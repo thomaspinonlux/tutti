@@ -17,6 +17,8 @@ import cors from 'cors';
 import { Server as SocketIOServer } from 'socket.io';
 import type { HealthResponse } from '@tutti/shared';
 import workspacesRouter from './routes/workspaces.js';
+import authRouter from './routes/auth.js';
+import meRouter from './routes/me.js';
 import { prisma } from './lib/prisma.js';
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -56,6 +58,8 @@ app.get('/api/health', async (_req, res) => {
   res.json(response);
 });
 
+app.use('/api/auth', authRouter);
+app.use('/api/me', meRouter);
 app.use('/api/workspaces', workspacesRouter);
 
 // 404 par défaut

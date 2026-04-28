@@ -1,49 +1,53 @@
 /**
- * Routes /api/workspaces — étape 2 (lecture seulement, sans auth pour l'instant).
+ * Routes /api/workspaces — lecture des workspaces du user courant.
  *
- * À l'étape 3, on ajoutera le middleware d'auth Supabase qui injectera
- * `req.userId`, et on filtrera les workspaces par membership.
- *
- * Pour l'étape 2, on liste tous les workspaces (mode service-role) afin
- * de valider que la chaîne DB → Prisma → Express → JSON fonctionne.
+ * Filtré par user_id via le middleware d'auth ; un user ne voit que
+ * ses propres workspaces (V1 : un seul, V2+ : potentiellement plusieurs).
  */
 
 import { Router, type Request, type Response } from 'express';
 import { prisma } from '../lib/prisma.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router: Router = Router();
 
-router.get('/', async (_req: Request, res: Response): Promise<void> => {
+router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const userId = req.userId;
+  if (!userId) {
+    res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'userId manquant' } });
+    return;
+  }
+
   try {
-    const workspaces = await prisma.workspace.findMany({
-      orderBy: { created_at: 'asc' },
+    const memberships = await prisma.workspaceMember.findMany({
+      where: { user_id: userId },
       include: {
-        establishments: {
-          select: {
-            id: true,
-            name: true,
-            default_language: true,
-            active_provider: true,
-          },
-        },
-        members: {
-          select: {
-            id: true,
-            user_id: true,
-            role: true,
+        workspace: {
+          include: {
+            establishments: {
+              select: {
+                id: true,
+                name: true,
+                default_language: true,
+                active_provider: true,
+              },
+            },
           },
         },
       },
+      orderBy: { created_at: 'asc' },
     });
+
+    const workspaces = memberships.map((m) => ({
+      ...m.workspace,
+      role: m.role,
+    }));
 
     res.json({ workspaces });
   } catch (err: unknown) {
     console.error('[GET /api/workspaces] error:', err);
     res.status(500).json({
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'Erreur interne lors de la récupération des workspaces',
-      },
+      error: { code: 'INTERNAL_ERROR', message: 'Erreur lors de la récupération des workspaces' },
     });
   }
 });
