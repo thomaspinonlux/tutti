@@ -69,7 +69,7 @@ Tout commit poussé sur `main` redéploie automatiquement les deux services.
 ## Avancement V1
 
 - [x] **Étape 1 — Setup repo + Hello World + déploiement auto** ✅ (validé le 2026-04-29)
-- [ ] Étape 2 — Base de données et schéma Prisma
+- [x] **Étape 2 — Base de données et schéma Prisma** ✅ (validé le 2026-04-29)
 - [ ] Étape 3 — Authentification utilisateurs
 - [ ] Étape 4 — Internationalisation (FR + EN)
 - [ ] Étape 5 — Direction visuelle Pop Cocktail
