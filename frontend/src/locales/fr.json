@@ -1,0 +1,51 @@
+{
+  "common": {
+    "brand": "Tutti",
+    "loading": "Chargement…",
+    "error": "Erreur",
+    "signOut": "Déconnexion"
+  },
+  "home": {
+    "tagline": "Plateforme de jeux interactifs pour bars et particuliers",
+    "goToDashboard": "Aller au dashboard",
+    "createAccount": "Créer un compte",
+    "signIn": "Se connecter"
+  },
+  "auth": {
+    "signupTitle": "Créer un compte",
+    "signupTagline": "Tutti — démarre ta soirée en 1 minute",
+    "loginTitle": "Connexion",
+    "loginTagline": "Bon retour parmi nous",
+    "workspaceName": "Nom de ton workspace",
+    "workspaceNamePlaceholder": "Mon bar",
+    "email": "Email",
+    "emailPlaceholder": "toi@exemple.com",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Au moins 8 caractères",
+    "signupSubmit": "Créer mon compte",
+    "signupSubmitting": "Création…",
+    "loginSubmit": "Se connecter",
+    "loginSubmitting": "Connexion…",
+    "confirmEmailNotice": "Confirme ton email pour activer le compte, puis connecte-toi.",
+    "invalidCredentials": "Email ou mot de passe incorrect",
+    "unknownError": "Erreur inconnue",
+    "haveAccount": "Déjà un compte ?",
+    "noAccount": "Pas encore de compte ?",
+    "linkSignIn": "Se connecter",
+    "linkSignUp": "Créer un compte",
+    "continueWithSeparator": "ou avec"
+  },
+  "admin": {
+    "welcomeTo": "Bienvenue dans",
+    "establishments": "Établissements",
+    "workspaceId": "ID workspace",
+    "plan": "Plan",
+    "role": "Rôle",
+    "upcomingSteps": "Étapes suivantes du plan de dev à venir : design system Pop Cocktail, jeux Tutti Tracks et Tutti Quizz…"
+  },
+  "language": {
+    "switchLabel": "Langue",
+    "fr": "Français",
+    "en": "English"
+  }
+}

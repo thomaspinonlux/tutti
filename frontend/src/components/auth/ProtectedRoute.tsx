@@ -7,6 +7,7 @@
 
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/auth.js';
 
 interface Props {
@@ -14,12 +15,13 @@ interface Props {
 }
 
 export function ProtectedRoute({ children }: Props): JSX.Element {
+  const { t } = useTranslation();
   const { session, loading } = useAuthStore();
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream">
-        <p className="font-mono text-ink/60">Chargement…</p>
+        <p className="font-mono text-ink/60">{t('common.loading')}</p>
       </div>
     );
   }

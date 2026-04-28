@@ -1,0 +1,17 @@
+{
+  "errors": {
+    "unauthorized_missing_token": "Token manquant ou format invalide",
+    "unauthorized_empty_token": "Token vide",
+    "unauthorized_invalid_token": "Token invalide ou expiré",
+    "unauthorized_missing_user_id": "userId manquant",
+    "internal_error": "Erreur interne",
+    "internal_token_validation": "Erreur lors de la validation du token",
+    "internal_workspace_resolution": "Erreur lors de la résolution du workspace",
+    "internal_workspaces_fetch": "Erreur lors de la récupération des workspaces",
+    "internal_profile_fetch": "Erreur lors de la récupération du profil",
+    "internal_workspace_init": "Erreur lors de l'initialisation du workspace",
+    "validation_invalid_body": "Body invalide",
+    "no_workspace": "Aucun workspace pour cet utilisateur. Appelez /api/auth/initialize.",
+    "not_found": "Route non trouvée"
+  }
+}

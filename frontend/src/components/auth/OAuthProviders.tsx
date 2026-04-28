@@ -14,6 +14,7 @@
  */
 
 import type { Provider } from '@supabase/supabase-js';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase.js';
 
 interface OAuthProvider {
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export function OAuthProviders({ redirectTo }: Props): JSX.Element | null {
+  const { t } = useTranslation();
   const enabled = PROVIDERS.filter((p) => p.enabled);
   if (enabled.length === 0) return null;
 
@@ -47,7 +49,9 @@ export function OAuthProviders({ redirectTo }: Props): JSX.Element | null {
 
   return (
     <div className="space-y-2 mt-4">
-      <p className="text-xs font-mono text-ink/60 uppercase tracking-wider text-center">ou avec</p>
+      <p className="text-xs font-mono text-ink/60 uppercase tracking-wider text-center">
+        {t('auth.continueWithSeparator')}
+      </p>
       {enabled.map((p) => (
         <button
           key={p.id}

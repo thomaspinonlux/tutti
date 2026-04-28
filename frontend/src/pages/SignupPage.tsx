@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase.js';
 import { api, ApiError } from '../lib/api.js';
 import { OAuthProviders } from '../components/auth/OAuthProviders.js';
+import { LanguageSwitch } from '../components/LanguageSwitch.js';
 
 export function SignupPage(): JSX.Element {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,7 +21,6 @@ export function SignupPage(): JSX.Element {
     setLoading(true);
 
     try {
-      // 1. Création du user Supabase Auth
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -29,57 +31,58 @@ export function SignupPage(): JSX.Element {
         return;
       }
       if (!data.session) {
-        // Email confirmation activée côté Supabase : on prévient l'utilisateur
-        setError('Confirme ton email pour activer le compte, puis connecte-toi via /auth/login.');
+        setError(t('auth.confirmEmailNotice'));
         return;
       }
 
-      // 2. Bootstrap du tenant (workspace + member + establishment)
       await api('/api/auth/initialize', {
         method: 'POST',
         body: { workspaceName: workspaceName.trim() },
       });
 
-      // 3. Redirection vers l'admin
       navigate('/admin', { replace: true });
     } catch (err: unknown) {
       const msg = err instanceof ApiError ? err.message : (err as Error).message;
-      setError(msg ?? 'Erreur inconnue');
+      setError(msg ?? t('auth.unknownError'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-8 bg-cream text-ink">
+    <main className="min-h-screen flex items-center justify-center p-8 bg-cream text-ink relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitch />
+      </div>
+
       <div className="w-full max-w-md border-2 border-ink rounded-lg p-8 bg-white shadow-[8px_8px_0_0_#1a1410]">
-        <h1 className="text-3xl font-bold mb-1">Créer un compte</h1>
-        <p className="text-sm text-ink/60 mb-6 italic">Tutti — démarre ta soirée en 1 minute</p>
+        <h1 className="text-3xl font-bold mb-1">{t('auth.signupTitle')}</h1>
+        <p className="text-sm text-ink/60 mb-6 italic">{t('auth.signupTagline')}</p>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           <Field
-            label="Nom de ton workspace"
+            label={t('auth.workspaceName')}
             type="text"
             value={workspaceName}
             onChange={setWorkspaceName}
-            placeholder="Le Komptoir"
+            placeholder={t('auth.workspaceNamePlaceholder')}
             required
             minLength={2}
           />
           <Field
-            label="Email"
+            label={t('auth.email')}
             type="email"
             value={email}
             onChange={setEmail}
-            placeholder="toi@exemple.com"
+            placeholder={t('auth.emailPlaceholder')}
             required
           />
           <Field
-            label="Mot de passe"
+            label={t('auth.password')}
             type="password"
             value={password}
             onChange={setPassword}
-            placeholder="Au moins 8 caractères"
+            placeholder={t('auth.passwordPlaceholder')}
             required
             minLength={8}
           />
@@ -98,16 +101,16 @@ export function SignupPage(): JSX.Element {
             disabled={loading}
             className="w-full px-4 py-3 bg-spritz text-white border-2 border-ink rounded shadow-[4px_4px_0_0_#1a1410] hover:shadow-[2px_2px_0_0_#1a1410] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Création…' : 'Créer mon compte'}
+            {loading ? t('auth.signupSubmitting') : t('auth.signupSubmit')}
           </button>
         </form>
 
         <OAuthProviders redirectTo={`${window.location.origin}/admin`} />
 
         <p className="text-sm text-ink/60 mt-6 text-center">
-          Déjà un compte ?{' '}
+          {t('auth.haveAccount')}{' '}
           <Link to="/auth/login" className="text-spritz hover:underline font-medium">
-            Se connecter
+            {t('auth.linkSignIn')}
           </Link>
         </p>
       </div>

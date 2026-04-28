@@ -1,0 +1,51 @@
+{
+  "common": {
+    "brand": "Tutti",
+    "loading": "Loading…",
+    "error": "Error",
+    "signOut": "Sign out"
+  },
+  "home": {
+    "tagline": "Interactive games platform for bars and home parties",
+    "goToDashboard": "Go to dashboard",
+    "createAccount": "Create an account",
+    "signIn": "Sign in"
+  },
+  "auth": {
+    "signupTitle": "Create an account",
+    "signupTagline": "Tutti — start your night in 1 minute",
+    "loginTitle": "Sign in",
+    "loginTagline": "Welcome back",
+    "workspaceName": "Workspace name",
+    "workspaceNamePlaceholder": "My bar",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "signupSubmit": "Create my account",
+    "signupSubmitting": "Creating…",
+    "loginSubmit": "Sign in",
+    "loginSubmitting": "Signing in…",
+    "confirmEmailNotice": "Confirm your email to activate the account, then sign in.",
+    "invalidCredentials": "Invalid email or password",
+    "unknownError": "Unknown error",
+    "haveAccount": "Already have an account?",
+    "noAccount": "No account yet?",
+    "linkSignIn": "Sign in",
+    "linkSignUp": "Create an account",
+    "continueWithSeparator": "or with"
+  },
+  "admin": {
+    "welcomeTo": "Welcome to",
+    "establishments": "Establishments",
+    "workspaceId": "Workspace ID",
+    "plan": "Plan",
+    "role": "Role",
+    "upcomingSteps": "Next steps in the dev plan: Pop Cocktail design system, Tutti Tracks and Tutti Quizz games…"
+  },
+  "language": {
+    "switchLabel": "Language",
+    "fr": "Français",
+    "en": "English"
+  }
+}

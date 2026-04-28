@@ -52,6 +52,27 @@ pnpm typecheck    # Vérification de types
 pnpm format       # Formatage Prettier
 ```
 
+## Internationalisation
+
+V1 supporte **français** (défaut) et **anglais**. Détection automatique de la langue du navigateur, switch manuel via le composant `<LanguageSwitch />` (persisté en localStorage).
+
+### Ajouter une nouvelle langue
+
+Procédure complète, sans modification de code applicatif :
+
+1. **Frontend** — créer `frontend/src/locales/<code>.json` (par exemple `de.json` pour l'allemand). Copier la structure de `fr.json` et traduire toutes les valeurs.
+2. **Frontend** — dans `frontend/src/i18n/index.ts` :
+   - importer `import de from '../locales/de.json'`
+   - ajouter `de: { translation: de }` à `resources`
+   - ajouter `'de'` à `SUPPORTED_LOCALES`
+3. **Backend** — créer `backend/src/locales/<code>.json` avec la même structure que `fr.json`.
+4. **Backend** — dans `backend/src/lib/i18n.ts` :
+   - importer `import de from '../locales/de.json' with { type: 'json' }`
+   - ajouter `de` à `RESOURCES`
+5. C'est tout : le `<LanguageSwitch />` détecte automatiquement la nouvelle langue, et l'API accepte la nouvelle valeur dans le header `Accept-Language`.
+
+Aucune logique applicative ne référence les codes de langue en dur.
+
 ## Variables d'environnement
 
 Voir `backend/.env.example` et `frontend/.env.example`.

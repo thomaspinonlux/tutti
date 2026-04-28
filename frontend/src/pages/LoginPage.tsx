@@ -1,9 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase.js';
 import { OAuthProviders } from '../components/auth/OAuthProviders.js';
+import { LanguageSwitch } from '../components/LanguageSwitch.js';
 
 export function LoginPage(): JSX.Element {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +27,7 @@ export function LoginPage(): JSX.Element {
       if (signInError) {
         setError(
           signInError.message === 'Invalid login credentials'
-            ? 'Email ou mot de passe incorrect'
+            ? t('auth.invalidCredentials')
             : signInError.message,
         );
         return;
@@ -32,28 +35,32 @@ export function LoginPage(): JSX.Element {
 
       navigate('/admin', { replace: true });
     } catch (err: unknown) {
-      setError((err as Error).message ?? 'Erreur inconnue');
+      setError((err as Error).message ?? t('auth.unknownError'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-8 bg-cream text-ink">
+    <main className="min-h-screen flex items-center justify-center p-8 bg-cream text-ink relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitch />
+      </div>
+
       <div className="w-full max-w-md border-2 border-ink rounded-lg p-8 bg-white shadow-[8px_8px_0_0_#1a1410]">
-        <h1 className="text-3xl font-bold mb-1">Connexion</h1>
-        <p className="text-sm text-ink/60 mb-6 italic">Bon retour parmi nous</p>
+        <h1 className="text-3xl font-bold mb-1">{t('auth.loginTitle')}</h1>
+        <p className="text-sm text-ink/60 mb-6 italic">{t('auth.loginTagline')}</p>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           <label className="block">
             <span className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1 block">
-              Email
+              {t('auth.email')}
             </span>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="toi@exemple.com"
+              placeholder={t('auth.emailPlaceholder')}
               required
               className="w-full px-3 py-2 border-2 border-ink rounded bg-cream/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz"
             />
@@ -61,7 +68,7 @@ export function LoginPage(): JSX.Element {
 
           <label className="block">
             <span className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1 block">
-              Mot de passe
+              {t('auth.password')}
             </span>
             <input
               type="password"
@@ -86,16 +93,16 @@ export function LoginPage(): JSX.Element {
             disabled={loading}
             className="w-full px-4 py-3 bg-spritz text-white border-2 border-ink rounded shadow-[4px_4px_0_0_#1a1410] hover:shadow-[2px_2px_0_0_#1a1410] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Connexion…' : 'Se connecter'}
+            {loading ? t('auth.loginSubmitting') : t('auth.loginSubmit')}
           </button>
         </form>
 
         <OAuthProviders redirectTo={`${window.location.origin}/admin`} />
 
         <p className="text-sm text-ink/60 mt-6 text-center">
-          Pas encore de compte ?{' '}
+          {t('auth.noAccount')}{' '}
           <Link to="/auth/signup" className="text-spritz hover:underline font-medium">
-            Créer un compte
+            {t('auth.linkSignUp')}
           </Link>
         </p>
       </div>
