@@ -1,0 +1,90 @@
+/**
+ * Tutti backend — point d'entrée du serveur.
+ *
+ * Étape 1 (Hello World) :
+ * - Express + middleware CORS
+ * - Endpoint GET /api/health → { status: "ok", ... }
+ * - Socket.IO initialisé (pas encore d'événements métier)
+ *
+ * Au fil des étapes du plan de dev, ce fichier orchestrera les routes,
+ * middlewares (auth, tenant), et les handlers Socket.IO.
+ */
+
+import 'dotenv/config';
+import { createServer } from 'node:http';
+import express from 'express';
+import cors from 'cors';
+import { Server as SocketIOServer } from 'socket.io';
+import type { HealthResponse } from '@tutti/shared';
+
+const PORT = Number(process.env.PORT ?? 3001);
+const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
+const NODE_ENV = process.env.NODE_ENV ?? 'development';
+
+const app = express();
+const httpServer = createServer(app);
+
+// ───── Middlewares globaux ────────────────────────────────────────────────
+
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    credentials: true,
+  }),
+);
+app.use(express.json({ limit: '1mb' }));
+
+// ───── Routes ─────────────────────────────────────────────────────────────
+
+app.get('/api/health', (_req, res) => {
+  const response: HealthResponse = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: '0.0.1',
+  };
+  res.json(response);
+});
+
+// 404 par défaut
+app.use((_req, res) => {
+  res.status(404).json({
+    error: { code: 'NOT_FOUND', message: 'Route non trouvée' },
+  });
+});
+
+// ───── Socket.IO (squelette, sera étendu à l'étape 9+) ────────────────────
+
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: FRONTEND_URL,
+    credentials: true,
+  },
+});
+
+io.on('connection', (socket) => {
+  console.info(`[socket] client connecté: ${socket.id}`);
+  socket.on('disconnect', (reason) => {
+    console.info(`[socket] client déconnecté: ${socket.id} (${reason})`);
+  });
+});
+
+// ───── Démarrage ──────────────────────────────────────────────────────────
+
+httpServer.listen(PORT, () => {
+  console.info(`[tutti-backend] démarré en mode ${NODE_ENV} sur http://localhost:${PORT}`);
+  console.info(`[tutti-backend] CORS autorisé pour: ${FRONTEND_URL}`);
+});
+
+// Gestion propre des arrêts
+const shutdown = (signal: string): void => {
+  console.info(`[tutti-backend] signal ${signal} reçu — arrêt en cours...`);
+  io.close();
+  httpServer.close(() => {
+    console.info('[tutti-backend] arrêté proprement');
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blind Test · Le Komptoir — Direction Pop Cocktail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Outfit:wght@300..700&family=JetBrains+Mono:wght@300..600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Crème palette */
+    --cream: #f5ecd9;
+    --cream-2: #efe4cc;
+    --cream-3: #e6d8b8;
+    --cream-4: #d4c39e;
+    --kraft: #c2aa78;
+
+    /* Ink for text on cream */
+    --ink: #1a1410;
+    --ink-2: #3d2f24;
+    --ink-soft: #6b5443;
+    --ink-faded: #9a8470;
+
+    /* Vibrant accents */
+    --spritz: #ee6c2a;          /* Orange Aperol */
+    --spritz-deep: #c84e15;
+    --basil: #4a8b3f;            /* Vert basilic */
+    --basil-deep: #356a2c;
+    --raspberry: #c8336e;        /* Framboise */
+    --raspberry-deep: #9c1f53;
+    --grapefruit: #e89a64;       /* Pamplemousse rose */
+    --lemon: #e8c547;            /* Citron */
+    --plum: #6e3a6e;             /* Prune */
+
+    /* Functional */
+    --correct: var(--basil);
+    --wrong: var(--raspberry);
+
+    --paper: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+
+  /* Paper grain texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    background-size: 300px 300px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+  }
+
+  /* Subtle warm wash */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 10% 0%, rgba(238, 108, 42, 0.07), transparent 50%),
+      radial-gradient(ellipse at 100% 100%, rgba(74, 139, 63, 0.06), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 40px 80px;
+  }
+
+  /* ─── PAGE HEADER ─── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 24px;
+    margin-bottom: 50px;
+    position: relative;
+  }
+
+  .page-header::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 80px;
+    height: 6px;
+    background: var(--spritz);
+  }
+
+  .page-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--spritz-deep);
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .page-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 56px;
+    line-height: 0.95;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .page-title .swirl {
+    color: var(--raspberry);
+    display: inline-block;
+    transform: rotate(-3deg);
+  }
+
+  .page-title .underline {
+    position: relative;
+    display: inline-block;
+  }
+
+  .page-title .underline::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    background: var(--lemon);
+    z-index: -1;
+    transform: skew(-8deg);
+  }
+
+  .page-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.8;
+  }
+
+  .page-meta strong { color: var(--ink); font-weight: 600; }
+
+  /* ─── INTRO TEXT ─── */
+  .intro {
+    margin-bottom: 40px;
+    max-width: 720px;
+    font-size: 16px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+
+  .intro em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--raspberry-deep);
+  }
+
+  /* ─── SCREEN LABEL ─── */
+  .screen-label {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .screen-label .number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--spritz-deep);
+    letter-spacing: 0.15em;
+    background: var(--cream-2);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--cream-4);
+  }
+
+  .screen-label .name {
+    font-family: 'Caprasimo', serif;
+    font-size: 26px;
+    color: var(--ink);
+  }
+
+  .screen-label .desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* ─── IPAD FRAME ─── */
+  .ipad-frame {
+    background: #1a1410;
+    border-radius: 28px;
+    padding: 14px;
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 30px 80px -10px rgba(110, 58, 110, 0.25),
+      0 60px 120px -30px rgba(238, 108, 42, 0.15);
+    position: relative;
+  }
+
+  .ipad-frame::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 6px;
+    width: 4px;
+    height: 36px;
+    background: #2a2218;
+    border-radius: 2px;
+    transform: translateY(-50%);
+  }
+
+  .ipad-screen {
+    background: var(--cream);
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    position: relative;
+  }
+
+  .ipad-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    background-size: 300px 300px;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+  }
+
+  /* ─── IPAD HEADER ─── */
+  .ipad-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--cream-3);
+    background: var(--cream-2);
+    position: relative;
+  }
+
+  /* Decorative dots strip */
+  .ipad-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+      var(--spritz) 0%, var(--spritz) 20%,
+      var(--basil) 20%, var(--basil) 40%,
+      var(--raspberry) 40%, var(--raspberry) 60%,
+      var(--lemon) 60%, var(--lemon) 80%,
+      var(--plum) 80%, var(--plum) 100%
+    );
+  }
+
+  .brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Caprasimo', serif;
+    font-size: 18px;
+    color: var(--ink);
+  }
+
+  .brand-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--spritz);
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-5deg);
+    box-shadow: 0 3px 0 var(--spritz-deep);
+  }
+
+  .brand-icon::after {
+    content: '♪';
+    color: var(--cream);
+    font-size: 14px;
+    transform: rotate(5deg);
+  }
+
+  .brand-mark .komptoir {
+    color: var(--raspberry);
+    font-style: normal;
+  }
+
+  .round-counter {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-2);
+    background: var(--cream);
+    padding: 6px 16px;
+    border-radius: 100px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    transform: rotate(-1deg);
+  }
+
+  .round-counter span {
+    color: var(--spritz-deep);
+    font-style: normal;
+    font-family: 'Caprasimo', serif;
+    font-size: 18px;
+    margin: 0 2px;
+  }
+
+  .session-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  .session-time strong { color: var(--ink); font-weight: 600; }
+
+  /* ─── IPAD MAIN GRID ─── */
+  .ipad-main {
+    display: grid;
+    grid-template-columns: 5fr 4fr 4fr;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ipad-main > div {
+    padding: 22px 24px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ipad-main > div + div {
+    border-left: 1.5px dashed var(--cream-4);
+  }
+
+  /* ─── COL 1: NOW PLAYING ─── */
+  .now-playing { display: flex; flex-direction: column; }
+
+  .album-stage {
+    position: relative;
+    aspect-ratio: 1;
+    margin: 0 auto 16px;
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .album-tape {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-4deg);
+    width: 80px;
+    height: 22px;
+    background: rgba(238, 108, 42, 0.7);
+    z-index: 2;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .album-tape::before, .album-tape::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .album-tape::before { left: 0; clip-path: polygon(0 0, 100% 0, 50% 100%, 100% 100%, 0 100%); }
+  .album-tape::after { right: 0; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 50% 0); transform: rotate(180deg); }
+
+  .album-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 
+      0 12px 30px -8px rgba(110, 58, 110, 0.4),
+      0 4px 8px -4px rgba(0, 0, 0, 0.2),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    transform: rotate(-1deg);
+  }
+
+  .album-art {
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 25% 30%, var(--lemon) 0%, transparent 50%),
+      radial-gradient(circle at 75% 70%, var(--raspberry) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, var(--spritz) 0%, transparent 60%),
+      linear-gradient(135deg, var(--plum), var(--basil-deep));
+    filter: blur(18px) saturate(1.5);
+    transform: scale(1.15);
+  }
+
+  .album-overlay {
+    position: absolute;
+    inset: 0;
+    background: 
+      linear-gradient(180deg, transparent 50%, rgba(26, 20, 16, 0.5)),
+      var(--paper);
+    background-size: cover, 100px 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .mystery-mark {
+    font-family: 'Caprasimo', serif;
+    font-size: 110px;
+    line-height: 1;
+    color: rgba(245, 236, 217, 0.55);
+    text-shadow: 
+      4px 4px 0 rgba(238, 108, 42, 0.4),
+      -2px -2px 0 rgba(74, 139, 63, 0.3);
+    transform: rotate(-5deg);
+    letter-spacing: -0.05em;
+  }
+
+  /* Timer */
+  .timer-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .timer-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--cream-3);
+    border-radius: 100px;
+    overflow: hidden;
+    border: 1px solid var(--ink);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .timer-bar-fill {
+    height: 100%;
+    width: 62%;
+    background: linear-gradient(90deg, var(--basil), var(--lemon), var(--spritz));
+    border-radius: 100px;
+    transition: width 0.5s linear;
+    position: relative;
+  }
+
+  .timer-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 100px;
+  }
+
+  .timer-text {
+    font-family: 'Caprasimo', serif;
+    font-size: 18px;
+    color: var(--spritz-deep);
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .phase-tag {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+
+  .phase-tag .live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--raspberry);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: livePulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes livePulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+  }
+
+  .answer-reveal {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    box-shadow: 3px 3px 0 var(--ink);
+    transform: rotate(0.5deg);
+  }
+
+  .answer-reveal .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .answer-reveal .label .eye {
+    color: var(--spritz);
+    margin-right: 4px;
+  }
+
+  .answer-reveal .artist {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 1px;
+    filter: blur(6px);
+    user-select: none;
+    font-weight: 500;
+  }
+
+  .answer-reveal .title {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+    filter: blur(6px);
+    user-select: none;
+  }
+
+  /* ─── COL 2: BUZZ FEED ─── */
+  .buzz-feed { display: flex; flex-direction: column; overflow: hidden; }
+
+  .col-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 2px;
+    line-height: 1.1;
+  }
+
+  .col-title .accent {
+    color: var(--basil);
+    display: inline-block;
+    transform: rotate(-2deg);
+  }
+
+  .col-subtitle {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin-bottom: 14px;
+  }
+
+  .buzz-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .buzz-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--cream-2);
+    border-radius: 10px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    animation: slideIn 0.3s ease-out;
+    position: relative;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .buzz-item.correct {
+    background: linear-gradient(135deg, rgba(74, 139, 63, 0.18), rgba(74, 139, 63, 0.05));
+    border-color: var(--basil);
+    box-shadow: 2px 2px 0 var(--basil-deep);
+  }
+
+  .buzz-item.wrong {
+    background: rgba(200, 51, 110, 0.1);
+    border-color: var(--raspberry);
+    box-shadow: 2px 2px 0 var(--raspberry-deep);
+    opacity: 0.75;
+  }
+
+  .buzz-item.live {
+    background: linear-gradient(135deg, rgba(238, 108, 42, 0.18), rgba(238, 108, 42, 0.05));
+    border-color: var(--spritz);
+    box-shadow: 2px 2px 0 var(--spritz-deep);
+    animation: liveBuzz 1.5s ease-in-out infinite;
+  }
+
+  @keyframes liveBuzz {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(2px); }
+  }
+
+  .buzz-rank {
+    font-family: 'Caprasimo', serif;
+    font-size: 18px;
+    color: var(--ink);
+    width: 26px;
+    height: 26px;
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .buzz-item.correct .buzz-rank { background: var(--basil); color: var(--cream); }
+  .buzz-item.wrong .buzz-rank { background: var(--raspberry); color: var(--cream); }
+  .buzz-item.live .buzz-rank { background: var(--spritz); color: var(--cream); }
+
+  .buzz-content { min-width: 0; }
+  .buzz-name {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+    margin-bottom: 1px;
+  }
+
+  .buzz-quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .buzz-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink);
+    text-align: right;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+
+  .buzz-time .pts {
+    display: block;
+    color: var(--basil-deep);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    font-family: 'Caprasimo', serif;
+    margin-top: 2px;
+  }
+
+  .buzz-item.wrong .buzz-time .pts { color: var(--raspberry-deep); }
+
+  .buzz-mic-wave {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    height: 18px;
+  }
+
+  .buzz-mic-wave span {
+    width: 2.5px;
+    background: var(--spritz);
+    border-radius: 1px;
+    animation: wave 0.7s ease-in-out infinite;
+  }
+
+  .buzz-mic-wave span:nth-child(1) { height: 30%; animation-delay: 0s; }
+  .buzz-mic-wave span:nth-child(2) { height: 70%; animation-delay: 0.1s; }
+  .buzz-mic-wave span:nth-child(3) { height: 100%; animation-delay: 0.2s; }
+  .buzz-mic-wave span:nth-child(4) { height: 60%; animation-delay: 0.3s; }
+  .buzz-mic-wave span:nth-child(5) { height: 40%; animation-delay: 0.4s; }
+
+  @keyframes wave {
+    0%, 100% { opacity: 0.5; transform: scaleY(0.6); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  .window-status {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--lemon);
+    border: 1.5px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .window-status strong {
+    font-family: 'Caprasimo', serif;
+    font-size: 15px;
+    color: var(--spritz-deep);
+  }
+
+  /* ─── COL 3: TEAMS LEADERBOARD + ADMIN ─── */
+  .col-right { display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+
+  .leaderboard {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lb-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    overflow: hidden;
+  }
+
+  .lb-team-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .lb-team-row.team-red {
+    background: linear-gradient(90deg, rgba(200, 51, 110, 0.18), rgba(200, 51, 110, 0.04));
+  }
+  .lb-team-row.team-blue {
+    background: linear-gradient(90deg, rgba(74, 139, 63, 0.18), rgba(74, 139, 63, 0.04));
+  }
+  .lb-team-row.team-gold {
+    background: linear-gradient(90deg, rgba(238, 108, 42, 0.18), rgba(238, 108, 42, 0.04));
+  }
+  .lb-team-row.team-green {
+    background: linear-gradient(90deg, rgba(110, 58, 110, 0.18), rgba(110, 58, 110, 0.04));
+  }
+
+  .lb-team-row.first::before {
+    content: '✦';
+    position: absolute;
+    left: -4px;
+    top: -10px;
+    background: var(--lemon);
+    color: var(--ink);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transform: rotate(-15deg);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .lb-rank {
+    font-family: 'Caprasimo', serif;
+    font-size: 22px;
+    color: var(--ink);
+    width: 32px;
+    text-align: center;
+  }
+
+  .lb-team-info { line-height: 1.2; min-width: 0; }
+
+  .lb-team-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .lb-team-players {
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+
+  .lb-team-players .mvp {
+    color: var(--spritz-deep);
+    font-weight: 600;
+  }
+
+  .lb-score {
+    font-family: 'Caprasimo', serif;
+    font-size: 22px;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .lb-score .delta {
+    display: block;
+    font-size: 10px;
+    color: var(--basil-deep);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  /* MVP individual line */
+  .mvp-strip {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--spritz);
+  }
+
+  .mvp-label {
+    font-family: 'Caprasimo', serif;
+    font-size: 14px;
+    color: var(--lemon);
+  }
+
+  .mvp-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    flex: 1;
+  }
+
+  .mvp-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--spritz);
+  }
+
+  /* Admin panel */
+  .admin-panel {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .admin-row {
+    display: flex;
+    gap: 5px;
+  }
+
+  .admin-btn {
+    flex: 1;
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 8px 4px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .admin-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .admin-btn.primary {
+    background: var(--spritz);
+    color: var(--cream);
+  }
+
+  .admin-btn.primary:hover { background: var(--spritz-deep); }
+
+  /* ─── IPAD FOOTER ─── */
+  .ipad-footer {
+    border-top: 1.5px solid var(--cream-3);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--cream-2);
+  }
+
+  .playlist-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .playlist-thumb {
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    background: 
+      conic-gradient(from 45deg, var(--spritz), var(--raspberry), var(--basil), var(--lemon), var(--spritz));
+    flex-shrink: 0;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    transform: rotate(-2deg);
+  }
+
+  .playlist-text { line-height: 1.2; min-width: 0; }
+  .playlist-text .name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .playlist-text .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+
+  .footer-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .ctrl-btn {
+    width: 40px;
+    height: 40px;
+    border: 1.5px solid var(--ink);
+    background: var(--cream);
+    color: var(--ink);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .ctrl-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .ctrl-btn.play {
+    background: var(--spritz);
+    color: var(--cream);
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .ctrl-btn.play:hover { background: var(--spritz-deep); }
+
+  .ctrl-btn.reveal {
+    background: var(--lemon);
+    color: var(--ink);
+  }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── CONFETTI EXPLOSION (correct answer celebration) ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .confetti-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 50;
+  }
+
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 14px;
+    animation: confettiFall 3s ease-in forwards;
+  }
+
+  @keyframes confettiFall {
+    0% {
+      transform: translateY(-30px) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(600px) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  /* ─── COMPARISON SECTION ─── */
+  .comparison {
+    margin-top: 80px;
+    background: var(--cream-2);
+    border: 2px solid var(--ink);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .comparison-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 28px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .comparison-title .stripe {
+    display: inline-block;
+    background: var(--lemon);
+    padding: 0 8px;
+    transform: rotate(-1deg);
+  }
+
+  .comparison-sub {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    font-style: italic;
+  }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .compare-card {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .compare-card h4 {
+    font-family: 'Caprasimo', serif;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .compare-card h4 .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  .compare-card.spritz h4 .dot { background: var(--spritz); }
+  .compare-card.basil h4 .dot { background: var(--basil); }
+  .compare-card.raspberry h4 .dot { background: var(--raspberry); }
+
+  .compare-card p {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+
+  /* ─── DESIGN NOTES ─── */
+  .design-notes {
+    margin-top: 50px;
+  }
+
+  .design-notes h3 {
+    font-family: 'Caprasimo', serif;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .note-item {
+    border-left: 4px solid var(--spritz);
+    padding-left: 16px;
+  }
+
+  .note-item:nth-child(2) { border-color: var(--basil); }
+  .note-item:nth-child(3) { border-color: var(--raspberry); }
+  .note-item:nth-child(4) { border-color: var(--lemon); }
+  .note-item:nth-child(5) { border-color: var(--plum); }
+  .note-item:nth-child(6) { border-color: var(--grapefruit); }
+
+  .note-item h4 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .note-item p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* ─── DEMO BUTTON ─── */
+  .demo-btn-wrap {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .demo-btn {
+    background: var(--raspberry);
+    color: var(--cream);
+    border: 2px solid var(--ink);
+    padding: 14px 28px;
+    font-family: 'Caprasimo', serif;
+    font-size: 18px;
+    border-radius: 100px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: all 0.15s;
+    transform: rotate(-1deg);
+  }
+
+  .demo-btn:hover {
+    background: var(--raspberry-deep);
+    transform: rotate(-1deg) translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1100px) {
+    .ipad-main { grid-template-columns: 1fr; }
+    .ipad-main > div + div { border-left: none; border-top: 1.5px dashed var(--cream-4); }
+    .comparison-grid, .notes-grid { grid-template-columns: 1fr; }
+    .page-title { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ─── PAGE HEADER ─── -->
+  <header class="page-header">
+    <div>
+      <div class="page-subtitle">DIRECTION POP COCKTAIL · TEST</div>
+      <h1 class="page-title">
+        <span class="underline">Pop</span> Cocktail,<br>
+        <span class="swirl">à boire</span> ensemble.
+      </h1>
+    </div>
+    <div class="page-meta">
+      <strong>NOUVELLE DIRECTION ARTISTIQUE</strong><br>
+      Crème + spritz + basilic + framboise<br>
+      Caprasimo + Fraunces + Outfit
+    </div>
+  </header>
+
+  <p class="intro">
+    On change l'ambiance pour mettre <em>la fête au centre</em>. Fond crème chaud (papier kraft), accents vifs (orange Aperol, vert basilic, framboise, citron), typo Caprasimo pour les moments d'impact. Bordures noires épaisses et ombres décalées pour le côté affiche risographe — un clin d'œil au visuel du Komptoir, mais en mode soirée.
+  </p>
+
+  <div class="demo-btn-wrap">
+    <button class="demo-btn" onclick="celebrate()">🎉 Lance les confettis (clique-moi)</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ─── ÉCRAN TEST : IPAD HOST EN PARTIE ─── -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section>
+    <div class="screen-label">
+      <span class="number">TEST D'AMBIANCE</span>
+      <span class="name">L'iPad host pendant une manche</span>
+      <span class="desc">— scène : 2 équipes ont trouvé, l'une est en train de répondre</span>
+    </div>
+
+    <div class="ipad-frame">
+      <div class="ipad-screen">
+
+        <!-- Confetti container -->
+        <div class="confetti-container" id="confetti"></div>
+
+        <!-- Header -->
+        <div class="ipad-header">
+          <div class="brand-mark">
+            <span class="brand-icon"></span>
+            <span>Blind Test <span class="komptoir">Komptoir</span></span>
+          </div>
+          <div class="round-counter">Manche <span>12</span> / 90</div>
+          <div class="session-time">
+            <strong>21:47</strong> · 14 joueurs<br>
+            4 équipes en lice
+          </div>
+        </div>
+
+        <!-- Main 3 columns -->
+        <div class="ipad-main">
+
+          <!-- ─── COL 1: Now Playing ─── -->
+          <div class="now-playing">
+            <div class="album-stage">
+              <div class="album-tape"></div>
+              <div class="album-card">
+                <div class="album-art"></div>
+                <div class="album-overlay">
+                  <div class="mystery-mark">?</div>
+                </div>
+              </div>
+            </div>
+            <div class="phase-tag">
+              <span class="live-dot"></span>
+              FENÊTRE MULTI-JOUEUR
+            </div>
+            <div class="timer-row">
+              <div class="timer-bar">
+                <div class="timer-bar-fill"></div>
+              </div>
+              <div class="timer-text">9.4s</div>
+            </div>
+            <div class="answer-reveal">
+              <div class="label"><span class="eye">👁</span> RÉPONSE CACHÉE</div>
+              <div class="artist">Stromae</div>
+              <div class="title">Alors on Danse</div>
+            </div>
+          </div>
+
+          <!-- ─── COL 2: Buzz Feed ─── -->
+          <div class="buzz-feed">
+            <div class="col-title">Les <span class="accent">buzz</span></div>
+            <div class="col-subtitle">en direct, transcription Whisper</div>
+
+            <div class="buzz-list">
+              <div class="buzz-item correct">
+                <div class="buzz-rank">1</div>
+                <div class="buzz-content">
+                  <div class="buzz-name">Marie L. <span style="color: var(--spritz-deep); font-size: 11px;">· Chardonnays</span></div>
+                  <div class="buzz-quote">"Stromae alors on danse"</div>
+                </div>
+                <div class="buzz-time">+1.84s<span class="pts">+200</span></div>
+              </div>
+
+              <div class="buzz-item correct">
+                <div class="buzz-rank">2</div>
+                <div class="buzz-content">
+                  <div class="buzz-name">Jérôme <span style="color: var(--raspberry-deep); font-size: 11px;">· Pinots</span></div>
+                  <div class="buzz-quote">"stromaé"</div>
+                </div>
+                <div class="buzz-time">+2.91s<span class="pts">+75</span></div>
+              </div>
+
+              <div class="buzz-item live">
+                <div class="buzz-rank">3</div>
+                <div class="buzz-content">
+                  <div class="buzz-name">Léa &amp; Tom <span style="color: var(--basil-deep); font-size: 11px;">· Riesling</span></div>
+                  <div class="buzz-quote">écoute en cours…</div>
+                </div>
+                <div class="buzz-mic-wave">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+
+              <div class="buzz-item wrong">
+                <div class="buzz-rank">4</div>
+                <div class="buzz-content">
+                  <div class="buzz-name">Antoine <span style="color: var(--basil-deep); font-size: 11px;">· Riesling</span></div>
+                  <div class="buzz-quote">"orelsan ?"</div>
+                </div>
+                <div class="buzz-time">+5.12s<span class="pts">×</span></div>
+              </div>
+            </div>
+
+            <div class="window-status">
+              <span>2 équipes ont trouvé</span>
+              <strong>9.4s</strong>
+            </div>
+          </div>
+
+          <!-- ─── COL 3: Teams Leaderboard + Admin ─── -->
+          <div class="col-right">
+            <div class="leaderboard">
+              <div class="col-title">Le <span class="accent" style="color: var(--spritz);">classement</span></div>
+              <div class="col-subtitle">scoring équipe</div>
+              <div class="lb-list">
+                <div class="lb-team-row team-gold first">
+                  <div class="lb-rank">1</div>
+                  <div class="lb-team-info">
+                    <div class="lb-team-name">Les Chardonnays</div>
+                    <div class="lb-team-players">4 joueurs · <span class="mvp">MVP Marie L.</span></div>
+                  </div>
+                  <div class="lb-score">2 480<span class="delta">+200</span></div>
+                </div>
+                <div class="lb-team-row team-red">
+                  <div class="lb-rank">2</div>
+                  <div class="lb-team-info">
+                    <div class="lb-team-name">Les Pinots</div>
+                    <div class="lb-team-players">4 joueurs · <span class="mvp">MVP Jérôme</span></div>
+                  </div>
+                  <div class="lb-score">2 105<span class="delta">+75</span></div>
+                </div>
+                <div class="lb-team-row team-blue">
+                  <div class="lb-rank">3</div>
+                  <div class="lb-team-info">
+                    <div class="lb-team-name">Les Riesling</div>
+                    <div class="lb-team-players">3 joueurs · MVP Léa &amp; Tom</div>
+                  </div>
+                  <div class="lb-score">1 890</div>
+                </div>
+                <div class="lb-team-row team-green">
+                  <div class="lb-rank">4</div>
+                  <div class="lb-team-info">
+                    <div class="lb-team-name">Les Sauvignons</div>
+                    <div class="lb-team-players">3 joueurs · MVP Pauline</div>
+                  </div>
+                  <div class="lb-score">1 420</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mvp-strip">
+              <span class="mvp-label">★ MVP</span>
+              <span class="mvp-name">Marie L. en tête</span>
+              <span class="mvp-score">+50</span>
+            </div>
+
+            <div class="admin-panel">
+              <div class="admin-row">
+                <button class="admin-btn">✎ Renommer</button>
+                <button class="admin-btn">♛ Master</button>
+                <button class="admin-btn">⊘ Kick</button>
+                <button class="admin-btn primary">+ Valider voix</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="ipad-footer">
+          <div class="playlist-info">
+            <div class="playlist-thumb"></div>
+            <div class="playlist-text">
+              <div class="name">Soirée du jeudi · French Hits</div>
+              <div class="meta">90 MORCEAUX · 78 / 90 LUS · NIVEAU MOYEN</div>
+            </div>
+          </div>
+          <div class="footer-controls">
+            <button class="ctrl-btn" title="Précédent">⏮</button>
+            <button class="ctrl-btn play" title="Pause">⏸</button>
+            <button class="ctrl-btn" title="Suivant">⏭</button>
+            <button class="ctrl-btn reveal" title="Révéler">👁</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── COMPARISON ─── -->
+  <div class="comparison">
+    <h2 class="comparison-title">Ce qui change <span class="stripe">vraiment</span></h2>
+    <p class="comparison-sub">Vs la version brasserie ink + ambre</p>
+    <div class="comparison-grid">
+      <div class="compare-card spritz">
+        <h4><span class="dot"></span>Le fond</h4>
+        <p>Ink profond → Crème kraft chaud avec grain papier. Inversion totale : on passe d'un cabaret feutré à une affiche imprimée qui donne envie de jouer. Plus chaleureux à 19h, en lumière de bar.</p>
+      </div>
+      <div class="compare-card basil">
+        <h4><span class="dot"></span>Les couleurs</h4>
+        <p>Une seule couleur (ambre) → cinq couleurs (spritz, basilic, framboise, citron, prune). Chaque équipe a son identité, chaque état (correct, faux, live) a sa teinte. L'œil reconnaît tout d'un coup d'œil.</p>
+      </div>
+      <div class="compare-card raspberry">
+        <h4><span class="dot"></span>Les bordures</h4>
+        <p>Bordures fines monocouche → contours noirs épais avec ombre décalée façon risographe. Style affiche, illustration éditoriale. Donne immédiatement un caractère graphique fort, identifiable Komptoir.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DESIGN NOTES ─── -->
+  <div class="design-notes">
+    <h3>Détails à noter</h3>
+    <div class="notes-grid">
+      <div class="note-item">
+        <h4>Le bouton confettis</h4>
+        <p>Clique sur le gros bouton rose en haut pour déclencher l'explosion de confettis sur l'iPad. C'est le moment "bonne réponse / fin de manche / podium" — coloré, joyeux, court.</p>
+      </div>
+      <div class="note-item">
+        <h4>Le strip multicolore</h4>
+        <p>La fine bande de 5 couleurs sous le header de l'iPad est une signature graphique à reprendre partout (haut/bas des écrans, séparateurs). Identifie l'app instantanément.</p>
+      </div>
+      <div class="note-item">
+        <h4>L'étiquette du Manche</h4>
+        <p>"Manche 12 / 90" est dans une pilule façon étiquette de bocal, légèrement penchée. Petit détail artisanal qui rappelle La Cave.</p>
+      </div>
+      <div class="note-item">
+        <h4>Le scotch sur la pochette</h4>
+        <p>La pochette d'album floutée a un faux ruban adhésif orange qui la maintient — comme une pochette qu'on aurait collée sur un mur de bar. Garde la signature "?" en gros par-dessus.</p>
+      </div>
+      <div class="note-item">
+        <h4>L'étoile du leader</h4>
+        <p>L'équipe en tête a une petite étoile jaune cousue dans le coin en haut à gauche, légèrement de travers. Petit détail de hierarchie qui fait sourire sans dominer l'écran.</p>
+      </div>
+      <div class="note-item">
+        <h4>Le strip MVP noir</h4>
+        <p>Pour démarquer le classement individuel du classement équipe, il a un fond noir + accents orange/jaune. Ça crée une pause visuelle et signale que c'est une autre nature d'info.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Confetti explosion
+  const colors = ['#ee6c2a', '#4a8b3f', '#c8336e', '#e8c547', '#6e3a6e', '#e89a64'];
+
+  function celebrate() {
+    const container = document.getElementById('confetti');
+    container.innerHTML = '';
+    for (let i = 0; i < 80; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + '%';
+      c.style.top = '-30px';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDelay = Math.random() * 0.5 + 's';
+      c.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+      c.style.transform = `rotate(${Math.random() * 360}deg)`;
+      // Random shape: rectangle or circle
+      if (Math.random() > 0.5) {
+        c.style.borderRadius = '50%';
+        c.style.width = '8px';
+        c.style.height = '8px';
+      } else if (Math.random() > 0.5) {
+        c.style.width = '4px';
+        c.style.height = '14px';
+      }
+      container.appendChild(c);
+    }
+    setTimeout(() => container.innerHTML = '', 4000);
+  }
+
+  // Auto-fire once on load
+  setTimeout(celebrate, 800);
+</script>
+
+</body>
+</html>

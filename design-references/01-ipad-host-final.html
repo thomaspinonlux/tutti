@@ -1,0 +1,3595 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blind Test · Le Komptoir — iPad Host enrichi + Config + Attente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Outfit:wght@300..700&family=JetBrains+Mono:wght@300..600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5ecd9;
+    --cream-2: #efe4cc;
+    --cream-3: #e6d8b8;
+    --cream-4: #d4c39e;
+    --kraft: #c2aa78;
+
+    --ink: #1a1410;
+    --ink-2: #3d2f24;
+    --ink-soft: #6b5443;
+    --ink-faded: #9a8470;
+
+    --spritz: #ee6c2a;
+    --spritz-deep: #c84e15;
+    --basil: #4a8b3f;
+    --basil-deep: #356a2c;
+    --raspberry: #c8336e;
+    --raspberry-deep: #9c1f53;
+    --grapefruit: #e89a64;
+    --lemon: #e8c547;
+    --plum: #6e3a6e;
+
+    --paper: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    background-size: 300px 300px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 50px 30px 60px;
+  }
+
+  /* ─── PAGE HEADER ─── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    position: relative;
+  }
+
+  .page-header::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 80px;
+    height: 6px;
+    background: var(--plum);
+  }
+
+  .page-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--plum);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .page-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 42px;
+    line-height: 0.95;
+    color: var(--ink);
+  }
+
+  .page-title .underline {
+    position: relative;
+    display: inline-block;
+  }
+
+  .page-title .underline::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    background: var(--lemon);
+    z-index: -1;
+    transform: skew(-8deg);
+  }
+
+  .page-title .swirl {
+    color: var(--basil);
+    display: inline-block;
+    transform: rotate(-3deg);
+  }
+
+  .page-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.7;
+  }
+
+  .page-meta strong { color: var(--ink); font-weight: 600; }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header { margin-top: 70px; margin-bottom: 24px; }
+  .section-header:first-of-type { margin-top: 20px; }
+
+  .section-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--spritz-deep);
+    letter-spacing: 0.2em;
+    background: var(--cream-2);
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    display: inline-block;
+    margin-bottom: 14px;
+  }
+
+  .section-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 32px;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .section-title em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--basil);
+  }
+
+  .section-desc {
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-style: italic;
+    max-width: 700px;
+  }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── IPAD FRAME ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .ipad-frame {
+    background: #1a1410;
+    border-radius: 24px;
+    padding: 12px;
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 30px 80px -10px rgba(110, 58, 110, 0.25),
+      0 60px 120px -30px rgba(238, 108, 42, 0.15);
+    position: relative;
+  }
+
+  .ipad-frame::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    width: 4px;
+    height: 36px;
+    background: #2a2218;
+    border-radius: 2px;
+    transform: translateY(-50%);
+  }
+
+  .ipad-screen {
+    background: var(--cream);
+    border-radius: 14px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    position: relative;
+  }
+
+  .ipad-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    background-size: 300px 300px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+  }
+
+  /* ─── HEADER ─── */
+  .ipad-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--cream-3);
+    background: var(--cream-2);
+    position: relative;
+    z-index: 2;
+  }
+
+  .ipad-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+      var(--spritz) 0%, var(--spritz) 20%,
+      var(--basil) 20%, var(--basil) 40%,
+      var(--raspberry) 40%, var(--raspberry) 60%,
+      var(--lemon) 60%, var(--lemon) 80%,
+      var(--plum) 80%, var(--plum) 100%
+    );
+  }
+
+  .brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Caprasimo', serif;
+    font-size: 16px;
+    color: var(--ink);
+  }
+
+  .brand-icon {
+    width: 26px;
+    height: 26px;
+    background: var(--spritz);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-5deg);
+    box-shadow: 0 3px 0 var(--spritz-deep);
+  }
+
+  .brand-icon::after {
+    content: '♪';
+    color: var(--cream);
+    font-size: 13px;
+    transform: rotate(5deg);
+  }
+
+  .brand-mark .komptoir { color: var(--raspberry); }
+
+  .round-counter {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink-2);
+    background: var(--cream);
+    padding: 5px 14px;
+    border-radius: 100px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    transform: rotate(-1deg);
+  }
+
+  .round-counter span {
+    color: var(--spritz-deep);
+    font-family: 'Caprasimo', serif;
+    font-size: 16px;
+    margin: 0 2px;
+  }
+
+  /* End game button in header */
+  .end-game-btn {
+    background: var(--cream);
+    color: var(--raspberry-deep);
+    border: 1.5px solid var(--raspberry);
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 2px 2px 0 var(--raspberry);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .end-game-btn:hover {
+    background: var(--raspberry);
+    color: var(--cream);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .end-game-btn .icon { font-size: 12px; }
+
+  /* ─── 4-COLUMN MAIN ─── */
+  .ipad-main {
+    display: grid;
+    grid-template-columns: 3.5fr 4fr 4fr 4fr;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+  }
+
+  .ipad-main > div {
+    padding: 14px 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ipad-main > div + div {
+    border-left: 1.5px dashed var(--cream-4);
+  }
+
+  /* ─── COL 1: NOW PLAYING ─── */
+  .now-playing { display: flex; flex-direction: column; }
+
+  .album-stage {
+    position: relative;
+    aspect-ratio: 1;
+    margin: 0 auto 10px;
+    width: 100%;
+    max-width: 180px;
+  }
+
+  .album-tape {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-4deg);
+    width: 70px;
+    height: 18px;
+    background: rgba(238, 108, 42, 0.7);
+    z-index: 2;
+  }
+
+  .album-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 
+      0 10px 24px -8px rgba(110, 58, 110, 0.4),
+      0 4px 8px -4px rgba(0, 0, 0, 0.2);
+    transform: rotate(-1deg);
+  }
+
+  .album-art {
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 25% 30%, var(--lemon) 0%, transparent 50%),
+      radial-gradient(circle at 75% 70%, var(--raspberry) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, var(--spritz) 0%, transparent 60%),
+      linear-gradient(135deg, var(--plum), var(--basil-deep));
+    filter: blur(18px) saturate(1.5);
+    transform: scale(1.15);
+  }
+
+  .album-overlay {
+    position: absolute;
+    inset: 0;
+    background: 
+      linear-gradient(180deg, transparent 50%, rgba(26, 20, 16, 0.5)),
+      var(--paper);
+    background-size: cover, 100px 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mystery-mark {
+    font-family: 'Caprasimo', serif;
+    font-size: 80px;
+    line-height: 1;
+    color: rgba(245, 236, 217, 0.55);
+    text-shadow: 
+      4px 4px 0 rgba(238, 108, 42, 0.4),
+      -2px -2px 0 rgba(74, 139, 63, 0.3);
+    transform: rotate(-5deg);
+    letter-spacing: -0.05em;
+  }
+
+  .timer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .timer-bar {
+    flex: 1;
+    height: 7px;
+    background: var(--cream-3);
+    border-radius: 100px;
+    overflow: hidden;
+    border: 1px solid var(--ink);
+  }
+
+  .timer-bar-fill {
+    height: 100%;
+    width: 62%;
+    background: linear-gradient(90deg, var(--basil), var(--lemon), var(--spritz));
+    border-radius: 100px;
+  }
+
+  .timer-text {
+    font-family: 'Caprasimo', serif;
+    font-size: 16px;
+    color: var(--spritz-deep);
+    min-width: 44px;
+    text-align: right;
+  }
+
+  .phase-tag {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .phase-tag .live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: var(--raspberry);
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: livePulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes livePulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+  }
+
+  /* ─── COL 2: TRACK INFO ─── */
+  .track-info { display: flex; flex-direction: column; gap: 8px; }
+
+  .col-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 17px;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .col-title .accent {
+    color: var(--basil);
+    display: inline-block;
+    transform: rotate(-2deg);
+  }
+
+  .col-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--spritz-deep);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .track-card {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    box-shadow: 3px 3px 0 var(--ink);
+    overflow: hidden;
+    transform: rotate(-0.3deg);
+  }
+
+  .track-card-header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .track-card-header .eye {
+    color: var(--lemon);
+    font-size: 10px;
+  }
+
+  .track-card-body {
+    padding: 10px;
+    filter: blur(4.5px);
+    transition: filter 0.2s ease;
+    user-select: none;
+  }
+
+  .track-card:hover .track-card-body { filter: blur(0); }
+
+  .track-artist {
+    font-family: 'Caprasimo', serif;
+    font-size: 19px;
+    color: var(--ink);
+    line-height: 1.1;
+    margin-bottom: 1px;
+  }
+
+  .track-title {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+  }
+
+  .track-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+  }
+
+  .track-meta-item {
+    background: var(--cream);
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--cream-4);
+  }
+
+  .track-meta-item .label {
+    color: var(--ink-faded);
+    font-size: 7px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: block;
+  }
+
+  .track-meta-item .value {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .points-scheme {
+    background: var(--lemon);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 9px 11px;
+    transform: rotate(0.5deg);
+  }
+
+  .points-scheme-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 12px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .points-scheme-title::before {
+    content: '🎯';
+    font-size: 12px;
+  }
+
+  .points-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    font-size: 10px;
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+
+  .points-row .pts {
+    font-family: 'Caprasimo', serif;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  .points-row.highlight {
+    background: var(--cream);
+    margin: 3px -5px;
+    padding: 3px 5px;
+    border-radius: 4px;
+    border: 1.5px solid var(--ink);
+  }
+
+  .points-row.highlight .pts { color: var(--spritz-deep); }
+
+  /* ─── COL 3: BUZZ FEED ─── */
+  .buzz-feed { display: flex; flex-direction: column; overflow: hidden; }
+
+  .buzz-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .buzz-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 7px;
+    align-items: center;
+    padding: 7px 9px;
+    background: var(--cream-2);
+    border-radius: 9px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    position: relative;
+  }
+
+  .buzz-item.correct {
+    background: linear-gradient(135deg, rgba(74, 139, 63, 0.18), rgba(74, 139, 63, 0.05));
+    border-color: var(--basil);
+    box-shadow: 2px 2px 0 var(--basil-deep);
+  }
+
+  .buzz-item.correct.with-title {
+    box-shadow: 2px 2px 0 var(--basil-deep), 5px 5px 0 var(--lemon);
+  }
+
+  .buzz-item.wrong {
+    background: rgba(200, 51, 110, 0.1);
+    border-color: var(--raspberry);
+    box-shadow: 2px 2px 0 var(--raspberry-deep);
+    opacity: 0.75;
+  }
+
+  .buzz-item.live {
+    background: linear-gradient(135deg, rgba(238, 108, 42, 0.18), rgba(238, 108, 42, 0.05));
+    border-color: var(--spritz);
+    box-shadow: 2px 2px 0 var(--spritz-deep);
+  }
+
+  .buzz-rank {
+    font-family: 'Caprasimo', serif;
+    font-size: 14px;
+    color: var(--ink);
+    width: 20px;
+    height: 20px;
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .buzz-item.correct .buzz-rank { background: var(--basil); color: var(--cream); }
+  .buzz-item.wrong .buzz-rank { background: var(--raspberry); color: var(--cream); }
+  .buzz-item.live .buzz-rank { background: var(--spritz); color: var(--cream); }
+
+  .buzz-content { min-width: 0; }
+  .buzz-name {
+    font-size: 11px;
+    color: var(--ink);
+    font-weight: 500;
+    margin-bottom: 1px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .team-tag {
+    font-size: 8px;
+    padding: 1px 4px;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .team-tag.gold { background: rgba(238, 108, 42, 0.15); color: var(--spritz-deep); }
+  .team-tag.red { background: rgba(200, 51, 110, 0.15); color: var(--raspberry-deep); }
+  .team-tag.blue { background: rgba(74, 139, 63, 0.15); color: var(--basil-deep); }
+  .team-tag.green { background: rgba(110, 58, 110, 0.15); color: var(--plum); }
+
+  .buzz-quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .match-badges {
+    display: flex;
+    gap: 3px;
+    margin-top: 2px;
+  }
+
+  .match-badge {
+    font-size: 7px;
+    padding: 1px 4px;
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .match-badge.artist { background: var(--basil); color: var(--cream); }
+  .match-badge.title { background: var(--lemon); color: var(--ink); border: 1px solid var(--ink); }
+  .match-badge.miss { background: var(--cream-3); color: var(--ink-faded); text-decoration: line-through; }
+
+  .buzz-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    text-align: right;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+
+  .buzz-time .pts {
+    display: block;
+    color: var(--basil-deep);
+    font-size: 11px;
+    font-family: 'Caprasimo', serif;
+    margin-top: 1px;
+  }
+
+  .buzz-item.wrong .buzz-time .pts { color: var(--raspberry-deep); }
+
+  .window-status {
+    margin-top: 8px;
+    padding: 7px 9px;
+    background: var(--lemon);
+    border: 1.5px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .window-status strong {
+    font-family: 'Caprasimo', serif;
+    font-size: 13px;
+    color: var(--spritz-deep);
+  }
+
+  /* ─── COL 4: LEADERBOARD + ADMIN ─── */
+  .col-right { display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+
+  .leaderboard {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lb-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .lb-team-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 7px;
+    align-items: center;
+    padding: 6px 9px;
+    border-radius: 9px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .lb-team-row:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .lb-team-row.team-gold {
+    background: linear-gradient(90deg, rgba(238, 108, 42, 0.18), rgba(238, 108, 42, 0.04));
+  }
+  .lb-team-row.team-red {
+    background: linear-gradient(90deg, rgba(200, 51, 110, 0.18), rgba(200, 51, 110, 0.04));
+  }
+  .lb-team-row.team-blue {
+    background: linear-gradient(90deg, rgba(74, 139, 63, 0.18), rgba(74, 139, 63, 0.04));
+  }
+  .lb-team-row.team-green {
+    background: linear-gradient(90deg, rgba(110, 58, 110, 0.18), rgba(110, 58, 110, 0.04));
+  }
+
+  .lb-team-row.first::before {
+    content: '✦';
+    position: absolute;
+    left: -4px;
+    top: -8px;
+    background: var(--lemon);
+    color: var(--ink);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transform: rotate(-15deg);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .lb-rank {
+    font-family: 'Caprasimo', serif;
+    font-size: 16px;
+    color: var(--ink);
+    width: 22px;
+    text-align: center;
+  }
+
+  .lb-team-info { line-height: 1.1; min-width: 0; }
+
+  .lb-team-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .lb-team-players {
+    font-size: 8px;
+    color: var(--ink-soft);
+  }
+
+  .lb-team-players .mvp {
+    color: var(--spritz-deep);
+    font-weight: 600;
+  }
+
+  .lb-score {
+    font-family: 'Caprasimo', serif;
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .lb-score .delta {
+    display: block;
+    font-size: 8px;
+    color: var(--basil-deep);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 1px;
+    font-weight: 500;
+  }
+
+  .mvp-strip {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 9px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--spritz);
+  }
+
+  .mvp-label {
+    font-family: 'Caprasimo', serif;
+    font-size: 11px;
+    color: var(--lemon);
+  }
+
+  .mvp-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    flex: 1;
+  }
+
+  .mvp-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--spritz);
+  }
+
+  /* Admin panel + audit log */
+  .admin-panel {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 9px;
+    padding: 7px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .admin-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  .admin-row:last-of-type { margin-bottom: 0; }
+
+  .admin-btn {
+    flex: 1;
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 6px 4px;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .admin-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .admin-btn.primary { background: var(--spritz); color: var(--cream); }
+  .admin-btn.adjust {
+    background: var(--lemon);
+    color: var(--ink);
+    flex: 2;
+    font-weight: 600;
+  }
+
+  /* Audit log */
+  .audit-log {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1.5px dashed var(--cream-4);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  .audit-log-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+
+  .audit-entry {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1px;
+  }
+
+  .audit-time { color: var(--ink-faded); flex-shrink: 0; }
+  .audit-action { font-weight: 600; }
+  .audit-action.plus { color: var(--basil-deep); }
+  .audit-action.minus { color: var(--raspberry-deep); }
+
+  /* ═══════════════════════════════════════ */
+  /* ─── UPCOMING TRACKS BAR ─── */
+  /* ═══════════════════════════════════════ */
+  .upcoming-bar {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 9px 24px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: center;
+    border-top: 2px solid var(--cream-3);
+    position: relative;
+    z-index: 2;
+  }
+
+  .upcoming-bar::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+      var(--spritz) 0%, var(--spritz) 20%,
+      var(--basil) 20%, var(--basil) 40%,
+      var(--raspberry) 40%, var(--raspberry) 60%,
+      var(--lemon) 60%, var(--lemon) 80%,
+      var(--plum) 80%, var(--plum) 100%
+    );
+  }
+
+  .upcoming-label {
+    font-family: 'Caprasimo', serif;
+    font-size: 13px;
+    color: var(--lemon);
+    line-height: 1;
+    white-space: nowrap;
+    transform: rotate(-2deg);
+    padding-right: 8px;
+    border-right: 1px solid var(--ink-soft);
+  }
+
+  .upcoming-label small {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--cream-4);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 2px;
+    transform: rotate(2deg);
+  }
+
+  .upcoming-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 7px;
+  }
+
+  .upcoming-card {
+    background: var(--ink-2);
+    border-radius: 5px;
+    padding: 5px 7px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px;
+    align-items: center;
+    border: 1px solid #4d3d2c;
+  }
+
+  .upcoming-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--cream-4);
+    font-weight: 600;
+  }
+
+  .upcoming-cover {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .upcoming-cover.c1 { background: linear-gradient(135deg, var(--spritz), var(--raspberry)); }
+  .upcoming-cover.c2 { background: linear-gradient(135deg, var(--basil), var(--lemon)); }
+  .upcoming-cover.c3 { background: linear-gradient(135deg, var(--plum), var(--raspberry)); }
+  .upcoming-cover.c4 { background: linear-gradient(135deg, var(--lemon), var(--spritz)); }
+  .upcoming-cover.c5 { background: linear-gradient(135deg, var(--basil-deep), var(--plum)); }
+
+  .upcoming-info {
+    min-width: 0;
+    line-height: 1.1;
+  }
+
+  .upcoming-artist {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--cream);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .upcoming-title {
+    font-size: 8px;
+    color: var(--cream-4);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ─── FOOTER ─── */
+  .ipad-footer {
+    border-top: 1.5px solid var(--cream-3);
+    padding: 9px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--cream-2);
+    position: relative;
+    z-index: 2;
+  }
+
+  .playlist-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .playlist-thumb {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: 
+      conic-gradient(from 45deg, var(--spritz), var(--raspberry), var(--basil), var(--lemon), var(--spritz));
+    flex-shrink: 0;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    transform: rotate(-2deg);
+  }
+
+  .playlist-text { line-height: 1.2; min-width: 0; }
+  .playlist-text .name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .playlist-text .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--ink-soft);
+  }
+
+  .footer-controls {
+    display: flex;
+    gap: 6px;
+  }
+
+  .ctrl-btn {
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--ink);
+    background: var(--cream);
+    color: var(--ink);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .ctrl-btn.play {
+    background: var(--spritz);
+    color: var(--cream);
+    width: 38px;
+    height: 38px;
+  }
+
+  .ctrl-btn.reveal {
+    background: var(--lemon);
+    color: var(--ink);
+  }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── ADJUSTMENT MODAL OVERLAY ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 20, 16, 0.65);
+    backdrop-filter: blur(2px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .modal {
+    background: var(--cream);
+    border: 2.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 6px 6px 0 var(--ink);
+    width: 100%;
+    max-width: 540px;
+    overflow: hidden;
+    transform: rotate(-0.5deg);
+  }
+
+  .modal-header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--lemon);
+  }
+
+  .modal-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .modal-title .player-name {
+    color: var(--lemon);
+  }
+
+  .modal-team-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11px;
+    background: var(--ink-2);
+    padding: 3px 9px;
+    border-radius: 100px;
+  }
+
+  .modal-team-tag .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .modal-team-tag .dot.basil { background: var(--basil); }
+
+  .modal-close {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 1px 1px 0 var(--lemon);
+  }
+
+  .modal-body { padding: 16px 18px; }
+
+  /* Current score */
+  .current-score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 9px;
+    margin-bottom: 14px;
+  }
+
+  .current-score-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  .current-score-value {
+    font-family: 'Caprasimo', serif;
+    font-size: 24px;
+    color: var(--ink);
+  }
+
+  /* Tab toggle: joueur / équipe */
+  .tabs {
+    display: flex;
+    background: var(--cream-3);
+    border: 1.5px solid var(--ink);
+    border-radius: 100px;
+    padding: 3px;
+    margin-bottom: 12px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 6px 12px;
+    text-align: center;
+    border-radius: 100px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    color: var(--ink-soft);
+    transition: all 0.15s;
+  }
+
+  .tab.active {
+    background: var(--ink);
+    color: var(--lemon);
+    font-weight: 600;
+  }
+
+  /* Quick adjust grid */
+  .adjust-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--spritz-deep);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .adjust-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+
+  .adjust-btn {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 8px 4px;
+    border-radius: 6px;
+    font-family: 'Caprasimo', serif;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: all 0.15s;
+  }
+
+  .adjust-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .adjust-btn.minus { color: var(--raspberry-deep); border-color: var(--raspberry); }
+  .adjust-btn.minus:hover { background: var(--raspberry); color: var(--cream); }
+
+  .adjust-btn.plus { color: var(--basil-deep); border-color: var(--basil); }
+  .adjust-btn.plus:hover { background: var(--basil); color: var(--cream); }
+
+  .adjust-btn.custom {
+    grid-column: span 6;
+    background: var(--cream-2);
+    color: var(--ink-soft);
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-style: italic;
+  }
+
+  /* Reason radios */
+  .reason-section { margin-bottom: 14px; }
+
+  .reason-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+
+  .reason-item {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 7px;
+    padding: 7px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    color: var(--ink-2);
+    transition: all 0.15s;
+  }
+
+  .reason-item:hover { background: var(--cream); }
+
+  .reason-item.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+
+  .reason-item .icon {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .reason-item .visibility {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 100px;
+    color: var(--ink-faded);
+    background: var(--cream-3);
+  }
+
+  .reason-item.active .visibility {
+    background: var(--ink-2);
+    color: var(--cream-4);
+  }
+
+  .reason-item .visibility.public { color: var(--basil-deep); background: rgba(74, 139, 63, 0.15); }
+  .reason-item .visibility.private { color: var(--raspberry-deep); background: rgba(200, 51, 110, 0.15); }
+  .reason-item.active .visibility.public { background: rgba(74, 139, 63, 0.3); color: #b8d6b3; }
+  .reason-item.active .visibility.private { background: rgba(200, 51, 110, 0.3); color: #f0a4c0; }
+
+  /* Modal footer */
+  .modal-footer {
+    background: var(--cream-2);
+    padding: 12px 18px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    border-top: 1.5px solid var(--cream-3);
+  }
+
+  .modal-btn {
+    border: 2px solid var(--ink);
+    padding: 9px 18px;
+    border-radius: 100px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .modal-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .modal-btn.cancel { background: var(--cream); color: var(--ink); }
+  .modal-btn.confirm { background: var(--basil); color: var(--cream); }
+
+  /* Visibility footer hint */
+  .visibility-hint {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+
+  .visibility-hint strong {
+    color: var(--basil-deep);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── PHONE NOTIFICATIONS ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .phones-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: start;
+    justify-items: center;
+    margin-top: 30px;
+  }
+
+  .phone-wrap { width: 100%; max-width: 320px; }
+
+  .phone-step-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--spritz-deep);
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .phone-step-name {
+    font-family: 'Caprasimo', serif;
+    font-size: 18px;
+    color: var(--ink);
+    text-align: center;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+
+  .phone-frame {
+    background: #1a1410;
+    border-radius: 36px;
+    padding: 10px;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      0 24px 50px -12px rgba(110, 58, 110, 0.4);
+    position: relative;
+  }
+
+  .phone-notch {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 22px;
+    background: #1a1410;
+    border-radius: 14px;
+    z-index: 10;
+  }
+
+  .phone-screen-mini {
+    background: var(--cream);
+    border-radius: 28px;
+    overflow: hidden;
+    aspect-ratio: 9 / 16;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 50px 16px 20px;
+  }
+
+  .phone-screen-mini::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    background-size: 200px 200px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+  }
+
+  .phone-screen-mini::after {
+    content: '';
+    position: absolute;
+    top: 46px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg,
+      var(--spritz) 0%, var(--spritz) 20%,
+      var(--basil) 20%, var(--basil) 40%,
+      var(--raspberry) 40%, var(--raspberry) 60%,
+      var(--lemon) 60%, var(--lemon) 80%,
+      var(--plum) 80%, var(--plum) 100%
+    );
+    z-index: 2;
+  }
+
+  .phone-content-mini {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 3;
+  }
+
+  /* Notification card */
+  .notif-card {
+    background: var(--cream-2);
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 4px 4px 0 var(--ink);
+    margin-bottom: 14px;
+    position: relative;
+    animation: notifSlide 0.4s ease-out;
+  }
+
+  @keyframes notifSlide {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .notif-card.bonus { border-color: var(--basil); box-shadow: 4px 4px 0 var(--basil-deep); }
+  .notif-card.malus { border-color: var(--raspberry); box-shadow: 4px 4px 0 var(--raspberry-deep); }
+
+  .notif-icon {
+    font-family: 'Caprasimo', serif;
+    font-size: 36px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .notif-card.bonus .notif-icon { color: var(--basil); }
+  .notif-card.malus .notif-icon { color: var(--raspberry); }
+
+  .notif-headline {
+    font-family: 'Caprasimo', serif;
+    font-size: 22px;
+    color: var(--ink);
+    line-height: 1.05;
+    margin-bottom: 4px;
+  }
+
+  .notif-headline em {
+    color: var(--basil-deep);
+    font-style: normal;
+  }
+
+  .notif-card.malus .notif-headline em { color: var(--raspberry-deep); }
+
+  .notif-reason {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .notif-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faded);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-top: 8px;
+    border-top: 1px dashed var(--cream-4);
+  }
+
+  /* Mock score display below */
+  .player-score-display {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    margin-top: auto;
+  }
+
+  .player-score-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--cream-4);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .player-score-value {
+    font-family: 'Caprasimo', serif;
+    font-size: 28px;
+    color: var(--lemon);
+    line-height: 1;
+  }
+
+  .player-score-delta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--basil);
+    margin-top: 3px;
+    font-weight: 600;
+  }
+
+  .player-score-delta.minus { color: var(--raspberry); }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── CONFIG SCREEN (Pop Cocktail) ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .ipad-screen-config {
+    background: var(--cream);
+    border-radius: 14px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    position: relative;
+  }
+
+  .ipad-screen-config::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    background-size: 300px 300px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+  }
+
+  .step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+
+  .step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cream-3);
+    border: 1.5px solid var(--ink);
+  }
+
+  .step-dot.active { background: var(--spritz); }
+  .step-dot.done { background: var(--basil); }
+
+  .config-body {
+    padding: 22px 28px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .config-section { margin-bottom: 18px; }
+  .config-section:last-child { margin-bottom: 0; }
+
+  .config-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--spritz-deep);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+
+  .config-section-title .num {
+    width: 20px;
+    height: 20px;
+    background: var(--spritz);
+    color: var(--cream);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  /* Mode toggle (config) */
+  .mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .mode-card {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 3px 3px 0 var(--ink);
+    position: relative;
+  }
+
+  .mode-card.active {
+    background: var(--lemon);
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .mode-card.active::after {
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 18px;
+    height: 18px;
+    background: var(--ink);
+    color: var(--lemon);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+  }
+
+  .mode-icon {
+    font-family: 'Caprasimo', serif;
+    font-size: 26px;
+    color: var(--spritz);
+    margin-bottom: 4px;
+    line-height: 1;
+  }
+
+  .mode-card.active .mode-icon { color: var(--ink); }
+
+  .mode-name {
+    font-family: 'Caprasimo', serif;
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  .mode-desc {
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.3;
+  }
+
+  /* Teams config */
+  .team-count {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .count-btn {
+    width: 30px;
+    height: 30px;
+    border: 1.5px solid var(--ink);
+    background: var(--cream);
+    color: var(--ink);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Caprasimo', serif;
+    font-size: 16px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .count-btn:hover { background: var(--spritz); color: var(--cream); }
+
+  .count-value {
+    font-family: 'Caprasimo', serif;
+    color: var(--ink);
+    padding: 0 12px;
+    font-size: 16px;
+  }
+
+  .count-label {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-left: 8px;
+  }
+
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .team-edit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 7px;
+    padding: 7px 10px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .team-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    border: 1.5px solid var(--ink);
+    flex-shrink: 0;
+  }
+
+  .team-color.red { background: var(--raspberry); }
+  .team-color.blue { background: var(--basil); }
+  .team-color.gold { background: var(--spritz); }
+  .team-color.green { background: var(--plum); }
+
+  .team-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    outline: none;
+    font-weight: 500;
+  }
+
+  /* Pills */
+  .pill-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    padding: 6px 12px;
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 100px;
+    font-size: 11px;
+    color: var(--ink-2);
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    font-weight: 500;
+  }
+
+  .pill.active {
+    background: var(--ink);
+    color: var(--lemon);
+  }
+
+  /* Right column */
+  .config-right {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .playlist-card {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .playlist-cover {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    background: 
+      conic-gradient(from 45deg, var(--spritz), var(--raspberry), var(--basil), var(--lemon), var(--spritz));
+    flex-shrink: 0;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    transform: rotate(-2deg);
+  }
+
+  .playlist-info-cfg { flex: 1; min-width: 0; }
+
+  .playlist-name {
+    font-family: 'Caprasimo', serif;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 1px;
+    line-height: 1.1;
+  }
+
+  .playlist-stats {
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+
+  .level-bar {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  .level-segment {
+    width: 12px;
+    height: 4px;
+    background: var(--cream-3);
+    border-radius: 1px;
+  }
+
+  .level-segment.filled { background: var(--spritz); }
+
+  .level-label {
+    font-size: 9px;
+    color: var(--ink-soft);
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .change-link {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 9px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  /* Scoring card */
+  .scoring-card {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .scoring-row-c {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px dashed var(--cream-4);
+    font-size: 11px;
+  }
+
+  .scoring-row-c:last-child { border-bottom: none; }
+
+  .scoring-label {
+    color: var(--ink-2);
+  }
+
+  .scoring-label em {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-left: 6px;
+    padding: 1px 5px;
+    border-radius: 100px;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .scoring-label em.team { background: rgba(238, 108, 42, 0.2); color: var(--spritz-deep); }
+  .scoring-label em.solo { background: rgba(74, 139, 63, 0.2); color: var(--basil-deep); }
+
+  .scoring-value-c {
+    font-family: 'Caprasimo', serif;
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  /* Footer CTA */
+  .ipad-footer-cta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background: var(--cream-2);
+    border-top: 1.5px solid var(--cream-3);
+    position: relative;
+    z-index: 2;
+  }
+
+  .footer-summary-c {
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  .footer-summary-c strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .cta-btn {
+    background: var(--spritz);
+    color: var(--cream);
+    border: 2px solid var(--ink);
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-family: 'Caprasimo', serif;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cta-btn:hover {
+    background: var(--spritz-deep);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .cta-arrow { font-size: 16px; line-height: 1; }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── WAITING ROOM (Pop Cocktail) ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .waiting-body {
+    padding: 22px 28px;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+  }
+
+  .qr-card {
+    background: var(--cream-2);
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 4px 4px 0 var(--ink);
+    transform: rotate(-1deg);
+  }
+
+  .qr-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--spritz-deep);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .qr-frame {
+    background: var(--cream);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .qr-frame svg { display: block; width: 170px; height: 170px; }
+
+  .session-code-c {
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .session-code-c .small {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+
+  .code-value {
+    font-family: 'Caprasimo', serif;
+    font-size: 26px;
+    color: var(--spritz-deep);
+    letter-spacing: 0.05em;
+  }
+
+  .session-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-align: center;
+    padding-top: 10px;
+    border-top: 1px dashed var(--cream-4);
+    width: 100%;
+    letter-spacing: 0.05em;
+  }
+
+  /* Players panel */
+  .players-panel {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .panel-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 22px;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .panel-title .accent { color: var(--basil); }
+
+  .panel-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  .panel-meta strong { color: var(--spritz-deep); font-weight: 700; }
+
+  .panel-actions {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+
+  .panel-btn {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 6px 11px;
+    border-radius: 100px;
+    font-size: 10px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  .panel-btn:hover { background: var(--lemon); }
+
+  /* Teams board */
+  .teams-board {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .team-zone {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 3px 3px 0 var(--ink);
+    position: relative;
+  }
+
+  .team-zone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 12px;
+    right: 12px;
+    height: 4px;
+    border-radius: 0 0 4px 4px;
+    border: 1.5px solid var(--ink);
+    border-top: 0;
+  }
+
+  .team-zone.team-red::before { background: var(--raspberry); }
+  .team-zone.team-blue::before { background: var(--basil); }
+  .team-zone.team-gold::before { background: var(--spritz); }
+  .team-zone.team-green::before { background: var(--plum); }
+
+  .team-zone-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+    padding-bottom: 7px;
+    border-bottom: 1px dashed var(--cream-4);
+  }
+
+  .team-zone-name {
+    font-family: 'Caprasimo', serif;
+    font-size: 13px;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  .team-zone-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    background: var(--cream);
+    padding: 1px 6px;
+    border-radius: 100px;
+    border: 1px solid var(--cream-4);
+    font-weight: 600;
+  }
+
+  .player-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+  }
+
+  .player-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--cream);
+    border-radius: 6px;
+    padding: 5px 9px;
+    border: 1px solid var(--cream-4);
+    cursor: grab;
+  }
+
+  .player-chip.new {
+    background: linear-gradient(90deg, var(--lemon), var(--cream));
+    border-color: var(--ink);
+  }
+
+  .player-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--spritz), var(--raspberry));
+    color: var(--cream);
+    font-family: 'Caprasimo', serif;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ink);
+  }
+
+  .player-name {
+    font-size: 11px;
+    color: var(--ink);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Toast */
+  .join-toast {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    background: var(--ink);
+    color: var(--cream);
+    border: 2px solid var(--lemon);
+    border-radius: 100px;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 3px 3px 0 var(--lemon);
+    font-size: 11px;
+    z-index: 5;
+  }
+
+  .toast-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--lemon);
+  }
+
+  .toast-text strong { color: var(--lemon); font-family: 'Caprasimo', serif; }
+
+  /* ─── DESIGN NOTES ─── */
+  .design-notes { margin-top: 50px; }
+
+  .design-notes h3 {
+    font-family: 'Caprasimo', serif;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .note-item {
+    border-left: 4px solid var(--spritz);
+    padding-left: 16px;
+  }
+
+  .note-item:nth-child(2) { border-color: var(--basil); }
+  .note-item:nth-child(3) { border-color: var(--raspberry); }
+  .note-item:nth-child(4) { border-color: var(--lemon); }
+  .note-item:nth-child(5) { border-color: var(--plum); }
+  .note-item:nth-child(6) { border-color: var(--grapefruit); }
+
+  .note-item h4 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .note-item p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* Toggle modal demo */
+  .demo-controls {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .demo-btn {
+    background: var(--lemon);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-family: 'Caprasimo', serif;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: all 0.15s;
+  }
+
+  .demo-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .modal-overlay.hidden { display: none; }
+
+  @media (max-width: 1100px) {
+    .ipad-main { grid-template-columns: 1fr 1fr; }
+    .ipad-main > div + div { border-left: none; }
+    .upcoming-list { grid-template-columns: repeat(2, 1fr); }
+    .config-body { grid-template-columns: 1fr; }
+    .waiting-body { grid-template-columns: 1fr; }
+    .phones-row { grid-template-columns: 1fr; }
+    .notes-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ─── PAGE HEADER ─── -->
+  <header class="page-header">
+    <div>
+      <div class="page-subtitle">FINAL · TOUR COMPLET</div>
+      <h1 class="page-title">
+        <span class="underline">Ajustements,</span> <span class="swirl">terminer,</span><br>
+        config et attente.
+      </h1>
+    </div>
+    <div class="page-meta">
+      <strong>3 ÉCRANS POP COCKTAIL</strong><br>
+      iPad host enrichi · Config · Salle d'attente<br>
+      Modale d'ajustement · Notifications joueurs
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ─── SECTION 1 : IPAD HOST ENRICHI ─── -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span class="section-tag">SECTION 1 · IPAD HOST</span>
+    <h2 class="section-title">Avec <em>terminer</em> et <em>ajuster les points</em></h2>
+    <p class="section-desc">L'iPad host complet, avec le bouton "Terminer" en haut à droite et la modale d'ajustement de points par-dessus l'écran. Clique sur le bouton ci-dessous pour fermer/ouvrir la modale.</p>
+  </div>
+
+  <div class="demo-controls">
+    <button class="demo-btn" onclick="toggleModal()">🎛 Afficher / cacher la modale</button>
+  </div>
+
+  <div class="ipad-frame">
+    <div class="ipad-screen" style="position: relative;">
+
+      <!-- HEADER with End Game button -->
+      <div class="ipad-header">
+        <div class="brand-mark">
+          <span class="brand-icon"></span>
+          <span>Blind Test <span class="komptoir">Komptoir</span></span>
+        </div>
+        <div class="round-counter">Manche <span>12</span> / 90</div>
+        <button class="end-game-btn">
+          <span class="icon">⏹</span>
+          Terminer la partie
+        </button>
+      </div>
+
+      <!-- 4-COLUMN MAIN -->
+      <div class="ipad-main">
+
+        <!-- COL 1: Now playing -->
+        <div class="now-playing">
+          <div class="album-stage">
+            <div class="album-tape"></div>
+            <div class="album-card">
+              <div class="album-art"></div>
+              <div class="album-overlay">
+                <div class="mystery-mark">?</div>
+              </div>
+            </div>
+          </div>
+          <div class="phase-tag">
+            <span class="live-dot"></span>FENÊTRE MULTI-JOUEUR
+          </div>
+          <div class="timer-row">
+            <div class="timer-bar">
+              <div class="timer-bar-fill"></div>
+            </div>
+            <div class="timer-text">9.4s</div>
+          </div>
+        </div>
+
+        <!-- COL 2: Track info -->
+        <div class="track-info">
+          <div>
+            <div class="col-title">Le <span class="accent">morceau</span></div>
+            <div class="col-subtitle">passe le curseur</div>
+          </div>
+
+          <div class="track-card">
+            <div class="track-card-header">
+              <span>★ EN COURS</span>
+              <span class="eye">👁 host</span>
+            </div>
+            <div class="track-card-body">
+              <div class="track-artist">Stromae</div>
+              <div class="track-title">Alors on Danse</div>
+              <div class="track-meta">
+                <div class="track-meta-item">
+                  <span class="label">Année</span>
+                  <span class="value">2009</span>
+                </div>
+                <div class="track-meta-item">
+                  <span class="label">Album</span>
+                  <span class="value">Cheese</span>
+                </div>
+                <div class="track-meta-item">
+                  <span class="label">Genre</span>
+                  <span class="value">Hip-hop FR</span>
+                </div>
+                <div class="track-meta-item">
+                  <span class="label">Pop.</span>
+                  <span class="value">82 / 100</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="points-scheme">
+            <div class="points-scheme-title">Points en jeu</div>
+            <div class="points-row">
+              <span>1<sup>re</sup> équipe · artiste</span>
+              <span class="pts">+150</span>
+            </div>
+            <div class="points-row">
+              <span>2<sup>e</sup> équipe</span>
+              <span class="pts">+75</span>
+            </div>
+            <div class="points-row">
+              <span>3<sup>e</sup> équipe</span>
+              <span class="pts">+50</span>
+            </div>
+            <div class="points-row highlight">
+              <span><strong>+ Bonus titre</strong></span>
+              <span class="pts">+50</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- COL 3: Buzz feed -->
+        <div class="buzz-feed">
+          <div>
+            <div class="col-title">Les <span class="accent">buzz</span></div>
+            <div class="col-subtitle">live · whisper</div>
+          </div>
+
+          <div class="buzz-list">
+            <div class="buzz-item correct with-title">
+              <div class="buzz-rank">1</div>
+              <div class="buzz-content">
+                <div class="buzz-name">Marie L. <span class="team-tag gold">Chardonnays</span></div>
+                <div class="buzz-quote">"Stromae alors on danse"</div>
+                <div class="match-badges">
+                  <span class="match-badge artist">✓ ARTISTE</span>
+                  <span class="match-badge title">✓ TITRE</span>
+                </div>
+              </div>
+              <div class="buzz-time">+1.84s<span class="pts">+200</span></div>
+            </div>
+
+            <div class="buzz-item correct">
+              <div class="buzz-rank">2</div>
+              <div class="buzz-content">
+                <div class="buzz-name">Jérôme <span class="team-tag red">Pinots</span></div>
+                <div class="buzz-quote">"stromaé"</div>
+                <div class="match-badges">
+                  <span class="match-badge artist">✓ ARTISTE</span>
+                  <span class="match-badge miss">TITRE</span>
+                </div>
+              </div>
+              <div class="buzz-time">+2.91s<span class="pts">+75</span></div>
+            </div>
+
+            <div class="buzz-item live">
+              <div class="buzz-rank">3</div>
+              <div class="buzz-content">
+                <div class="buzz-name">Léa &amp; Tom <span class="team-tag blue">Riesling</span></div>
+                <div class="buzz-quote">écoute en cours…</div>
+              </div>
+              <div class="buzz-time" style="color: var(--spritz-deep);">live</div>
+            </div>
+
+            <div class="buzz-item wrong">
+              <div class="buzz-rank">4</div>
+              <div class="buzz-content">
+                <div class="buzz-name">Antoine <span class="team-tag blue">Riesling</span></div>
+                <div class="buzz-quote">"orelsan ?"</div>
+                <div class="match-badges">
+                  <span class="match-badge miss">ARTISTE</span>
+                  <span class="match-badge miss">TITRE</span>
+                </div>
+              </div>
+              <div class="buzz-time">+5.12s<span class="pts">×</span></div>
+            </div>
+          </div>
+
+          <div class="window-status">
+            <span>2 équipes ont trouvé</span>
+            <strong>9.4s</strong>
+          </div>
+        </div>
+
+        <!-- COL 4: Leaderboard + Admin + Audit -->
+        <div class="col-right">
+          <div class="leaderboard">
+            <div>
+              <div class="col-title">Le <span class="accent" style="color: var(--spritz);">classement</span></div>
+              <div class="col-subtitle">tap pour ajuster</div>
+            </div>
+            <div class="lb-list">
+              <div class="lb-team-row team-gold first">
+                <div class="lb-rank">1</div>
+                <div class="lb-team-info">
+                  <div class="lb-team-name">Les Chardonnays</div>
+                  <div class="lb-team-players">4 j · <span class="mvp">MVP Marie</span></div>
+                </div>
+                <div class="lb-score">2 480<span class="delta">+200</span></div>
+              </div>
+              <div class="lb-team-row team-red">
+                <div class="lb-rank">2</div>
+                <div class="lb-team-info">
+                  <div class="lb-team-name">Les Pinots</div>
+                  <div class="lb-team-players">4 j · <span class="mvp">MVP Jérôme</span></div>
+                </div>
+                <div class="lb-score">2 105<span class="delta">+75</span></div>
+              </div>
+              <div class="lb-team-row team-blue">
+                <div class="lb-rank">3</div>
+                <div class="lb-team-info">
+                  <div class="lb-team-name">Les Riesling</div>
+                  <div class="lb-team-players">3 j · MVP Léa</div>
+                </div>
+                <div class="lb-score">1 890</div>
+              </div>
+              <div class="lb-team-row team-green">
+                <div class="lb-rank">4</div>
+                <div class="lb-team-info">
+                  <div class="lb-team-name">Les Sauvignons</div>
+                  <div class="lb-team-players">3 j · MVP Pauline</div>
+                </div>
+                <div class="lb-score">1 420</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mvp-strip">
+            <span class="mvp-label">★ MVP</span>
+            <span class="mvp-name">Marie L. en tête</span>
+            <span class="mvp-score">+50</span>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-row">
+              <button class="admin-btn">✎ Renommer</button>
+              <button class="admin-btn">♛ Master</button>
+              <button class="admin-btn">⊘ Kick</button>
+            </div>
+            <div class="admin-row">
+              <button class="admin-btn adjust">± Ajuster les points</button>
+              <button class="admin-btn primary">+ Valider voix</button>
+            </div>
+
+            <!-- Audit log -->
+            <div class="audit-log">
+              <div class="audit-log-label">Journal des ajustements</div>
+              <div class="audit-entry">
+                <span class="audit-time">21:42</span>
+                <span class="audit-action minus">−200</span>
+                <span>Antoine · triche détectée</span>
+              </div>
+              <div class="audit-entry">
+                <span class="audit-time">21:38</span>
+                <span class="audit-action plus">+100</span>
+                <span>Sophie · bug technique</span>
+              </div>
+              <div class="audit-entry">
+                <span class="audit-time">21:30</span>
+                <span class="audit-action plus">+50</span>
+                <span>Léa · fair-play bonus</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPCOMING TRACKS BAR -->
+      <div class="upcoming-bar">
+        <div class="upcoming-label">
+          À venir
+          <small>5 prochains</small>
+        </div>
+        <div class="upcoming-list">
+          <div class="upcoming-card">
+            <div class="upcoming-num">13</div>
+            <div class="upcoming-cover c1"></div>
+            <div class="upcoming-info">
+              <div class="upcoming-artist">Daft Punk</div>
+              <div class="upcoming-title">Around the World</div>
+            </div>
+          </div>
+          <div class="upcoming-card">
+            <div class="upcoming-num">14</div>
+            <div class="upcoming-cover c2"></div>
+            <div class="upcoming-info">
+              <div class="upcoming-artist">Indochine</div>
+              <div class="upcoming-title">L'aventurier</div>
+            </div>
+          </div>
+          <div class="upcoming-card">
+            <div class="upcoming-num">15</div>
+            <div class="upcoming-cover c3"></div>
+            <div class="upcoming-info">
+              <div class="upcoming-artist">Mylène F.</div>
+              <div class="upcoming-title">Désenchantée</div>
+            </div>
+          </div>
+          <div class="upcoming-card">
+            <div class="upcoming-num">16</div>
+            <div class="upcoming-cover c4"></div>
+            <div class="upcoming-info">
+              <div class="upcoming-artist">Orelsan</div>
+              <div class="upcoming-title">Basique</div>
+            </div>
+          </div>
+          <div class="upcoming-card">
+            <div class="upcoming-num">17</div>
+            <div class="upcoming-cover c5"></div>
+            <div class="upcoming-info">
+              <div class="upcoming-artist">Téléphone</div>
+              <div class="upcoming-title">Cendrillon</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="ipad-footer">
+        <div class="playlist-info">
+          <div class="playlist-thumb"></div>
+          <div class="playlist-text">
+            <div class="name">Soirée du jeudi · French Hits</div>
+            <div class="meta">90 MORCEAUX · 12 / 90 LUS · NIVEAU MOYEN</div>
+          </div>
+        </div>
+        <div class="footer-controls">
+          <button class="ctrl-btn" title="Précédent">⏮</button>
+          <button class="ctrl-btn play" title="Pause">⏸</button>
+          <button class="ctrl-btn" title="Suivant">⏭</button>
+          <button class="ctrl-btn reveal" title="Révéler">👁</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- ─── ADJUSTMENT MODAL OVERLAY ─── -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <div class="modal-overlay" id="modal">
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">
+              Ajuster <span class="player-name">Antoine</span>
+              <span class="modal-team-tag">
+                <span class="dot basil"></span>
+                Riesling
+              </span>
+            </div>
+            <button class="modal-close" onclick="toggleModal()">×</button>
+          </div>
+
+          <div class="modal-body">
+
+            <div class="current-score-row">
+              <span class="current-score-label">Score actuel</span>
+              <span class="current-score-value">1 420 pts</span>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+              <div class="tab active">Joueur (Antoine)</div>
+              <div class="tab">Équipe entière (Riesling)</div>
+            </div>
+
+            <!-- Quick adjust -->
+            <div class="adjust-label">Ajustement rapide</div>
+            <div class="adjust-grid">
+              <button class="adjust-btn minus">−200</button>
+              <button class="adjust-btn minus">−100</button>
+              <button class="adjust-btn minus">−50</button>
+              <button class="adjust-btn plus">+50</button>
+              <button class="adjust-btn plus">+100</button>
+              <button class="adjust-btn plus">+200</button>
+              <button class="adjust-btn custom">⌨ Saisir un montant personnalisé</button>
+            </div>
+
+            <!-- Reasons -->
+            <div class="reason-section">
+              <div class="adjust-label">Raison</div>
+              <div class="reason-grid">
+                <div class="reason-item">
+                  <span class="icon">🎤</span>
+                  <span>Validation voix</span>
+                  <span class="visibility public">PUBLIC</span>
+                </div>
+                <div class="reason-item">
+                  <span class="icon">🔧</span>
+                  <span>Bug technique</span>
+                  <span class="visibility public">PUBLIC</span>
+                </div>
+                <div class="reason-item">
+                  <span class="icon">✨</span>
+                  <span>Fair-play / bonus host</span>
+                  <span class="visibility public">PUBLIC</span>
+                </div>
+                <div class="reason-item active">
+                  <span class="icon">🚨</span>
+                  <span>Triche détectée</span>
+                  <span class="visibility private">PRIVÉ</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="visibility-hint">
+              Ajustement <strong>privé</strong> · seul Antoine recevra la notification sur son téléphone.
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="modal-btn cancel" onclick="toggleModal()">Annuler</button>
+            <button class="modal-btn confirm" style="background: var(--raspberry);">Appliquer −200</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ─── PHONE NOTIFICATIONS ─── -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span class="section-tag">SECTION 2 · CÔTÉ JOUEURS</span>
+    <h2 class="section-title">Les <em>notifications</em> reçues</h2>
+    <p class="section-desc">Quand l'host applique un ajustement, le joueur concerné reçoit immédiatement une notification sur son téléphone — bonus en vert, malus en rose. La raison est toujours mentionnée pour transparence.</p>
+  </div>
+
+  <div class="phones-row">
+
+    <!-- Phone 1: Bonus -->
+    <div class="phone-wrap">
+      <div class="phone-step-label">BONUS · NOTIF PUBLIQUE</div>
+      <div class="phone-step-name">Sophie reçoit +100</div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen-mini">
+          <div class="phone-content-mini">
+
+            <div class="notif-card bonus">
+              <div class="notif-icon">+</div>
+              <div class="notif-headline">Tu reçois <em>+100 pts</em></div>
+              <div class="notif-reason">Bug technique reconnu — l'host a validé ta réponse.</div>
+              <div class="notif-meta">21:38 · DE L'HOST</div>
+            </div>
+
+            <div class="player-score-display">
+              <div class="player-score-label">TON SCORE</div>
+              <div class="player-score-value">1 545</div>
+              <div class="player-score-delta">+100</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone 2: Malus (private) -->
+    <div class="phone-wrap">
+      <div class="phone-step-label">MALUS · NOTIF PRIVÉE</div>
+      <div class="phone-step-name">Antoine reçoit −200 (pas visible des autres)</div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen-mini">
+          <div class="phone-content-mini">
+
+            <div class="notif-card malus">
+              <div class="notif-icon">−</div>
+              <div class="notif-headline">Pénalité <em>−200 pts</em></div>
+              <div class="notif-reason">Triche détectée. Cette notification est privée — seul toi la vois.</div>
+              <div class="notif-meta">21:42 · DE L'HOST</div>
+            </div>
+
+            <div class="player-score-display">
+              <div class="player-score-label">TON SCORE</div>
+              <div class="player-score-value" style="color: var(--raspberry);">1 220</div>
+              <div class="player-score-delta minus">−200</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ─── SECTION 3 : CONFIG SESSION (Pop Cocktail) ─── -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span class="section-tag">SECTION 3 · ÉTAPE 1</span>
+    <h2 class="section-title">Configuration <em>de la session</em></h2>
+    <p class="section-desc">Avant de publier le QR code — mode (solo / équipes), nombre et noms des équipes, attribution, playlist, et rappel des règles de scoring.</p>
+  </div>
+
+  <div class="ipad-frame">
+    <div class="ipad-screen-config">
+
+      <div class="ipad-header">
+        <div class="brand-mark">
+          <span class="brand-icon"></span>
+          <span>Blind Test <span class="komptoir">Komptoir</span></span>
+        </div>
+        <div class="step-indicator">
+          <span class="step-dot active"></span>
+          <span class="step-dot"></span>
+          <span class="step-dot"></span>
+          <span style="margin-left: 6px;">ÉTAPE 1 · CONFIG</span>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft); font-weight: 600;">JEUDI · 21:32</div>
+      </div>
+
+      <div class="config-body">
+
+        <!-- LEFT -->
+        <div>
+
+          <div class="config-section">
+            <div class="config-section-title"><span class="num">1</span>Mode de jeu</div>
+            <div class="mode-toggle">
+              <div class="mode-card">
+                <div class="mode-icon">i</div>
+                <div class="mode-name">Solo</div>
+                <div class="mode-desc">Chaque joueur joue pour son score perso. Classement individuel.</div>
+              </div>
+              <div class="mode-card active">
+                <div class="mode-icon">&amp;</div>
+                <div class="mode-name">Équipes</div>
+                <div class="mode-desc">Joueurs rattachés à une équipe. Classement équipe + MVP individuel.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="config-section">
+            <div class="config-section-title"><span class="num">2</span>Équipes</div>
+            <div class="team-count">
+              <button class="count-btn">−</button>
+              <span class="count-value">4</span>
+              <button class="count-btn">+</button>
+              <span class="count-label">équipes (de 2 à 6)</span>
+            </div>
+            <div class="teams-grid">
+              <div class="team-edit">
+                <div class="team-color red"></div>
+                <input class="team-input" value="Les Pinots">
+              </div>
+              <div class="team-edit">
+                <div class="team-color blue"></div>
+                <input class="team-input" value="Les Riesling">
+              </div>
+              <div class="team-edit">
+                <div class="team-color gold"></div>
+                <input class="team-input" value="Les Chardonnays">
+              </div>
+              <div class="team-edit">
+                <div class="team-color green"></div>
+                <input class="team-input" value="Les Sauvignons">
+              </div>
+            </div>
+          </div>
+
+          <div class="config-section">
+            <div class="config-section-title"><span class="num">3</span>Attribution des joueurs</div>
+            <div class="pill-group">
+              <div class="pill active">Choix libre</div>
+              <div class="pill">Aléatoire</div>
+              <div class="pill">QR par table</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="config-right">
+
+          <div>
+            <div class="config-section-title"><span class="num">4</span>Playlist du soir</div>
+            <div class="playlist-card">
+              <div class="playlist-cover"></div>
+              <div class="playlist-info-cfg">
+                <div class="playlist-name">French Hits 2000-2020</div>
+                <div class="playlist-stats">90 morceaux · ~45 min</div>
+                <div class="level-bar">
+                  <div class="level-segment filled"></div>
+                  <div class="level-segment filled"></div>
+                  <div class="level-segment filled"></div>
+                  <div class="level-segment"></div>
+                  <div class="level-segment"></div>
+                  <span class="level-label">NIVEAU MOYEN</span>
+                </div>
+              </div>
+              <button class="change-link">Changer</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="config-section-title"><span class="num">5</span>Règles de scoring</div>
+            <div class="scoring-card">
+              <div class="scoring-row-c">
+                <span class="scoring-label">1<sup>er</sup> trouvé <em class="team">ÉQUIPE</em></span>
+                <span class="scoring-value-c">+150</span>
+              </div>
+              <div class="scoring-row-c">
+                <span class="scoring-label">2<sup>e</sup> équipe <em class="team">ÉQUIPE</em></span>
+                <span class="scoring-value-c">+75</span>
+              </div>
+              <div class="scoring-row-c">
+                <span class="scoring-label">3<sup>e</sup> équipe <em class="team">ÉQUIPE</em></span>
+                <span class="scoring-value-c">+50</span>
+              </div>
+              <div class="scoring-row-c">
+                <span class="scoring-label">Bonus MVP <em class="solo">SOLO</em></span>
+                <span class="scoring-value-c">+25</span>
+              </div>
+              <div class="scoring-row-c">
+                <span class="scoring-label">Bonus titre <em class="team">ÉQUIPE</em></span>
+                <span class="scoring-value-c">+50</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="ipad-footer-cta">
+        <div class="footer-summary-c">
+          <strong>Mode équipes</strong> · 4 équipes · Choix libre · 90 morceaux niveau Moyen<br>
+          <span style="color: var(--ink-faded);">Tu pourras toujours modifier après.</span>
+        </div>
+        <button class="cta-btn">
+          <span>Publier le QR</span>
+          <span class="cta-arrow">→</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ─── SECTION 4 : SALLE D'ATTENTE (Pop Cocktail) ─── -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span class="section-tag">SECTION 4 · ÉTAPE 2</span>
+    <h2 class="section-title">Salle <em>d'attente</em> &amp; gestion</h2>
+    <p class="section-desc">QR code + code court visibles, joueurs qui rejoignent en temps réel, possibilité de les déplacer entre équipes par drag &amp; drop.</p>
+  </div>
+
+  <div class="ipad-frame">
+    <div class="ipad-screen-config">
+
+      <div class="ipad-header">
+        <div class="brand-mark">
+          <span class="brand-icon"></span>
+          <span>Blind Test <span class="komptoir">Komptoir</span></span>
+        </div>
+        <div class="step-indicator">
+          <span class="step-dot done"></span>
+          <span class="step-dot active"></span>
+          <span class="step-dot"></span>
+          <span style="margin-left: 6px;">ÉTAPE 2 · ATTENTE</span>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft); font-weight: 600;">JEUDI · 21:38 · EN ATTENTE</div>
+      </div>
+
+      <div class="waiting-body">
+
+        <!-- QR CARD -->
+        <div class="qr-card">
+          <div class="qr-label">★ SCANNER POUR REJOINDRE</div>
+          <div class="qr-frame">
+            <svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+              <rect width="33" height="33" fill="#f5ecd9"/>
+              <g fill="#1a1410">
+                <rect x="0" y="0" width="7" height="7"/>
+                <rect x="26" y="0" width="7" height="7"/>
+                <rect x="0" y="26" width="7" height="7"/>
+              </g>
+              <g fill="#f5ecd9">
+                <rect x="1" y="1" width="5" height="5"/>
+                <rect x="27" y="1" width="5" height="5"/>
+                <rect x="1" y="27" width="5" height="5"/>
+              </g>
+              <g fill="#1a1410">
+                <rect x="2" y="2" width="3" height="3"/>
+                <rect x="28" y="2" width="3" height="3"/>
+                <rect x="2" y="28" width="3" height="3"/>
+                <rect x="9" y="0" width="1" height="1"/>
+                <rect x="11" y="0" width="1" height="1"/>
+                <rect x="14" y="0" width="2" height="1"/>
+                <rect x="18" y="0" width="1" height="1"/>
+                <rect x="20" y="0" width="2" height="1"/>
+                <rect x="23" y="0" width="1" height="1"/>
+                <rect x="9" y="2" width="2" height="1"/>
+                <rect x="13" y="2" width="1" height="1"/>
+                <rect x="16" y="2" width="3" height="1"/>
+                <rect x="20" y="2" width="1" height="1"/>
+                <rect x="22" y="2" width="2" height="1"/>
+                <rect x="8" y="3" width="1" height="1"/>
+                <rect x="11" y="3" width="2" height="1"/>
+                <rect x="15" y="3" width="1" height="1"/>
+                <rect x="17" y="3" width="2" height="1"/>
+                <rect x="21" y="3" width="1" height="1"/>
+                <rect x="24" y="3" width="1" height="1"/>
+                <rect x="9" y="5" width="2" height="1"/>
+                <rect x="14" y="5" width="3" height="1"/>
+                <rect x="18" y="5" width="1" height="1"/>
+                <rect x="20" y="5" width="2" height="1"/>
+                <rect x="23" y="5" width="1" height="1"/>
+                <rect x="0" y="8" width="1" height="1"/>
+                <rect x="2" y="8" width="3" height="1"/>
+                <rect x="7" y="8" width="2" height="1"/>
+                <rect x="10" y="8" width="2" height="1"/>
+                <rect x="14" y="8" width="1" height="1"/>
+                <rect x="17" y="8" width="2" height="1"/>
+                <rect x="20" y="8" width="1" height="1"/>
+                <rect x="22" y="8" width="2" height="1"/>
+                <rect x="25" y="8" width="2" height="1"/>
+                <rect x="29" y="8" width="2" height="1"/>
+                <rect x="32" y="8" width="1" height="1"/>
+                <rect x="1" y="9" width="2" height="1"/>
+                <rect x="4" y="9" width="2" height="1"/>
+                <rect x="9" y="9" width="3" height="1"/>
+                <rect x="13" y="9" width="2" height="1"/>
+                <rect x="16" y="9" width="2" height="1"/>
+                <rect x="19" y="9" width="3" height="1"/>
+                <rect x="24" y="9" width="2" height="1"/>
+                <rect x="28" y="9" width="2" height="1"/>
+                <rect x="31" y="9" width="2" height="1"/>
+                <rect x="0" y="10" width="2" height="1"/>
+                <rect x="3" y="10" width="2" height="1"/>
+                <rect x="8" y="10" width="2" height="1"/>
+                <rect x="11" y="10" width="3" height="1"/>
+                <rect x="15" y="10" width="2" height="1"/>
+                <rect x="20" y="10" width="3" height="1"/>
+                <rect x="25" y="10" width="2" height="1"/>
+                <rect x="28" y="10" width="1" height="1"/>
+                <rect x="30" y="10" width="2" height="1"/>
+                <rect x="1" y="11" width="1" height="1"/>
+                <rect x="3" y="11" width="3" height="1"/>
+                <rect x="8" y="11" width="3" height="1"/>
+                <rect x="13" y="11" width="2" height="1"/>
+                <rect x="17" y="11" width="2" height="1"/>
+                <rect x="22" y="11" width="2" height="1"/>
+                <rect x="26" y="11" width="2" height="1"/>
+                <rect x="30" y="11" width="2" height="1"/>
+                <rect x="0" y="12" width="2" height="1"/>
+                <rect x="5" y="12" width="2" height="1"/>
+                <rect x="10" y="12" width="3" height="1"/>
+                <rect x="15" y="12" width="2" height="1"/>
+                <rect x="19" y="12" width="2" height="1"/>
+                <rect x="23" y="12" width="2" height="1"/>
+                <rect x="27" y="12" width="3" height="1"/>
+                <rect x="31" y="12" width="2" height="1"/>
+                <rect x="2" y="13" width="2" height="1"/>
+                <rect x="6" y="13" width="2" height="1"/>
+                <rect x="11" y="13" width="2" height="1"/>
+                <rect x="16" y="13" width="3" height="1"/>
+                <rect x="21" y="13" width="2" height="1"/>
+                <rect x="25" y="13" width="2" height="1"/>
+                <rect x="29" y="13" width="2" height="1"/>
+                <rect x="0" y="14" width="3" height="1"/>
+                <rect x="5" y="14" width="2" height="1"/>
+                <rect x="9" y="14" width="3" height="1"/>
+                <rect x="13" y="14" width="2" height="1"/>
+                <rect x="18" y="14" width="2" height="1"/>
+                <rect x="22" y="14" width="3" height="1"/>
+                <rect x="26" y="14" width="2" height="1"/>
+                <rect x="30" y="14" width="2" height="1"/>
+                <rect x="2" y="15" width="2" height="1"/>
+                <rect x="7" y="15" width="2" height="1"/>
+                <rect x="11" y="15" width="2" height="1"/>
+                <rect x="15" y="15" width="3" height="1"/>
+                <rect x="20" y="15" width="2" height="1"/>
+                <rect x="24" y="15" width="2" height="1"/>
+                <rect x="28" y="15" width="3" height="1"/>
+                <rect x="0" y="16" width="2" height="1"/>
+                <rect x="4" y="16" width="3" height="1"/>
+                <rect x="9" y="16" width="2" height="1"/>
+                <rect x="13" y="16" width="3" height="1"/>
+                <rect x="17" y="16" width="2" height="1"/>
+                <rect x="22" y="16" width="2" height="1"/>
+                <rect x="26" y="16" width="3" height="1"/>
+                <rect x="31" y="16" width="2" height="1"/>
+                <rect x="2" y="17" width="2" height="1"/>
+                <rect x="6" y="17" width="2" height="1"/>
+                <rect x="10" y="17" width="3" height="1"/>
+                <rect x="14" y="17" width="2" height="1"/>
+                <rect x="19" y="17" width="2" height="1"/>
+                <rect x="23" y="17" width="3" height="1"/>
+                <rect x="28" y="17" width="2" height="1"/>
+                <rect x="31" y="17" width="2" height="1"/>
+                <rect x="0" y="18" width="3" height="1"/>
+                <rect x="5" y="18" width="2" height="1"/>
+                <rect x="9" y="18" width="2" height="1"/>
+                <rect x="13" y="18" width="3" height="1"/>
+                <rect x="17" y="18" width="2" height="1"/>
+                <rect x="21" y="18" width="3" height="1"/>
+                <rect x="25" y="18" width="2" height="1"/>
+                <rect x="29" y="18" width="3" height="1"/>
+                <rect x="3" y="19" width="2" height="1"/>
+                <rect x="7" y="19" width="3" height="1"/>
+                <rect x="11" y="19" width="2" height="1"/>
+                <rect x="15" y="19" width="2" height="1"/>
+                <rect x="19" y="19" width="3" height="1"/>
+                <rect x="23" y="19" width="2" height="1"/>
+                <rect x="27" y="19" width="2" height="1"/>
+                <rect x="31" y="19" width="2" height="1"/>
+                <rect x="0" y="20" width="2" height="1"/>
+                <rect x="4" y="20" width="2" height="1"/>
+                <rect x="9" y="20" width="3" height="1"/>
+                <rect x="14" y="20" width="2" height="1"/>
+                <rect x="18" y="20" width="2" height="1"/>
+                <rect x="22" y="20" width="3" height="1"/>
+                <rect x="26" y="20" width="2" height="1"/>
+                <rect x="30" y="20" width="2" height="1"/>
+                <rect x="2" y="21" width="3" height="1"/>
+                <rect x="6" y="21" width="2" height="1"/>
+                <rect x="11" y="21" width="2" height="1"/>
+                <rect x="15" y="21" width="3" height="1"/>
+                <rect x="20" y="21" width="2" height="1"/>
+                <rect x="24" y="21" width="3" height="1"/>
+                <rect x="28" y="21" width="2" height="1"/>
+                <rect x="0" y="22" width="2" height="1"/>
+                <rect x="5" y="22" width="2" height="1"/>
+                <rect x="8" y="22" width="3" height="1"/>
+                <rect x="13" y="22" width="2" height="1"/>
+                <rect x="17" y="22" width="3" height="1"/>
+                <rect x="22" y="22" width="2" height="1"/>
+                <rect x="26" y="22" width="2" height="1"/>
+                <rect x="30" y="22" width="2" height="1"/>
+                <rect x="9" y="26" width="2" height="1"/>
+                <rect x="13" y="26" width="3" height="1"/>
+                <rect x="18" y="26" width="2" height="1"/>
+                <rect x="22" y="26" width="2" height="1"/>
+                <rect x="26" y="26" width="3" height="1"/>
+                <rect x="30" y="26" width="2" height="1"/>
+                <rect x="8" y="27" width="2" height="1"/>
+                <rect x="11" y="27" width="3" height="1"/>
+                <rect x="16" y="27" width="2" height="1"/>
+                <rect x="20" y="27" width="3" height="1"/>
+                <rect x="24" y="27" width="2" height="1"/>
+                <rect x="28" y="27" width="3" height="1"/>
+                <rect x="9" y="28" width="3" height="1"/>
+                <rect x="14" y="28" width="2" height="1"/>
+                <rect x="18" y="28" width="2" height="1"/>
+                <rect x="22" y="28" width="3" height="1"/>
+                <rect x="26" y="28" width="2" height="1"/>
+                <rect x="30" y="28" width="3" height="1"/>
+                <rect x="8" y="29" width="2" height="1"/>
+                <rect x="12" y="29" width="3" height="1"/>
+                <rect x="17" y="29" width="2" height="1"/>
+                <rect x="21" y="29" width="3" height="1"/>
+                <rect x="25" y="29" width="2" height="1"/>
+                <rect x="29" y="29" width="3" height="1"/>
+                <rect x="9" y="30" width="3" height="1"/>
+                <rect x="13" y="30" width="2" height="1"/>
+                <rect x="16" y="30" width="3" height="1"/>
+                <rect x="20" y="30" width="2" height="1"/>
+                <rect x="23" y="30" width="3" height="1"/>
+                <rect x="27" y="30" width="2" height="1"/>
+                <rect x="30" y="30" width="2" height="1"/>
+                <rect x="8" y="31" width="2" height="1"/>
+                <rect x="11" y="31" width="3" height="1"/>
+                <rect x="15" y="31" width="2" height="1"/>
+                <rect x="19" y="31" width="3" height="1"/>
+                <rect x="23" y="31" width="2" height="1"/>
+                <rect x="27" y="31" width="3" height="1"/>
+                <rect x="31" y="31" width="2" height="1"/>
+                <rect x="9" y="32" width="2" height="1"/>
+                <rect x="13" y="32" width="3" height="1"/>
+                <rect x="17" y="32" width="2" height="1"/>
+                <rect x="21" y="32" width="3" height="1"/>
+                <rect x="26" y="32" width="2" height="1"/>
+                <rect x="30" y="32" width="3" height="1"/>
+              </g>
+            </svg>
+          </div>
+          <div class="session-code-c">
+            <div class="small">CODE COURT</div>
+            <div class="code-value">KOMP-7K2X</div>
+          </div>
+          <div class="session-url">blindtest.lekomptoir.lu</div>
+        </div>
+
+        <!-- Players panel -->
+        <div class="players-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Joueurs &amp; <span class="accent">équipes</span></div>
+              <div class="panel-meta" style="font-style: italic; font-family: 'Fraunces', serif; margin-top: 2px; font-size: 11px;">Glisse pour déplacer</div>
+            </div>
+            <div class="panel-meta"><strong>14</strong> joueurs · 4 équipes</div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="panel-btn">⇅ Rééquilibrer auto</button>
+            <button class="panel-btn">+ Ajouter une équipe</button>
+            <button class="panel-btn">Fermer la session</button>
+          </div>
+
+          <div class="teams-board">
+
+            <div class="team-zone team-red">
+              <div class="team-zone-header">
+                <div class="team-zone-name">Les Pinots</div>
+                <div class="team-zone-count">4</div>
+              </div>
+              <div class="player-list">
+                <div class="player-chip">
+                  <div class="player-avatar">J</div>
+                  <div class="player-name">Jérôme</div>
+                </div>
+                <div class="player-chip">
+                  <div class="player-avatar">S</div>
+                  <div class="player-name">Sophie K.</div>
+                </div>
+                <div class="player-chip">
+                  <div class="player-avatar">B</div>
+                  <div class="player-name">Bastien</div>
+                </div>
+                <div class="player-chip new">
+                  <div class="player-avatar">F</div>
+                  <div class="player-name">Florian</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="team-zone team-blue">
+              <div class="team-zone-header">
+                <div class="team-zone-name">Les Riesling</div>
+                <div class="team-zone-count">3</div>
+              </div>
+              <div class="player-list">
+                <div class="player-chip">
+                  <div class="player-avatar">L</div>
+                  <div class="player-name">Léa &amp; Tom</div>
+                </div>
+                <div class="player-chip">
+                  <div class="player-avatar">A</div>
+                  <div class="player-name">Antoine</div>
+                </div>
+                <div class="player-chip">
+                  <div class="player-avatar">N</div>
+                  <div class="player-name">Nadège</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="team-zone team-gold">
+              <div class="team-zone-header">
+                <div class="team-zone-name">Les Chardonnays</div>
+                <div class="team-zone-count">4</div>
+              </div>
+              <div class="player-list">
+                <div class="player-chip">
+                  <div class="player-avatar">M</div>
+                  <div class="player-name">Marie L.</div>
+                </div>
+                <div class="player-chip">
+                  <div class="player-avatar">R</div>
+                  <div class="player-name">Renaud Z.</div>
+                </div>
+                <div class="player-chip">
+                  <div class="player-avatar">C</div>
+                  <div class="player-name">Camille</div>
+                </div>
+                <div class="player-chip">
+                  <div class="player-avatar">V</div>
+                  <div class="player-name">Victor</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="team-zone team-green">
+              <div class="team-zone-header">
+                <div class="team-zone-name">Les Sauvignons</div>
+                <div class="team-zone-count">3</div>
+              </div>
+              <div class="player-list">
+                <div class="player-chip">
+                  <div class="player-avatar">P</div>
+                  <div class="player-name">Pauline D.</div>
+                </div>
+                <div class="player-chip">
+                  <div class="player-avatar">H</div>
+                  <div class="player-name">Hugo</div>
+                </div>
+                <div class="player-chip">
+                  <div class="player-avatar">E</div>
+                  <div class="player-name">Élodie</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="join-toast">
+            <span class="toast-dot"></span>
+            <span class="toast-text"><strong>Florian</strong> rejoint les Pinots</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ipad-footer-cta">
+        <div class="footer-summary-c">
+          <strong>14 joueurs en attente</strong> — 4 équipes équilibrées<br>
+          <span style="color: var(--ink-faded);">Tu peux continuer à attendre, ou lancer la 1<sup>re</sup> manche.</span>
+        </div>
+        <button class="cta-btn">
+          <span>Lancer la partie</span>
+          <span class="cta-arrow">→</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── DESIGN NOTES ─── -->
+  <div class="design-notes">
+    <h3>Les 6 ajouts clés de cette série</h3>
+    <div class="notes-grid">
+      <div class="note-item">
+        <h4>Bouton "Terminer" en header</h4>
+        <p>En haut à droite, contour framboise, à côté du compteur de manche. Volontairement pas trop voyant pour ne pas être tapé par accident, mais accessible. Ouvre une confirmation avant de basculer sur le podium.</p>
+      </div>
+      <div class="note-item">
+        <h4>Modale d'ajustement</h4>
+        <p>Tap sur n'importe quelle équipe ou joueur du classement, ou sur le bouton citron "± Ajuster les points" du panneau admin. Onglets joueur/équipe, presets ±50/±100/±200, ou montant personnalisé.</p>
+      </div>
+      <div class="note-item">
+        <h4>Visibilité par raison</h4>
+        <p>Bonus (validation, bug, fair-play) → notif <strong>publique</strong> visible des autres joueurs. Malus (triche) → notif <strong>privée</strong> visible uniquement par le joueur concerné. Pas d'humiliation publique.</p>
+      </div>
+      <div class="note-item">
+        <h4>Audit log compact</h4>
+        <p>3 dernières entrées au bas du panneau admin, en JetBrains Mono mini-format. Te rappelle ce que tu as fait, avec horodatage et raison. Crucial pour la transparence si un Master demande.</p>
+      </div>
+      <div class="note-item">
+        <h4>Notifications téléphone signées</h4>
+        <p>"DE L'HOST" en bas de chaque notif pour qu'il n'y ait aucune ambiguïté. Bonus en vert basilic, malus en rose framboise. Score recalculé en bas, avec delta affiché en couleur.</p>
+      </div>
+      <div class="note-item">
+        <h4>Config et attente cohérentes</h4>
+        <p>Mêmes codes graphiques que l'iPad host : crème + couleurs cocktail, contours noirs, ombres décalées, bandeau multicolore. Le toast "Florian rejoint" est noir avec liseré citron — petit détail qui anime la salle d'attente.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Toggle modal
+  function toggleModal() {
+    document.getElementById('modal').classList.toggle('hidden');
+  }
+
+  // Close on click outside
+  document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target.id === 'modal') toggleModal();
+  });
+
+  // Tab toggle in modal
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      t.parentElement.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+
+  // Reason toggle
+  document.querySelectorAll('.reason-item').forEach(r => {
+    r.addEventListener('click', () => {
+      r.parentElement.querySelectorAll('.reason-item').forEach(x => x.classList.remove('active'));
+      r.classList.add('active');
+    });
+  });
+
+  // Mode toggle
+  document.querySelectorAll('.mode-toggle').forEach(g => {
+    g.querySelectorAll('.mode-card').forEach(c => {
+      c.addEventListener('click', () => {
+        g.querySelectorAll('.mode-card').forEach(x => x.classList.remove('active'));
+        c.classList.add('active');
+      });
+    });
+  });
+
+  // Pill toggle
+  document.querySelectorAll('.pill-group').forEach(g => {
+    g.querySelectorAll('.pill').forEach(p => {
+      p.addEventListener('click', () => {
+        g.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+        p.classList.add('active');
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

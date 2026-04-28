@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blind Test · Le Komptoir — Admin Playlists</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Outfit:wght@300..700&family=JetBrains+Mono:wght@300..600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5ecd9;
+    --cream-2: #efe4cc;
+    --cream-3: #e6d8b8;
+    --cream-4: #d4c39e;
+    --kraft: #c2aa78;
+
+    --ink: #1a1410;
+    --ink-2: #3d2f24;
+    --ink-soft: #6b5443;
+    --ink-faded: #9a8470;
+
+    --spritz: #ee6c2a;
+    --spritz-deep: #c84e15;
+    --basil: #4a8b3f;
+    --basil-deep: #356a2c;
+    --raspberry: #c8336e;
+    --raspberry-deep: #9c1f53;
+    --grapefruit: #e89a64;
+    --lemon: #e8c547;
+    --plum: #6e3a6e;
+
+    --paper: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    background-size: 300px 300px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 50px 30px 60px;
+  }
+
+  /* ─── PAGE HEADER ─── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    position: relative;
+  }
+
+  .page-header::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 80px;
+    height: 6px;
+    background: var(--basil);
+  }
+
+  .page-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--basil-deep);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .page-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 42px;
+    line-height: 0.95;
+    color: var(--ink);
+  }
+
+  .page-title .underline {
+    position: relative;
+    display: inline-block;
+  }
+
+  .page-title .underline::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    background: var(--lemon);
+    z-index: -1;
+    transform: skew(-8deg);
+  }
+
+  .page-title .swirl {
+    color: var(--raspberry);
+    display: inline-block;
+    transform: rotate(-3deg);
+  }
+
+  .page-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.7;
+  }
+
+  .page-meta strong { color: var(--ink); font-weight: 600; }
+
+  .intro {
+    margin-bottom: 30px;
+    max-width: 820px;
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+
+  .intro em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--raspberry-deep);
+  }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── BROWSER FRAME ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .browser-frame {
+    background: var(--ink);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 
+      0 30px 80px -10px rgba(110, 58, 110, 0.25),
+      0 60px 120px -30px rgba(238, 108, 42, 0.15);
+  }
+
+  .browser-bar {
+    background: #2a2218;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .browser-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .browser-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+
+  .browser-dot:nth-child(1) { background: #ff5f57; }
+  .browser-dot:nth-child(2) { background: #febc2e; }
+  .browser-dot:nth-child(3) { background: #28c840; }
+
+  .browser-url {
+    flex: 1;
+    background: var(--ink);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cream-4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .browser-url .lock {
+    color: var(--basil);
+    font-size: 10px;
+  }
+
+  .browser-url .url-path {
+    color: var(--lemon);
+  }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── ADMIN APP ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .admin-app {
+    background: var(--cream);
+    display: grid;
+    grid-template-columns: 280px 1fr 380px;
+    height: 850px;
+    position: relative;
+  }
+
+  .admin-app::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    background-size: 300px 300px;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    z-index: 0;
+  }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── SIDEBAR (LEFT) ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .sidebar {
+    background: var(--cream-2);
+    border-right: 1.5px solid var(--cream-4);
+    padding: 24px 18px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Caprasimo', serif;
+    font-size: 17px;
+    color: var(--ink);
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 2px dashed var(--cream-4);
+    position: relative;
+  }
+
+  .sidebar-brand::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg,
+      var(--spritz) 0%, var(--spritz) 25%,
+      var(--basil) 25%, var(--basil) 50%,
+      var(--raspberry) 50%, var(--raspberry) 75%,
+      var(--lemon) 75%
+    );
+  }
+
+  .brand-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--spritz);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-5deg);
+    box-shadow: 0 3px 0 var(--spritz-deep);
+    flex-shrink: 0;
+  }
+
+  .brand-icon::after {
+    content: '♪';
+    color: var(--cream);
+    font-size: 14px;
+    transform: rotate(5deg);
+  }
+
+  .brand-name .komptoir { color: var(--raspberry); }
+  .brand-name {
+    line-height: 1.1;
+  }
+  .brand-name small {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  /* Nav */
+  .sidebar-section {
+    margin-bottom: 20px;
+  }
+
+  .sidebar-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faded);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sidebar-section-action {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-family: 'Caprasimo', serif;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 1px 1px 0 var(--ink);
+    transition: all 0.15s;
+  }
+
+  .sidebar-section-action:hover {
+    background: var(--spritz);
+    color: var(--cream);
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .nav-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    border: 1.5px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .nav-item:hover {
+    background: var(--cream);
+    border-color: var(--cream-4);
+  }
+
+  .nav-item.active {
+    background: var(--cream);
+    border-color: var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .nav-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    border: 1.5px solid var(--ink);
+  }
+
+  .nav-thumb.t1 { background: linear-gradient(135deg, var(--spritz), var(--raspberry)); }
+  .nav-thumb.t2 { background: linear-gradient(135deg, var(--basil), var(--lemon)); }
+  .nav-thumb.t3 { background: linear-gradient(135deg, var(--plum), var(--raspberry)); }
+  .nav-thumb.t4 { background: linear-gradient(135deg, var(--grapefruit), var(--spritz)); }
+  .nav-thumb.t5 { background: linear-gradient(135deg, var(--basil-deep), var(--plum)); }
+  .nav-thumb.t6 { background: linear-gradient(135deg, var(--lemon), var(--basil)); }
+
+  .nav-info { min-width: 0; line-height: 1.2; }
+
+  .nav-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .nav-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+
+  .nav-level {
+    width: 24px;
+    text-align: center;
+  }
+
+  .level-dots {
+    display: flex;
+    gap: 2px;
+    flex-direction: column;
+  }
+
+  .level-dots-row {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+  }
+
+  .level-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--cream-4);
+  }
+
+  .level-dot.filled.spritz { background: var(--spritz); }
+  .level-dot.filled.basil { background: var(--basil); }
+  .level-dot.filled.raspberry { background: var(--raspberry); }
+  .level-dot.filled.plum { background: var(--plum); }
+
+  /* CTA new playlist */
+  .new-playlist-btn {
+    background: var(--ink);
+    color: var(--cream);
+    border: 2px solid var(--ink);
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-family: 'Caprasimo', serif;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--lemon);
+    transition: all 0.15s;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: auto;
+  }
+
+  .new-playlist-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--lemon);
+  }
+
+  .new-playlist-btn .icon { color: var(--lemon); font-size: 18px; line-height: 1; }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── MAIN COLUMN (CENTER) ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .main-col {
+    overflow-y: auto;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main-header {
+    padding: 22px 28px 16px;
+    border-bottom: 1.5px solid var(--cream-3);
+    background: var(--cream);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  /* Cover band */
+  .playlist-cover-band {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 16px;
+  }
+
+  .playlist-cover-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    background: 
+      conic-gradient(from 45deg, var(--spritz), var(--raspberry), var(--basil), var(--lemon), var(--spritz));
+    flex-shrink: 0;
+    border: 2px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    transform: rotate(-2deg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .playlist-cover-large::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    background-size: 100px 100px;
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+  }
+
+  .playlist-info-block { flex: 1; min-width: 0; padding-top: 6px; }
+
+  .playlist-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--basil-deep);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .playlist-title {
+    font-family: 'Caprasimo', serif;
+    font-size: 30px;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .playlist-title-input {
+    font-family: 'Caprasimo', serif;
+    font-size: 30px;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 0;
+    margin: -2px 0 4px;
+    line-height: 1;
+  }
+
+  .playlist-meta-row {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    color: var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    font-weight: 500;
+  }
+
+  .meta-pill strong {
+    color: var(--spritz-deep);
+    font-family: 'Caprasimo', serif;
+    font-size: 13px;
+    margin-right: 2px;
+  }
+
+  /* Level selector */
+  .level-selector {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .level-label-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-right: 6px;
+    font-weight: 600;
+  }
+
+  .level-pill {
+    padding: 4px 10px;
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 100px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .level-pill:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+
+  .level-pill.active.facile { background: var(--basil); color: var(--cream); }
+  .level-pill.active.moyen { background: var(--spritz); color: var(--cream); }
+  .level-pill.active.expert { background: var(--plum); color: var(--cream); }
+
+  /* Action row */
+  .action-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  .action-row-btn {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .action-row-btn:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+
+  .action-row-btn.primary { background: var(--spritz); color: var(--cream); }
+  .action-row-btn.danger:hover { background: var(--raspberry); color: var(--cream); border-color: var(--raspberry); }
+
+  /* Tab bar (en-cours / brouillons / archives) */
+  .filter-bar {
+    display: flex;
+    gap: 6px;
+    padding: 14px 28px 12px;
+    border-bottom: 1.5px solid var(--cream-3);
+    background: var(--cream);
+    align-items: center;
+  }
+
+  .filter-bar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-right: 6px;
+    font-weight: 600;
+  }
+
+  .filter-pill {
+    padding: 5px 12px;
+    background: transparent;
+    border: 1.5px solid transparent;
+    border-radius: 100px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .filter-pill:hover { background: var(--cream-2); }
+
+  .filter-pill.active {
+    background: var(--ink);
+    color: var(--lemon);
+  }
+
+  .filter-pill .count {
+    margin-left: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    opacity: 0.7;
+  }
+
+  /* Sort dropdown */
+  .sort-area {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sort-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faded);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .sort-select {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    color: var(--ink);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  /* TRACK LIST */
+  .track-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 28px 28px;
+  }
+
+  .track-list-header {
+    display: grid;
+    grid-template-columns: 36px 36px 1fr 80px 90px 70px 80px;
+    gap: 12px;
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faded);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-bottom: 1.5px dashed var(--cream-4);
+    margin-bottom: 6px;
+  }
+
+  .track-row {
+    display: grid;
+    grid-template-columns: 36px 36px 1fr 80px 90px 70px 80px;
+    gap: 12px;
+    padding: 8px 12px;
+    align-items: center;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .track-row:hover {
+    background: var(--cream-2);
+    border-color: var(--cream-4);
+  }
+
+  .track-row.selected {
+    background: var(--cream-2);
+    border-color: var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .track-row-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faded);
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .track-row-cover {
+    width: 32px;
+    height: 32px;
+    border-radius: 5px;
+    border: 1px solid var(--ink);
+  }
+
+  .track-row-cover.c1 { background: linear-gradient(135deg, var(--spritz), var(--raspberry)); }
+  .track-row-cover.c2 { background: linear-gradient(135deg, var(--basil), var(--lemon)); }
+  .track-row-cover.c3 { background: linear-gradient(135deg, var(--plum), var(--raspberry)); }
+  .track-row-cover.c4 { background: linear-gradient(135deg, var(--lemon), var(--spritz)); }
+  .track-row-cover.c5 { background: linear-gradient(135deg, var(--basil-deep), var(--plum)); }
+  .track-row-cover.c6 { background: linear-gradient(135deg, var(--grapefruit), var(--lemon)); }
+  .track-row-cover.c7 { background: linear-gradient(135deg, var(--raspberry), var(--plum)); }
+  .track-row-cover.c8 { background: linear-gradient(135deg, var(--basil), var(--spritz)); }
+
+  .track-row-info { min-width: 0; line-height: 1.2; }
+
+  .track-row-artist {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .track-row-title {
+    font-size: 11px;
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .track-row-year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  .track-row-genre {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .track-row-popularity {
+    font-family: 'Caprasimo', serif;
+    font-size: 13px;
+    color: var(--ink);
+    text-align: center;
+    position: relative;
+  }
+
+  .pop-bar {
+    height: 4px;
+    background: var(--cream-3);
+    border-radius: 2px;
+    margin-top: 3px;
+    overflow: hidden;
+    border: 1px solid var(--cream-4);
+  }
+
+  .pop-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  .pop-bar-fill.high { background: var(--basil); }
+  .pop-bar-fill.mid { background: var(--spritz); }
+  .pop-bar-fill.low { background: var(--plum); }
+
+  .track-row-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+
+  .track-action-btn {
+    width: 24px;
+    height: 24px;
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--ink);
+    box-shadow: 1px 1px 0 var(--ink);
+    transition: all 0.15s;
+  }
+
+  .track-action-btn:hover { transform: translate(-1px, -1px); box-shadow: 2px 2px 0 var(--ink); }
+  .track-action-btn.preview:hover { background: var(--lemon); }
+  .track-action-btn.remove:hover { background: var(--raspberry); color: var(--cream); border-color: var(--raspberry); }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ─── RIGHT PANEL: SEARCH + DETAILS ─── */
+  /* ═══════════════════════════════════════════════════════ */
+  .right-panel {
+    background: var(--cream-2);
+    border-left: 1.5px solid var(--cream-4);
+    overflow-y: auto;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .right-tabs {
+    display: flex;
+    background: var(--cream-3);
+    border-bottom: 1.5px solid var(--cream-4);
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .right-tab {
+    flex: 1;
+    padding: 8px 10px;
+    text-align: center;
+    border-radius: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    transition: all 0.15s;
+    border: 1.5px solid transparent;
+  }
+
+  .right-tab.active {
+    background: var(--cream);
+    color: var(--ink);
+    font-weight: 600;
+    border-color: var(--ink);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .right-tab .icon { margin-right: 4px; }
+
+  /* SEARCH PANEL */
+  .search-panel {
+    padding: 18px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .search-spotify-row {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .spotify-dot {
+    width: 10px;
+    height: 10px;
+    background: #1db954;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(29, 185, 84, 0.5);
+  }
+
+  .search-spotify-row .label { color: var(--cream-4); }
+  .search-spotify-row .status { color: #1db954; margin-left: auto; }
+
+  .search-input-wrap {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .search-icon { font-size: 16px; color: var(--ink-soft); }
+
+  .search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .search-input::placeholder { color: var(--ink-faded); font-style: italic; }
+
+  .search-clear {
+    background: var(--cream-3);
+    border: 1px solid var(--cream-4);
+    color: var(--ink-soft);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .search-results-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .search-results-label .accent { color: var(--spritz-deep); }
+
+  .search-result {
+    background: var(--cream);
+    border: 1.5px solid var(--cream-4);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .search-result:hover {
+    border-color: var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    transform: translate(-1px, -1px);
+  }
+
+  .search-result-cover {
+    width: 36px;
+    height: 36px;
+    border-radius: 5px;
+    border: 1px solid var(--ink);
+    flex-shrink: 0;
+  }
+
+  .search-result-cover.s1 { background: linear-gradient(135deg, var(--spritz), var(--lemon)); }
+  .search-result-cover.s2 { background: linear-gradient(135deg, var(--basil), var(--plum)); }
+  .search-result-cover.s3 { background: linear-gradient(135deg, var(--raspberry), var(--grapefruit)); }
+  .search-result-cover.s4 { background: linear-gradient(135deg, var(--plum), var(--basil-deep)); }
+  .search-result-cover.s5 { background: linear-gradient(135deg, var(--lemon), var(--basil)); }
+
+  .search-result-info { min-width: 0; line-height: 1.2; }
+
+  .search-result-artist {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .search-result-title {
+    font-size: 10px;
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .search-result-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--ink-faded);
+    letter-spacing: 0.05em;
+    margin-top: 1px;
+  }
+
+  .search-result-add {
+    background: var(--basil);
+    color: var(--cream);
+    border: 1.5px solid var(--ink);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Caprasimo', serif;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 1px 1px 0 var(--ink);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .search-result-add:hover {
+    background: var(--basil-deep);
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .search-result-add.added {
+    background: var(--cream-3);
+    color: var(--ink-faded);
+    border-color: var(--cream-4);
+    cursor: default;
+  }
+
+  /* Quick imports */
+  .quick-imports {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1.5px dashed var(--cream-4);
+  }
+
+  .quick-import-btn {
+    width: 100%;
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    margin-bottom: 5px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .quick-import-btn:hover {
+    background: var(--lemon);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  .quick-import-btn .icon { font-size: 14px; }
+
+  /* DETAIL PANEL (when track is selected) */
+  .detail-panel {
+    padding: 18px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .detail-cover-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .detail-cover {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    background: linear-gradient(135deg, var(--lemon), var(--spritz));
+    flex-shrink: 0;
+    transform: rotate(-2deg);
+  }
+
+  .detail-info { flex: 1; min-width: 0; padding-top: 4px; }
+
+  .detail-artist {
+    font-family: 'Caprasimo', serif;
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1.05;
+    margin-bottom: 2px;
+  }
+
+  .detail-title {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .detail-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin-bottom: 14px;
+  }
+
+  .detail-meta-item {
+    background: var(--cream);
+    padding: 6px 9px;
+    border-radius: 6px;
+    border: 1px solid var(--cream-4);
+  }
+
+  .detail-meta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--ink-faded);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1px;
+    font-weight: 600;
+  }
+
+  .detail-meta-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* Aliases editor */
+  .aliases-section { margin-bottom: 16px; }
+
+  .aliases-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .aliases-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--basil-deep);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .aliases-section-help {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 10px;
+    color: var(--ink-soft);
+  }
+
+  .aliases-card {
+    background: var(--cream);
+    border: 1.5px solid var(--ink);
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 3px 3px 0 var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .aliases-card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    margin-bottom: 6px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .aliases-card-title .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .aliases-card-title.artist .dot { background: var(--basil); }
+  .aliases-card-title.title .dot { background: var(--lemon); }
+
+  .alias-pills-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .alias-pill {
+    background: var(--cream-2);
+    border: 1.5px solid var(--ink);
+    border-radius: 100px;
+    padding: 3px 9px;
+    font-size: 11px;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+  }
+
+  .alias-pill.original {
+    background: var(--basil);
+    color: var(--cream);
+  }
+
+  .alias-pill .remove {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 0 0 2px;
+    opacity: 0.7;
+    line-height: 1;
+  }
+
+  .alias-pill .remove:hover { opacity: 1; }
+
+  .alias-add-input {
+    background: transparent;
+    border: 1.5px dashed var(--cream-4);
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-soft);
+    outline: none;
+    min-width: 80px;
+    width: auto;
+  }
+
+  .alias-add-input:focus { border-color: var(--ink); border-style: solid; color: var(--ink); }
+
+  .alias-suggest {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--cream-4);
+    font-size: 10px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .alias-suggest-btn {
+    background: var(--lemon);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .alias-suggest-btn:hover { transform: translate(-1px, -1px); box-shadow: 2px 2px 0 var(--ink); }
+
+  /* Preview */
+  .preview-card {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--spritz);
+  }
+
+  .preview-play {
+    width: 32px;
+    height: 32px;
+    background: var(--spritz);
+    border: 1.5px solid var(--cream);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--cream);
+    flex-shrink: 0;
+  }
+
+  .preview-info { flex: 1; min-width: 0; line-height: 1.2; }
+
+  .preview-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--lemon);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+
+  .preview-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--cream);
+  }
+
+  .preview-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--cream-4);
+    margin-top: 1px;
+  }
+
+  /* ─── DESIGN NOTES ─── */
+  .design-notes {
+    margin-top: 50px;
+  }
+
+  .design-notes h3 {
+    font-family: 'Caprasimo', serif;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .note-item {
+    border-left: 4px solid var(--spritz);
+    padding-left: 16px;
+  }
+
+  .note-item:nth-child(2) { border-color: var(--basil); }
+  .note-item:nth-child(3) { border-color: var(--raspberry); }
+  .note-item:nth-child(4) { border-color: var(--lemon); }
+  .note-item:nth-child(5) { border-color: var(--plum); }
+  .note-item:nth-child(6) { border-color: var(--grapefruit); }
+
+  .note-item h4 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .note-item p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 1200px) {
+    .admin-app { grid-template-columns: 1fr; height: auto; }
+    .sidebar, .right-panel { border: none; border-bottom: 1.5px solid var(--cream-4); }
+    .notes-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ─── PAGE HEADER ─── -->
+  <header class="page-header">
+    <div>
+      <div class="page-subtitle">DERNIER ÉCRAN · OUTIL DE TRAVAIL</div>
+      <h1 class="page-title">L'<span class="underline">admin playlist</span> que <span class="swirl">tu utiliseras</span> chaque semaine.</h1>
+    </div>
+    <div class="page-meta">
+      <strong>INTERFACE NAVIGATEUR DESKTOP</strong><br>
+      Recherche Spotify · Édition aliases · Niveau auto<br>
+      Cohérent avec le reste — direction Pop Cocktail
+    </div>
+  </header>
+
+  <p class="intro">
+    Le dernier écran : ton <em>back-office</em> où tu prépares les playlists de tes soirées. Pas sur l'iPad, mais sur navigateur depuis ton ordi (plus confortable pour la frappe, le copier-coller, l'import). Recherche Spotify intégrée à droite, liste de morceaux au centre, sidebar des playlists existantes à gauche.
+  </p>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ─── ADMIN APP ─── -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="browser-frame">
+
+    <div class="browser-bar">
+      <div class="browser-dots">
+        <div class="browser-dot"></div>
+        <div class="browser-dot"></div>
+        <div class="browser-dot"></div>
+      </div>
+      <div class="browser-url">
+        <span class="lock">🔒</span>
+        <span>blindtest.lekomptoir.lu</span>
+        <span class="url-path">/admin/playlists/french-hits-2000-2020</span>
+      </div>
+    </div>
+
+    <div class="admin-app">
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- ─── SIDEBAR (LEFT) ─── -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <aside class="sidebar">
+
+        <div class="sidebar-brand">
+          <span class="brand-icon"></span>
+          <div class="brand-name">
+            Le <span class="komptoir">Komptoir</span>
+            <small>Admin · Blind Test</small>
+          </div>
+        </div>
+
+        <!-- Mes playlists -->
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">
+            <span>★ Mes playlists · 6</span>
+            <button class="sidebar-section-action">+</button>
+          </div>
+
+          <div class="nav-item active">
+            <div class="nav-thumb t1"></div>
+            <div class="nav-info">
+              <div class="nav-name">French Hits 2000-2020</div>
+              <div class="nav-meta">90 morceaux</div>
+            </div>
+            <div class="nav-level">
+              <div class="level-dots">
+                <div class="level-dots-row">
+                  <div class="level-dot filled spritz"></div>
+                  <div class="level-dot filled spritz"></div>
+                  <div class="level-dot filled spritz"></div>
+                </div>
+                <div class="level-dots-row">
+                  <div class="level-dot"></div>
+                  <div class="level-dot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-item">
+            <div class="nav-thumb t2"></div>
+            <div class="nav-info">
+              <div class="nav-name">Années 80 · Pop Internationale</div>
+              <div class="nav-meta">60 morceaux</div>
+            </div>
+            <div class="nav-level">
+              <div class="level-dots">
+                <div class="level-dots-row">
+                  <div class="level-dot filled basil"></div>
+                  <div class="level-dot filled basil"></div>
+                </div>
+                <div class="level-dots-row">
+                  <div class="level-dot"></div>
+                  <div class="level-dot"></div>
+                  <div class="level-dot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-item">
+            <div class="nav-thumb t3"></div>
+            <div class="nav-info">
+              <div class="nav-name">Indé Français · Expert</div>
+              <div class="nav-meta">75 morceaux</div>
+            </div>
+            <div class="nav-level">
+              <div class="level-dots">
+                <div class="level-dots-row">
+                  <div class="level-dot filled plum"></div>
+                  <div class="level-dot filled plum"></div>
+                  <div class="level-dot filled plum"></div>
+                  <div class="level-dot filled plum"></div>
+                </div>
+                <div class="level-dots-row">
+                  <div class="level-dot filled plum"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-item">
+            <div class="nav-thumb t4"></div>
+            <div class="nav-info">
+              <div class="nav-name">B.O. de films cultes</div>
+              <div class="nav-meta">50 morceaux</div>
+            </div>
+            <div class="nav-level">
+              <div class="level-dots">
+                <div class="level-dots-row">
+                  <div class="level-dot filled spritz"></div>
+                  <div class="level-dot filled spritz"></div>
+                  <div class="level-dot filled spritz"></div>
+                </div>
+                <div class="level-dots-row">
+                  <div class="level-dot"></div>
+                  <div class="level-dot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-item">
+            <div class="nav-thumb t5"></div>
+            <div class="nav-info">
+              <div class="nav-name">Hip-Hop FR Old School</div>
+              <div class="nav-meta">45 morceaux</div>
+            </div>
+            <div class="nav-level">
+              <div class="level-dots">
+                <div class="level-dots-row">
+                  <div class="level-dot filled spritz"></div>
+                  <div class="level-dot filled spritz"></div>
+                  <div class="level-dot filled spritz"></div>
+                </div>
+                <div class="level-dots-row">
+                  <div class="level-dot filled spritz"></div>
+                  <div class="level-dot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-item">
+            <div class="nav-thumb t6"></div>
+            <div class="nav-info">
+              <div class="nav-name">Tubes de l'été · Facile</div>
+              <div class="nav-meta">40 morceaux · brouillon</div>
+            </div>
+            <div class="nav-level">
+              <div class="level-dots">
+                <div class="level-dots-row">
+                  <div class="level-dot filled basil"></div>
+                  <div class="level-dot filled basil"></div>
+                </div>
+                <div class="level-dots-row">
+                  <div class="level-dot"></div>
+                  <div class="level-dot"></div>
+                  <div class="level-dot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="new-playlist-btn">
+          <span class="icon">+</span>
+          <span>Nouvelle playlist</span>
+        </button>
+
+      </aside>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- ─── MAIN COLUMN (CENTER) ─── -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <main class="main-col">
+
+        <div class="main-header">
+
+          <!-- Cover band -->
+          <div class="playlist-cover-band">
+            <div class="playlist-cover-large"></div>
+            <div class="playlist-info-block">
+              <div class="playlist-tag">★ EN COURS D'ÉDITION · BROUILLON</div>
+              <input class="playlist-title-input" value="French Hits 2000-2020">
+              <div class="playlist-meta-row">
+                <div class="meta-pill"><strong>90</strong> morceaux</div>
+                <div class="meta-pill"><strong>~45</strong> min</div>
+                <div class="meta-pill">Mis à jour <strong>aujourd'hui</strong></div>
+              </div>
+              <div class="action-row">
+                <div class="level-selector">
+                  <span class="level-label-text">NIVEAU</span>
+                  <div class="level-pill">Facile</div>
+                  <div class="level-pill active moyen">Moyen</div>
+                  <div class="level-pill">Expert</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="action-row-btn primary">
+              <span>✓</span>
+              Publier la playlist
+            </button>
+            <button class="action-row-btn">
+              <span>⎘</span>
+              Dupliquer
+            </button>
+            <button class="action-row-btn">
+              <span>↗</span>
+              Exporter
+            </button>
+            <button class="action-row-btn danger" style="margin-left: auto;">
+              <span>⊘</span>
+              Supprimer
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+          <span class="filter-bar-label">Filtre</span>
+          <div class="filter-pill active">Tous <span class="count">90</span></div>
+          <div class="filter-pill">FR <span class="count">62</span></div>
+          <div class="filter-pill">2000s <span class="count">38</span></div>
+          <div class="filter-pill">2010s <span class="count">35</span></div>
+          <div class="filter-pill">Hip-hop <span class="count">14</span></div>
+          <div class="sort-area">
+            <span class="sort-label">Tri</span>
+            <select class="sort-select">
+              <option>Ordre manuel</option>
+              <option>Plus populaire</option>
+              <option>Année (récent)</option>
+              <option>Aléatoire</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Track list -->
+        <div class="track-list">
+
+          <div class="track-list-header">
+            <span></span>
+            <span></span>
+            <span>Morceau</span>
+            <span>Année</span>
+            <span>Genre</span>
+            <span>Pop.</span>
+            <span></span>
+          </div>
+
+          <div class="track-row selected">
+            <div class="track-row-num">12</div>
+            <div class="track-row-cover c1"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">Stromae</div>
+              <div class="track-row-title">Alors on Danse</div>
+            </div>
+            <div class="track-row-year">2009</div>
+            <div class="track-row-genre">Hip-hop FR</div>
+            <div>
+              <div class="track-row-popularity">82</div>
+              <div class="pop-bar"><div class="pop-bar-fill high" style="width: 82%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+          <div class="track-row">
+            <div class="track-row-num">13</div>
+            <div class="track-row-cover c2"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">Daft Punk</div>
+              <div class="track-row-title">Around the World</div>
+            </div>
+            <div class="track-row-year">1997</div>
+            <div class="track-row-genre">Electro / Dance</div>
+            <div>
+              <div class="track-row-popularity">79</div>
+              <div class="pop-bar"><div class="pop-bar-fill high" style="width: 79%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+          <div class="track-row">
+            <div class="track-row-num">14</div>
+            <div class="track-row-cover c3"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">Indochine</div>
+              <div class="track-row-title">L'aventurier</div>
+            </div>
+            <div class="track-row-year">1982</div>
+            <div class="track-row-genre">Rock FR</div>
+            <div>
+              <div class="track-row-popularity">68</div>
+              <div class="pop-bar"><div class="pop-bar-fill mid" style="width: 68%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+          <div class="track-row">
+            <div class="track-row-num">15</div>
+            <div class="track-row-cover c4"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">Mylène Farmer</div>
+              <div class="track-row-title">Désenchantée</div>
+            </div>
+            <div class="track-row-year">1991</div>
+            <div class="track-row-genre">Pop FR</div>
+            <div>
+              <div class="track-row-popularity">71</div>
+              <div class="pop-bar"><div class="pop-bar-fill mid" style="width: 71%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+          <div class="track-row">
+            <div class="track-row-num">16</div>
+            <div class="track-row-cover c5"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">Orelsan</div>
+              <div class="track-row-title">Basique</div>
+            </div>
+            <div class="track-row-year">2017</div>
+            <div class="track-row-genre">Hip-hop FR</div>
+            <div>
+              <div class="track-row-popularity">85</div>
+              <div class="pop-bar"><div class="pop-bar-fill high" style="width: 85%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+          <div class="track-row">
+            <div class="track-row-num">17</div>
+            <div class="track-row-cover c6"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">Téléphone</div>
+              <div class="track-row-title">Cendrillon</div>
+            </div>
+            <div class="track-row-year">1982</div>
+            <div class="track-row-genre">Rock FR</div>
+            <div>
+              <div class="track-row-popularity">64</div>
+              <div class="pop-bar"><div class="pop-bar-fill mid" style="width: 64%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+          <div class="track-row">
+            <div class="track-row-num">18</div>
+            <div class="track-row-cover c7"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">Christine and the Queens</div>
+              <div class="track-row-title">Christine</div>
+            </div>
+            <div class="track-row-year">2014</div>
+            <div class="track-row-genre">Pop FR</div>
+            <div>
+              <div class="track-row-popularity">58</div>
+              <div class="pop-bar"><div class="pop-bar-fill mid" style="width: 58%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+          <div class="track-row">
+            <div class="track-row-num">19</div>
+            <div class="track-row-cover c8"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">M.</div>
+              <div class="track-row-title">Mojo</div>
+            </div>
+            <div class="track-row-year">2003</div>
+            <div class="track-row-genre">Pop FR</div>
+            <div>
+              <div class="track-row-popularity">42</div>
+              <div class="pop-bar"><div class="pop-bar-fill low" style="width: 42%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+          <div class="track-row">
+            <div class="track-row-num">20</div>
+            <div class="track-row-cover c2"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">Vianney</div>
+              <div class="track-row-title">Pas là</div>
+            </div>
+            <div class="track-row-year">2014</div>
+            <div class="track-row-genre">Variété FR</div>
+            <div>
+              <div class="track-row-popularity">73</div>
+              <div class="pop-bar"><div class="pop-bar-fill mid" style="width: 73%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+          <div class="track-row">
+            <div class="track-row-num">21</div>
+            <div class="track-row-cover c3"></div>
+            <div class="track-row-info">
+              <div class="track-row-artist">Angèle</div>
+              <div class="track-row-title">Balance ton quoi</div>
+            </div>
+            <div class="track-row-year">2019</div>
+            <div class="track-row-genre">Pop FR</div>
+            <div>
+              <div class="track-row-popularity">80</div>
+              <div class="pop-bar"><div class="pop-bar-fill high" style="width: 80%"></div></div>
+            </div>
+            <div class="track-row-actions">
+              <button class="track-action-btn preview" title="Écouter">▶</button>
+              <button class="track-action-btn remove" title="Retirer">×</button>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- ─── RIGHT PANEL ─── -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <aside class="right-panel">
+
+        <div class="right-tabs">
+          <div class="right-tab"><span class="icon">🔍</span>Recherche</div>
+          <div class="right-tab active"><span class="icon">✎</span>Détails</div>
+        </div>
+
+        <!-- Detail panel for selected track -->
+        <div class="detail-panel">
+
+          <!-- Cover row -->
+          <div class="detail-cover-row">
+            <div class="detail-cover"></div>
+            <div class="detail-info">
+              <div class="detail-artist">Stromae</div>
+              <div class="detail-title">Alors on Danse</div>
+            </div>
+          </div>
+
+          <!-- Meta grid -->
+          <div class="detail-meta-grid">
+            <div class="detail-meta-item">
+              <div class="detail-meta-label">Année</div>
+              <div class="detail-meta-value">2009</div>
+            </div>
+            <div class="detail-meta-item">
+              <div class="detail-meta-label">Album</div>
+              <div class="detail-meta-value">Cheese</div>
+            </div>
+            <div class="detail-meta-item">
+              <div class="detail-meta-label">Genre</div>
+              <div class="detail-meta-value">Hip-hop FR</div>
+            </div>
+            <div class="detail-meta-item">
+              <div class="detail-meta-label">Popularité</div>
+              <div class="detail-meta-value">82 / 100</div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-card" style="margin-bottom: 18px;">
+            <div class="preview-play">▶</div>
+            <div class="preview-info">
+              <div class="preview-label">EXTRAIT 30s</div>
+              <div class="preview-name">Spotify Web Playback</div>
+              <div class="preview-duration">0:00 / 0:30</div>
+            </div>
+          </div>
+
+          <!-- Aliases ARTISTE -->
+          <div class="aliases-section">
+            <div class="aliases-section-header">
+              <div class="aliases-section-title">Réponses acceptées</div>
+              <div class="aliases-section-help">+150 / +75 / +50 pts</div>
+            </div>
+
+            <div class="aliases-card">
+              <div class="aliases-card-title artist">
+                <span class="dot"></span>
+                ARTISTE
+              </div>
+              <div class="alias-pills-wrap">
+                <span class="alias-pill original">Stromae</span>
+                <span class="alias-pill">stromaé <button class="remove">×</button></span>
+                <span class="alias-pill">Paul Van Haver <button class="remove">×</button></span>
+                <input class="alias-add-input" placeholder="+ ajouter un alias…">
+              </div>
+              <div class="alias-suggest">
+                <span>★</span>
+                <span>Whisper suggère :</span>
+                <button class="alias-suggest-btn">+ stromaye</button>
+                <button class="alias-suggest-btn">+ stromay</button>
+              </div>
+            </div>
+
+            <div class="aliases-card">
+              <div class="aliases-card-title title">
+                <span class="dot"></span>
+                TITRE <span style="color: var(--ink-soft); font-style: italic; font-family: 'Fraunces', serif; text-transform: none; letter-spacing: 0; font-size: 9px; margin-left: 4px;">bonus +50 pts</span>
+              </div>
+              <div class="alias-pills-wrap">
+                <span class="alias-pill original">Alors on Danse</span>
+                <span class="alias-pill">alors on dance <button class="remove">×</button></span>
+                <input class="alias-add-input" placeholder="+ ajouter un alias…">
+              </div>
+            </div>
+          </div>
+
+          <!-- Save indicator -->
+          <div style="text-align: center; font-family: 'Fraunces', serif; font-style: italic; font-size: 11px; color: var(--basil-deep); padding: 8px; background: rgba(74, 139, 63, 0.08); border-radius: 8px; border: 1px dashed var(--basil);">
+            ✓ Modifications enregistrées automatiquement
+          </div>
+
+        </div>
+
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- ─── DESIGN NOTES ─── -->
+  <div class="design-notes">
+    <h3>Comment l'admin de playlist fonctionne</h3>
+    <div class="notes-grid">
+      <div class="note-item">
+        <h4>3 colonnes claires</h4>
+        <p>Sidebar gauche pour naviguer entre tes playlists existantes (avec niveau visualisé en dots colorés). Centre = la liste de morceaux de la playlist active. Droite = détail du morceau sélectionné OU recherche Spotify (toggle par onglets).</p>
+      </div>
+      <div class="note-item">
+        <h4>Niveau auto-calculé</h4>
+        <p>Le niveau (Facile / Moyen / Expert) est calculé à partir de la moyenne des scores de popularité Spotify des morceaux. Tu peux surcharger manuellement via les pills colorés en haut. Pratique : tu vois en un coup d'œil quels morceaux tirent vers le bas (popularité &lt; 60).</p>
+      </div>
+      <div class="note-item">
+        <h4>Édition des aliases en pills</h4>
+        <p>Pour chaque morceau, deux cartes : ARTISTE (vert basilic, +150 pts) et TITRE (jaune citron, bonus +50). Les aliases sont en pills supprimables. L'alias "officiel" en vert plein, les autres en cream. Tap dans le champ pour en ajouter, suppression au "×".</p>
+      </div>
+      <div class="note-item">
+        <h4>Whisper suggère des aliases</h4>
+        <p>Détail clé : Whisper a sa propre idée de comment "Stromae" peut être prononcé. Le système suggère "stromaye / stromay" comme aliases probables — un tap pour les ajouter. Après quelques soirées, le système apprend des erreurs récurrentes et propose des aliases pertinents.</p>
+      </div>
+      <div class="note-item">
+        <h4>Recherche Spotify intégrée</h4>
+        <p>Onglet "Recherche" à droite : barre de recherche avec preview 30s, ajout en un tap (bouton vert "+"). Section "Quick imports" en bas pour importer une playlist Spotify entière par URL, ou copier d'une playlist existante.</p>
+      </div>
+      <div class="note-item">
+        <h4>Filtres + tri en bandeau</h4>
+        <p>Au-dessus de la liste, des pills de filtre (FR / 2000s / Hip-hop…) auto-générées à partir des morceaux présents. Tri par popularité, année, ou ordre manuel (drag & drop pour réorganiser). Sauvegarde auto.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Tab toggle (right panel)
+  document.querySelectorAll('.right-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      t.parentElement.querySelectorAll('.right-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+
+  // Track row select
+  document.querySelectorAll('.track-row').forEach(r => {
+    r.addEventListener('click', (e) => {
+      if (e.target.closest('.track-action-btn')) return;
+      document.querySelectorAll('.track-row').forEach(x => x.classList.remove('selected'));
+      r.classList.add('selected');
+    });
+  });
+
+  // Level pill toggle
+  document.querySelectorAll('.level-selector').forEach(g => {
+    const colors = ['facile', 'moyen', 'expert'];
+    g.querySelectorAll('.level-pill').forEach(p => {
+      p.addEventListener('click', () => {
+        g.querySelectorAll('.level-pill').forEach(x => {
+          x.classList.remove('active', ...colors);
+        });
+        const text = p.textContent.toLowerCase();
+        p.classList.add('active');
+        if (text === 'facile') p.classList.add('facile');
+        else if (text === 'moyen') p.classList.add('moyen');
+        else if (text === 'expert') p.classList.add('expert');
+      });
+    });
+  });
+
+  // Filter pill
+  document.querySelectorAll('.filter-bar .filter-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      p.parentElement.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+    });
+  });
+
+  // Sidebar nav
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+      n.classList.add('active');
+    });
+  });
+
+  // Alias remove
+  document.querySelectorAll('.alias-pill .remove').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      b.parentElement.remove();
+    });
+  });
+
+  // Alias suggest add
+  document.querySelectorAll('.alias-suggest-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const text = b.textContent.replace('+ ', '');
+      const wrap = b.closest('.aliases-card').querySelector('.alias-pills-wrap');
+      const input = wrap.querySelector('.alias-add-input');
+      const pill = document.createElement('span');
+      pill.className = 'alias-pill';
+      pill.innerHTML = `${text} <button class="remove">×</button>`;
+      pill.querySelector('.remove').addEventListener('click', (e) => {
+        e.stopPropagation();
+        pill.remove();
+      });
+      wrap.insertBefore(pill, input);
+      b.remove();
+    });
+  });
+</script>
+
+</body>
+</html>
