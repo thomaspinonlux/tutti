@@ -1,17 +1,16 @@
 /**
  * <OAuthProviders /> — boutons de connexion via providers OAuth.
  *
- * V1 : email/password seul. Aucun provider activé.
- * V2 (commercialisation) : Google OAuth.
- * Apple OAuth : pas prévu (compte Apple Developer 99$/an, dispro pour le test).
+ * V1 : email/password seul. Tous les providers ont `enabled: false`.
+ * V2 (commercialisation) : passer Google à `enabled: true` après avoir
+ *   activé le provider dans le dashboard Supabase.
  *
- * Pour activer Google plus tard :
- *   1. Activer le provider dans le dashboard Supabase + configurer client_id
- *   2. Ajouter `{ id: 'google', label: 'Google', enabled: true }` à PROVIDERS
- *   3. La logique de redirect OAuth + initialize est déjà en place
+ * Apple OAuth : pas dans la liste — compte Apple Developer 99$/an
+ *   disproportionné pour le test V1. À ajouter manuellement si pertinent.
  *
  * Architecture : zéro modification du flow auth/initialize côté backend
- * pour ajouter un provider — le hook `useOAuthSignIn` est agnostique.
+ * pour activer un provider — il suffit de basculer le booléen `enabled`
+ * et de configurer le provider dans Supabase.
  */
 
 import type { Provider } from '@supabase/supabase-js';
@@ -20,12 +19,12 @@ import { supabase } from '../../lib/supabase.js';
 interface OAuthProvider {
   id: Provider;
   label: string;
+  /** Si false : non affiché. Pour activer = true + config Supabase dashboard. */
   enabled: boolean;
 }
 
 const PROVIDERS: OAuthProvider[] = [
-  // À activer en V2 :
-  // { id: 'google', label: 'Continuer avec Google', enabled: true },
+  { id: 'google', label: 'Continuer avec Google', enabled: false },
 ];
 
 interface Props {
