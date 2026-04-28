@@ -1,0 +1,352 @@
+// Tutti — Schéma Prisma (multi-tenant strict)
+//
+// Convention: les colonnes en base sont en snake_case (via @map).
+// Les modèles côté Prisma utilisent les noms du Document 02-ARCHITECTURE.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  WORKSPACES (entité de facturation)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Workspace {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  plan       Plan      @default(FREE)
+  expires_at DateTime? @db.Timestamptz(6)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime  @updatedAt @db.Timestamptz(6)
+
+  members           WorkspaceMember[]
+  establishments    Establishment[]
+  music_credentials MusicProviderCredential[]
+
+  @@map("workspaces")
+}
+
+enum Plan {
+  FREE
+  PAY_PER_NIGHT
+  MONTHLY
+
+  @@map("plan")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  WORKSPACE_MEMBERS (lien auth.users ↔ workspace, avec rôle)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model WorkspaceMember {
+  id           String   @id @default(uuid()) @db.Uuid
+  workspace_id String   @db.Uuid
+  user_id      String   @db.Uuid // référence auth.users.id (Supabase Auth)
+  role         Role     @default(HOST)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([workspace_id, user_id])
+  @@index([user_id])
+  @@map("workspace_members")
+}
+
+enum Role {
+  OWNER
+  HOST
+  ANIMATOR
+
+  @@map("role")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  ESTABLISHMENTS (lieu physique ou thème)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Establishment {
+  id               String   @id @default(uuid()) @db.Uuid
+  workspace_id     String   @db.Uuid
+  name             String
+  branding_logo    String?
+  branding_color   String?
+  default_language String   @default("fr") @db.VarChar(8)
+  active_provider  String   @default("demo") @db.VarChar(32)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace     Workspace     @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  playlists     Playlist[]
+  question_sets QuestionSet[]
+  sessions      Session[]
+
+  @@index([workspace_id])
+  @@map("establishments")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  MUSIC_PROVIDER_CREDENTIALS (tokens OAuth, stockés chiffrés)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MusicProviderCredential {
+  id            String    @id @default(uuid()) @db.Uuid
+  workspace_id  String    @db.Uuid
+  provider      String    @db.VarChar(32) // "spotify", "deezer", "apple_music"
+  access_token  String // chiffré (pgcrypto, voir migration RLS/encryption)
+  refresh_token String?
+  expires_at    DateTime? @db.Timestamptz(6)
+  account_email String?
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([workspace_id, provider])
+  @@map("music_provider_credentials")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  PLAYLISTS (Tutti Tracks)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Playlist {
+  id               String   @id @default(uuid()) @db.Uuid
+  establishment_id String   @db.Uuid
+  name             String
+  cover_url        String?
+  level            Level    @default(MEDIUM)
+  language         String   @default("fr") @db.VarChar(8)
+  is_published     Boolean  @default(false)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @updatedAt @db.Timestamptz(6)
+
+  establishment Establishment @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
+  tracks        Track[]
+
+  @@index([establishment_id])
+  @@map("playlists")
+}
+
+enum Level {
+  EASY
+  MEDIUM
+  EXPERT
+
+  @@map("level")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  TRACKS (morceaux dans une playlist)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Track {
+  id                String   @id @default(uuid()) @db.Uuid
+  playlist_id       String   @db.Uuid
+  position          Int
+  provider          String   @db.VarChar(32) // "spotify", "demo"
+  provider_track_id String   @db.VarChar(128)
+  artist            String
+  title             String
+  album             String?
+  year              Int?
+  genre             String?
+  popularity        Int? // 0-100, score Spotify
+  duration_ms       Int?
+  cover_url         String?
+  artist_aliases    String[] @default([]) // strings normalisées pour fuzzy match
+  title_aliases     String[] @default([])
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+
+  playlist Playlist @relation(fields: [playlist_id], references: [id], onDelete: Cascade)
+
+  @@index([playlist_id, position])
+  @@map("tracks")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  QUESTION_SETS (Tutti Quizz — packs de questions)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model QuestionSet {
+  id               String   @id @default(uuid()) @db.Uuid
+  establishment_id String?  @db.Uuid // null = pack générique partagé
+  name             String
+  description      String?
+  cover_url        String?
+  is_bilingual     Boolean  @default(false)
+  language_1       String   @default("fr") @db.VarChar(8)
+  language_2       String?  @db.VarChar(8)
+  is_generic       Boolean  @default(false)
+  is_published     Boolean  @default(false)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+
+  establishment Establishment? @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
+  questions     Question[]
+
+  @@index([establishment_id])
+  @@map("question_sets")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  QUESTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Question {
+  id             String       @id @default(uuid()) @db.Uuid
+  set_id         String       @db.Uuid
+  position       Int
+  type           QuestionType
+  category       String?
+  text_lang1     String
+  text_lang2     String?
+  choices_lang1  String[]     @default([])
+  choices_lang2  String[]     @default([])
+  answer_lang1   String
+  answer_lang2   String?
+  time_limit_sec Int          @default(30)
+  points         Int          @default(100)
+  media_type     MediaType    @default(NONE)
+  media_url      String?
+  created_at     DateTime     @default(now()) @db.Timestamptz(6)
+
+  set QuestionSet @relation(fields: [set_id], references: [id], onDelete: Cascade)
+
+  @@index([set_id, position])
+  @@map("questions")
+}
+
+enum QuestionType {
+  MCQ
+  TRUE_FALSE
+  FREE_TEXT
+  ESTIMATION
+
+  @@map("question_type")
+}
+
+enum MediaType {
+  NONE
+  VIDEO
+  AUDIO
+  IMAGE
+
+  @@map("media_type")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SESSIONS (instance de jeu)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Session {
+  id               String        @id @default(uuid()) @db.Uuid
+  establishment_id String        @db.Uuid
+  game_type        GameType
+  status           SessionStatus @default(WAITING)
+  short_code       String        @unique @db.VarChar(16) // "KOMP-7K2X"
+  mode             GameMode      @default(SOLO)
+  teams_config     Json? // [{id, name, color, ...}]
+  language         String        @default("fr") @db.VarChar(8)
+  playlist_id      String?       @db.Uuid
+  question_set_id  String?       @db.Uuid
+  current_index    Int           @default(0)
+  created_at       DateTime      @default(now()) @db.Timestamptz(6)
+  started_at       DateTime?     @db.Timestamptz(6)
+  ended_at         DateTime?     @db.Timestamptz(6)
+
+  establishment Establishment @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
+  participants  Participant[]
+  score_events  ScoreEvent[]
+
+  @@index([short_code])
+  @@index([establishment_id])
+  @@map("sessions")
+}
+
+enum GameType {
+  TRACKS
+  QUIZZ
+
+  @@map("game_type")
+}
+
+enum GameMode {
+  SOLO
+  TEAMS
+
+  @@map("game_mode")
+}
+
+enum SessionStatus {
+  WAITING
+  PLAYING
+  ENDED
+
+  @@map("session_status")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  PARTICIPANTS (joueurs anonymes connectés à une session)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Participant {
+  id          String   @id @default(uuid()) @db.Uuid
+  session_id  String   @db.Uuid
+  pseudo      String   @db.VarChar(64)
+  team_id     String?  @db.Uuid // référence à teams_config[].id (côté Json)
+  is_master   Boolean  @default(false)
+  is_kicked   Boolean  @default(false)
+  fingerprint String? // empreinte navigateur pour anti-spam
+  joined_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  session      Session      @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  score_events ScoreEvent[]
+
+  @@index([session_id])
+  @@map("participants")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SCORE_EVENTS (journal d'audit complet de la partie)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ScoreEvent {
+  id               String         @id @default(uuid()) @db.Uuid
+  session_id       String         @db.Uuid
+  participant_id   String         @db.Uuid
+  team_id          String?        @db.Uuid
+  round_index      Int
+  type             ScoreEventType
+  points           Int // peut être négatif
+  buzz_time_ms     Int? // pour TRACKS
+  match_artist     Boolean? // pour TRACKS
+  match_title      Boolean? // pour TRACKS
+  voice_transcript String? // ce que Whisper a entendu (TRACKS)
+  answer           String? // pour QUIZZ
+  reason           String? // "voice_validation", "tech_bug", "fair_play", "cheating"
+  is_public        Boolean        @default(true)
+  applied_by       String?        @db.Uuid // user_id de l'host qui a appliqué l'ajustement
+  created_at       DateTime       @default(now()) @db.Timestamptz(6)
+
+  session     Session     @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id, round_index])
+  @@index([participant_id])
+  @@map("score_events")
+}
+
+enum ScoreEventType {
+  ARTIST_FOUND
+  TITLE_BONUS
+  MVP_BONUS
+  CORRECT_ANSWER
+  SPEED_BONUS
+  MANUAL_ADJUSTMENT
+
+  @@map("score_event_type")
+}

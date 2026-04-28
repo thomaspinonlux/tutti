@@ -16,6 +16,8 @@ import express from 'express';
 import cors from 'cors';
 import { Server as SocketIOServer } from 'socket.io';
 import type { HealthResponse } from '@tutti/shared';
+import workspacesRouter from './routes/workspaces.js';
+import { prisma } from './lib/prisma.js';
 
 const PORT = Number(process.env.PORT ?? 3001);
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
@@ -36,15 +38,25 @@ app.use(express.json({ limit: '1mb' }));
 
 // ───── Routes ─────────────────────────────────────────────────────────────
 
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res) => {
+  // Vérification rapide DB pour le health check (timeout court).
+  let dbStatus: 'ok' | 'down' = 'ok';
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch {
+    dbStatus = 'down';
+  }
+
   const response: HealthResponse = {
-    status: 'ok',
+    status: dbStatus === 'ok' ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     version: '0.0.1',
   };
   res.json(response);
 });
+
+app.use('/api/workspaces', workspacesRouter);
 
 // 404 par défaut
 app.use((_req, res) => {
@@ -81,8 +93,10 @@ const shutdown = (signal: string): void => {
   console.info(`[tutti-backend] signal ${signal} reçu — arrêt en cours...`);
   io.close();
   httpServer.close(() => {
-    console.info('[tutti-backend] arrêté proprement');
-    process.exit(0);
+    void prisma.$disconnect().finally(() => {
+      console.info('[tutti-backend] arrêté proprement');
+      process.exit(0);
+    });
   });
 };
 
