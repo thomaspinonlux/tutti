@@ -58,9 +58,17 @@ Voir `backend/.env.example` et `frontend/.env.example`.
 
 **Ne JAMAIS committer** les vrais fichiers `.env*` ni `credentials.env.local`.
 
+## Production
+
+- **Frontend** : https://tutti-brown.vercel.app
+- **Backend** : https://accomplished-embrace-production-1807.up.railway.app
+- **Repo** : https://github.com/thomaspinonlux/tutti
+
+Tout commit poussé sur `main` redéploie automatiquement les deux services.
+
 ## Avancement V1
 
-- [x] Étape 1 — Setup repo + Hello World + déploiement auto
+- [x] **Étape 1 — Setup repo + Hello World + déploiement auto** ✅ (validé le 2026-04-29)
 - [ ] Étape 2 — Base de données et schéma Prisma
 - [ ] Étape 3 — Authentification utilisateurs
 - [ ] Étape 4 — Internationalisation (FR + EN)
