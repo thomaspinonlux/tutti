@@ -94,7 +94,7 @@ Tout commit poussé sur `main` redéploie automatiquement les deux services.
 - [x] **Étape 3 — Authentification utilisateurs (email/password Supabase)** ✅ (validé le 2026-04-29)
 - [x] **Étape 4 — Internationalisation (FR + EN)** ✅ (validé le 2026-04-29)
 - [x] **Étape 5 — Direction visuelle Pop Cocktail** ✅ (validé le 2026-04-29)
-- [ ] Étape 6 — Page d'accueil host + choix du jeu
+- [x] **Étape 6 — Page d'accueil host + sidebar + paramètres établissement** ✅ (validé le 2026-04-29)
 - [ ] Étape 7 — Module Music Provider (Demo + Spotify)
 - [ ] Étape 8 — Création et édition de playlists Tutti Tracks
 - [ ] Étape 9 — Configuration de session + salle d'attente
