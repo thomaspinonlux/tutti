@@ -12,9 +12,12 @@ import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { AccountPage } from './pages/admin/AccountPage.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 
-// Lazy : chunk uniquement chargé en dev (route absente en prod).
+// Lazy : chunks dédiés aux pages volumineuses
 const DesignSystemPage = lazy(() =>
   import('./pages/DesignSystemPage.js').then((m) => ({ default: m.DesignSystemPage })),
+);
+const PlaylistEditPage = lazy(() =>
+  import('./pages/admin/PlaylistEditPage.js').then((m) => ({ default: m.PlaylistEditPage })),
 );
 
 function App(): JSX.Element {
@@ -42,6 +45,14 @@ function App(): JSX.Element {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="tracks" element={<TracksPage />} />
+          <Route
+            path="tracks/:id"
+            element={
+              <Suspense fallback={null}>
+                <PlaylistEditPage />
+              </Suspense>
+            }
+          />
           <Route path="quizz" element={<QuizzPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="account" element={<AccountPage />} />

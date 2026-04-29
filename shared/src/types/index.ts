@@ -75,3 +75,44 @@ export interface ProviderInfo {
   id: MusicProviderId;
   capabilities: ProviderCapabilities;
 }
+
+// ───── Playlists Tutti Tracks (étape 8+) ──────────────────────────────────
+
+export type Level = 'EASY' | 'MEDIUM' | 'EXPERT';
+
+export interface Playlist {
+  id: string;
+  establishment_id: string;
+  name: string;
+  cover_url: string | null;
+  level: Level;
+  language: string;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  /** Comptage léger renvoyé par l'API liste (sans inclure les tracks). */
+  tracks_count?: number;
+}
+
+export interface Track {
+  id: string;
+  playlist_id: string;
+  position: number;
+  provider: MusicProviderId;
+  provider_track_id: string;
+  artist: string;
+  title: string;
+  album: string | null;
+  year: number | null;
+  genre: string | null;
+  popularity: number | null;
+  duration_ms: number | null;
+  cover_url: string | null;
+  artist_aliases: string[];
+  title_aliases: string[];
+  created_at: string;
+}
+
+export interface PlaylistWithTracks extends Playlist {
+  tracks: Track[];
+}
