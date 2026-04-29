@@ -150,7 +150,16 @@
     "waitingMessage": "Hang tight — the host will start the game soon.",
     "participantsConnected": "players connected",
     "gameStarting": "Here we go!",
-    "gameStartingHint": "First round coming up…"
+    "gameStartingHint": "First round coming up…",
+    "endedTitle": "Game over!",
+    "endedHint": "Thanks for playing — see you next time."
+  },
+  "connection": {
+    "connected": "Connected",
+    "reconnecting": "Reconnecting…",
+    "offline": "Offline",
+    "toastReconnected": "Reconnected ✓",
+    "toastMissedRound": "You missed round {{round}} — here's the next one."
   },
   "quizz": {
     "title": "Tutti Quizz",

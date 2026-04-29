@@ -150,7 +150,16 @@
     "waitingMessage": "Patience, ça va démarrer dès que l'animateur lance la partie.",
     "participantsConnected": "joueurs connectés",
     "gameStarting": "C'est parti !",
-    "gameStartingHint": "La première manche arrive…"
+    "gameStartingHint": "La première manche arrive…",
+    "endedTitle": "Partie terminée !",
+    "endedHint": "Merci d'avoir joué — à la prochaine."
+  },
+  "connection": {
+    "connected": "Connecté",
+    "reconnecting": "Reconnexion en cours…",
+    "offline": "Hors ligne",
+    "toastReconnected": "Reconnecté ✓",
+    "toastMissedRound": "Tu as manqué la manche {{round}} — voici la suivante."
   },
   "quizz": {
     "title": "Tutti Quizz",

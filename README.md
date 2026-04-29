@@ -56,6 +56,10 @@ pnpm format       # Formatage Prettier
 
 Toutes les règles (breakpoints, comportement par route, cibles tactiles, checklist) sont dans **[`docs/RESPONSIVE.md`](docs/RESPONSIVE.md)**.
 
+## Résilience joueur (pages `/play`)
+
+Persistance d'identité, reconnexion auto Socket.IO, Wake Lock, indicateur visuel : voir **[`docs/PLAYER_RESILIENCE.md`](docs/PLAYER_RESILIENCE.md)**. Non négociable pour une vraie soirée au bar.
+
 **TL;DR** :
 
 - Mobile-first systématique (≥ 360 px).
