@@ -200,6 +200,40 @@ export async function postBuzz(
 
 // ───── Master actions (mode B — joueur master pilote depuis son tel) ─────
 
+export interface MasterPlaylistEntry {
+  id: string;
+  name: string;
+  description: string | null;
+  cover_url: string | null;
+  level: string;
+  language: string;
+  is_express: boolean;
+  is_official_tutti: boolean;
+  tracks_count: number;
+}
+
+export async function masterListScores(
+  sessionId: string,
+  token: string,
+): Promise<CumulativeScore[]> {
+  const data = await api<{ cumulative: CumulativeScore[] }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/master/scores`,
+    { method: 'POST', body: { token }, anonymous: true },
+  );
+  return data.cumulative;
+}
+
+export async function masterListPlaylists(
+  sessionId: string,
+  token: string,
+): Promise<MasterPlaylistEntry[]> {
+  const data = await api<{ playlists: MasterPlaylistEntry[] }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/master/playlists`,
+    { method: 'POST', body: { token }, anonymous: true },
+  );
+  return data.playlists;
+}
+
 export async function masterNextTrack(
   sessionId: string,
   roundId: string,

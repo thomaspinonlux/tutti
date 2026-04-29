@@ -26,7 +26,22 @@ import type {
   SessionWithParticipants,
   Team,
 } from '@tutti/shared';
-import { getPublicSession, joinSession, postAnswer, postBuzz } from '../lib/sessions.js';
+import {
+  getPublicSession,
+  joinSession,
+  masterAdjustPoints,
+  masterEndSession,
+  masterListScores,
+  masterNextTrack,
+  masterPause,
+  masterPickRound,
+  masterResume,
+  masterReveal,
+  masterSkipTrack,
+  postAnswer,
+  postBuzz,
+} from '../lib/sessions.js';
+import type { CumulativeScore } from '@tutti/shared';
 import {
   clearParticipantContext,
   connectAsParticipant,
@@ -44,6 +59,12 @@ import { useWakeLock } from '../lib/useWakeLock.js';
 import { ConnectionIndicator } from '../components/ConnectionIndicator.js';
 import { OnboardingScreen } from '../components/play/OnboardingScreen.js';
 import { MicPermissionErrorScreen } from '../components/play/MicPermissionErrorScreen.js';
+import { MasterMenu } from '../components/play/MasterMenu.js';
+import { MasterPlaylistPicker } from '../components/play/MasterPlaylistPicker.js';
+import {
+  MasterAdjustPointsSheet,
+  type ParticipantOption,
+} from '../components/play/MasterAdjustPointsSheet.js';
 import {
   Badge,
   Button,
@@ -88,9 +109,17 @@ export function PlayPage(): JSX.Element {
   const [currentRound, setCurrentRound] = useState<SessionRoundWithPlaylist | null>(null);
   const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
   const [lastResult, setLastResult] = useState<BuzzResult | null>(null);
+  const [lastReveal, setLastReveal] = useState<{ artist: string; title: string } | null>(null);
   const [myScore, setMyScore] = useState(0);
   const [micRequesting, setMicRequesting] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Master mode (mode B uniquement) : flag is_master + état de pause
+  const [isMaster, setIsMaster] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [masterPickerOpen, setMasterPickerOpen] = useState(false);
+  const [adjustSheetOpen, setAdjustSheetOpen] = useState(false);
+  const [participantsList, setParticipantsList] = useState<Participant[]>([]);
+  const [cumulative, setCumulative] = useState<CumulativeScore[]>([]);
   const hadConnectionRef = useRef(false);
 
   const teams = useMemo<Team[]>(
@@ -100,6 +129,15 @@ export function PlayPage(): JSX.Element {
 
   // Wake Lock pendant la lecture
   useWakeLock(step === 'playing');
+
+  // Master : récupère la cumulative quand on ouvre l'ajustement (et on est
+  // master). Évite d'afficher "0 pts" partout.
+  useEffect(() => {
+    if (!adjustSheetOpen || !identity || !isMaster) return;
+    void masterListScores(identity.sessionId, identity.token)
+      .then(setCumulative)
+      .catch(() => {});
+  }, [adjustSheetOpen, identity, isMaster]);
 
   // ── Bootstrap : récupère la session publique + auto-resume éventuel ──
   useEffect(() => {
@@ -156,8 +194,13 @@ export function PlayPage(): JSX.Element {
           }
           if (resp.session) {
             setParticipantsCount(resp.session.participants.length);
+            setParticipantsList(resp.session.participants);
             const playing = resp.session.rounds.find((r) => r.status === 'PLAYING');
             setCurrentRound(playing ?? null);
+            // Récupère mon flag is_master courant (mode B) + état pause
+            const me = resp.session.participants.find((p) => p.id === identity.participantId);
+            setIsMaster(me?.is_master ?? false);
+            setIsPaused(resp.session.is_paused ?? false);
             if (resp.session.status === 'PLAYING') setStep('playing');
             else if (resp.session.status === 'ENDED') {
               clearParticipantContext(shortCode);
@@ -177,7 +220,10 @@ export function PlayPage(): JSX.Element {
       );
     });
 
-    sock.on('participant:joined', () => setParticipantsCount((c) => c + 1));
+    sock.on('participant:joined', ({ participant }: { participant: Participant }) => {
+      setParticipantsCount((c) => c + 1);
+      setParticipantsList((prev) => [...prev, participant]);
+    });
     sock.on('participant:kicked', ({ participant }: { participant: Participant }) => {
       if (participant.id === identity.participantId) {
         clearParticipantContext(shortCode);
@@ -186,8 +232,27 @@ export function PlayPage(): JSX.Element {
         setStep('pseudo');
       } else {
         setParticipantsCount((c) => Math.max(0, c - 1));
+        setParticipantsList((prev) => prev.filter((p) => p.id !== participant.id));
       }
     });
+    sock.on(
+      'participant:master_changed',
+      ({ participant, is_master }: { participant: Participant; is_master: boolean }) => {
+        // Backend démasterise tous les autres en transaction.
+        setParticipantsList((prev) =>
+          prev.map((p) =>
+            p.id === participant.id ? { ...p, is_master } : { ...p, is_master: false },
+          ),
+        );
+        // Maj de mon propre flag
+        if (participant.id === identity.participantId) {
+          setIsMaster(is_master);
+        } else if (is_master) {
+          // Quelqu'un d'autre vient d'être nommé master → je perds le statut
+          setIsMaster(false);
+        }
+      },
+    );
     sock.on('session:started', () => setStep('playing'));
     sock.on('session:ended', () => {
       clearParticipantContext(shortCode);
@@ -230,10 +295,44 @@ export function PlayPage(): JSX.Element {
     );
     sock.on('buzz:result', (result: BuzzResult) => {
       setLastResult(result);
+      setLastReveal(null);
       setCurrentTrack((prev) => (prev ? { ...prev, phase: 'cooldown' } : prev));
       if (result.participant_id === identity.participantId) {
         setMyScore((prev) => prev + result.total_points);
       }
+    });
+    sock.on(
+      'track:revealed',
+      ({
+        artist,
+        title,
+      }: {
+        round_id: string;
+        track_index: number;
+        artist: string;
+        title: string;
+      }) => {
+        // Master a appuyé sur "Réponse" — pas de buzz, pas de score, juste reveal.
+        setLastReveal({ artist, title });
+        setLastResult(null);
+        setCurrentTrack((prev) => (prev ? { ...prev, phase: 'cooldown' } : prev));
+      },
+    );
+    sock.on('session:paused', () => setIsPaused(true));
+    sock.on('session:resumed', () => setIsPaused(false));
+    sock.on('scores:invalidated', () => {
+      // Le master a ajusté des points : on rafraîchit la cumulative pour le
+      // master (sheet d'ajustement) et on recalcule notre score perso si
+      // un event nous concerne. Pour les non-master, on accepte que leur
+      // score perso (myScore) ne reflète pas un ajustement silencieux —
+      // ça reste cohérent avec le brief "pas de notif publique".
+      void masterListScores(identity.sessionId, identity.token)
+        .then((c) => {
+          setCumulative(c);
+          const me = c.find((entry) => entry.id === identity.participantId);
+          if (me) setMyScore(me.total_points);
+        })
+        .catch(() => {});
     });
 
     return () => {
@@ -297,6 +396,66 @@ export function PlayPage(): JSX.Element {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // ── Master actions (mode B) ───────────────────────────────────────────
+  const masterCall = async (fn: () => Promise<unknown>): Promise<void> => {
+    if (!identity || busy) return;
+    setBusy(true);
+    try {
+      await fn();
+    } catch (err: unknown) {
+      pushToast(setToasts, (err as Error).message, 'raspberry');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleMasterReveal = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity || !currentRound) return;
+      await masterReveal(identity.sessionId, currentRound.id, identity.token);
+    });
+  const handleMasterSkip = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity || !currentRound) return;
+      await masterSkipTrack(identity.sessionId, currentRound.id, identity.token);
+    });
+  const handleMasterNext = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity || !currentRound) return;
+      await masterNextTrack(identity.sessionId, currentRound.id, identity.token);
+    });
+  const handleMasterPause = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity) return;
+      await masterPause(identity.sessionId, identity.token);
+    });
+  const handleMasterResume = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity) return;
+      await masterResume(identity.sessionId, identity.token);
+    });
+  const handleMasterEndSession = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity) return;
+      await masterEndSession(identity.sessionId, identity.token);
+      // L'event session:ended fera basculer step → 'ended'
+    });
+  const handleMasterPickPlaylist = async (playlistId: string): Promise<void> => {
+    setMasterPickerOpen(false);
+    return masterCall(async () => {
+      if (!identity) return;
+      await masterPickRound(identity.sessionId, playlistId, identity.token);
+    });
+  };
+  const handleMasterAdjust = async (args: {
+    target_participant_id: string;
+    delta: number;
+    reason?: string;
+  }): Promise<void> => {
+    if (!identity) return;
+    await masterAdjustPoints(identity.sessionId, identity.token, args);
   };
 
   // ── Render ─────────────────────────────────────────────────────────────
@@ -460,14 +619,44 @@ export function PlayPage(): JSX.Element {
           )}
 
           {step === 'playing' && identity && (
-            <PlayingView
-              currentTrack={currentTrack}
-              identity={identity}
-              myScore={myScore}
-              lastResult={lastResult}
-              busy={busy}
-              setBusy={setBusy}
-            />
+            <>
+              {isPaused && (
+                <Card tone="plum" size="md" className="text-center mb-3">
+                  <p className="font-display text-2xl">⏸ {t('play.pausedTitle')}</p>
+                  <p className="font-editorial italic text-ink-2 text-sm mt-1">
+                    {t('play.pausedHint')}
+                  </p>
+                </Card>
+              )}
+              <PlayingView
+                currentTrack={currentTrack}
+                identity={identity}
+                myScore={myScore}
+                lastResult={lastResult}
+                lastReveal={lastReveal}
+                busy={busy}
+                setBusy={setBusy}
+              />
+
+              {isMaster && (
+                <div className="mt-4">
+                  <MasterMenu
+                    isPaused={isPaused}
+                    currentTrack={currentTrack}
+                    hasActiveRound={!!currentRound}
+                    busy={busy}
+                    onReveal={handleMasterReveal}
+                    onSkipTrack={handleMasterSkip}
+                    onNextTrack={handleMasterNext}
+                    onPause={handleMasterPause}
+                    onResume={handleMasterResume}
+                    onEndSession={handleMasterEndSession}
+                    onPickRound={() => setMasterPickerOpen(true)}
+                    onAdjustPoints={() => setAdjustSheetOpen(true)}
+                  />
+                </div>
+              )}
+            </>
           )}
 
           {step === 'ended' && (
@@ -480,6 +669,41 @@ export function PlayPage(): JSX.Element {
           )}
         </div>
       </main>
+
+      {identity && (
+        <MasterPlaylistPicker
+          open={masterPickerOpen}
+          sessionId={identity.sessionId}
+          token={identity.token}
+          onClose={() => setMasterPickerOpen(false)}
+          onPick={(pid) => void handleMasterPickPlaylist(pid)}
+        />
+      )}
+
+      {identity && (
+        <MasterAdjustPointsSheet
+          open={adjustSheetOpen}
+          participants={participantsList
+            .filter((p) => !p.is_kicked)
+            .map<ParticipantOption>((p) => ({
+              id: p.id,
+              pseudo: p.pseudo,
+              team_id: p.team_id,
+              total_points: cumulative.find((c) => c.id === p.id)?.total_points ?? 0,
+            }))}
+          onClose={() => setAdjustSheetOpen(false)}
+          onConfirm={async (args) => {
+            await handleMasterAdjust(args);
+            // Rafraîchit la cumulative localement pour refléter le delta
+            try {
+              const c = await masterListScores(identity.sessionId, identity.token);
+              setCumulative(c);
+            } catch {
+              /* ignore */
+            }
+          }}
+        />
+      )}
 
       <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-[280px]">
         {toasts.map((toast) => (
@@ -522,6 +746,7 @@ function PlayingView({
   identity,
   myScore,
   lastResult,
+  lastReveal,
   busy,
   setBusy,
 }: {
@@ -529,6 +754,7 @@ function PlayingView({
   identity: ParticipantContext;
   myScore: number;
   lastResult: BuzzResult | null;
+  lastReveal: { artist: string; title: string } | null;
   busy: boolean;
   setBusy: (v: boolean) => void;
 }): JSX.Element {
@@ -664,18 +890,18 @@ function PlayingView({
     );
   }
 
-  // Phase cooldown : reveal
+  // Phase cooldown : reveal — soit buzz résolu, soit master a appuyé sur "Réponse"
+  const revealTitle = lastResult?.reveal.title ?? lastReveal?.title ?? currentTrack.title;
+  const revealArtist = lastResult?.reveal.artist ?? lastReveal?.artist ?? currentTrack.artist;
   return (
     <Card size="md" tone="basil" className="text-center">
       <p className="text-xs font-mono uppercase tracking-wider text-basil-deep mb-2">
         {t('play.reveal')}
       </p>
       <TitleHandwritten as="h2" className="mb-1">
-        {lastResult?.reveal.title ?? currentTrack.title}
+        {revealTitle}
       </TitleHandwritten>
-      <p className="font-editorial italic text-ink-2 mb-4">
-        {lastResult?.reveal.artist ?? currentTrack.artist}
-      </p>
+      <p className="font-editorial italic text-ink-2 mb-4">{revealArtist}</p>
       {lastResult && lastResult.participant_id === identity.participantId && (
         <Badge tone="lemon" tilt={-1}>
           {t('play.youScored', { points: lastResult.total_points })}
@@ -684,6 +910,11 @@ function PlayingView({
       {lastResult && lastResult.participant_id !== identity.participantId && (
         <Badge tone="cream" tilt={1}>
           {lastResult.participant_pseudo}: +{lastResult.total_points}
+        </Badge>
+      )}
+      {!lastResult && lastReveal && (
+        <Badge tone="cream" tilt={1}>
+          {t('play.masterRevealedNobodyFound')}
         </Badge>
       )}
       <ScoreBadge score={myScore} />

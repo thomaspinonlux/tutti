@@ -249,6 +249,25 @@ function HostPageInner(): JSX.Element {
                   .catch(() => {});
               }
             });
+            socket?.on('track:revealed', () => {
+              // Master a appuyé sur "Réponse" — pas de buzz_result, on passe
+              // juste la phase à cooldown. Le CooldownView affichera le track
+              // courant (artist/title déjà connus dans currentTrack).
+              setCurrentTrack((prev) => (prev ? { ...prev, phase: 'cooldown' } : prev));
+            });
+            socket?.on('session:paused', () => {
+              setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
+            });
+            socket?.on('session:resumed', () => {
+              setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
+            });
+            socket?.on('scores:invalidated', () => {
+              if (resp.session) {
+                void getSession(resp.session.id)
+                  .then((res) => setCumulative(res.cumulative))
+                  .catch(() => {});
+              }
+            });
           },
         );
       } catch (err: unknown) {
@@ -305,6 +324,11 @@ function HostPageInner(): JSX.Element {
       return;
     }
     if (currentTrack.provider !== 'spotify') return;
+    if (session?.is_paused) {
+      // Pause master active : on ne tente pas de relancer la lecture, c'est
+      // l'effet pause/resume ci-dessous qui pilote l'audio dans cet état.
+      return;
+    }
 
     if (currentTrack.phase === 'listening') {
       // Lance le morceau (mis en file d'attente si le SDK n'est pas encore prêt)
@@ -314,7 +338,27 @@ function HostPageInner(): JSX.Element {
       void spotify.pause();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTrack?.track_id, currentTrack?.phase, currentTrack?.provider, currentTrack === null]);
+  }, [
+    currentTrack?.track_id,
+    currentTrack?.phase,
+    currentTrack?.provider,
+    currentTrack === null,
+    session?.is_paused,
+  ]);
+
+  // Master pause/resume : pause/reprise l'audio Spotify si on était en train
+  // de jouer, et indépendamment de la phase track.
+  useEffect(() => {
+    if (!currentTrack) return;
+    if (currentTrack.provider !== 'spotify') return;
+    if (session?.is_paused) {
+      void spotify.pause();
+    } else if (currentTrack.phase === 'listening') {
+      // Reprise pendant l'écoute → on relance la lecture du morceau courant
+      void spotify.resume();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.is_paused]);
 
   // ── Actions ────────────────────────────────────────────────────────────
   const refreshCumulative = async (sid: string): Promise<void> => {

@@ -77,6 +77,80 @@ function enrichRound<
   };
 }
 
+// ── POST /scores ──────────────────────────────────────────────────────────
+// Renvoie la cumulative de la session pour que le master puisse voir les
+// totaux courants quand il ouvre le panneau d'ajustement de points.
+
+router.post('/scores', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const session = await prisma.session.findUnique({
+    where: { id: req.params.id },
+    include: { participants: { where: { is_kicked: false } } },
+  });
+  if (!session) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+    return;
+  }
+  const teams = (session.teams_config as Team[] | null) ?? null;
+  const cumulative = await getCumulativeScores({
+    sessionId: session.id,
+    mode: session.mode as GameMode,
+    teams,
+    participants: session.participants.map((p) => ({
+      id: p.id,
+      pseudo: p.pseudo,
+      team_id: p.team_id,
+    })),
+  });
+  res.json({ cumulative });
+});
+
+// ── POST /playlists ───────────────────────────────────────────────────────
+// Renvoie la liste des playlists publiables disponibles pour l'établissement
+// de la session (pour que le master puisse choisir la manche suivante depuis
+// son tel). Pas en GET car l'auth master se fait via token dans le body.
+
+router.post('/playlists', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const session = await prisma.session.findUnique({
+    where: { id: req.params.id },
+    select: { establishment_id: true },
+  });
+  if (!session) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+    return;
+  }
+  const playlists = await prisma.playlist.findMany({
+    where: {
+      establishment_id: session.establishment_id,
+      is_published: true,
+    },
+    orderBy: { updated_at: 'desc' },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      cover_url: true,
+      level: true,
+      language: true,
+      is_express: true,
+      is_official_tutti: true,
+      _count: { select: { tracks: true } },
+    },
+  });
+  res.json({
+    playlists: playlists.map((p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      cover_url: p.cover_url,
+      level: p.level,
+      language: p.language,
+      is_express: p.is_express,
+      is_official_tutti: p.is_official_tutti,
+      tracks_count: p._count.tracks,
+    })),
+  });
+});
+
 // ── POST /next-track ──────────────────────────────────────────────────────
 
 router.post('/next-track', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
