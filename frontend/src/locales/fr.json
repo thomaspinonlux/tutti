@@ -3,7 +3,11 @@
     "brand": "Tutti",
     "loading": "Chargement…",
     "error": "Erreur",
-    "signOut": "Déconnexion"
+    "signOut": "Déconnexion",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré ✓",
+    "cancel": "Annuler"
   },
   "home": {
     "tagline": "Plateforme de jeux interactifs pour bars et particuliers",
@@ -34,6 +38,62 @@
     "linkSignIn": "Se connecter",
     "linkSignUp": "Créer un compte",
     "continueWithSeparator": "ou avec"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "tracks": "Tutti Tracks",
+    "quizz": "Tutti Quizz",
+    "settings": "Paramètres",
+    "account": "Compte"
+  },
+  "dashboard": {
+    "welcomeTo": "Bienvenue dans",
+    "chooseGame": "Quel jeu veux-tu animer ce soir ?",
+    "tracksTitle": "Tutti Tracks",
+    "tracksTagline": "Le blind test musical à la voix",
+    "tracksDescription": "Écoute, devine, marque des points. Avec Spotify ou notre catalogue démo.",
+    "tracksCta": "Lancer Tracks",
+    "quizzTitle": "Tutti Quizz",
+    "quizzTagline": "Le quizz multimédia bilingue",
+    "quizzDescription": "QCM, vrai/faux, réponse libre, estimations. Bilingue FR/EN.",
+    "quizzCta": "Lancer Quizz"
+  },
+  "tracks": {
+    "title": "Tutti Tracks",
+    "comingSoon": "Création de playlists et lancement de session — étapes 7 à 14 du plan de dev.",
+    "description": "Cette section permettra de créer tes playlists de blind test, configurer une session, et lancer une partie."
+  },
+  "quizz": {
+    "title": "Tutti Quizz",
+    "comingSoon": "Création de packs de questions et lancement de session — étape 15 du plan de dev.",
+    "description": "Cette section permettra de créer tes packs de questions, configurer une session bilingue, et lancer une partie."
+  },
+  "settings": {
+    "title": "Paramètres de l'établissement",
+    "description": "Personnalise l'apparence et les options par défaut de ton établissement.",
+    "establishmentName": "Nom de l'établissement",
+    "establishmentNameHint": "Affiché dans tout l'app et sur les écrans des joueurs.",
+    "brandingColor": "Couleur d'accent",
+    "brandingColorHint": "Utilisée pour les éléments mis en avant côté joueur (#RRGGBB).",
+    "brandingLogo": "Logo",
+    "brandingLogoHint": "PNG, JPG, WEBP ou SVG. Max 2 MB.",
+    "brandingLogoCta": "Choisir un fichier",
+    "brandingLogoUploading": "Envoi…",
+    "brandingLogoRemove": "Retirer le logo",
+    "defaultLanguage": "Langue par défaut",
+    "languageFr": "Français",
+    "languageEn": "English",
+    "activeProvider": "Source musicale active",
+    "providerDemo": "Démo (catalogue intégré)",
+    "providerSpotify": "Spotify (à configurer plus tard)",
+    "providerDeezer": "Deezer (à venir)",
+    "providerAppleMusic": "Apple Music (à venir)",
+    "uploadFailed": "Échec de l'envoi du logo"
+  },
+  "account": {
+    "title": "Mon compte",
+    "comingSoon": "Gestion du compte (mot de passe, email, suppression) — V1+.",
+    "email": "Email connecté"
   },
   "admin": {
     "welcomeTo": "Bienvenue dans",

@@ -3,7 +3,11 @@
     "brand": "Tutti",
     "loading": "Loading…",
     "error": "Error",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved ✓",
+    "cancel": "Cancel"
   },
   "home": {
     "tagline": "Interactive games platform for bars and home parties",
@@ -34,6 +38,62 @@
     "linkSignIn": "Sign in",
     "linkSignUp": "Create an account",
     "continueWithSeparator": "or with"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "tracks": "Tutti Tracks",
+    "quizz": "Tutti Quizz",
+    "settings": "Settings",
+    "account": "Account"
+  },
+  "dashboard": {
+    "welcomeTo": "Welcome to",
+    "chooseGame": "Which game tonight?",
+    "tracksTitle": "Tutti Tracks",
+    "tracksTagline": "Voice-first music blind test",
+    "tracksDescription": "Listen, guess, score. With Spotify or our demo catalogue.",
+    "tracksCta": "Start Tracks",
+    "quizzTitle": "Tutti Quizz",
+    "quizzTagline": "Bilingual multimedia quiz",
+    "quizzDescription": "MCQ, true/false, free text, estimations. Bilingual FR/EN.",
+    "quizzCta": "Start Quizz"
+  },
+  "tracks": {
+    "title": "Tutti Tracks",
+    "comingSoon": "Playlist creation and session launch — steps 7 to 14 of the dev plan.",
+    "description": "This section will let you create blind test playlists, configure a session, and start a game."
+  },
+  "quizz": {
+    "title": "Tutti Quizz",
+    "comingSoon": "Question pack creation and session launch — step 15 of the dev plan.",
+    "description": "This section will let you create question packs, configure a bilingual session, and start a game."
+  },
+  "settings": {
+    "title": "Establishment settings",
+    "description": "Customize the appearance and defaults of your establishment.",
+    "establishmentName": "Establishment name",
+    "establishmentNameHint": "Shown across the app and on player screens.",
+    "brandingColor": "Accent color",
+    "brandingColorHint": "Used for highlighted player-facing elements (#RRGGBB).",
+    "brandingLogo": "Logo",
+    "brandingLogoHint": "PNG, JPG, WEBP or SVG. Max 2 MB.",
+    "brandingLogoCta": "Choose a file",
+    "brandingLogoUploading": "Uploading…",
+    "brandingLogoRemove": "Remove logo",
+    "defaultLanguage": "Default language",
+    "languageFr": "Français",
+    "languageEn": "English",
+    "activeProvider": "Active music source",
+    "providerDemo": "Demo (built-in catalogue)",
+    "providerSpotify": "Spotify (to configure later)",
+    "providerDeezer": "Deezer (coming soon)",
+    "providerAppleMusic": "Apple Music (coming soon)",
+    "uploadFailed": "Logo upload failed"
+  },
+  "account": {
+    "title": "My account",
+    "comingSoon": "Account management (password, email, deletion) — V1+.",
+    "email": "Signed-in email"
   },
   "admin": {
     "welcomeTo": "Welcome to",
