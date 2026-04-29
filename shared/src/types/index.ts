@@ -190,9 +190,40 @@ export interface SessionRoundWithPlaylist extends SessionRound {
 
 // ───── Boucle de jeu Tutti Tracks (étape 10) ──────────────────────────────
 
-export type GameTrackPhase = 'listening' | 'buzzed' | 'cooldown';
+/**
+ * Phases d'un morceau dans la mécanique voice-first (Phase C) :
+ *   - phase1 : écoute libre, n'importe qui peut buzzer
+ *   - phase2 : 15s après la 1ʳᵉ bonne réponse, les autres peuvent encore
+ *              buzzer pour les points dégressifs
+ *   - phase3 : phase festive — buzzers désactivés, musique continue
+ *              jusqu'à la fin naturelle
+ *   - phase3-revealed : master a appuyé sur "Donner la réponse" — le
+ *                       morceau est révélé sans qu'aucun joueur ait buzzé,
+ *                       puis on passe en festif
+ *   - phase3-skipped  : master a appuyé sur "Sauter" — pas de reveal du
+ *                       tout, on passe direct au suivant
+ */
+export type GameTrackPhase = 'phase1' | 'phase2' | 'phase3' | 'phase3-revealed' | 'phase3-skipped';
 
-/** État courant du track en cours de jeu, broadcast à tous (host + joueurs). */
+/** Réponse correcte enregistrée pendant un track (broadcast au fur et à mesure). */
+export interface CorrectAnswerEntry {
+  participant_id: string;
+  pseudo: string;
+  team_id: string | null;
+  /** Position dans l'ordre d'arrivée (1ʳᵉ = 1, 2ᵉ = 2, etc.). */
+  position: number;
+  /** Délai écoulé depuis le démarrage du track (ms). */
+  answered_at_ms: number;
+  matched_artist: boolean;
+  matched_title: boolean;
+  score: number;
+}
+
+/**
+ * État courant du track en cours de jeu, broadcast à tous (host + joueurs).
+ * Modèle voice-first : pas de buzzer unique, plusieurs réponses possibles
+ * en parallèle.
+ */
 export interface CurrentTrackState {
   round_id: string;
   track_index: number;
@@ -205,22 +236,28 @@ export interface CurrentTrackState {
   provider: MusicProviderId;
   /** ID du morceau côté provider (Spotify track ID, hash demo, etc.). */
   provider_track_id: string;
-  /** Métadonnées affichées côté host (révélées aux joueurs en fin de track). */
+  /** Métadonnées du morceau — révélées en phase 2/3. */
   artist: string;
   title: string;
   album: string | null;
   year: number | null;
   cover_url: string | null;
-  /** Date de démarrage (ISO) pour calculer le timer côté client. */
+  /** Date de démarrage du track (ISO) pour calculer le timer côté client. */
   started_at: string;
-  /** Durée d'écoute autorisée avant timeout (ms). */
-  duration_ms: number;
+  /** Durée du Track Spotify en ms (informatif, le morceau joue jusqu'au bout). */
+  duration_ms: number | null;
   phase: GameTrackPhase;
-  /** ID du participant qui a buzzé en 1ᵉʳ (si phase === 'buzzed'). */
-  buzzer_id: string | null;
-  /** Pseudo du buzzeur (rendu pour l'UI sans round-trip). */
-  buzzer_pseudo: string | null;
+  /**
+   * Date de démarrage de la phase 2 (ISO) si on y est. Permet aux clients
+   * d'afficher un chrono "encore X secondes pour buzzer".
+   */
+  phase2_started_at: string | null;
+  /** Toutes les bonnes réponses enregistrées jusque-là, dans l'ordre. */
+  correct_answers: CorrectAnswerEntry[];
 }
+
+/** Durée de la phase 2 en ms (constante partagée frontend ↔ backend). */
+export const PHASE_2_DURATION_MS = 15_000;
 
 /** Résultat d'une réponse, broadcast à tous après le verdict. */
 export interface BuzzResult {

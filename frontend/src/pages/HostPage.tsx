@@ -216,34 +216,14 @@ function HostPageInner(): JSX.Element {
             socket?.on('track:start', ({ state }: { state: CurrentTrackState }) => {
               setCurrentTrack(state);
             });
-            socket?.on(
-              'buzz:received',
-              ({
-                participant_id,
-                participant_pseudo,
-              }: {
-                round_id: string;
-                track_index: number;
-                participant_id: string;
-                participant_pseudo: string;
-                buzz_time_ms: number;
-              }) => {
-                setCurrentTrack((prev) =>
-                  prev
-                    ? {
-                        ...prev,
-                        phase: 'buzzed',
-                        buzzer_id: participant_id,
-                        buzzer_pseudo: participant_pseudo,
-                      }
-                    : prev,
-                );
-              },
-            );
+            // Note : la mécanique buzz multi-parallèle est dans le commit 5/6.
+            // Pour l'instant on ne fait que stub pour garder le build vert.
+            socket?.on('buzz:received', () => {
+              // No-op : le buzz n'altère plus la phase (multi-buzz parallèle).
+            });
             socket?.on('buzz:result', (result: BuzzResult) => {
               setRecentBuzzes((prev) => [result, ...prev].slice(0, 8));
-              setCurrentTrack((prev) => (prev ? { ...prev, phase: 'cooldown' } : prev));
-              // Refresh scores cumulés
+              setCurrentTrack((prev) => (prev ? { ...prev, phase: 'phase3' } : prev));
               if (resp.session) {
                 void getSession(resp.session.id)
                   .then((res) => setCumulative(res.cumulative))
@@ -251,10 +231,7 @@ function HostPageInner(): JSX.Element {
               }
             });
             socket?.on('track:revealed', () => {
-              // Master a appuyé sur "Réponse" — pas de buzz_result, on passe
-              // juste la phase à cooldown. Le CooldownView affichera le track
-              // courant (artist/title déjà connus dans currentTrack).
-              setCurrentTrack((prev) => (prev ? { ...prev, phase: 'cooldown' } : prev));
+              setCurrentTrack((prev) => (prev ? { ...prev, phase: 'phase3-revealed' } : prev));
             });
             socket?.on('session:paused', () => {
               setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
@@ -331,10 +308,14 @@ function HostPageInner(): JSX.Element {
       return;
     }
 
-    if (currentTrack.phase === 'listening') {
+    if (currentTrack.phase === 'phase1') {
       // Lance le morceau (mis en file d'attente si le SDK n'est pas encore prêt)
       void spotify.play(`spotify:track:${currentTrack.provider_track_id}`);
-    } else if (currentTrack.phase === 'buzzed' || currentTrack.phase === 'cooldown') {
+    } else if (
+      currentTrack.phase === 'phase2' ||
+      currentTrack.phase === 'phase3' ||
+      currentTrack.phase === 'phase3-revealed'
+    ) {
       // Coupe l'audio pendant que le joueur répond / pendant le reveal
       void spotify.pause();
     }
@@ -354,7 +335,7 @@ function HostPageInner(): JSX.Element {
     if (currentTrack.provider !== 'spotify') return;
     if (session?.is_paused) {
       void spotify.pause();
-    } else if (currentTrack.phase === 'listening') {
+    } else if (currentTrack.phase === 'phase1') {
       // Reprise pendant l'écoute → on relance la lecture du morceau courant
       void spotify.resume();
     }
@@ -907,9 +888,9 @@ function RoundPlayingScreen({
 
         {!currentTrack ? (
           <p className="font-editorial italic text-ink-2 my-8">{t('host.noTrackYet')}</p>
-        ) : currentTrack.phase === 'listening' ? (
+        ) : currentTrack.phase === 'phase1' ? (
           <ListeningView track={currentTrack} />
-        ) : currentTrack.phase === 'buzzed' ? (
+        ) : currentTrack.phase === 'phase2' ? (
           <BuzzedView track={currentTrack} />
         ) : (
           <CooldownView track={currentTrack} lastBuzz={recentBuzzes[0] ?? null} />
@@ -920,7 +901,7 @@ function RoundPlayingScreen({
             variant="primary"
             size="md"
             onClick={() => void onNextTrack()}
-            disabled={busy || !currentTrack || currentTrack.phase === 'listening'}
+            disabled={busy || !currentTrack || currentTrack.phase === 'phase1'}
           >
             {t('host.nextTrack')} →
           </Button>
@@ -1018,9 +999,12 @@ function useTimeRemaining(startedAtIso: string, durationMs: number): number {
 
 function ListeningView({ track }: { track: CurrentTrackState }): JSX.Element {
   const { t } = useTranslation();
-  const remaining = useTimeRemaining(track.started_at, track.duration_ms);
+  // Phase C : la durée du morceau vient de track.duration_ms (Spotify), null
+  // pour les morceaux Demo. Fallback 30s en attendant la rewrite commit 6.
+  const durationMs = track.duration_ms ?? 30_000;
+  const remaining = useTimeRemaining(track.started_at, durationMs);
   const seconds = Math.ceil(remaining / 1000);
-  const progress = 1 - remaining / track.duration_ms;
+  const progress = 1 - remaining / durationMs;
   return (
     <div className="py-6">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
@@ -1040,13 +1024,16 @@ function ListeningView({ track }: { track: CurrentTrackState }): JSX.Element {
 
 function BuzzedView({ track }: { track: CurrentTrackState }): JSX.Element {
   const { t } = useTranslation();
+  // Stub commit 2 — la BuzzedView complète arrive en commit 6 avec les
+  // multi-correct-answers + chrono phase 2.
+  void track;
   return (
     <div className="py-6">
       <p className="font-display text-6xl text-spritz-deep mb-2 animate-pop-in">
         {t('host.buzzed')} !
       </p>
       <p className="font-editorial italic text-ink-2">
-        {t('host.awaitingAnswer', { pseudo: track.buzzer_pseudo ?? '…' })}
+        {t('host.awaitingAnswer', { pseudo: '…' })}
       </p>
     </div>
   );

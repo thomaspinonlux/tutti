@@ -72,7 +72,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         )}
 
         {/* ── Phase listening : Réponse + Sauter ──────────────────────── */}
-        {phase === 'listening' && !props.isPaused && (
+        {phase === 'phase1' && !props.isPaused && (
           <>
             <Button
               variant="primary"
@@ -94,17 +94,18 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         )}
 
         {/* ── Phase cooldown : Suivant ─────────────────────────────────── */}
-        {phase === 'cooldown' && !props.isPaused && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => void props.onNextTrack()}
-            disabled={props.busy}
-            className="col-span-2"
-          >
-            ▶ {t('play.masterNext')} →
-          </Button>
-        )}
+        {phase === 'phase3' ||
+          (phase === 'phase3-revealed' && !props.isPaused && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => void props.onNextTrack()}
+              disabled={props.busy}
+              className="col-span-2"
+            >
+              ▶ {t('play.masterNext')} →
+            </Button>
+          ))}
 
         {/* ── Pas de round actif (intermission après round-end) : pick suivant ── */}
         {!props.hasActiveRound && (

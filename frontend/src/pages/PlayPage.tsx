@@ -281,22 +281,16 @@ export function PlayPage(): JSX.Element {
         participant_pseudo: string;
         buzz_time_ms: number;
       }) => {
-        setCurrentTrack((prev) =>
-          prev
-            ? {
-                ...prev,
-                phase: 'buzzed',
-                buzzer_id: participant_id,
-                buzzer_pseudo: participant_pseudo,
-              }
-            : prev,
-        );
+        // Stub commit 2 — la mécanique multi-buzz parallèle arrive en commit 5.
+        // On ignore l'identité du buzzer (il n'y a plus de "buzzer unique").
+        void participant_id;
+        void participant_pseudo;
       },
     );
     sock.on('buzz:result', (result: BuzzResult) => {
       setLastResult(result);
       setLastReveal(null);
-      setCurrentTrack((prev) => (prev ? { ...prev, phase: 'cooldown' } : prev));
+      setCurrentTrack((prev) => (prev ? { ...prev, phase: 'phase3' } : prev));
       if (result.participant_id === identity.participantId) {
         setMyScore((prev) => prev + result.total_points);
       }
@@ -312,10 +306,10 @@ export function PlayPage(): JSX.Element {
         artist: string;
         title: string;
       }) => {
-        // Master a appuyé sur "Réponse" — pas de buzz, pas de score, juste reveal.
+        // Master a appuyé sur "Donner la réponse" — pas de buzz, pas de score, juste reveal.
         setLastReveal({ artist, title });
         setLastResult(null);
-        setCurrentTrack((prev) => (prev ? { ...prev, phase: 'cooldown' } : prev));
+        setCurrentTrack((prev) => (prev ? { ...prev, phase: 'phase3-revealed' } : prev));
       },
     );
     sock.on('session:paused', () => setIsPaused(true));
@@ -804,7 +798,7 @@ function PlayingView({
   }
 
   // Phase listening : grand bouton buzzer
-  if (currentTrack.phase === 'listening') {
+  if (currentTrack.phase === 'phase1') {
     return (
       <div className="text-center">
         <p className="font-editorial italic text-ink-2 mb-4">{t('play.listenAndBuzz')}</p>
@@ -827,9 +821,9 @@ function PlayingView({
     );
   }
 
-  // Phase buzzed
-  const isMyBuzz = currentTrack.buzzer_id === identity.participantId;
-  if (currentTrack.phase === 'buzzed' && isMyBuzz) {
+  // Phase buzzed (stub commit 2 — la mécanique multi-buzz vocale arrive en commit 5).
+  const isMyBuzz = false;
+  if (currentTrack.phase === 'phase2' && isMyBuzz) {
     return (
       <Card size="md" tone="spritz" className="text-center">
         <p className="text-xs font-mono uppercase tracking-wider text-spritz-deep mb-3">
@@ -875,14 +869,14 @@ function PlayingView({
     );
   }
 
-  if (currentTrack.phase === 'buzzed' && !isMyBuzz) {
+  if (currentTrack.phase === 'phase2' && !isMyBuzz) {
     return (
       <Card size="md" tone="cream" className="text-center">
         <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-2">
           {t('play.someoneBuzzed')}
         </p>
         <TitleHandwritten as="h2" className="mb-2">
-          {currentTrack.buzzer_pseudo ?? '…'}
+          {'…'}
         </TitleHandwritten>
         <p className="font-editorial italic text-ink-2">{t('play.suspense')}</p>
         <ScoreBadge score={myScore} />

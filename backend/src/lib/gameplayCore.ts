@@ -13,7 +13,12 @@
 import type { CurrentTrackState } from '@tutti/shared';
 import { prisma } from './prisma.js';
 import { broadcastToSession } from '../socket/index.js';
-import { clearActiveTrack, setActiveTrack, setCooldown, getActiveTrack } from './gameState.js';
+import {
+  clearActiveTrack,
+  setActiveTrack,
+  setPhase3Revealed,
+  getActiveTrack,
+} from './gameState.js';
 
 export const LISTEN_DURATION_MS = 30_000; // 30s par défaut V1
 
@@ -86,6 +91,7 @@ export async function buildAndBroadcastTrack(
   if (!playlistTrack) return null;
   const track = playlistTrack.track;
 
+  const nowMs = Date.now();
   const state: CurrentTrackState = {
     round_id: round.id,
     track_index: trackIndex,
@@ -97,21 +103,18 @@ export async function buildAndBroadcastTrack(
     album: track.album,
     year: track.year,
     cover_url: track.cover_url,
-    started_at: new Date().toISOString(),
-    duration_ms: LISTEN_DURATION_MS,
-    phase: 'listening',
-    buzzer_id: null,
-    buzzer_pseudo: null,
+    started_at: new Date(nowMs).toISOString(),
+    duration_ms: track.duration_ms,
+    phase: 'phase1',
+    phase2_started_at: null,
+    correct_answers: [],
   };
 
   setActiveTrack(round.id, {
     round_id: round.id,
     track_index: trackIndex,
     track_id: track.id,
-    started_at: Date.now(),
-    phase: 'listening',
-    buzzer_id: null,
-    buzz_time_ms: null,
+    started_at_ms: nowMs,
   });
 
   await prisma.sessionRound.update({
@@ -208,7 +211,9 @@ export async function revealCurrentTrack(
   roundId: string,
 ): Promise<{ artist: string; title: string; track_index: number } | null> {
   const active = getActiveTrack(roundId);
-  if (!active || active.phase !== 'listening') return null;
+  // "Donner la réponse" n'a de sens qu'en phase1 (pas encore de bonne
+  // réponse). En phase2/3, on a déjà des réponses ou on est en festif.
+  if (!active || active.phase !== 'phase1') return null;
 
   const track = await prisma.track.findUnique({
     where: { id: active.track_id },
@@ -216,7 +221,7 @@ export async function revealCurrentTrack(
   });
   if (!track) return null;
 
-  setCooldown(roundId);
+  setPhase3Revealed(roundId);
   const payload = {
     round_id: roundId,
     track_index: active.track_index,

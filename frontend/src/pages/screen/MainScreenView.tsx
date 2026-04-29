@@ -358,12 +358,16 @@ function PlayingFestive({
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-3">
               {round.playlist.name}
             </p>
-            <MysteryCover track={track} revealed={track.phase === 'cooldown'} />
+            <MysteryCover
+              track={track}
+              revealed={track.phase === 'phase3' || track.phase === 'phase3-revealed'}
+            />
 
             <div className="mt-6">
-              {track.phase === 'listening' && <ListeningFestive track={track} />}
-              {track.phase === 'buzzed' && <BuzzedFestive track={track} />}
-              {track.phase === 'cooldown' && <CooldownFestive track={track} />}
+              {track.phase === 'phase1' && <ListeningFestive track={track} />}
+              {track.phase === 'phase2' && <BuzzedFestive track={track} />}
+              {track.phase === 'phase3' ||
+                (track.phase === 'phase3-revealed' && <CooldownFestive track={track} />)}
             </div>
           </>
         )}
@@ -376,9 +380,11 @@ function PlayingFestive({
 
 function ListeningFestive({ track }: { track: CurrentTrackState }): JSX.Element {
   const { t } = useTranslation();
-  const remaining = useTimeRemaining(track.started_at, track.duration_ms);
+  // Stub commit 2 — la vraie durée Spotify arrivera dans le rewrite commit 6.
+  const durationMs = track.duration_ms ?? 30_000;
+  const remaining = useTimeRemaining(track.started_at, durationMs);
   const seconds = Math.ceil(remaining / 1000);
-  const progress = 1 - remaining / track.duration_ms;
+  const progress = 1 - remaining / durationMs;
   return (
     <div>
       <p className="font-display text-7xl text-ink mb-2">{seconds}s</p>
@@ -395,10 +401,11 @@ function ListeningFestive({ track }: { track: CurrentTrackState }): JSX.Element 
 
 function BuzzedFestive({ track }: { track: CurrentTrackState }): JSX.Element {
   const { t } = useTranslation();
+  // Stub commit 2 — la vue phase 2 multi-correct + chrono 15s arrive en commit 6.
+  void track;
   return (
     <div className="animate-buzz-shake">
       <p className="font-display text-7xl text-spritz-deep mb-2">💥 {t('host.buzzed')} !</p>
-      <p className="font-display text-3xl text-ink">{track.buzzer_pseudo ?? '…'}</p>
       <p className="font-editorial italic text-ink-2 text-base mt-2">{t('screen.buzzedHint')}</p>
     </div>
   );
