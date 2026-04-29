@@ -57,15 +57,13 @@ router.post(
     const workspaceId = req.workspaceId!;
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Body invalide',
-            details: parsed.error.flatten(),
-          },
-        });
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Body invalide',
+          details: parsed.error.flatten(),
+        },
+      });
       return;
     }
     try {
@@ -83,11 +81,9 @@ router.post(
       // Pour TRACKS, vérifier que la playlist appartient bien au tenant
       if (parsed.data.game_type === 'TRACKS') {
         if (!parsed.data.playlist_id) {
-          res
-            .status(400)
-            .json({
-              error: { code: 'PLAYLIST_REQUIRED', message: 'playlist_id requis pour TRACKS' },
-            });
+          res.status(400).json({
+            error: { code: 'PLAYLIST_REQUIRED', message: 'playlist_id requis pour TRACKS' },
+          });
           return;
         }
         const ownPlaylist = await prisma.playlist.findFirst({
@@ -204,15 +200,13 @@ router.patch(
     const workspaceId = req.workspaceId!;
     const parsed = patchSchema.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Body invalide',
-            details: parsed.error.flatten(),
-          },
-        });
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Body invalide',
+          details: parsed.error.flatten(),
+        },
+      });
       return;
     }
     const own = await ensureOwnSession(req.params.id, workspaceId);
@@ -221,14 +215,12 @@ router.patch(
       return;
     }
     if (own.status !== 'WAITING') {
-      res
-        .status(409)
-        .json({
-          error: {
-            code: 'INVALID_STATUS',
-            message: 'Configuration impossible : session déjà démarrée',
-          },
-        });
+      res.status(409).json({
+        error: {
+          code: 'INVALID_STATUS',
+          message: 'Configuration impossible : session déjà démarrée',
+        },
+      });
       return;
     }
     try {
@@ -280,10 +272,13 @@ router.post(
         .json({ error: { code: 'INVALID_STATUS', message: 'Session pas en WAITING' } });
       return;
     }
-    if (own.participants.length < 2) {
+    // V1 dev/test : seuil temporaire à 1 joueur pour faciliter les tests solo.
+    // À remonter à 2 (ou rendre configurable via env var) pour la mise en prod.
+    const MIN_PLAYERS_TO_START = 1;
+    if (own.participants.length < MIN_PLAYERS_TO_START) {
       res
         .status(400)
-        .json({ error: { code: 'NOT_ENOUGH_PLAYERS', message: 'Au moins 2 joueurs requis' } });
+        .json({ error: { code: 'NOT_ENOUGH_PLAYERS', message: 'Au moins 1 joueur requis' } });
       return;
     }
     try {
@@ -316,15 +311,13 @@ router.post(
     const code = req.params.short_code.toUpperCase();
     const parsed = joinSchema.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Body invalide',
-            details: parsed.error.flatten(),
-          },
-        });
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Body invalide',
+          details: parsed.error.flatten(),
+        },
+      });
       return;
     }
     try {
@@ -337,11 +330,9 @@ router.post(
         return;
       }
       if (session.status !== 'WAITING') {
-        res
-          .status(409)
-          .json({
-            error: { code: 'NOT_ACCEPTING_PLAYERS', message: 'Session déjà démarrée ou terminée' },
-          });
+        res.status(409).json({
+          error: { code: 'NOT_ACCEPTING_PLAYERS', message: 'Session déjà démarrée ou terminée' },
+        });
         return;
       }
 
@@ -350,14 +341,12 @@ router.post(
       if (session.mode === 'TEAMS') {
         const teams = (session.teams_config as Array<{ id: string }> | null) ?? [];
         if (!parsed.data.team_id || !teams.some((t) => t.id === parsed.data.team_id)) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'INVALID_TEAM',
-                message: 'team_id requis et valide pour le mode TEAMS',
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_TEAM',
+              message: 'team_id requis et valide pour le mode TEAMS',
+            },
+          });
           return;
         }
         teamId = parsed.data.team_id;
@@ -398,15 +387,13 @@ router.patch(
     const workspaceId = req.workspaceId!;
     const parsed = movePartSchema.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Body invalide',
-            details: parsed.error.flatten(),
-          },
-        });
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Body invalide',
+          details: parsed.error.flatten(),
+        },
+      });
       return;
     }
     const own = await ensureOwnSession(req.params.id, workspaceId);
