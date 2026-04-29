@@ -37,6 +37,7 @@ import {
   startSession,
 } from '../lib/sessions.js';
 import { connectAsHost } from '../lib/socket.js';
+import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
 import { MinScreen } from '../components/MinScreen.js';
 import {
   Badge,
@@ -270,6 +271,30 @@ function HostPageInner(): JSX.Element {
   const pendingRound = session?.rounds.find((r) => r.status === 'PENDING') ?? null;
   const playingRoundsCount = session?.rounds.filter((r) => r.status !== 'PENDING').length ?? 0;
 
+  // ── Audio playback (Phase B) ───────────────────────────────────────────
+  // On charge le SDK Spotify dès qu'on est en phase de lecture. Le hook se
+  // débrouille pour ignorer si aucun track:start ne demande Spotify.
+  const spotify = useSpotifyPlayer({ enabled: phase === 'roundPlaying' });
+
+  // Auto-play / pause selon les events gameplay
+  useEffect(() => {
+    if (!currentTrack) {
+      // Round terminé mid-track ou track effacé : on coupe le son
+      void spotify.pause();
+      return;
+    }
+    if (currentTrack.provider !== 'spotify') return;
+
+    if (currentTrack.phase === 'listening') {
+      // Lance le morceau (mis en file d'attente si le SDK n'est pas encore prêt)
+      void spotify.play(`spotify:track:${currentTrack.provider_track_id}`);
+    } else if (currentTrack.phase === 'buzzed' || currentTrack.phase === 'cooldown') {
+      // Coupe l'audio pendant que le joueur répond / pendant le reveal
+      void spotify.pause();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrack?.track_id, currentTrack?.phase, currentTrack?.provider, currentTrack === null]);
+
   // ── Actions ────────────────────────────────────────────────────────────
   const refreshCumulative = async (sid: string): Promise<void> => {
     try {
@@ -454,6 +479,9 @@ function HostPageInner(): JSX.Element {
               onNextTrack={handleNextTrack}
               onEndRound={handleEndCurrentRound}
               busy={busy}
+              spotifyStatus={spotify.status}
+              spotifyError={spotify.error}
+              spotifyErrorCode={spotify.errorCode}
             />
           )}
 
@@ -577,6 +605,9 @@ function RoundPlayingScreen({
   onNextTrack,
   onEndRound,
   busy,
+  spotifyStatus,
+  spotifyError,
+  spotifyErrorCode,
 }: {
   round: SessionRoundWithPlaylist;
   cumulative: CumulativeScore[];
@@ -585,11 +616,18 @@ function RoundPlayingScreen({
   onNextTrack: () => Promise<void>;
   onEndRound: () => Promise<void>;
   busy: boolean;
+  spotifyStatus: import('../lib/useSpotifyPlayer.js').SpotifyPlayerStatus;
+  spotifyError: string | null;
+  spotifyErrorCode: string | null;
 }): JSX.Element {
   const { t } = useTranslation();
   const top5 = cumulative.slice(0, 5);
   const totalTracks = round.playlist.tracks_count ?? 0;
   const trackPosition = currentTrack ? currentTrack.track_index + 1 : round.current_track_index + 1;
+
+  const showSpotifyStatus =
+    currentTrack?.provider === 'spotify' || (currentTrack === null && spotifyStatus !== 'idle');
+  const isDemoProvider = currentTrack?.provider === 'demo';
 
   return (
     <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -608,6 +646,17 @@ function RoundPlayingScreen({
         <TitleHandwritten as="h2" className="mb-4">
           <Underline>{round.playlist.name}</Underline>
         </TitleHandwritten>
+
+        {showSpotifyStatus && (
+          <SpotifyStatusBanner
+            status={spotifyStatus}
+            error={spotifyError}
+            errorCode={spotifyErrorCode}
+          />
+        )}
+        {isDemoProvider && (
+          <p className="font-mono text-xs text-ink-soft my-3">{t('host.demoProviderHint')}</p>
+        )}
 
         {!currentTrack ? (
           <p className="font-editorial italic text-ink-2 my-8">{t('host.noTrackYet')}</p>
@@ -752,6 +801,38 @@ function BuzzedView({ track }: { track: CurrentTrackState }): JSX.Element {
       <p className="font-editorial italic text-ink-2">
         {t('host.awaitingAnswer', { pseudo: track.buzzer_pseudo ?? '…' })}
       </p>
+    </div>
+  );
+}
+
+function SpotifyStatusBanner({
+  status,
+  error,
+  errorCode,
+}: {
+  status: import('../lib/useSpotifyPlayer.js').SpotifyPlayerStatus;
+  error: string | null;
+  errorCode: string | null;
+}): JSX.Element | null {
+  const { t } = useTranslation();
+  if (status === 'idle' || status === 'ready') return null;
+  if (status === 'loading_sdk' || status === 'loading_token' || status === 'connecting') {
+    return (
+      <p className="font-mono text-xs text-ink-soft my-3 animate-pulse">
+        {t('host.spotifyLoading')}
+      </p>
+    );
+  }
+  // Erreur
+  const msg =
+    errorCode === 'NOT_CONNECTED'
+      ? t('host.spotifyNotConnected')
+      : errorCode === 'PREMIUM_REQUIRED'
+        ? t('host.spotifyPremiumRequired')
+        : (error ?? t('host.spotifyError'));
+  return (
+    <div className="my-3 px-3 py-2 border-2 border-raspberry rounded bg-cream-2 text-xs text-raspberry">
+      <span className="font-medium">{t('host.spotifyErrorEyebrow')} :</span> {msg}
     </div>
   );
 }

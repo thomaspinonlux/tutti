@@ -23,6 +23,7 @@
 import { Router, type Request, type Response } from 'express';
 import { prisma } from '../../lib/prisma.js';
 import { signOAuthState, verifyOAuthState } from '../../lib/oauthState.js';
+import { getValidSpotifyAccessToken, SpotifyAuthError } from '../../lib/spotifyToken.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { requireWorkspace } from '../../middleware/tenant.js';
 
@@ -244,6 +245,42 @@ router.get(
     } catch (err: unknown) {
       console.error('[spotify status] error:', err);
       res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur statut Spotify' } });
+    }
+  },
+);
+
+// ───── GET /token ─────────────────────────────────────────────────────────
+// Renvoie un access token valide (refresh transparent côté serveur) pour
+// initialiser le Web Playback SDK côté navigateur du host. Ne PAS exposer
+// le refresh_token, et ne pas mettre cet endpoint en cache.
+
+router.get(
+  '/token',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId;
+    if (!workspaceId) {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth requise' } });
+      return;
+    }
+    try {
+      const token = await getValidSpotifyAccessToken(workspaceId);
+      res.set('Cache-Control', 'no-store');
+      res.json({
+        access_token: token.access_token,
+        expires_at: token.expires_at.toISOString(),
+        account_email: token.account_email,
+      });
+    } catch (err: unknown) {
+      if (err instanceof SpotifyAuthError) {
+        if (err.code === 'NOT_CONNECTED' || err.code === 'NO_REFRESH_TOKEN') {
+          res.status(409).json({ error: { code: err.code, message: err.message } });
+          return;
+        }
+      }
+      console.error('[spotify token] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur token Spotify' } });
     }
   },
 );

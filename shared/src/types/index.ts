@@ -177,6 +177,14 @@ export interface CurrentTrackState {
   round_id: string;
   track_index: number;
   track_id: string;
+  /**
+   * Provider du morceau ('spotify', 'demo', etc.) — sert au host pour décider
+   * comment déclencher la lecture (Web Playback SDK pour Spotify, <audio> ou
+   * fallback manuel pour Demo).
+   */
+  provider: MusicProviderId;
+  /** ID du morceau côté provider (Spotify track ID, hash demo, etc.). */
+  provider_track_id: string;
   /** Métadonnées affichées côté host (révélées aux joueurs en fin de track). */
   artist: string;
   title: string;

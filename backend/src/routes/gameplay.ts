@@ -59,6 +59,8 @@ async function buildAndBroadcastTrack(
     round_id: round.id,
     track_index: trackIndex,
     track_id: track.id,
+    provider: track.provider as CurrentTrackState['provider'],
+    provider_track_id: track.provider_track_id,
     artist: track.artist,
     title: track.title,
     album: track.album,

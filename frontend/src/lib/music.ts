@@ -51,6 +51,20 @@ export async function disconnectSpotify(): Promise<void> {
   await api('/api/auth/spotify/disconnect', { method: 'DELETE' });
 }
 
+export interface SpotifyTokenResponse {
+  access_token: string;
+  expires_at: string;
+  account_email: string | null;
+}
+
+/**
+ * Récupère un access token Spotify valide pour le host courant — utilisé
+ * par le Web Playback SDK. Le backend rafraîchit transparemment si besoin.
+ */
+export async function getSpotifyToken(): Promise<SpotifyTokenResponse> {
+  return api<SpotifyTokenResponse>('/api/auth/spotify/token');
+}
+
 export async function getTrack(providerTrackId: string): Promise<TrackResult | null> {
   try {
     const data = await api<{ track: TrackResult }>(

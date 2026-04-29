@@ -172,7 +172,13 @@
     "notFound": "Pas trouvé",
     "nextTrack": "Morceau suivant",
     "buzzFeed": "Derniers buzz",
-    "buzzFeedEmpty": "Pas encore de buzz."
+    "buzzFeedEmpty": "Pas encore de buzz.",
+    "spotifyLoading": "Chargement du player Spotify…",
+    "spotifyErrorEyebrow": "Spotify",
+    "spotifyError": "Le player audio n'a pas pu démarrer.",
+    "spotifyNotConnected": "Compte Spotify non connecté à ce workspace. Va dans Paramètres → Spotify.",
+    "spotifyPremiumRequired": "Compte Spotify Premium requis pour la lecture full track.",
+    "demoProviderHint": "Provider Demo — l'audio n'est pas joué automatiquement. Lance le morceau depuis ton propre setup."
   },
   "play": {
     "missingCode": "Lien invalide. Demande à l'animateur de te scanner le QR code.",

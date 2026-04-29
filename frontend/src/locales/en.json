@@ -172,7 +172,13 @@
     "notFound": "Not found",
     "nextTrack": "Next track",
     "buzzFeed": "Recent buzzes",
-    "buzzFeedEmpty": "No buzz yet."
+    "buzzFeedEmpty": "No buzz yet.",
+    "spotifyLoading": "Loading Spotify player…",
+    "spotifyErrorEyebrow": "Spotify",
+    "spotifyError": "Audio player failed to start.",
+    "spotifyNotConnected": "Spotify account not linked to this workspace. Go to Settings → Spotify.",
+    "spotifyPremiumRequired": "Spotify Premium required for full-track playback.",
+    "demoProviderHint": "Demo provider — audio is not auto-played. Launch the track from your own setup."
   },
   "play": {
     "missingCode": "Invalid link. Ask the host to scan the QR code.",
