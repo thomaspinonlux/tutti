@@ -44,6 +44,8 @@ export function SessionConfigPage(): JSX.Element {
 
   const [name, setName] = useState('');
   const [playlistName, setPlaylistName] = useState<string | null>(null);
+  // Défaut B2C : mode B "tout le monde joue", sans animateur dédié.
+  const [hasAnimator, setHasAnimator] = useState(false);
   const [mode, setMode] = useState<'SOLO' | 'TEAMS'>('SOLO');
   const [teams, setTeams] = useState<Team[]>(() => [newTeam(0), newTeam(1)]);
   const [language, setLanguage] = useState<'fr' | 'en'>('fr');
@@ -86,6 +88,7 @@ export function SessionConfigPage(): JSX.Element {
         mode,
         teams_config: mode === 'TEAMS' ? teams : undefined,
         language,
+        has_animator: hasAnimator,
       });
       // Si une playlist est passée en paramètre, on pré-crée la 1ʳᵉ manche
       // pour qu'elle soit prête au démarrage. L'host n'aura plus qu'à
@@ -116,6 +119,53 @@ export function SessionConfigPage(): JSX.Element {
       )}
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
+        {/* ── Mode A vs B ──────────────────────────────────────────── */}
+        <div>
+          <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-3">
+            {t('sessionConfig.animatorChoice')}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setHasAnimator(false)}
+              aria-pressed={!hasAnimator}
+              className={[
+                'text-left p-5 border-3 rounded shadow-pop transition-all',
+                !hasAnimator
+                  ? 'border-spritz-deep bg-spritz/10 -rotate-[0.4deg]'
+                  : 'border-ink bg-cream-2 hover:bg-cream',
+              ].join(' ')}
+            >
+              <p className="font-display text-2xl mb-1">
+                {!hasAnimator && '✓ '}
+                {t('sessionConfig.modeNoAnimatorTitle')}
+              </p>
+              <p className="font-editorial italic text-sm text-ink-2">
+                {t('sessionConfig.modeNoAnimatorBody')}
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setHasAnimator(true)}
+              aria-pressed={hasAnimator}
+              className={[
+                'text-left p-5 border-3 rounded shadow-pop transition-all',
+                hasAnimator
+                  ? 'border-spritz-deep bg-spritz/10 rotate-[0.4deg]'
+                  : 'border-ink bg-cream-2 hover:bg-cream',
+              ].join(' ')}
+            >
+              <p className="font-display text-2xl mb-1">
+                {hasAnimator && '✓ '}
+                {t('sessionConfig.modeAnimatorTitle')}
+              </p>
+              <p className="font-editorial italic text-sm text-ink-2">
+                {t('sessionConfig.modeAnimatorBody')}
+              </p>
+            </button>
+          </div>
+        </div>
+
         <Card>
           <Input
             label={t('sessionConfig.nameLabel')}

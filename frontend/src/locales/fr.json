@@ -98,6 +98,11 @@
   },
   "sessionConfig": {
     "title": "Nouveau blind test",
+    "animatorChoice": "Comment on joue ?",
+    "modeNoAnimatorTitle": "Tout le monde joue",
+    "modeNoAnimatorBody": "L'app pilote la partie depuis le tel d'un animateur joueur. Personne ne voit les réponses ni le programme. Idéal pour soirées entre amis, anniversaires, EVJF/EVG.",
+    "modeAnimatorTitle": "Avec animateur",
+    "modeAnimatorBody": "Une personne pilote depuis l'iPad/Mac, voit les réponses et ajuste si besoin, les autres jouent. Idéal pour bars, événements, soirées avec organisateur dédié.",
     "nameLabel": "Nom de la partie (optionnel)",
     "namePlaceholder": "Ex : Anniv Marc 29/04",
     "nameHint": "Sert à retrouver la partie dans l'historique. Laisse vide si tu n'en as pas besoin.",
@@ -178,7 +183,15 @@
     "spotifyError": "Le player audio n'a pas pu démarrer.",
     "spotifyNotConnected": "Compte Spotify non connecté à ce workspace. Va dans Paramètres → Spotify.",
     "spotifyPremiumRequired": "Compte Spotify Premium requis pour la lecture full track.",
-    "demoProviderHint": "Provider Demo — l'audio n'est pas joué automatiquement. Lance le morceau depuis ton propre setup."
+    "demoProviderHint": "Provider Demo — l'audio n'est pas joué automatiquement. Lance le morceau depuis ton propre setup.",
+    "masterSectionLabel": "Animateur de la partie",
+    "masterPickHint": "Mode B : désigne un joueur comme animateur — il pilotera la partie depuis son tel (lancer le morceau suivant, faire pause, ajuster les points). Le bouton Démarrer s'activera dès qu'un animateur est désigné.",
+    "masterPickedHint": "{{pseudo}} pilotera la partie depuis son tel. Tu peux toujours changer d'animateur tant que la partie n'a pas démarré.",
+    "masterAssign": "Désigner animateur",
+    "masterRevoke": "Retirer animateur",
+    "masterIs": "Animateur :",
+    "masterNone": "Pas d'animateur désigné",
+    "masterChange": "Changer d'animateur"
   },
   "play": {
     "missingCode": "Lien invalide. Demande à l'animateur de te scanner le QR code.",

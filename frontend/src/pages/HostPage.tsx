@@ -35,6 +35,7 @@ import {
   playTrack,
   startRound,
   startSession,
+  toggleParticipantMaster,
 } from '../lib/sessions.js';
 import { connectAsHost } from '../lib/socket.js';
 import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
@@ -147,6 +148,25 @@ function HostPageInner(): JSX.Element {
                 'raspberry',
               );
             });
+            socket?.on(
+              'participant:master_changed',
+              ({ participant, is_master }: { participant: Participant; is_master: boolean }) => {
+                // Côté backend, on a démasterisé tous les autres avant de
+                // (dé)masteriser la cible. On reflète ça côté UI.
+                setSession((s) =>
+                  s
+                    ? {
+                        ...s,
+                        participants: s.participants.map((p) =>
+                          p.id === participant.id
+                            ? { ...p, is_master }
+                            : { ...p, is_master: false },
+                        ),
+                      }
+                    : s,
+                );
+              },
+            );
             socket?.on('session:started', ({ session: s }: { session: Session }) => {
               setSession((prev) => (prev ? { ...prev, ...s } : prev));
               pushToast(setToasts, t('host.toastStarted'), 'basil');
@@ -270,6 +290,7 @@ function HostPageInner(): JSX.Element {
     : null;
   const pendingRound = session?.rounds.find((r) => r.status === 'PENDING') ?? null;
   const playingRoundsCount = session?.rounds.filter((r) => r.status !== 'PENDING').length ?? 0;
+  const currentMaster = session?.participants.find((p) => p.is_master) ?? null;
 
   // ── Audio playback (Phase B) ───────────────────────────────────────────
   // On charge le SDK Spotify dès qu'on est en phase de lecture. Le hook se
@@ -363,6 +384,16 @@ function HostPageInner(): JSX.Element {
     }
   };
 
+  const handleToggleMaster = async (participantId: string): Promise<void> => {
+    if (!session) return;
+    try {
+      await toggleParticipantMaster(session.id, participantId);
+      // L'event socket participant:master_changed mettra à jour l'UI.
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    }
+  };
+
   const handleEndSession = async (): Promise<void> => {
     if (!session) return;
     if (!window.confirm(t('host.endBlindTestConfirm'))) return;
@@ -424,18 +455,30 @@ function HostPageInner(): JSX.Element {
               {session.name ? <Underline>{session.name}</Underline> : t('host.title')}
             </TitleHandwritten>
           </div>
-          {(effectivePhase === 'roundPlaying' ||
-            effectivePhase === 'roundSelection' ||
-            effectivePhase === 'intermission') && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => void handleEndSession()}
-              disabled={busy}
-            >
-              {t('host.endBlindTest')}
-            </Button>
-          )}
+          <div className="flex items-center gap-3 flex-wrap">
+            {!session.has_animator &&
+              (effectivePhase === 'roundPlaying' ||
+                effectivePhase === 'roundSelection' ||
+                effectivePhase === 'intermission') && (
+                <MasterBadge
+                  master={currentMaster}
+                  participants={session.participants}
+                  onToggleMaster={handleToggleMaster}
+                />
+              )}
+            {(effectivePhase === 'roundPlaying' ||
+              effectivePhase === 'roundSelection' ||
+              effectivePhase === 'intermission') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => void handleEndSession()}
+                disabled={busy}
+              >
+                {t('host.endBlindTest')}
+              </Button>
+            )}
+          </div>
         </header>
 
         <div className="max-w-7xl mx-auto">
@@ -448,6 +491,8 @@ function HostPageInner(): JSX.Element {
               mode={session.mode}
               busy={busy}
               hasPendingRound={!!pendingRound}
+              hasAnimator={session.has_animator}
+              currentMasterId={currentMaster?.id ?? null}
               onStart={handleStartSession}
               onMove={async (pid, tid) => {
                 await moveParticipantTeam(session.id, pid, tid);
@@ -457,6 +502,7 @@ function HostPageInner(): JSX.Element {
                   await kickParticipant(session.id, pid);
                 }
               }}
+              onToggleMaster={handleToggleMaster}
             />
           )}
 
@@ -534,6 +580,82 @@ function HostPageInner(): JSX.Element {
 
 // ── Sous-écrans ─────────────────────────────────────────────────────────────
 
+function MasterBadge({
+  master,
+  participants,
+  onToggleMaster,
+}: {
+  master: Participant | null;
+  participants: Participant[];
+  onToggleMaster: (id: string) => Promise<void>;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 text-xs font-mono px-3 py-1.5 border-2 border-ink rounded bg-cream-2 hover:bg-cream"
+      >
+        <span aria-hidden>👑</span>
+        <span>
+          {master ? (
+            <>
+              {t('host.masterIs')} <strong>{master.pseudo}</strong>
+            </>
+          ) : (
+            t('host.masterNone')
+          )}
+        </span>
+        <span aria-hidden className="text-ink-soft">
+          ▾
+        </span>
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-2 z-30 w-64 max-h-72 overflow-auto bg-white border-2 border-ink rounded shadow-pop p-2">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft px-2 py-1">
+            {t('host.masterChange')}
+          </p>
+          <ul className="space-y-1">
+            {participants.length === 0 && (
+              <li className="px-2 py-2 font-editorial italic text-xs text-ink-soft">
+                {t('host.waitingForPlayers')}
+              </li>
+            )}
+            {participants.map((p) => {
+              const isCurrent = p.id === master?.id;
+              return (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void onToggleMaster(p.id);
+                      setOpen(false);
+                    }}
+                    className={[
+                      'w-full text-left px-2 py-1.5 rounded text-sm flex items-center gap-2',
+                      isCurrent ? 'bg-basil/15 text-ink' : 'hover:bg-cream-2',
+                    ].join(' ')}
+                  >
+                    {isCurrent && <span aria-hidden>👑</span>}
+                    <span className="truncate flex-1">{p.pseudo}</span>
+                    {isCurrent && (
+                      <span className="text-[10px] font-mono text-basil-deep">
+                        {t('host.masterRevoke')}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WaitingPhase({
   shortCode,
   playUrl,
@@ -542,9 +664,12 @@ function WaitingPhase({
   mode,
   busy,
   hasPendingRound,
+  hasAnimator,
+  currentMasterId,
   onStart,
   onMove,
   onKick,
+  onToggleMaster,
 }: {
   shortCode: string;
   playUrl: string;
@@ -553,11 +678,17 @@ function WaitingPhase({
   mode: 'SOLO' | 'TEAMS';
   busy: boolean;
   hasPendingRound: boolean;
+  hasAnimator: boolean;
+  currentMasterId: string | null;
   onStart: () => Promise<void>;
   onMove: (participantId: string, teamId: string | null) => Promise<void>;
   onKick: (participantId: string) => Promise<void>;
+  onToggleMaster: (participantId: string) => Promise<void>;
 }): JSX.Element {
   const { t } = useTranslation();
+  // Mode B exige qu'un master soit désigné avant de démarrer.
+  const needsMaster = !hasAnimator && !currentMasterId;
+  const canStart = !busy && participants.length >= 1 && !needsMaster;
   return (
     <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-[auto_1fr]">
       <Card size="lg" tone="cream" className="text-center">
@@ -574,11 +705,7 @@ function WaitingPhase({
           <p className="font-display text-2xl">
             {t('host.participants')} <span className="text-ink-soft">({participants.length})</span>
           </p>
-          <Button
-            onClick={() => void onStart()}
-            disabled={busy || participants.length < 1}
-            size="lg"
-          >
+          <Button onClick={() => void onStart()} disabled={!canStart} size="lg">
             {busy
               ? t('host.starting')
               : hasPendingRound
@@ -587,10 +714,39 @@ function WaitingPhase({
           </Button>
         </div>
 
+        {!hasAnimator && (
+          <Card tone={currentMasterId ? 'basil' : 'cream'} size="md">
+            <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-1">
+              {t('host.masterSectionLabel')}
+            </p>
+            <p className="font-editorial italic text-sm text-ink-2">
+              {currentMasterId
+                ? t('host.masterPickedHint', {
+                    pseudo: participants.find((p) => p.id === currentMasterId)?.pseudo ?? '',
+                  })
+                : t('host.masterPickHint')}
+            </p>
+          </Card>
+        )}
+
         {mode === 'TEAMS' ? (
-          <TeamsView teams={teams} participants={participants} onMove={onMove} onKick={onKick} />
+          <TeamsView
+            teams={teams}
+            participants={participants}
+            currentMasterId={currentMasterId}
+            showMasterToggle={!hasAnimator}
+            onMove={onMove}
+            onKick={onKick}
+            onToggleMaster={onToggleMaster}
+          />
         ) : (
-          <ParticipantsList participants={participants} onKick={onKick} />
+          <ParticipantsList
+            participants={participants}
+            currentMasterId={currentMasterId}
+            showMasterToggle={!hasAnimator}
+            onKick={onKick}
+            onToggleMaster={onToggleMaster}
+          />
         )}
       </div>
     </div>
@@ -930,10 +1086,16 @@ function EndedScreen({ cumulative }: { cumulative: CumulativeScore[] }): JSX.Ele
 
 function ParticipantsList({
   participants,
+  currentMasterId,
+  showMasterToggle,
   onKick,
+  onToggleMaster,
 }: {
   participants: Participant[];
+  currentMasterId: string | null;
+  showMasterToggle: boolean;
   onKick: (id: string) => Promise<void>;
+  onToggleMaster: (id: string) => Promise<void>;
 }): JSX.Element {
   const { t } = useTranslation();
   if (participants.length === 0) {
@@ -948,21 +1110,47 @@ function ParticipantsList({
   return (
     <Card>
       <ul className="space-y-2">
-        {participants.map((p) => (
-          <li
-            key={p.id}
-            className="flex items-center justify-between gap-3 px-3 py-2 border-2 border-ink rounded bg-cream-2 group"
-          >
-            <span className="font-medium">{p.pseudo}</span>
-            <button
-              type="button"
-              onClick={() => void onKick(p.id)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-raspberry hover:underline"
+        {participants.map((p) => {
+          const isMaster = p.id === currentMasterId;
+          return (
+            <li
+              key={p.id}
+              className={[
+                'flex items-center justify-between gap-3 px-3 py-2 border-2 rounded group',
+                isMaster ? 'border-basil bg-basil/10' : 'border-ink bg-cream-2',
+              ].join(' ')}
             >
-              {t('host.kick')}
-            </button>
-          </li>
-        ))}
+              <span className="font-medium flex items-center gap-2">
+                {isMaster && <span aria-hidden>👑</span>}
+                {p.pseudo}
+              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                {showMasterToggle && (
+                  <button
+                    type="button"
+                    onClick={() => void onToggleMaster(p.id)}
+                    className={[
+                      'text-xs font-mono px-2 py-1 border-2 rounded transition-colors',
+                      isMaster
+                        ? 'border-basil text-basil-deep bg-white hover:bg-basil/20'
+                        : 'border-ink text-ink-soft hover:bg-cream',
+                    ].join(' ')}
+                    aria-pressed={isMaster}
+                  >
+                    {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => void onKick(p.id)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-raspberry hover:underline"
+                >
+                  {t('host.kick')}
+                </button>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </Card>
   );
@@ -971,13 +1159,19 @@ function ParticipantsList({
 function TeamsView({
   teams,
   participants,
+  currentMasterId,
+  showMasterToggle,
   onMove,
   onKick,
+  onToggleMaster,
 }: {
   teams: Team[];
   participants: Participant[];
+  currentMasterId: string | null;
+  showMasterToggle: boolean;
   onMove: (participantId: string, teamId: string | null) => Promise<void>;
   onKick: (id: string) => Promise<void>;
+  onToggleMaster: (id: string) => Promise<void>;
 }): JSX.Element {
   const { t } = useTranslation();
   return (
@@ -998,32 +1192,54 @@ function TeamsView({
               </p>
             ) : (
               <ul className="space-y-1">
-                {members.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="truncate">{p.pseudo}</span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <select
-                        aria-label={t('host.moveToTeam')}
-                        value={p.team_id ?? ''}
-                        onChange={(e) => void onMove(p.id, e.target.value || null)}
-                        className="text-xs border border-ink rounded px-1 py-0.5 bg-cream"
-                      >
-                        {teams.map((t2) => (
-                          <option key={t2.id} value={t2.id}>
-                            {t2.name}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => void onKick(p.id)}
-                        className="text-xs text-raspberry hover:underline"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                {members.map((p) => {
+                  const isMaster = p.id === currentMasterId;
+                  return (
+                    <li key={p.id} className="flex items-center justify-between gap-2 text-sm">
+                      <span className="truncate flex items-center gap-1">
+                        {isMaster && <span aria-hidden>👑</span>}
+                        {p.pseudo}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {showMasterToggle && (
+                          <button
+                            type="button"
+                            onClick={() => void onToggleMaster(p.id)}
+                            className={[
+                              'text-[10px] font-mono px-1.5 py-0.5 border rounded',
+                              isMaster
+                                ? 'border-basil text-basil-deep bg-basil/10'
+                                : 'border-ink-soft text-ink-soft hover:bg-cream',
+                            ].join(' ')}
+                            aria-pressed={isMaster}
+                            aria-label={isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
+                          >
+                            👤
+                          </button>
+                        )}
+                        <select
+                          aria-label={t('host.moveToTeam')}
+                          value={p.team_id ?? ''}
+                          onChange={(e) => void onMove(p.id, e.target.value || null)}
+                          className="text-xs border border-ink rounded px-1 py-0.5 bg-cream"
+                        >
+                          {teams.map((t2) => (
+                            <option key={t2.id} value={t2.id}>
+                              {t2.name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => void onKick(p.id)}
+                          className="text-xs text-raspberry hover:underline"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </Card>

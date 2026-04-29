@@ -98,6 +98,11 @@
   },
   "sessionConfig": {
     "title": "New blind test",
+    "animatorChoice": "How are we playing?",
+    "modeNoAnimatorTitle": "Everyone plays",
+    "modeNoAnimatorBody": "One player runs the game from their phone. Nobody sees the answers or the upcoming tracks. Best for parties at home, birthdays, hen/stag nights.",
+    "modeAnimatorTitle": "With an animator",
+    "modeAnimatorBody": "One person runs the game from the iPad/Mac, sees the answers and adjusts as needed, the others play. Best for bars, events, sessions with a dedicated host.",
     "nameLabel": "Game name (optional)",
     "namePlaceholder": "Ex: Marc's b-day Apr 29",
     "nameHint": "Helps you find this game in history. Leave empty if you don't need it.",
@@ -178,7 +183,15 @@
     "spotifyError": "Audio player failed to start.",
     "spotifyNotConnected": "Spotify account not linked to this workspace. Go to Settings → Spotify.",
     "spotifyPremiumRequired": "Spotify Premium required for full-track playback.",
-    "demoProviderHint": "Demo provider — audio is not auto-played. Launch the track from your own setup."
+    "demoProviderHint": "Demo provider — audio is not auto-played. Launch the track from your own setup.",
+    "masterSectionLabel": "Game animator",
+    "masterPickHint": "Mode B: pick a player as the animator — they'll run the game from their phone (next track, pause, adjust points). The Start button unlocks once an animator is picked.",
+    "masterPickedHint": "{{pseudo}} will run the game from their phone. You can swap animators any time before the game starts.",
+    "masterAssign": "Make animator",
+    "masterRevoke": "Remove animator",
+    "masterIs": "Animator:",
+    "masterNone": "No animator picked",
+    "masterChange": "Change animator"
   },
   "play": {
     "missingCode": "Invalid link. Ask the host to scan the QR code.",
