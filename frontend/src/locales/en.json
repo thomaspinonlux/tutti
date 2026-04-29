@@ -60,8 +60,14 @@
   },
   "tracks": {
     "title": "Tutti Tracks",
-    "comingSoon": "Playlist creation and session launch — steps 7 to 14 of the dev plan.",
-    "description": "This section will let you create blind test playlists, configure a session, and start a game."
+    "comingSoon": "Playlist persistence and session launch — steps 8 to 14 of the dev plan.",
+    "description": "This section will let you create blind test playlists, configure a session, and start a game.",
+    "searchHelp": "Search by artist or title. Results come from your establishment's active provider.",
+    "searchSection": "Search",
+    "searchPlaceholder": "Type an artist, a title…",
+    "pickedSection": "Shortlist",
+    "pickedEmpty": "No track shortlisted yet.",
+    "noResults": "No results. Try other keywords."
   },
   "quizz": {
     "title": "Tutti Quizz",

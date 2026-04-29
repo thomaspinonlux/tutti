@@ -1,0 +1,290 @@
+[
+  {
+    "id": "demo-001",
+    "artist": "Queen",
+    "title": "Bohemian Rhapsody",
+    "album": "A Night at the Opera",
+    "year": 1975,
+    "duration_ms": 354000,
+    "popularity": 95
+  },
+  {
+    "id": "demo-002",
+    "artist": "The Beatles",
+    "title": "Hey Jude",
+    "album": "Hey Jude",
+    "year": 1968,
+    "duration_ms": 431000,
+    "popularity": 92
+  },
+  {
+    "id": "demo-003",
+    "artist": "Michael Jackson",
+    "title": "Billie Jean",
+    "album": "Thriller",
+    "year": 1982,
+    "duration_ms": 294000,
+    "popularity": 94
+  },
+  {
+    "id": "demo-004",
+    "artist": "Nirvana",
+    "title": "Smells Like Teen Spirit",
+    "album": "Nevermind",
+    "year": 1991,
+    "duration_ms": 301000,
+    "popularity": 91
+  },
+  {
+    "id": "demo-005",
+    "artist": "Daft Punk",
+    "title": "Get Lucky",
+    "album": "Random Access Memories",
+    "year": 2013,
+    "duration_ms": 369000,
+    "popularity": 90
+  },
+  {
+    "id": "demo-006",
+    "artist": "Adele",
+    "title": "Rolling in the Deep",
+    "album": "21",
+    "year": 2010,
+    "duration_ms": 228000,
+    "popularity": 93
+  },
+  {
+    "id": "demo-007",
+    "artist": "Stromae",
+    "title": "Alors on danse",
+    "album": "Cheese",
+    "year": 2009,
+    "duration_ms": 207000,
+    "popularity": 88
+  },
+  {
+    "id": "demo-008",
+    "artist": "Ed Sheeran",
+    "title": "Shape of You",
+    "album": "Divide",
+    "year": 2017,
+    "duration_ms": 234000,
+    "popularity": 96
+  },
+  {
+    "id": "demo-009",
+    "artist": "Coldplay",
+    "title": "Yellow",
+    "album": "Parachutes",
+    "year": 2000,
+    "duration_ms": 269000,
+    "popularity": 89
+  },
+  {
+    "id": "demo-010",
+    "artist": "Oasis",
+    "title": "Wonderwall",
+    "album": "(What's the Story) Morning Glory?",
+    "year": 1995,
+    "duration_ms": 258000,
+    "popularity": 90
+  },
+  {
+    "id": "demo-011",
+    "artist": "Beyoncé",
+    "title": "Halo",
+    "album": "I Am... Sasha Fierce",
+    "year": 2008,
+    "duration_ms": 261000,
+    "popularity": 91
+  },
+  {
+    "id": "demo-012",
+    "artist": "Pharrell Williams",
+    "title": "Happy",
+    "album": "Girl",
+    "year": 2013,
+    "duration_ms": 233000,
+    "popularity": 89
+  },
+  {
+    "id": "demo-013",
+    "artist": "Lady Gaga",
+    "title": "Bad Romance",
+    "album": "The Fame Monster",
+    "year": 2009,
+    "duration_ms": 295000,
+    "popularity": 92
+  },
+  {
+    "id": "demo-014",
+    "artist": "Imagine Dragons",
+    "title": "Believer",
+    "album": "Evolve",
+    "year": 2017,
+    "duration_ms": 204000,
+    "popularity": 88
+  },
+  {
+    "id": "demo-015",
+    "artist": "Bob Marley & The Wailers",
+    "title": "No Woman, No Cry",
+    "album": "Live!",
+    "year": 1975,
+    "duration_ms": 267000,
+    "popularity": 87
+  },
+  {
+    "id": "demo-016",
+    "artist": "Indochine",
+    "title": "L'Aventurier",
+    "album": "L'Aventurier",
+    "year": 1982,
+    "duration_ms": 247000,
+    "popularity": 80
+  },
+  {
+    "id": "demo-017",
+    "artist": "Téléphone",
+    "title": "Cendrillon",
+    "album": "Dure Limite",
+    "year": 1982,
+    "duration_ms": 258000,
+    "popularity": 82
+  },
+  {
+    "id": "demo-018",
+    "artist": "Édith Piaf",
+    "title": "La Vie en rose",
+    "album": "La Vie en rose",
+    "year": 1947,
+    "duration_ms": 184000,
+    "popularity": 88
+  },
+  {
+    "id": "demo-019",
+    "artist": "Serge Gainsbourg",
+    "title": "La Javanaise",
+    "album": "Confidentiel",
+    "year": 1963,
+    "duration_ms": 162000,
+    "popularity": 78
+  },
+  {
+    "id": "demo-020",
+    "artist": "Daft Punk",
+    "title": "Around the World",
+    "album": "Homework",
+    "year": 1997,
+    "duration_ms": 437000,
+    "popularity": 85
+  },
+  {
+    "id": "demo-021",
+    "artist": "ABBA",
+    "title": "Dancing Queen",
+    "album": "Arrival",
+    "year": 1976,
+    "duration_ms": 230000,
+    "popularity": 91
+  },
+  {
+    "id": "demo-022",
+    "artist": "Fleetwood Mac",
+    "title": "Dreams",
+    "album": "Rumours",
+    "year": 1977,
+    "duration_ms": 257000,
+    "popularity": 89
+  },
+  {
+    "id": "demo-023",
+    "artist": "AC/DC",
+    "title": "Highway to Hell",
+    "album": "Highway to Hell",
+    "year": 1979,
+    "duration_ms": 208000,
+    "popularity": 90
+  },
+  {
+    "id": "demo-024",
+    "artist": "Eagles",
+    "title": "Hotel California",
+    "album": "Hotel California",
+    "year": 1976,
+    "duration_ms": 391000,
+    "popularity": 92
+  },
+  {
+    "id": "demo-025",
+    "artist": "Pink Floyd",
+    "title": "Another Brick in the Wall, Part 2",
+    "album": "The Wall",
+    "year": 1979,
+    "duration_ms": 238000,
+    "popularity": 88
+  },
+  {
+    "id": "demo-026",
+    "artist": "Bruno Mars",
+    "title": "Uptown Funk",
+    "album": "Uptown Special",
+    "year": 2014,
+    "duration_ms": 270000,
+    "popularity": 94
+  },
+  {
+    "id": "demo-027",
+    "artist": "The Weeknd",
+    "title": "Blinding Lights",
+    "album": "After Hours",
+    "year": 2019,
+    "duration_ms": 200000,
+    "popularity": 97
+  },
+  {
+    "id": "demo-028",
+    "artist": "Billie Eilish",
+    "title": "Bad Guy",
+    "album": "When We All Fall Asleep, Where Do We Go?",
+    "year": 2019,
+    "duration_ms": 194000,
+    "popularity": 93
+  },
+  {
+    "id": "demo-029",
+    "artist": "Dua Lipa",
+    "title": "Levitating",
+    "album": "Future Nostalgia",
+    "year": 2020,
+    "duration_ms": 203000,
+    "popularity": 90
+  },
+  {
+    "id": "demo-030",
+    "artist": "Måneskin",
+    "title": "Beggin'",
+    "album": "Chosen",
+    "year": 2017,
+    "duration_ms": 211000,
+    "popularity": 88
+  },
+  {
+    "id": "demo-031",
+    "artist": "Maître Gims",
+    "title": "Bella",
+    "album": "Subliminal",
+    "year": 2013,
+    "duration_ms": 240000,
+    "popularity": 82
+  },
+  {
+    "id": "demo-032",
+    "artist": "Christine and the Queens",
+    "title": "Christine",
+    "album": "Chaleur humaine",
+    "year": 2014,
+    "duration_ms": 235000,
+    "popularity": 80
+  }
+]

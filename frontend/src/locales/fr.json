@@ -60,8 +60,14 @@
   },
   "tracks": {
     "title": "Tutti Tracks",
-    "comingSoon": "Création de playlists et lancement de session — étapes 7 à 14 du plan de dev.",
-    "description": "Cette section permettra de créer tes playlists de blind test, configurer une session, et lancer une partie."
+    "comingSoon": "Persistance des playlists et lancement de session — étapes 8 à 14 du plan de dev.",
+    "description": "Cette section permettra de créer tes playlists de blind test, configurer une session, et lancer une partie.",
+    "searchHelp": "Cherche par artiste ou titre. Les résultats viennent du provider actif de ton établissement.",
+    "searchSection": "Recherche",
+    "searchPlaceholder": "Tape un artiste, un titre…",
+    "pickedSection": "Présélection",
+    "pickedEmpty": "Aucun morceau présélectionné pour l'instant.",
+    "noResults": "Aucun résultat. Essaie avec d'autres mots-clés."
   },
   "quizz": {
     "title": "Tutti Quizz",

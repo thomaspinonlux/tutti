@@ -20,6 +20,7 @@ import workspacesRouter from './routes/workspaces.js';
 import authRouter from './routes/auth.js';
 import meRouter from './routes/me.js';
 import establishmentRouter from './routes/establishment.js';
+import musicRouter from './routes/music.js';
 import { prisma } from './lib/prisma.js';
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -63,6 +64,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/me', meRouter);
 app.use('/api/workspaces', workspacesRouter);
 app.use('/api/establishment', establishmentRouter);
+app.use('/api/music', musicRouter);
 
 // 404 par défaut
 app.use((_req, res) => {
