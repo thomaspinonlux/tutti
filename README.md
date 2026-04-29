@@ -93,7 +93,7 @@ Tout commit poussé sur `main` redéploie automatiquement les deux services.
 - [x] **Étape 2 — Base de données et schéma Prisma** ✅ (validé le 2026-04-29)
 - [x] **Étape 3 — Authentification utilisateurs (email/password Supabase)** ✅ (validé le 2026-04-29)
 - [x] **Étape 4 — Internationalisation (FR + EN)** ✅ (validé le 2026-04-29)
-- [ ] Étape 5 — Direction visuelle Pop Cocktail
+- [x] **Étape 5 — Direction visuelle Pop Cocktail** ✅ (validé le 2026-04-29)
 - [ ] Étape 6 — Page d'accueil host + choix du jeu
 - [ ] Étape 7 — Module Music Provider (Demo + Spotify)
 - [ ] Étape 8 — Création et édition de playlists Tutti Tracks
