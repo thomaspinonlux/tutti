@@ -2,6 +2,7 @@
  * <AdminLayout /> — coque de l'espace admin (sidebar + main content via Outlet).
  *
  * Wrappé par <ProtectedRoute /> dans App.tsx.
+ * Bloque la navigation sous `md` (cf. docs/RESPONSIVE.md).
  * L'établissement courant est fetché une fois ici et exposé aux pages enfants
  * via useOutletContext (cf. type EstablishmentContext).
  */
@@ -9,6 +10,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useOutletContext } from 'react-router-dom';
 import { Sidebar } from '../../components/admin/Sidebar.js';
+import { MinScreen } from '../../components/MinScreen.js';
 import { api, ApiError } from '../../lib/api.js';
 import { MultiColorBar } from '../../components/ui/index.js';
 
@@ -61,15 +63,17 @@ export function AdminLayout(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen flex bg-cream">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <MultiColorBar height="sm" />
-        <main className="flex-1 px-6 md:px-10 py-8">
-          <Outlet context={ctx} />
-        </main>
+    <MinScreen min="md">
+      <div className="min-h-screen flex bg-cream">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <MultiColorBar height="sm" />
+          <main className="flex-1 px-6 md:px-10 py-8">
+            <Outlet context={ctx} />
+          </main>
+        </div>
       </div>
-    </div>
+    </MinScreen>
   );
 }
 

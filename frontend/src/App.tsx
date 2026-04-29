@@ -1,3 +1,18 @@
+/**
+ * Tutti — racine du routeur.
+ *
+ * IMPORTANT : toute nouvelle route doit respecter la stratégie responsive
+ * documentée dans `docs/RESPONSIVE.md`. En résumé :
+ *   - mobile-first systématique
+ *   - /admin/*  : bloqué sub-md, 2 cols md→xl (panel en modale), 3 cols xl+
+ *   - /host     : bloqué sub-lg, 2x2 lg→xl, 4 cols xl+
+ *   - /screen   : adaptatif lg→2xl, polices XL en 2xl pour TV
+ *   - /play     : mobile-first absolu, max-w-[500px] centré sur grands écrans
+ *   - public    : 360 px → 2xl
+ *
+ * Outils dispo : <MinScreen min="md|lg|xl"> + useBreakpoint().
+ */
+
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { initAuth } from './stores/auth.js';

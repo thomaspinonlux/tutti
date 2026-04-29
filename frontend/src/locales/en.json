@@ -92,7 +92,8 @@
     "aliasTitleLabel": "Title aliases",
     "aliasTitleHint": "Same rules: shorter versions, common mistakes, etc.",
     "aliasPlaceholder": "Add an alias…",
-    "aliasRemove": "Remove alias"
+    "aliasRemove": "Remove alias",
+    "addTrackCta": "Add a track"
   },
   "quizz": {
     "title": "Tutti Quizz",
@@ -146,5 +147,12 @@
     "switchLabel": "Language",
     "fr": "Français",
     "en": "English"
+  },
+  "responsive": {
+    "tooSmallEyebrow": "Screen too small",
+    "tooSmallTitle": "This page needs more room",
+    "tooSmallBody": "Come back on a screen at least {{width}} wide.",
+    "tooSmallHint": "To play a live session, open /play on your phone — everything is optimized.",
+    "tooSmallCta": "Back to home"
   }
 }

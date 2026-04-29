@@ -52,6 +52,21 @@ pnpm typecheck    # Vérification de types
 pnpm format       # Formatage Prettier
 ```
 
+## Stratégie responsive
+
+Toutes les règles (breakpoints, comportement par route, cibles tactiles, checklist) sont dans **[`docs/RESPONSIVE.md`](docs/RESPONSIVE.md)**.
+
+**TL;DR** :
+
+- Mobile-first systématique (≥ 360 px).
+- `/admin/*` : bloqué sub-md, 2 cols md→xl (panel droit en modale), 3 cols xl+.
+- `/host` (étape 9+) : bloqué sub-lg, 2 × 2 lg→xl, 4 cols xl+.
+- `/screen` (étape 12+) : adaptatif lg→2xl, polices XL pour TV en 2xl.
+- `/play` (étape 9+) : mobile-first absolu (375–430 px = la majorité de l'usage), centré max 500 px sur grands écrans.
+- Pages publiques : 360 px → 2xl, sans blocage.
+
+Outils : `<MinScreen min="md|lg|xl">` + `useBreakpoint()`.
+
 ## Internationalisation
 
 V1 supporte **français** (défaut) et **anglais**. Détection automatique de la langue du navigateur, switch manuel via le composant `<LanguageSwitch />` (persisté en localStorage).
