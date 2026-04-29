@@ -27,13 +27,18 @@ import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { AccountPage } from './pages/admin/AccountPage.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 
-// Lazy : chunks dédiés aux pages volumineuses
+// Lazy : chunks dédiés aux pages volumineuses (audio, dnd, qrcode, socket.io…)
 const DesignSystemPage = lazy(() =>
   import('./pages/DesignSystemPage.js').then((m) => ({ default: m.DesignSystemPage })),
 );
 const PlaylistEditPage = lazy(() =>
   import('./pages/admin/PlaylistEditPage.js').then((m) => ({ default: m.PlaylistEditPage })),
 );
+const SessionConfigPage = lazy(() =>
+  import('./pages/admin/SessionConfigPage.js').then((m) => ({ default: m.SessionConfigPage })),
+);
+const HostPage = lazy(() => import('./pages/HostPage.js').then((m) => ({ default: m.HostPage })));
+const PlayPage = lazy(() => import('./pages/PlayPage.js').then((m) => ({ default: m.PlayPage })));
 
 function App(): JSX.Element {
   useEffect(() => {
@@ -71,7 +76,35 @@ function App(): JSX.Element {
           <Route path="quizz" element={<QuizzPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="account" element={<AccountPage />} />
+          <Route
+            path="sessions/new"
+            element={
+              <Suspense fallback={null}>
+                <SessionConfigPage />
+              </Suspense>
+            }
+          />
         </Route>
+
+        {/* Pages session : /host (host iPad) et /play (joueur mobile). */}
+        <Route
+          path="/host"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={null}>
+                <HostPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/play"
+          element={
+            <Suspense fallback={null}>
+              <PlayPage />
+            </Suspense>
+          }
+        />
 
         {/* Design system : visible uniquement en dev. */}
         {import.meta.env.DEV && (

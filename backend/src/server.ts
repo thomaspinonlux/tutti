@@ -14,7 +14,6 @@ import 'dotenv/config';
 import { createServer } from 'node:http';
 import express from 'express';
 import cors from 'cors';
-import { Server as SocketIOServer } from 'socket.io';
 import type { HealthResponse } from '@tutti/shared';
 import workspacesRouter from './routes/workspaces.js';
 import authRouter from './routes/auth.js';
@@ -22,8 +21,10 @@ import meRouter from './routes/me.js';
 import establishmentRouter from './routes/establishment.js';
 import musicRouter from './routes/music.js';
 import playlistsRouter from './routes/playlists.js';
+import sessionsRouter from './routes/sessions.js';
 import spotifyAuthRouter from './music/spotify/auth.js';
 import { prisma } from './lib/prisma.js';
+import { initSocketIO } from './socket/index.js';
 
 const PORT = Number(process.env.PORT ?? 3001);
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
@@ -68,6 +69,7 @@ app.use('/api/workspaces', workspacesRouter);
 app.use('/api/establishment', establishmentRouter);
 app.use('/api/music', musicRouter);
 app.use('/api/playlists', playlistsRouter);
+app.use('/api/sessions', sessionsRouter);
 app.use('/api/auth/spotify', spotifyAuthRouter);
 
 // 404 par défaut
@@ -77,21 +79,9 @@ app.use((_req, res) => {
   });
 });
 
-// ───── Socket.IO (squelette, sera étendu à l'étape 9+) ────────────────────
+// ───── Socket.IO (étape 9+ : auth + rooms par session) ────────────────────
 
-const io = new SocketIOServer(httpServer, {
-  cors: {
-    origin: FRONTEND_URL,
-    credentials: true,
-  },
-});
-
-io.on('connection', (socket) => {
-  console.info(`[socket] client connecté: ${socket.id}`);
-  socket.on('disconnect', (reason) => {
-    console.info(`[socket] client déconnecté: ${socket.id} (${reason})`);
-  });
-});
+const io = initSocketIO(httpServer);
 
 // ───── Démarrage ──────────────────────────────────────────────────────────
 

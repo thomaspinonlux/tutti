@@ -116,3 +116,68 @@ export interface Track {
 export interface PlaylistWithTracks extends Playlist {
   tracks: Track[];
 }
+
+// ───── Sessions Tutti Tracks (étape 9+) ───────────────────────────────────
+
+export type GameType = 'TRACKS' | 'QUIZZ';
+export type GameMode = 'SOLO' | 'TEAMS';
+export type SessionStatus = 'WAITING' | 'PLAYING' | 'ENDED';
+
+export interface Team {
+  id: string;
+  name: string;
+  color: string; // hex #RRGGBB (parmi les couleurs Pop Cocktail)
+}
+
+export interface Session {
+  id: string;
+  establishment_id: string;
+  game_type: GameType;
+  status: SessionStatus;
+  short_code: string; // ex. "KOMP-7K2X"
+  mode: GameMode;
+  teams_config: Team[] | null;
+  language: string;
+  playlist_id: string | null;
+  question_set_id: string | null;
+  current_index: number;
+  created_at: string;
+  started_at: string | null;
+  ended_at: string | null;
+}
+
+export interface Participant {
+  id: string;
+  session_id: string;
+  pseudo: string;
+  team_id: string | null;
+  is_master: boolean;
+  is_kicked: boolean;
+  joined_at: string;
+}
+
+export interface SessionWithParticipants extends Session {
+  participants: Participant[];
+}
+
+/** Vue publique côté joueur (pas d'établissement, pas de stats sensibles). */
+export interface PublicSessionView {
+  short_code: string;
+  status: SessionStatus;
+  mode: GameMode;
+  teams_config: Team[] | null;
+  language: string;
+  game_type: GameType;
+  /** Nom de l'établissement pour l'écran d'accueil joueur. */
+  establishment_name: string;
+  /** Couleur d'accent pour le branding (étape 6). */
+  branding_color: string | null;
+  /** Liste minimale des participants (pseudo + team_id seuls — pas d'IDs internes). */
+  participants_count: number;
+}
+
+/** Réponse au /join : retourne un token JWT pour la connexion Socket.IO. */
+export interface JoinResponse {
+  participant: Participant;
+  token: string;
+}
