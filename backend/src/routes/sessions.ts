@@ -44,7 +44,12 @@ async function ensureOwnSession(sessionId: string, workspaceId: string) {
         orderBy: { position: 'asc' },
         include: {
           playlist: {
-            select: { id: true, name: true, level: true, _count: { select: { tracks: true } } },
+            select: {
+              id: true,
+              name: true,
+              level: true,
+              _count: { select: { playlist_tracks: true } },
+            },
           },
         },
       },
@@ -63,7 +68,7 @@ function serializeSession(session: NonNullable<EnrichedSession>) {
         id: r.playlist.id,
         name: r.playlist.name,
         level: r.playlist.level,
-        tracks_count: r.playlist._count.tracks,
+        tracks_count: r.playlist._count.playlist_tracks,
       },
     })),
   };
@@ -426,7 +431,7 @@ router.post(
     // Vérif tenant playlist
     const playlist = await prisma.playlist.findFirst({
       where: { id: parsed.data.playlist_id, establishment: { workspace_id: workspaceId } },
-      include: { _count: { select: { tracks: true } } },
+      include: { _count: { select: { playlist_tracks: true } } },
     });
     if (!playlist) {
       res
@@ -434,7 +439,7 @@ router.post(
         .json({ error: { code: 'PLAYLIST_NOT_FOUND', message: 'Playlist introuvable' } });
       return;
     }
-    if (playlist._count.tracks === 0) {
+    if (playlist._count.playlist_tracks === 0) {
       res.status(400).json({ error: { code: 'EMPTY_PLAYLIST', message: 'Playlist vide' } });
       return;
     }
@@ -453,7 +458,12 @@ router.post(
         },
         include: {
           playlist: {
-            select: { id: true, name: true, level: true, _count: { select: { tracks: true } } },
+            select: {
+              id: true,
+              name: true,
+              level: true,
+              _count: { select: { playlist_tracks: true } },
+            },
           },
         },
       });
@@ -463,7 +473,7 @@ router.post(
           id: round.playlist.id,
           name: round.playlist.name,
           level: round.playlist.level,
-          tracks_count: round.playlist._count.tracks,
+          tracks_count: round.playlist._count.playlist_tracks,
         },
       };
       broadcastToSession(req.params.id, 'round:created', { round: enriched });
@@ -503,7 +513,12 @@ router.post(
         data: { status: 'PLAYING' as RoundStatus, started_at: new Date() },
         include: {
           playlist: {
-            select: { id: true, name: true, level: true, _count: { select: { tracks: true } } },
+            select: {
+              id: true,
+              name: true,
+              level: true,
+              _count: { select: { playlist_tracks: true } },
+            },
           },
         },
       });
@@ -513,7 +528,7 @@ router.post(
           id: round.playlist.id,
           name: round.playlist.name,
           level: round.playlist.level,
-          tracks_count: round.playlist._count.tracks,
+          tracks_count: round.playlist._count.playlist_tracks,
         },
       };
       broadcastToSession(req.params.id, 'round:started', { round: enriched });
@@ -544,7 +559,12 @@ router.post(
         data: { status: 'ENDED' as RoundStatus, ended_at: new Date() },
         include: {
           playlist: {
-            select: { id: true, name: true, level: true, _count: { select: { tracks: true } } },
+            select: {
+              id: true,
+              name: true,
+              level: true,
+              _count: { select: { playlist_tracks: true } },
+            },
           },
         },
       });
@@ -554,7 +574,7 @@ router.post(
           id: round.playlist.id,
           name: round.playlist.name,
           level: round.playlist.level,
-          tracks_count: round.playlist._count.tracks,
+          tracks_count: round.playlist._count.playlist_tracks,
         },
       };
       broadcastToSession(req.params.id, 'round:ended', { round: enriched });

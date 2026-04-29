@@ -49,7 +49,12 @@ model WorkspaceMember {
   workspace_id String   @db.Uuid
   user_id      String   @db.Uuid // référence auth.users.id (Supabase Auth)
   role         Role     @default(HOST)
-  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  // Système de parrainage (V1.1) — auto-généré à la création du membre,
+  // 6 caractères alphanumériques majuscules (ex. "K7P2X9").
+  referral_code String?  @unique @db.VarChar(8)
+  // Code du parrain si l'utilisateur s'est inscrit via un lien filleul.
+  referrer_code String?  @db.VarChar(8)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
@@ -129,9 +134,9 @@ model Playlist {
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   updated_at        DateTime @updatedAt @db.Timestamptz(6)
 
-  establishment  Establishment  @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
-  tracks         Track[]
-  session_rounds SessionRound[]
+  establishment   Establishment   @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
+  playlist_tracks PlaylistTrack[]
+  session_rounds  SessionRound[]
 
   @@index([establishment_id])
   @@map("playlists")
@@ -146,31 +151,69 @@ enum Level {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  TRACKS (morceaux dans une playlist)
+//  ARTISTS (catalogue partagé global, aliases globaux pour matching vocal)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Artist {
+  id             String   @id @default(uuid()) @db.Uuid
+  canonical_name String   @unique
+  aliases        String[] @default([]) // ex: ["stromaé", "stomei", "stromaye"]
+  language       String?  @db.VarChar(8)
+  origin_country String?  @db.VarChar(8)
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @updatedAt @db.Timestamptz(6)
+
+  tracks Track[]
+
+  @@map("artists")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  TRACKS (catalogue partagé global, lié à un Artist, indépendant des playlists)
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Track {
   id                String   @id @default(uuid()) @db.Uuid
-  playlist_id       String   @db.Uuid
-  position          Int
-  provider          String   @db.VarChar(32) // "spotify", "demo"
-  provider_track_id String   @db.VarChar(128)
-  artist            String
-  title             String
+  artist_id         String   @db.Uuid
+  canonical_title   String
+  aliases           String[] @default([]) // alias du titre (ex: "alors on dance", "danse alors")
   album             String?
   year              Int?
   genre             String?
   popularity        Int? // 0-100, score Spotify
   duration_ms       Int?
   cover_url         String?
-  artist_aliases    String[] @default([]) // strings normalisées pour fuzzy match
-  title_aliases     String[] @default([])
+  provider          String   @db.VarChar(32) // "spotify", "demo"
+  provider_track_id String   @db.VarChar(128)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
 
-  playlist Playlist @relation(fields: [playlist_id], references: [id], onDelete: Cascade)
+  artist          Artist          @relation(fields: [artist_id], references: [id], onDelete: Restrict)
+  playlist_tracks PlaylistTrack[]
+  voice_logs      VoiceTranscript[]
 
-  @@index([playlist_id, position])
+  @@index([artist_id])
+  @@index([provider, provider_track_id])
   @@map("tracks")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  PLAYLIST_TRACKS (table de jointure playlist ↔ track avec ordre)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PlaylistTrack {
+  id          String   @id @default(uuid()) @db.Uuid
+  playlist_id String   @db.Uuid
+  track_id    String   @db.Uuid
+  position    Int
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  playlist Playlist @relation(fields: [playlist_id], references: [id], onDelete: Cascade)
+  track    Track    @relation(fields: [track_id], references: [id], onDelete: Cascade)
+
+  @@unique([playlist_id, position])
+  @@unique([playlist_id, track_id])
+  @@index([track_id])
+  @@map("playlist_tracks")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -264,14 +307,19 @@ model Session {
   // Pause master en mode B. Pas d'auto-resume — c'est le master qui
   // déclenche la reprise. Le timer continue de courir (V1 simple).
   is_paused        Boolean       @default(false)
+  // Durée de la fenêtre micro joueur (10s défaut, 15s en mode "détendu").
+  buzz_window_seconds Int        @default(10)
+  // Cap technique de participants par session (15 V1 pour B2C).
+  max_participants Int           @default(15)
   created_at       DateTime      @default(now()) @db.Timestamptz(6)
   started_at       DateTime?     @db.Timestamptz(6)
   ended_at         DateTime?     @db.Timestamptz(6)
 
-  establishment Establishment  @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
-  participants  Participant[]
-  rounds        SessionRound[] // succession de manches
-  score_events  ScoreEvent[]
+  establishment     Establishment     @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
+  participants      Participant[]
+  rounds            SessionRound[] // succession de manches
+  score_events      ScoreEvent[]
+  voice_transcripts VoiceTranscript[]
 
   @@index([short_code])
   @@index([establishment_id])
@@ -346,8 +394,9 @@ model Participant {
   fingerprint String? // empreinte navigateur pour anti-spam
   joined_at   DateTime @default(now()) @db.Timestamptz(6)
 
-  session      Session      @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  score_events ScoreEvent[]
+  session           Session           @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  score_events      ScoreEvent[]
+  voice_transcripts VoiceTranscript[]
 
   @@index([session_id])
   @@map("participants")
@@ -395,4 +444,28 @@ enum ScoreEventType {
   MANUAL_ADJUSTMENT
 
   @@map("score_event_type")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  VOICE_TRANSCRIPTS (logging Whisper pour auto-apprentissage des aliases V1.1)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model VoiceTranscript {
+  id             String   @id @default(uuid()) @db.Uuid
+  session_id     String   @db.Uuid
+  participant_id String   @db.Uuid
+  track_id       String   @db.Uuid
+  transcript     String
+  matched_artist Boolean  @default(false)
+  matched_title  Boolean  @default(false)
+  confidence     Float?
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  session     Session     @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+  track       Track       @relation(fields: [track_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+  @@index([track_id])
+  @@map("voice_transcripts")
 }

@@ -42,7 +42,7 @@ const SESSION_INCLUDE = {
           id: true,
           name: true,
           level: true,
-          _count: { select: { tracks: true } },
+          _count: { select: { playlist_tracks: true } },
         },
       },
     },
@@ -68,7 +68,7 @@ function serializeSession(session: SessionWithIncludes) {
         id: r.playlist.id,
         name: r.playlist.name,
         level: r.playlist.level,
-        tracks_count: r.playlist._count.tracks,
+        tracks_count: r.playlist._count.playlist_tracks,
       },
     })),
   };

@@ -60,11 +60,13 @@ const PLAYLIST_LIGHT = {
   id: true,
   name: true,
   level: true,
-  _count: { select: { tracks: true } },
+  _count: { select: { playlist_tracks: true } },
 } as const;
 
 function enrichRound<
-  R extends { playlist: { id: string; name: string; level: string; _count: { tracks: number } } },
+  R extends {
+    playlist: { id: string; name: string; level: string; _count: { playlist_tracks: number } };
+  },
 >(round: R) {
   return {
     ...round,
@@ -72,7 +74,7 @@ function enrichRound<
       id: round.playlist.id,
       name: round.playlist.name,
       level: round.playlist.level,
-      tracks_count: round.playlist._count.tracks,
+      tracks_count: round.playlist._count.playlist_tracks,
     },
   };
 }
@@ -133,7 +135,7 @@ router.post('/playlists', async (req: Request<{ id: string }>, res: Response): P
       language: true,
       is_express: true,
       is_official_tutti: true,
-      _count: { select: { tracks: true } },
+      _count: { select: { playlist_tracks: true } },
     },
   });
   res.json({
@@ -146,7 +148,7 @@ router.post('/playlists', async (req: Request<{ id: string }>, res: Response): P
       language: p.language,
       is_express: p.is_express,
       is_official_tutti: p.is_official_tutti,
-      tracks_count: p._count.tracks,
+      tracks_count: p._count.playlist_tracks,
     })),
   });
 });
@@ -341,7 +343,7 @@ router.post('/pick-round', async (req: Request<{ id: string }>, res: Response): 
   }
   const playlist = await prisma.playlist.findFirst({
     where: { id: parsed.data.playlist_id, establishment_id: session.establishment_id },
-    include: { _count: { select: { tracks: true } } },
+    include: { _count: { select: { playlist_tracks: true } } },
   });
   if (!playlist) {
     res.status(404).json({
@@ -349,7 +351,7 @@ router.post('/pick-round', async (req: Request<{ id: string }>, res: Response): 
     });
     return;
   }
-  if (playlist._count.tracks === 0) {
+  if (playlist._count.playlist_tracks === 0) {
     res.status(400).json({ error: { code: 'EMPTY_PLAYLIST', message: 'Playlist vide' } });
     return;
   }

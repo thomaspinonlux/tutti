@@ -17,8 +17,17 @@ import { clearActiveTrack, setActiveTrack, setCooldown, getActiveTrack } from '.
 
 export const LISTEN_DURATION_MS = 30_000; // 30s par défaut V1
 
+// Inclut la playlist avec ses morceaux ordonnés. Track relie maintenant un
+// Artist (catalogue partagé), donc on l'inclut aussi pour avoir artist.canonical_name.
 const ROUND_INCLUDE = {
-  playlist: { include: { tracks: { orderBy: { position: 'asc' } as const } } },
+  playlist: {
+    include: {
+      playlist_tracks: {
+        orderBy: { position: 'asc' as const },
+        include: { track: { include: { artist: true } } },
+      },
+    },
+  },
 } as const;
 
 export type RoundWithTracks = NonNullable<Awaited<ReturnType<typeof findRoundForSession>>>;
@@ -27,7 +36,7 @@ const PLAYLIST_LIGHT = {
   id: true,
   name: true,
   level: true,
-  _count: { select: { tracks: true } },
+  _count: { select: { playlist_tracks: true } },
 } as const;
 
 /**
@@ -73,8 +82,9 @@ export async function buildAndBroadcastTrack(
   round: RoundWithTracks,
   trackIndex: number,
 ): Promise<CurrentTrackState | null> {
-  const track = round.playlist.tracks[trackIndex];
-  if (!track) return null;
+  const playlistTrack = round.playlist.playlist_tracks[trackIndex];
+  if (!playlistTrack) return null;
+  const track = playlistTrack.track;
 
   const state: CurrentTrackState = {
     round_id: round.id,
@@ -82,8 +92,8 @@ export async function buildAndBroadcastTrack(
     track_id: track.id,
     provider: track.provider as CurrentTrackState['provider'],
     provider_track_id: track.provider_track_id,
-    artist: track.artist,
-    title: track.title,
+    artist: track.artist.canonical_name,
+    title: track.canonical_title,
     album: track.album,
     year: track.year,
     cover_url: track.cover_url,
@@ -128,7 +138,7 @@ export async function advanceToNextOrEndRound(
   { ended: true; round: EnrichedEndedRound | null } | { ended: false; state: CurrentTrackState }
 > {
   const nextIndex = round.current_track_index + 1;
-  if (nextIndex < round.playlist.tracks.length) {
+  if (nextIndex < round.playlist.playlist_tracks.length) {
     const state = await buildAndBroadcastTrack(sessionId, round, nextIndex);
     if (!state) {
       // ne devrait pas arriver, on a déjà vérifié l'index
@@ -177,7 +187,7 @@ export async function endRoundInternal(
           id: updated.playlist.id,
           name: updated.playlist.name,
           level: updated.playlist.level,
-          tracks_count: updated.playlist._count.tracks,
+          tracks_count: updated.playlist._count.playlist_tracks,
         },
       }
     : null;
@@ -202,7 +212,7 @@ export async function revealCurrentTrack(
 
   const track = await prisma.track.findUnique({
     where: { id: active.track_id },
-    select: { artist: true, title: true },
+    select: { canonical_title: true, artist: { select: { canonical_name: true } } },
   });
   if (!track) return null;
 
@@ -210,9 +220,13 @@ export async function revealCurrentTrack(
   const payload = {
     round_id: roundId,
     track_index: active.track_index,
-    artist: track.artist,
-    title: track.title,
+    artist: track.artist.canonical_name,
+    title: track.canonical_title,
   };
   broadcastToSession(sessionId, 'track:revealed', payload);
-  return { artist: track.artist, title: track.title, track_index: active.track_index };
+  return {
+    artist: track.artist.canonical_name,
+    title: track.canonical_title,
+    track_index: active.track_index,
+  };
 }

@@ -156,6 +156,14 @@ export interface Session {
    * pendant la pause côté UI (V1 simple) ; seul l'audio est mis en pause.
    */
   is_paused: boolean;
+  /**
+   * Durée de la fenêtre micro joueur en secondes (10 par défaut, 15 en
+   * mode "détendu"). C'est la durée pendant laquelle le micro reste ouvert
+   * après un buzz pour capter la réponse vocale.
+   */
+  buzz_window_seconds: number;
+  /** Cap technique de participants par session (15 par défaut V1 B2C). */
+  max_participants: number;
   created_at: string;
   started_at: string | null;
   ended_at: string | null;

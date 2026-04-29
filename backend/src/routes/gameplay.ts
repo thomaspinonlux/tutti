@@ -184,7 +184,7 @@ router.post(
 
     const track = await prisma.track.findUnique({
       where: { id: state.track_id },
-      select: { artist: true, title: true },
+      select: { canonical_title: true, artist: { select: { canonical_name: true } } },
     });
     if (!track) {
       res.status(500).json({ error: { code: 'TRACK_LOST', message: 'Track introuvable' } });
@@ -240,7 +240,7 @@ router.post(
       artist_points: score.artist_points,
       title_points: score.title_points,
       total_points: score.total,
-      reveal: { artist: track.artist, title: track.title },
+      reveal: { artist: track.artist.canonical_name, title: track.canonical_title },
     };
     broadcastToSession(req.params.id, 'buzz:result', result);
 
