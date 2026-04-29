@@ -21,6 +21,7 @@ import authRouter from './routes/auth.js';
 import meRouter from './routes/me.js';
 import establishmentRouter from './routes/establishment.js';
 import musicRouter from './routes/music.js';
+import spotifyAuthRouter from './music/spotify/auth.js';
 import { prisma } from './lib/prisma.js';
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -65,6 +66,7 @@ app.use('/api/me', meRouter);
 app.use('/api/workspaces', workspacesRouter);
 app.use('/api/establishment', establishmentRouter);
 app.use('/api/music', musicRouter);
+app.use('/api/auth/spotify', spotifyAuthRouter);
 
 // 404 par défaut
 app.use((_req, res) => {

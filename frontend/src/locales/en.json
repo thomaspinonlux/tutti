@@ -91,10 +91,18 @@
     "languageEn": "English",
     "activeProvider": "Active music source",
     "providerDemo": "Demo (built-in catalogue)",
-    "providerSpotify": "Spotify (to configure later)",
+    "providerSpotify": "Spotify",
     "providerDeezer": "Deezer (coming soon)",
     "providerAppleMusic": "Apple Music (coming soon)",
-    "uploadFailed": "Logo upload failed"
+    "uploadFailed": "Logo upload failed",
+    "spotifyTitle": "Spotify",
+    "spotifyDescription": "Connect your Spotify account to access the full catalogue and play full tracks (Premium account required for playback).",
+    "spotifyConnect": "Connect Spotify",
+    "spotifyDisconnect": "Disconnect",
+    "spotifyAccount": "Connected account",
+    "spotifyConnectFirst": "Connect your Spotify account first.",
+    "spotifyConnectedToast": "Spotify connected successfully.",
+    "spotifyErrorToast": "Error connecting Spotify"
   },
   "account": {
     "title": "My account",

@@ -91,10 +91,18 @@
     "languageEn": "English",
     "activeProvider": "Source musicale active",
     "providerDemo": "Démo (catalogue intégré)",
-    "providerSpotify": "Spotify (à configurer plus tard)",
+    "providerSpotify": "Spotify",
     "providerDeezer": "Deezer (à venir)",
     "providerAppleMusic": "Apple Music (à venir)",
-    "uploadFailed": "Échec de l'envoi du logo"
+    "uploadFailed": "Échec de l'envoi du logo",
+    "spotifyTitle": "Spotify",
+    "spotifyDescription": "Connecte ton compte Spotify pour accéder au catalogue complet et lire les morceaux entiers (compte Premium requis pour la lecture).",
+    "spotifyConnect": "Connecter Spotify",
+    "spotifyDisconnect": "Déconnecter",
+    "spotifyAccount": "Compte connecté",
+    "spotifyConnectFirst": "Connecte d'abord ton compte Spotify.",
+    "spotifyConnectedToast": "Spotify connecté avec succès.",
+    "spotifyErrorToast": "Erreur lors de la connexion Spotify"
   },
   "account": {
     "title": "Mon compte",

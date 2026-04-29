@@ -26,6 +26,31 @@ export async function searchTracks(
   );
 }
 
+// ───── Spotify OAuth ──────────────────────────────────────────────────────
+
+export interface SpotifyStatus {
+  connected: boolean;
+  account_email: string | null;
+  expires_at: string | null;
+  connected_at: string | null;
+}
+
+/** Lance la connexion Spotify — retourne l'URL d'autorisation à laquelle rediriger. */
+export async function startSpotifyConnect(): Promise<string> {
+  const { authUrl } = await api<{ authUrl: string }>('/api/auth/spotify/authorize', {
+    method: 'POST',
+  });
+  return authUrl;
+}
+
+export async function getSpotifyStatus(): Promise<SpotifyStatus> {
+  return api<SpotifyStatus>('/api/auth/spotify/status');
+}
+
+export async function disconnectSpotify(): Promise<void> {
+  await api('/api/auth/spotify/disconnect', { method: 'DELETE' });
+}
+
 export async function getTrack(providerTrackId: string): Promise<TrackResult | null> {
   try {
     const data = await api<{ track: TrackResult }>(

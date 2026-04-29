@@ -13,18 +13,15 @@
 import type { MusicProviderId, ProviderInfo } from '@tutti/shared';
 import type { MusicProvider, ProviderContext } from './types.js';
 import { DemoProvider } from './demo/DemoProvider.js';
+import { SPOTIFY_CAPABILITIES, SpotifyProvider } from './spotify/SpotifyProvider.js';
 
 /**
  * Liste les providers disponibles + leurs capacités.
  * Sert au frontend pour afficher la sélection dans /admin/settings.
  */
 export const LIST_PROVIDERS: ProviderInfo[] = [
-  {
-    id: 'demo',
-    capabilities: new DemoProvider().capabilities,
-  },
-  // Spotify sera ajouté ici en étape 7.2 :
-  // { id: 'spotify', capabilities: SPOTIFY_CAPABILITIES },
+  { id: 'demo', capabilities: new DemoProvider().capabilities },
+  { id: 'spotify', capabilities: SPOTIFY_CAPABILITIES },
 ];
 
 /**
@@ -33,15 +30,19 @@ export const LIST_PROVIDERS: ProviderInfo[] = [
  *
  * @throws Error si le provider est inconnu ou nécessite des credentials manquants.
  */
-export function getProvider(id: MusicProviderId, _ctx: ProviderContext): MusicProvider {
+export function getProvider(id: MusicProviderId, ctx: ProviderContext): MusicProvider {
   switch (id) {
     case 'demo':
       // Pas de credentials nécessaires.
       return new DemoProvider();
 
     case 'spotify':
-      // En étape 7.2 : new SpotifyProvider(_ctx.credentials)
-      throw new Error('Provider Spotify pas encore activé (étape 7.2)');
+      if (!ctx.credentials) {
+        throw new Error(
+          'Spotify non connecté pour ce workspace — passer par /api/auth/spotify/authorize',
+        );
+      }
+      return new SpotifyProvider(ctx.workspaceId, ctx.credentials);
 
     case 'deezer':
     case 'apple_music':
