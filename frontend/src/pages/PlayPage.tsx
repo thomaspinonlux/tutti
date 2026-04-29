@@ -17,7 +17,6 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
 import type {
-  BuzzResult,
   CurrentTrackState,
   JoinResponse,
   Participant,
@@ -31,17 +30,22 @@ import {
   joinSession,
   masterAdjustPoints,
   masterEndSession,
+  masterGiveAnswer,
   masterListScores,
   masterNextTrack,
   masterPause,
   masterPickRound,
   masterResume,
-  masterReveal,
   masterSkipTrack,
-  postAnswer,
   postBuzz,
 } from '../lib/sessions.js';
-import type { CumulativeScore } from '@tutti/shared';
+import type { CorrectAnswerEntry, CumulativeScore } from '@tutti/shared';
+import {
+  startVoiceCapture,
+  uploadVoiceAnswer,
+  type VoiceAnswerResult,
+  type VoiceCapture,
+} from '../lib/voiceCapture.js';
 import {
   clearParticipantContext,
   connectAsParticipant,
@@ -108,8 +112,9 @@ export function PlayPage(): JSX.Element {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [currentRound, setCurrentRound] = useState<SessionRoundWithPlaylist | null>(null);
   const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
-  const [lastResult, setLastResult] = useState<BuzzResult | null>(null);
+  const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
   const [lastReveal, setLastReveal] = useState<{ artist: string; title: string } | null>(null);
+  const [phase2StartedAt, setPhase2StartedAt] = useState<string | null>(null);
   const [myScore, setMyScore] = useState(0);
   const [micRequesting, setMicRequesting] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -264,54 +269,54 @@ export function PlayPage(): JSX.Element {
     sock.on('round:ended', () => {
       setCurrentRound(null);
       setCurrentTrack(null);
+      setCorrectAnswers([]);
+      setLastReveal(null);
+      setPhase2StartedAt(null);
     });
     sock.on('track:start', ({ state }: { state: CurrentTrackState }) => {
       setCurrentTrack(state);
-      setLastResult(null);
+      setCorrectAnswers([]);
+      setLastReveal(null);
+      setPhase2StartedAt(null);
     });
     sock.on(
       'buzz:received',
-      ({
-        participant_id,
-        participant_pseudo,
-      }: {
-        round_id: string;
-        track_index: number;
-        participant_id: string;
-        participant_pseudo: string;
-        buzz_time_ms: number;
-      }) => {
-        // Stub commit 2 — la mécanique multi-buzz parallèle arrive en commit 5.
-        // On ignore l'identité du buzzer (il n'y a plus de "buzzer unique").
-        void participant_id;
-        void participant_pseudo;
+      (_payload: { round_id: string; participant_id: string; participant_pseudo: string }) => {
+        // V1 : on ne fait rien sur le tel des autres joueurs (le multi-buzz
+        // ne bloque pas leur UI). Pourrait afficher un compteur "X joueurs
+        // en train d'enregistrer" à terme.
       },
     );
-    sock.on('buzz:result', (result: BuzzResult) => {
-      setLastResult(result);
-      setLastReveal(null);
-      setCurrentTrack((prev) => (prev ? { ...prev, phase: 'phase3' } : prev));
-      if (result.participant_id === identity.participantId) {
-        setMyScore((prev) => prev + result.total_points);
+    sock.on('track:correct_answer', (entry: CorrectAnswerEntry) => {
+      setCorrectAnswers((prev) => [...prev, entry]);
+      if (entry.participant_id === identity.participantId) {
+        setMyScore((prev) => prev + entry.score);
       }
     });
     sock.on(
-      'track:revealed',
-      ({
-        artist,
-        title,
-      }: {
+      'track:phase_changed',
+      (payload: {
         round_id: string;
-        track_index: number;
-        artist: string;
-        title: string;
+        phase: CurrentTrackState['phase'];
+        phase2_started_at?: string;
+        artist?: string;
+        title?: string;
       }) => {
-        // Master a appuyé sur "Donner la réponse" — pas de buzz, pas de score, juste reveal.
-        setLastReveal({ artist, title });
-        setLastResult(null);
-        setCurrentTrack((prev) => (prev ? { ...prev, phase: 'phase3-revealed' } : prev));
+        setCurrentTrack((prev) => (prev ? { ...prev, phase: payload.phase } : prev));
+        if (payload.phase === 'phase2' && payload.phase2_started_at) {
+          setPhase2StartedAt(payload.phase2_started_at);
+        }
+        if (payload.phase === 'phase3-revealed' && payload.artist && payload.title) {
+          // Master a déclenché "Donner la réponse" sans qu'aucun buzz n'ait abouti
+          setLastReveal({ artist: payload.artist, title: payload.title });
+        }
       },
     );
+    sock.on('track:revealed', (payload: { round_id: string; artist: string; title: string }) => {
+      // Cohérent avec phase_changed → phase3-revealed mais conservé pour
+      // compat ascendante.
+      setLastReveal({ artist: payload.artist, title: payload.title });
+    });
     sock.on('session:paused', () => setIsPaused(true));
     sock.on('session:resumed', () => setIsPaused(false));
     sock.on('scores:invalidated', () => {
@@ -408,7 +413,7 @@ export function PlayPage(): JSX.Element {
   const handleMasterReveal = (): Promise<void> =>
     masterCall(async () => {
       if (!identity || !currentRound) return;
-      await masterReveal(identity.sessionId, currentRound.id, identity.token);
+      await masterGiveAnswer(identity.sessionId, currentRound.id, identity.token);
     });
   const handleMasterSkip = (): Promise<void> =>
     masterCall(async () => {
@@ -626,8 +631,9 @@ export function PlayPage(): JSX.Element {
                 currentTrack={currentTrack}
                 identity={identity}
                 myScore={myScore}
-                lastResult={lastResult}
+                correctAnswers={correctAnswers}
                 lastReveal={lastReveal}
+                phase2StartedAt={phase2StartedAt}
                 busy={busy}
                 setBusy={setBusy}
               />
@@ -733,58 +739,137 @@ function pushToast(
   }, 4000);
 }
 
-// ── Vue de jeu (étape 10) ───────────────────────────────────────────────────
+// ── Vue de jeu voice-first (Phase C) ───────────────────────────────────────
 
-function PlayingView({
-  currentTrack,
-  identity,
-  myScore,
-  lastResult,
-  lastReveal,
-  busy,
-  setBusy,
-}: {
+type RecState =
+  | { kind: 'idle' }
+  | { kind: 'recording'; capture: VoiceCapture; startedAt: number; level: number }
+  | { kind: 'uploading' }
+  | { kind: 'result'; result: VoiceAnswerResult };
+
+interface PlayingViewProps {
   currentTrack: CurrentTrackState | null;
   identity: ParticipantContext;
   myScore: number;
-  lastResult: BuzzResult | null;
+  /** Réponses correctes accumulées sur le track courant (broadcast track:correct_answer). */
+  correctAnswers: CorrectAnswerEntry[];
+  /** Reveal master (phase3-revealed) ou null si phase3 normale. */
   lastReveal: { artist: string; title: string } | null;
+  /** Phase 2 a démarré à cette date — pour calculer le chrono côté UI. */
+  phase2StartedAt: string | null;
   busy: boolean;
   setBusy: (v: boolean) => void;
-}): JSX.Element {
+}
+
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
+
+function PlayingView(props: PlayingViewProps): JSX.Element {
   const { t } = useTranslation();
+  const { currentTrack, identity, myScore, correctAnswers, lastReveal, phase2StartedAt } = props;
+  const [recState, setRecState] = useState<RecState>({ kind: 'idle' });
+  const [buzzCooldownUntil, setBuzzCooldownUntil] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const sendBuzz = async (): Promise<void> => {
-    if (!currentTrack || busy) return;
-    setBusy(true);
+  // Reset le state d'enregistrement à chaque nouveau track.
+  useEffect(() => {
+    setRecState({ kind: 'idle' });
     setError(null);
-    try {
-      await postBuzz(identity.sessionId, currentTrack.round_id, identity.token);
-    } catch (err: unknown) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
+    setBuzzCooldownUntil(0);
+  }, [currentTrack?.track_id]);
 
-  const sendAnswer = async (matched_artist: boolean, matched_title: boolean): Promise<void> => {
-    if (!currentTrack || busy) return;
-    setBusy(true);
+  const myCorrect = correctAnswers.find((a) => a.participant_id === identity.participantId);
+
+  // ── Action : tap BUZZ → ouvre le micro et démarre la capture ──────────
+  const handleBuzz = async (): Promise<void> => {
+    if (!currentTrack) return;
+    if (recState.kind !== 'idle') return;
+    if (Date.now() < buzzCooldownUntil) return;
+
     setError(null);
+    setBuzzCooldownUntil(Date.now() + 1000); // cooldown 1s anti-tap
+
     try {
-      await postAnswer(identity.sessionId, currentTrack.round_id, identity.token, {
-        matched_artist,
-        matched_title,
+      // 1) Notifie le backend (ouvre la fenêtre micro côté gameState).
+      const buzzRes = await postBuzz(identity.sessionId, currentTrack.round_id, identity.token);
+      const maxDurationMs = (buzzRes as { buzz_window_ms?: number }).buzz_window_ms ?? 10_000;
+
+      // 2) Démarre la capture audio locale.
+      const capture = await startVoiceCapture({
+        maxDurationMs,
+        onSilence: () => {
+          // Auto-stop quand le joueur a fini (1.5s de silence après speech).
+          void finalizeRecording();
+        },
+        onLevel: (rms) => {
+          setRecState((prev) => (prev.kind === 'recording' ? { ...prev, level: rms } : prev));
+        },
       });
+
+      setRecState({
+        kind: 'recording',
+        capture,
+        startedAt: Date.now(),
+        level: 0,
+      });
+
+      // Auto-finalisation au bout du maxDurationMs si rien d'autre n'a coupé avant
+      window.setTimeout(() => {
+        void finalizeRecording();
+      }, maxDurationMs + 200);
     } catch (err: unknown) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
+      const msg = err instanceof Error ? err.message : 'Erreur micro';
+      // Si le backend a refusé (cooldown, déjà répondu, phase locked) : message clair
+      if (msg.includes('ALREADY_ANSWERED')) {
+        setError(t('play.alreadyAnswered'));
+      } else if (msg.includes('PHASE_LOCKED')) {
+        setError(t('play.tooLate'));
+      } else {
+        setError(msg);
+      }
+      setRecState({ kind: 'idle' });
     }
   };
 
-  // Pas encore de track : entre 2 manches ou track:start pas reçu
+  // ── Action : "Envoyer maintenant" ou silence détecté ou timeout ───────
+  const finalizeRecording = async (): Promise<void> => {
+    setRecState((prev) => {
+      if (prev.kind !== 'recording') return prev;
+      // Capture le handle puis dispatch async
+      void uploadAndShowResult(prev.capture);
+      return { kind: 'uploading' };
+    });
+  };
+
+  const uploadAndShowResult = async (capture: VoiceCapture): Promise<void> => {
+    if (!currentTrack) return;
+    try {
+      const blob = await capture.stop();
+      const result = await uploadVoiceAnswer({
+        apiUrl: API_BASE,
+        sessionId: identity.sessionId,
+        roundId: currentTrack.round_id,
+        token: identity.token,
+        audio: blob,
+        filename: capture.mimeType.includes('mp4') ? 'buzz.mp4' : 'buzz.webm',
+      });
+      setRecState({ kind: 'result', result });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Upload échoué');
+      setRecState({ kind: 'idle' });
+    }
+  };
+
+  // ── Cancel manuel pendant l'enregistrement ────────────────────────────
+  const handleCancelRec = (): void => {
+    setRecState((prev) => {
+      if (prev.kind === 'recording') {
+        prev.capture.cancel();
+      }
+      return { kind: 'idle' };
+    });
+  };
+
+  // ── Pas de track : entre 2 manches ────────────────────────────────────
   if (!currentTrack) {
     return (
       <Card size="md" tone="cream" className="text-center">
@@ -797,122 +882,248 @@ function PlayingView({
     );
   }
 
-  // Phase listening : grand bouton buzzer
-  if (currentTrack.phase === 'phase1') {
+  // ── État recording : countdown + waveform + Envoyer ───────────────────
+  if (recState.kind === 'recording') {
     return (
-      <div className="text-center">
-        <p className="font-editorial italic text-ink-2 mb-4">{t('play.listenAndBuzz')}</p>
-        <button
-          type="button"
-          onClick={() => void sendBuzz()}
-          disabled={busy}
-          className="w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-spritz text-cream border-3 border-ink shadow-pop-xl font-display text-4xl active:translate-x-1 active:translate-y-1 active:shadow-pop-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          BUZZ
-        </button>
-        <p className="font-mono text-xs text-ink-soft mt-4">{t('play.buzzHint')}</p>
-        {error && (
-          <p role="alert" className="text-sm text-raspberry mt-3">
-            {error}
-          </p>
-        )}
-        <ScoreBadge score={myScore} />
-      </div>
+      <RecordingView
+        capture={recState.capture}
+        startedAt={recState.startedAt}
+        level={recState.level}
+        onSubmit={() => void finalizeRecording()}
+        onCancel={handleCancelRec}
+      />
     );
   }
 
-  // Phase buzzed (stub commit 2 — la mécanique multi-buzz vocale arrive en commit 5).
-  const isMyBuzz = false;
-  if (currentTrack.phase === 'phase2' && isMyBuzz) {
+  // ── État uploading : transcription Whisper en cours ───────────────────
+  if (recState.kind === 'uploading') {
     return (
       <Card size="md" tone="spritz" className="text-center">
-        <p className="text-xs font-mono uppercase tracking-wider text-spritz-deep mb-3">
-          {t('play.yourTurn')}
-        </p>
-        <TitleHandwritten as="h2" className="mb-4">
-          {t('play.youGuessed')}
+        <p className="text-5xl mb-3">🎧</p>
+        <TitleHandwritten as="h2" className="mb-2">
+          {t('play.transcribing')}
         </TitleHandwritten>
-        <div className="space-y-2">
-          <Button
-            size="lg"
-            className="w-full bg-basil border-ink text-cream hover:bg-basil-deep"
-            onClick={() => void sendAnswer(true, false)}
-            disabled={busy}
-          >
-            {t('play.answerArtist')} (+100)
-          </Button>
-          <Button
-            size="lg"
-            variant="primary"
-            className="w-full"
-            onClick={() => void sendAnswer(true, true)}
-            disabled={busy}
-          >
-            {t('play.answerArtistAndTitle')} (+150)
-          </Button>
-          <Button
-            size="md"
-            variant="ghost"
-            className="w-full"
-            onClick={() => void sendAnswer(false, false)}
-            disabled={busy}
-          >
-            {t('play.answerNotFound')}
-          </Button>
-        </div>
-        {error && (
-          <p role="alert" className="text-sm text-raspberry mt-3">
-            {error}
-          </p>
-        )}
+        <p className="font-editorial italic text-ink-2 text-sm">{t('play.transcribingHint')}</p>
       </Card>
     );
   }
 
-  if (currentTrack.phase === 'phase2' && !isMyBuzz) {
+  // ── État result : matched / not matched ───────────────────────────────
+  if (recState.kind === 'result') {
+    const r = recState.result;
     return (
-      <Card size="md" tone="cream" className="text-center">
-        <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-2">
-          {t('play.someoneBuzzed')}
+      <ResultView
+        result={r}
+        canRebuzz={
+          (currentTrack.phase === 'phase1' || currentTrack.phase === 'phase2') && !myCorrect
+        }
+        onRebuzz={() => setRecState({ kind: 'idle' })}
+        myScore={myScore}
+      />
+    );
+  }
+
+  // ── Phase 3 (festive) : buzzers off, profite de la musique ────────────
+  if (
+    currentTrack.phase === 'phase3' ||
+    currentTrack.phase === 'phase3-revealed' ||
+    currentTrack.phase === 'phase3-skipped'
+  ) {
+    const revealTitle = lastReveal?.title ?? currentTrack.title;
+    const revealArtist = lastReveal?.artist ?? currentTrack.artist;
+    return (
+      <Card size="md" tone="basil" className="text-center">
+        {currentTrack.phase !== 'phase3-skipped' && (
+          <>
+            <p className="text-xs font-mono uppercase tracking-wider text-basil-deep mb-2">
+              {t('play.reveal')}
+            </p>
+            <TitleHandwritten as="h2" className="mb-1">
+              {revealTitle}
+            </TitleHandwritten>
+            <p className="font-editorial italic text-ink-2 mb-4">{revealArtist}</p>
+          </>
+        )}
+        {myCorrect ? (
+          <Badge tone="lemon" tilt={-1}>
+            {t('play.youScored', { points: myCorrect.score })}
+          </Badge>
+        ) : currentTrack.phase === 'phase3-revealed' ? (
+          <Badge tone="cream" tilt={1}>
+            {t('play.masterRevealedNobodyFound')}
+          </Badge>
+        ) : null}
+        <p className="font-editorial italic text-ink-soft text-sm mt-4">
+          🎵 {t('play.festivePhase')}
         </p>
-        <TitleHandwritten as="h2" className="mb-2">
-          {'…'}
-        </TitleHandwritten>
-        <p className="font-editorial italic text-ink-2">{t('play.suspense')}</p>
         <ScoreBadge score={myScore} />
       </Card>
     );
   }
 
-  // Phase cooldown : reveal — soit buzz résolu, soit master a appuyé sur "Réponse"
-  const revealTitle = lastResult?.reveal.title ?? lastReveal?.title ?? currentTrack.title;
-  const revealArtist = lastResult?.reveal.artist ?? lastReveal?.artist ?? currentTrack.artist;
+  // ── Phase 1 / Phase 2 : grand bouton BUZZ ─────────────────────────────
+  const inPhase2 = currentTrack.phase === 'phase2';
+  const cooldownActive = Date.now() < buzzCooldownUntil;
   return (
-    <Card size="md" tone="basil" className="text-center">
-      <p className="text-xs font-mono uppercase tracking-wider text-basil-deep mb-2">
-        {t('play.reveal')}
-      </p>
-      <TitleHandwritten as="h2" className="mb-1">
-        {revealTitle}
+    <div className="text-center">
+      {inPhase2 && phase2StartedAt && <Phase2Countdown phase2StartedAt={phase2StartedAt} />}
+      {!inPhase2 && (
+        <p className="font-editorial italic text-ink-2 mb-4">{t('play.listenAndBuzz')}</p>
+      )}
+      <button
+        type="button"
+        onClick={() => void handleBuzz()}
+        disabled={!!myCorrect || cooldownActive}
+        className="w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-spritz text-cream border-3 border-ink shadow-pop-xl font-display text-4xl active:translate-x-1 active:translate-y-1 active:shadow-pop-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        BUZZ
+      </button>
+      <p className="font-mono text-xs text-ink-soft mt-4">{t('play.buzzHint')}</p>
+      {myCorrect && (
+        <Badge tone="lemon" tilt={-1} className="mt-3">
+          {t('play.youAlreadyFound', { points: myCorrect.score })}
+        </Badge>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-raspberry mt-3">
+          {error}
+        </p>
+      )}
+      <ScoreBadge score={myScore} />
+    </div>
+  );
+}
+
+// ── Sous-vues ───────────────────────────────────────────────────────────────
+
+function RecordingView({
+  capture,
+  startedAt,
+  level,
+  onSubmit,
+  onCancel,
+}: {
+  capture: VoiceCapture;
+  startedAt: number;
+  level: number;
+  onSubmit: () => void;
+  onCancel: () => void;
+}): JSX.Element {
+  const { t } = useTranslation();
+  void capture; // disponible si on veut accéder aux états plus tard
+  // Tick à 100ms pour rafraîchir le countdown
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 100);
+    return () => window.clearInterval(id);
+  }, []);
+  const elapsed = now - startedAt;
+  const remaining = Math.max(0, 10_000 - elapsed);
+  const seconds = Math.ceil(remaining / 1000);
+
+  // Niveau audio normalisé (0-100% pour la barre)
+  const levelPct = Math.min(100, Math.round(level * 800));
+
+  return (
+    <Card size="md" tone="spritz" className="text-center">
+      <p className="text-5xl mb-2 animate-pulse">🎤</p>
+      <TitleHandwritten as="h2" className="mb-2">
+        {t('play.recording')}
       </TitleHandwritten>
-      <p className="font-editorial italic text-ink-2 mb-4">{revealArtist}</p>
-      {lastResult && lastResult.participant_id === identity.participantId && (
-        <Badge tone="lemon" tilt={-1}>
-          {t('play.youScored', { points: lastResult.total_points })}
-        </Badge>
+      <p className="font-editorial italic text-ink-2 text-sm mb-4">{t('play.recordingHint')}</p>
+
+      <p className="font-display text-5xl text-spritz-deep mb-2">{seconds}s</p>
+
+      <div className="h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden mb-4">
+        <div
+          className="h-full bg-spritz-deep transition-[width] duration-100 ease-out"
+          style={{ width: `${levelPct}%` }}
+        />
+      </div>
+
+      <Button variant="primary" size="lg" onClick={onSubmit} className="w-full mb-2">
+        ✓ {t('play.recordingSubmit')}
+      </Button>
+      <Button variant="ghost" size="sm" onClick={onCancel} className="w-full">
+        {t('common.cancel')}
+      </Button>
+    </Card>
+  );
+}
+
+function ResultView({
+  result,
+  canRebuzz,
+  onRebuzz,
+  myScore,
+}: {
+  result: VoiceAnswerResult;
+  canRebuzz: boolean;
+  onRebuzz: () => void;
+  myScore: number;
+}): JSX.Element {
+  const { t } = useTranslation();
+
+  if (result.matched && result.scored) {
+    return (
+      <Card size="md" tone="basil" className="text-center">
+        <p className="text-5xl mb-2">🎉</p>
+        <TitleHandwritten as="h2" className="mb-2">
+          {t('play.youScored', { points: result.score ?? 0 })}
+        </TitleHandwritten>
+        {result.position && (
+          <Badge tone="lemon" tilt={-1} className="mb-2">
+            {t('play.position', { n: result.position })}
+          </Badge>
+        )}
+        {result.transcript && (
+          <p className="font-mono text-xs text-ink-soft mt-3 italic">« {result.transcript} »</p>
+        )}
+        <ScoreBadge score={myScore + (result.score ?? 0)} />
+      </Card>
+    );
+  }
+
+  // Pas matché → on encourage à retenter (en phase 1/2 only).
+  return (
+    <Card size="md" tone="cream" className="text-center">
+      <p className="text-5xl mb-2">🤔</p>
+      <TitleHandwritten as="h2" className="mb-2">
+        {t('play.notMatched')}
+      </TitleHandwritten>
+      {result.transcript && (
+        <p className="font-mono text-xs text-ink-soft mt-1 italic mb-3">
+          {t('play.weHeard')} : « {result.transcript} »
+        </p>
       )}
-      {lastResult && lastResult.participant_id !== identity.participantId && (
-        <Badge tone="cream" tilt={1}>
-          {lastResult.participant_pseudo}: +{lastResult.total_points}
-        </Badge>
-      )}
-      {!lastResult && lastReveal && (
-        <Badge tone="cream" tilt={1}>
-          {t('play.masterRevealedNobodyFound')}
-        </Badge>
+      {canRebuzz ? (
+        <Button variant="primary" size="md" onClick={onRebuzz} className="w-full mt-2">
+          {t('play.rebuzz')}
+        </Button>
+      ) : (
+        <p className="font-editorial italic text-ink-soft text-sm">{t('play.tooLate')}</p>
       )}
       <ScoreBadge score={myScore} />
     </Card>
+  );
+}
+
+function Phase2Countdown({ phase2StartedAt }: { phase2StartedAt: string }): JSX.Element {
+  const { t } = useTranslation();
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, []);
+  const elapsed = now - new Date(phase2StartedAt).getTime();
+  const remaining = Math.max(0, 15_000 - elapsed);
+  const seconds = Math.ceil(remaining / 1000);
+  return (
+    <div className="mb-3">
+      <Badge tone="raspberry" tilt={-1}>
+        ⏱ {t('play.phase2Remaining', { seconds })}
+      </Badge>
+    </div>
   );
 }
 
