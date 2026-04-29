@@ -258,6 +258,12 @@ model Session {
   teams_config     Json? // [{id, name, color, ...}]
   language         String        @default("fr") @db.VarChar(8)
   question_set_id  String?       @db.Uuid // pour Tutti Quizz (étape 15+)
+  // Mode A = avec animateur (host pilote depuis l'iPad/Mac).
+  // Mode B = sans animateur, défaut B2C : un joueur master pilote depuis son tel.
+  has_animator     Boolean       @default(false)
+  // Pause master en mode B. Pas d'auto-resume — c'est le master qui
+  // déclenche la reprise. Le timer continue de courir (V1 simple).
+  is_paused        Boolean       @default(false)
   created_at       DateTime      @default(now()) @db.Timestamptz(6)
   started_at       DateTime?     @db.Timestamptz(6)
   ended_at         DateTime?     @db.Timestamptz(6)

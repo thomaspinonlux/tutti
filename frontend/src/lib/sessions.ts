@@ -26,6 +26,8 @@ export interface CreateSessionInput {
   teams_config?: Team[];
   language?: 'fr' | 'en';
   question_set_id?: string;
+  /** false = mode B "tout le monde joue" (défaut), true = mode A avec animateur. */
+  has_animator?: boolean;
 }
 
 export async function createSession(input: CreateSessionInput): Promise<Session> {
@@ -148,6 +150,21 @@ export async function kickParticipant(sessionId: string, participantId: string):
     `/api/sessions/${encodeURIComponent(sessionId)}/participants/${encodeURIComponent(participantId)}`,
     { method: 'DELETE' },
   );
+}
+
+/**
+ * Toggle master sur un participant. Au plus un master par session — si quelqu'un
+ * d'autre l'était, il est démasterisé en transaction.
+ */
+export async function toggleParticipantMaster(
+  sessionId: string,
+  participantId: string,
+): Promise<Participant> {
+  const data = await api<{ participant: Participant }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/participants/${encodeURIComponent(participantId)}/master`,
+    { method: 'POST' },
+  );
+  return data.participant;
 }
 
 // ───── Gameplay (étape 10) ────────────────────────────────────────────────

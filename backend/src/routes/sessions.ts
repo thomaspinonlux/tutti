@@ -84,6 +84,8 @@ const createSchema = z.object({
   teams_config: z.array(teamSchema).max(8).optional(),
   language: z.enum(['fr', 'en']).default('fr'),
   question_set_id: z.string().uuid().optional(),
+  // Mode A vs B. Défaut B (false) = "tout le monde joue", c'est le défaut B2C.
+  has_animator: z.boolean().default(false),
 });
 
 router.post(
@@ -94,15 +96,13 @@ router.post(
     const workspaceId = req.workspaceId!;
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Body invalide',
-            details: parsed.error.flatten(),
-          },
-        });
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Body invalide',
+          details: parsed.error.flatten(),
+        },
+      });
       return;
     }
     try {
@@ -130,6 +130,7 @@ router.post(
             : Prisma.JsonNull,
           language: parsed.data.language,
           question_set_id: parsed.data.question_set_id ?? null,
+          has_animator: parsed.data.has_animator,
           short_code: shortCode,
           status: 'WAITING',
         },
@@ -183,7 +184,10 @@ router.get(
         where: { short_code: code },
         include: {
           establishment: { select: { name: true, branding_color: true } },
-          participants: { where: { is_kicked: false }, select: { id: true } },
+          participants: {
+            where: { is_kicked: false },
+            select: { id: true, pseudo: true, is_master: true },
+          },
           rounds: {
             where: { status: 'PLAYING' },
             select: { id: true, position: true, playlist: { select: { name: true } } },
@@ -196,6 +200,7 @@ router.get(
         return;
       }
       const currentRound = session.rounds[0] ?? null;
+      const masterPseudo = session.participants.find((p) => p.is_master)?.pseudo ?? null;
       res.json({
         session: {
           short_code: session.short_code,
@@ -207,6 +212,8 @@ router.get(
           establishment_name: session.establishment.name,
           branding_color: session.establishment.branding_color,
           participants_count: session.participants.length,
+          has_animator: session.has_animator,
+          master_pseudo: masterPseudo,
           current_round: currentRound
             ? {
                 position: currentRound.position,
@@ -242,15 +249,13 @@ router.patch(
     const workspaceId = req.workspaceId!;
     const parsed = patchSchema.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Body invalide',
-            details: parsed.error.flatten(),
-          },
-        });
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Body invalide',
+          details: parsed.error.flatten(),
+        },
+      });
       return;
     }
     const own = await ensureOwnSession(req.params.id, workspaceId);
@@ -259,14 +264,12 @@ router.patch(
       return;
     }
     if (own.status !== 'WAITING') {
-      res
-        .status(409)
-        .json({
-          error: {
-            code: 'INVALID_STATUS',
-            message: 'Configuration impossible : session déjà démarrée',
-          },
-        });
+      res.status(409).json({
+        error: {
+          code: 'INVALID_STATUS',
+          message: 'Configuration impossible : session déjà démarrée',
+        },
+      });
       return;
     }
     try {
@@ -402,15 +405,13 @@ router.post(
     const workspaceId = req.workspaceId!;
     const parsed = createRoundSchema.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Body invalide',
-            details: parsed.error.flatten(),
-          },
-        });
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Body invalide',
+          details: parsed.error.flatten(),
+        },
+      });
       return;
     }
     const own = await ensureOwnSession(req.params.id, workspaceId);
@@ -579,15 +580,13 @@ router.post(
     const code = req.params.short_code.toUpperCase();
     const parsed = joinSchema.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Body invalide',
-            details: parsed.error.flatten(),
-          },
-        });
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Body invalide',
+          details: parsed.error.flatten(),
+        },
+      });
       return;
     }
     try {
@@ -612,14 +611,12 @@ router.post(
       if (session.mode === 'TEAMS') {
         const teams = (session.teams_config as Array<{ id: string }> | null) ?? [];
         if (!parsed.data.team_id || !teams.some((t) => t.id === parsed.data.team_id)) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'INVALID_TEAM',
-                message: 'team_id requis et valide pour le mode TEAMS',
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_TEAM',
+              message: 'team_id requis et valide pour le mode TEAMS',
+            },
+          });
           return;
         }
         teamId = parsed.data.team_id;
@@ -683,6 +680,59 @@ router.patch(
       res
         .status(500)
         .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur changement équipe' } });
+    }
+  },
+);
+
+// ── POST /:id/participants/:pid/master (host) ────────────────────────────
+// Désigne un participant comme master (animateur du tel) en mode B.
+// Désigne via toggle : si déjà master → le révoque, sinon → le promeut et
+// révoque tous les autres masters de la session (un seul master à la fois).
+// Mode A : utile aussi pour donner accès au menu master à un participant
+// précis, même si le pilotage principal reste sur l'iPad.
+router.post(
+  '/:id/participants/:pid/master',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; pid: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const own = await ensureOwnSession(req.params.id, workspaceId);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    try {
+      const target = await prisma.participant.findFirst({
+        where: { id: req.params.pid, session_id: req.params.id, is_kicked: false },
+      });
+      if (!target) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Participant introuvable' } });
+        return;
+      }
+      const willBeMaster = !target.is_master;
+      // Atomic : démasterise tous les autres puis (dé)masterise la cible.
+      const [, updatedTarget] = await prisma.$transaction([
+        prisma.participant.updateMany({
+          where: { session_id: req.params.id, is_master: true, NOT: { id: req.params.pid } },
+          data: { is_master: false },
+        }),
+        prisma.participant.update({
+          where: { id: req.params.pid },
+          data: { is_master: willBeMaster },
+        }),
+      ]);
+      broadcastToSession(own.id, 'participant:master_changed', {
+        participant: updatedTarget,
+        // Aide les clients à savoir si quelqu'un d'autre vient d'être démasterisé
+        // (un seul master à la fois, donc on les démasterise tous puis on remet).
+        is_master: willBeMaster,
+      });
+      res.json({ participant: updatedTarget });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/participants/:pid/master] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur désignation master' } });
     }
   },
 );

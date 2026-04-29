@@ -144,6 +144,18 @@ export interface Session {
   teams_config: Team[] | null;
   language: string;
   question_set_id: string | null;
+  /**
+   * true = mode A (avec animateur, host pilote depuis l'iPad).
+   * false = mode B (sans animateur, défaut B2C : un joueur master pilote
+   * depuis son tel et l'iPad affiche la vue publique festive).
+   */
+  has_animator: boolean;
+  /**
+   * Pause déclenchée par le master en mode B. Pas d'auto-resume — le master
+   * appuie sur "Reprendre" quand il veut. Le timer continue de courir
+   * pendant la pause côté UI (V1 simple) ; seul l'audio est mis en pause.
+   */
+  is_paused: boolean;
   created_at: string;
   started_at: string | null;
   ended_at: string | null;
@@ -258,6 +270,10 @@ export interface PublicSessionView {
   branding_color: string | null;
   /** Liste minimale des participants (pseudo + team_id seuls — pas d'IDs internes). */
   participants_count: number;
+  /** Mode A (true) vs Mode B (false). Le tel adapte ses contrôles selon. */
+  has_animator: boolean;
+  /** Pseudo du master désigné (mode B). null si personne n'est encore animateur. */
+  master_pseudo: string | null;
 }
 
 /** Réponse au /join : retourne un token JWT pour la connexion Socket.IO. */
