@@ -193,6 +193,21 @@
     "masterNone": "Pas d'animateur désigné",
     "masterChange": "Changer d'animateur"
   },
+  "screen": {
+    "leaderboardLabel": "Classement live",
+    "animatorIs": "Animateur : {{pseudo}}",
+    "waitingTrack": "Le morceau arrive…",
+    "waitingTrackHint": "L'animateur lance la musique depuis son tel.",
+    "listenAndBuzz": "Écoute et buzze quand tu reconnais !",
+    "buzzedHint": "Le joueur donne sa réponse…",
+    "celebrationFound": "a trouvé !",
+    "firstRoundComing": "C'est parti !",
+    "waitingMasterPick": "{{pseudo}} choisit la prochaine playlist…",
+    "waitingAnyPick": "L'animateur va choisir la prochaine playlist…",
+    "takeABreak": "Petite pause — buvez un coup, ça repart bientôt.",
+    "pauseTitle": "Pause",
+    "pauseHint": "L'animateur a mis le jeu en pause."
+  },
   "play": {
     "missingCode": "Lien invalide. Demande à l'animateur de te scanner le QR code.",
     "notFound": "Session introuvable. Vérifie le code.",

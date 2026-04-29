@@ -193,6 +193,21 @@
     "masterNone": "No animator picked",
     "masterChange": "Change animator"
   },
+  "screen": {
+    "leaderboardLabel": "Live ranking",
+    "animatorIs": "Animator: {{pseudo}}",
+    "waitingTrack": "Track coming up…",
+    "waitingTrackHint": "The animator is starting the music from their phone.",
+    "listenAndBuzz": "Listen and buzz when you recognize it!",
+    "buzzedHint": "The player is answering…",
+    "celebrationFound": "found it!",
+    "firstRoundComing": "Here we go!",
+    "waitingMasterPick": "{{pseudo}} is picking the next playlist…",
+    "waitingAnyPick": "The animator will pick the next playlist…",
+    "takeABreak": "Quick break — grab a drink, more coming.",
+    "pauseTitle": "Paused",
+    "pauseHint": "The animator paused the game."
+  },
   "play": {
     "missingCode": "Invalid link. Ask the host to scan the QR code.",
     "notFound": "Session not found. Check the code.",

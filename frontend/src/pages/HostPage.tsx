@@ -52,6 +52,7 @@ import { QRCode } from '../components/host/QRCode.js';
 import { RoundSelectionScreen } from '../components/host/RoundSelectionScreen.js';
 import { RoundIntermissionScreen } from '../components/host/RoundIntermissionScreen.js';
 import { ExpressPlaylistModal } from '../components/host/ExpressPlaylistModal.js';
+import { MainScreenView } from './screen/MainScreenView.js';
 
 interface Toast {
   id: string;
@@ -480,6 +481,49 @@ function HostPageInner(): JSX.Element {
 
   const teams = (session.teams_config as Team[] | null) ?? [];
   const playUrl = `${window.location.origin}/play?session=${session.short_code}`;
+  const isModeB = !session.has_animator;
+  const inGameplay =
+    effectivePhase === 'roundPlaying' ||
+    effectivePhase === 'roundSelection' ||
+    effectivePhase === 'intermission';
+
+  // ── Mode B en cours de jeu : vue festive publique sans contrôles ─────
+  if (isModeB && inGameplay) {
+    return (
+      <>
+        {/* Badge master + change-master accessible discrètement en haut-droite */}
+        <div className="fixed top-4 right-4 z-30">
+          <MasterBadge
+            master={currentMaster}
+            participants={session.participants}
+            onToggleMaster={handleToggleMaster}
+          />
+        </div>
+        <MainScreenView
+          session={session}
+          currentTrack={currentTrack}
+          cumulative={cumulative}
+          recentBuzzes={recentBuzzes}
+        />
+        <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-xs">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className={`px-4 py-2 border-2 border-ink rounded shadow-pop bg-white animate-pop-in font-medium text-sm ${
+                toast.tone === 'spritz'
+                  ? 'border-l-8 border-l-spritz'
+                  : toast.tone === 'basil'
+                    ? 'border-l-8 border-l-basil'
+                    : 'border-l-8 border-l-raspberry'
+              }`}
+            >
+              {toast.text}
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -510,18 +554,21 @@ function HostPageInner(): JSX.Element {
                   onToggleMaster={handleToggleMaster}
                 />
               )}
-            {(effectivePhase === 'roundPlaying' ||
-              effectivePhase === 'roundSelection' ||
-              effectivePhase === 'intermission') && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => void handleEndSession()}
-                disabled={busy}
-              >
-                {t('host.endBlindTest')}
-              </Button>
-            )}
+            {/* En mode A : bouton terminer accessible sur l'iPad. En mode B :
+                c'est le master qui termine depuis son tel (cf. brief). */}
+            {session.has_animator &&
+              (effectivePhase === 'roundPlaying' ||
+                effectivePhase === 'roundSelection' ||
+                effectivePhase === 'intermission') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void handleEndSession()}
+                  disabled={busy}
+                >
+                  {t('host.endBlindTest')}
+                </Button>
+              )}
           </div>
         </header>
 
