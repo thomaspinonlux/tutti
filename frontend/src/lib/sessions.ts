@@ -258,17 +258,19 @@ export async function masterSkipTrack(
   });
 }
 
-export async function masterReveal(
+export async function masterGiveAnswer(
   sessionId: string,
   roundId: string,
   token: string,
 ): Promise<{ reveal: { artist: string; title: string; track_index: number } }> {
-  return api(`/api/sessions/${encodeURIComponent(sessionId)}/master/reveal`, {
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/master/give-answer`, {
     method: 'POST',
     body: { token, round_id: roundId },
     anonymous: true,
   });
 }
+// Alias rétrocompat — anciens consommateurs.
+export const masterReveal = masterGiveAnswer;
 
 export async function masterPause(sessionId: string, token: string): Promise<void> {
   await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/pause`, {

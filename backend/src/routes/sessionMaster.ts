@@ -171,9 +171,10 @@ router.post('/next-track', async (req: Request<{ id: string }>, res: Response): 
 });
 
 // ── POST /skip-track ──────────────────────────────────────────────────────
-// Sémantiquement identique à next-track côté backend, label différent côté UI.
-// Permet de sauter une piste en cours d'écoute (mauvaise piste glissée dans
-// la playlist, bug audio…).
+// Master a appuyé sur "Sauter" (mauvaise piste glissée dans la playlist).
+// Différence avec /next-track : on broadcast track:phase_changed → phase3-skipped
+// AVANT d'avancer, pour que les clients puissent stopper la lecture audio
+// proprement (au lieu de juste enchainer sur le suivant).
 
 router.post('/skip-track', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   const parsed = roundIdSchema.safeParse(req.body);
@@ -186,15 +187,23 @@ router.post('/skip-track', async (req: Request<{ id: string }>, res: Response): 
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
     return;
   }
+  // Marque la phase phase3-skipped pour que les clients sachent ne pas
+  // afficher de reveal. Puis avance.
+  broadcastToSession(req.params.id, 'track:phase_changed', {
+    round_id: parsed.data.round_id,
+    phase: 'phase3-skipped',
+  });
   const result = await advanceToNextOrEndRound(req.params.id, round);
   res.json(result);
 });
 
-// ── POST /reveal ──────────────────────────────────────────────────────────
-// "Réponse" master : personne n'a trouvé, on révèle artist+titre sans buzz
-// ni score. Passe la phase à cooldown, broadcast track:revealed.
+// ── POST /give-answer ─────────────────────────────────────────────────────
+// "Donner la réponse" master : personne n'a trouvé pendant la phase 1, on
+// révèle artist+titre, 0 point, on passe en phase3-revealed (la musique
+// continue à jouer jusqu'à ce que master clique "Suivant"). Alias historique
+// /reveal préservé temporairement pour rétrocompat. Broadcast track:revealed.
 
-router.post('/reveal', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+const giveAnswerHandler = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   const parsed = roundIdSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'round_id requis' } });
@@ -211,7 +220,11 @@ router.post('/reveal', async (req: Request<{ id: string }>, res: Response): Prom
     return;
   }
   res.json({ reveal });
-});
+};
+
+router.post('/give-answer', giveAnswerHandler);
+// Alias rétrocompat — supprimable après mise à jour du frontend (commit 5).
+router.post('/reveal', giveAnswerHandler);
 
 // ── POST /pause ───────────────────────────────────────────────────────────
 

@@ -612,7 +612,14 @@ router.post(
     try {
       const session = await prisma.session.findUnique({
         where: { short_code: code },
-        select: { id: true, status: true, mode: true, teams_config: true },
+        select: {
+          id: true,
+          status: true,
+          mode: true,
+          teams_config: true,
+          max_participants: true,
+          _count: { select: { participants: { where: { is_kicked: false } } } },
+        },
       });
       if (!session) {
         res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
@@ -624,6 +631,16 @@ router.post(
         res
           .status(409)
           .json({ error: { code: 'NOT_ACCEPTING_PLAYERS', message: 'Session terminée' } });
+        return;
+      }
+      // Cap V1 = 15 participants (cf. Session.max_participants, défaut 15).
+      if (session._count.participants >= session.max_participants) {
+        res.status(409).json({
+          error: {
+            code: 'SESSION_FULL',
+            message: `Cette session est complète (${session.max_participants} participants maximum). Reviens plus tard ou demande à l'organisateur de créer une autre session.`,
+          },
+        });
         return;
       }
 
