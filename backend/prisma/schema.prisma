@@ -115,18 +115,23 @@ model MusicProviderCredential {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Playlist {
-  id               String   @id @default(uuid()) @db.Uuid
-  establishment_id String   @db.Uuid
-  name             String
-  cover_url        String?
-  level            Level    @default(MEDIUM)
-  language         String   @default("fr") @db.VarChar(8)
-  is_published     Boolean  @default(false)
-  created_at       DateTime @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime @updatedAt @db.Timestamptz(6)
+  id                String   @id @default(uuid()) @db.Uuid
+  establishment_id  String   @db.Uuid
+  name              String
+  description       String? // V1.1 : utile pour les playlists Tutti curées
+  cover_url         String?
+  level             Level    @default(MEDIUM)
+  language          String   @default("fr") @db.VarChar(8)
+  is_published      Boolean  @default(false)
+  is_express        Boolean  @default(false) // V1 : créée à la volée pendant une session
+  is_official_tutti Boolean  @default(false) // V1.1 : playlist curée par Tutti (catalogue partagé)
+  external_links    Json? // V1.1 : { spotify: url, deezer: url, apple_music: url }
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @updatedAt @db.Timestamptz(6)
 
-  establishment Establishment @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
-  tracks        Track[]
+  establishment  Establishment  @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
+  tracks         Track[]
+  session_rounds SessionRound[]
 
   @@index([establishment_id])
   @@map("playlists")
@@ -245,26 +250,58 @@ enum MediaType {
 model Session {
   id               String        @id @default(uuid()) @db.Uuid
   establishment_id String        @db.Uuid
+  name             String? // étiquette éditable optionnelle ("Anniv Marc 29/04")
   game_type        GameType
   status           SessionStatus @default(WAITING)
   short_code       String        @unique @db.VarChar(16) // "KOMP-7K2X"
   mode             GameMode      @default(SOLO)
   teams_config     Json? // [{id, name, color, ...}]
   language         String        @default("fr") @db.VarChar(8)
-  playlist_id      String?       @db.Uuid
-  question_set_id  String?       @db.Uuid
-  current_index    Int           @default(0)
+  question_set_id  String?       @db.Uuid // pour Tutti Quizz (étape 15+)
   created_at       DateTime      @default(now()) @db.Timestamptz(6)
   started_at       DateTime?     @db.Timestamptz(6)
   ended_at         DateTime?     @db.Timestamptz(6)
 
-  establishment Establishment @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
+  establishment Establishment  @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
   participants  Participant[]
+  rounds        SessionRound[] // succession de manches
   score_events  ScoreEvent[]
 
   @@index([short_code])
   @@index([establishment_id])
   @@map("sessions")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SESSION_ROUNDS (manches d'une session — chaque manche = 1 playlist)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SessionRound {
+  id                  String      @id @default(uuid()) @db.Uuid
+  session_id          String      @db.Uuid
+  playlist_id         String      @db.Uuid
+  position            Int // 1, 2, 3...
+  status              RoundStatus @default(PENDING)
+  current_track_index Int         @default(0) // pour reprendre la manche après pause
+  started_at          DateTime?   @db.Timestamptz(6)
+  ended_at            DateTime?   @db.Timestamptz(6)
+  created_at          DateTime    @default(now()) @db.Timestamptz(6)
+
+  session  Session      @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  playlist Playlist     @relation(fields: [playlist_id], references: [id])
+  events   ScoreEvent[]
+
+  @@unique([session_id, position])
+  @@index([session_id, position])
+  @@map("session_rounds")
+}
+
+enum RoundStatus {
+  PENDING
+  PLAYING
+  ENDED
+
+  @@map("round_status")
 }
 
 enum GameType {
@@ -317,9 +354,10 @@ model Participant {
 model ScoreEvent {
   id               String         @id @default(uuid()) @db.Uuid
   session_id       String         @db.Uuid
+  session_round_id String?        @db.Uuid // null pour les events hors-manche (ajustements globaux)
   participant_id   String         @db.Uuid
   team_id          String?        @db.Uuid
-  round_index      Int
+  round_index      Int // index du morceau dans la manche (0-based)
   type             ScoreEventType
   points           Int // peut être négatif
   buzz_time_ms     Int? // pour TRACKS
@@ -332,10 +370,12 @@ model ScoreEvent {
   applied_by       String?        @db.Uuid // user_id de l'host qui a appliqué l'ajustement
   created_at       DateTime       @default(now()) @db.Timestamptz(6)
 
-  session     Session     @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  participant Participant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+  session     Session       @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  round       SessionRound? @relation(fields: [session_round_id], references: [id], onDelete: Cascade)
+  participant Participant   @relation(fields: [participant_id], references: [id], onDelete: Cascade)
 
   @@index([session_id, round_index])
+  @@index([session_round_id])
   @@index([participant_id])
   @@map("score_events")
 }

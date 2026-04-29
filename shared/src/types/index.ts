@@ -84,10 +84,14 @@ export interface Playlist {
   id: string;
   establishment_id: string;
   name: string;
+  description: string | null;
   cover_url: string | null;
   level: Level;
   language: string;
   is_published: boolean;
+  is_express: boolean;
+  is_official_tutti: boolean;
+  external_links: { spotify?: string; deezer?: string; apple_music?: string } | null;
   created_at: string;
   updated_at: string;
   /** Comptage léger renvoyé par l'API liste (sans inclure les tracks). */
@@ -132,18 +136,47 @@ export interface Team {
 export interface Session {
   id: string;
   establishment_id: string;
+  name: string | null;
   game_type: GameType;
   status: SessionStatus;
   short_code: string; // ex. "KOMP-7K2X"
   mode: GameMode;
   teams_config: Team[] | null;
   language: string;
-  playlist_id: string | null;
   question_set_id: string | null;
-  current_index: number;
   created_at: string;
   started_at: string | null;
   ended_at: string | null;
+}
+
+export type RoundStatus = 'PENDING' | 'PLAYING' | 'ENDED';
+
+export interface SessionRound {
+  id: string;
+  session_id: string;
+  playlist_id: string;
+  position: number;
+  status: RoundStatus;
+  current_track_index: number;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+}
+
+/** SessionRound enrichi de la playlist (utilisé pour /host). */
+export interface SessionRoundWithPlaylist extends SessionRound {
+  playlist: { id: string; name: string; level: string; tracks_count?: number };
+}
+
+/** Score agrégé sur l'ensemble de la session pour un participant ou une équipe. */
+export interface CumulativeScore {
+  /** ID participant (mode SOLO) ou ID team (mode TEAMS). */
+  id: string;
+  /** Nom à afficher (pseudo ou nom d'équipe). */
+  label: string;
+  /** Couleur (hex) pour les équipes ; null en mode solo. */
+  color: string | null;
+  total_points: number;
 }
 
 export interface Participant {
@@ -158,6 +191,7 @@ export interface Participant {
 
 export interface SessionWithParticipants extends Session {
   participants: Participant[];
+  rounds: SessionRoundWithPlaylist[];
 }
 
 /** Vue publique côté joueur (pas d'établissement, pas de stats sensibles). */

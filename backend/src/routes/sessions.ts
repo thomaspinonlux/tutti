@@ -1,25 +1,35 @@
 /**
- * Routes /api/sessions/* — création, configuration, join, gestion participants.
+ * Routes /api/sessions/* — création, configuration, join, gestion participants,
+ * rounds, scores cumulés.
  *
- *   POST   /                                : créer une session (host, auth)
- *   GET    /by-id/:id                       : détails (host, auth)
- *   GET    /by-code/:short_code             : vue publique (joueur, sans auth)
- *   PATCH  /:id                             : éditer config avant start (host)
- *   POST   /:id/start                       : passer status WAITING → PLAYING (host)
+ *   POST   /                                : créer une session (sans playlist)
+ *   GET    /by-id/:id                       : détails (host) + rounds + scores
+ *   GET    /by-code/:short_code             : vue publique (joueur)
+ *   PATCH  /:id                             : éditer name/mode/teams/language
+ *   POST   /:id/start                       : WAITING → PLAYING (host)
+ *   POST   /:id/end                         : termine la session
+ *
+ *   POST   /:id/rounds                      : créer une manche { playlist_id }
+ *   POST   /:id/rounds/:roundId/start       : passer round PENDING → PLAYING
+ *                                              (le précédent passe à ENDED)
+ *   POST   /:id/rounds/:roundId/end         : passer round PLAYING → ENDED
+ *
  *   POST   /by-code/:short_code/join        : joueur rejoint (sans auth)
- *   PATCH  /:id/participants/:pid           : host change l'équipe d'un joueur
- *   DELETE /:id/participants/:pid           : host kick
+ *   PATCH  /:id/participants/:pid           : host change l'équipe
+ *   DELETE /:id/participants/:pid           : host kick (soft)
  */
 
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
-import { GameType, GameMode, SessionStatus, Prisma } from '@prisma/client';
+import { GameType, GameMode, SessionStatus, RoundStatus, Prisma } from '@prisma/client';
+import type { Team } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { generateUniqueShortCode } from '../lib/shortCode.js';
 import { signParticipantToken } from '../lib/participantToken.js';
 import { broadcastToSession } from '../socket/index.js';
+import { getCumulativeScores } from '../lib/scores.js';
 
 const router: Router = Router();
 
@@ -28,11 +38,38 @@ const router: Router = Router();
 async function ensureOwnSession(sessionId: string, workspaceId: string) {
   return prisma.session.findFirst({
     where: { id: sessionId, establishment: { workspace_id: workspaceId } },
-    include: { participants: { where: { is_kicked: false }, orderBy: { joined_at: 'asc' } } },
+    include: {
+      participants: { where: { is_kicked: false }, orderBy: { joined_at: 'asc' } },
+      rounds: {
+        orderBy: { position: 'asc' },
+        include: {
+          playlist: {
+            select: { id: true, name: true, level: true, _count: { select: { tracks: true } } },
+          },
+        },
+      },
+    },
   });
 }
 
-// ── POST / : création (host) ──────────────────────────────────────────────
+type EnrichedSession = Awaited<ReturnType<typeof ensureOwnSession>>;
+
+function serializeSession(session: NonNullable<EnrichedSession>) {
+  return {
+    ...session,
+    rounds: session.rounds.map((r) => ({
+      ...r,
+      playlist: {
+        id: r.playlist.id,
+        name: r.playlist.name,
+        level: r.playlist.level,
+        tracks_count: r.playlist._count.tracks,
+      },
+    })),
+  };
+}
+
+// ── POST / : création (host) — sans playlist au démarrage ─────────────────
 
 const teamSchema = z.object({
   id: z.string().uuid(),
@@ -41,11 +78,11 @@ const teamSchema = z.object({
 });
 
 const createSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
   game_type: z.enum(['TRACKS', 'QUIZZ']).default('TRACKS'),
   mode: z.enum(['SOLO', 'TEAMS']).default('SOLO'),
   teams_config: z.array(teamSchema).max(8).optional(),
   language: z.enum(['fr', 'en']).default('fr'),
-  playlist_id: z.string().uuid().optional(),
   question_set_id: z.string().uuid().optional(),
 });
 
@@ -57,13 +94,15 @@ router.post(
     const workspaceId = req.workspaceId!;
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Body invalide',
-          details: parsed.error.flatten(),
-        },
-      });
+      res
+        .status(400)
+        .json({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Body invalide',
+            details: parsed.error.flatten(),
+          },
+        });
       return;
     }
     try {
@@ -78,38 +117,18 @@ router.post(
         return;
       }
 
-      // Pour TRACKS, vérifier que la playlist appartient bien au tenant
-      if (parsed.data.game_type === 'TRACKS') {
-        if (!parsed.data.playlist_id) {
-          res.status(400).json({
-            error: { code: 'PLAYLIST_REQUIRED', message: 'playlist_id requis pour TRACKS' },
-          });
-          return;
-        }
-        const ownPlaylist = await prisma.playlist.findFirst({
-          where: { id: parsed.data.playlist_id, establishment: { workspace_id: workspaceId } },
-          select: { id: true },
-        });
-        if (!ownPlaylist) {
-          res
-            .status(404)
-            .json({ error: { code: 'PLAYLIST_NOT_FOUND', message: 'Playlist introuvable' } });
-          return;
-        }
-      }
-
       const shortCode = await generateUniqueShortCode(establishment.name);
 
       const session = await prisma.session.create({
         data: {
           establishment_id: establishment.id,
+          name: parsed.data.name ?? null,
           game_type: parsed.data.game_type as GameType,
           mode: parsed.data.mode as GameMode,
           teams_config: parsed.data.teams_config
             ? (parsed.data.teams_config as Prisma.InputJsonValue)
             : Prisma.JsonNull,
           language: parsed.data.language,
-          playlist_id: parsed.data.playlist_id ?? null,
           question_set_id: parsed.data.question_set_id ?? null,
           short_code: shortCode,
           status: 'WAITING',
@@ -138,7 +157,18 @@ router.get(
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
       return;
     }
-    res.json({ session });
+    const teams = (session.teams_config as Team[] | null) ?? null;
+    const cumulative = await getCumulativeScores({
+      sessionId: session.id,
+      mode: session.mode as GameMode,
+      teams,
+      participants: session.participants.map((p) => ({
+        id: p.id,
+        pseudo: p.pseudo,
+        team_id: p.team_id,
+      })),
+    });
+    res.json({ session: serializeSession(session), cumulative });
   },
 );
 
@@ -154,12 +184,18 @@ router.get(
         include: {
           establishment: { select: { name: true, branding_color: true } },
           participants: { where: { is_kicked: false }, select: { id: true } },
+          rounds: {
+            where: { status: 'PLAYING' },
+            select: { id: true, position: true, playlist: { select: { name: true } } },
+            take: 1,
+          },
         },
       });
       if (!session) {
         res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
         return;
       }
+      const currentRound = session.rounds[0] ?? null;
       res.json({
         session: {
           short_code: session.short_code,
@@ -171,6 +207,12 @@ router.get(
           establishment_name: session.establishment.name,
           branding_color: session.establishment.branding_color,
           participants_count: session.participants.length,
+          current_round: currentRound
+            ? {
+                position: currentRound.position,
+                playlist_name: currentRound.playlist.name,
+              }
+            : null,
         },
       });
     } catch (err: unknown) {
@@ -185,10 +227,10 @@ router.get(
 // ── PATCH /:id (host) ─────────────────────────────────────────────────────
 
 const patchSchema = z.object({
+  name: z.string().trim().min(1).max(120).nullable().optional(),
   mode: z.enum(['SOLO', 'TEAMS']).optional(),
   teams_config: z.array(teamSchema).max(8).nullable().optional(),
   language: z.enum(['fr', 'en']).optional(),
-  playlist_id: z.string().uuid().nullable().optional(),
   question_set_id: z.string().uuid().nullable().optional(),
 });
 
@@ -200,13 +242,15 @@ router.patch(
     const workspaceId = req.workspaceId!;
     const parsed = patchSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Body invalide',
-          details: parsed.error.flatten(),
-        },
-      });
+      res
+        .status(400)
+        .json({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Body invalide',
+            details: parsed.error.flatten(),
+          },
+        });
       return;
     }
     const own = await ensureOwnSession(req.params.id, workspaceId);
@@ -215,16 +259,19 @@ router.patch(
       return;
     }
     if (own.status !== 'WAITING') {
-      res.status(409).json({
-        error: {
-          code: 'INVALID_STATUS',
-          message: 'Configuration impossible : session déjà démarrée',
-        },
-      });
+      res
+        .status(409)
+        .json({
+          error: {
+            code: 'INVALID_STATUS',
+            message: 'Configuration impossible : session déjà démarrée',
+          },
+        });
       return;
     }
     try {
       const updateData: Prisma.SessionUpdateInput = {};
+      if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
       if (parsed.data.mode) updateData.mode = parsed.data.mode as GameMode;
       if (parsed.data.teams_config !== undefined) {
         updateData.teams_config = parsed.data.teams_config
@@ -232,9 +279,6 @@ router.patch(
           : Prisma.JsonNull;
       }
       if (parsed.data.language) updateData.language = parsed.data.language;
-      if (parsed.data.playlist_id !== undefined) {
-        updateData.playlist_id = parsed.data.playlist_id;
-      }
       if (parsed.data.question_set_id !== undefined) {
         updateData.question_set_id = parsed.data.question_set_id;
       }
@@ -272,9 +316,7 @@ router.post(
         .json({ error: { code: 'INVALID_STATUS', message: 'Session pas en WAITING' } });
       return;
     }
-    // V1 dev/test : seuil temporaire à 1 joueur pour faciliter les tests solo.
-    // À remonter à 2 (ou rendre configurable via env var) pour la mise en prod.
-    const MIN_PLAYERS_TO_START = 1;
+    const MIN_PLAYERS_TO_START = 1; // V1 dev/test (2 en prod commerciale)
     if (own.participants.length < MIN_PLAYERS_TO_START) {
       res
         .status(400)
@@ -297,7 +339,233 @@ router.post(
   },
 );
 
-// ── POST /by-code/:code/join (joueur, sans auth) ──────────────────────────
+// ── POST /:id/end (host) — termine toute la session ───────────────────────
+
+router.post(
+  '/:id/end',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const own = await ensureOwnSession(req.params.id, workspaceId);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    if (own.status === 'ENDED') {
+      res.status(409).json({ error: { code: 'INVALID_STATUS', message: 'Session déjà terminée' } });
+      return;
+    }
+    try {
+      // Termine d'abord le round courant éventuel
+      await prisma.sessionRound.updateMany({
+        where: { session_id: req.params.id, status: 'PLAYING' },
+        data: { status: 'ENDED', ended_at: new Date() },
+      });
+      const session = await prisma.session.update({
+        where: { id: req.params.id },
+        data: { status: 'ENDED', ended_at: new Date() },
+      });
+
+      // Scores cumulés finaux pour le podium
+      const teams = (own.teams_config as Team[] | null) ?? null;
+      const cumulative = await getCumulativeScores({
+        sessionId: session.id,
+        mode: session.mode as GameMode,
+        teams,
+        participants: own.participants.map((p) => ({
+          id: p.id,
+          pseudo: p.pseudo,
+          team_id: p.team_id,
+        })),
+      });
+      broadcastToSession(session.id, 'session:ended', { session, cumulative });
+      res.json({ session, cumulative });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/end] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur fin session' } });
+    }
+  },
+);
+
+// ── ROUNDS ────────────────────────────────────────────────────────────────
+
+const createRoundSchema = z.object({
+  playlist_id: z.string().uuid(),
+});
+
+router.post(
+  '/:id/rounds',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const parsed = createRoundSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Body invalide',
+            details: parsed.error.flatten(),
+          },
+        });
+      return;
+    }
+    const own = await ensureOwnSession(req.params.id, workspaceId);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    if (own.status === 'ENDED') {
+      res.status(409).json({ error: { code: 'INVALID_STATUS', message: 'Session terminée' } });
+      return;
+    }
+    // Vérif tenant playlist
+    const playlist = await prisma.playlist.findFirst({
+      where: { id: parsed.data.playlist_id, establishment: { workspace_id: workspaceId } },
+      include: { _count: { select: { tracks: true } } },
+    });
+    if (!playlist) {
+      res
+        .status(404)
+        .json({ error: { code: 'PLAYLIST_NOT_FOUND', message: 'Playlist introuvable' } });
+      return;
+    }
+    if (playlist._count.tracks === 0) {
+      res.status(400).json({ error: { code: 'EMPTY_PLAYLIST', message: 'Playlist vide' } });
+      return;
+    }
+    try {
+      const lastRound = await prisma.sessionRound.findFirst({
+        where: { session_id: req.params.id },
+        orderBy: { position: 'desc' },
+        select: { position: true },
+      });
+      const round = await prisma.sessionRound.create({
+        data: {
+          session_id: req.params.id,
+          playlist_id: parsed.data.playlist_id,
+          position: (lastRound?.position ?? 0) + 1,
+          status: 'PENDING',
+        },
+        include: {
+          playlist: {
+            select: { id: true, name: true, level: true, _count: { select: { tracks: true } } },
+          },
+        },
+      });
+      const enriched = {
+        ...round,
+        playlist: {
+          id: round.playlist.id,
+          name: round.playlist.name,
+          level: round.playlist.level,
+          tracks_count: round.playlist._count.tracks,
+        },
+      };
+      broadcastToSession(req.params.id, 'round:created', { round: enriched });
+      res.status(201).json({ round: enriched });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/rounds] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur création round' } });
+    }
+  },
+);
+
+router.post(
+  '/:id/rounds/:roundId/start',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const own = await ensureOwnSession(req.params.id, workspaceId);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    if (own.status !== 'PLAYING') {
+      res
+        .status(409)
+        .json({ error: { code: 'INVALID_STATUS', message: 'Démarre la session avant un round' } });
+      return;
+    }
+    try {
+      // Termine les autres rounds PLAYING (au cas où)
+      await prisma.sessionRound.updateMany({
+        where: { session_id: req.params.id, status: 'PLAYING', NOT: { id: req.params.roundId } },
+        data: { status: 'ENDED', ended_at: new Date() },
+      });
+      const round = await prisma.sessionRound.update({
+        where: { id: req.params.roundId, session_id: req.params.id },
+        data: { status: 'PLAYING' as RoundStatus, started_at: new Date() },
+        include: {
+          playlist: {
+            select: { id: true, name: true, level: true, _count: { select: { tracks: true } } },
+          },
+        },
+      });
+      const enriched = {
+        ...round,
+        playlist: {
+          id: round.playlist.id,
+          name: round.playlist.name,
+          level: round.playlist.level,
+          tracks_count: round.playlist._count.tracks,
+        },
+      };
+      broadcastToSession(req.params.id, 'round:started', { round: enriched });
+      res.json({ round: enriched });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/rounds/:roundId/start] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur démarrage round' } });
+    }
+  },
+);
+
+router.post(
+  '/:id/rounds/:roundId/end',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const own = await ensureOwnSession(req.params.id, workspaceId);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    try {
+      const round = await prisma.sessionRound.update({
+        where: { id: req.params.roundId, session_id: req.params.id },
+        data: { status: 'ENDED' as RoundStatus, ended_at: new Date() },
+        include: {
+          playlist: {
+            select: { id: true, name: true, level: true, _count: { select: { tracks: true } } },
+          },
+        },
+      });
+      const enriched = {
+        ...round,
+        playlist: {
+          id: round.playlist.id,
+          name: round.playlist.name,
+          level: round.playlist.level,
+          tracks_count: round.playlist._count.tracks,
+        },
+      };
+      broadcastToSession(req.params.id, 'round:ended', { round: enriched });
+      res.json({ round: enriched });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/rounds/:roundId/end] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur fin round' } });
+    }
+  },
+);
+
+// ── JOIN (joueur, sans auth) ──────────────────────────────────────────────
 
 const joinSchema = z.object({
   pseudo: z.string().trim().min(1).max(40),
@@ -311,13 +579,15 @@ router.post(
     const code = req.params.short_code.toUpperCase();
     const parsed = joinSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Body invalide',
-          details: parsed.error.flatten(),
-        },
-      });
+      res
+        .status(400)
+        .json({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Body invalide',
+            details: parsed.error.flatten(),
+          },
+        });
       return;
     }
     try {
@@ -329,24 +599,27 @@ router.post(
         res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
         return;
       }
-      if (session.status !== 'WAITING') {
-        res.status(409).json({
-          error: { code: 'NOT_ACCEPTING_PLAYERS', message: 'Session déjà démarrée ou terminée' },
-        });
+      // On accepte les joueurs en WAITING ET en PLAYING (latecomers OK).
+      // Refuser uniquement quand session terminée.
+      if (session.status === 'ENDED') {
+        res
+          .status(409)
+          .json({ error: { code: 'NOT_ACCEPTING_PLAYERS', message: 'Session terminée' } });
         return;
       }
 
-      // Si TEAMS, valider que team_id existe dans teams_config
       let teamId: string | null = null;
       if (session.mode === 'TEAMS') {
         const teams = (session.teams_config as Array<{ id: string }> | null) ?? [];
         if (!parsed.data.team_id || !teams.some((t) => t.id === parsed.data.team_id)) {
-          res.status(400).json({
-            error: {
-              code: 'INVALID_TEAM',
-              message: 'team_id requis et valide pour le mode TEAMS',
-            },
-          });
+          res
+            .status(400)
+            .json({
+              error: {
+                code: 'INVALID_TEAM',
+                message: 'team_id requis et valide pour le mode TEAMS',
+              },
+            });
           return;
         }
         teamId = parsed.data.team_id;
@@ -362,9 +635,7 @@ router.post(
       });
 
       const token = signParticipantToken({ participantId: participant.id, sessionId: session.id });
-
       broadcastToSession(session.id, 'participant:joined', { participant });
-
       res.status(201).json({ participant, token });
     } catch (err: unknown) {
       console.error('[POST /sessions/by-code/join] error:', err);
@@ -373,11 +644,9 @@ router.post(
   },
 );
 
-// ── PATCH /:id/participants/:pid (host change l'équipe) ──────────────────
+// ── PARTICIPANTS (host) ───────────────────────────────────────────────────
 
-const movePartSchema = z.object({
-  team_id: z.string().uuid().nullable(),
-});
+const movePartSchema = z.object({ team_id: z.string().uuid().nullable() });
 
 router.patch(
   '/:id/participants/:pid',
@@ -387,13 +656,7 @@ router.patch(
     const workspaceId = req.workspaceId!;
     const parsed = movePartSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Body invalide',
-          details: parsed.error.flatten(),
-        },
-      });
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
       return;
     }
     const own = await ensureOwnSession(req.params.id, workspaceId);
@@ -401,7 +664,6 @@ router.patch(
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
       return;
     }
-    // Si team_id fourni, vérifier qu'il existe dans teams_config
     if (parsed.data.team_id) {
       const teams = (own.teams_config as Array<{ id: string }> | null) ?? [];
       if (!teams.some((t) => t.id === parsed.data.team_id)) {
@@ -424,8 +686,6 @@ router.patch(
     }
   },
 );
-
-// ── DELETE /:id/participants/:pid (host kick) ────────────────────────────
 
 router.delete(
   '/:id/participants/:pid',

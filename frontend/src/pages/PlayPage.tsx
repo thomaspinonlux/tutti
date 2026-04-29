@@ -1,20 +1,15 @@
 /**
- * /play?session=CODE — flow joueur (étape 9 + résilience).
+ * /play?session=CODE — flow joueur (étapes 9 + 9.5 + résilience + onboarding).
  *
- * Mobile-first absolu. C'est l'écran le plus vu en pratique.
- * Cf. docs/RESPONSIVE.md + docs/PLAYER_RESILIENCE.md.
+ * Mobile-first absolu. Cf. docs/RESPONSIVE.md + docs/PLAYER_RESILIENCE.md.
  *
  * Steps :
- *   1. (Si pas d'identité en localStorage) saisie pseudo
- *   2. (Si TEAMS) choix d'une équipe
- *   3. Salle d'attente — Socket.IO connecté, état resync au reconnect
- *   4. Mode jeu (étape 10) — Wake Lock activé, écran reste allumé
- *
- * Persistance :
- *   - À chaque succès de /join, on sauvegarde dans localStorage par short_code.
- *   - Au montage, si on trouve une identité valide, on saute aux étapes 3/4.
- *   - On efface la persistance si la session passe en ENDED ou si le
- *     serveur rejette le token.
+ *   1. pseudo (+ team si TEAMS) — sauf si on a déjà une identité en localStorage
+ *   2. onboarding (skip si hasPlayedBefore + permission micro déjà OK)
+ *   3. micPermissionError (si refus)
+ *   4. waiting (Socket.IO connecté)
+ *   5. playing — badge "Manche X — <Nom>" si round PLAYING
+ *   6. ended
  */
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
@@ -25,6 +20,7 @@ import type {
   JoinResponse,
   Participant,
   PublicSessionView,
+  SessionRoundWithPlaylist,
   SessionWithParticipants,
   Team,
 } from '@tutti/shared';
@@ -36,8 +32,16 @@ import {
   saveParticipantContext,
   type ParticipantContext,
 } from '../lib/socket.js';
+import {
+  checkMicPermission,
+  hasPlayedBefore,
+  markOnboardingDone,
+  requestMicPermission,
+} from '../lib/onboarding.js';
 import { useWakeLock } from '../lib/useWakeLock.js';
 import { ConnectionIndicator } from '../components/ConnectionIndicator.js';
+import { OnboardingScreen } from '../components/play/OnboardingScreen.js';
+import { MicPermissionErrorScreen } from '../components/play/MicPermissionErrorScreen.js';
 import {
   Badge,
   Button,
@@ -48,7 +52,15 @@ import {
   Underline,
 } from '../components/ui/index.js';
 
-type Step = 'pseudo' | 'team' | 'waiting' | 'playing' | 'ended';
+type Step =
+  | 'pseudo'
+  | 'team'
+  | 'onboarding'
+  | 'onboardingCondensed'
+  | 'micError'
+  | 'waiting'
+  | 'playing'
+  | 'ended';
 
 interface Toast {
   id: string;
@@ -71,6 +83,8 @@ export function PlayPage(): JSX.Element {
   const [participantsCount, setParticipantsCount] = useState(0);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [currentRound, setCurrentRound] = useState<SessionRoundWithPlaylist | null>(null);
+  const [micRequesting, setMicRequesting] = useState(false);
   const hadConnectionRef = useRef(false);
 
   const teams = useMemo<Team[]>(
@@ -78,7 +92,7 @@ export function PlayPage(): JSX.Element {
     [view?.teams_config],
   );
 
-  // ── Wake Lock pendant PLAYING ─────────────────────────────────────────
+  // Wake Lock pendant la lecture
   useWakeLock(step === 'playing');
 
   // ── Bootstrap : récupère la session publique + auto-resume éventuel ──
@@ -99,6 +113,7 @@ export function PlayPage(): JSX.Element {
             setStep('ended');
             return;
           }
+          // Reprise : on saute l'onboarding si déjà fait, sinon on l'affiche en condensé
           setIdentity(stored);
           setPseudo(stored.pseudo);
           setSelectedTeam(stored.teamId);
@@ -106,8 +121,8 @@ export function PlayPage(): JSX.Element {
           return;
         }
 
-        if (v.status !== 'WAITING') {
-          setError(t('play.alreadyStarted'));
+        if (v.status === 'ENDED') {
+          setStep('ended');
         }
       })
       .catch(() => setError(t('play.notFound')));
@@ -135,6 +150,8 @@ export function PlayPage(): JSX.Element {
           }
           if (resp.session) {
             setParticipantsCount(resp.session.participants.length);
+            const playing = resp.session.rounds.find((r) => r.status === 'PLAYING');
+            setCurrentRound(playing ?? null);
             if (resp.session.status === 'PLAYING') setStep('playing');
             else if (resp.session.status === 'ENDED') {
               clearParticipantContext(shortCode);
@@ -143,6 +160,12 @@ export function PlayPage(): JSX.Element {
           }
           if (wasReconnect) {
             pushToast(setToasts, t('connection.toastReconnected'), 'basil');
+            // Vérif silencieuse de la permission micro après une coupure prolongée
+            void checkMicPermission().then((res) => {
+              if (res.kind === 'denied') {
+                pushToast(setToasts, t('onboarding.micErrorEyebrow'), 'raspberry');
+              }
+            });
           }
         },
       );
@@ -164,6 +187,12 @@ export function PlayPage(): JSX.Element {
       clearParticipantContext(shortCode);
       setStep('ended');
     });
+    sock.on('round:started', ({ round }: { round: SessionRoundWithPlaylist }) => {
+      setCurrentRound(round);
+    });
+    sock.on('round:ended', () => {
+      setCurrentRound(null);
+    });
 
     return () => {
       sock.disconnect();
@@ -179,12 +208,28 @@ export function PlayPage(): JSX.Element {
       setStep('team');
       return;
     }
-    void doJoin(null);
+    setStep(hasPlayedBefore() ? 'onboardingCondensed' : 'onboarding');
   };
 
   const handleTeamSubmit = (): void => {
     if (!selectedTeam) return;
-    void doJoin(selectedTeam);
+    setStep(hasPlayedBefore() ? 'onboardingCondensed' : 'onboarding');
+  };
+
+  const handleOnboardingContinue = async (): Promise<void> => {
+    setMicRequesting(true);
+    const res = await requestMicPermission();
+    setMicRequesting(false);
+    if (res.kind === 'granted') {
+      markOnboardingDone();
+      await doJoin(selectedTeam);
+    } else if (res.kind === 'unsupported') {
+      // Pas de micro disponible : on permet de jouer quand même (V1 bienveillant)
+      markOnboardingDone();
+      await doJoin(selectedTeam);
+    } else {
+      setStep('micError');
+    }
   };
 
   const doJoin = async (teamId: string | null): Promise<void> => {
@@ -212,6 +257,7 @@ export function PlayPage(): JSX.Element {
     }
   };
 
+  // ── Render ─────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col">
       <MultiColorBar height="md" />
@@ -229,6 +275,14 @@ export function PlayPage(): JSX.Element {
                 <Underline>{view?.establishment_name ?? '…'}</Underline>
               </TitleHandwritten>
               <p className="font-mono text-xs tracking-[0.2em] text-ink-soft mt-2">{shortCode}</p>
+              {currentRound && (
+                <Badge tone="spritz" tilt={-1} className="mt-2">
+                  {t('play.roundBadge', {
+                    n: currentRound.position,
+                    name: currentRound.playlist.name,
+                  })}
+                </Badge>
+              )}
             </div>
           </header>
 
@@ -240,7 +294,7 @@ export function PlayPage(): JSX.Element {
             </Card>
           )}
 
-          {step === 'pseudo' && view?.status === 'WAITING' && (
+          {step === 'pseudo' && view?.status !== 'ENDED' && (
             <Card size="md">
               <form onSubmit={handlePseudoSubmit} className="space-y-4">
                 <p className="font-editorial italic text-ink-2 text-center mb-2">
@@ -262,7 +316,9 @@ export function PlayPage(): JSX.Element {
                   size="lg"
                   className="w-full"
                 >
-                  {view?.mode === 'TEAMS' ? t('play.continueToTeam') : t('play.joinNow')}
+                  {view?.mode === 'TEAMS'
+                    ? t('play.continueToTeam')
+                    : t('play.continueToOnboarding')}
                 </Button>
               </form>
             </Card>
@@ -309,10 +365,33 @@ export function PlayPage(): JSX.Element {
                   disabled={!selectedTeam || submitting}
                   className="flex-1"
                 >
-                  {submitting ? t('play.joining') : t('play.joinNow')}
+                  {t('play.continueToOnboarding')}
                 </Button>
               </div>
             </Card>
+          )}
+
+          {step === 'onboarding' && (
+            <OnboardingScreen
+              onContinue={handleOnboardingContinue}
+              busy={micRequesting || submitting}
+            />
+          )}
+
+          {step === 'onboardingCondensed' && (
+            <OnboardingScreen
+              condensed
+              onContinue={handleOnboardingContinue}
+              onShowFull={() => setStep('onboarding')}
+              busy={micRequesting || submitting}
+            />
+          )}
+
+          {step === 'micError' && (
+            <MicPermissionErrorScreen
+              onRetry={handleOnboardingContinue}
+              busy={micRequesting || submitting}
+            />
           )}
 
           {step === 'waiting' && identity && (
@@ -341,7 +420,7 @@ export function PlayPage(): JSX.Element {
           {step === 'playing' && (
             <Card size="md" tone="spritz" className="text-center">
               <TitleHandwritten as="h2" className="mb-2">
-                {t('play.gameStarting')}
+                {currentRound ? t('play.roundLive') : t('play.gameStarting')}
               </TitleHandwritten>
               <p className="font-editorial italic text-ink-2">{t('play.gameStartingHint')}</p>
               {identity && (
@@ -396,6 +475,6 @@ function pushToast(
   const id = crypto.randomUUID();
   set((prev) => [...prev, { id, text, tone }]);
   window.setTimeout(() => {
-    set((prev) => prev.filter((t) => t.id !== id));
+    set((prev) => prev.filter((tt) => tt.id !== id));
   }, 4000);
 }

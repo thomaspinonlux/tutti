@@ -32,6 +32,48 @@ type SocketIdentity =
   | { kind: 'host'; userId: string; userEmail: string | null }
   | { kind: 'participant'; participantId: string; sessionId: string };
 
+const SESSION_INCLUDE = {
+  participants: { where: { is_kicked: false }, orderBy: { joined_at: 'asc' as const } },
+  rounds: {
+    orderBy: { position: 'asc' as const },
+    include: {
+      playlist: {
+        select: {
+          id: true,
+          name: true,
+          level: true,
+          _count: { select: { tracks: true } },
+        },
+      },
+    },
+  },
+} as const;
+
+type SessionWithIncludes = NonNullable<
+  Awaited<
+    ReturnType<
+      typeof import('../lib/prisma.js').prisma.session.findFirst<{
+        include: typeof SESSION_INCLUDE;
+      }>
+    >
+  >
+>;
+
+function serializeSession(session: SessionWithIncludes) {
+  return {
+    ...session,
+    rounds: session.rounds.map((r) => ({
+      ...r,
+      playlist: {
+        id: r.playlist.id,
+        name: r.playlist.name,
+        level: r.playlist.level,
+        tracks_count: r.playlist._count.tracks,
+      },
+    })),
+  };
+}
+
 interface AuthedSocket extends Socket {
   identity?: SocketIdentity;
 }
@@ -105,13 +147,11 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
                   workspace: { members: { some: { user_id: identity.userId } } },
                 },
               },
-              include: {
-                participants: { where: { is_kicked: false }, orderBy: { joined_at: 'asc' } },
-              },
+              include: SESSION_INCLUDE,
             });
             if (!session) throw new Error('Session introuvable ou non autorisée');
             await socket.join(roomName(sessionId));
-            ack?.({ ok: true, session });
+            ack?.({ ok: true, session: serializeSession(session) });
             return;
           }
 
@@ -120,13 +160,11 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
           }
           const session = await prisma.session.findUnique({
             where: { id: sessionId },
-            include: {
-              participants: { where: { is_kicked: false }, orderBy: { joined_at: 'asc' } },
-            },
+            include: SESSION_INCLUDE,
           });
           if (!session) throw new Error('Session introuvable');
           await socket.join(roomName(sessionId));
-          ack?.({ ok: true, session });
+          ack?.({ ok: true, session: serializeSession(session) });
         } catch (err) {
           ack?.({ ok: false, error: (err as Error).message });
         }
@@ -148,13 +186,11 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
                 workspace: { members: { some: { user_id: identity.userId } } },
               },
             },
-            include: {
-              participants: { where: { is_kicked: false }, orderBy: { joined_at: 'asc' } },
-            },
+            include: SESSION_INCLUDE,
           });
           if (!session) throw new Error('Session introuvable ou non autorisée');
           await socket.join(roomName(session.id));
-          ack?.({ ok: true, session });
+          ack?.({ ok: true, session: serializeSession(session) });
         } catch (err) {
           ack?.({ ok: false, error: (err as Error).message });
         }

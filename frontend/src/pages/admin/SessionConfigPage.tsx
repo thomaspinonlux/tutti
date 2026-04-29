@@ -1,10 +1,13 @@
 /**
- * /admin/sessions/new?playlist=:id — wizard de configuration de session.
+ * /admin/sessions/new — wizard de configuration de session.
  *
- * Étape 1 : mode (Solo / Équipes)
- * Étape 2 (si Équipes) : nombre + noms d'équipes (pré-remplis avec couleurs Pop)
- * Étape 3 : langue (préchargée depuis la playlist)
- * Validation → POST /api/sessions → redirect /host?session=CODE
+ * Refonte multi-round : la session est désormais un conteneur de manches.
+ * Le wizard ne demande plus de playlist (elle sera choisie sur /host quand
+ * l'host démarre le blind test).
+ *
+ * Si `?playlist=X` est présent dans l'URL (depuis le bouton "▶ Lancer un blind
+ * test avec cette playlist"), on pré-créé la 1ʳᵉ manche après création de la
+ * session. Sinon la session est vide et l'host choisira plus tard.
  */
 
 import { useEffect, useState, type FormEvent } from 'react';
@@ -12,7 +15,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Team } from '@tutti/shared';
 import { getPlaylist } from '../../lib/playlists.js';
-import { createSession } from '../../lib/sessions.js';
+import { createRound, createSession } from '../../lib/sessions.js';
 import {
   Button,
   Card,
@@ -37,8 +40,9 @@ export function SessionConfigPage(): JSX.Element {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const playlistId = params.get('playlist');
+  const playlistId = params.get('playlist'); // optionnel — pré-créé round 1 si présent
 
+  const [name, setName] = useState('');
   const [playlistName, setPlaylistName] = useState<string | null>(null);
   const [mode, setMode] = useState<'SOLO' | 'TEAMS'>('SOLO');
   const [teams, setTeams] = useState<Team[]>(() => [newTeam(0), newTeam(1)]);
@@ -53,16 +57,14 @@ export function SessionConfigPage(): JSX.Element {
         setPlaylistName(p.name);
         setLanguage((p.language as 'fr' | 'en') ?? 'fr');
       })
-      .catch(() => {
-        setError(t('sessionConfig.playlistError'));
-      });
-  }, [playlistId, t]);
+      .catch(() => setPlaylistName(null));
+  }, [playlistId]);
 
   const canAddTeam = teams.length < 6;
   const canRemoveTeam = teams.length > 2;
 
   const updateTeam = (id: string, patch: Partial<Team>): void => {
-    setTeams((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    setTeams((prev) => prev.map((tt) => (tt.id === id ? { ...tt, ...patch } : tt)));
   };
   const addTeam = (): void => {
     if (!canAddTeam) return;
@@ -70,25 +72,31 @@ export function SessionConfigPage(): JSX.Element {
   };
   const removeTeam = (id: string): void => {
     if (!canRemoveTeam) return;
-    setTeams((prev) => prev.filter((t) => t.id !== id));
+    setTeams((prev) => prev.filter((tt) => tt.id !== id));
   };
 
   const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
-    if (!playlistId) {
-      setError(t('sessionConfig.playlistMissing'));
-      return;
-    }
     setSubmitting(true);
     setError(null);
     try {
       const session = await createSession({
+        name: name.trim() || undefined,
         game_type: 'TRACKS',
         mode,
         teams_config: mode === 'TEAMS' ? teams : undefined,
         language,
-        playlist_id: playlistId,
       });
+      // Si une playlist est passée en paramètre, on pré-crée la 1ʳᵉ manche
+      // pour qu'elle soit prête au démarrage. L'host n'aura plus qu'à
+      // cliquer "Démarrer le blind test" puis "Lancer cette manche".
+      if (playlistId) {
+        try {
+          await createRound(session.id, playlistId);
+        } catch {
+          // Tolérant : la session existe, l'host pourra choisir manuellement.
+        }
+      }
       navigate(`/host?session=${encodeURIComponent(session.short_code)}`, { replace: true });
     } catch (err: unknown) {
       setError((err as Error).message);
@@ -103,11 +111,22 @@ export function SessionConfigPage(): JSX.Element {
       </TitleHandwritten>
       {playlistName && (
         <p className="font-editorial italic text-ink-2 mb-8">
-          {t('sessionConfig.forPlaylist', { name: playlistName })}
+          {t('sessionConfig.firstRoundWith', { name: playlistName })}
         </p>
       )}
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
+        <Card>
+          <Input
+            label={t('sessionConfig.nameLabel')}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t('sessionConfig.namePlaceholder')}
+            hint={t('sessionConfig.nameHint')}
+            maxLength={120}
+          />
+        </Card>
+
         <Card>
           <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-3">
             {t('sessionConfig.mode')}

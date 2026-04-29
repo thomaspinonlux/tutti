@@ -4,23 +4,25 @@
  */
 
 import type {
+  CumulativeScore,
   GameMode,
   GameType,
   JoinResponse,
   Participant,
   PublicSessionView,
   Session,
+  SessionRoundWithPlaylist,
   SessionWithParticipants,
   Team,
 } from '@tutti/shared';
 import { api } from './api.js';
 
 export interface CreateSessionInput {
+  name?: string;
   game_type?: GameType;
   mode?: GameMode;
   teams_config?: Team[];
   language?: 'fr' | 'en';
-  playlist_id?: string;
   question_set_id?: string;
 }
 
@@ -29,11 +31,21 @@ export async function createSession(input: CreateSessionInput): Promise<Session>
   return data.session;
 }
 
-export async function getSession(id: string): Promise<SessionWithParticipants> {
-  const data = await api<{ session: SessionWithParticipants }>(
+export async function getSession(
+  id: string,
+): Promise<{ session: SessionWithParticipants; cumulative: CumulativeScore[] }> {
+  return api<{ session: SessionWithParticipants; cumulative: CumulativeScore[] }>(
     `/api/sessions/by-id/${encodeURIComponent(id)}`,
   );
-  return data.session;
+}
+
+export async function endSession(
+  id: string,
+): Promise<{ session: Session; cumulative: CumulativeScore[] }> {
+  return api<{ session: Session; cumulative: CumulativeScore[] }>(
+    `/api/sessions/${encodeURIComponent(id)}/end`,
+    { method: 'POST' },
+  );
 }
 
 /** Vue publique (joueur, sans auth). */
@@ -48,10 +60,10 @@ export async function getPublicSession(shortCode: string): Promise<PublicSession
 export async function patchSession(
   id: string,
   patch: Partial<{
+    name: string | null;
     mode: GameMode;
     teams_config: Team[] | null;
     language: 'fr' | 'en';
-    playlist_id: string | null;
     question_set_id: string | null;
   }>,
 ): Promise<Session> {
@@ -68,6 +80,43 @@ export async function startSession(id: string): Promise<Session> {
   });
   return data.session;
 }
+
+// ───── Rounds ─────────────────────────────────────────────────────────────
+
+export async function createRound(
+  sessionId: string,
+  playlistId: string,
+): Promise<SessionRoundWithPlaylist> {
+  const data = await api<{ round: SessionRoundWithPlaylist }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds`,
+    { method: 'POST', body: { playlist_id: playlistId } },
+  );
+  return data.round;
+}
+
+export async function startRound(
+  sessionId: string,
+  roundId: string,
+): Promise<SessionRoundWithPlaylist> {
+  const data = await api<{ round: SessionRoundWithPlaylist }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/start`,
+    { method: 'POST' },
+  );
+  return data.round;
+}
+
+export async function endRound(
+  sessionId: string,
+  roundId: string,
+): Promise<SessionRoundWithPlaylist> {
+  const data = await api<{ round: SessionRoundWithPlaylist }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/end`,
+    { method: 'POST' },
+  );
+  return data.round;
+}
+
+// ───── Participants ───────────────────────────────────────────────────────
 
 export async function joinSession(
   shortCode: string,
