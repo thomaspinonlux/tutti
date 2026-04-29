@@ -258,7 +258,7 @@ function HostPageInner(): JSX.Element {
               <Button
                 onClick={() => void handleStart()}
                 disabled={
-                  starting || session.participants.length < 2 || session.status !== 'WAITING'
+                  starting || session.participants.length < 1 || session.status !== 'WAITING'
                 }
                 size="lg"
               >
