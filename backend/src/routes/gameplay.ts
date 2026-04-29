@@ -14,83 +14,21 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { ScoreEventType } from '@prisma/client';
-import type { CurrentTrackState, BuzzResult } from '@tutti/shared';
+import type { BuzzResult } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { verifyParticipantToken } from '../lib/participantToken.js';
 import { broadcastToSession } from '../socket/index.js';
-import {
-  clearActiveTrack,
-  getActiveTrack,
-  setActiveTrack,
-  setCooldown,
-  tryBuzz,
-} from '../lib/gameState.js';
+import { getActiveTrack, setCooldown, tryBuzz } from '../lib/gameState.js';
 import { computeBuzzPoints } from '../lib/gameScoring.js';
+import {
+  advanceToNextOrEndRound,
+  buildAndBroadcastTrack,
+  findRoundForWorkspace,
+} from '../lib/gameplayCore.js';
 
 const router: Router = Router({ mergeParams: true });
-
-const LISTEN_DURATION_MS = 30_000; // 30s par défaut pour V1
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-
-async function ensureOwnRound(roundId: string, sessionId: string, workspaceId: string) {
-  return prisma.sessionRound.findFirst({
-    where: {
-      id: roundId,
-      session_id: sessionId,
-      session: { establishment: { workspace_id: workspaceId } },
-    },
-    include: { playlist: { include: { tracks: { orderBy: { position: 'asc' } } } } },
-  });
-}
-
-async function buildAndBroadcastTrack(
-  sessionId: string,
-  round: Awaited<ReturnType<typeof ensureOwnRound>>,
-  trackIndex: number,
-): Promise<CurrentTrackState | null> {
-  if (!round) return null;
-  const track = round.playlist.tracks[trackIndex];
-  if (!track) return null;
-
-  const state: CurrentTrackState = {
-    round_id: round.id,
-    track_index: trackIndex,
-    track_id: track.id,
-    provider: track.provider as CurrentTrackState['provider'],
-    provider_track_id: track.provider_track_id,
-    artist: track.artist,
-    title: track.title,
-    album: track.album,
-    year: track.year,
-    cover_url: track.cover_url,
-    started_at: new Date().toISOString(),
-    duration_ms: LISTEN_DURATION_MS,
-    phase: 'listening',
-    buzzer_id: null,
-    buzzer_pseudo: null,
-  };
-
-  setActiveTrack(round.id, {
-    round_id: round.id,
-    track_index: trackIndex,
-    track_id: track.id,
-    started_at: Date.now(),
-    phase: 'listening',
-    buzzer_id: null,
-    buzz_time_ms: null,
-  });
-
-  await prisma.sessionRound.update({
-    where: { id: round.id },
-    data: { current_track_index: trackIndex },
-  });
-
-  broadcastToSession(sessionId, 'track:start', { state });
-  return state;
-}
 
 // ── POST /play-track (host) ───────────────────────────────────────────────
 
@@ -100,7 +38,7 @@ router.post(
   requireWorkspace,
   async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
     const workspaceId = req.workspaceId!;
-    const round = await ensureOwnRound(req.params.roundId, req.params.id, workspaceId);
+    const round = await findRoundForWorkspace(req.params.roundId, req.params.id, workspaceId);
     if (!round) {
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
       return;
@@ -126,42 +64,13 @@ router.post(
   requireWorkspace,
   async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
     const workspaceId = req.workspaceId!;
-    const round = await ensureOwnRound(req.params.roundId, req.params.id, workspaceId);
+    const round = await findRoundForWorkspace(req.params.roundId, req.params.id, workspaceId);
     if (!round) {
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
       return;
     }
-    const nextIndex = round.current_track_index + 1;
-    if (nextIndex >= round.playlist.tracks.length) {
-      // Plus de tracks → auto-end du round
-      await prisma.sessionRound.update({
-        where: { id: round.id },
-        data: { status: 'ENDED', ended_at: new Date() },
-      });
-      clearActiveTrack(round.id);
-      const updatedRound = await prisma.sessionRound.findUnique({
-        where: { id: round.id },
-        include: {
-          playlist: {
-            select: { id: true, name: true, level: true, _count: { select: { tracks: true } } },
-          },
-        },
-      });
-      const enriched = updatedRound && {
-        ...updatedRound,
-        playlist: {
-          id: updatedRound.playlist.id,
-          name: updatedRound.playlist.name,
-          level: updatedRound.playlist.level,
-          tracks_count: updatedRound.playlist._count.tracks,
-        },
-      };
-      broadcastToSession(req.params.id, 'round:ended', { round: enriched });
-      res.json({ ended: true, round: enriched });
-      return;
-    }
-    const state = await buildAndBroadcastTrack(req.params.id, round, nextIndex);
-    res.json({ state });
+    const result = await advanceToNextOrEndRound(req.params.id, round);
+    res.json(result);
   },
 );
 

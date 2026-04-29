@@ -17,6 +17,13 @@ declare global {
       userEmail?: string;
       /** ID du workspace courant, injecté par middleware tenant. */
       workspaceId?: string;
+      /** Contexte master (mode B), injecté par middleware requireMasterParticipant. */
+      master?: {
+        participantId: string;
+        sessionId: string;
+        pseudo: string;
+        teamId: string | null;
+      };
     }
   }
 }

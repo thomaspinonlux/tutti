@@ -198,6 +198,107 @@ export async function postBuzz(
   );
 }
 
+// ───── Master actions (mode B — joueur master pilote depuis son tel) ─────
+
+export async function masterNextTrack(
+  sessionId: string,
+  roundId: string,
+  token: string,
+): Promise<{ state?: CurrentTrackState; ended?: boolean; round?: SessionRoundWithPlaylist }> {
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/master/next-track`, {
+    method: 'POST',
+    body: { token, round_id: roundId },
+    anonymous: true,
+  });
+}
+
+export async function masterSkipTrack(
+  sessionId: string,
+  roundId: string,
+  token: string,
+): Promise<{ state?: CurrentTrackState; ended?: boolean; round?: SessionRoundWithPlaylist }> {
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/master/skip-track`, {
+    method: 'POST',
+    body: { token, round_id: roundId },
+    anonymous: true,
+  });
+}
+
+export async function masterReveal(
+  sessionId: string,
+  roundId: string,
+  token: string,
+): Promise<{ reveal: { artist: string; title: string; track_index: number } }> {
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/master/reveal`, {
+    method: 'POST',
+    body: { token, round_id: roundId },
+    anonymous: true,
+  });
+}
+
+export async function masterPause(sessionId: string, token: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/pause`, {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}
+
+export async function masterResume(sessionId: string, token: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/resume`, {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}
+
+export async function masterEndRound(
+  sessionId: string,
+  roundId: string,
+  token: string,
+): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/end-round`, {
+    method: 'POST',
+    body: { token, round_id: roundId },
+    anonymous: true,
+  });
+}
+
+export async function masterEndSession(
+  sessionId: string,
+  token: string,
+): Promise<{ session: Session; cumulative: CumulativeScore[] }> {
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/master/end-session`, {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}
+
+export async function masterPickRound(
+  sessionId: string,
+  playlistId: string,
+  token: string,
+): Promise<{ round: SessionRoundWithPlaylist; state: CurrentTrackState | null }> {
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/master/pick-round`, {
+    method: 'POST',
+    body: { token, playlist_id: playlistId },
+    anonymous: true,
+  });
+}
+
+export async function masterAdjustPoints(
+  sessionId: string,
+  token: string,
+  args: { target_participant_id: string; delta: number; reason?: string },
+): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/adjust-points`, {
+    method: 'POST',
+    body: { token, ...args },
+    anonymous: true,
+  });
+}
+
 export async function postAnswer(
   sessionId: string,
   roundId: string,
