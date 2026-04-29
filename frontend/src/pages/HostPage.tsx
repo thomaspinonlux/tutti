@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
 import type {
   BuzzResult,
+  CorrectAnswerEntry,
   CumulativeScore,
   CurrentTrackState,
   Participant,
@@ -82,7 +83,13 @@ function HostPageInner(): JSX.Element {
   const [expressModalOpen, setExpressModalOpen] = useState(false);
   const [forcedSelection, setForcedSelection] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
-  const [recentBuzzes, setRecentBuzzes] = useState<BuzzResult[]>([]);
+  // recentBuzzes : conservé pour l'ancien BuzzFeed du mode A. Il sera
+  // alimenté par track:correct_answer (mappé en BuzzResult-like) en commit
+  // ultérieur — pour l'instant vide, le BuzzFeed restera "Pas encore de buzz".
+  const [recentBuzzes] = useState<BuzzResult[]>([]);
+  const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
+  const [phase2StartedAt, setPhase2StartedAt] = useState<string | null>(null);
+  const [lastReveal, setLastReveal] = useState<{ artist: string; title: string } | null>(null);
 
   // ── Bootstrap : socket + state initial ─────────────────────────────────
   useEffect(() => {
@@ -212,27 +219,52 @@ function HostPageInner(): JSX.Element {
               );
               setCurrentTrack(null);
             });
-            // Gameplay events
+            // Gameplay events (Phase C voice-first)
             socket?.on('track:start', ({ state }: { state: CurrentTrackState }) => {
               setCurrentTrack(state);
+              // Reset les états par-track
+              setCorrectAnswers([]);
+              setPhase2StartedAt(null);
+              setLastReveal(null);
             });
-            // Note : la mécanique buzz multi-parallèle est dans le commit 5/6.
-            // Pour l'instant on ne fait que stub pour garder le build vert.
             socket?.on('buzz:received', () => {
-              // No-op : le buzz n'altère plus la phase (multi-buzz parallèle).
+              // No-op : multi-buzz parallèle, on n'altère pas la phase.
+              // Pourrait afficher "X joueurs en train de chercher" V1.1.
             });
-            socket?.on('buzz:result', (result: BuzzResult) => {
-              setRecentBuzzes((prev) => [result, ...prev].slice(0, 8));
-              setCurrentTrack((prev) => (prev ? { ...prev, phase: 'phase3' } : prev));
+            socket?.on('track:correct_answer', (entry: CorrectAnswerEntry) => {
+              setCorrectAnswers((prev) => [...prev, entry]);
+              // Le toast festif XL est déclenché côté MainScreenView via l'effect
+              // qui watch correctAnswers.length.
               if (resp.session) {
                 void getSession(resp.session.id)
                   .then((res) => setCumulative(res.cumulative))
                   .catch(() => {});
               }
             });
-            socket?.on('track:revealed', () => {
-              setCurrentTrack((prev) => (prev ? { ...prev, phase: 'phase3-revealed' } : prev));
-            });
+            socket?.on(
+              'track:phase_changed',
+              (payload: {
+                round_id: string;
+                phase: CurrentTrackState['phase'];
+                phase2_started_at?: string;
+                artist?: string;
+                title?: string;
+              }) => {
+                setCurrentTrack((prev) => (prev ? { ...prev, phase: payload.phase } : prev));
+                if (payload.phase === 'phase2' && payload.phase2_started_at) {
+                  setPhase2StartedAt(payload.phase2_started_at);
+                }
+                if (payload.phase === 'phase3-revealed' && payload.artist && payload.title) {
+                  setLastReveal({ artist: payload.artist, title: payload.title });
+                }
+              },
+            );
+            socket?.on(
+              'track:revealed',
+              (payload: { round_id: string; artist: string; title: string }) => {
+                setLastReveal({ artist: payload.artist, title: payload.title });
+              },
+            );
             socket?.on('session:paused', () => {
               setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
             });
@@ -294,7 +326,8 @@ function HostPageInner(): JSX.Element {
   // débrouille pour ignorer si aucun track:start ne demande Spotify.
   const spotify = useSpotifyPlayer({ enabled: phase === 'roundPlaying' });
 
-  // Auto-play / pause selon les events gameplay
+  // Auto-play selon les events gameplay (Phase C : musique continue en
+  // phase 2 + phase 3, ne s'arrête QUE sur phase3-skipped ou round/session end).
   useEffect(() => {
     if (!currentTrack) {
       // Round terminé mid-track ou track effacé : on coupe le son
@@ -303,26 +336,24 @@ function HostPageInner(): JSX.Element {
     }
     if (currentTrack.provider !== 'spotify') return;
     if (session?.is_paused) {
-      // Pause master active : on ne tente pas de relancer la lecture, c'est
-      // l'effet pause/resume ci-dessous qui pilote l'audio dans cet état.
+      // Pause master active : effet géré ci-dessous, on ne touche pas ici.
       return;
     }
 
-    if (currentTrack.phase === 'phase1') {
-      // Lance le morceau (mis en file d'attente si le SDK n'est pas encore prêt)
-      void spotify.play(`spotify:track:${currentTrack.provider_track_id}`);
-    } else if (
-      currentTrack.phase === 'phase2' ||
-      currentTrack.phase === 'phase3' ||
-      currentTrack.phase === 'phase3-revealed'
-    ) {
-      // Coupe l'audio pendant que le joueur répond / pendant le reveal
+    // Sur le NOUVEAU track (track_id change), on lance la lecture.
+    // Pendant phase 2 et phase 3 et phase 3-revealed, on laisse jouer (musique
+    // continue jusqu'à la fin naturelle). Sur phase 3-skipped, on coupe.
+    if (currentTrack.phase === 'phase3-skipped') {
       void spotify.pause();
+      return;
     }
+    // Pour les autres phases : on déclenche play() seulement si on vient de
+    // changer de track (le useEffect retrigger sur track_id).
+    void spotify.play(`spotify:track:${currentTrack.provider_track_id}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentTrack?.track_id,
-    currentTrack?.phase,
+    currentTrack?.phase === 'phase3-skipped',
     currentTrack?.provider,
     currentTrack === null,
     session?.is_paused,
@@ -484,7 +515,9 @@ function HostPageInner(): JSX.Element {
           session={session}
           currentTrack={currentTrack}
           cumulative={cumulative}
-          recentBuzzes={recentBuzzes}
+          correctAnswers={correctAnswers}
+          phase2StartedAt={phase2StartedAt}
+          lastReveal={lastReveal}
         />
         <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-xs">
           {toasts.map((toast) => (

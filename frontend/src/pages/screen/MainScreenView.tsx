@@ -19,7 +19,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
-  BuzzResult,
+  CorrectAnswerEntry,
   CumulativeScore,
   CurrentTrackState,
   Participant,
@@ -127,26 +127,23 @@ function MysteryCover({
   );
 }
 
-// ── Toast festif XL "Marie a trouvé en 3.2s" ──────────────────────────────
+// ── Toast festif XL "Marie a trouvé en 3.2s !" ────────────────────────────
 
 function BuzzCelebration({
-  result,
+  entry,
   onDismiss,
 }: {
-  result: BuzzResult;
+  entry: CorrectAnswerEntry;
   onDismiss: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
-  const seconds = result.total_points > 0 ? null : null; // buzz_time_ms n'est pas dans BuzzResult, ok pour V1
-  // (V1 ne diffuse pas le buzz_time_ms dans buzz:result, on affichera juste les points)
-  void seconds;
+  const seconds = (entry.answered_at_ms / 1000).toFixed(1);
 
   useEffect(() => {
     const t1 = window.setTimeout(onDismiss, 3500);
     return () => window.clearTimeout(t1);
   }, [onDismiss]);
 
-  if (result.total_points <= 0) return <></>;
   return (
     <div
       role="status"
@@ -157,11 +154,16 @@ function BuzzCelebration({
         <p className="text-6xl mb-3" aria-hidden>
           🎉
         </p>
-        <p className="font-display text-5xl text-cream mb-2">{result.participant_pseudo}</p>
-        <p className="font-editorial italic text-2xl text-cream-2">
-          {t('screen.celebrationFound')}
+        <p className="font-display text-5xl text-cream mb-2">{entry.pseudo}</p>
+        <p className="font-editorial italic text-2xl text-cream-2 mb-1">
+          {t('screen.foundInSeconds', { seconds })}
         </p>
-        <p className="font-display text-4xl text-cream mt-4">+{result.total_points} pts</p>
+        <p className="font-display text-4xl text-cream mt-3">+{entry.score} pts</p>
+        {entry.position > 1 && (
+          <p className="font-mono text-xs text-cream-2 mt-2 uppercase tracking-widest">
+            {t('screen.positionInRound', { n: entry.position })}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -238,17 +240,24 @@ export interface MainScreenViewProps {
   session: SessionWithParticipants;
   currentTrack: CurrentTrackState | null;
   cumulative: CumulativeScore[];
-  recentBuzzes: BuzzResult[];
+  /** Bonnes réponses du track courant, dans l'ordre d'arrivée. */
+  correctAnswers: CorrectAnswerEntry[];
+  /** Date ISO de démarrage de la phase 2 si on y est, sinon null. */
+  phase2StartedAt: string | null;
+  /** Reveal master (phase3-revealed) ou null. */
+  lastReveal: { artist: string; title: string } | null;
 }
 
 export function MainScreenView({
   session,
   currentTrack,
   cumulative,
-  recentBuzzes,
+  correctAnswers,
+  phase2StartedAt,
+  lastReveal,
 }: MainScreenViewProps): JSX.Element {
   const { t } = useTranslation();
-  const [celebration, setCelebration] = useState<BuzzResult | null>(null);
+  const [celebration, setCelebration] = useState<CorrectAnswerEntry | null>(null);
   const playingRound = session.rounds.find((r) => r.status === 'PLAYING') ?? null;
   const lastEnded = [...session.rounds].reverse().find((r) => r.status === 'ENDED') ?? null;
   const master = session.participants.find((p) => p.is_master) ?? null;
@@ -258,13 +267,12 @@ export function MainScreenView({
     : (playingRound?.current_track_index ?? 0) + 1;
   const playingRoundsCount = session.rounds.filter((r) => r.status !== 'PENDING').length;
 
-  // Déclenche la célébration XL quand un nouveau buzz_result arrive
+  // Déclenche la célébration XL à chaque nouvelle bonne réponse.
   useEffect(() => {
-    if (recentBuzzes.length === 0) return;
-    const latest = recentBuzzes[0];
-    if (!latest || latest.total_points <= 0) return;
-    setCelebration(latest);
-  }, [recentBuzzes]);
+    if (correctAnswers.length === 0) return;
+    const latest = correctAnswers[correctAnswers.length - 1];
+    if (latest) setCelebration(latest);
+  }, [correctAnswers.length]);
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -296,7 +304,9 @@ export function MainScreenView({
             round={playingRound}
             track={currentTrack}
             cumulative={cumulative}
-            participants={session.participants}
+            correctAnswers={correctAnswers}
+            phase2StartedAt={phase2StartedAt}
+            lastReveal={lastReveal}
           />
         ) : (
           <BetweenRoundsFestive lastEnded={lastEnded} cumulative={cumulative} master={master} />
@@ -320,7 +330,7 @@ export function MainScreenView({
 
       {/* Toast festif buzz */}
       {celebration && (
-        <BuzzCelebration result={celebration} onDismiss={() => setCelebration(null)} />
+        <BuzzCelebration entry={celebration} onDismiss={() => setCelebration(null)} />
       )}
     </div>
   );
@@ -332,15 +342,23 @@ function PlayingFestive({
   round,
   track,
   cumulative,
-  participants,
+  correctAnswers,
+  phase2StartedAt,
+  lastReveal,
 }: {
   round: SessionRoundWithPlaylist;
   track: CurrentTrackState | null;
   cumulative: CumulativeScore[];
-  participants: Participant[];
+  correctAnswers: CorrectAnswerEntry[];
+  phase2StartedAt: string | null;
+  lastReveal: { artist: string; title: string } | null;
 }): JSX.Element {
   const { t } = useTranslation();
-  void participants; // V1 : pas utilisé directement, dispo si on veut afficher des badges joueurs
+  const isPhase3 =
+    track?.phase === 'phase3' ||
+    track?.phase === 'phase3-revealed' ||
+    track?.phase === 'phase3-skipped';
+  const isPhase2 = track?.phase === 'phase2';
 
   return (
     <div className="grid gap-8 lg:grid-cols-[3fr_2fr] items-start">
@@ -358,16 +376,24 @@ function PlayingFestive({
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-3">
               {round.playlist.name}
             </p>
-            <MysteryCover
-              track={track}
-              revealed={track.phase === 'phase3' || track.phase === 'phase3-revealed'}
-            />
+            <MysteryCover track={track} revealed={isPhase2 || isPhase3} />
 
             <div className="mt-6">
-              {track.phase === 'phase1' && <ListeningFestive track={track} />}
-              {track.phase === 'phase2' && <BuzzedFestive track={track} />}
-              {track.phase === 'phase3' ||
-                (track.phase === 'phase3-revealed' && <CooldownFestive track={track} />)}
+              {track.phase === 'phase1' && <ListeningFestive />}
+              {isPhase2 && phase2StartedAt && (
+                <Phase2Festive
+                  track={track}
+                  phase2StartedAt={phase2StartedAt}
+                  correctAnswers={correctAnswers}
+                />
+              )}
+              {isPhase3 && (
+                <Phase3Festive
+                  track={track}
+                  correctAnswers={correctAnswers}
+                  lastReveal={lastReveal}
+                />
+              )}
             </div>
           </>
         )}
@@ -378,50 +404,127 @@ function PlayingFestive({
   );
 }
 
-function ListeningFestive({ track }: { track: CurrentTrackState }): JSX.Element {
+function ListeningFestive(): JSX.Element {
   const { t } = useTranslation();
-  // Stub commit 2 — la vraie durée Spotify arrivera dans le rewrite commit 6.
-  const durationMs = track.duration_ms ?? 30_000;
-  const remaining = useTimeRemaining(track.started_at, durationMs);
-  const seconds = Math.ceil(remaining / 1000);
-  const progress = 1 - remaining / durationMs;
   return (
     <div>
-      <p className="font-display text-7xl text-ink mb-2">{seconds}s</p>
-      <p className="font-editorial italic text-ink-2 text-lg mb-4">{t('screen.listenAndBuzz')}</p>
-      <div className="h-2 border-2 border-ink rounded bg-cream-2 overflow-hidden max-w-md mx-auto">
+      <p className="font-display text-5xl text-ink mb-3">🎵</p>
+      <p className="font-editorial italic text-ink-2 text-lg mb-2">{t('screen.listenAndBuzz')}</p>
+      <p className="font-mono text-xs text-ink-soft">{t('screen.firstToFindWins')}</p>
+    </div>
+  );
+}
+
+function Phase2Festive({
+  track,
+  phase2StartedAt,
+  correctAnswers,
+}: {
+  track: CurrentTrackState;
+  phase2StartedAt: string;
+  correctAnswers: CorrectAnswerEntry[];
+}): JSX.Element {
+  const { t } = useTranslation();
+  // Chrono dégressif depuis le démarrage de la phase 2 (15s).
+  const remaining = useTimeRemaining(phase2StartedAt, 15_000);
+  const seconds = Math.ceil(remaining / 1000);
+  const progress = 1 - remaining / 15_000;
+  return (
+    <div>
+      {/* Reveal artiste + titre dès la phase 2 (cf. spec : on révèle quand
+          la 1ʳᵉ bonne réponse arrive, le morceau continue). */}
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-basil-deep mb-2">
+        {t('host.reveal')}
+      </p>
+      <TitleHandwritten as="h3" className="text-3xl mb-1 animate-reveal-pop">
+        <Underline>{track.title}</Underline>
+      </TitleHandwritten>
+      <p className="font-editorial italic text-2xl text-ink-2 mb-4">{track.artist}</p>
+
+      {/* Chrono visible "Encore Xs pour buzzer" */}
+      <Badge tone="raspberry" tilt={-1} className="mb-3">
+        ⏱ {t('screen.phase2Remaining', { seconds })}
+      </Badge>
+      <div className="h-2 border-2 border-ink rounded bg-cream-2 overflow-hidden max-w-md mx-auto mt-2 mb-4">
         <div
-          className="h-full bg-spritz-deep transition-[width] duration-100 ease-linear"
-          style={{ width: `${Math.round(progress * 100)}%` }}
+          className="h-full bg-raspberry transition-[width] duration-200 ease-linear"
+          style={{ width: `${Math.round((1 - progress) * 100)}%` }}
         />
       </div>
+
+      {/* Liste des joueurs qui ont déjà trouvé */}
+      {correctAnswers.length > 0 && (
+        <div className="mt-3">
+          <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
+            {t('screen.foundBy')}
+          </p>
+          <ul className="flex items-center justify-center gap-2 flex-wrap">
+            {correctAnswers.map((entry) => (
+              <li key={entry.participant_id}>
+                <Badge
+                  tone={entry.position === 1 ? 'spritz' : 'basil'}
+                  tilt={entry.position % 2 === 0 ? 1 : -1}
+                >
+                  #{entry.position} {entry.pseudo} +{entry.score}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
 
-function BuzzedFestive({ track }: { track: CurrentTrackState }): JSX.Element {
+function Phase3Festive({
+  track,
+  correctAnswers,
+  lastReveal,
+}: {
+  track: CurrentTrackState;
+  correctAnswers: CorrectAnswerEntry[];
+  lastReveal: { artist: string; title: string } | null;
+}): JSX.Element {
   const { t } = useTranslation();
-  // Stub commit 2 — la vue phase 2 multi-correct + chrono 15s arrive en commit 6.
-  void track;
-  return (
-    <div className="animate-buzz-shake">
-      <p className="font-display text-7xl text-spritz-deep mb-2">💥 {t('host.buzzed')} !</p>
-      <p className="font-editorial italic text-ink-2 text-base mt-2">{t('screen.buzzedHint')}</p>
-    </div>
-  );
-}
-
-function CooldownFestive({ track }: { track: CurrentTrackState }): JSX.Element {
-  const { t } = useTranslation();
+  if (track.phase === 'phase3-skipped') {
+    return (
+      <div>
+        <p className="font-display text-3xl text-ink-soft mb-2">⏭</p>
+        <p className="font-editorial italic text-ink-2 text-lg">{t('screen.trackSkipped')}</p>
+      </div>
+    );
+  }
+  // phase3 (post-phase2 normal) ou phase3-revealed (master a donné la réponse)
+  const title = lastReveal?.title ?? track.title;
+  const artist = lastReveal?.artist ?? track.artist;
   return (
     <div className="animate-reveal-pop">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-basil-deep mb-2">
         {t('host.reveal')}
       </p>
       <TitleHandwritten as="h3" className="text-3xl mb-1">
-        <Underline>{track.title}</Underline>
+        <Underline>{title}</Underline>
       </TitleHandwritten>
-      <p className="font-editorial italic text-2xl text-ink-2">{track.artist}</p>
+      <p className="font-editorial italic text-2xl text-ink-2 mb-4">{artist}</p>
+      {correctAnswers.length === 0 && track.phase === 'phase3-revealed' && (
+        <Badge tone="cream" tilt={1}>
+          {t('screen.nobodyFound')}
+        </Badge>
+      )}
+      {correctAnswers.length > 0 && (
+        <ul className="flex items-center justify-center gap-2 flex-wrap mt-3">
+          {correctAnswers.map((entry) => (
+            <li key={entry.participant_id}>
+              <Badge tone={entry.position === 1 ? 'spritz' : 'basil'}>
+                #{entry.position} {entry.pseudo} +{entry.score}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="font-editorial italic text-ink-soft text-sm mt-4">
+        🎵 {t('screen.festivePhase')}
+      </p>
     </div>
   );
 }
