@@ -112,7 +112,6 @@ Tout commit poussé sur `main` redéploie automatiquement les deux services.
 - [x] **Étape 6 — Page d'accueil host + sidebar + paramètres établissement** ✅ (validé le 2026-04-29)
 - [x] **Étape 7 — Module Music Provider (Demo + Spotify)** ✅ (validé le 2026-04-29)
 - [x] **Étape 8 — Création et édition de playlists Tutti Tracks** ✅ (validé le 2026-04-29)
-- [ ] Étape 8 — Création et édition de playlists Tutti Tracks
 - [ ] Étape 9 — Configuration de session + salle d'attente
 - [ ] Étape 10 — Boucle de jeu Tutti Tracks
 - [ ] Étape 11 — Reconnaissance vocale Whisper
