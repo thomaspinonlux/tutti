@@ -57,7 +57,7 @@ export function OAuthProviders({ redirectTo }: Props): JSX.Element | null {
           key={p.id}
           type="button"
           onClick={() => void handleOAuth(p.id)}
-          className="w-full px-4 py-2 border-2 border-ink rounded bg-white hover:bg-cream transition-colors font-medium"
+          className="w-full px-4 py-2 border-2 border-ink rounded bg-white hover:bg-cream-2 transition-colors font-medium"
         >
           {p.label}
         </button>

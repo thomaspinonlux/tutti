@@ -5,6 +5,7 @@ import { HomePage } from './pages/HomePage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { SignupPage } from './pages/SignupPage.js';
 import { AdminPage } from './pages/AdminPage.js';
+import { DesignSystemPage } from './pages/DesignSystemPage.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 
 function App(): JSX.Element {
@@ -27,6 +28,8 @@ function App(): JSX.Element {
             </ProtectedRoute>
           }
         />
+        {/* Design system : visible uniquement en dev (build local). */}
+        {import.meta.env.DEV && <Route path="/_design-system" element={<DesignSystemPage />} />}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

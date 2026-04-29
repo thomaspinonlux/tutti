@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase.js';
 import { OAuthProviders } from '../components/auth/OAuthProviders.js';
 import { LanguageSwitch } from '../components/LanguageSwitch.js';
+import { Button, Card, Input, MultiColorBar, TitleHandwritten } from '../components/ui/index.js';
 
 export function LoginPage(): JSX.Element {
   const { t } = useTranslation();
@@ -42,70 +43,59 @@ export function LoginPage(): JSX.Element {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-8 bg-cream text-ink relative">
-      <div className="absolute top-4 right-4">
-        <LanguageSwitch />
-      </div>
+    <main className="min-h-screen flex flex-col">
+      <MultiColorBar height="md" />
 
-      <div className="w-full max-w-md border-2 border-ink rounded-lg p-8 bg-white shadow-[8px_8px_0_0_#1a1410]">
-        <h1 className="text-3xl font-bold mb-1">{t('auth.loginTitle')}</h1>
-        <p className="text-sm text-ink/60 mb-6 italic">{t('auth.loginTagline')}</p>
+      <div className="flex-1 flex items-center justify-center p-8 relative">
+        <div className="absolute top-6 right-6">
+          <LanguageSwitch />
+        </div>
 
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-          <label className="block">
-            <span className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1 block">
-              {t('auth.email')}
-            </span>
-            <input
+        <Card size="lg" className="w-full max-w-md">
+          <TitleHandwritten as="h2" className="mb-1">
+            {t('auth.loginTitle')}
+          </TitleHandwritten>
+          <p className="font-editorial italic text-sm text-ink-soft mb-6">
+            {t('auth.loginTagline')}
+          </p>
+
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+            <Input
+              label={t('auth.email')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('auth.emailPlaceholder')}
               required
-              className="w-full px-3 py-2 border-2 border-ink rounded bg-cream/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz"
+              autoComplete="email"
             />
-          </label>
-
-          <label className="block">
-            <span className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1 block">
-              {t('auth.password')}
-            </span>
-            <input
+            <Input
+              label={t('auth.password')}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border-2 border-ink rounded bg-cream/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz"
+              autoComplete="current-password"
+              error={error ?? undefined}
             />
-          </label>
 
-          {error && (
-            <p
-              role="alert"
-              className="text-sm text-raspberry border-l-2 border-raspberry pl-3 py-1 bg-raspberry/5"
-            >
-              {error}
-            </p>
-          )}
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? t('auth.loginSubmitting') : t('auth.loginSubmit')}
+            </Button>
+          </form>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full px-4 py-3 bg-spritz text-white border-2 border-ink rounded shadow-[4px_4px_0_0_#1a1410] hover:shadow-[2px_2px_0_0_#1a1410] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? t('auth.loginSubmitting') : t('auth.loginSubmit')}
-          </button>
-        </form>
+          <OAuthProviders redirectTo={`${window.location.origin}/admin`} />
 
-        <OAuthProviders redirectTo={`${window.location.origin}/admin`} />
-
-        <p className="text-sm text-ink/60 mt-6 text-center">
-          {t('auth.noAccount')}{' '}
-          <Link to="/auth/signup" className="text-spritz hover:underline font-medium">
-            {t('auth.linkSignUp')}
-          </Link>
-        </p>
+          <p className="text-sm text-ink-soft mt-6 text-center">
+            {t('auth.noAccount')}{' '}
+            <Link to="/auth/signup" className="text-spritz-deep hover:underline font-medium">
+              {t('auth.linkSignUp')}
+            </Link>
+          </p>
+        </Card>
       </div>
+
+      <MultiColorBar height="md" />
     </main>
   );
 }
