@@ -168,6 +168,48 @@ export interface SessionRoundWithPlaylist extends SessionRound {
   playlist: { id: string; name: string; level: string; tracks_count?: number };
 }
 
+// ───── Boucle de jeu Tutti Tracks (étape 10) ──────────────────────────────
+
+export type GameTrackPhase = 'listening' | 'buzzed' | 'cooldown';
+
+/** État courant du track en cours de jeu, broadcast à tous (host + joueurs). */
+export interface CurrentTrackState {
+  round_id: string;
+  track_index: number;
+  track_id: string;
+  /** Métadonnées affichées côté host (révélées aux joueurs en fin de track). */
+  artist: string;
+  title: string;
+  album: string | null;
+  year: number | null;
+  cover_url: string | null;
+  /** Date de démarrage (ISO) pour calculer le timer côté client. */
+  started_at: string;
+  /** Durée d'écoute autorisée avant timeout (ms). */
+  duration_ms: number;
+  phase: GameTrackPhase;
+  /** ID du participant qui a buzzé en 1ᵉʳ (si phase === 'buzzed'). */
+  buzzer_id: string | null;
+  /** Pseudo du buzzeur (rendu pour l'UI sans round-trip). */
+  buzzer_pseudo: string | null;
+}
+
+/** Résultat d'une réponse, broadcast à tous après le verdict. */
+export interface BuzzResult {
+  round_id: string;
+  track_index: number;
+  participant_id: string;
+  participant_pseudo: string;
+  team_id: string | null;
+  matched_artist: boolean;
+  matched_title: boolean;
+  artist_points: number;
+  title_points: number;
+  total_points: number;
+  /** Métadonnées du track révélées en fin de manche. */
+  reveal: { artist: string; title: string };
+}
+
 /** Score agrégé sur l'ensemble de la session pour un participant ou une équipe. */
 export interface CumulativeScore {
   /** ID participant (mode SOLO) ou ID team (mode TEAMS). */

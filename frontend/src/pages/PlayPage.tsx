@@ -17,6 +17,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
 import type {
+  BuzzResult,
+  CurrentTrackState,
   JoinResponse,
   Participant,
   PublicSessionView,
@@ -24,7 +26,7 @@ import type {
   SessionWithParticipants,
   Team,
 } from '@tutti/shared';
-import { getPublicSession, joinSession } from '../lib/sessions.js';
+import { getPublicSession, joinSession, postAnswer, postBuzz } from '../lib/sessions.js';
 import {
   clearParticipantContext,
   connectAsParticipant,
@@ -84,7 +86,11 @@ export function PlayPage(): JSX.Element {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [currentRound, setCurrentRound] = useState<SessionRoundWithPlaylist | null>(null);
+  const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
+  const [lastResult, setLastResult] = useState<BuzzResult | null>(null);
+  const [myScore, setMyScore] = useState(0);
   const [micRequesting, setMicRequesting] = useState(false);
+  const [busy, setBusy] = useState(false);
   const hadConnectionRef = useRef(false);
 
   const teams = useMemo<Team[]>(
@@ -192,6 +198,42 @@ export function PlayPage(): JSX.Element {
     });
     sock.on('round:ended', () => {
       setCurrentRound(null);
+      setCurrentTrack(null);
+    });
+    sock.on('track:start', ({ state }: { state: CurrentTrackState }) => {
+      setCurrentTrack(state);
+      setLastResult(null);
+    });
+    sock.on(
+      'buzz:received',
+      ({
+        participant_id,
+        participant_pseudo,
+      }: {
+        round_id: string;
+        track_index: number;
+        participant_id: string;
+        participant_pseudo: string;
+        buzz_time_ms: number;
+      }) => {
+        setCurrentTrack((prev) =>
+          prev
+            ? {
+                ...prev,
+                phase: 'buzzed',
+                buzzer_id: participant_id,
+                buzzer_pseudo: participant_pseudo,
+              }
+            : prev,
+        );
+      },
+    );
+    sock.on('buzz:result', (result: BuzzResult) => {
+      setLastResult(result);
+      setCurrentTrack((prev) => (prev ? { ...prev, phase: 'cooldown' } : prev));
+      if (result.participant_id === identity.participantId) {
+        setMyScore((prev) => prev + result.total_points);
+      }
     });
 
     return () => {
@@ -417,21 +459,15 @@ export function PlayPage(): JSX.Element {
             </Card>
           )}
 
-          {step === 'playing' && (
-            <Card size="md" tone="spritz" className="text-center">
-              <TitleHandwritten as="h2" className="mb-2">
-                {currentRound ? t('play.roundLive') : t('play.gameStarting')}
-              </TitleHandwritten>
-              <p className="font-editorial italic text-ink-2">{t('play.gameStartingHint')}</p>
-              {identity && (
-                <p className="font-mono text-xs text-ink-soft mt-4">
-                  {identity.pseudo}
-                  {identity.teamId
-                    ? ` · ${teams.find((t2) => t2.id === identity.teamId)?.name ?? ''}`
-                    : ''}
-                </p>
-              )}
-            </Card>
+          {step === 'playing' && identity && (
+            <PlayingView
+              currentTrack={currentTrack}
+              identity={identity}
+              myScore={myScore}
+              lastResult={lastResult}
+              busy={busy}
+              setBusy={setBusy}
+            />
           )}
 
           {step === 'ended' && (
@@ -477,4 +513,189 @@ function pushToast(
   window.setTimeout(() => {
     set((prev) => prev.filter((tt) => tt.id !== id));
   }, 4000);
+}
+
+// ── Vue de jeu (étape 10) ───────────────────────────────────────────────────
+
+function PlayingView({
+  currentTrack,
+  identity,
+  myScore,
+  lastResult,
+  busy,
+  setBusy,
+}: {
+  currentTrack: CurrentTrackState | null;
+  identity: ParticipantContext;
+  myScore: number;
+  lastResult: BuzzResult | null;
+  busy: boolean;
+  setBusy: (v: boolean) => void;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const [error, setError] = useState<string | null>(null);
+
+  const sendBuzz = async (): Promise<void> => {
+    if (!currentTrack || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await postBuzz(identity.sessionId, currentTrack.round_id, identity.token);
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const sendAnswer = async (matched_artist: boolean, matched_title: boolean): Promise<void> => {
+    if (!currentTrack || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await postAnswer(identity.sessionId, currentTrack.round_id, identity.token, {
+        matched_artist,
+        matched_title,
+      });
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Pas encore de track : entre 2 manches ou track:start pas reçu
+  if (!currentTrack) {
+    return (
+      <Card size="md" tone="cream" className="text-center">
+        <TitleHandwritten as="h2" className="mb-2">
+          {t('play.waitingTrack')}
+        </TitleHandwritten>
+        <p className="font-editorial italic text-ink-2">{t('play.waitingTrackHint')}</p>
+        <ScoreBadge score={myScore} />
+      </Card>
+    );
+  }
+
+  // Phase listening : grand bouton buzzer
+  if (currentTrack.phase === 'listening') {
+    return (
+      <div className="text-center">
+        <p className="font-editorial italic text-ink-2 mb-4">{t('play.listenAndBuzz')}</p>
+        <button
+          type="button"
+          onClick={() => void sendBuzz()}
+          disabled={busy}
+          className="w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-spritz text-cream border-3 border-ink shadow-pop-xl font-display text-4xl active:translate-x-1 active:translate-y-1 active:shadow-pop-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          BUZZ
+        </button>
+        <p className="font-mono text-xs text-ink-soft mt-4">{t('play.buzzHint')}</p>
+        {error && (
+          <p role="alert" className="text-sm text-raspberry mt-3">
+            {error}
+          </p>
+        )}
+        <ScoreBadge score={myScore} />
+      </div>
+    );
+  }
+
+  // Phase buzzed
+  const isMyBuzz = currentTrack.buzzer_id === identity.participantId;
+  if (currentTrack.phase === 'buzzed' && isMyBuzz) {
+    return (
+      <Card size="md" tone="spritz" className="text-center">
+        <p className="text-xs font-mono uppercase tracking-wider text-spritz-deep mb-3">
+          {t('play.yourTurn')}
+        </p>
+        <TitleHandwritten as="h2" className="mb-4">
+          {t('play.youGuessed')}
+        </TitleHandwritten>
+        <div className="space-y-2">
+          <Button
+            size="lg"
+            className="w-full bg-basil border-ink text-cream hover:bg-basil-deep"
+            onClick={() => void sendAnswer(true, false)}
+            disabled={busy}
+          >
+            {t('play.answerArtist')} (+100)
+          </Button>
+          <Button
+            size="lg"
+            variant="primary"
+            className="w-full"
+            onClick={() => void sendAnswer(true, true)}
+            disabled={busy}
+          >
+            {t('play.answerArtistAndTitle')} (+150)
+          </Button>
+          <Button
+            size="md"
+            variant="ghost"
+            className="w-full"
+            onClick={() => void sendAnswer(false, false)}
+            disabled={busy}
+          >
+            {t('play.answerNotFound')}
+          </Button>
+        </div>
+        {error && (
+          <p role="alert" className="text-sm text-raspberry mt-3">
+            {error}
+          </p>
+        )}
+      </Card>
+    );
+  }
+
+  if (currentTrack.phase === 'buzzed' && !isMyBuzz) {
+    return (
+      <Card size="md" tone="cream" className="text-center">
+        <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-2">
+          {t('play.someoneBuzzed')}
+        </p>
+        <TitleHandwritten as="h2" className="mb-2">
+          {currentTrack.buzzer_pseudo ?? '…'}
+        </TitleHandwritten>
+        <p className="font-editorial italic text-ink-2">{t('play.suspense')}</p>
+        <ScoreBadge score={myScore} />
+      </Card>
+    );
+  }
+
+  // Phase cooldown : reveal
+  return (
+    <Card size="md" tone="basil" className="text-center">
+      <p className="text-xs font-mono uppercase tracking-wider text-basil-deep mb-2">
+        {t('play.reveal')}
+      </p>
+      <TitleHandwritten as="h2" className="mb-1">
+        {lastResult?.reveal.title ?? currentTrack.title}
+      </TitleHandwritten>
+      <p className="font-editorial italic text-ink-2 mb-4">
+        {lastResult?.reveal.artist ?? currentTrack.artist}
+      </p>
+      {lastResult && lastResult.participant_id === identity.participantId && (
+        <Badge tone="lemon" tilt={-1}>
+          {t('play.youScored', { points: lastResult.total_points })}
+        </Badge>
+      )}
+      {lastResult && lastResult.participant_id !== identity.participantId && (
+        <Badge tone="cream" tilt={1}>
+          {lastResult.participant_pseudo}: +{lastResult.total_points}
+        </Badge>
+      )}
+      <ScoreBadge score={myScore} />
+    </Card>
+  );
+}
+
+function ScoreBadge({ score }: { score: number }): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <p className="font-mono text-sm text-ink-soft mt-6">
+      {t('play.yourScore')}: <span className="font-display text-lg text-ink">{score}</span>
+    </p>
+  );
 }

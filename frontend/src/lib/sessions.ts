@@ -4,7 +4,9 @@
  */
 
 import type {
+  BuzzResult,
   CumulativeScore,
+  CurrentTrackState,
   GameMode,
   GameType,
   JoinResponse,
@@ -145,5 +147,48 @@ export async function kickParticipant(sessionId: string, participantId: string):
   await api(
     `/api/sessions/${encodeURIComponent(sessionId)}/participants/${encodeURIComponent(participantId)}`,
     { method: 'DELETE' },
+  );
+}
+
+// ───── Gameplay (étape 10) ────────────────────────────────────────────────
+
+export async function playTrack(sessionId: string, roundId: string): Promise<CurrentTrackState> {
+  const data = await api<{ state: CurrentTrackState }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/play-track`,
+    { method: 'POST' },
+  );
+  return data.state;
+}
+
+export async function nextTrack(
+  sessionId: string,
+  roundId: string,
+): Promise<{ state?: CurrentTrackState; ended?: boolean; round?: SessionRoundWithPlaylist }> {
+  return api<{ state?: CurrentTrackState; ended?: boolean; round?: SessionRoundWithPlaylist }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/next-track`,
+    { method: 'POST' },
+  );
+}
+
+export async function postBuzz(
+  sessionId: string,
+  roundId: string,
+  token: string,
+): Promise<{ ok: boolean; buzz_time_ms: number }> {
+  return api<{ ok: boolean; buzz_time_ms: number }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/buzz`,
+    { method: 'POST', body: { token }, anonymous: true },
+  );
+}
+
+export async function postAnswer(
+  sessionId: string,
+  roundId: string,
+  token: string,
+  matched: { matched_artist: boolean; matched_title: boolean },
+): Promise<{ result: BuzzResult }> {
+  return api<{ result: BuzzResult }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/answer`,
+    { method: 'POST', body: { token, ...matched }, anonymous: true },
   );
 }

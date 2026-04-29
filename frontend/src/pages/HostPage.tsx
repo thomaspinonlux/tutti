@@ -14,7 +14,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
 import type {
+  BuzzResult,
   CumulativeScore,
+  CurrentTrackState,
   Participant,
   Session,
   SessionRoundWithPlaylist,
@@ -29,6 +31,8 @@ import {
   getSession,
   kickParticipant,
   moveParticipantTeam,
+  nextTrack,
+  playTrack,
   startRound,
   startSession,
 } from '../lib/sessions.js';
@@ -74,6 +78,8 @@ function HostPageInner(): JSX.Element {
   const [busy, setBusy] = useState(false);
   const [expressModalOpen, setExpressModalOpen] = useState(false);
   const [forcedSelection, setForcedSelection] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
+  const [recentBuzzes, setRecentBuzzes] = useState<BuzzResult[]>([]);
 
   // ── Bootstrap : socket + state initial ─────────────────────────────────
   useEffect(() => {
@@ -182,6 +188,45 @@ function HostPageInner(): JSX.Element {
                   ? { ...prev, rounds: prev.rounds.map((r) => (r.id === round.id ? round : r)) }
                   : prev,
               );
+              setCurrentTrack(null);
+            });
+            // Gameplay events
+            socket?.on('track:start', ({ state }: { state: CurrentTrackState }) => {
+              setCurrentTrack(state);
+            });
+            socket?.on(
+              'buzz:received',
+              ({
+                participant_id,
+                participant_pseudo,
+              }: {
+                round_id: string;
+                track_index: number;
+                participant_id: string;
+                participant_pseudo: string;
+                buzz_time_ms: number;
+              }) => {
+                setCurrentTrack((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        phase: 'buzzed',
+                        buzzer_id: participant_id,
+                        buzzer_pseudo: participant_pseudo,
+                      }
+                    : prev,
+                );
+              },
+            );
+            socket?.on('buzz:result', (result: BuzzResult) => {
+              setRecentBuzzes((prev) => [result, ...prev].slice(0, 8));
+              setCurrentTrack((prev) => (prev ? { ...prev, phase: 'cooldown' } : prev));
+              // Refresh scores cumulés
+              if (resp.session) {
+                void getSession(resp.session.id)
+                  .then((res) => setCumulative(res.cumulative))
+                  .catch(() => {});
+              }
             });
           },
         );
@@ -243,6 +288,8 @@ function HostPageInner(): JSX.Element {
       await startSession(session.id);
       if (pendingRound) {
         await startRound(session.id, pendingRound.id);
+        // Démarre auto le 1ᵉʳ track
+        await playTrack(session.id, pendingRound.id);
       }
     } catch (err: unknown) {
       setError((err as Error).message);
@@ -257,6 +304,20 @@ function HostPageInner(): JSX.Element {
     try {
       const round = await createRound(session.id, playlistId);
       await startRound(session.id, round.id);
+      await playTrack(session.id, round.id);
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleNextTrack = async (): Promise<void> => {
+    if (!session || !playingRound) return;
+    setBusy(true);
+    try {
+      await nextTrack(session.id, playingRound.id);
+      // round:ended est broadcast auto si fin de playlist
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {
@@ -388,6 +449,9 @@ function HostPageInner(): JSX.Element {
             <RoundPlayingScreen
               round={playingRound}
               cumulative={cumulative}
+              currentTrack={currentTrack}
+              recentBuzzes={recentBuzzes}
+              onNextTrack={handleNextTrack}
               onEndRound={handleEndCurrentRound}
               busy={busy}
             />
@@ -508,64 +572,211 @@ function WaitingPhase({
 function RoundPlayingScreen({
   round,
   cumulative,
+  currentTrack,
+  recentBuzzes,
+  onNextTrack,
   onEndRound,
   busy,
 }: {
   round: SessionRoundWithPlaylist;
   cumulative: CumulativeScore[];
+  currentTrack: CurrentTrackState | null;
+  recentBuzzes: BuzzResult[];
+  onNextTrack: () => Promise<void>;
   onEndRound: () => Promise<void>;
   busy: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
-  const top3 = cumulative.slice(0, 3);
+  const top5 = cumulative.slice(0, 5);
+  const totalTracks = round.playlist.tracks_count ?? 0;
+  const trackPosition = currentTrack ? currentTrack.track_index + 1 : round.current_track_index + 1;
+
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      {/* ── Colonne gauche : track en cours ──────────────────────────── */}
       <Card tone="spritz" size="lg" className="text-center">
-        <p className="text-xs font-mono uppercase tracking-wider text-spritz-deep mb-2">
-          {t('host.currentRound', { n: round.position })}
-        </p>
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <Badge tone="cream" tilt={-1}>
+            {t('host.currentRound', { n: round.position })}
+          </Badge>
+          {totalTracks > 0 && (
+            <Badge tone="ink" tilt={1}>
+              {t('host.trackPosition', { current: trackPosition, total: totalTracks })}
+            </Badge>
+          )}
+        </div>
         <TitleHandwritten as="h2" className="mb-4">
           <Underline>{round.playlist.name}</Underline>
         </TitleHandwritten>
-        <Badge tone="cream" tilt={-1} className="mb-4">
-          {round.playlist.tracks_count ?? 0} {t('playlists.tracksCount')}
-        </Badge>
-        <p className="font-editorial italic text-ink-2 mt-4 mb-6">{t('host.gameLoopComingSoon')}</p>
-        <Button variant="danger" size="md" onClick={() => void onEndRound()} disabled={busy}>
-          {t('host.endRound')}
-        </Button>
+
+        {!currentTrack ? (
+          <p className="font-editorial italic text-ink-2 my-8">{t('host.noTrackYet')}</p>
+        ) : currentTrack.phase === 'listening' ? (
+          <ListeningView track={currentTrack} />
+        ) : currentTrack.phase === 'buzzed' ? (
+          <BuzzedView track={currentTrack} />
+        ) : (
+          <CooldownView track={currentTrack} lastBuzz={recentBuzzes[0] ?? null} />
+        )}
+
+        <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => void onNextTrack()}
+            disabled={busy || !currentTrack || currentTrack.phase === 'listening'}
+          >
+            {t('host.nextTrack')} →
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => void onEndRound()} disabled={busy}>
+            {t('host.endRound')}
+          </Button>
+        </div>
       </Card>
 
-      <Card size="lg">
-        <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-4">
-          {t('host.cumulativeScores')}
-        </p>
-        {top3.length === 0 ? (
-          <p className="font-editorial italic text-sm text-ink-soft">{t('host.noScoresYet')}</p>
-        ) : (
-          <ol className="space-y-2">
-            {top3.map((entry, idx) => (
-              <li
-                key={entry.id}
-                className="flex items-center gap-3 px-3 py-2 border-2 border-ink rounded bg-white"
-              >
-                <span className="font-display text-2xl w-8 text-center text-spritz-deep">
-                  {idx + 1}
-                </span>
-                {entry.color && (
-                  <span
-                    aria-hidden
-                    className="w-3 h-3 rounded-full border-2 border-ink shrink-0"
-                    style={{ backgroundColor: entry.color }}
-                  />
-                )}
-                <span className="font-medium flex-1">{entry.label}</span>
-                <Badge tone="ink">{entry.total_points}</Badge>
-              </li>
-            ))}
-          </ol>
-        )}
-      </Card>
+      {/* ── Colonne droite : classement + buzz feed ──────────────────── */}
+      <div className="space-y-4">
+        <Card size="md">
+          <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
+            {t('host.cumulativeScores')}
+          </p>
+          {top5.length === 0 ? (
+            <p className="font-editorial italic text-sm text-ink-soft">{t('host.noScoresYet')}</p>
+          ) : (
+            <ol className="space-y-2">
+              {top5.map((entry, idx) => (
+                <li
+                  key={entry.id}
+                  className="flex items-center gap-3 px-3 py-2 border-2 border-ink rounded bg-white"
+                >
+                  <span className="font-display text-xl w-6 text-center text-spritz-deep">
+                    {idx + 1}
+                  </span>
+                  {entry.color && (
+                    <span
+                      aria-hidden
+                      className="w-3 h-3 rounded-full border-2 border-ink shrink-0"
+                      style={{ backgroundColor: entry.color }}
+                    />
+                  )}
+                  <span className="font-medium flex-1 truncate text-sm">{entry.label}</span>
+                  <Badge tone="ink">{entry.total_points}</Badge>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Card>
+
+        <Card size="md">
+          <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
+            {t('host.buzzFeed')}
+          </p>
+          {recentBuzzes.length === 0 ? (
+            <p className="font-editorial italic text-sm text-ink-soft">{t('host.buzzFeedEmpty')}</p>
+          ) : (
+            <ul className="space-y-2">
+              {recentBuzzes.map((buzz, idx) => (
+                <li
+                  key={`${buzz.round_id}-${buzz.track_index}-${idx}`}
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <span className="font-medium truncate">{buzz.participant_pseudo}</span>
+                  <span className="text-ink-soft truncate flex-1">
+                    {buzz.matched_artist
+                      ? buzz.matched_title
+                        ? `${buzz.reveal.artist} — ${buzz.reveal.title}`
+                        : buzz.reveal.artist
+                      : t('host.notFound')}
+                  </span>
+                  <Badge tone={buzz.total_points > 0 ? 'basil' : 'plum'}>
+                    {buzz.total_points > 0 ? `+${buzz.total_points}` : '0'}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ── Sous-vues du track en cours ──────────────────────────────────────────
+
+function useTimeRemaining(startedAtIso: string, durationMs: number): number {
+  const [remaining, setRemaining] = useState(() => {
+    const elapsed = Date.now() - new Date(startedAtIso).getTime();
+    return Math.max(0, durationMs - elapsed);
+  });
+  useEffect(() => {
+    const tick = (): void => {
+      const elapsed = Date.now() - new Date(startedAtIso).getTime();
+      setRemaining(Math.max(0, durationMs - elapsed));
+    };
+    tick();
+    const id = window.setInterval(tick, 100);
+    return () => window.clearInterval(id);
+  }, [startedAtIso, durationMs]);
+  return remaining;
+}
+
+function ListeningView({ track }: { track: CurrentTrackState }): JSX.Element {
+  const { t } = useTranslation();
+  const remaining = useTimeRemaining(track.started_at, track.duration_ms);
+  const seconds = Math.ceil(remaining / 1000);
+  const progress = 1 - remaining / track.duration_ms;
+  return (
+    <div className="py-6">
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
+        {t('host.listening')}
+      </p>
+      <p className="font-display text-7xl text-ink mb-1">{seconds}s</p>
+      <p className="font-editorial italic text-ink-2 mb-4">{t('host.waitingForBuzz')}</p>
+      <div className="h-2 border-2 border-ink rounded bg-cream-2 overflow-hidden max-w-sm mx-auto">
+        <div
+          className="h-full bg-spritz-deep transition-[width] duration-100 ease-linear"
+          style={{ width: `${Math.round(progress * 100)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function BuzzedView({ track }: { track: CurrentTrackState }): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <div className="py-6">
+      <p className="font-display text-6xl text-spritz-deep mb-2 animate-pop-in">
+        {t('host.buzzed')} !
+      </p>
+      <p className="font-editorial italic text-ink-2">
+        {t('host.awaitingAnswer', { pseudo: track.buzzer_pseudo ?? '…' })}
+      </p>
+    </div>
+  );
+}
+
+function CooldownView({
+  track,
+  lastBuzz,
+}: {
+  track: CurrentTrackState;
+  lastBuzz: BuzzResult | null;
+}): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <div className="py-4">
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft mb-2">
+        {t('host.reveal')}
+      </p>
+      <p className="font-display text-3xl text-ink leading-tight">{track.title}</p>
+      <p className="font-editorial italic text-xl text-ink-2 mb-4">{track.artist}</p>
+      {lastBuzz && (
+        <Badge tone={lastBuzz.total_points > 0 ? 'basil' : 'plum'} tilt={-2}>
+          {lastBuzz.participant_pseudo} :{' '}
+          {lastBuzz.total_points > 0 ? `+${lastBuzz.total_points}` : '0'} pts
+        </Badge>
+      )}
     </div>
   );
 }

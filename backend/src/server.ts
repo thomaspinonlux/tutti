@@ -22,6 +22,7 @@ import establishmentRouter from './routes/establishment.js';
 import musicRouter from './routes/music.js';
 import playlistsRouter from './routes/playlists.js';
 import sessionsRouter from './routes/sessions.js';
+import gameplayRouter from './routes/gameplay.js';
 import spotifyAuthRouter from './music/spotify/auth.js';
 import { prisma } from './lib/prisma.js';
 import { initSocketIO } from './socket/index.js';
@@ -70,6 +71,7 @@ app.use('/api/establishment', establishmentRouter);
 app.use('/api/music', musicRouter);
 app.use('/api/playlists', playlistsRouter);
 app.use('/api/sessions', sessionsRouter);
+app.use('/api/sessions/:id/rounds/:roundId', gameplayRouter);
 app.use('/api/auth/spotify', spotifyAuthRouter);
 
 // 404 par défaut
