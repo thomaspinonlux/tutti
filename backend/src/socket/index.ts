@@ -30,7 +30,8 @@ import { prisma } from '../lib/prisma.js';
 
 type SocketIdentity =
   | { kind: 'host'; userId: string; userEmail: string | null }
-  | { kind: 'participant'; participantId: string; sessionId: string };
+  | { kind: 'participant'; participantId: string; sessionId: string }
+  | { kind: 'spectator'; sessionId: string };
 
 const SESSION_INCLUDE = {
   participants: { where: { is_kicked: false }, orderBy: { joined_at: 'asc' as const } },
@@ -91,11 +92,25 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
   // ── Middleware auth (handshake) ───────────────────────────────────────
   io.use(async (socket: AuthedSocket, next) => {
     try {
+      const role = socket.handshake.auth?.role as string | undefined;
+
+      // Spectator : accès anonyme read-only par short_code (TV mode "cast par code")
+      if (role === 'spectator') {
+        const shortCode = String(socket.handshake.auth?.shortCode ?? '').toUpperCase();
+        if (!shortCode) return next(new Error('SHORT_CODE_REQUIRED'));
+        const session = await prisma.session.findUnique({
+          where: { short_code: shortCode },
+          select: { id: true },
+        });
+        if (!session) return next(new Error('SESSION_NOT_FOUND'));
+        socket.identity = { kind: 'spectator', sessionId: session.id };
+        return next();
+      }
+
       const raw = socket.handshake.auth?.token;
       if (typeof raw !== 'string' || !raw) {
         return next(new Error('AUTH_REQUIRED'));
       }
-      const role = socket.handshake.auth?.role as string | undefined;
 
       if (role === 'host') {
         const { data, error } = await supabaseAdmin.auth.getUser(raw);
@@ -129,6 +144,11 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
     if (!identity) {
       socket.disconnect(true);
       return;
+    }
+
+    // Spectator : auto-join sa session room dès connexion (read-only).
+    if (identity.kind === 'spectator') {
+      void socket.join(roomName(identity.sessionId));
     }
 
     // ── Join by sessionId (joueur ou host avec ID connu) ─────────────

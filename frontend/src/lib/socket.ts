@@ -99,3 +99,15 @@ export function connectAsParticipant(token: string): Socket {
     ...RECONNECT_OPTS,
   });
 }
+
+/**
+ * Spectator anonyme — utilisé par /screen TV (cast par code).
+ * Read-only : reçoit les broadcasts mais ne peut pas émettre.
+ */
+export function connectAsSpectator(shortCode: string): Socket {
+  return io(SOCKET_URL, {
+    auth: { role: 'spectator', shortCode: shortCode.toUpperCase() },
+    transports: ['websocket', 'polling'],
+    ...RECONNECT_OPTS,
+  });
+}

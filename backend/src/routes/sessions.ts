@@ -22,7 +22,7 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { GameType, GameMode, SessionStatus, RoundStatus, Prisma } from '@prisma/client';
-import type { Team } from '@tutti/shared';
+import type { Team, GameMode as GameModeType } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
@@ -232,6 +232,83 @@ router.get(
       res
         .status(500)
         .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur récupération session' } });
+    }
+  },
+);
+
+// ── GET /by-code/:short_code/snapshot (public, screen TV) ────────────────
+// Snapshot complet de la session destiné à la vue /screen TV (cast par code).
+// Read-only, pas de tokens, pas d'infos sensibles.
+
+router.get(
+  '/by-code/:short_code/snapshot',
+  async (req: Request<{ short_code: string }>, res: Response): Promise<void> => {
+    const code = req.params.short_code.toUpperCase();
+    try {
+      const session = await prisma.session.findUnique({
+        where: { short_code: code },
+        include: {
+          establishment: {
+            select: { name: true, branding_color: true, branding_logo: true },
+          },
+          participants: {
+            where: { is_kicked: false },
+            orderBy: { joined_at: 'asc' },
+          },
+          rounds: {
+            orderBy: { position: 'asc' },
+            include: {
+              playlist: {
+                select: {
+                  id: true,
+                  name: true,
+                  level: true,
+                  _count: { select: { playlist_tracks: true } },
+                },
+              },
+            },
+          },
+        },
+      });
+      if (!session) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+        return;
+      }
+      const participantsForScores = session.participants.map((p) => ({
+        id: p.id,
+        pseudo: p.pseudo,
+        team_id: p.team_id,
+      }));
+      const teams = (session.teams_config as Team[] | null) ?? null;
+      const cumulative = await getCumulativeScores({
+        sessionId: session.id,
+        mode: session.mode as GameModeType,
+        teams,
+        participants: participantsForScores,
+      });
+      // Sérialise les rounds en enrichissant playlist.tracks_count.
+      const rounds = session.rounds.map((r) => ({
+        ...r,
+        playlist: {
+          id: r.playlist.id,
+          name: r.playlist.name,
+          level: r.playlist.level,
+          tracks_count: r.playlist._count.playlist_tracks,
+        },
+      }));
+      res.json({
+        session: {
+          ...session,
+          rounds,
+          establishment_name: session.establishment.name,
+          branding_color: session.establishment.branding_color,
+          branding_logo: session.establishment.branding_logo,
+        },
+        cumulative,
+      });
+    } catch (err: unknown) {
+      console.error('[GET /sessions/by-code/snapshot] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur snapshot' } });
     }
   },
 );

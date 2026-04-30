@@ -195,6 +195,10 @@
     "masterChange": "Changer d'animateur"
   },
   "screen": {
+    "castTitle": "Cast par code",
+    "castSubtitle": "Entre le code de la session pour afficher le jeu sur cette TV.",
+    "codeLabel": "Code session",
+    "castButton": "Afficher la session",
     "leaderboardLabel": "Classement live",
     "animatorIs": "Animateur : {{pseudo}}",
     "waitingTrack": "Le morceau arrive…",

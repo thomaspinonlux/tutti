@@ -62,6 +62,16 @@ export async function getPublicSession(shortCode: string): Promise<PublicSession
   return data.session;
 }
 
+/** Snapshot complet de la session pour le screen TV (read-only, sans auth). */
+export async function getSessionSnapshot(
+  shortCode: string,
+): Promise<{ session: SessionWithParticipants; cumulative: CumulativeScore[] }> {
+  return api<{ session: SessionWithParticipants; cumulative: CumulativeScore[] }>(
+    `/api/sessions/by-code/${encodeURIComponent(shortCode)}/snapshot`,
+    { anonymous: true },
+  );
+}
+
 export async function patchSession(
   id: string,
   patch: Partial<{

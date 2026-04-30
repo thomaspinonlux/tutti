@@ -42,6 +42,9 @@ const SessionConfigPage = lazy(() =>
 );
 const HostPage = lazy(() => import('./pages/HostPage.js').then((m) => ({ default: m.HostPage })));
 const PlayPage = lazy(() => import('./pages/PlayPage.js').then((m) => ({ default: m.PlayPage })));
+const ScreenPage = lazy(() =>
+  import('./pages/ScreenPage.js').then((m) => ({ default: m.ScreenPage })),
+);
 
 function App(): JSX.Element {
   useEffect(() => {
@@ -113,6 +116,14 @@ function App(): JSX.Element {
           element={
             <Suspense fallback={null}>
               <PlayPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/screen"
+          element={
+            <Suspense fallback={null}>
+              <ScreenPage />
             </Suspense>
           }
         />
