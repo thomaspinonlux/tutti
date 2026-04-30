@@ -34,6 +34,9 @@ const DesignSystemPage = lazy(() =>
 const PlaylistEditPage = lazy(() =>
   import('./pages/admin/PlaylistEditPage.js').then((m) => ({ default: m.PlaylistEditPage })),
 );
+const QuizzPackEditPage = lazy(() =>
+  import('./pages/admin/QuizzPackEditPage.js').then((m) => ({ default: m.QuizzPackEditPage })),
+);
 const SessionConfigPage = lazy(() =>
   import('./pages/admin/SessionConfigPage.js').then((m) => ({ default: m.SessionConfigPage })),
 );
@@ -74,6 +77,14 @@ function App(): JSX.Element {
             }
           />
           <Route path="quizz" element={<QuizzPage />} />
+          <Route
+            path="quizz/:id"
+            element={
+              <Suspense fallback={null}>
+                <QuizzPackEditPage />
+              </Suspense>
+            }
+          />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route
