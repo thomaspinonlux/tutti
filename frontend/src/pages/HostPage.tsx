@@ -30,10 +30,12 @@ import {
   endSession,
   getPublicSession,
   getSession,
+  giveAnswer,
   kickParticipant,
   moveParticipantTeam,
   nextTrack,
   playTrack,
+  skipTrack,
   startRound,
   startSession,
   toggleParticipantMaster,
@@ -90,6 +92,9 @@ function HostPageInner(): JSX.Element {
   const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
   const [phase2StartedAt, setPhase2StartedAt] = useState<string | null>(null);
   const [lastReveal, setLastReveal] = useState<{ artist: string; title: string } | null>(null);
+  // Set des participants avec un buzz ouvert (mic en cours d'enregistrement).
+  // Sert au compteur "X joueurs ont buzzé" en phase 1 (maquette 06).
+  const [activeBuzzers, setActiveBuzzers] = useState<Set<string>>(new Set());
 
   // ── Bootstrap : socket + state initial ─────────────────────────────────
   useEffect(() => {
@@ -226,11 +231,37 @@ function HostPageInner(): JSX.Element {
               setCorrectAnswers([]);
               setPhase2StartedAt(null);
               setLastReveal(null);
+              setActiveBuzzers(new Set());
             });
-            socket?.on('buzz:received', () => {
-              // No-op : multi-buzz parallèle, on n'altère pas la phase.
-              // Pourrait afficher "X joueurs en train de chercher" V1.1.
-            });
+            socket?.on(
+              'buzz:received',
+              (payload: {
+                round_id: string;
+                participant_id: string;
+                participant_pseudo: string;
+                buzzed_at_ms: number;
+                expires_at_ms: number;
+              }) => {
+                // Compteur de buzzes pour la phase 1 (maquette 06 — top-left
+                // du center stage). On ajoute le participant au set, et on le
+                // retire automatiquement à expires_at_ms (fin de la fenêtre
+                // micro 10s).
+                setActiveBuzzers((prev) => {
+                  const next = new Set(prev);
+                  next.add(payload.participant_id);
+                  return next;
+                });
+                const remainingMs = Math.max(0, payload.expires_at_ms - Date.now());
+                window.setTimeout(() => {
+                  setActiveBuzzers((prev) => {
+                    if (!prev.has(payload.participant_id)) return prev;
+                    const next = new Set(prev);
+                    next.delete(payload.participant_id);
+                    return next;
+                  });
+                }, remainingMs);
+              },
+            );
             socket?.on('track:correct_answer', (entry: CorrectAnswerEntry) => {
               setCorrectAnswers((prev) => [...prev, entry]);
               // Le toast festif XL est déclenché côté MainScreenView via l'effect
@@ -428,6 +459,30 @@ function HostPageInner(): JSX.Element {
     }
   };
 
+  const handleSkipTrack = async (): Promise<void> => {
+    if (!session || !playingRound) return;
+    setBusy(true);
+    try {
+      await skipTrack(session.id, playingRound.id);
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleGiveAnswer = async (): Promise<void> => {
+    if (!session || !playingRound) return;
+    setBusy(true);
+    try {
+      await giveAnswer(session.id, playingRound.id);
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleEndCurrentRound = async (): Promise<void> => {
     if (!session || !playingRound) return;
     setBusy(true);
@@ -518,6 +573,11 @@ function HostPageInner(): JSX.Element {
           correctAnswers={correctAnswers}
           phase2StartedAt={phase2StartedAt}
           lastReveal={lastReveal}
+          activeBuzzCount={activeBuzzers.size}
+          busy={busy}
+          onSkipTrack={handleSkipTrack}
+          onGiveAnswer={handleGiveAnswer}
+          onNextTrack={handleNextTrack}
         />
         <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-xs">
           {toasts.map((toast) => (

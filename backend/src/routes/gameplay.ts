@@ -3,18 +3,25 @@
  *
  *   POST /play-track       (host) : démarre le track à current_track_index
  *   POST /next-track       (host) : avance au suivant (auto-end du round si plus de tracks)
+ *   POST /skip-track       (host) : avance sans reveal (broadcast phase3-skipped d'abord)
+ *   POST /give-answer      (host) : "Donner la réponse" — reveal artist+title, 0 pts
  *
  * Les routes joueur (/buzz, /voice-answer) sont définies dans
  * gameplayParticipant.ts (commit 3 — voice-first).
+ *
+ * Ces routes hôte permettent au créateur en mode B de piloter aussi depuis
+ * l'iPad (footer maquette 06), pas seulement depuis son tel master.
  */
 
 import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
+import { broadcastToSession } from '../socket/index.js';
 import {
   advanceToNextOrEndRound,
   buildAndBroadcastTrack,
   findRoundForWorkspace,
+  revealCurrentTrack,
 } from '../lib/gameplayCore.js';
 
 const router: Router = Router({ mergeParams: true });
@@ -60,6 +67,60 @@ router.post(
     }
     const result = await advanceToNextOrEndRound(req.params.id, round);
     res.json(result);
+  },
+);
+
+// ── POST /skip-track (host) ───────────────────────────────────────────────
+// Broadcast track:phase_changed → phase3-skipped d'abord (les clients coupent
+// proprement la lecture audio + n'affichent pas de reveal), puis avance.
+// Mirror du /master/skip-track avec auth Supabase.
+
+router.post(
+  '/skip-track',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const round = await findRoundForWorkspace(req.params.roundId, req.params.id, workspaceId);
+    if (!round) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
+      return;
+    }
+    broadcastToSession(req.params.id, 'track:phase_changed', {
+      round_id: req.params.roundId,
+      phase: 'phase3-skipped',
+    });
+    const result = await advanceToNextOrEndRound(req.params.id, round);
+    res.json(result);
+  },
+);
+
+// ── POST /give-answer (host) ──────────────────────────────────────────────
+// "Donner la réponse" — révèle artist+titre, 0 point, passe en phase3-revealed.
+// La musique continue de jouer. Mirror du /master/give-answer avec auth Supabase.
+
+router.post(
+  '/give-answer',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const round = await findRoundForWorkspace(req.params.roundId, req.params.id, workspaceId);
+    if (!round) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
+      return;
+    }
+    const reveal = await revealCurrentTrack(req.params.id, req.params.roundId);
+    if (!reveal) {
+      res.status(409).json({
+        error: {
+          code: 'INVALID_PHASE',
+          message: "Le morceau ne peut être révélé que pendant l'écoute (phase 1)",
+        },
+      });
+      return;
+    }
+    res.json({ reveal });
   },
 );
 

@@ -187,6 +187,26 @@ export async function nextTrack(
   );
 }
 
+export async function skipTrack(
+  sessionId: string,
+  roundId: string,
+): Promise<{ state?: CurrentTrackState; ended?: boolean; round?: SessionRoundWithPlaylist }> {
+  return api<{ state?: CurrentTrackState; ended?: boolean; round?: SessionRoundWithPlaylist }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/skip-track`,
+    { method: 'POST' },
+  );
+}
+
+export async function giveAnswer(
+  sessionId: string,
+  roundId: string,
+): Promise<{ reveal: { artist: string; title: string; track_index: number } }> {
+  return api<{ reveal: { artist: string; title: string; track_index: number } }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/give-answer`,
+    { method: 'POST' },
+  );
+}
+
 export async function postBuzz(
   sessionId: string,
   roundId: string,
