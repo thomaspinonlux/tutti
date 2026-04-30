@@ -642,6 +642,8 @@ export function PlayPage(): JSX.Element {
               participantId={identity.participantId}
               token={identity.token}
               pseudo={identity.pseudo}
+              isMaster={isMaster}
+              sessionStatus="PLAYING"
             />
           )}
 

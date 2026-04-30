@@ -419,6 +419,14 @@
     "errorTextRequired": "Text is required.",
     "errorTextLang2Required": "Lang2 text is required (bilingual pack)."
   },
+  "masterQuizz": {
+    "title": "Run the game",
+    "startFirst": "Launch first question",
+    "nextQuestion": "Next question",
+    "revealNow": "Reveal now",
+    "endSession": "End session",
+    "endedHint": "The game is over."
+  },
   "playQuizz": {
     "waitingNextQuestion": "Waiting for next question…",
     "waitingHint": "The host is launching the next question.",

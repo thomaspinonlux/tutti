@@ -16,6 +16,7 @@ import type { Socket } from 'socket.io-client';
 import type { CurrentQuestionState, QuestionType } from '@tutti/shared';
 import { Button, Card, Badge } from '../../ui/index.js';
 import { submitQuizzAnswer } from '../../../lib/sessions.js';
+import { MasterQuizzMenu } from './MasterQuizzMenu.js';
 
 interface RevealResult {
   participant_id: string;
@@ -39,6 +40,10 @@ interface Props {
   participantId: string;
   token: string;
   pseudo: string;
+  /** true si le joueur a été désigné master (mode B → contrôles visibles). */
+  isMaster?: boolean;
+  /** Status de la session (WAITING / PLAYING / ENDED). */
+  sessionStatus?: 'WAITING' | 'PLAYING' | 'ENDED';
 }
 
 type LocalPhase = 'waitingNextQuestion' | 'asking' | 'submitted' | 'revealed';
@@ -49,6 +54,8 @@ export function PlayQuizzView({
   participantId,
   token,
   pseudo: _pseudo,
+  isMaster = false,
+  sessionStatus = 'PLAYING',
 }: Props): JSX.Element {
   const { t } = useTranslation();
 
@@ -100,14 +107,31 @@ export function PlayQuizzView({
     }
   };
 
+  // ── Phase dérivée pour MasterQuizzMenu ─────────────────────────────────
+  const masterPhase: 'waiting' | 'asking' | 'revealed' | 'no-active' | 'ended' =
+    sessionStatus === 'ENDED'
+      ? 'ended'
+      : !activeQuestion
+        ? sessionStatus === 'WAITING'
+          ? 'waiting'
+          : 'no-active'
+        : activeQuestion.phase === 'revealed'
+          ? 'revealed'
+          : 'asking';
+
   // ── Render ──────────────────────────────────────────────────────────────
 
   if (localPhase === 'waitingNextQuestion' || !activeQuestion) {
     return (
-      <Card tone="cream" size="md" className="text-center">
-        <p className="font-display text-2xl mb-2">{t('playQuizz.waitingNextQuestion')}</p>
-        <p className="font-editorial italic text-ink-soft text-sm">{t('playQuizz.waitingHint')}</p>
-      </Card>
+      <div className="space-y-3">
+        <Card tone="cream" size="md" className="text-center">
+          <p className="font-display text-2xl mb-2">{t('playQuizz.waitingNextQuestion')}</p>
+          <p className="font-editorial italic text-ink-soft text-sm">
+            {t('playQuizz.waitingHint')}
+          </p>
+        </Card>
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} />}
+      </div>
     );
   }
 
@@ -117,12 +141,15 @@ export function PlayQuizzView({
 
   if (phaseToRender === 'revealed') {
     return (
-      <RevealedView
-        question={activeQuestion}
-        reveal={reveal}
-        myParticipantId={participantId}
-        mySubmitted={submittedValue}
-      />
+      <div className="space-y-3">
+        <RevealedView
+          question={activeQuestion}
+          reveal={reveal}
+          myParticipantId={participantId}
+          mySubmitted={submittedValue}
+        />
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} />}
+      </div>
     );
   }
 
@@ -149,6 +176,7 @@ export function PlayQuizzView({
           {error}
         </p>
       )}
+      {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} />}
     </div>
   );
 }

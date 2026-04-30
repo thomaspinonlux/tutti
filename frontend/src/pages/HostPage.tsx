@@ -551,6 +551,8 @@ function HostPageInner(): JSX.Element {
   }
 
   // ── Branche Tutti Quizz : vue dédiée pour les sessions QUIZZ ─────────────
+  // Mode A (has_animator) : iPad = console host avec contrôles.
+  // Mode B (!has_animator) : iPad = vue publique festive XL, master pilote depuis tel.
   if (session.game_type === 'QUIZZ') {
     return (
       <HostQuizzView
@@ -559,6 +561,7 @@ function HostPageInner(): JSX.Element {
         socket={hostSocket}
         onSessionUpdate={(s) => setSession(s)}
         onCumulativeUpdate={(c) => setCumulative(c)}
+        publicView={!session.has_animator}
       />
     );
   }

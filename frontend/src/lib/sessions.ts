@@ -413,3 +413,40 @@ export async function postAnswer(
     { method: 'POST', body: { token, ...matched }, anonymous: true },
   );
 }
+
+// ───── Tutti Quizz — master actions (mode B) ──────────────────────────────
+
+export async function masterPlayQuestion(
+  sessionId: string,
+  token: string,
+  questionIndex = 0,
+): Promise<{ state: CurrentQuestionState }> {
+  return api<{ state: CurrentQuestionState }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/play-question`,
+    { method: 'POST', body: { token, question_index: questionIndex }, anonymous: true },
+  );
+}
+
+export async function masterNextQuestion(
+  sessionId: string,
+  token: string,
+): Promise<{
+  state?: CurrentQuestionState;
+  ended?: boolean;
+  session?: Session;
+  cumulative?: CumulativeScore[];
+}> {
+  return api(`/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/next-question`, {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}
+
+export async function masterRevealQuestion(sessionId: string, token: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/reveal-question`, {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}

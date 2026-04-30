@@ -29,6 +29,11 @@ import { prisma } from '../lib/prisma.js';
 import { requireMasterParticipant } from '../middleware/master.js';
 import { broadcastToSession } from '../socket/index.js';
 import { clearActiveTrack, getActiveTrack } from '../lib/gameState.js';
+import {
+  clearActiveQuestion,
+  getActiveQuestion,
+  setActiveQuestion,
+} from '../lib/gameStateQuizz.js';
 import { getCumulativeScores } from '../lib/scores.js';
 import {
   advanceToNextOrEndRound,
@@ -37,6 +42,14 @@ import {
   findRoundForSession,
   revealCurrentTrack,
 } from '../lib/gameplayCore.js';
+import {
+  buildAndBroadcastQuestion,
+  clearAutoReveal,
+  findQuestionAtIndex,
+  revealCurrentQuestion,
+  scheduleAutoReveal,
+} from '../lib/gameplayQuizzCore.js';
+import type { QuestionType } from '@tutti/shared';
 
 const router: Router = Router({ mergeParams: true });
 
@@ -500,6 +513,160 @@ router.post(
         .status(500)
         .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur ajustement points' } });
     }
+  },
+);
+
+// ═══ Tutti Quizz — routes master ═══════════════════════════════════════════
+// Le master tel pilote la partie quizz mode B :
+//   POST /master/quizz/play-question   : démarre la 1ère question (index=0)
+//   POST /master/quizz/next-question   : avance à la suivante (auto-end)
+//   POST /master/quizz/reveal-question : reveal anticipé
+
+const playQuestionMasterSchema = z.object({
+  token: z.string(),
+  question_index: z.number().int().min(0).optional(),
+});
+
+router.post(
+  '/quizz/play-question',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = playQuestionMasterSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    let session = await prisma.session.findUnique({
+      where: { id: req.params.id },
+      include: { participants: { where: { is_kicked: false }, select: { id: true } } },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    if (session.game_type !== 'QUIZZ' || !session.question_set_id) {
+      res.status(409).json({ error: { code: 'NOT_QUIZZ', message: 'Session non quizz' } });
+      return;
+    }
+    const questionSetId = session.question_set_id;
+    // Si la session est encore en WAITING, le master la démarre.
+    if (session.status === 'WAITING') {
+      const updated = await prisma.session.update({
+        where: { id: req.params.id },
+        data: { status: 'PLAYING', started_at: new Date() },
+      });
+      broadcastToSession(req.params.id, 'session:started', { session: updated });
+    }
+    const set = await prisma.questionSet.findUnique({
+      where: { id: questionSetId },
+      select: { is_bilingual: true },
+    });
+    const idx = parsed.data.question_index ?? 0;
+    const question = await findQuestionAtIndex(questionSetId, idx);
+    if (!question || !set) {
+      res.status(404).json({ error: { code: 'NO_QUESTION', message: 'Question introuvable' } });
+      return;
+    }
+    const state = buildAndBroadcastQuestion(req.params.id, question, set.is_bilingual);
+    setActiveQuestion(req.params.id, {
+      question_index: question.position,
+      question_id: question.id,
+      question_type: question.type as QuestionType,
+      time_limit_ms: question.time_limit_sec * 1000,
+      points: question.points,
+      expected_participants: session.participants.map((p) => p.id),
+    });
+    scheduleAutoReveal(req.params.id, question.time_limit_sec * 1000, () => {
+      void revealCurrentQuestion(req.params.id);
+    });
+    res.json({ state });
+  },
+);
+
+const tokenSchema = z.object({ token: z.string() });
+
+router.post(
+  '/quizz/next-question',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = tokenSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    const session = await prisma.session.findUnique({
+      where: { id: req.params.id },
+      include: { participants: { where: { is_kicked: false } } },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    if (session.game_type !== 'QUIZZ' || !session.question_set_id) {
+      res.status(409).json({ error: { code: 'NOT_QUIZZ', message: 'Session non quizz' } });
+      return;
+    }
+    const active = getActiveQuestion(req.params.id);
+    const nextIndex = active ? active.question_index + 1 : 0;
+    const set = await prisma.questionSet.findUnique({
+      where: { id: session.question_set_id },
+      select: { is_bilingual: true, _count: { select: { questions: true } } },
+    });
+    if (!set) {
+      res.status(404).json({ error: { code: 'NO_SET', message: 'Pack introuvable' } });
+      return;
+    }
+    if (nextIndex >= set._count.questions) {
+      clearActiveQuestion(req.params.id);
+      clearAutoReveal(req.params.id);
+      const updated = await prisma.session.update({
+        where: { id: req.params.id },
+        data: { status: 'ENDED', ended_at: new Date() },
+      });
+      const teams = (updated.teams_config as Team[] | null) ?? null;
+      const cumulative = await getCumulativeScores({
+        sessionId: updated.id,
+        mode: updated.mode as GameMode,
+        teams,
+        participants: session.participants.map((p) => ({
+          id: p.id,
+          pseudo: p.pseudo,
+          team_id: p.team_id,
+        })),
+      });
+      broadcastToSession(req.params.id, 'session:ended', { session: updated, cumulative });
+      res.json({ ended: true, session: updated, cumulative });
+      return;
+    }
+    const question = await findQuestionAtIndex(session.question_set_id, nextIndex);
+    if (!question) {
+      res.status(404).json({ error: { code: 'NO_QUESTION', message: 'Question introuvable' } });
+      return;
+    }
+    const state = buildAndBroadcastQuestion(req.params.id, question, set.is_bilingual);
+    setActiveQuestion(req.params.id, {
+      question_index: question.position,
+      question_id: question.id,
+      question_type: question.type as QuestionType,
+      time_limit_ms: question.time_limit_sec * 1000,
+      points: question.points,
+      expected_participants: session.participants.map((p) => p.id),
+    });
+    scheduleAutoReveal(req.params.id, question.time_limit_sec * 1000, () => {
+      void revealCurrentQuestion(req.params.id);
+    });
+    res.json({ state });
+  },
+);
+
+router.post(
+  '/quizz/reveal-question',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = tokenSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    await revealCurrentQuestion(req.params.id);
+    res.json({ ok: true });
   },
 );
 

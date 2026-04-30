@@ -30,8 +30,11 @@ interface Props {
   submittedSet: Set<string>;
   lastReveal: { question_index: number; results: RevealResult[] } | null;
   busy: boolean;
-  onReveal: () => void;
-  onNext: () => void;
+  /** null en publicView (mode B iPad) → masque les boutons. */
+  onReveal: (() => void) | null;
+  onNext: (() => void) | null;
+  /** true en publicView : agrandit les polices pour la TV. */
+  xl?: boolean;
 }
 
 export function QuestionConsole({
@@ -43,6 +46,7 @@ export function QuestionConsole({
   busy,
   onReveal,
   onNext,
+  xl = false,
 }: Props): JSX.Element {
   const { t } = useTranslation();
 
@@ -87,9 +91,17 @@ export function QuestionConsole({
 
       {/* Énoncé */}
       <Card size="lg" tone={isAsking ? 'cream' : 'spritz'} className="mb-4">
-        <p className="font-display text-3xl md:text-4xl leading-tight mb-2">{state.text}</p>
+        <p
+          className={`font-display leading-tight mb-2 ${
+            xl ? 'text-5xl md:text-6xl 2xl:text-7xl' : 'text-3xl md:text-4xl'
+          }`}
+        >
+          {state.text}
+        </p>
         {packBilingual && state.text_alt && (
-          <p className="font-editorial italic text-xl text-ink-soft">{state.text_alt}</p>
+          <p className={`font-editorial italic text-ink-soft ${xl ? 'text-3xl' : 'text-xl'}`}>
+            {state.text_alt}
+          </p>
         )}
       </Card>
 
@@ -150,7 +162,7 @@ export function QuestionConsole({
         )}
       </div>
 
-      {/* Footer actions */}
+      {/* Footer actions (cachés en publicView mode B) */}
       <footer className="mt-4 flex items-center justify-between gap-3">
         <p className="font-mono text-sm text-ink-soft">
           {isAsking
@@ -158,11 +170,12 @@ export function QuestionConsole({
             : t('hostQuizz.phaseRevealed')}
         </p>
         <div className="flex gap-2">
-          {isAsking ? (
+          {isAsking && onReveal && (
             <Button onClick={onReveal} disabled={busy} variant="secondary">
               {t('hostQuizz.revealNow')}
             </Button>
-          ) : (
+          )}
+          {!isAsking && onNext && (
             <Button onClick={onNext} disabled={busy}>
               {t('hostQuizz.nextQuestion')}
             </Button>

@@ -419,6 +419,14 @@
     "errorTextRequired": "L'énoncé est requis.",
     "errorTextLang2Required": "L'énoncé en langue 2 est requis (pack bilingue)."
   },
+  "masterQuizz": {
+    "title": "Pilote la partie",
+    "startFirst": "Lancer la 1ʳᵉ question",
+    "nextQuestion": "Question suivante",
+    "revealNow": "Révéler maintenant",
+    "endSession": "Terminer la session",
+    "endedHint": "La partie est terminée."
+  },
   "playQuizz": {
     "waitingNextQuestion": "En attente de la prochaine question…",
     "waitingHint": "Le maître du jeu démarre la prochaine question.",

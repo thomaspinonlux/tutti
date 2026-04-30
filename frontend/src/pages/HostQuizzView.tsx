@@ -58,6 +58,11 @@ interface Props {
   socket: Socket | null;
   onSessionUpdate: (s: SessionWithParticipants) => void;
   onCumulativeUpdate: (c: CumulativeScore[]) => void;
+  /**
+   * true en mode B (sans animateur) : iPad = vue publique festive XL,
+   * pas de boutons de pilotage (le master pilote depuis son tel).
+   */
+  publicView?: boolean;
 }
 
 export function HostQuizzView({
@@ -66,6 +71,7 @@ export function HostQuizzView({
   socket,
   onSessionUpdate,
   onCumulativeUpdate,
+  publicView = false,
 }: Props): JSX.Element {
   const { t } = useTranslation();
 
@@ -212,7 +218,7 @@ export function HostQuizzView({
       <WaitingView
         pack={pack}
         participants={session.participants}
-        onStart={() => void handleStartSession()}
+        onStart={publicView ? null : () => void handleStartSession()}
         busy={busy}
         error={error}
       />
@@ -231,13 +237,14 @@ export function HostQuizzView({
             submittedSet={submittedSet}
             lastReveal={lastReveal}
             busy={busy}
-            onReveal={() => void handleReveal()}
-            onNext={() => void handleNext()}
+            onReveal={publicView ? null : () => void handleReveal()}
+            onNext={publicView ? null : () => void handleNext()}
+            xl={publicView}
           />
         ) : (
           <NoActiveQuestion
             pack={pack}
-            onNext={() => void handleNext()}
+            onNext={publicView ? null : () => void handleNext()}
             busy={busy}
             error={error}
           />
@@ -272,15 +279,17 @@ export function HostQuizzView({
           <QuizzAnswersList participants={session.participants} submittedSet={submittedSet} />
         )}
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => void handleEndSession()}
-          disabled={busy}
-          className="w-full"
-        >
-          {t('hostQuizz.endSession')}
-        </Button>
+        {!publicView && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void handleEndSession()}
+            disabled={busy}
+            className="w-full"
+          >
+            {t('hostQuizz.endSession')}
+          </Button>
+        )}
       </aside>
     </div>
   );
@@ -297,7 +306,7 @@ function WaitingView({
 }: {
   pack: QuestionSetWithQuestions;
   participants: Participant[];
-  onStart: () => void;
+  onStart: (() => void) | null;
   busy: boolean;
   error: string | null;
 }): JSX.Element {
@@ -346,11 +355,13 @@ function WaitingView({
         </p>
       )}
 
-      <div className="flex justify-center">
-        <Button onClick={onStart} disabled={busy || connected.length === 0} size="lg">
-          {busy ? t('common.saving') : t('hostQuizz.startSession')}
-        </Button>
-      </div>
+      {onStart && (
+        <div className="flex justify-center">
+          <Button onClick={onStart} disabled={busy || connected.length === 0} size="lg">
+            {busy ? t('common.saving') : t('hostQuizz.startSession')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -362,7 +373,7 @@ function NoActiveQuestion({
   error,
 }: {
   pack: QuestionSetWithQuestions;
-  onNext: () => void;
+  onNext: (() => void) | null;
   busy: boolean;
   error: string | null;
 }): JSX.Element {
@@ -378,9 +389,11 @@ function NoActiveQuestion({
           {error}
         </p>
       )}
-      <Button onClick={onNext} disabled={busy} size="lg">
-        {t('hostQuizz.firstQuestion')}
-      </Button>
+      {onNext && (
+        <Button onClick={onNext} disabled={busy} size="lg">
+          {t('hostQuizz.firstQuestion')}
+        </Button>
+      )}
     </div>
   );
 }

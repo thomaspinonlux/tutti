@@ -12,12 +12,14 @@
  * V0 : pas de SessionRound pour QUIZZ — on travaille directement sur
  * Session.question_set_id. Pour V1.1, on pourra utiliser SessionRound pour
  * enchaîner plusieurs packs de questions dans la même session.
+ *
+ * Helpers métier (revealCurrentQuestion, scheduleAutoReveal, etc.) factorisés
+ * dans lib/gameplayQuizzCore.ts pour partage avec les routes master.
  */
 
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
-import { ScoreEventType, type Question } from '@prisma/client';
-import type { CurrentQuestionState, QuestionType, GameMode, Team } from '@tutti/shared';
+import type { QuestionType, GameMode, Team } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
@@ -26,18 +28,19 @@ import { broadcastToSession } from '../socket/index.js';
 import {
   clearActiveQuestion,
   getActiveQuestion,
-  revealAnswers,
   setActiveQuestion,
   trySubmitAnswer,
 } from '../lib/gameStateQuizz.js';
-import { computeQuestionScore } from '../lib/quizzScoring.js';
-import { matchAnswer } from '../lib/quizzMatch.js';
+import {
+  buildAndBroadcastQuestion,
+  clearAutoReveal,
+  findQuestionAtIndex,
+  revealCurrentQuestion,
+  scheduleAutoReveal,
+} from '../lib/gameplayQuizzCore.js';
 import { getCumulativeScores } from '../lib/scores.js';
 
 const router: Router = Router({ mergeParams: true });
-
-// Stockage des timers d'auto-reveal par session_id.
-const revealTimers = new Map<string, NodeJS.Timeout>();
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -48,85 +51,6 @@ async function ensureOwnSession(sessionId: string, workspaceId: string) {
       participants: { where: { is_kicked: false }, select: { id: true } },
     },
   });
-}
-
-async function findQuestionAtIndex(questionSetId: string, index: number): Promise<Question | null> {
-  return prisma.question.findFirst({
-    where: { set_id: questionSetId, position: index },
-  });
-}
-
-/**
- * Construit le CurrentQuestionState à partir d'une Question DB et du
- * is_bilingual du set, puis broadcast 'quizz:question_start'.
- *
- * Pour les questions ESTIMATION, parse answer_lang1 en JSON pour exposer
- * estimation_min/max/unit aux clients (sans révéler target).
- */
-function buildAndBroadcastQuestion(
-  sessionId: string,
-  question: Question,
-  isBilingual: boolean,
-): CurrentQuestionState {
-  const state: CurrentQuestionState = {
-    round_id: '', // pas de round V0 pour QUIZZ
-    question_index: question.position,
-    question_id: question.id,
-    text: question.text_lang1,
-    text_alt: isBilingual ? (question.text_lang2 ?? undefined) : undefined,
-    type: question.type as QuestionType,
-    category: question.category,
-    choices: question.choices_lang1,
-    choices_alt: isBilingual ? question.choices_lang2 : undefined,
-    media_type: question.media_type as CurrentQuestionState['media_type'],
-    media_url: question.media_url,
-    started_at: new Date().toISOString(),
-    time_limit_sec: question.time_limit_sec,
-    points: question.points,
-    phase: 'asking',
-  };
-
-  // ESTIMATION : expose min/max/unit (pas target qui est la réponse)
-  if (question.type === 'ESTIMATION') {
-    try {
-      const meta = JSON.parse(question.answer_lang1) as {
-        target?: number;
-        min?: number;
-        max?: number;
-        unit?: string;
-      };
-      state.estimation_min = meta.min;
-      state.estimation_max = meta.max;
-      state.estimation_unit = meta.unit;
-    } catch {
-      /* fallback : pas de bornes, le slider tel sera 0..100 */
-    }
-  }
-
-  broadcastToSession(sessionId, 'quizz:question_start', { state });
-  return state;
-}
-
-/**
- * Programme l'auto-reveal de la question quand le timer expire.
- * Annule le timer précédent éventuel.
- */
-function scheduleAutoReveal(sessionId: string, timeLimitMs: number, doReveal: () => void): void {
-  const existing = revealTimers.get(sessionId);
-  if (existing) clearTimeout(existing);
-  const timer = setTimeout(() => {
-    revealTimers.delete(sessionId);
-    doReveal();
-  }, timeLimitMs);
-  revealTimers.set(sessionId, timer);
-}
-
-function clearAutoReveal(sessionId: string): void {
-  const existing = revealTimers.get(sessionId);
-  if (existing) {
-    clearTimeout(existing);
-    revealTimers.delete(sessionId);
-  }
 }
 
 // ── POST /play-question (host) ───────────────────────────────────────────
@@ -152,11 +76,9 @@ router.post(
       return;
     }
     if (!session.question_set_id) {
-      res
-        .status(409)
-        .json({
-          error: { code: 'NO_QUESTION_SET', message: 'Pas de question_set lié à la session' },
-        });
+      res.status(409).json({
+        error: { code: 'NO_QUESTION_SET', message: 'Pas de question_set lié à la session' },
+      });
       return;
     }
     const set = await prisma.questionSet.findUnique({
@@ -342,100 +264,5 @@ router.post(
     res.json({ ok: true, allAnswered: result.allAnswered });
   },
 );
-
-// ── Logique reveal partagée ──────────────────────────────────────────────
-
-async function revealCurrentQuestion(sessionId: string): Promise<void> {
-  clearAutoReveal(sessionId);
-  const active = getActiveQuestion(sessionId);
-  if (!active || active.phase === 'revealed') return;
-
-  const question = await prisma.question.findUnique({ where: { id: active.question_id } });
-  if (!question) return;
-
-  // Score chaque réponse soumise.
-  const session = await prisma.session.findUnique({
-    where: { id: sessionId },
-    select: { language: true },
-  });
-  const playerLang = session?.language === 'en' ? ('lang1' as const) : ('lang1' as const); // V0 simple : on score toujours en langue 1
-  const state = revealAnswers(
-    sessionId,
-    ({ value, submitted_at_ms, started_at_ms, time_limit_ms, base_points }) => {
-      const matchResult = matchAnswer(question, value, playerLang);
-      const score = computeQuestionScore({
-        is_correct: matchResult.is_correct,
-        estimation_distance: matchResult.estimation_distance,
-        base_points,
-        submitted_at_ms,
-        started_at_ms,
-        time_limit_ms,
-      });
-      return { is_correct: score.is_correct, score: score.score };
-    },
-  );
-  if (!state) return;
-
-  // Persiste les ScoreEvent pour les bonnes réponses (et 0 pour les autres
-  // si tu veux tracer — V0 on log uniquement les bonnes pour limiter le bruit).
-  const participants = await prisma.participant.findMany({
-    where: { session_id: sessionId, is_kicked: false },
-    select: { id: true, pseudo: true, team_id: true },
-  });
-  const participantsById = new Map(participants.map((p) => [p.id, p]));
-
-  const events: Promise<unknown>[] = [];
-  for (const ans of state.answers.values()) {
-    if (ans.score && ans.score > 0) {
-      const p = participantsById.get(ans.participant_id);
-      events.push(
-        prisma.scoreEvent.create({
-          data: {
-            session_id: sessionId,
-            session_round_id: null, // pas de round V0 quizz
-            participant_id: ans.participant_id,
-            team_id: p?.team_id ?? null,
-            round_index: state.question_index,
-            type: ScoreEventType.CORRECT_ANSWER,
-            points: ans.score,
-            answer: ans.value.slice(0, 200),
-          },
-        }),
-      );
-    }
-  }
-  await Promise.all(events);
-
-  // Construit le payload reveal à broadcast.
-  const results = [...state.answers.values()].map((ans) => {
-    const p = participantsById.get(ans.participant_id);
-    return {
-      participant_id: ans.participant_id,
-      pseudo: p?.pseudo ?? '?',
-      team_id: p?.team_id ?? null,
-      is_correct: ans.is_correct ?? false,
-      answered_at_ms: ans.submitted_at_ms - state.started_at_ms,
-      score: ans.score ?? 0,
-      submitted: ans.value,
-    };
-  });
-  // Tri par score desc puis temps croissant (1ers en haut).
-  results.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    return a.answered_at_ms - b.answered_at_ms;
-  });
-
-  // Réponse à révéler côté UI
-  const reveal = {
-    answer: question.answer_lang1,
-    answer_alt: question.answer_lang2 ?? undefined,
-  };
-
-  broadcastToSession(sessionId, 'quizz:question_revealed', {
-    question_index: state.question_index,
-    reveal,
-    results,
-  });
-}
 
 export default router;
