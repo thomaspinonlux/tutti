@@ -8,7 +8,9 @@
     "saving": "Enregistrement…",
     "saved": "Enregistré ✓",
     "cancel": "Annuler",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "copy": "Copier",
+    "copied": "Copié"
   },
   "home": {
     "tagline": "Plateforme de jeux interactifs pour bars et particuliers",
@@ -38,7 +40,9 @@
     "noAccount": "Pas encore de compte ?",
     "linkSignIn": "Se connecter",
     "linkSignUp": "Créer un compte",
-    "continueWithSeparator": "ou avec"
+    "continueWithSeparator": "ou avec",
+    "invitedTitle": "Tu as été invité·e à rejoindre une équipe",
+    "invitedHint": "Code de parrainage : {{code}}. Tu rejoindras le workspace existant comme HOST."
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -489,6 +493,12 @@
     "providerSpotify": "Spotify",
     "providerDeezer": "Deezer (à venir)",
     "providerAppleMusic": "Apple Music (à venir)",
+    "membersTitle": "Membres de l'équipe",
+    "membersList": "Membres",
+    "noMembers": "Aucun membre.",
+    "membersHint": "Partage ton lien d'invitation pour ajouter des collègues à ton workspace. Ils s'inscrivent et te rejoignent automatiquement.",
+    "referralCode": "Mon code",
+    "you": "toi",
     "uploadFailed": "Échec de l'envoi du logo",
     "spotifyTitle": "Spotify",
     "spotifyDescription": "Connecte ton compte Spotify pour accéder au catalogue complet et lire les morceaux entiers (compte Premium requis pour la lecture).",

@@ -21,6 +21,7 @@ import {
   type SpotifyStatus,
 } from '../../lib/music.js';
 import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
+import { WorkspaceMembersCard } from '../../components/admin/settings/WorkspaceMembersCard.js';
 
 const PROVIDER_IDS = ['demo', 'spotify', 'deezer', 'apple_music'] as const;
 type ProviderRow = {
@@ -417,6 +418,10 @@ export function SettingsPage(): JSX.Element {
           )}
         </div>
       </form>
+
+      <div className="mt-6">
+        <WorkspaceMembersCard />
+      </div>
     </div>
   );
 }

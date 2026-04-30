@@ -8,7 +8,9 @@
     "saving": "Saving…",
     "saved": "Saved ✓",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "home": {
     "tagline": "Interactive games platform for bars and home parties",
@@ -38,7 +40,9 @@
     "noAccount": "No account yet?",
     "linkSignIn": "Sign in",
     "linkSignUp": "Create an account",
-    "continueWithSeparator": "or with"
+    "continueWithSeparator": "or with",
+    "invitedTitle": "You were invited to join a team",
+    "invitedHint": "Referral code: {{code}}. You'll join the existing workspace as HOST."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -489,6 +493,12 @@
     "providerSpotify": "Spotify",
     "providerDeezer": "Deezer (coming soon)",
     "providerAppleMusic": "Apple Music (coming soon)",
+    "membersTitle": "Team members",
+    "membersList": "Members",
+    "noMembers": "No members yet.",
+    "membersHint": "Share your invitation link to add colleagues to your workspace. They sign up and join automatically.",
+    "referralCode": "My code",
+    "you": "you",
     "uploadFailed": "Logo upload failed",
     "spotifyTitle": "Spotify",
     "spotifyDescription": "Connect your Spotify account to access the full catalogue and play full tracks (Premium account required for playback).",

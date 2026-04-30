@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase.js';
 import { api, ApiError } from '../lib/api.js';
@@ -10,6 +10,8 @@ import { Button, Card, Input, MultiColorBar, TitleHandwritten } from '../compone
 export function SignupPage(): JSX.Element {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const referrerCode = (params.get('ref') ?? '').trim().toUpperCase();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
@@ -38,7 +40,10 @@ export function SignupPage(): JSX.Element {
 
       await api('/api/auth/initialize', {
         method: 'POST',
-        body: { workspaceName: workspaceName.trim() },
+        body: {
+          workspaceName: referrerCode ? 'invited' : workspaceName.trim(),
+          ...(referrerCode ? { referrerCode } : {}),
+        },
       });
 
       navigate('/admin', { replace: true });
@@ -67,17 +72,28 @@ export function SignupPage(): JSX.Element {
             {t('auth.signupTagline')}
           </p>
 
+          {referrerCode && (
+            <div className="mb-4 p-3 border-2 border-basil rounded bg-basil/10 text-sm">
+              <p className="font-display text-lg">🎉 {t('auth.invitedTitle')}</p>
+              <p className="font-mono text-xs text-ink-soft mt-1">
+                {t('auth.invitedHint', { code: referrerCode })}
+              </p>
+            </div>
+          )}
+
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-            <Input
-              label={t('auth.workspaceName')}
-              type="text"
-              value={workspaceName}
-              onChange={(e) => setWorkspaceName(e.target.value)}
-              placeholder={t('auth.workspaceNamePlaceholder')}
-              required
-              minLength={2}
-              autoComplete="organization"
-            />
+            {!referrerCode && (
+              <Input
+                label={t('auth.workspaceName')}
+                type="text"
+                value={workspaceName}
+                onChange={(e) => setWorkspaceName(e.target.value)}
+                placeholder={t('auth.workspaceNamePlaceholder')}
+                required
+                minLength={2}
+                autoComplete="organization"
+              />
+            )}
             <Input
               label={t('auth.email')}
               type="email"

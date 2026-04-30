@@ -38,6 +38,7 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
       },
       workspace: member?.workspace ?? null,
       role: member?.role ?? null,
+      referral_code: member?.referral_code ?? null,
       hasWorkspace: !!member,
     });
   } catch (err: unknown) {
