@@ -245,22 +245,31 @@ model QuestionSet {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Question {
-  id             String       @id @default(uuid()) @db.Uuid
-  set_id         String       @db.Uuid
-  position       Int
-  type           QuestionType
-  category       String?
-  text_lang1     String
-  text_lang2     String?
-  choices_lang1  String[]     @default([])
-  choices_lang2  String[]     @default([])
-  answer_lang1   String
-  answer_lang2   String?
-  time_limit_sec Int          @default(30)
-  points         Int          @default(100)
-  media_type     MediaType    @default(NONE)
-  media_url      String?
-  created_at     DateTime     @default(now()) @db.Timestamptz(6)
+  id                   String       @id @default(uuid()) @db.Uuid
+  set_id               String       @db.Uuid
+  position             Int
+  type                 QuestionType
+  category             String?
+  text_lang1           String
+  text_lang2           String?
+  // MCQ : choix proposés (4 typiquement). TRUE_FALSE/FREE_TEXT/ESTIMATION : []
+  choices_lang1        String[]     @default([])
+  choices_lang2        String[]     @default([])
+  // MCQ/TRUE_FALSE : la réponse exacte ("Beatles", "true").
+  // FREE_TEXT       : la réponse canonique (matchée + aliases ci-dessous).
+  // ESTIMATION      : JSON encodé { "target": 1953, "min": 1900, "max": 2000, "unit": "année" }.
+  answer_lang1         String
+  answer_lang2         String?
+  // FREE_TEXT uniquement : alternatives orthographiques acceptées en plus
+  // de answer_lang1. Match fuzzy après normalize (lowercase, accents, etc).
+  // Pas utilisés pour MCQ / TRUE_FALSE / ESTIMATION.
+  answer_aliases_lang1 String[]     @default([])
+  answer_aliases_lang2 String[]     @default([])
+  time_limit_sec       Int          @default(30)
+  points               Int          @default(100)
+  media_type           MediaType    @default(NONE)
+  media_url            String?
+  created_at           DateTime     @default(now()) @db.Timestamptz(6)
 
   set QuestionSet @relation(fields: [set_id], references: [id], onDelete: Cascade)
 

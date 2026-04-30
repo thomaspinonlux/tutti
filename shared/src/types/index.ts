@@ -259,6 +259,118 @@ export interface CurrentTrackState {
 /** Durée de la phase 2 en ms (constante partagée frontend ↔ backend). */
 export const PHASE_2_DURATION_MS = 15_000;
 
+// ───── Tutti Quizz (étape 15) ─────────────────────────────────────────────
+
+export type QuestionType = 'MCQ' | 'TRUE_FALSE' | 'FREE_TEXT' | 'ESTIMATION';
+export type QuestionMediaType = 'NONE' | 'VIDEO' | 'AUDIO' | 'IMAGE';
+
+export interface QuestionSet {
+  id: string;
+  establishment_id: string | null;
+  name: string;
+  description: string | null;
+  cover_url: string | null;
+  is_bilingual: boolean;
+  language_1: string;
+  language_2: string | null;
+  is_generic: boolean;
+  is_published: boolean;
+  created_at: string;
+  /** Comptage léger renvoyé par l'API liste (sans inclure les questions). */
+  questions_count?: number;
+}
+
+export interface Question {
+  id: string;
+  set_id: string;
+  position: number;
+  type: QuestionType;
+  category: string | null;
+  text_lang1: string;
+  text_lang2: string | null;
+  choices_lang1: string[];
+  choices_lang2: string[];
+  answer_lang1: string;
+  answer_lang2: string | null;
+  answer_aliases_lang1: string[];
+  answer_aliases_lang2: string[];
+  time_limit_sec: number;
+  points: number;
+  media_type: QuestionMediaType;
+  media_url: string | null;
+  created_at: string;
+}
+
+export interface QuestionSetWithQuestions extends QuestionSet {
+  questions: Question[];
+}
+
+/**
+ * Métadonnées encodées dans answer_lang1 pour les questions ESTIMATION.
+ *   target : valeur exacte à deviner
+ *   min, max : borne du slider côté joueur (pour bornage UI + scoring)
+ *   unit : unité affichée à côté du chiffre (ex. "année", "km", "%")
+ */
+export interface EstimationAnswer {
+  target: number;
+  min: number;
+  max: number;
+  unit?: string;
+}
+
+/**
+ * État courant d'une question en cours (équivalent de CurrentTrackState
+ * pour Tutti Tracks). Broadcast à tous (host + joueurs).
+ */
+export interface CurrentQuestionState {
+  round_id: string;
+  question_index: number;
+  question_id: string;
+  /** Texte de la question dans les langues actives. */
+  text: string;
+  text_alt?: string; // langue 2 si is_bilingual
+  type: QuestionType;
+  category: string | null;
+  /** Choix MCQ (vide pour les autres types). */
+  choices: string[];
+  choices_alt?: string[];
+  /** Borne pour ESTIMATION (parsée depuis answer_lang1 JSON côté serveur). */
+  estimation_min?: number;
+  estimation_max?: number;
+  estimation_unit?: string;
+  /** Médias optionnels. */
+  media_type: QuestionMediaType;
+  media_url: string | null;
+  /** Date de démarrage (ISO) pour calculer le timer côté client. */
+  started_at: string;
+  /** Durée d'écoute autorisée avant timeout (s, défaut 30). */
+  time_limit_sec: number;
+  /** Points en jeu pour cette question. */
+  points: number;
+  /** Phase courante : asking (joueurs répondent) → revealed (réponse + recap). */
+  phase: 'asking' | 'revealed';
+  /** Réponse révélée (visible en phase 'revealed' uniquement). */
+  reveal?: { answer: string; answer_alt?: string };
+}
+
+/** Réponse soumise par un joueur (avant scoring). */
+export interface QuizzAnswerSubmission {
+  /** MCQ : index dans choices. TRUE_FALSE : "true"/"false". FREE_TEXT : texte libre. ESTIMATION : nombre. */
+  value: string;
+}
+
+/** Résultat du scoring d'une réponse, broadcast après reveal. */
+export interface QuizzAnswerResult {
+  participant_id: string;
+  pseudo: string;
+  team_id: string | null;
+  is_correct: boolean;
+  answered_at_ms: number;
+  score: number;
+  /** Réponse soumise (pour affichage debug/transparence). */
+  submitted: string;
+}
+
 /** Résultat d'une réponse, broadcast à tous après le verdict. */
 export interface BuzzResult {
   round_id: string;
