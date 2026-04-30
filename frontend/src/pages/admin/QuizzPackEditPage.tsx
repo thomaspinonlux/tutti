@@ -39,6 +39,8 @@ export function QuizzPackEditPage(): JSX.Element {
   const [saveState, setSaveState] = useState<SaveState>('idle');
 
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
@@ -51,6 +53,8 @@ export function QuizzPackEditPage(): JSX.Element {
         setPack(p);
         setAllPacks(list);
         setName(p.name);
+        setDescription(p.description ?? '');
+        setCoverUrl(p.cover_url ?? '');
         setError(null);
       })
       .catch((err: unknown) => setError((err as Error).message))
@@ -69,6 +73,38 @@ export function QuizzPackEditPage(): JSX.Element {
       const updated = await updateQuestionSet(pack.id, { name: name.trim() });
       setPack((p) => (p ? { ...p, ...updated } : p));
       setAllPacks((list) => list.map((x) => (x.id === pack.id ? { ...x, ...updated } : x)));
+      flash();
+    } catch {
+      setSaveState('error');
+    }
+  };
+
+  const handleDescriptionBlur = async (): Promise<void> => {
+    if (!pack) return;
+    const trimmed = description.trim();
+    if (trimmed === (pack.description ?? '')) return;
+    setSaveState('saving');
+    try {
+      const updated = await updateQuestionSet(pack.id, {
+        description: trimmed.length > 0 ? trimmed : null,
+      });
+      setPack((p) => (p ? { ...p, ...updated } : p));
+      flash();
+    } catch {
+      setSaveState('error');
+    }
+  };
+
+  const handleCoverUrlBlur = async (): Promise<void> => {
+    if (!pack) return;
+    const trimmed = coverUrl.trim();
+    if (trimmed === (pack.cover_url ?? '')) return;
+    setSaveState('saving');
+    try {
+      const updated = await updateQuestionSet(pack.id, {
+        cover_url: trimmed.length > 0 ? trimmed : null,
+      });
+      setPack((p) => (p ? { ...p, ...updated } : p));
       flash();
     } catch {
       setSaveState('error');
@@ -195,6 +231,45 @@ export function QuizzPackEditPage(): JSX.Element {
               onBlur={() => void handleNameBlur()}
               className="w-full px-2 py-1.5 border-2 border-ink rounded font-bold bg-cream"
             />
+          </label>
+
+          <label className="block mt-3">
+            <span className="block text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+              {t('quizz.fieldDescription')}
+            </span>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              onBlur={() => void handleDescriptionBlur()}
+              rows={2}
+              maxLength={300}
+              placeholder={t('quizz.descriptionPlaceholder')}
+              className="w-full px-2 py-1.5 border-2 border-ink rounded text-sm bg-cream resize-none"
+            />
+          </label>
+
+          <label className="block mt-3">
+            <span className="block text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+              {t('quizz.fieldCover')}
+            </span>
+            <input
+              type="url"
+              value={coverUrl}
+              onChange={(e) => setCoverUrl(e.target.value)}
+              onBlur={() => void handleCoverUrlBlur()}
+              placeholder="https://…"
+              className="w-full px-2 py-1.5 border-2 border-ink rounded text-xs font-mono bg-cream"
+            />
+            {coverUrl && (
+              <img
+                src={coverUrl}
+                alt=""
+                className="mt-2 w-full h-24 object-cover border-2 border-ink rounded"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            )}
           </label>
 
           <div className="mt-3 flex items-center gap-2 flex-wrap">
