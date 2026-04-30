@@ -92,6 +92,11 @@ export function LoginPage(): JSX.Element {
               {t('auth.linkSignUp')}
             </Link>
           </p>
+          <p className="text-xs text-ink-soft mt-2 text-center">
+            <Link to="/auth/forgot-password" className="hover:underline">
+              {t('auth.forgotPasswordLink')}
+            </Link>
+          </p>
         </Card>
       </div>
 

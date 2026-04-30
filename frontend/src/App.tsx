@@ -19,6 +19,8 @@ import { initAuth } from './stores/auth.js';
 import { HomePage } from './pages/HomePage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { SignupPage } from './pages/SignupPage.js';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage.js';
+import { ResetPasswordPage } from './pages/ResetPasswordPage.js';
 import { AdminLayout } from './pages/admin/AdminLayout.js';
 import { DashboardPage } from './pages/admin/DashboardPage.js';
 import { TracksPage } from './pages/admin/TracksPage.js';
@@ -58,6 +60,8 @@ function App(): JSX.Element {
         <Route path="/" element={<HomePage />} />
         <Route path="/auth/signup" element={<SignupPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
 
         {/* Espace admin protégé : toutes les sous-routes héritent du layout. */}
         <Route
