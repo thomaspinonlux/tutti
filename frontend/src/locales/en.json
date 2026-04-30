@@ -451,6 +451,14 @@
     "endSession": "End session",
     "endedHint": "The game is over."
   },
+  "gettingStarted": {
+    "title": "Getting started",
+    "stepAccount": "Account created",
+    "stepSpotify": "Connect Spotify",
+    "stepPlaylist": "Create your first Tutti Tracks playlist",
+    "stepPack": "Create your first Tutti Quizz pack",
+    "go": "Go"
+  },
   "playQuizz": {
     "waitingNextQuestion": "Waiting for next question…",
     "waitingHint": "The host is launching the next question.",

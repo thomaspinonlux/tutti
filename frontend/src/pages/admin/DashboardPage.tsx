@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEstablishment } from './AdminLayout.js';
 import { Button, Card, TitleHandwritten, Swirl, Underline } from '../../components/ui/index.js';
+import { GettingStartedChecklist } from '../../components/admin/dashboard/GettingStartedChecklist.js';
 
 export function DashboardPage(): JSX.Element {
   const { t } = useTranslation();
@@ -37,6 +38,8 @@ export function DashboardPage(): JSX.Element {
         </TitleHandwritten>
         <p className="font-editorial italic text-lg text-ink-2">{t('dashboard.chooseGame')}</p>
       </header>
+
+      <GettingStartedChecklist />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <GameCard

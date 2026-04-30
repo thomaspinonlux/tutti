@@ -451,6 +451,14 @@
     "endSession": "Terminer la session",
     "endedHint": "La partie est terminée."
   },
+  "gettingStarted": {
+    "title": "Premiers pas",
+    "stepAccount": "Compte créé",
+    "stepSpotify": "Connecter Spotify",
+    "stepPlaylist": "Créer ta première playlist Tutti Tracks",
+    "stepPack": "Créer ton premier pack Tutti Quizz",
+    "go": "Aller"
+  },
   "playQuizz": {
     "waitingNextQuestion": "En attente de la prochaine question…",
     "waitingHint": "Le maître du jeu démarre la prochaine question.",
