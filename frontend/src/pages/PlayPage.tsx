@@ -78,6 +78,7 @@ import {
   TitleHandwritten,
   Underline,
 } from '../components/ui/index.js';
+import { PlayQuizzView } from '../components/play/quizz/PlayQuizzView.js';
 
 type Step =
   | 'pseudo'
@@ -356,11 +357,20 @@ export function PlayPage(): JSX.Element {
       setStep('team');
       return;
     }
+    // Tutti Quizz : pas d'onboarding micro requis (pas de voice).
+    if (view?.game_type === 'QUIZZ') {
+      void doJoin(null);
+      return;
+    }
     setStep(hasPlayedBefore() ? 'onboardingCondensed' : 'onboarding');
   };
 
   const handleTeamSubmit = (): void => {
     if (!selectedTeam) return;
+    if (view?.game_type === 'QUIZZ') {
+      void doJoin(selectedTeam);
+      return;
+    }
     setStep(hasPlayedBefore() ? 'onboardingCondensed' : 'onboarding');
   };
 
@@ -625,7 +635,17 @@ export function PlayPage(): JSX.Element {
             </Card>
           )}
 
-          {step === 'playing' && identity && (
+          {step === 'playing' && identity && view?.game_type === 'QUIZZ' && (
+            <PlayQuizzView
+              socket={socket}
+              sessionId={identity.sessionId}
+              participantId={identity.participantId}
+              token={identity.token}
+              pseudo={identity.pseudo}
+            />
+          )}
+
+          {step === 'playing' && identity && view?.game_type !== 'QUIZZ' && (
             <>
               {isPaused && (
                 <Card tone="plum" size="md" className="text-center mb-3">

@@ -419,6 +419,19 @@
     "errorTextRequired": "L'énoncé est requis.",
     "errorTextLang2Required": "L'énoncé en langue 2 est requis (pack bilingue)."
   },
+  "playQuizz": {
+    "waitingNextQuestion": "En attente de la prochaine question…",
+    "waitingHint": "Le maître du jeu démarre la prochaine question.",
+    "submitted": "Réponse envoyée ✓",
+    "submittedHint": "On attend la révélation pour voir ton score.",
+    "correct": "Bonne réponse !",
+    "wrong": "Raté !",
+    "rankOnQuestion": "{{rank}}ᵉ sur cette question",
+    "correctAnswerLabel": "La bonne réponse",
+    "yourAnswer": "Ta réponse : {{value}}",
+    "freeTextPlaceholder": "Tape ta réponse…",
+    "send": "Envoyer"
+  },
   "hostQuizz": {
     "noPackError": "Aucun pack de questions n'est lié à cette session.",
     "leaderboard": "Classement",

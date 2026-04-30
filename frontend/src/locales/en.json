@@ -419,6 +419,19 @@
     "errorTextRequired": "Text is required.",
     "errorTextLang2Required": "Lang2 text is required (bilingual pack)."
   },
+  "playQuizz": {
+    "waitingNextQuestion": "Waiting for next question…",
+    "waitingHint": "The host is launching the next question.",
+    "submitted": "Answer sent ✓",
+    "submittedHint": "Waiting for the reveal to see your score.",
+    "correct": "Correct!",
+    "wrong": "Wrong!",
+    "rankOnQuestion": "{{rank}} on this question",
+    "correctAnswerLabel": "Correct answer",
+    "yourAnswer": "Your answer: {{value}}",
+    "freeTextPlaceholder": "Type your answer…",
+    "send": "Send"
+  },
   "hostQuizz": {
     "noPackError": "No question pack is linked to this session.",
     "leaderboard": "Leaderboard",
