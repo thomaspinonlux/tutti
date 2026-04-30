@@ -777,6 +777,19 @@ function PlayingView(props: PlayingViewProps): JSX.Element {
     setBuzzCooldownUntil(0);
   }, [currentTrack?.track_id]);
 
+  // À l'entrée en phase 3 (reveal global), on sort de l'écran "résultat" pour
+  // laisser apparaître le reveal commun (artiste + titre + scores). Le branch
+  // phase 3 ci-dessous prend le relais.
+  useEffect(() => {
+    const phase = currentTrack?.phase;
+    if (
+      (phase === 'phase3' || phase === 'phase3-revealed' || phase === 'phase3-skipped') &&
+      recState.kind === 'result'
+    ) {
+      setRecState({ kind: 'idle' });
+    }
+  }, [currentTrack?.phase, recState.kind]);
+
   const myCorrect = correctAnswers.find((a) => a.participant_id === identity.participantId);
 
   // ── Action : tap BUZZ → ouvre le micro et démarre la capture ──────────
@@ -1065,20 +1078,25 @@ function ResultView({
   const { t } = useTranslation();
 
   if (result.matched && result.scored) {
+    // Correction spec : on n'affiche PAS l'artiste/titre ici (le joueur les
+    // connaît déjà puisqu'il les a dits, mais un voisin pourrait regarder
+    // par-dessus son épaule). Le reveal complet arrive en phase 3 pour tous.
+    // On ne montre PAS non plus le transcript (idem, anti-leak).
     return (
       <Card size="md" tone="basil" className="text-center">
-        <p className="text-5xl mb-2">🎉</p>
+        <p className="text-6xl mb-3">✓</p>
         <TitleHandwritten as="h2" className="mb-2">
-          {t('play.youScored', { points: result.score ?? 0 })}
+          {t('play.answerValidated')}
         </TitleHandwritten>
+        <p className="font-display text-3xl text-basil-deep mb-3">+{result.score ?? 0} pts</p>
         {result.position && (
-          <Badge tone="lemon" tilt={-1} className="mb-2">
+          <Badge tone="lemon" tilt={-1}>
             {t('play.position', { n: result.position })}
           </Badge>
         )}
-        {result.transcript && (
-          <p className="font-mono text-xs text-ink-soft mt-3 italic">« {result.transcript} »</p>
-        )}
+        <p className="font-editorial italic text-ink-soft text-sm mt-4">
+          {t('play.waitForReveal')}
+        </p>
         <ScoreBadge score={myScore + (result.score ?? 0)} />
       </Card>
     );
