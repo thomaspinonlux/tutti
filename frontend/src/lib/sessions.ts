@@ -6,6 +6,7 @@
 import type {
   BuzzResult,
   CumulativeScore,
+  CurrentQuestionState,
   CurrentTrackState,
   GameMode,
   GameType,
@@ -215,6 +216,52 @@ export async function postBuzz(
   return api<{ ok: boolean; buzz_time_ms: number }>(
     `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/buzz`,
     { method: 'POST', body: { token }, anonymous: true },
+  );
+}
+
+// ───── Tutti Quizz gameplay (étape 15) ────────────────────────────────────
+
+export async function playQuestion(
+  sessionId: string,
+  questionIndex: number,
+): Promise<CurrentQuestionState> {
+  const data = await api<{ state: CurrentQuestionState }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/quizz/play-question`,
+    { method: 'POST', body: { question_index: questionIndex } },
+  );
+  return data.state;
+}
+
+export async function nextQuestion(sessionId: string): Promise<{
+  state?: CurrentQuestionState;
+  ended?: boolean;
+  session?: Session;
+  cumulative?: CumulativeScore[];
+}> {
+  return api<{
+    state?: CurrentQuestionState;
+    ended?: boolean;
+    session?: Session;
+    cumulative?: CumulativeScore[];
+  }>(`/api/sessions/${encodeURIComponent(sessionId)}/quizz/next-question`, {
+    method: 'POST',
+  });
+}
+
+export async function revealQuestion(sessionId: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/quizz/reveal-question`, {
+    method: 'POST',
+  });
+}
+
+export async function submitQuizzAnswer(
+  sessionId: string,
+  token: string,
+  value: string,
+): Promise<{ ok: boolean; allAnswered: boolean }> {
+  return api<{ ok: boolean; allAnswered: boolean }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/quizz/submit-answer`,
+    { method: 'POST', body: { token, value }, anonymous: true },
   );
 }
 

@@ -56,6 +56,7 @@ import { RoundSelectionScreen } from '../components/host/RoundSelectionScreen.js
 import { RoundIntermissionScreen } from '../components/host/RoundIntermissionScreen.js';
 import { ExpressPlaylistModal } from '../components/host/ExpressPlaylistModal.js';
 import { MainScreenView } from './screen/MainScreenView.js';
+import { HostQuizzView } from './HostQuizzView.js';
 
 interface Toast {
   id: string;
@@ -79,6 +80,7 @@ function HostPageInner(): JSX.Element {
 
   const [session, setSession] = useState<SessionWithParticipants | null>(null);
   const [cumulative, setCumulative] = useState<CumulativeScore[]>([]);
+  const [hostSocket, setHostSocket] = useState<Socket | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [busy, setBusy] = useState(false);
@@ -110,6 +112,7 @@ function HostPageInner(): JSX.Element {
         const publicView = await getPublicSession(shortCode);
         if (cancelled) return;
         socket = await connectAsHost();
+        setHostSocket(socket);
         socket.on('connect_error', (err) => {
           if (cancelled) return;
           setError(`Socket: ${err.message}`);
@@ -320,6 +323,7 @@ function HostPageInner(): JSX.Element {
     return () => {
       cancelled = true;
       socket?.disconnect();
+      setHostSocket(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shortCode]);
@@ -543,6 +547,19 @@ function HostPageInner(): JSX.Element {
       <div className="min-h-screen flex items-center justify-center">
         <p className="font-mono text-ink-soft">{t('common.loading')}</p>
       </div>
+    );
+  }
+
+  // ── Branche Tutti Quizz : vue dédiée pour les sessions QUIZZ ─────────────
+  if (session.game_type === 'QUIZZ') {
+    return (
+      <HostQuizzView
+        session={session}
+        cumulative={cumulative}
+        socket={hostSocket}
+        onSessionUpdate={(s) => setSession(s)}
+        onCumulativeUpdate={(c) => setCumulative(c)}
+      />
     );
   }
 
