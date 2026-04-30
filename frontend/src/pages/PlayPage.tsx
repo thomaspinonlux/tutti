@@ -287,12 +287,20 @@ export function PlayPage(): JSX.Element {
         // en train d'enregistrer" à terme.
       },
     );
-    sock.on('track:correct_answer', (entry: CorrectAnswerEntry) => {
-      setCorrectAnswers((prev) => [...prev, entry]);
-      if (entry.participant_id === identity.participantId) {
-        setMyScore((prev) => prev + entry.score);
-      }
-    });
+    sock.on(
+      'track:correct_answer',
+      (payload: CorrectAnswerEntry & { cumulative?: CumulativeScore[] }) => {
+        setCorrectAnswers((prev) => [...prev, payload]);
+        if (payload.participant_id === identity.participantId) {
+          setMyScore((prev) => prev + payload.score);
+        }
+        // Backend inclut maintenant la cumulative dans le broadcast — permet
+        // au PhoneFooter d'afficher myRank live sans appel REST master-only.
+        if (payload.cumulative) {
+          setCumulative(payload.cumulative);
+        }
+      },
+    );
     sock.on(
       'track:phase_changed',
       (payload: {
@@ -1014,8 +1022,13 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
           myScore={myScore}
         />
       ) : myCorrect ? (
-        // J'ai trouvé : ValidatedBanner remplace le buzzer
-        <ValidatedBanner score={myCorrect.score} position={myCorrect.position} />
+        // J'ai trouvé : ValidatedBanner remplace le buzzer.
+        // Confettis seulement en phase 3 (correction spec — pas avant).
+        <ValidatedBanner
+          score={myCorrect.score}
+          position={myCorrect.position}
+          showConfetti={isPhase3Reveal}
+        />
       ) : (
         // Buzzer (idle) — actif en phase 1+2, désactivé en phase 3
         <BuzzerArea
@@ -1220,18 +1233,68 @@ function DanceMessage({ isFinder, score }: { isFinder: boolean; score: number })
   );
 }
 
-function ValidatedBanner({ score, position }: { score: number; position: number }): JSX.Element {
+function ValidatedBanner({
+  score,
+  position,
+  showConfetti,
+}: {
+  score: number;
+  position: number;
+  showConfetti: boolean;
+}): JSX.Element {
   const { t } = useTranslation();
   return (
-    <div className="bg-basil border-4 border-ink rounded-2xl px-5 py-7 text-center shadow-pop-lg animate-valid-pop my-4">
-      <span className="font-display text-6xl block mb-1.5 text-cream">✓</span>
-      <p className="font-display text-2xl text-cream mb-1.5">{t('play.answerValidated')}</p>
-      <p className="font-mono text-3xl bg-lemon text-ink inline-block px-4 py-1 rounded-xl font-bold">
-        +{score} pts
-      </p>
-      <p className="font-mono text-xs text-cream-2 mt-3 uppercase tracking-widest">
-        {t('play.position', { n: position })}
-      </p>
+    <div className="relative my-4 overflow-hidden rounded-2xl">
+      {/* Confettis confinés au banner — déclenchés en phase 3 pour les finders.
+          Pas en phase 2 (pas d'animation festive avant le reveal global). */}
+      {showConfetti && <PhoneConfettiBurst />}
+      <div className="bg-basil border-4 border-ink rounded-2xl px-5 py-7 text-center shadow-pop-lg animate-valid-pop relative z-10">
+        <span className="font-display text-6xl block mb-1.5 text-cream">✓</span>
+        <p className="font-display text-2xl text-cream mb-1.5">{t('play.answerValidated')}</p>
+        <p className="font-mono text-3xl bg-lemon text-ink inline-block px-4 py-1 rounded-xl font-bold">
+          +{score} pts
+        </p>
+        <p className="font-mono text-xs text-cream-2 mt-3 uppercase tracking-widest">
+          {t('play.position', { n: position })}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Confettis confinés au panneau (overlay absolute), spawn ~10 morceaux en
+ * burst 3-5s. Animation linéaire de haut en bas, couleurs Pop Cocktail.
+ * Utilisé sur le tel des trouveurs en phase 3.
+ */
+function PhoneConfettiBurst(): JSX.Element {
+  const [pieces] = useState(() =>
+    Array.from({ length: 10 }, (_, i) => ({
+      id: i,
+      left: `${Math.round(Math.random() * 100)}%`,
+      delay: `${Math.round(Math.random() * 1500)}ms`,
+      duration: `${3 + Math.round(Math.random() * 2)}s`,
+      color: ['#ee6c2a', '#4a8b3f', '#c8336e', '#e8c547', '#6e3a6e', '#e89a64'][i % 6],
+      isCircle: i % 3 === 0,
+    })),
+  );
+  return (
+    <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+      {pieces.map((c) => (
+        <span
+          key={c.id}
+          className="absolute top-0 animate-confetti-fall border border-ink"
+          style={{
+            left: c.left,
+            width: '8px',
+            height: '12px',
+            backgroundColor: c.color,
+            animationDelay: c.delay,
+            animationDuration: c.duration,
+            borderRadius: c.isCircle ? '50%' : '0',
+          }}
+        />
+      ))}
     </div>
   );
 }

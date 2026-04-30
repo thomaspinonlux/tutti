@@ -30,6 +30,8 @@ import {
 import { computeAnswerScore } from '../lib/gameScoring.js';
 import { transcribeAudio, WhisperError } from '../lib/whisper.js';
 import { matchTranscript } from '../lib/voiceMatch.js';
+import { getCumulativeScores } from '../lib/scores.js';
+import type { GameMode, Team } from '@tutti/shared';
 
 const router: Router = Router({ mergeParams: true });
 
@@ -307,8 +309,32 @@ router.post(
       transcriptPreview: matchResult.transcript_normalized.slice(0, 200),
     });
 
+    // Compute la cumulative à inclure dans le broadcast — permet aux
+    // téléphones joueurs d'afficher leur position dans le footer (myRank
+    // dans le PhoneFooter de la maquette 07) sans avoir besoin d'un
+    // endpoint REST master-only.
+    const sessionForCumul = await prisma.session.findUnique({
+      where: { id: req.params.id },
+      select: {
+        mode: true,
+        teams_config: true,
+        participants: {
+          where: { is_kicked: false },
+          select: { id: true, pseudo: true, team_id: true },
+        },
+      },
+    });
+    const cumulative = sessionForCumul
+      ? await getCumulativeScores({
+          sessionId: req.params.id,
+          mode: sessionForCumul.mode as GameMode,
+          teams: (sessionForCumul.teams_config as Team[] | null) ?? null,
+          participants: sessionForCumul.participants,
+        })
+      : [];
+
     // Broadcast la bonne réponse à tous (l'iPad festif l'affiche en toast XL,
-    // les téléphones autres adaptent leur UI).
+    // les téléphones autres adaptent leur UI + footer position).
     broadcastToSession(req.params.id, 'track:correct_answer', {
       round_id: req.params.roundId,
       track_index: active.track_index,
@@ -320,6 +346,7 @@ router.post(
       matched_artist: true,
       matched_title: matchResult.matched_title,
       score: registered.entry.score,
+      cumulative,
     });
 
     // Si c'est la 1ʳᵉ bonne réponse → on broadcast le passage en phase 2 +
