@@ -191,11 +191,11 @@ function Phase1BuzzCounter({ count }: { count: number }): JSX.Element {
 // ── Phase 2 — Toasts "Marie a trouvé !" empilés au top du stage ───────────
 
 function FoundToast({ pseudo, index }: { pseudo: string; index: number }): JSX.Element {
-  const shadows = ['shadow-pop', 'shadow-pop'];
-  const shadowColors = ['var(--c-spritz)', 'var(--c-basil)', 'var(--c-rasp)'];
-  // Use inline style for shadow color rotation
+  const { t } = useTranslation();
+  // Couleurs Pop Cocktail tournantes pour la shadow décalée — cohérent
+  // avec la maquette qui alterne spritz / basil / raspberry.
+  const shadowColors = ['#ee6c2a', '#4a8b3f', '#c8336e'];
   const shadowColor = shadowColors[index % shadowColors.length];
-  void shadows;
   return (
     <div
       role="status"
@@ -209,7 +209,11 @@ function FoundToast({ pseudo, index }: { pseudo: string; index: number }): JSX.E
       <span className="w-7 h-7 rounded-full bg-basil text-ink flex items-center justify-center text-base font-black">
         ✓
       </span>
-      <span>{index === 0 ? `${pseudo} a trouvé !` : `${pseudo} aussi !`}</span>
+      <span>
+        {index === 0
+          ? t('screen.toastFirstFound', { pseudo })
+          : t('screen.toastAlsoFound', { pseudo })}
+      </span>
     </div>
   );
 }

@@ -636,6 +636,15 @@ export function PlayPage(): JSX.Element {
                 phase2StartedAt={phase2StartedAt}
                 busy={busy}
                 setBusy={setBusy}
+                teamName={teams.find((t2) => t2.id === identity.teamId)?.name ?? null}
+                teamColor={teams.find((t2) => t2.id === identity.teamId)?.color ?? null}
+                myRank={cumulative.findIndex((c) => c.id === identity.participantId) + 1 || null}
+                totalParticipants={participantsCount}
+                roundPosition={currentRound?.position ?? null}
+                isMaster={isMaster}
+                isPaused={isPaused}
+                onOpenMasterMenu={isMaster ? () => setMasterPickerOpen(false) : undefined}
+                onMasterPause={isMaster ? handleMasterPause : undefined}
               />
 
               {isMaster && (
@@ -763,9 +772,46 @@ interface PlayingViewProps {
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
 
-function PlayingView(props: PlayingViewProps): JSX.Element {
+interface PlayingViewExtraProps {
+  /** Couleur de l'équipe du joueur (mode TEAMS). */
+  teamColor?: string | null;
+  /** Nom de l'équipe du joueur (mode TEAMS). */
+  teamName?: string | null;
+  /** Position cumulée du joueur dans le classement (1-based, null si inconnu). */
+  myRank: number | null;
+  /** Total de joueurs en jeu (footer). */
+  totalParticipants: number;
+  /** Position de la manche en cours (badge header). */
+  roundPosition: number | null;
+  /** True si le joueur est master (affiche l'icône Modérer). */
+  isMaster: boolean;
+  /** Callback pour ouvrir le menu master. */
+  onOpenMasterMenu?: () => void;
+  /** Callback pour le bouton pause (master uniquement V1). */
+  onMasterPause?: () => void;
+  /** Pause active (overlay). */
+  isPaused: boolean;
+}
+
+function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Element {
   const { t } = useTranslation();
-  const { currentTrack, identity, myScore, correctAnswers, lastReveal, phase2StartedAt } = props;
+  const {
+    currentTrack,
+    identity,
+    myScore,
+    correctAnswers,
+    lastReveal,
+    phase2StartedAt,
+    teamName,
+    teamColor,
+    myRank,
+    totalParticipants,
+    roundPosition,
+    isMaster,
+    onOpenMasterMenu,
+    onMasterPause,
+    isPaused,
+  } = props;
   const [recState, setRecState] = useState<RecState>({ kind: 'idle' });
   const [buzzCooldownUntil, setBuzzCooldownUntil] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -791,6 +837,12 @@ function PlayingView(props: PlayingViewProps): JSX.Element {
   }, [currentTrack?.phase, recState.kind]);
 
   const myCorrect = correctAnswers.find((a) => a.participant_id === identity.participantId);
+  const totalScore = myScore + (myCorrect ? 0 : 0); // myScore est déjà additionné via socket
+  const phase = currentTrack?.phase ?? null;
+  const isPhase1 = phase === 'phase1';
+  const isPhase2 = phase === 'phase2';
+  const isPhase3Reveal = phase === 'phase3' || phase === 'phase3-revealed';
+  const isPhase3 = isPhase3Reveal || phase === 'phase3-skipped';
 
   // ── Action : tap BUZZ → ouvre le micro et démarre la capture ──────────
   const handleBuzz = async (): Promise<void> => {
@@ -799,18 +851,15 @@ function PlayingView(props: PlayingViewProps): JSX.Element {
     if (Date.now() < buzzCooldownUntil) return;
 
     setError(null);
-    setBuzzCooldownUntil(Date.now() + 1000); // cooldown 1s anti-tap
+    setBuzzCooldownUntil(Date.now() + 1000);
 
     try {
-      // 1) Notifie le backend (ouvre la fenêtre micro côté gameState).
       const buzzRes = await postBuzz(identity.sessionId, currentTrack.round_id, identity.token);
       const maxDurationMs = (buzzRes as { buzz_window_ms?: number }).buzz_window_ms ?? 10_000;
 
-      // 2) Démarre la capture audio locale.
       const capture = await startVoiceCapture({
         maxDurationMs,
         onSilence: () => {
-          // Auto-stop quand le joueur a fini (1.5s de silence après speech).
           void finalizeRecording();
         },
         onLevel: (rms) => {
@@ -825,13 +874,11 @@ function PlayingView(props: PlayingViewProps): JSX.Element {
         level: 0,
       });
 
-      // Auto-finalisation au bout du maxDurationMs si rien d'autre n'a coupé avant
       window.setTimeout(() => {
         void finalizeRecording();
       }, maxDurationMs + 200);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Erreur micro';
-      // Si le backend a refusé (cooldown, déjà répondu, phase locked) : message clair
       if (msg.includes('ALREADY_ANSWERED')) {
         setError(t('play.alreadyAnswered'));
       } else if (msg.includes('PHASE_LOCKED')) {
@@ -843,11 +890,9 @@ function PlayingView(props: PlayingViewProps): JSX.Element {
     }
   };
 
-  // ── Action : "Envoyer maintenant" ou silence détecté ou timeout ───────
   const finalizeRecording = async (): Promise<void> => {
     setRecState((prev) => {
       if (prev.kind !== 'recording') return prev;
-      // Capture le handle puis dispatch async
       void uploadAndShowResult(prev.capture);
       return { kind: 'uploading' };
     });
@@ -872,7 +917,6 @@ function PlayingView(props: PlayingViewProps): JSX.Element {
     }
   };
 
-  // ── Cancel manuel pendant l'enregistrement ────────────────────────────
   const handleCancelRec = (): void => {
     setRecState((prev) => {
       if (prev.kind === 'recording') {
@@ -882,132 +926,382 @@ function PlayingView(props: PlayingViewProps): JSX.Element {
     });
   };
 
-  // ── Pas de track : entre 2 manches ────────────────────────────────────
-  if (!currentTrack) {
-    return (
-      <Card size="md" tone="cream" className="text-center">
-        <TitleHandwritten as="h2" className="mb-2">
-          {t('play.waitingTrack')}
-        </TitleHandwritten>
-        <p className="font-editorial italic text-ink-2">{t('play.waitingTrackHint')}</p>
-        <ScoreBadge score={myScore} />
-      </Card>
-    );
-  }
+  // Pseudo du 1ᵉʳ trouveur — pour le late banner non-finder phase 2.
+  const firstFinder = correctAnswers[0] ?? null;
 
-  // ── État recording : countdown + waveform + Envoyer ───────────────────
-  if (recState.kind === 'recording') {
-    return (
-      <RecordingView
-        capture={recState.capture}
-        startedAt={recState.startedAt}
-        level={recState.level}
-        onSubmit={() => void finalizeRecording()}
-        onCancel={handleCancelRec}
-      />
-    );
-  }
-
-  // ── État uploading : transcription Whisper en cours ───────────────────
-  if (recState.kind === 'uploading') {
-    return (
-      <Card size="md" tone="spritz" className="text-center">
-        <p className="text-5xl mb-3">🎧</p>
-        <TitleHandwritten as="h2" className="mb-2">
-          {t('play.transcribing')}
-        </TitleHandwritten>
-        <p className="font-editorial italic text-ink-2 text-sm">{t('play.transcribingHint')}</p>
-      </Card>
-    );
-  }
-
-  // ── État result : matched / not matched ───────────────────────────────
-  if (recState.kind === 'result') {
-    const r = recState.result;
-    return (
-      <ResultView
-        result={r}
-        canRebuzz={
-          (currentTrack.phase === 'phase1' || currentTrack.phase === 'phase2') && !myCorrect
-        }
-        onRebuzz={() => setRecState({ kind: 'idle' })}
-        myScore={myScore}
-      />
-    );
-  }
-
-  // ── Phase 3 (festive) : buzzers off, profite de la musique ────────────
-  if (
-    currentTrack.phase === 'phase3' ||
-    currentTrack.phase === 'phase3-revealed' ||
-    currentTrack.phase === 'phase3-skipped'
-  ) {
-    const revealTitle = lastReveal?.title ?? currentTrack.title;
-    const revealArtist = lastReveal?.artist ?? currentTrack.artist;
-    return (
-      <Card size="md" tone="basil" className="text-center">
-        {currentTrack.phase !== 'phase3-skipped' && (
-          <>
-            <p className="text-xs font-mono uppercase tracking-wider text-basil-deep mb-2">
-              {t('play.reveal')}
-            </p>
-            <TitleHandwritten as="h2" className="mb-1">
-              {revealTitle}
-            </TitleHandwritten>
-            <p className="font-editorial italic text-ink-2 mb-4">{revealArtist}</p>
-          </>
-        )}
-        {myCorrect ? (
-          <Badge tone="lemon" tilt={-1}>
-            {t('play.youScored', { points: myCorrect.score })}
-          </Badge>
-        ) : currentTrack.phase === 'phase3-revealed' ? (
-          <Badge tone="cream" tilt={1}>
-            {t('play.masterRevealedNobodyFound')}
-          </Badge>
-        ) : null}
-        <p className="font-editorial italic text-ink-soft text-sm mt-4">
-          🎵 {t('play.festivePhase')}
-        </p>
-        <ScoreBadge score={myScore} />
-      </Card>
-    );
-  }
-
-  // ── Phase 1 / Phase 2 : grand bouton BUZZ ─────────────────────────────
-  const inPhase2 = currentTrack.phase === 'phase2';
+  // ── Render unifié style "tel" maquette 07 ─────────────────────────────
   const cooldownActive = Date.now() < buzzCooldownUntil;
+  const buzzerDisabled =
+    !currentTrack ||
+    !!myCorrect ||
+    cooldownActive ||
+    isPhase3 ||
+    recState.kind !== 'idle' ||
+    isPaused;
+
   return (
-    <div className="text-center">
-      {inPhase2 && phase2StartedAt && <Phase2Countdown phase2StartedAt={phase2StartedAt} />}
-      {!inPhase2 && (
-        <p className="font-editorial italic text-ink-2 mb-4">{t('play.listenAndBuzz')}</p>
+    <div className="flex flex-col gap-3">
+      {/* Header tel : logo + manche + connection + boutons (master) */}
+      <PhoneHeader
+        roundPosition={roundPosition}
+        isMaster={isMaster}
+        onModerate={onOpenMasterMenu}
+        onPause={onMasterPause}
+      />
+
+      {/* Player info bar : pseudo + équipe + score */}
+      <PlayerInfoBar
+        pseudo={identity.pseudo}
+        teamName={teamName ?? null}
+        teamColor={teamColor ?? null}
+        score={totalScore}
+      />
+
+      {/* Phase 2 banner — différent pour finder vs non-finder.
+          Pas de reveal ici (correction spec — pas de leak). */}
+      {isPhase2 && phase2StartedAt && (
+        <LateBanner
+          isFinder={!!myCorrect}
+          firstFinderPseudo={firstFinder?.pseudo ?? null}
+          phase2StartedAt={phase2StartedAt}
+        />
       )}
-      <button
-        type="button"
-        onClick={() => void handleBuzz()}
-        disabled={!!myCorrect || cooldownActive}
-        className="w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-spritz text-cream border-3 border-ink shadow-pop-xl font-display text-4xl active:translate-x-1 active:translate-y-1 active:shadow-pop-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        BUZZ
-      </button>
-      <p className="font-mono text-xs text-ink-soft mt-4">{t('play.buzzHint')}</p>
-      {myCorrect && (
-        <Badge tone="lemon" tilt={-1} className="mt-3">
-          {t('play.youAlreadyFound', { points: myCorrect.score })}
-        </Badge>
+
+      {/* Phase 1 — track status mystery (avant tout buzz) */}
+      {isPhase1 && recState.kind === 'idle' && !myCorrect && <TrackStatusMystery />}
+
+      {/* Phase 3 — result panel : reveal partagé avec tous */}
+      {isPhase3Reveal && (
+        <ResultPanel
+          artist={lastReveal?.artist ?? currentTrack?.artist ?? '???'}
+          title={lastReveal?.title ?? currentTrack?.title ?? '???'}
+        />
       )}
-      {error && (
-        <p role="alert" className="text-sm text-raspberry mt-3">
-          {error}
-        </p>
+
+      {/* Phase 3 — dance message différencié finder vs non-finder */}
+      {isPhase3 && <DanceMessage isFinder={!!myCorrect} score={myCorrect?.score ?? 0} />}
+
+      {/* Zone interactive centrale : buzzer / recording / uploading / validated */}
+      {!currentTrack ? (
+        <Card size="md" tone="cream" className="text-center">
+          <TitleHandwritten as="h2" className="mb-2">
+            {t('play.waitingTrack')}
+          </TitleHandwritten>
+          <p className="font-editorial italic text-ink-2">{t('play.waitingTrackHint')}</p>
+        </Card>
+      ) : recState.kind === 'recording' ? (
+        <RecordingView
+          capture={recState.capture}
+          startedAt={recState.startedAt}
+          level={recState.level}
+          onSubmit={() => void finalizeRecording()}
+          onCancel={handleCancelRec}
+        />
+      ) : recState.kind === 'uploading' ? (
+        <Card size="md" tone="spritz" className="text-center">
+          <p className="text-5xl mb-3">🎧</p>
+          <TitleHandwritten as="h2" className="mb-2">
+            {t('play.transcribing')}
+          </TitleHandwritten>
+          <p className="font-editorial italic text-ink-2 text-sm">{t('play.transcribingHint')}</p>
+        </Card>
+      ) : recState.kind === 'result' && !recState.result.matched ? (
+        // Pas matché en phase 1/2 → encourage à retenter
+        <ResultView
+          result={recState.result}
+          canRebuzz={(isPhase1 || isPhase2) && !myCorrect}
+          onRebuzz={() => setRecState({ kind: 'idle' })}
+          myScore={myScore}
+        />
+      ) : myCorrect ? (
+        // J'ai trouvé : ValidatedBanner remplace le buzzer
+        <ValidatedBanner score={myCorrect.score} position={myCorrect.position} />
+      ) : (
+        // Buzzer (idle) — actif en phase 1+2, désactivé en phase 3
+        <BuzzerArea
+          onBuzz={() => void handleBuzz()}
+          disabled={buzzerDisabled}
+          isPhase3={isPhase3}
+          isPhase3Skipped={phase === 'phase3-skipped'}
+          error={error}
+        />
       )}
-      <ScoreBadge score={myScore} />
+
+      {/* Phone footer : position cumulée + total joueurs */}
+      <PhoneFooter myRank={myRank} totalParticipants={totalParticipants} />
     </div>
   );
 }
 
-// ── Sous-vues ───────────────────────────────────────────────────────────────
+// ── Sous-composants tel (maquette 07) ──────────────────────────────────────
+
+function PhoneHeader({
+  roundPosition,
+  isMaster,
+  onModerate,
+  onPause,
+}: {
+  roundPosition: number | null;
+  isMaster: boolean;
+  onModerate?: () => void;
+  onPause?: () => void;
+}): JSX.Element {
+  return (
+    <div className="relative bg-ink text-cream rounded-2xl px-4 py-3.5 flex items-center justify-between shadow-pop">
+      <div className="flex items-center gap-2">
+        <div className="font-display text-xl text-spritz">
+          Tutti
+          <span
+            aria-hidden
+            className="inline-block w-2 h-2 bg-lemon rounded-full ml-0.5 align-top"
+          />
+        </div>
+        {roundPosition !== null && (
+          <span className="font-bold text-[11px] bg-basil text-ink px-2.5 py-0.5 rounded-xl uppercase tracking-wider">
+            M{roundPosition}
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <span
+          aria-hidden
+          className="w-2 h-2 rounded-full bg-basil animate-pulse-buzz"
+          title="Connecté"
+        />
+        {isMaster && onModerate && (
+          <button
+            type="button"
+            onClick={onModerate}
+            aria-label="Modérer"
+            className="w-7 h-7 bg-spritz border-2 border-cream rounded-full flex items-center justify-center text-sm hover:bg-spritz-deep"
+          >
+            ⚙
+          </button>
+        )}
+        {isMaster && onPause && (
+          <button
+            type="button"
+            onClick={onPause}
+            aria-label="Pause"
+            className="w-7 h-7 border-2 border-cream rounded-full flex items-center justify-center text-sm hover:bg-cream/10"
+          >
+            ⏸
+          </button>
+        )}
+      </div>
+      {/* Multi-color signature */}
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 flex rounded-b-2xl overflow-hidden">
+        <div className="flex-1 bg-spritz" />
+        <div className="flex-1 bg-basil" />
+        <div className="flex-1 bg-raspberry" />
+        <div className="flex-1 bg-lemon" />
+        <div className="flex-1 bg-plum" />
+      </div>
+    </div>
+  );
+}
+
+function PlayerInfoBar({
+  pseudo,
+  teamName,
+  teamColor,
+  score,
+}: {
+  pseudo: string;
+  teamName: string | null;
+  teamColor: string | null;
+  score: number;
+}): JSX.Element {
+  return (
+    <div className="text-center">
+      <p className="font-display text-2xl text-ink leading-tight">{pseudo}</p>
+      {teamName && (
+        <p className="font-editorial italic text-sm" style={{ color: teamColor ?? '#c8336e' }}>
+          {teamName}
+        </p>
+      )}
+      <span className="font-mono text-sm bg-lemon border-2 border-ink px-3 py-0.5 rounded-2xl inline-block mt-1.5 font-bold">
+        {score} pts
+      </span>
+    </div>
+  );
+}
+
+function TrackStatusMystery(): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-cream-2 border-3 border-ink rounded-xl px-4 py-3 text-center">
+      <p className="text-[10px] uppercase tracking-widest font-bold opacity-70 mb-0.5">
+        {t('play.trackStatusLabel')}
+      </p>
+      <p className="font-display text-lg">♪ ? ? ? ? ?</p>
+    </div>
+  );
+}
+
+function LateBanner({
+  isFinder,
+  firstFinderPseudo,
+  phase2StartedAt,
+}: {
+  isFinder: boolean;
+  firstFinderPseudo: string | null;
+  phase2StartedAt: string;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, []);
+  const remaining = Math.max(0, 15_000 - (now - new Date(phase2StartedAt).getTime()));
+  const seconds = Math.ceil(remaining / 1000);
+  return (
+    <div className="bg-lemon border-3 border-ink rounded-xl p-3 flex items-center justify-between shadow-pop">
+      <div className="font-bold text-sm leading-tight pr-3">
+        <strong className="block font-display font-normal text-base text-ink">
+          {isFinder
+            ? t('play.lateBannerFinderTitle')
+            : t('play.lateBannerNonFinderTitle', { pseudo: firstFinderPseudo ?? '…' })}
+        </strong>
+        <span className="text-ink">
+          {isFinder ? t('play.lateBannerFinderSub') : t('play.lateBannerNonFinderSub')}
+        </span>
+      </div>
+      <div className="font-mono text-4xl font-bold text-ink leading-none animate-tick-pulse tabular-nums shrink-0">
+        {seconds}
+      </div>
+    </div>
+  );
+}
+
+function ResultPanel({ artist, title }: { artist: string; title: string }): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <div
+      className="bg-cream-2 border-3 border-ink rounded-xl p-4 text-center"
+      style={{ boxShadow: '4px 4px 0 #ee6c2a' }}
+    >
+      <p className="text-[10px] uppercase tracking-widest font-bold opacity-70 mb-1">
+        {t('play.resultPanelLabel')}
+      </p>
+      <p className="font-display text-2xl text-ink leading-none mb-1">{artist}</p>
+      <p className="font-editorial italic text-sm text-raspberry font-semibold">{title}</p>
+    </div>
+  );
+}
+
+function DanceMessage({ isFinder, score }: { isFinder: boolean; score: number }): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-ink text-cream rounded-xl py-3.5 text-center font-display text-lg animate-dance-pulse">
+      {isFinder ? (
+        <>
+          <span aria-hidden className="inline-block animate-emoji-wave mr-2">
+            🎉
+          </span>
+          {t('play.danceFinder', { points: score })}
+          <span aria-hidden className="inline-block animate-emoji-wave ml-2">
+            🎉
+          </span>
+        </>
+      ) : (
+        <>
+          <span aria-hidden className="inline-block animate-emoji-wave mr-2">
+            🕺
+          </span>
+          {t('play.danceNonFinder')}
+          <span aria-hidden className="inline-block animate-emoji-wave ml-2">
+            💃
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ValidatedBanner({ score, position }: { score: number; position: number }): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-basil border-4 border-ink rounded-2xl px-5 py-7 text-center shadow-pop-lg animate-valid-pop my-4">
+      <span className="font-display text-6xl block mb-1.5 text-cream">✓</span>
+      <p className="font-display text-2xl text-cream mb-1.5">{t('play.answerValidated')}</p>
+      <p className="font-mono text-3xl bg-lemon text-ink inline-block px-4 py-1 rounded-xl font-bold">
+        +{score} pts
+      </p>
+      <p className="font-mono text-xs text-cream-2 mt-3 uppercase tracking-widest">
+        {t('play.position', { n: position })}
+      </p>
+    </div>
+  );
+}
+
+function BuzzerArea({
+  onBuzz,
+  disabled,
+  isPhase3,
+  isPhase3Skipped,
+  error,
+}: {
+  onBuzz: () => void;
+  disabled: boolean;
+  isPhase3: boolean;
+  isPhase3Skipped: boolean;
+  error: string | null;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const hint = isPhase3Skipped
+    ? t('play.buzzerHintSkipped')
+    : isPhase3
+      ? t('play.buzzerHintPhase3')
+      : t('play.buzzerHintActive');
+  return (
+    <div className="flex flex-col items-center gap-3.5 my-2">
+      <button
+        type="button"
+        onClick={onBuzz}
+        disabled={disabled}
+        className={[
+          'w-[220px] h-[220px] rounded-full border-[6px] border-ink',
+          'flex flex-col items-center justify-center font-display text-2xl',
+          'transition-all',
+          disabled
+            ? 'bg-ink-faded cursor-not-allowed shadow-[0_4px_0_#1a1410]'
+            : 'bg-spritz text-ink shadow-[0_8px_0_#1a1410] active:translate-y-1 active:shadow-[0_4px_0_#1a1410] animate-pulse-buzz',
+        ].join(' ')}
+      >
+        <span className={['text-5xl mb-1', disabled ? 'opacity-50' : ''].join(' ')} aria-hidden>
+          🎤
+        </span>
+        <span className="text-2xl">BUZZ</span>
+      </button>
+      <p className="font-editorial italic text-sm text-ink/80 text-center max-w-[280px]">{hint}</p>
+      {error && (
+        <p role="alert" className="text-sm text-raspberry text-center">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function PhoneFooter({
+  myRank,
+  totalParticipants,
+}: {
+  myRank: number | null;
+  totalParticipants: number;
+}): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-ink text-cream rounded-xl py-2.5 px-4 text-center text-xs font-bold mt-2">
+      {myRank !== null && <span className="font-display text-lg text-lemon mr-1.5">{myRank}</span>}
+      <span>{t('play.phoneFooter', { count: totalParticipants })}</span>
+    </div>
+  );
+}
+
+// ── Sous-vues legacy ────────────────────────────────────────────────────────
 
 function RecordingView({
   capture,
@@ -1126,24 +1420,8 @@ function ResultView({
   );
 }
 
-function Phase2Countdown({ phase2StartedAt }: { phase2StartedAt: string }): JSX.Element {
-  const { t } = useTranslation();
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(id);
-  }, []);
-  const elapsed = now - new Date(phase2StartedAt).getTime();
-  const remaining = Math.max(0, 15_000 - elapsed);
-  const seconds = Math.ceil(remaining / 1000);
-  return (
-    <div className="mb-3">
-      <Badge tone="raspberry" tilt={-1}>
-        ⏱ {t('play.phase2Remaining', { seconds })}
-      </Badge>
-    </div>
-  );
-}
+// Phase2Countdown : remplacé par LateBanner (maquette 07). Conservé pour
+// référence si besoin de revenir à un affichage compact.
 
 function ScoreBadge({ score }: { score: number }): JSX.Element {
   const { t } = useTranslation();
