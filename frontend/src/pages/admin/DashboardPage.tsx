@@ -29,14 +29,19 @@ export function DashboardPage(): JSX.Element {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <header className="mb-12">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-3">
-          {t('dashboard.welcomeTo')}
-        </p>
-        <TitleHandwritten as="h1" className="mb-4">
-          <Swirl>{establishment.name}</Swirl>
-        </TitleHandwritten>
-        <p className="font-editorial italic text-lg text-ink-2">{t('dashboard.chooseGame')}</p>
+      <header className="mb-8 flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-3">
+            {t('dashboard.welcomeTo')}
+          </p>
+          <TitleHandwritten as="h1" className="mb-4">
+            <Swirl>{establishment.name}</Swirl>
+          </TitleHandwritten>
+          <p className="font-editorial italic text-lg text-ink-2">{t('dashboard.chooseGame')}</p>
+        </div>
+        <Link to="/admin/sessions/new">
+          <Button size="lg">▶ {t('dashboard.newSession')}</Button>
+        </Link>
       </header>
 
       <GettingStartedChecklist />

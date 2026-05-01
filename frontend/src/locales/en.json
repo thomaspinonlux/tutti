@@ -77,7 +77,8 @@
     "quizzTitle": "Tutti Quizz",
     "quizzTagline": "Bilingual multimedia quiz",
     "quizzDescription": "MCQ, true/false, free text, estimations. Bilingual FR/EN.",
-    "quizzCta": "Start Quizz"
+    "quizzCta": "Start Quizz",
+    "newSession": "New session"
   },
   "tracks": {
     "title": "Tutti Tracks",

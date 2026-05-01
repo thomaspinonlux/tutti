@@ -33,11 +33,16 @@ export function TracksPage(): JSX.Element {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <header className="flex items-center justify-between mb-8">
+      <header className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <TitleHandwritten as="h1">
           <Underline>{t('tracks.title')}</Underline>
         </TitleHandwritten>
-        <Button onClick={() => setModalOpen(true)}>{t('playlists.newPlaylist')}</Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link to="/admin/sessions/new">
+            <Button variant="secondary">▶ {t('dashboard.newSession')}</Button>
+          </Link>
+          <Button onClick={() => setModalOpen(true)}>{t('playlists.newPlaylist')}</Button>
+        </div>
       </header>
 
       {error && (

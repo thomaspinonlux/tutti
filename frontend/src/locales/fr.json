@@ -77,7 +77,8 @@
     "quizzTitle": "Tutti Quizz",
     "quizzTagline": "Le quizz multimédia bilingue",
     "quizzDescription": "QCM, vrai/faux, réponse libre, estimations. Bilingue FR/EN.",
-    "quizzCta": "Lancer Quizz"
+    "quizzCta": "Lancer Quizz",
+    "newSession": "Nouvelle session"
   },
   "tracks": {
     "title": "Tutti Tracks",
