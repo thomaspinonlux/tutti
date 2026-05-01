@@ -19,12 +19,12 @@ interface SpotifyPlayerState {
   paused: boolean;
   position: number;
   duration: number;
-  track_window: {
-    current_track: {
+  track_window?: {
+    current_track?: {
       id: string;
       name: string;
       uri: string;
-      artists: Array<{ name: string }>;
+      artists?: Array<{ name: string }>;
     };
   };
 }
@@ -32,6 +32,12 @@ interface SpotifyPlayerState {
 interface SpotifyPlayer {
   connect(): Promise<boolean>;
   disconnect(): void;
+  /**
+   * Active le pipeline audio HTMLMediaElement interne (anti-blocage Chrome
+   * autoplay). Doit être appelé après une interaction utilisateur. Idempotent.
+   * Méthode présente depuis 2022 dans le SDK officiel.
+   */
+  activateElement(): Promise<void>;
   addListener(event: 'ready', cb: (state: { device_id: string }) => void): boolean;
   addListener(event: 'not_ready', cb: (state: { device_id: string }) => void): boolean;
   addListener(

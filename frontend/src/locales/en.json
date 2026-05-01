@@ -207,6 +207,9 @@
     "spotifyPremiumRequired": "Spotify Premium required for full-track playback.",
     "demoProviderHint": "Demo provider — audio is not auto-played. Launch the track from your own setup.",
     "forceAudioOnDevice": "Force audio on this device",
+    "pauseAudio": "Pause",
+    "resumeAudio": "Resume",
+    "restartTrack": "Restart",
     "externalScreen": {
       "openButton": "TV screen",
       "openHint": "Open the public view on external screen or new tab",
@@ -349,6 +352,7 @@
     "masterNext": "Next",
     "masterPause": "Pause",
     "masterResume": "Resume",
+    "masterRestart": "🔄 Restart",
     "masterPickRound": "Next round",
     "masterPickRoundTitle": "Pick the next playlist",
     "masterAdjust": "Adjust points",

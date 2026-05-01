@@ -35,6 +35,7 @@ import {
   masterNextTrack,
   masterPause,
   masterPickRound,
+  masterRestartTrack,
   masterResume,
   masterSkipTrack,
   postBuzz,
@@ -453,6 +454,11 @@ export function PlayPage(): JSX.Element {
       if (!identity) return;
       await masterResume(identity.sessionId, identity.token);
     });
+  const handleMasterRestart = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity || !currentRound) return;
+      await masterRestartTrack(identity.sessionId, currentRound.id, identity.token);
+    });
   const handleMasterEndSession = (): Promise<void> =>
     masterCall(async () => {
       if (!identity) return;
@@ -689,6 +695,7 @@ export function PlayPage(): JSX.Element {
                     onNextTrack={handleMasterNext}
                     onPause={handleMasterPause}
                     onResume={handleMasterResume}
+                    onRestartTrack={handleMasterRestart}
                     onEndSession={handleMasterEndSession}
                     onPickRound={() => setMasterPickerOpen(true)}
                     onAdjustPoints={() => setAdjustSheetOpen(true)}

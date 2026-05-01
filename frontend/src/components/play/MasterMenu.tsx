@@ -29,6 +29,7 @@ export interface MasterMenuProps {
   onNextTrack: () => Promise<void>;
   onPause: () => Promise<void>;
   onResume: () => Promise<void>;
+  onRestartTrack?: () => Promise<void>;
   onEndSession: () => Promise<void>;
   onPickRound: () => void; // ouvre le picker (modale gérée à l'extérieur)
   onAdjustPoints: () => void; // ouvre la sheet (modale gérée à l'extérieur)
@@ -68,6 +69,18 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
             disabled={props.busy}
           >
             ▶ {t('play.masterResume')}
+          </Button>
+        )}
+
+        {/* ── Recommencer le morceau ─────────────────────────────────── */}
+        {props.hasActiveRound && props.currentTrack && props.onRestartTrack && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void props.onRestartTrack!()}
+            disabled={props.busy}
+          >
+            🔄 {t('play.masterRestart')}
           </Button>
         )}
 

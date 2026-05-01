@@ -207,6 +207,9 @@
     "spotifyPremiumRequired": "Compte Spotify Premium requis pour la lecture full track.",
     "demoProviderHint": "Provider Demo — l'audio n'est pas joué automatiquement. Lance le morceau depuis ton propre setup.",
     "forceAudioOnDevice": "Forcer audio sur cet appareil",
+    "pauseAudio": "Pause",
+    "resumeAudio": "Reprendre",
+    "restartTrack": "Recommencer",
     "externalScreen": {
       "openButton": "Écran TV",
       "openHint": "Ouvre la vue grand public sur l'écran externe ou nouvel onglet",
@@ -349,6 +352,7 @@
     "masterNext": "Suivant",
     "masterPause": "Pause",
     "masterResume": "Reprendre",
+    "masterRestart": "🔄 Recommencer",
     "masterPickRound": "Manche suivante",
     "masterPickRoundTitle": "Choisis la prochaine playlist",
     "masterAdjust": "Ajuster les points",

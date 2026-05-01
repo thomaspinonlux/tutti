@@ -33,14 +33,23 @@ const SPOTIFY_AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
 
 // Scopes nécessaires :
-//   - user-read-email          : identifier le compte connecté
-//   - streaming                : Web Playback SDK (lecture full track)
+//   - user-read-email           : identifier le compte connecté
+//   - user-read-private         : profil compte (Premium check, country)
+//   - streaming                 : Web Playback SDK (lecture full track)
 //   - user-modify-playback-state + user-read-playback-state : contrôle play/pause
+//   - playlist-read-private + playlist-read-collaborative : catalogue user (V2+)
+//
+// Si l'utilisateur a déjà connecté Spotify avec un set de scopes plus
+// restreint, il devra se déconnecter/reconnecter pour rafraîchir le token
+// avec les nouveaux scopes.
 const SPOTIFY_SCOPES = [
   'user-read-email',
+  'user-read-private',
   'streaming',
   'user-modify-playback-state',
   'user-read-playback-state',
+  'playlist-read-private',
+  'playlist-read-collaborative',
 ].join(' ');
 
 function getConfig(): {

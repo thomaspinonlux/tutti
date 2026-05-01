@@ -17,6 +17,7 @@ import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { broadcastToSession } from '../socket/index.js';
+import { prisma } from '../lib/prisma.js';
 import {
   advanceToNextOrEndRound,
   buildAndBroadcastTrack,
@@ -121,6 +122,72 @@ router.post(
       return;
     }
     res.json({ reveal });
+  },
+);
+
+// ── POST /pause (host) ────────────────────────────────────────────────────
+// Mirror de /master/pause avec auth Supabase (mode A iPad).
+
+router.post(
+  '/pause',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    try {
+      const session = await prisma.session.update({
+        where: { id: req.params.id },
+        data: { is_paused: true },
+      });
+      broadcastToSession(req.params.id, 'session:paused', {
+        session_id: session.id,
+        requested_by: 'host',
+      });
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      console.error('[POST host/pause] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur pause' } });
+    }
+  },
+);
+
+router.post(
+  '/resume',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    try {
+      const session = await prisma.session.update({
+        where: { id: req.params.id },
+        data: { is_paused: false },
+      });
+      broadcastToSession(req.params.id, 'session:resumed', { session_id: session.id });
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      console.error('[POST host/resume] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur reprise' } });
+    }
+  },
+);
+
+// ── POST /restart-track (host) ────────────────────────────────────────────
+// Broadcast track:restart aux clients pour relancer l'audio à position_ms=0.
+
+router.post(
+  '/restart-track',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const round = await findRoundForWorkspace(req.params.roundId, req.params.id, workspaceId);
+    if (!round) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
+      return;
+    }
+    broadcastToSession(req.params.id, 'track:restart', {
+      round_id: req.params.roundId,
+      requested_by: 'host',
+    });
+    res.json({ ok: true });
   },
 );
 

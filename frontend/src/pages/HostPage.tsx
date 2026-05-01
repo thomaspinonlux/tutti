@@ -31,6 +31,9 @@ import {
   getPublicSession,
   getSession,
   giveAnswer,
+  hostPauseSession,
+  hostResumeSession,
+  hostRestartTrack,
   kickParticipant,
   moveParticipantTeam,
   nextTrack,
@@ -306,6 +309,8 @@ function HostPageInner(): JSX.Element {
             socket?.on('session:resumed', () => {
               setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
             });
+            // track:restart attaché dans un useEffect séparé pour éviter
+            // closure stale sur spotify.restartCurrentTrack (cf. ci-dessous).
             socket?.on('scores:invalidated', () => {
               if (resp.session) {
                 void getSession(resp.session.id)
@@ -361,6 +366,19 @@ function HostPageInner(): JSX.Element {
   // On charge le SDK Spotify dès qu'on est en phase de lecture. Le hook se
   // débrouille pour ignorer si aucun track:start ne demande Spotify.
   const spotify = useSpotifyPlayer({ enabled: phase === 'roundPlaying' });
+
+  // Listener track:restart séparé — re-attaché à chaque changement de socket
+  // ou de spotify pour garantir une closure fraîche sur restartCurrentTrack.
+  useEffect(() => {
+    if (!hostSocket) return;
+    const handler = (): void => {
+      void spotify.restartCurrentTrack();
+    };
+    hostSocket.on('track:restart', handler);
+    return () => {
+      hostSocket.off('track:restart', handler);
+    };
+  }, [hostSocket, spotify]);
 
   // Auto-play selon les events gameplay (Phase C : musique continue en
   // phase 2 + phase 3, ne s'arrête QUE sur phase3-skipped ou round/session end).
@@ -424,6 +442,10 @@ function HostPageInner(): JSX.Element {
     if (!session) return;
     setBusy(true);
     try {
+      // Active le pipeline audio Spotify (anti-blocage Chrome autoplay).
+      // Ce clic est la 1ʳᵉ interaction utilisateur — moment idéal pour
+      // débloquer le HTMLMediaElement interne du SDK.
+      await spotify.activate();
       await startSession(session.id);
       if (pendingRound) {
         await startRound(session.id, pendingRound.id);
@@ -437,10 +459,44 @@ function HostPageInner(): JSX.Element {
     }
   };
 
+  const handlePauseAudio = async (): Promise<void> => {
+    if (!session || !playingRound) return;
+    try {
+      await hostPauseSession(session.id, playingRound.id);
+      await spotify.pause();
+    } catch (err: unknown) {
+      console.warn('[host pause]', err);
+    }
+  };
+
+  const handleResumeAudio = async (): Promise<void> => {
+    if (!session || !playingRound) return;
+    try {
+      await hostResumeSession(session.id, playingRound.id);
+      await spotify.resume();
+    } catch (err: unknown) {
+      console.warn('[host resume]', err);
+    }
+  };
+
+  const handleRestartTrack = async (): Promise<void> => {
+    if (!session || !playingRound) return;
+    try {
+      await hostRestartTrack(session.id, playingRound.id);
+      // Le broadcast track:restart déclenche le restart côté ce client aussi
+      // (via le useEffect listener), donc pas besoin d'appel direct ici.
+    } catch (err: unknown) {
+      console.warn('[host restart]', err);
+    }
+  };
+
   const handlePickPlaylist = async (playlistId: string): Promise<void> => {
     if (!session) return;
     setBusy(true);
     try {
+      // Idempotent — réactive l'audio si l'utilisateur arrive direct depuis
+      // roundSelection (cas où handleStartSession ne s'est pas exécuté).
+      await spotify.activate();
       const round = await createRound(session.id, playlistId);
       await startRound(session.id, round.id);
       await playTrack(session.id, round.id);
@@ -713,10 +769,14 @@ function HostPageInner(): JSX.Element {
               onNextTrack={handleNextTrack}
               onEndRound={handleEndCurrentRound}
               busy={busy}
+              isPaused={session.is_paused}
               spotifyStatus={spotify.status}
               spotifyError={spotify.error}
               spotifyErrorCode={spotify.errorCode}
               onForceAudio={() => void spotify.transferToTutti()}
+              onPauseAudio={() => void handlePauseAudio()}
+              onResumeAudio={() => void handleResumeAudio()}
+              onRestartTrack={() => void handleRestartTrack()}
             />
           )}
 
@@ -950,10 +1010,14 @@ function RoundPlayingScreen({
   onNextTrack,
   onEndRound,
   busy,
+  isPaused,
   spotifyStatus,
   spotifyError,
   spotifyErrorCode,
   onForceAudio,
+  onPauseAudio,
+  onResumeAudio,
+  onRestartTrack,
 }: {
   round: SessionRoundWithPlaylist;
   cumulative: CumulativeScore[];
@@ -962,10 +1026,14 @@ function RoundPlayingScreen({
   onNextTrack: () => Promise<void>;
   onEndRound: () => Promise<void>;
   busy: boolean;
+  isPaused: boolean;
   spotifyStatus: import('../lib/useSpotifyPlayer.js').SpotifyPlayerStatus;
   spotifyError: string | null;
   spotifyErrorCode: string | null;
   onForceAudio: () => void;
+  onPauseAudio: () => void;
+  onResumeAudio: () => void;
+  onRestartTrack: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const top5 = cumulative.slice(0, 5);
@@ -1033,6 +1101,24 @@ function RoundPlayingScreen({
             {t('host.endRound')}
           </Button>
         </div>
+
+        {/* ── Contrôles audio (pause / reprendre / recommencer) ────────── */}
+        {currentTrack && (
+          <div className="mt-3 pt-3 border-t-2 border-ink/10 flex items-center justify-center gap-2 flex-wrap">
+            {!isPaused ? (
+              <Button variant="ghost" size="sm" onClick={onPauseAudio} disabled={busy}>
+                ⏸️ {t('host.pauseAudio')}
+              </Button>
+            ) : (
+              <Button variant="primary" size="sm" onClick={onResumeAudio} disabled={busy}>
+                ▶️ {t('host.resumeAudio')}
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={onRestartTrack} disabled={busy}>
+              🔄 {t('host.restartTrack')}
+            </Button>
+          </div>
+        )}
       </Card>
 
       {/* ── Colonne droite : classement + buzz feed ──────────────────── */}

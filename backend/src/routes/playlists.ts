@@ -80,7 +80,7 @@ async function findOrCreateArtist(canonicalName: string): Promise<{ id: string }
   return prisma.artist.create({
     data: {
       canonical_name: canonicalName,
-      aliases: generateAliases(canonicalName),
+      aliases: generateAliases(canonicalName, 'artist'),
     },
     select: { id: true },
   });

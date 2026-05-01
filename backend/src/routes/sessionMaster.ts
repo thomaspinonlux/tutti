@@ -274,6 +274,27 @@ router.post('/resume', async (req: Request<{ id: string }>, res: Response): Prom
   }
 });
 
+// ── POST /restart-track ──────────────────────────────────────────────────
+// "Recommencer le morceau" : broadcast track:restart aux clients pour qu'ils
+// relancent l'audio Spotify à position_ms=0. Ne change pas la phase ni le
+// timer côté serveur (V1 simple). Le master assume que l'erreur est rare.
+
+router.post(
+  '/restart-track',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = roundIdSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'round_id requis' } });
+      return;
+    }
+    broadcastToSession(req.params.id, 'track:restart', {
+      round_id: parsed.data.round_id,
+      requested_by: req.master!.pseudo,
+    });
+    res.json({ ok: true });
+  },
+);
+
 // ── POST /end-round ───────────────────────────────────────────────────────
 
 router.post('/end-round', async (req: Request<{ id: string }>, res: Response): Promise<void> => {

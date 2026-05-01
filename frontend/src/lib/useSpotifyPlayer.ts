@@ -55,6 +55,12 @@ export interface UseSpotifyPlayerResult {
   /** Force le transfert de la lecture sur le device Tutti (utile si l'audio
    * sort sur un autre device — téléphone, autre app desktop). */
   transferToTutti: () => Promise<boolean>;
+  /** Active le pipeline audio HTMLMediaElement du SDK. À appeler après une
+   * vraie interaction utilisateur (clic) pour débloquer Chrome/Safari
+   * autoplay policy. Idempotent. */
+  activate: () => Promise<boolean>;
+  /** Recommence le morceau courant depuis le début (position_ms = 0). */
+  restartCurrentTrack: () => Promise<boolean>;
 }
 
 /**
@@ -142,6 +148,7 @@ export function useSpotifyPlayer({
 
     const init = async (): Promise<void> => {
       try {
+        console.info('[Spotify SDK] Initialisation du player…');
         setStatus('loading_token');
         // Préchauffe le token pour vérifier qu'on est connecté avant de
         // charger le SDK (et pour donner un message d'erreur clair sinon).
@@ -149,8 +156,14 @@ export function useSpotifyPlayer({
           const initialToken = await getSpotifyToken();
           tokenRef.current = initialToken.access_token;
           tokenExpiresAtRef.current = new Date(initialToken.expires_at).getTime();
+          console.info(
+            '[Spotify SDK] Token récupéré (expire dans',
+            Math.round((tokenExpiresAtRef.current - Date.now()) / 1000),
+            's)',
+          );
         } catch (err) {
           const msg = err instanceof Error ? err.message : '';
+          console.error('[Spotify SDK] Token fetch failed:', msg);
           if (msg.includes('NOT_CONNECTED') || msg.includes('non connecté')) {
             fail('NOT_CONNECTED', 'Spotify non connecté à ce workspace.');
           } else {
@@ -161,6 +174,7 @@ export function useSpotifyPlayer({
         if (cancelled) return;
 
         setStatus('loading_sdk');
+        console.info('[Spotify SDK] Chargement du SDK script…');
         await loadSpotifySdk();
         if (cancelled) return;
 
@@ -168,6 +182,7 @@ export function useSpotifyPlayer({
           fail('SDK_UNAVAILABLE', 'Spotify SDK indisponible.');
           return;
         }
+        console.info('[Spotify SDK] SDK chargé');
 
         setStatus('connecting');
         player = new window.Spotify.Player({
@@ -178,23 +193,52 @@ export function useSpotifyPlayer({
           volume: initialVolume,
         });
         playerRef.current = player;
+        console.info('[Spotify SDK] Player créé : Tutti Tracks - Soirée');
 
         player.addListener('ready', ({ device_id }) => {
           if (cancelled) return;
+          console.info('[Spotify SDK] Ready event - Device ID:', device_id);
           setDeviceId(device_id);
           setStatus('ready');
-          // Transfert explicite de la lecture sur ce device — Spotify peut
-          // avoir un autre device actif (téléphone, app desktop) et play()
-          // tomberait silencieusement dessus. On force l'audio sur Tutti.
+          // ⚠️ activateElement() : indispensable sur Chrome/Safari pour
+          // débloquer la pipeline audio HTMLMediaElement interne au SDK.
+          // Sans ça, le device apparaît dans Spotify Connect mais aucun son.
+          // Cette méthode doit être appelée après une interaction utilisateur
+          // au moins une fois (Chrome autoplay policy). On la rappellera
+          // depuis activate() au clic "Démarrer le blind test".
+          if (player) {
+            void player.activateElement().then(
+              () => console.info('[Spotify SDK] activateElement OK (auto)'),
+              (err) =>
+                console.warn('[Spotify SDK] activateElement auto failed (need user click):', err),
+            );
+          }
+          // Transfert explicite de la lecture sur ce device.
           void transferPlaybackInternal(device_id, false);
           // Si un play était en attente, on le déclenche
           const pending = pendingPlayRef.current;
           pendingPlayRef.current = null;
           if (pending) void play(pending);
         });
-        player.addListener('not_ready', () => {
+        player.addListener('not_ready', ({ device_id }) => {
           if (cancelled) return;
+          console.warn('[Spotify SDK] not_ready - Device ID:', device_id);
           setDeviceId(null);
+        });
+        player.addListener('player_state_changed', (state) => {
+          if (!state) return;
+          const trackName = state.track_window?.current_track?.name;
+          const artistName = state.track_window?.current_track?.artists?.[0]?.name;
+          console.info(
+            '[Spotify SDK] state_changed - paused:',
+            state.paused,
+            '| position:',
+            state.position,
+            '| track:',
+            trackName,
+            '-',
+            artistName,
+          );
         });
         player.addListener('initialization_error', ({ message }) =>
           fail('INIT_ERROR', `Init: ${message}`),
@@ -249,6 +293,13 @@ export function useSpotifyPlayer({
     autoplay: boolean,
   ): Promise<boolean> => {
     if (!tokenRef.current) return false;
+    console.info(
+      '[Spotify Transfer] Tentative transfer vers device',
+      targetDeviceId,
+      '(autoplay:',
+      autoplay,
+      ')',
+    );
     try {
       const res = await fetch(`${SPOTIFY_API}/me/player`, {
         method: 'PUT',
@@ -258,7 +309,10 @@ export function useSpotifyPlayer({
         },
         body: JSON.stringify({ device_ids: [targetDeviceId], play: autoplay }),
       });
+      console.info('[Spotify Transfer] Response status:', res.status);
       if (res.status === 204 || res.ok) return true;
+      const body = await res.text().catch(() => '');
+      console.warn('[Spotify Transfer] Failed body:', body);
       if (res.status === 401) {
         tokenRef.current = null;
         tokenExpiresAtRef.current = 0;
@@ -269,11 +323,11 @@ export function useSpotifyPlayer({
         // Pas de session active sur ce compte → pas grave, le play() suivant
         // déclenchera la lecture directement.
       } else {
-        console.warn('[spotify transferPlayback] failed', res.status);
+        console.warn('[Spotify Transfer] unexpected status', res.status);
       }
       return false;
     } catch (err) {
-      console.warn('[spotify transferPlayback] network error', err);
+      console.warn('[Spotify Transfer] network error', err);
       return false;
     }
   };
@@ -283,11 +337,69 @@ export function useSpotifyPlayer({
     return transferPlaybackInternal(deviceId, true);
   };
 
+  /**
+   * Active explicitement le pipeline audio HTMLMediaElement du SDK.
+   * Doit être appelé après une vraie interaction utilisateur (clic) pour
+   * débloquer Chrome/Safari autoplay policy. Idempotent (peut être appelé
+   * plusieurs fois sans effet de bord).
+   */
+  const activate = async (): Promise<boolean> => {
+    const p = playerRef.current;
+    if (!p) {
+      console.warn('[Spotify SDK] activateElement non disponible (player pas prêt)');
+      return false;
+    }
+    try {
+      await p.activateElement();
+      console.info('[Spotify SDK] activateElement OK (post user click)');
+      // Re-transfert pour garantir que le device Tutti est bien actif
+      if (deviceId) {
+        await transferPlaybackInternal(deviceId, false);
+      }
+      return true;
+    } catch (err) {
+      console.error('[Spotify SDK] activateElement failed:', err);
+      return false;
+    }
+  };
+
+  /** Recommence le morceau courant depuis le début (position_ms = 0). */
+  const restartCurrentTrack = async (): Promise<boolean> => {
+    if (!deviceId || !tokenRef.current) return false;
+    console.info('[Spotify Play] Restart current track at position_ms=0');
+    try {
+      const res = await fetch(
+        `${SPOTIFY_API}/me/player/seek?position_ms=0&device_id=${encodeURIComponent(deviceId)}`,
+        {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${tokenRef.current}` },
+        },
+      );
+      console.info('[Spotify Play] Seek response status:', res.status);
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        console.warn('[Spotify Play] Seek failed:', body);
+        return false;
+      }
+      // Force play après le seek (au cas où on était en pause).
+      await fetch(`${SPOTIFY_API}/me/player/play?device_id=${encodeURIComponent(deviceId)}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${tokenRef.current}` },
+      });
+      return true;
+    } catch (err) {
+      console.warn('[Spotify Play] restart error:', err);
+      return false;
+    }
+  };
+
   const play = async (spotifyUri: string): Promise<boolean> => {
     if (!deviceId || !tokenRef.current) {
+      console.info('[Spotify Play] Device pas prêt, mise en file:', spotifyUri);
       pendingPlayRef.current = spotifyUri;
       return false;
     }
+    console.info('[Spotify Play] Tentative play sur device', deviceId, 'avec URI:', spotifyUri);
     const res = await fetch(
       `${SPOTIFY_API}/me/player/play?device_id=${encodeURIComponent(deviceId)}`,
       {
@@ -296,9 +408,11 @@ export function useSpotifyPlayer({
           Authorization: `Bearer ${tokenRef.current}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ uris: [spotifyUri] }),
+        body: JSON.stringify({ uris: [spotifyUri], position_ms: 0 }),
       },
     );
+    console.info('[Spotify Play] Response status:', res.status);
+    if (res.status === 204 || res.ok) return true;
     if (res.status === 401) {
       // Token expiré → invalide le cache, le SDK redemandera un token frais
       tokenRef.current = null;
@@ -310,12 +424,17 @@ export function useSpotifyPlayer({
       setError('Lecture refusée — Compte Spotify Premium requis pour le full playback.');
       return false;
     }
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      console.warn('[spotify play] failed', res.status, text);
+    if (res.status === 404) {
+      // Device perdu (pas dispo côté Spotify Connect) — peut arriver si
+      // l'utilisateur a fermé un onglet ailleurs. On force un re-transfer.
+      console.warn('[Spotify Play] Device 404 — re-transfer puis retry');
+      const ok = await transferPlaybackInternal(deviceId, false);
+      if (ok) return play(spotifyUri);
       return false;
     }
-    return true;
+    const text = await res.text().catch(() => '');
+    console.warn('[Spotify Play] Failed body:', text);
+    return false;
   };
 
   const pause = async (): Promise<void> => {
@@ -323,6 +442,7 @@ export function useSpotifyPlayer({
     if (p) {
       try {
         await p.pause();
+        console.info('[Spotify Play] Paused');
       } catch (err) {
         console.warn('[spotify pause] failed', err);
       }
@@ -334,11 +454,23 @@ export function useSpotifyPlayer({
     if (p) {
       try {
         await p.resume();
+        console.info('[Spotify Play] Resumed');
       } catch (err) {
         console.warn('[spotify resume] failed', err);
       }
     }
   };
 
-  return { status, deviceId, error, errorCode, play, pause, resume, transferToTutti };
+  return {
+    status,
+    deviceId,
+    error,
+    errorCode,
+    play,
+    pause,
+    resume,
+    transferToTutti,
+    activate,
+    restartCurrentTrack,
+  };
 }

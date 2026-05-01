@@ -24,8 +24,17 @@ function basicNormalize(s: string): string {
 /**
  * Génère les aliases initiaux pour un nom d'artiste / titre.
  * Toujours dédupliqué + jamais vide (au minimum la version normalisée).
+ *
+ * Règles génériques (artist + title) :
+ *   - version originale + version normalisée
+ *   - sans article en tête (the/le/la/les)
+ *   - sans suffixe feat./ft./& (ne garde que la partie principale)
+ *
+ * Règles spécifiques artiste (mode='artist') :
+ *   - dernier mot (souvent nom de famille — "Cabrel" pour "Francis Cabrel")
+ *   - premier mot (souvent prénom — "Francis")
  */
-export function generateAliases(raw: string): string[] {
+export function generateAliases(raw: string, mode: 'artist' | 'title' = 'title'): string[] {
   const set = new Set<string>();
   const trimmed = raw.trim();
   if (!trimmed) return [];
@@ -45,6 +54,20 @@ export function generateAliases(raw: string): string[] {
   if (lead && lead !== trimmed) {
     set.add(lead);
     set.add(basicNormalize(lead));
+  }
+
+  // Pour un artiste : ajouter dernier + premier mot (nom famille / prénom)
+  if (mode === 'artist') {
+    const baseForSplit = lead || trimmed;
+    const words = baseForSplit.split(/\s+/u).filter((w) => w.length > 0);
+    if (words.length >= 2) {
+      const last = words[words.length - 1]!;
+      const first = words[0]!;
+      set.add(last);
+      set.add(basicNormalize(last));
+      set.add(first);
+      set.add(basicNormalize(first));
+    }
   }
 
   return [...set].filter((s) => s.length >= 2);

@@ -229,6 +229,29 @@ export async function postBuzz(
   );
 }
 
+// ───── Host (Supabase auth) — pause/resume/restart audio ──────────────────
+
+export async function hostPauseSession(sessionId: string, roundId: string): Promise<void> {
+  await api(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/pause`,
+    { method: 'POST' },
+  );
+}
+
+export async function hostResumeSession(sessionId: string, roundId: string): Promise<void> {
+  await api(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/resume`,
+    { method: 'POST' },
+  );
+}
+
+export async function hostRestartTrack(sessionId: string, roundId: string): Promise<void> {
+  await api(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/restart-track`,
+    { method: 'POST' },
+  );
+}
+
 // ───── Tutti Quizz gameplay (étape 15) ────────────────────────────────────
 
 export async function playQuestion(
@@ -361,6 +384,18 @@ export async function masterResume(sessionId: string, token: string): Promise<vo
   await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/resume`, {
     method: 'POST',
     body: { token },
+    anonymous: true,
+  });
+}
+
+export async function masterRestartTrack(
+  sessionId: string,
+  roundId: string,
+  token: string,
+): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/restart-track`, {
+    method: 'POST',
+    body: { token, round_id: roundId },
     anonymous: true,
   });
 }
