@@ -35,6 +35,36 @@ const PORT = Number(process.env.PORT ?? 3001);
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
 
+/**
+ * CORS whitelist — origines autorisées à appeler l'API + Socket.IO.
+ *
+ * Prod : domaines custom + URL Vercel temporaire pour debug.
+ * Dev  : localhost (Vite par défaut + 3000 si jamais).
+ *
+ * On accepte en plus FRONTEND_URL si configuré (override env), et tous les
+ * sous-domaines *.vercel.app pour les preview deploys.
+ */
+const STATIC_ALLOWED_ORIGINS = [
+  'https://tuttiparty.app',
+  'https://www.tuttiparty.app',
+  'https://tutti-brown.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+const allowedOrigins = new Set(STATIC_ALLOWED_ORIGINS);
+if (FRONTEND_URL) allowedOrigins.add(FRONTEND_URL);
+
+function isOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return true; // requêtes server-to-server / curl / sans Origin header
+  if (allowedOrigins.has(origin)) return true;
+  // Preview deploys Vercel : *.vercel.app appartenant au projet tutti
+  if (/^https:\/\/tutti-[a-z0-9-]+\.vercel\.app$/.test(origin)) return true;
+  return false;
+}
+
+export { isOriginAllowed };
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -42,7 +72,10 @@ const httpServer = createServer(app);
 
 app.use(
   cors({
-    origin: FRONTEND_URL,
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) return callback(null, true);
+      callback(new Error(`CORS blocked: origin ${origin} not allowed`));
+    },
     credentials: true,
   }),
 );

@@ -79,13 +79,39 @@ interface AuthedSocket extends Socket {
   identity?: SocketIdentity;
 }
 
+/**
+ * CORS Socket.IO — même whitelist que l'API REST. Cf. server.ts.
+ * On duplique ici car ce module est importé en premier par server.ts et on
+ * évite l'import circulaire.
+ */
+const STATIC_ALLOWED_ORIGINS = [
+  'https://tuttiparty.app',
+  'https://www.tuttiparty.app',
+  'https://tutti-brown.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
+const allowedOrigins = new Set([...STATIC_ALLOWED_ORIGINS, FRONTEND_URL]);
+
+function isOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return true;
+  if (allowedOrigins.has(origin)) return true;
+  if (/^https:\/\/tutti-[a-z0-9-]+\.vercel\.app$/.test(origin)) return true;
+  return false;
+}
 
 let io: SocketIOServer | null = null;
 
 export function initSocketIO(httpServer: HttpServer): SocketIOServer {
   io = new SocketIOServer(httpServer, {
-    cors: { origin: FRONTEND_URL, credentials: true },
+    cors: {
+      origin: (origin, callback) => {
+        if (isOriginAllowed(origin)) return callback(null, true);
+        callback(new Error(`CORS blocked: origin ${origin} not allowed`));
+      },
+      credentials: true,
+    },
     transports: ['websocket', 'polling'],
   });
 
