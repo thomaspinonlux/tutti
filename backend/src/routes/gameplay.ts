@@ -115,7 +115,7 @@ router.post(
       res.status(409).json({
         error: {
           code: 'INVALID_PHASE',
-          message: "Le morceau ne peut être révélé que pendant l'écoute (phase 1)",
+          message: 'Le morceau ne peut être révélé que pendant les phases 1 ou 2',
         },
       });
       return;

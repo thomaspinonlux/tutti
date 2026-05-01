@@ -211,9 +211,9 @@ export async function revealCurrentTrack(
   roundId: string,
 ): Promise<{ artist: string; title: string; track_index: number } | null> {
   const active = getActiveTrack(roundId);
-  // "Donner la réponse" n'a de sens qu'en phase1 (pas encore de bonne
-  // réponse). En phase2/3, on a déjà des réponses ou on est en festif.
-  if (!active || active.phase !== 'phase1') return null;
+  // "Donner la réponse" : permis en phase1 (personne n'a buzzé) et phase2
+  // (fenêtre retardataires — abrège l'attente). Refusé en phase3+ (déjà révélé).
+  if (!active || (active.phase !== 'phase1' && active.phase !== 'phase2')) return null;
 
   const track = await prisma.track.findUnique({
     where: { id: active.track_id },

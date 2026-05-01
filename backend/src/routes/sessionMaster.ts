@@ -227,7 +227,7 @@ const giveAnswerHandler = async (req: Request<{ id: string }>, res: Response): P
     res.status(409).json({
       error: {
         code: 'INVALID_PHASE',
-        message: "Le morceau ne peut être révélé que pendant l'écoute",
+        message: 'Le morceau ne peut être révélé que pendant les phases 1 ou 2',
       },
     });
     return;
