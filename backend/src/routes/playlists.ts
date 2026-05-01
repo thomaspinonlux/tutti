@@ -667,6 +667,189 @@ router.delete(
   },
 );
 
+// ── POST /:id/import-tracks (bulk) ───────────────────────────────────────
+// Import en lot — ajoute jusqu'à 500 tracks Spotify dans la playlist Tutti.
+// Idempotent : skip les tracks déjà dans la playlist (par provider+id).
+// Auto-create Artist + Track + aliases.
+
+const importTracksSchema = z.object({
+  provider: z.enum(['demo', 'spotify', 'deezer', 'apple_music']),
+  /** Liste de provider_track_id à importer (max 500). */
+  provider_track_ids: z.array(z.string().min(1).max(128)).min(1).max(500),
+});
+
+router.post(
+  '/:id/import-tracks',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const id = req.params.id;
+    const parsed = importTracksSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Body invalide',
+          details: parsed.error.flatten(),
+        },
+      });
+      return;
+    }
+    try {
+      const own = await ensureOwnPlaylist(id, workspaceId);
+      if (!own) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Playlist introuvable' } });
+        return;
+      }
+      const credentials = await prisma.musicProviderCredential.findUnique({
+        where: {
+          workspace_id_provider: { workspace_id: workspaceId, provider: parsed.data.provider },
+        },
+      });
+      const providerInst = getProvider(parsed.data.provider, {
+        workspaceId,
+        credentials: credentials
+          ? {
+              access_token: credentials.access_token,
+              refresh_token: credentials.refresh_token,
+              expires_at: credentials.expires_at,
+            }
+          : null,
+      });
+
+      // Position de départ pour les nouveaux ajouts
+      const last = await prisma.playlistTrack.findFirst({
+        where: { playlist_id: id },
+        orderBy: { position: 'desc' },
+        select: { position: true },
+      });
+      let nextPosition = (last?.position ?? -1) + 1;
+
+      let imported = 0;
+      let skipped = 0;
+      const errors: Array<{ provider_track_id: string; error: string }> = [];
+
+      for (const providerTrackId of parsed.data.provider_track_ids) {
+        try {
+          const meta = await providerInst.getTrack(providerTrackId);
+          if (!meta) {
+            errors.push({ provider_track_id: providerTrackId, error: 'NOT_FOUND' });
+            continue;
+          }
+          const artist = await findOrCreateArtist(meta.artist);
+          const track = await findOrCreateTrack(meta.provider, meta.provider_track_id, artist.id, {
+            canonical_title: meta.title,
+            album: meta.album ?? null,
+            year: meta.year ?? null,
+            popularity: meta.popularity ?? null,
+            duration_ms: meta.duration_ms ?? null,
+            cover_url: meta.cover_url ?? null,
+          });
+          // Idempotence : skip si déjà dans cette playlist
+          const alreadyIn = await prisma.playlistTrack.findUnique({
+            where: { playlist_id_track_id: { playlist_id: id, track_id: track.id } },
+            select: { id: true },
+          });
+          if (alreadyIn) {
+            skipped++;
+            continue;
+          }
+          await prisma.playlistTrack.create({
+            data: { playlist_id: id, track_id: track.id, position: nextPosition },
+          });
+          nextPosition++;
+          imported++;
+        } catch (err: unknown) {
+          errors.push({
+            provider_track_id: providerTrackId,
+            error: err instanceof Error ? err.message : 'UNKNOWN',
+          });
+        }
+      }
+
+      if (imported > 0) await recomputePlaylistLevel(id);
+      res.json({ imported, skipped, errors });
+    } catch (err: unknown) {
+      console.error('[POST /playlists/:id/import-tracks]', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur import bulk' } });
+    }
+  },
+);
+
+// ── POST /duplicates-check ───────────────────────────────────────────────
+// Vérifie pour une liste de tracks (artist+title) ceux qui sont déjà dans
+// au moins une playlist du workspace. Retourne pour chaque un flag + nom
+// de la playlist cible.
+
+const duplicatesCheckSchema = z.object({
+  candidates: z
+    .array(
+      z.object({
+        provider_track_id: z.string().optional(),
+        artist: z.string().min(1).max(120),
+        title: z.string().min(1).max(200),
+      }),
+    )
+    .min(1)
+    .max(500),
+});
+
+router.post('/duplicates-check', async (req: Request, res: Response): Promise<void> => {
+  const workspaceId = req.workspaceId!;
+  const parsed = duplicatesCheckSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+    return;
+  }
+  try {
+    // Charge tous les playlist_tracks du workspace avec artist+title
+    // Relation : PlaylistTrack → Playlist → Establishment (workspace_id)
+    const allInWorkspace = await prisma.playlistTrack.findMany({
+      where: { playlist: { establishment: { workspace_id: workspaceId } } },
+      include: {
+        playlist: { select: { id: true, name: true } },
+        track: {
+          select: {
+            canonical_title: true,
+            artist: { select: { canonical_name: true } },
+          },
+        },
+      },
+    });
+    // Indexe par clé normalisée (artist+title)
+    const normalize = (s: string): string =>
+      s
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/\s*\([^)]*\)\s*/g, ' ')
+        .replace(/[^a-z0-9 ]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    const index = new Map<string, { playlist_id: string; playlist_name: string }>();
+    for (const pt of allInWorkspace) {
+      const key = `${normalize(pt.track.artist.canonical_name)}|${normalize(pt.track.canonical_title)}`;
+      if (!index.has(key)) {
+        index.set(key, { playlist_id: pt.playlist.id, playlist_name: pt.playlist.name });
+      }
+    }
+    const results = parsed.data.candidates.map((c) => {
+      const key = `${normalize(c.artist)}|${normalize(c.title)}`;
+      const found = index.get(key);
+      return {
+        provider_track_id: c.provider_track_id,
+        artist: c.artist,
+        title: c.title,
+        duplicate: !!found,
+        existing_playlist: found ?? null,
+      };
+    });
+    res.json({ results });
+  } catch (err: unknown) {
+    console.error('[POST /playlists/duplicates-check]', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur duplicates check' } });
+  }
+});
+
 export default router;
 
 // Re-export for type checking only — callers should import from @tutti/shared.

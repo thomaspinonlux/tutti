@@ -44,10 +44,53 @@ interface SpotifyTrackApi {
   duration_ms: number;
   popularity: number;
   preview_url: string | null;
+  explicit?: boolean;
+  is_local?: boolean;
 }
 
 interface SpotifySearchResponse {
-  tracks: { items: SpotifyTrackApi[] };
+  tracks: { items: SpotifyTrackApi[]; total?: number; next?: string | null };
+}
+
+interface SpotifyPlaylistApi {
+  id: string;
+  name: string;
+  description?: string | null;
+  public?: boolean | null;
+  collaborative?: boolean;
+  images?: Array<{ url: string; width: number | null; height: number | null }>;
+  owner: { id: string; display_name?: string | null };
+  tracks: { total: number };
+  followers?: { total: number };
+}
+
+export interface SpotifyPlaylistSummary {
+  id: string;
+  name: string;
+  description: string | null;
+  cover_url: string | null;
+  owner_name: string;
+  owner_id: string;
+  tracks_count: number;
+  is_public: boolean;
+  is_collaborative: boolean;
+  followers_count: number | null;
+}
+
+function toPlaylistSummary(p: SpotifyPlaylistApi): SpotifyPlaylistSummary {
+  const cover = p.images?.[0]?.url ?? null;
+  return {
+    id: p.id,
+    name: p.name,
+    description: p.description ?? null,
+    cover_url: cover,
+    owner_name: p.owner.display_name ?? p.owner.id,
+    owner_id: p.owner.id,
+    tracks_count: p.tracks.total,
+    is_public: p.public ?? false,
+    is_collaborative: p.collaborative ?? false,
+    followers_count: p.followers?.total ?? null,
+  };
 }
 
 export class SpotifyProvider implements MusicProvider {
@@ -74,6 +117,121 @@ export class SpotifyProvider implements MusicProvider {
 
     const data = await this.spotifyFetch<SpotifySearchResponse>(`/search?${params.toString()}`);
     return data.tracks.items.map(toTrackResult);
+  }
+
+  /**
+   * Recherche tracks avancée — combine artist, track, year_min/max, genre via
+   * les query operators Spotify (artist:"x" track:"y" year:1990-1999 genre:rock).
+   */
+  async searchTracksAdvanced(opts: {
+    artist?: string;
+    track?: string;
+    year_min?: number;
+    year_max?: number;
+    genre?: string;
+    market?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ items: TrackResult[]; total: number; next: string | null }> {
+    const parts: string[] = [];
+    if (opts.artist) parts.push(`artist:"${opts.artist.replace(/"/g, '')}"`);
+    if (opts.track) parts.push(`track:"${opts.track.replace(/"/g, '')}"`);
+    if (opts.genre) parts.push(`genre:"${opts.genre.replace(/"/g, '')}"`);
+    if (opts.year_min && opts.year_max) {
+      parts.push(`year:${opts.year_min}-${opts.year_max}`);
+    } else if (opts.year_min) {
+      parts.push(`year:${opts.year_min}-${new Date().getFullYear()}`);
+    } else if (opts.year_max) {
+      parts.push(`year:1900-${opts.year_max}`);
+    }
+    const q = parts.join(' ').trim();
+    if (!q) return { items: [], total: 0, next: null };
+
+    const params = new URLSearchParams({
+      q,
+      type: 'track',
+      limit: String(Math.min(opts.limit ?? 20, 50)),
+      offset: String(opts.offset ?? 0),
+    });
+    if (opts.market) params.set('market', opts.market);
+
+    const data = await this.spotifyFetch<SpotifySearchResponse>(`/search?${params.toString()}`);
+    return {
+      items: data.tracks.items.map(toTrackResult),
+      total: data.tracks.total ?? 0,
+      next: data.tracks.next ?? null,
+    };
+  }
+
+  /** Récupère les playlists de l'utilisateur connecté (paginé). */
+  async getMyPlaylists(opts: { limit?: number; offset?: number } = {}): Promise<{
+    items: SpotifyPlaylistSummary[];
+    total: number;
+    next: string | null;
+  }> {
+    const params = new URLSearchParams({
+      limit: String(Math.min(opts.limit ?? 20, 50)),
+      offset: String(opts.offset ?? 0),
+    });
+    const data = await this.spotifyFetch<{
+      items: SpotifyPlaylistApi[];
+      total: number;
+      next: string | null;
+    }>(`/me/playlists?${params.toString()}`);
+    return {
+      items: data.items.map(toPlaylistSummary),
+      total: data.total,
+      next: data.next,
+    };
+  }
+
+  /** Recherche de playlists publiques. */
+  async searchPlaylists(opts: {
+    query: string;
+    market?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ items: SpotifyPlaylistSummary[]; total: number; next: string | null }> {
+    if (!opts.query.trim()) return { items: [], total: 0, next: null };
+    const params = new URLSearchParams({
+      q: opts.query,
+      type: 'playlist',
+      limit: String(Math.min(opts.limit ?? 20, 50)),
+      offset: String(opts.offset ?? 0),
+    });
+    if (opts.market) params.set('market', opts.market);
+    const data = await this.spotifyFetch<{
+      playlists: { items: SpotifyPlaylistApi[]; total: number; next: string | null };
+    }>(`/search?${params.toString()}`);
+    return {
+      items: data.playlists.items.map(toPlaylistSummary),
+      total: data.playlists.total,
+      next: data.playlists.next,
+    };
+  }
+
+  /** Récupère les tracks d'une playlist Spotify (paginé). */
+  async getPlaylistTracks(
+    playlistId: string,
+    opts: { limit?: number; offset?: number; market?: string } = {},
+  ): Promise<{ items: TrackResult[]; total: number; next: string | null }> {
+    const params = new URLSearchParams({
+      limit: String(Math.min(opts.limit ?? 50, 100)),
+      offset: String(opts.offset ?? 0),
+      fields:
+        'total,next,items(track(id,name,artists,album(name,images,release_date),duration_ms,popularity,explicit,is_local))',
+    });
+    if (opts.market) params.set('market', opts.market);
+    const data = await this.spotifyFetch<{
+      items: Array<{ track: SpotifyTrackApi | null }>;
+      total: number;
+      next: string | null;
+    }>(`/playlists/${encodeURIComponent(playlistId)}/tracks?${params.toString()}`);
+    const items = data.items
+      .map((it) => it.track)
+      .filter((t): t is SpotifyTrackApi => t !== null && !t.is_local)
+      .map(toTrackResult);
+    return { items, total: data.total, next: data.next };
   }
 
   async getTrack(providerTrackId: string): Promise<TrackResult | null> {

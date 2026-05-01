@@ -28,6 +28,7 @@ import gameplayParticipantRouter from './routes/gameplayParticipant.js';
 import gameplayQuizzRouter from './routes/gameplayQuizz.js';
 import sessionMasterRouter from './routes/sessionMaster.js';
 import spotifyAuthRouter from './music/spotify/auth.js';
+import spotifyApiRouter from './routes/spotify.js';
 import { prisma } from './lib/prisma.js';
 import { initSocketIO } from './socket/index.js';
 
@@ -146,6 +147,7 @@ app.use('/api/sessions/:id/rounds/:roundId', gameplayParticipantRouter);
 app.use('/api/sessions/:id/quizz', gameplayQuizzRouter);
 app.use('/api/sessions/:id/master', sessionMasterRouter);
 app.use('/api/auth/spotify', spotifyAuthRouter);
+app.use('/api/spotify', spotifyApiRouter);
 
 // 404 par défaut
 app.use((_req, res) => {
