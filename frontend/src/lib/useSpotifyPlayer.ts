@@ -52,6 +52,9 @@ export interface UseSpotifyPlayerResult {
   play: (spotifyUri: string) => Promise<boolean>;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
+  /** Force le transfert de la lecture sur le device Tutti (utile si l'audio
+   * sort sur un autre device — téléphone, autre app desktop). */
+  transferToTutti: () => Promise<boolean>;
 }
 
 /**
@@ -168,7 +171,7 @@ export function useSpotifyPlayer({
 
         setStatus('connecting');
         player = new window.Spotify.Player({
-          name: 'Tutti Host',
+          name: 'Tutti Tracks - Soirée',
           getOAuthToken: (cb) => {
             void fetchToken(cb);
           },
@@ -180,6 +183,10 @@ export function useSpotifyPlayer({
           if (cancelled) return;
           setDeviceId(device_id);
           setStatus('ready');
+          // Transfert explicite de la lecture sur ce device — Spotify peut
+          // avoir un autre device actif (téléphone, app desktop) et play()
+          // tomberait silencieusement dessus. On force l'audio sur Tutti.
+          void transferPlaybackInternal(device_id, false);
           // Si un play était en attente, on le déclenche
           const pending = pendingPlayRef.current;
           pendingPlayRef.current = null;
@@ -230,6 +237,51 @@ export function useSpotifyPlayer({
   }, [enabled]);
 
   // ── Actions ────────────────────────────────────────────────────────────
+
+  /**
+   * Transfère la lecture sur le device Tutti via PUT /me/player.
+   * Appelé automatiquement au ready event + manuellement via le bouton
+   * "Forcer audio sur cet appareil" (fallback si le transfert auto échoue
+   * silencieusement, p. ex. browser permissions audio).
+   */
+  const transferPlaybackInternal = async (
+    targetDeviceId: string,
+    autoplay: boolean,
+  ): Promise<boolean> => {
+    if (!tokenRef.current) return false;
+    try {
+      const res = await fetch(`${SPOTIFY_API}/me/player`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${tokenRef.current}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ device_ids: [targetDeviceId], play: autoplay }),
+      });
+      if (res.status === 204 || res.ok) return true;
+      if (res.status === 401) {
+        tokenRef.current = null;
+        tokenExpiresAtRef.current = 0;
+      } else if (res.status === 403) {
+        setErrorCode('PREMIUM_REQUIRED');
+        setError('Compte Spotify Premium requis pour la lecture.');
+      } else if (res.status === 404) {
+        // Pas de session active sur ce compte → pas grave, le play() suivant
+        // déclenchera la lecture directement.
+      } else {
+        console.warn('[spotify transferPlayback] failed', res.status);
+      }
+      return false;
+    } catch (err) {
+      console.warn('[spotify transferPlayback] network error', err);
+      return false;
+    }
+  };
+
+  const transferToTutti = async (): Promise<boolean> => {
+    if (!deviceId) return false;
+    return transferPlaybackInternal(deviceId, true);
+  };
 
   const play = async (spotifyUri: string): Promise<boolean> => {
     if (!deviceId || !tokenRef.current) {
@@ -288,5 +340,5 @@ export function useSpotifyPlayer({
     }
   };
 
-  return { status, deviceId, error, errorCode, play, pause, resume };
+  return { status, deviceId, error, errorCode, play, pause, resume, transferToTutti };
 }

@@ -206,6 +206,7 @@
     "spotifyNotConnected": "Spotify account not linked to this workspace. Go to Settings → Spotify.",
     "spotifyPremiumRequired": "Spotify Premium required for full-track playback.",
     "demoProviderHint": "Demo provider — audio is not auto-played. Launch the track from your own setup.",
+    "forceAudioOnDevice": "Force audio on this device",
     "masterSectionLabel": "Game animator",
     "masterPickHint": "Mode B: pick a player as the animator — they'll run the game from their phone (next track, pause, adjust points). The Start button unlocks once an animator is picked.",
     "masterPickedHint": "{{pseudo}} will run the game from their phone. You can swap animators any time before the game starts.",

@@ -713,6 +713,7 @@ function HostPageInner(): JSX.Element {
               spotifyStatus={spotify.status}
               spotifyError={spotify.error}
               spotifyErrorCode={spotify.errorCode}
+              onForceAudio={() => void spotify.transferToTutti()}
             />
           )}
 
@@ -949,6 +950,7 @@ function RoundPlayingScreen({
   spotifyStatus,
   spotifyError,
   spotifyErrorCode,
+  onForceAudio,
 }: {
   round: SessionRoundWithPlaylist;
   cumulative: CumulativeScore[];
@@ -960,6 +962,7 @@ function RoundPlayingScreen({
   spotifyStatus: import('../lib/useSpotifyPlayer.js').SpotifyPlayerStatus;
   spotifyError: string | null;
   spotifyErrorCode: string | null;
+  onForceAudio: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const top5 = cumulative.slice(0, 5);
@@ -994,6 +997,11 @@ function RoundPlayingScreen({
             error={spotifyError}
             errorCode={spotifyErrorCode}
           />
+        )}
+        {showSpotifyStatus && spotifyStatus === 'ready' && currentTrack && (
+          <Button variant="ghost" size="sm" onClick={onForceAudio} className="mt-2">
+            🔊 {t('host.forceAudioOnDevice')}
+          </Button>
         )}
         {isDemoProvider && (
           <p className="font-mono text-xs text-ink-soft my-3">{t('host.demoProviderHint')}</p>
