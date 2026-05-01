@@ -57,6 +57,7 @@ import { RoundIntermissionScreen } from '../components/host/RoundIntermissionScr
 import { ExpressPlaylistModal } from '../components/host/ExpressPlaylistModal.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
+import { ExternalScreenButton } from '../components/host/ExternalScreenButton.js';
 
 interface Toast {
   id: string;
@@ -579,7 +580,8 @@ function HostPageInner(): JSX.Element {
     return (
       <>
         {/* Badge master + change-master accessible discrètement en haut-droite */}
-        <div className="fixed top-4 right-4 z-30">
+        <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
+          <ExternalScreenButton shortCode={session.short_code} />
           <MasterBadge
             master={currentMaster}
             participants={session.participants}
@@ -638,6 +640,7 @@ function HostPageInner(): JSX.Element {
             </TitleHandwritten>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
+            <ExternalScreenButton shortCode={session.short_code} />
             {!session.has_animator &&
               (effectivePhase === 'roundPlaying' ||
                 effectivePhase === 'roundSelection' ||

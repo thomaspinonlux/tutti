@@ -37,6 +37,7 @@ import { getQuestionSet } from '../lib/questionSets.js';
 import { Badge, Button, Card, TitleHandwritten, Underline } from '../components/ui/index.js';
 import { QuestionConsole } from '../components/host/quizz/QuestionConsole.js';
 import { QuizzAnswersList } from '../components/host/quizz/QuizzAnswersList.js';
+import { ExternalScreenButton } from '../components/host/ExternalScreenButton.js';
 
 interface QuizzReveal {
   question_index: number;
@@ -227,7 +228,12 @@ export function HostQuizzView({
 
   // Session PLAYING
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4 h-screen">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4 h-screen relative">
+      {!publicView && (
+        <div className="absolute top-2 right-2 z-30">
+          <ExternalScreenButton shortCode={session.short_code} />
+        </div>
+      )}
       <main className="min-w-0 overflow-hidden">
         {activeQuestion ? (
           <QuestionConsole

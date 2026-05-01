@@ -207,6 +207,15 @@
     "spotifyPremiumRequired": "Spotify Premium required for full-track playback.",
     "demoProviderHint": "Demo provider — audio is not auto-played. Launch the track from your own setup.",
     "forceAudioOnDevice": "Force audio on this device",
+    "externalScreen": {
+      "openButton": "TV screen",
+      "openHint": "Open the public view on external screen or new tab",
+      "detected": "External screen detected",
+      "detectedHint": "Project the public view on this screen (TV)? Your control interface stays here.",
+      "projectNow": "Project now",
+      "apiUnsupported": "Auto-detection not supported by your browser — use the manual button.",
+      "noExternalDetected": "No external screen detected."
+    },
     "masterSectionLabel": "Game animator",
     "masterPickHint": "Mode B: pick a player as the animator — they'll run the game from their phone (next track, pause, adjust points). The Start button unlocks once an animator is picked.",
     "masterPickedHint": "{{pseudo}} will run the game from their phone. You can swap animators any time before the game starts.",

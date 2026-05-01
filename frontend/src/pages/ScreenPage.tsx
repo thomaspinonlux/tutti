@@ -272,29 +272,88 @@ export function ScreenPage(): JSX.Element {
   }
 
   // ── Render selon game_type ──────────────────────────────────────────────
-  if (session.game_type === 'QUIZZ') {
-    return (
-      <HostQuizzView
-        session={session}
-        cumulative={cumulative}
-        socket={socket}
-        onSessionUpdate={setSession}
-        onCumulativeUpdate={setCumulative}
-        publicView={true}
-      />
-    );
-  }
-
-  // TRACKS : MainScreenView en mode TV public
   return (
-    <MainScreenView
-      session={session}
-      currentTrack={currentTrack}
-      cumulative={cumulative}
-      correctAnswers={correctAnswers}
-      phase2StartedAt={phase2StartedAt}
-      lastReveal={lastReveal}
-      activeBuzzCount={activeBuzzers.size}
-    />
+    <FullscreenWrapper>
+      {session.game_type === 'QUIZZ' ? (
+        <HostQuizzView
+          session={session}
+          cumulative={cumulative}
+          socket={socket}
+          onSessionUpdate={setSession}
+          onCumulativeUpdate={setCumulative}
+          publicView={true}
+        />
+      ) : (
+        <MainScreenView
+          session={session}
+          currentTrack={currentTrack}
+          cumulative={cumulative}
+          correctAnswers={correctAnswers}
+          phase2StartedAt={phase2StartedAt}
+          lastReveal={lastReveal}
+          activeBuzzCount={activeBuzzers.size}
+        />
+      )}
+    </FullscreenWrapper>
+  );
+}
+
+/**
+ * <FullscreenWrapper /> — bouton "Plein écran" (déclenche requestFullscreen
+ * au 1er click — Chrome bloque l'auto-fullscreen sans interaction utilisateur)
+ * + bouton "Sortir" en plein écran. Compat Safari (webkit prefix).
+ */
+function FullscreenWrapper({ children }: { children: React.ReactNode }): JSX.Element {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onChange = (): void => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const enterFullscreen = async (): Promise<void> => {
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch {
+      /* refusé */
+    }
+  };
+
+  const exitFullscreen = async (): Promise<void> => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+    } catch {
+      /* ignore */
+    }
+  };
+
+  return (
+    <div className="relative">
+      {children}
+      <div className="fixed top-2 right-2 z-50 flex gap-1">
+        {!isFullscreen ? (
+          <button
+            type="button"
+            onClick={() => void enterFullscreen()}
+            aria-label="Plein écran"
+            className="px-2 py-1 text-xs font-mono bg-cream/80 border-2 border-ink rounded hover:bg-cream"
+          >
+            ⛶ Plein écran
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void exitFullscreen()}
+            aria-label="Quitter plein écran"
+            className="px-2 py-1 text-xs font-mono bg-cream/80 border-2 border-ink rounded hover:bg-cream"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
