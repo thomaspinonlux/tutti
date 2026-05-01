@@ -68,6 +68,38 @@ app.get('/api/health', async (_req, res) => {
   res.json(response);
 });
 
+// Healthcheck Whisper : valide que OPENAI_API_KEY est présente + auth OK
+// auprès d'OpenAI (sans transcription, juste GET /v1/models).
+app.get('/api/whisper/health', async (_req, res) => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    res.status(503).json({ status: 'down', reason: 'OPENAI_API_KEY missing' });
+    return;
+  }
+  try {
+    const r = await fetch('https://api.openai.com/v1/models', {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    if (!r.ok) {
+      res.status(503).json({ status: 'down', reason: `OpenAI ${r.status}` });
+      return;
+    }
+    const data = (await r.json()) as { data?: Array<{ id: string }> };
+    const hasWhisper = (data.data ?? []).some((m) => m.id === 'whisper-1');
+    res.json({
+      status: 'ok',
+      whisper_available: hasWhisper,
+      models_count: data.data?.length ?? 0,
+    });
+  } catch (err) {
+    res.status(503).json({
+      status: 'down',
+      reason: err instanceof Error ? err.message : 'unknown',
+    });
+  }
+});
+
 app.use('/api/auth', authRouter);
 app.use('/api/me', meRouter);
 app.use('/api/workspaces', workspacesRouter);
