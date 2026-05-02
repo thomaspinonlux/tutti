@@ -372,7 +372,18 @@ function HostPageInner(): JSX.Element {
   useEffect(() => {
     if (!hostSocket) return;
     const handler = (): void => {
+      console.info('[track:restart] received — restart Spotify + reset UI timer');
       void spotify.restartCurrentTrack();
+      // Reset le started_at + phase pour que le chrono header reparte de 0
+      // et que les buzzers se réactivent (retour phase1).
+      setCurrentTrack((prev) =>
+        prev ? { ...prev, started_at: new Date().toISOString(), phase: 'phase1' } : prev,
+      );
+      // Clear correctAnswers + lastReveal pour repartir propre.
+      setCorrectAnswers([]);
+      setPhase2StartedAt(null);
+      setLastReveal(null);
+      setActiveBuzzers(new Set());
     };
     hostSocket.on('track:restart', handler);
     return () => {

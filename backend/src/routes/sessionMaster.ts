@@ -28,7 +28,7 @@ import type { GameMode, Team } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { requireMasterParticipant } from '../middleware/master.js';
 import { broadcastToSession } from '../socket/index.js';
-import { clearActiveTrack, getActiveTrack } from '../lib/gameState.js';
+import { clearActiveTrack, getActiveTrack, restartActiveTrack } from '../lib/gameState.js';
 import {
   clearActiveQuestion,
   getActiveQuestion,
@@ -287,9 +287,12 @@ router.post(
       res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'round_id requis' } });
       return;
     }
+    // Reset gameState côté serveur : phase=phase1, started_at=now.
+    const fresh = restartActiveTrack(parsed.data.round_id);
     broadcastToSession(req.params.id, 'track:restart', {
       round_id: parsed.data.round_id,
       requested_by: req.master!.pseudo,
+      started_at_ms: fresh?.started_at_ms ?? Date.now(),
     });
     res.json({ ok: true });
   },

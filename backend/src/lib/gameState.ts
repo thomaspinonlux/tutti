@@ -91,6 +91,29 @@ export function setActiveTrack(
   });
 }
 
+/**
+ * "Recommencer le morceau" — reset l'état pour repartir de phase1 sans
+ * changer de track. Conserve track_id/track_index, vide buzzes/answers.
+ * Renvoie le state remis à zéro ou null si pas de track actif.
+ */
+export function restartActiveTrack(roundId: string): ActiveTrackState | null {
+  const state = activeTracks.get(roundId);
+  if (!state) return null;
+  const fresh: ActiveTrackState = {
+    round_id: state.round_id,
+    track_index: state.track_index,
+    track_id: state.track_id,
+    started_at_ms: Date.now(),
+    phase: 'phase1',
+    phase2_started_at_ms: null,
+    active_buzzes: new Map(),
+    correct_answers: [],
+    last_buzz_at_ms: new Map(),
+  };
+  activeTracks.set(roundId, fresh);
+  return fresh;
+}
+
 export function clearActiveTrack(roundId: string): void {
   activeTracks.delete(roundId);
 }

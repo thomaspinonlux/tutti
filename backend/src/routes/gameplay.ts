@@ -18,6 +18,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { broadcastToSession } from '../socket/index.js';
 import { prisma } from '../lib/prisma.js';
+import { restartActiveTrack } from '../lib/gameState.js';
 import {
   advanceToNextOrEndRound,
   buildAndBroadcastTrack,
@@ -183,9 +184,13 @@ router.post(
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
       return;
     }
+    // Reset gameState côté serveur : phase=phase1, started_at=now,
+    // buzzes/answers vidés. Permet aux joueurs de rebuzzer + nouveau timer.
+    const fresh = restartActiveTrack(req.params.roundId);
     broadcastToSession(req.params.id, 'track:restart', {
       round_id: req.params.roundId,
       requested_by: 'host',
+      started_at_ms: fresh?.started_at_ms ?? Date.now(),
     });
     res.json({ ok: true });
   },

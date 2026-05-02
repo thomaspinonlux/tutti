@@ -86,6 +86,37 @@ function useNowTick(intervalMs = 500): number {
   return now;
 }
 
+/**
+ * Compteur "temps écoulé" pause-aware. Démarre à 0 quand startedAtIso change,
+ * incrémente par delta de tick si !isPaused, fige sinon.
+ */
+function useTimeElapsed(startedAtIso: string | null, isPaused = false): number {
+  const [elapsed, setElapsed] = useState(0);
+  const lastTickRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    setElapsed(0);
+    lastTickRef.current = Date.now();
+  }, [startedAtIso]);
+
+  useEffect(() => {
+    if (!startedAtIso) return;
+    const tick = (): void => {
+      const now = Date.now();
+      const delta = now - lastTickRef.current;
+      lastTickRef.current = now;
+      if (!isPaused) {
+        setElapsed((e) => e + delta);
+      }
+    };
+    lastTickRef.current = Date.now();
+    const id = window.setInterval(tick, 250);
+    return () => window.clearInterval(id);
+  }, [isPaused, startedAtIso]);
+
+  return elapsed;
+}
+
 function formatTime(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));
   const m = Math.floor(total / 60);
@@ -304,16 +335,17 @@ function IPadHeader({
   trackPosition,
   currentTrack,
   phaseLabel,
+  isPaused,
 }: {
   round: SessionRoundWithPlaylist | null;
   totalTracks: number;
   trackPosition: number;
   currentTrack: CurrentTrackState | null;
   phaseLabel: string;
+  isPaused: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
-  const now = useNowTick(500);
-  const elapsed = currentTrack ? now - new Date(currentTrack.started_at).getTime() : 0;
+  const elapsed = useTimeElapsed(currentTrack?.started_at ?? null, isPaused);
   const totalMs = currentTrack?.duration_ms ?? null;
   return (
     <header
@@ -369,6 +401,7 @@ function IPadFooter({
   currentTrack,
   phase,
   busy,
+  isPaused,
   onSkipTrack,
   onGiveAnswer,
   onNextTrack,
@@ -377,13 +410,13 @@ function IPadFooter({
   currentTrack: CurrentTrackState | null;
   phase: CurrentTrackState['phase'] | null;
   busy: boolean;
+  isPaused: boolean;
   onSkipTrack?: () => void;
   onGiveAnswer?: () => void;
   onNextTrack?: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
-  const now = useNowTick(500);
-  const elapsed = currentTrack ? now - new Date(currentTrack.started_at).getTime() : 0;
+  const elapsed = useTimeElapsed(currentTrack?.started_at ?? null, isPaused);
   const totalMs = currentTrack?.duration_ms ?? null;
   const progress = totalMs && totalMs > 0 ? Math.min(1, elapsed / totalMs) : 0;
   // Bouton "Suivant" mis en évidence en phase 3
@@ -643,6 +676,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
         trackPosition={trackPosition}
         currentTrack={currentTrack}
         phaseLabel={phaseLabel}
+        isPaused={session.is_paused}
       />
 
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 p-6 relative z-10">
@@ -732,6 +766,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
         currentTrack={currentTrack}
         phase={phase}
         busy={busy}
+        isPaused={session.is_paused}
         onSkipTrack={onSkipTrack}
         onGiveAnswer={onGiveAnswer}
         onNextTrack={onNextTrack}
