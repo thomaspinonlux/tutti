@@ -229,9 +229,7 @@ router.get(
 );
 
 // ── GET /_debug ──────────────────────────────────────────────────────────
-// Test minimaliste : appelle Spotify avec EXACTEMENT le même format que curl,
-// sans passer par SpotifyProvider. Permet d'isoler si le bug vient du
-// provider ou de Spotify lui-même (App Dev Mode / user pas whitelist).
+// Tests ciblés : isole le bug "Invalid limit" sur /v1/search.
 
 router.get(
   '/_debug',
@@ -249,52 +247,105 @@ router.get(
         return;
       }
       const token = cred.access_token.trim();
-      const url =
-        'https://api.spotify.com/v1/search?q=stromae&type=track&limit=20&offset=0&market=FR';
-      const r = await fetch(url, {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const body = await r.text();
-      const headers: Record<string, string> = {};
-      r.headers.forEach((v, k) => {
-        headers[k] = v;
-      });
-      // Test 2 : avec opérateurs de query
-      const url2 =
-        'https://api.spotify.com/v1/search?q=' +
-        encodeURIComponent('artist:"stromae"') +
-        '&type=track&limit=20&offset=0&market=FR';
-      const r2 = await fetch(url2, {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const auth = { Authorization: `Bearer ${token}` };
+
+      // Test 1 : profil user — récupère country pour test ciblé
+      const r1 = await fetch('https://api.spotify.com/v1/me', { method: 'GET', headers: auth });
+      const body1 = await r1.text();
+      let userCountry: string | null = null;
+      try {
+        userCountry = (JSON.parse(body1) as { country?: string }).country ?? null;
+      } catch {
+        /* ignore */
+      }
+
+      // Test 2 : search SANS market (utilise pays compte par défaut)
+      const url2 = 'https://api.spotify.com/v1/search?q=stromae&type=track&limit=20';
+      const r2 = await fetch(url2, { method: 'GET', headers: auth });
       const body2 = await r2.text();
-      // Test 3 : profil user (vérifie scopes)
-      const r3 = await fetch('https://api.spotify.com/v1/me', {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+
+      // Test 3 : search avec market=FR (forcé)
+      const url3 = 'https://api.spotify.com/v1/search?q=stromae&type=track&limit=20&market=FR';
+      const r3 = await fetch(url3, { method: 'GET', headers: auth });
       const body3 = await r3.text();
+
+      // Test 4 : search avec market = pays user
+      let body4 = '';
+      let url4 = '';
+      let r4Status = 0;
+      if (userCountry) {
+        url4 = `https://api.spotify.com/v1/search?q=stromae&type=track&limit=20&market=${userCountry}`;
+        const r4 = await fetch(url4, { method: 'GET', headers: auth });
+        r4Status = r4.status;
+        body4 = await r4.text();
+      }
+
+      // Test 5 : search via module natif https (bypass undici)
+      const test5: { status: number; body_first_500: string; method: string } = {
+        status: 0,
+        body_first_500: '',
+        method: 'native_https',
+      };
+      try {
+        const { request: httpsRequest } = await import('node:https');
+        await new Promise<void>((resolve, reject) => {
+          const req = httpsRequest(
+            {
+              host: 'api.spotify.com',
+              path: '/v1/search?q=stromae&type=track&limit=20&market=FR',
+              method: 'GET',
+              headers: { Authorization: `Bearer ${token}` },
+            },
+            (httpRes) => {
+              test5.status = httpRes.statusCode ?? 0;
+              const chunks: Buffer[] = [];
+              httpRes.on('data', (c: Buffer) => chunks.push(c));
+              httpRes.on('end', () => {
+                test5.body_first_500 = Buffer.concat(chunks).toString('utf8').slice(0, 500);
+                resolve();
+              });
+              httpRes.on('error', reject);
+            },
+          );
+          req.on('error', reject);
+          req.end();
+        });
+      } catch (err) {
+        test5.body_first_500 = `ERROR: ${(err as Error).message}`;
+      }
+
+      // Test 6 : minimal possible search (que q + type)
+      const url6 = 'https://api.spotify.com/v1/search?q=stromae&type=track';
+      const r6 = await fetch(url6, { method: 'GET', headers: auth });
+      const body6 = await r6.text();
+
       res.json({
         token_length: token.length,
-        token_first_10: token.substring(0, 10),
         token_has_whitespace: cred.access_token !== token,
         token_expires_at: cred.expires_at,
-        test1_simple_search: {
-          url,
-          status: r.status,
-          headers,
-          body_first_500: body.substring(0, 500),
+        test1_me_profile: {
+          status: r1.status,
+          country: userCountry,
+          body_first_500: body1.substring(0, 500),
         },
-        test2_with_operators: {
+        test2_search_no_market: {
           url: url2,
           status: r2.status,
           body_first_500: body2.substring(0, 500),
         },
-        test3_me_profile: {
+        test3_search_market_FR: {
+          url: url3,
           status: r3.status,
           body_first_500: body3.substring(0, 500),
+        },
+        test4_search_market_user_country: userCountry
+          ? { url: url4, status: r4Status, body_first_500: body4.substring(0, 500) }
+          : { skipped: 'no country in profile' },
+        test5_native_https_search: test5,
+        test6_minimal_search: {
+          url: url6,
+          status: r6.status,
+          body_first_500: body6.substring(0, 500),
         },
       });
     } catch (err: unknown) {
