@@ -145,8 +145,9 @@ router.get(
 
 const playlistTracksQuerySchema = z.object({
   market: z.string().length(2).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
-  offset: z.coerce.number().int().min(0).max(10000).default(0),
+  // Spotify cap : limit ∈ [1, 50] sur cet endpoint.
+  limit: z.coerce.number().int().min(1).max(50).default(50),
+  offset: z.coerce.number().int().min(0).max(100000).default(0),
 });
 
 router.get(

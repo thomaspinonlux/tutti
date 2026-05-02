@@ -122,6 +122,8 @@ export class SpotifyProvider implements MusicProvider {
   /**
    * Recherche tracks avancée — combine artist, track, year_min/max, genre via
    * les query operators Spotify (artist:"x" track:"y" year:1990-1999 genre:rock).
+   *
+   * Spotify cap : limit ∈ [1, 50], offset ∈ [0, 1000].
    */
   async searchTracksAdvanced(opts: {
     artist?: string;
@@ -147,11 +149,13 @@ export class SpotifyProvider implements MusicProvider {
     const q = parts.join(' ').trim();
     if (!q) return { items: [], total: 0, next: null };
 
+    const limit = clampInt(opts.limit, 20, 1, 50);
+    const offset = clampInt(opts.offset, 0, 0, 1000);
     const params = new URLSearchParams({
       q,
       type: 'track',
-      limit: String(Math.min(opts.limit ?? 20, 50)),
-      offset: String(opts.offset ?? 0),
+      limit: String(limit),
+      offset: String(offset),
     });
     if (opts.market) params.set('market', opts.market);
 
@@ -163,15 +167,18 @@ export class SpotifyProvider implements MusicProvider {
     };
   }
 
-  /** Récupère les playlists de l'utilisateur connecté (paginé). */
+  /** Récupère les playlists de l'utilisateur connecté (paginé).
+   *  Spotify cap : limit ∈ [1, 50], offset ∈ [0, 100000]. */
   async getMyPlaylists(opts: { limit?: number; offset?: number } = {}): Promise<{
     items: SpotifyPlaylistSummary[];
     total: number;
     next: string | null;
   }> {
+    const limit = clampInt(opts.limit, 20, 1, 50);
+    const offset = clampInt(opts.offset, 0, 0, 100000);
     const params = new URLSearchParams({
-      limit: String(Math.min(opts.limit ?? 20, 50)),
-      offset: String(opts.offset ?? 0),
+      limit: String(limit),
+      offset: String(offset),
     });
     const data = await this.spotifyFetch<{
       items: SpotifyPlaylistApi[];
@@ -185,7 +192,8 @@ export class SpotifyProvider implements MusicProvider {
     };
   }
 
-  /** Recherche de playlists publiques. */
+  /** Recherche de playlists publiques.
+   *  Spotify cap : limit ∈ [1, 50], offset ∈ [0, 1000]. */
   async searchPlaylists(opts: {
     query: string;
     market?: string;
@@ -193,31 +201,40 @@ export class SpotifyProvider implements MusicProvider {
     offset?: number;
   }): Promise<{ items: SpotifyPlaylistSummary[]; total: number; next: string | null }> {
     if (!opts.query.trim()) return { items: [], total: 0, next: null };
+    const limit = clampInt(opts.limit, 20, 1, 50);
+    const offset = clampInt(opts.offset, 0, 0, 1000);
     const params = new URLSearchParams({
       q: opts.query,
       type: 'playlist',
-      limit: String(Math.min(opts.limit ?? 20, 50)),
-      offset: String(opts.offset ?? 0),
+      limit: String(limit),
+      offset: String(offset),
     });
     if (opts.market) params.set('market', opts.market);
     const data = await this.spotifyFetch<{
-      playlists: { items: SpotifyPlaylistApi[]; total: number; next: string | null };
+      playlists: { items: Array<SpotifyPlaylistApi | null>; total: number; next: string | null };
     }>(`/search?${params.toString()}`);
+    // Spotify peut renvoyer des null dans items (algorithmes internes) — filtre.
+    const validItems = data.playlists.items.filter(
+      (p): p is SpotifyPlaylistApi => p !== null && p !== undefined,
+    );
     return {
-      items: data.playlists.items.map(toPlaylistSummary),
+      items: validItems.map(toPlaylistSummary),
       total: data.playlists.total,
       next: data.playlists.next,
     };
   }
 
-  /** Récupère les tracks d'une playlist Spotify (paginé). */
+  /** Récupère les tracks d'une playlist Spotify (paginé).
+   *  Spotify cap : limit ∈ [1, 50] sur cet endpoint. */
   async getPlaylistTracks(
     playlistId: string,
     opts: { limit?: number; offset?: number; market?: string } = {},
   ): Promise<{ items: TrackResult[]; total: number; next: string | null }> {
+    const limit = clampInt(opts.limit, 50, 1, 50);
+    const offset = clampInt(opts.offset, 0, 0, 100000);
     const params = new URLSearchParams({
-      limit: String(Math.min(opts.limit ?? 50, 100)),
-      offset: String(opts.offset ?? 0),
+      limit: String(limit),
+      offset: String(offset),
       fields:
         'total,next,items(track(id,name,artists,album(name,images,release_date),duration_ms,popularity,explicit,is_local))',
     });
@@ -250,21 +267,32 @@ export class SpotifyProvider implements MusicProvider {
 
   private async spotifyFetch<T>(path: string): Promise<T> {
     const token = await this.getValidAccessToken();
-    const res = await fetch(`${SPOTIFY_API}${path}`, {
+    const fullUrl = `${SPOTIFY_API}${path}`;
+    console.info('[Spotify Fetch] URL:', fullUrl);
+    const res = await fetch(fullUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    console.info('[Spotify Fetch] Response status:', res.status);
 
     if (res.status === 401) {
       // Token rejeté malgré check d'expiration : refresh forcé puis retry une fois.
+      console.info('[Spotify Fetch] 401 — refresh token + retry');
       await this.refreshAccessToken();
-      const retry = await fetch(`${SPOTIFY_API}${path}`, {
+      const retry = await fetch(fullUrl, {
         headers: { Authorization: `Bearer ${this.credentials.access_token}` },
       });
-      if (!retry.ok) throw await spotifyErrorFrom(retry);
+      console.info('[Spotify Fetch] Retry status:', retry.status);
+      if (!retry.ok) {
+        const err = await spotifyErrorFrom(retry, fullUrl);
+        throw err;
+      }
       return (await retry.json()) as T;
     }
 
-    if (!res.ok) throw await spotifyErrorFrom(res);
+    if (!res.ok) {
+      const err = await spotifyErrorFrom(res, fullUrl);
+      throw err;
+    }
     return (await res.json()) as T;
   }
 
@@ -338,6 +366,26 @@ export class SpotifyProvider implements MusicProvider {
   }
 }
 
+/**
+ * Clamp un entier optionnel dans [min, max], ou retourne fallback si invalide
+ * (NaN, undefined, null, non entier). Utilisé pour les params Spotify limit/
+ * offset où passer une mauvaise valeur fait crasher l'API avec
+ * "Invalid limit" / "Invalid offset".
+ */
+function clampInt(
+  value: number | undefined | null,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  if (value === undefined || value === null) return fallback;
+  if (!Number.isFinite(value)) return fallback;
+  const n = Math.trunc(value);
+  if (n < min) return min;
+  if (n > max) return max;
+  return n;
+}
+
 // ─── Mapping Spotify → TrackResult ────────────────────────────────────────
 
 function toTrackResult(t: SpotifyTrackApi): TrackResult {
@@ -372,15 +420,18 @@ export class SpotifyError extends Error {
   }
 }
 
-async function spotifyErrorFrom(res: Response): Promise<SpotifyError> {
+async function spotifyErrorFrom(res: Response, url?: string): Promise<SpotifyError> {
   let message = `HTTP ${res.status}`;
+  let bodyRaw = '';
   try {
-    const json = (await res.json()) as { error?: { message?: string } | string };
+    bodyRaw = await res.text();
+    const json = JSON.parse(bodyRaw) as { error?: { message?: string } | string };
     if (typeof json.error === 'string') message = json.error;
     else if (json.error?.message) message = json.error.message;
   } catch {
     // body non-JSON, on garde le message par défaut
   }
+  console.error('[Spotify Error]', url ?? '', '→', res.status, bodyRaw.slice(0, 500));
   return new SpotifyError(res.status, `Spotify: ${message}`);
 }
 
