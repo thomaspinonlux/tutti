@@ -42,8 +42,10 @@ interface SpotifyTrackApi {
     images: Array<{ url: string; width: number; height: number }>;
   };
   duration_ms: number;
-  popularity: number;
-  preview_url: string | null;
+  /** Restricted en Development Mode (mai 2024) — peut être absent. */
+  popularity?: number;
+  /** Restricted en Development Mode — peut être absent. */
+  preview_url?: string | null;
   explicit?: boolean;
   is_local?: boolean;
 }
@@ -292,11 +294,13 @@ export class SpotifyProvider implements MusicProvider {
   ): Promise<{ items: TrackResult[]; total: number; next: string | null }> {
     const limit = clampInt(opts.limit, SPOTIFY_MAX_LIMIT, 1, SPOTIFY_MAX_LIMIT);
     const offset = clampInt(opts.offset, 0, 0, 100000);
+    // Spotify a restreint certains champs en Development Mode (mai 2024 :
+    // popularity, audio features, related artists, etc.). On retire
+    // complètement le paramètre `fields` pour laisser Spotify renvoyer la
+    // structure par défaut. Trade-off : payload plus lourd, mais évite 403.
     const params = new URLSearchParams({
       limit: String(limit),
       offset: String(offset),
-      fields:
-        'total,next,items(track(id,name,artists,album(name,images,release_date),duration_ms,popularity,explicit,is_local))',
     });
     if (opts.market) params.set('market', opts.market);
     const data = await this.spotifyFetch<{
@@ -486,21 +490,22 @@ const SPOTIFY_MAX_LIMIT = 10;
 // ─── Mapping Spotify → TrackResult ────────────────────────────────────────
 
 function toTrackResult(t: SpotifyTrackApi): TrackResult {
-  const year = t.album.release_date
-    ? Number.parseInt(t.album.release_date.slice(0, 4), 10)
-    : undefined;
-  const cover =
-    t.album.images.find((img) => img.width >= 200 && img.width <= 400) ?? t.album.images[0];
+  // Defensive : album peut manquer dans certaines réponses (rare). Spotify
+  // peut aussi retirer popularity / preview_url en Development Mode.
+  const releaseDate = t.album?.release_date;
+  const year = releaseDate ? Number.parseInt(releaseDate.slice(0, 4), 10) : undefined;
+  const images = t.album?.images ?? [];
+  const cover = images.find((img) => img.width >= 200 && img.width <= 400) ?? images[0];
   return {
     provider: 'spotify',
     provider_track_id: t.id,
     artist: t.artists.map((a) => a.name).join(', ') || 'Inconnu',
     title: t.name,
-    album: t.album.name,
+    album: t.album?.name ?? null,
     year: Number.isFinite(year) ? year : undefined,
     duration_ms: t.duration_ms,
     cover_url: cover?.url,
-    preview_url: t.preview_url,
+    preview_url: t.preview_url ?? null,
     popularity: t.popularity,
   };
 }
