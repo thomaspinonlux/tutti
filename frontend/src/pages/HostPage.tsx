@@ -304,9 +304,11 @@ function HostPageInner(): JSX.Element {
               },
             );
             socket?.on('session:paused', () => {
+              console.info('[Socket] session:paused received');
               setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
             });
             socket?.on('session:resumed', () => {
+              console.info('[Socket] session:resumed received');
               setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
             });
             // track:restart attaché dans un useEffect séparé pour éviter
@@ -471,33 +473,59 @@ function HostPageInner(): JSX.Element {
   };
 
   const handlePauseAudio = async (): Promise<void> => {
-    if (!session || !playingRound) return;
+    if (!session || !playingRound) {
+      console.warn('[Session Pause] ABORT — pas de session ou playingRound');
+      return;
+    }
+    console.info(
+      '[Session Pause] Click — session:',
+      session.id,
+      '| is_paused before:',
+      session.is_paused,
+    );
     try {
+      console.info('[Session Pause] POST /pause');
       await hostPauseSession(session.id, playingRound.id);
+      console.info('[Session Pause] POST OK — Spotify pause');
       await spotify.pause();
+      // Optimistic update : on n'attend pas le broadcast socket pour figer le timer.
+      setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
+      console.info('[Session Pause] is_paused → true (optimistic)');
     } catch (err: unknown) {
-      console.warn('[host pause]', err);
+      console.error('[Session Pause] ERROR:', err);
     }
   };
 
   const handleResumeAudio = async (): Promise<void> => {
-    if (!session || !playingRound) return;
+    if (!session || !playingRound) {
+      console.warn('[Session Resume] ABORT');
+      return;
+    }
+    console.info('[Session Resume] Click — is_paused before:', session.is_paused);
     try {
       await hostResumeSession(session.id, playingRound.id);
+      console.info('[Session Resume] POST OK — Spotify resume');
       await spotify.resume();
+      setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
+      console.info('[Session Resume] is_paused → false (optimistic)');
     } catch (err: unknown) {
-      console.warn('[host resume]', err);
+      console.error('[Session Resume] ERROR:', err);
     }
   };
 
   const handleRestartTrack = async (): Promise<void> => {
-    if (!session || !playingRound) return;
+    if (!session || !playingRound) {
+      console.warn('[Restart Track] ABORT');
+      return;
+    }
+    console.info('[Restart Track] Click — round:', playingRound.id);
     try {
       await hostRestartTrack(session.id, playingRound.id);
+      console.info('[Restart Track] POST OK — track:restart broadcast attendu');
       // Le broadcast track:restart déclenche le restart côté ce client aussi
       // (via le useEffect listener), donc pas besoin d'appel direct ici.
     } catch (err: unknown) {
-      console.warn('[host restart]', err);
+      console.error('[Restart Track] ERROR:', err);
     }
   };
 

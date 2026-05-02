@@ -240,9 +240,18 @@ export function useSpotifyPlayer({
             console.warn(
               '[Spotify SDK] state_changed: state=null (device perdu ou control transféré ailleurs)',
             );
-            setLastEvent('state_changed:null');
+            setLastEvent('state_changed:null → auto re-transfer');
             setIsPlaying(false);
             setCurrentTrackUri(null);
+            // Auto re-transfer pour récupérer le control sur le device Tutti.
+            // Si un autre device a pris la main (téléphone, autre app), on
+            // reprend ici. Délai 1s pour ne pas thrash en cas de transition.
+            if (deviceId && tokenRef.current) {
+              window.setTimeout(() => {
+                console.info('[Spotify SDK] Auto-recovery : re-transfer vers Tutti device');
+                void transferPlaybackInternal(deviceId, false);
+              }, 1000);
+            }
             return;
           }
           const trackName = state.track_window?.current_track?.name;

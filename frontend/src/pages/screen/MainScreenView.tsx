@@ -99,6 +99,11 @@ function useTimeElapsed(startedAtIso: string | null, isPaused = false): number {
     lastTickRef.current = Date.now();
   }, [startedAtIso]);
 
+  // Log à chaque changement de isPaused pour vérifier la propagation
+  useEffect(() => {
+    console.info('[useTimeElapsed] isPaused changed →', isPaused);
+  }, [isPaused]);
+
   useEffect(() => {
     if (!startedAtIso) return;
     const tick = (): void => {
