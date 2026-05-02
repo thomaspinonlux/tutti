@@ -27,6 +27,7 @@ import {
 import { Button, Card, Badge, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { SortableTrackList } from '../../components/admin/playlists/SortableTrackList.js';
 import { TrackDetailsPanel } from '../../components/admin/playlists/TrackDetailsPanel.js';
+import { AddTracksTabs } from '../../components/admin/playlists/import/AddTracksTabs.js';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -320,13 +321,23 @@ export function PlaylistEditPage(): JSX.Element {
         />
       </section>
 
-      {/* ─── Colonne droite : panel détail/recherche ─────────────────────── */}
-      <aside>
-        <TrackDetailsPanel
-          selected={selectedTrack}
-          onAddTrack={handleAddTrack}
-          onUpdateAliases={handleUpdateAliases}
+      {/* ─── Colonne droite : modes d'ajout + détails track ───────────────── */}
+      <aside className="space-y-4">
+        <AddTracksTabs
+          playlistId={playlist.id}
+          onImported={async () => {
+            const refreshed = await getPlaylist(playlist.id);
+            setPlaylist(refreshed);
+            flash();
+          }}
         />
+        {selectedTrack && (
+          <TrackDetailsPanel
+            selected={selectedTrack}
+            onAddTrack={handleAddTrack}
+            onUpdateAliases={handleUpdateAliases}
+          />
+        )}
       </aside>
     </div>
   );
