@@ -45,6 +45,12 @@ export interface UseSpotifyPlayerResult {
   error: string | null;
   /** Code d'erreur "stable" pour différencier les cas (NOT_CONNECTED, PREMIUM_REQUIRED…). */
   errorCode: string | null;
+  /** Dernier event SDK reçu — pour debug UI badge. */
+  lastEvent: string | null;
+  /** Track URI actuellement lu (depuis state_changed). */
+  currentTrackUri: string | null;
+  /** Si le SDK considère le player comme actuellement en lecture (paused=false). */
+  isPlaying: boolean;
   /**
    * Joue un morceau. Retourne true si l'API a accepté la requête.
    * Si le device n'est pas encore prêt, met l'URI en attente et retourne false.
@@ -109,6 +115,9 @@ export function useSpotifyPlayer({
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [lastEvent, setLastEvent] = useState<string | null>(null);
+  const [currentTrackUri, setCurrentTrackUri] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const playerRef = useRef<SpotifyPlayer | null>(null);
   const tokenRef = useRef<string | null>(null);
@@ -200,12 +209,10 @@ export function useSpotifyPlayer({
           console.info('[Spotify SDK] Ready event - Device ID:', device_id);
           setDeviceId(device_id);
           setStatus('ready');
+          setLastEvent(`ready: ${device_id.substring(0, 12)}…`);
           // ⚠️ activateElement() : indispensable sur Chrome/Safari pour
           // débloquer la pipeline audio HTMLMediaElement interne au SDK.
           // Sans ça, le device apparaît dans Spotify Connect mais aucun son.
-          // Cette méthode doit être appelée après une interaction utilisateur
-          // au moins une fois (Chrome autoplay policy). On la rappellera
-          // depuis activate() au clic "Démarrer le blind test".
           if (player) {
             void player.activateElement().then(
               () => console.info('[Spotify SDK] activateElement OK (auto)'),
@@ -213,12 +220,15 @@ export function useSpotifyPlayer({
                 console.warn('[Spotify SDK] activateElement auto failed (need user click):', err),
             );
           }
-          // Transfert explicite de la lecture sur ce device.
-          void transferPlaybackInternal(device_id, false);
-          // Si un play était en attente, on le déclenche
-          const pending = pendingPlayRef.current;
-          pendingPlayRef.current = null;
-          if (pending) void play(pending);
+          // Transfert explicite de la lecture sur ce device + délai 500ms
+          // avant play() (Spotify Connect peut throttle si trop rapide).
+          void (async () => {
+            await transferPlaybackInternal(device_id, false);
+            await new Promise((r) => window.setTimeout(r, 500));
+            const pending = pendingPlayRef.current;
+            pendingPlayRef.current = null;
+            if (pending) void play(pending);
+          })();
         });
         player.addListener('not_ready', ({ device_id }) => {
           if (cancelled) return;
@@ -226,9 +236,18 @@ export function useSpotifyPlayer({
           setDeviceId(null);
         });
         player.addListener('player_state_changed', (state) => {
-          if (!state) return;
+          if (!state) {
+            console.warn(
+              '[Spotify SDK] state_changed: state=null (device perdu ou control transféré ailleurs)',
+            );
+            setLastEvent('state_changed:null');
+            setIsPlaying(false);
+            setCurrentTrackUri(null);
+            return;
+          }
           const trackName = state.track_window?.current_track?.name;
           const artistName = state.track_window?.current_track?.artists?.[0]?.name;
+          const trackUri = state.track_window?.current_track?.uri ?? null;
           console.info(
             '[Spotify SDK] state_changed - paused:',
             state.paused,
@@ -239,6 +258,11 @@ export function useSpotifyPlayer({
             '-',
             artistName,
           );
+          setLastEvent(
+            `state_changed: ${state.paused ? 'paused' : 'playing'} @ ${state.position}ms`,
+          );
+          setIsPlaying(!state.paused);
+          setCurrentTrackUri(trackUri);
         });
         player.addListener('initialization_error', ({ message }) =>
           fail('INIT_ERROR', `Init: ${message}`),
@@ -251,7 +275,23 @@ export function useSpotifyPlayer({
         );
         player.addListener('playback_error', ({ message }) => {
           // Non bloquant — on log mais on ne sort pas de status='ready'
-          console.warn('[spotify playback_error]', message);
+          console.warn('[Spotify SDK] playback_error:', message);
+          setLastEvent(`playback_error: ${message}`);
+        });
+        // ⚠️ autoplay_failed : event SDK officiel quand Chrome bloque la
+        // lecture audio même après activateElement. Indique que l'user n'a
+        // PAS encore fait d'interaction directe permettant au navigateur de
+        // débloquer la pipeline (Chrome/Safari autoplay policy).
+        player.addListener('autoplay_failed', () => {
+          console.error(
+            '[Spotify SDK] ❌ AUTOPLAY FAILED — Chrome/Safari ont bloqué la lecture. ' +
+              "L'utilisateur doit cliquer un bouton DIRECT (pas via timer/socket).",
+          );
+          setErrorCode('AUTOPLAY_BLOCKED');
+          setError(
+            'Le navigateur a bloqué la lecture. Clique le bouton "Démarrer audio" pour autoriser.',
+          );
+          setLastEvent('autoplay_failed');
         });
 
         const ok = await player.connect();
@@ -393,13 +433,61 @@ export function useSpotifyPlayer({
     }
   };
 
+  /** Vérifie le state du player après play() — détecte si Chrome a bloqué. */
+  const verifyPlayback = (uri: string): void => {
+    const p = playerRef.current;
+    if (!p) return;
+    [500, 1500, 3000].forEach((delayMs) => {
+      window.setTimeout(() => {
+        void p.getCurrentState().then((state) => {
+          if (!state) {
+            console.warn(
+              `[Spotify Verify] +${delayMs}ms state=null — device pas actif (control ailleurs ?)`,
+            );
+            return;
+          }
+          const trackUri = state.track_window?.current_track?.uri;
+          const matches = trackUri === uri;
+          console.info(
+            `[Spotify Verify] +${delayMs}ms — paused: ${state.paused} | pos: ${state.position}ms | uri match: ${matches} (${trackUri})`,
+          );
+          if (delayMs === 3000 && state.paused && matches) {
+            console.error(
+              '[Spotify Verify] ❌ Toujours paused 3s après play() — autoplay bloqué OU device inactif',
+            );
+            setLastEvent('verify:still_paused_3s');
+          }
+        });
+      }, delayMs);
+    });
+  };
+
   const play = async (spotifyUri: string): Promise<boolean> => {
     if (!deviceId || !tokenRef.current) {
       console.info('[Spotify Play] Device pas prêt, mise en file:', spotifyUri);
       pendingPlayRef.current = spotifyUri;
       return false;
     }
-    console.info('[Spotify Play] Tentative play sur device', deviceId, 'avec URI:', spotifyUri);
+    console.info(
+      '[Spotify Play] Tentative play — device:',
+      deviceId,
+      '| uri:',
+      spotifyUri,
+      '| status:',
+      status,
+      '| isPlaying:',
+      isPlaying,
+    );
+    // Re-active la pipeline audio par sécurité (idempotent). Important si
+    // Chrome a reset le contexte audio entre 2 plays.
+    const p = playerRef.current;
+    if (p) {
+      try {
+        await p.activateElement();
+      } catch (err) {
+        console.warn('[Spotify Play] activateElement before play failed:', err);
+      }
+    }
     const res = await fetch(
       `${SPOTIFY_API}/me/player/play?device_id=${encodeURIComponent(deviceId)}`,
       {
@@ -411,8 +499,11 @@ export function useSpotifyPlayer({
         body: JSON.stringify({ uris: [spotifyUri], position_ms: 0 }),
       },
     );
-    console.info('[Spotify Play] Response status:', res.status);
-    if (res.status === 204 || res.ok) return true;
+    console.info('[Spotify Play] Response status:', res.status, '| device used:', deviceId);
+    if (res.status === 204 || res.ok) {
+      verifyPlayback(spotifyUri);
+      return true;
+    }
     if (res.status === 401) {
       // Token expiré → invalide le cache, le SDK redemandera un token frais
       tokenRef.current = null;
@@ -466,6 +557,9 @@ export function useSpotifyPlayer({
     deviceId,
     error,
     errorCode,
+    lastEvent,
+    currentTrackUri,
+    isPlaying,
     play,
     pause,
     resume,

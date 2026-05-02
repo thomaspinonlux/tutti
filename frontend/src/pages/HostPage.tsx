@@ -823,6 +823,23 @@ function HostPageInner(): JSX.Element {
       </div>
 
       <MultiColorBar height="md" />
+
+      {/* Debug Spotify (visible uniquement quand SDK actif) */}
+      {spotify.status !== 'idle' && (
+        <div className="fixed bottom-2 left-2 z-50 max-w-[280px] px-2 py-1 bg-ink/90 text-cream font-mono text-[10px] rounded border border-cream/30 leading-tight">
+          <div>
+            🎵 Spotify: <strong>{spotify.status}</strong>
+            {spotify.isPlaying ? ' ▶' : ' ⏸'}
+          </div>
+          <div className="opacity-70 truncate">
+            device: {spotify.deviceId ? spotify.deviceId.substring(0, 16) + '…' : 'none'}
+          </div>
+          {spotify.lastEvent && (
+            <div className="opacity-70 truncate">last: {spotify.lastEvent}</div>
+          )}
+          {spotify.error && <div className="text-raspberry truncate">⚠ {spotify.error}</div>}
+        </div>
+      )}
     </div>
   );
 }

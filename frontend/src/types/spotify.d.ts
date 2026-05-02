@@ -38,6 +38,7 @@ interface SpotifyPlayer {
    * Méthode présente depuis 2022 dans le SDK officiel.
    */
   activateElement(): Promise<void>;
+  addListener(event: 'autoplay_failed', cb: () => void): boolean;
   addListener(event: 'ready', cb: (state: { device_id: string }) => void): boolean;
   addListener(event: 'not_ready', cb: (state: { device_id: string }) => void): boolean;
   addListener(
