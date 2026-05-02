@@ -76,16 +76,6 @@ function useTimeRemaining(startedAtIso: string, durationMs: number, isPaused = f
   return remaining;
 }
 
-/** Tick chaque seconde — utilisé pour rafraîchir des compteurs côté UI. */
-function useNowTick(intervalMs = 500): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), intervalMs);
-    return () => window.clearInterval(id);
-  }, [intervalMs]);
-  return now;
-}
-
 /**
  * Compteur "temps écoulé" pause-aware. Démarre à 0 quand startedAtIso change,
  * incrémente par delta de tick si !isPaused, fige sinon.

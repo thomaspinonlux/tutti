@@ -127,6 +127,22 @@ export async function buildAndBroadcastTrack(
 }
 
 /**
+ * "Recommencer le morceau" — reset gameState (phase=phase1, started_at=now,
+ * vide buzzes/answers) ET re-broadcast 'track:start' avec nouveau state pour
+ * que les clients se synchronisent (timer reset, phase reset, audio seek 0).
+ *
+ * Conserve track_id + track_index (même morceau). N'utilise PAS d'event
+ * spécial 'track:restart' — single source of truth = track:start.
+ */
+export async function restartCurrentTrackAndBroadcast(
+  sessionId: string,
+  round: RoundWithTracks,
+): Promise<CurrentTrackState | null> {
+  // Le track courant = round.current_track_index
+  return buildAndBroadcastTrack(sessionId, round, round.current_track_index);
+}
+
+/**
  * Avance au track suivant. Si on a dépassé la dernière piste, termine le round
  * automatiquement (status ENDED + broadcast 'round:ended').
  *

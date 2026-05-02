@@ -23,6 +23,7 @@ import {
   advanceToNextOrEndRound,
   buildAndBroadcastTrack,
   findRoundForWorkspace,
+  restartCurrentTrackAndBroadcast,
   revealCurrentTrack,
 } from '../lib/gameplayCore.js';
 
@@ -184,15 +185,12 @@ router.post(
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
       return;
     }
-    // Reset gameState côté serveur : phase=phase1, started_at=now,
-    // buzzes/answers vidés. Permet aux joueurs de rebuzzer + nouveau timer.
-    const fresh = restartActiveTrack(req.params.roundId);
-    broadcastToSession(req.params.id, 'track:restart', {
-      round_id: req.params.roundId,
-      requested_by: 'host',
-      started_at_ms: fresh?.started_at_ms ?? Date.now(),
-    });
-    res.json({ ok: true });
+    // Reset gameState + re-broadcast track:start (single source of truth).
+    // Les clients voient un nouveau started_at → useSpotifyAudioSync seek(0)
+    // ou play depuis URI inchangé. Plus d'event séparé track:restart.
+    restartActiveTrack(req.params.roundId);
+    const state = await restartCurrentTrackAndBroadcast(req.params.id, round);
+    res.json({ ok: true, state });
   },
 );
 

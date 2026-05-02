@@ -40,6 +40,7 @@ import {
   buildAndBroadcastTrack,
   endRoundInternal,
   findRoundForSession,
+  restartCurrentTrackAndBroadcast,
   revealCurrentTrack,
 } from '../lib/gameplayCore.js';
 import {
@@ -287,14 +288,15 @@ router.post(
       res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'round_id requis' } });
       return;
     }
-    // Reset gameState côté serveur : phase=phase1, started_at=now.
-    const fresh = restartActiveTrack(parsed.data.round_id);
-    broadcastToSession(req.params.id, 'track:restart', {
-      round_id: parsed.data.round_id,
-      requested_by: req.master!.pseudo,
-      started_at_ms: fresh?.started_at_ms ?? Date.now(),
-    });
-    res.json({ ok: true });
+    const round = await findRoundForSession(parsed.data.round_id, req.params.id);
+    if (!round) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
+      return;
+    }
+    // Reset gameState + re-broadcast track:start (cf. gameplay.ts).
+    restartActiveTrack(parsed.data.round_id);
+    const state = await restartCurrentTrackAndBroadcast(req.params.id, round);
+    res.json({ ok: true, state });
   },
 );
 

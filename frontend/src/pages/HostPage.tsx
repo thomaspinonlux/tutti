@@ -45,6 +45,7 @@ import {
 } from '../lib/sessions.js';
 import { connectAsHost } from '../lib/socket.js';
 import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
+import { useSpotifyAudioSync } from '../lib/useSpotifyAudioSync.js';
 import { MinScreen } from '../components/MinScreen.js';
 import {
   Badge,
@@ -369,76 +370,15 @@ function HostPageInner(): JSX.Element {
   // débrouille pour ignorer si aucun track:start ne demande Spotify.
   const spotify = useSpotifyPlayer({ enabled: phase === 'roundPlaying' });
 
-  // Listener track:restart séparé — re-attaché à chaque changement de socket
-  // ou de spotify pour garantir une closure fraîche sur restartCurrentTrack.
-  useEffect(() => {
-    if (!hostSocket) return;
-    const handler = (): void => {
-      console.info('[track:restart] received — restart Spotify + reset UI timer');
-      void spotify.restartCurrentTrack();
-      // Reset le started_at + phase pour que le chrono header reparte de 0
-      // et que les buzzers se réactivent (retour phase1).
-      setCurrentTrack((prev) =>
-        prev ? { ...prev, started_at: new Date().toISOString(), phase: 'phase1' } : prev,
-      );
-      // Clear correctAnswers + lastReveal pour repartir propre.
-      setCorrectAnswers([]);
-      setPhase2StartedAt(null);
-      setLastReveal(null);
-      setActiveBuzzers(new Set());
-    };
-    hostSocket.on('track:restart', handler);
-    return () => {
-      hostSocket.off('track:restart', handler);
-    };
-  }, [hostSocket, spotify]);
-
-  // Auto-play selon les events gameplay (Phase C : musique continue en
-  // phase 2 + phase 3, ne s'arrête QUE sur phase3-skipped ou round/session end).
-  useEffect(() => {
-    if (!currentTrack) {
-      // Round terminé mid-track ou track effacé : on coupe le son
-      void spotify.pause();
-      return;
-    }
-    if (currentTrack.provider !== 'spotify') return;
-    if (session?.is_paused) {
-      // Pause master active : effet géré ci-dessous, on ne touche pas ici.
-      return;
-    }
-
-    // Sur le NOUVEAU track (track_id change), on lance la lecture.
-    // Pendant phase 2 et phase 3 et phase 3-revealed, on laisse jouer (musique
-    // continue jusqu'à la fin naturelle). Sur phase 3-skipped, on coupe.
-    if (currentTrack.phase === 'phase3-skipped') {
-      void spotify.pause();
-      return;
-    }
-    // Pour les autres phases : on déclenche play() seulement si on vient de
-    // changer de track (le useEffect retrigger sur track_id).
-    void spotify.play(`spotify:track:${currentTrack.provider_track_id}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    currentTrack?.track_id,
-    currentTrack?.phase === 'phase3-skipped',
-    currentTrack?.provider,
-    currentTrack === null,
-    session?.is_paused,
-  ]);
-
-  // Master pause/resume : pause/reprise l'audio Spotify si on était en train
-  // de jouer, et indépendamment de la phase track.
-  useEffect(() => {
-    if (!currentTrack) return;
-    if (currentTrack.provider !== 'spotify') return;
-    if (session?.is_paused) {
-      void spotify.pause();
-    } else if (currentTrack.phase === 'phase1') {
-      // Reprise pendant l'écoute → on relance la lecture du morceau courant
-      void spotify.resume();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.is_paused]);
+  // ── Audio sync unifié — single source of truth = état serveur ────────
+  // Le hook réagit à currentTrack (track:start broadcast) et session.is_paused
+  // (session:paused broadcast) pour piloter Spotify. Aucune mutation locale.
+  useSpotifyAudioSync({
+    spotify,
+    currentTrack,
+    isPaused: session?.is_paused ?? false,
+    enabled: phase === 'roundPlaying',
+  });
 
   // ── Actions ────────────────────────────────────────────────────────────
   const refreshCumulative = async (sid: string): Promise<void> => {
@@ -472,58 +412,36 @@ function HostPageInner(): JSX.Element {
     }
   };
 
+  // Pas d'optimistic update : on attend le broadcast socket session:paused/
+  // session:resumed qui set session.is_paused. useSpotifyAudioSync pilote
+  // Spotify automatiquement quand le state change. Single source of truth.
   const handlePauseAudio = async (): Promise<void> => {
-    if (!session || !playingRound) {
-      console.warn('[Session Pause] ABORT — pas de session ou playingRound');
-      return;
-    }
-    console.info(
-      '[Session Pause] Click — session:',
-      session.id,
-      '| is_paused before:',
-      session.is_paused,
-    );
+    if (!session || !playingRound) return;
+    console.info('[Session Pause] POST /pause');
     try {
-      console.info('[Session Pause] POST /pause');
       await hostPauseSession(session.id, playingRound.id);
-      console.info('[Session Pause] POST OK — Spotify pause');
-      await spotify.pause();
-      // Optimistic update : on n'attend pas le broadcast socket pour figer le timer.
-      setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
-      console.info('[Session Pause] is_paused → true (optimistic)');
     } catch (err: unknown) {
       console.error('[Session Pause] ERROR:', err);
     }
   };
 
   const handleResumeAudio = async (): Promise<void> => {
-    if (!session || !playingRound) {
-      console.warn('[Session Resume] ABORT');
-      return;
-    }
-    console.info('[Session Resume] Click — is_paused before:', session.is_paused);
+    if (!session || !playingRound) return;
+    console.info('[Session Resume] POST /resume');
     try {
       await hostResumeSession(session.id, playingRound.id);
-      console.info('[Session Resume] POST OK — Spotify resume');
-      await spotify.resume();
-      setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
-      console.info('[Session Resume] is_paused → false (optimistic)');
     } catch (err: unknown) {
       console.error('[Session Resume] ERROR:', err);
     }
   };
 
   const handleRestartTrack = async (): Promise<void> => {
-    if (!session || !playingRound) {
-      console.warn('[Restart Track] ABORT');
-      return;
-    }
-    console.info('[Restart Track] Click — round:', playingRound.id);
+    if (!session || !playingRound) return;
+    console.info('[Restart Track] POST /restart-track');
     try {
       await hostRestartTrack(session.id, playingRound.id);
-      console.info('[Restart Track] POST OK — track:restart broadcast attendu');
-      // Le broadcast track:restart déclenche le restart côté ce client aussi
-      // (via le useEffect listener), donc pas besoin d'appel direct ici.
+      // Backend re-broadcast track:start avec nouveau started_at.
+      // useSpotifyAudioSync détecte le changement → seek 0 + play.
     } catch (err: unknown) {
       console.error('[Restart Track] ERROR:', err);
     }

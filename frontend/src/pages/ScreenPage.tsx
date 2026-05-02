@@ -200,6 +200,13 @@ export function ScreenPage(): JSX.Element {
         sock.on('track:revealed', (payload: { artist: string; title: string }) => {
           setLastReveal({ artist: payload.artist, title: payload.title });
         });
+        // Sync pause/resume — la TV doit refléter l'état serveur.
+        sock.on('session:paused', () => {
+          setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
+        });
+        sock.on('session:resumed', () => {
+          setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
+        });
       } catch (err: unknown) {
         if (!cancelled) setError((err as Error).message);
       }
