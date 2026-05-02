@@ -50,6 +50,7 @@ const SPOTIFY_SCOPES = [
   'user-read-playback-state',
   'playlist-read-private',
   'playlist-read-collaborative',
+  'user-library-read',
 ].join(' ');
 
 function getConfig(): {
@@ -92,7 +93,11 @@ router.post('/authorize', requireAuth, requireWorkspace, (req: Request, res: Res
       state,
       show_dialog: 'true', // forcer le re-consent pour permettre changement de compte
     });
-    res.json({ authUrl: `${SPOTIFY_AUTHORIZE_URL}?${params.toString()}` });
+    const authUrl = `${SPOTIFY_AUTHORIZE_URL}?${params.toString()}`;
+    console.info('[spotify authorize] Demande OAuth pour user', userId);
+    console.info('[spotify authorize] Scopes demandés:', SPOTIFY_SCOPES);
+    console.info('[spotify authorize] URL complète:', authUrl);
+    res.json({ authUrl });
   } catch (err: unknown) {
     console.error('[spotify authorize] error:', err);
     res.status(500).json({
@@ -175,6 +180,21 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
       scope: string;
       token_type: string;
     };
+
+    // Log scopes effectivement accordés par Spotify (vs ceux demandés)
+    console.info('[spotify callback] Scopes demandés :', SPOTIFY_SCOPES);
+    console.info('[spotify callback] Scopes accordés :', tokenJson.scope);
+    const requested = new Set(SPOTIFY_SCOPES.split(' '));
+    const granted = new Set(tokenJson.scope.split(' '));
+    const missing = [...requested].filter((s) => !granted.has(s));
+    if (missing.length > 0) {
+      console.warn(
+        '[spotify callback] ⚠️ Scopes MANQUANTS (Spotify ne les a pas accordés) :',
+        missing.join(', '),
+      );
+    } else {
+      console.info('[spotify callback] ✓ Tous les scopes demandés ont été accordés');
+    }
 
     // Récupérer l'email du compte (info utile pour l'UI)
     let accountEmail: string | null = null;
