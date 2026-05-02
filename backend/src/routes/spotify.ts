@@ -41,7 +41,9 @@ const searchTracksSchema = z.object({
   year_max: z.coerce.number().int().min(1900).max(2100).optional(),
   genre: z.string().trim().max(50).optional(),
   market: z.string().length(2).optional(),
-  limit: z.coerce.number().int().min(1).max(50).default(20),
+  // Spotify rejette silencieusement limit > 10 sur ce client (400 "Invalid
+  // limit" trompeur). Cap à 10. Pour > 10 résultats, paginer via offset.
+  limit: z.coerce.number().int().min(1).max(10).default(10),
   offset: z.coerce.number().int().min(0).max(1000).default(0),
 });
 
@@ -99,7 +101,9 @@ function needsReconnectHint(msg: string): string | undefined {
 // ── GET /my-playlists ─────────────────────────────────────────────────────
 
 const paginationSchema = z.object({
-  limit: z.coerce.number().int().min(1).max(50).default(20),
+  // Spotify rejette silencieusement limit > 10 sur ce client (400 "Invalid
+  // limit" trompeur). Cap à 10. Pour > 10 résultats, paginer via offset.
+  limit: z.coerce.number().int().min(1).max(10).default(10),
   offset: z.coerce.number().int().min(0).max(10000).default(0),
 });
 
@@ -142,7 +146,9 @@ router.get(
 const searchPlaylistsSchema = z.object({
   q: z.string().trim().min(1).max(100),
   market: z.string().length(2).optional(),
-  limit: z.coerce.number().int().min(1).max(50).default(20),
+  // Spotify rejette silencieusement limit > 10 sur ce client (400 "Invalid
+  // limit" trompeur). Cap à 10. Pour > 10 résultats, paginer via offset.
+  limit: z.coerce.number().int().min(1).max(10).default(10),
   offset: z.coerce.number().int().min(0).max(1000).default(0),
 });
 
@@ -189,8 +195,9 @@ router.get(
 
 const playlistTracksQuerySchema = z.object({
   market: z.string().length(2).optional(),
-  // Spotify cap : limit ∈ [1, 50] sur cet endpoint.
-  limit: z.coerce.number().int().min(1).max(50).default(50),
+  // Spotify rejette silencieusement limit > 10 sur ce client. Cap à 10
+  // partout (paginer via offset si besoin de plus).
+  limit: z.coerce.number().int().min(1).max(10).default(10),
   offset: z.coerce.number().int().min(0).max(100000).default(0),
 });
 

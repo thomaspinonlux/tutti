@@ -155,7 +155,7 @@ export class SpotifyProvider implements MusicProvider {
     const q = parts.join(' ').trim();
     if (!q) return { items: [], total: 0, next: null };
 
-    const limit = clampInt(opts.limit, 20, 1, 50);
+    const limit = clampInt(opts.limit, SPOTIFY_MAX_LIMIT, 1, SPOTIFY_MAX_LIMIT);
     const offset = clampInt(opts.offset, 0, 0, 1000);
     const params = new URLSearchParams({
       q,
@@ -180,7 +180,7 @@ export class SpotifyProvider implements MusicProvider {
     total: number;
     next: string | null;
   }> {
-    const limit = clampInt(opts.limit, 20, 1, 50);
+    const limit = clampInt(opts.limit, SPOTIFY_MAX_LIMIT, 1, SPOTIFY_MAX_LIMIT);
     const offset = clampInt(opts.offset, 0, 0, 100000);
     const params = new URLSearchParams({
       limit: String(limit),
@@ -207,7 +207,7 @@ export class SpotifyProvider implements MusicProvider {
     offset?: number;
   }): Promise<{ items: SpotifyPlaylistSummary[]; total: number; next: string | null }> {
     if (!opts.query.trim()) return { items: [], total: 0, next: null };
-    const limit = clampInt(opts.limit, 20, 1, 50);
+    const limit = clampInt(opts.limit, SPOTIFY_MAX_LIMIT, 1, SPOTIFY_MAX_LIMIT);
     const offset = clampInt(opts.offset, 0, 0, 1000);
     const params = new URLSearchParams({
       q: opts.query,
@@ -236,7 +236,7 @@ export class SpotifyProvider implements MusicProvider {
     playlistId: string,
     opts: { limit?: number; offset?: number; market?: string } = {},
   ): Promise<{ items: TrackResult[]; total: number; next: string | null }> {
-    const limit = clampInt(opts.limit, 50, 1, 50);
+    const limit = clampInt(opts.limit, SPOTIFY_MAX_LIMIT, 1, SPOTIFY_MAX_LIMIT);
     const offset = clampInt(opts.offset, 0, 0, 100000);
     const params = new URLSearchParams({
       limit: String(limit),
@@ -421,6 +421,14 @@ function clampInt(
   return n;
 }
 
+/**
+ * Cap limit Spotify à 10 — restriction silencieuse découverte sur cet
+ * account (limit > 10 retourne 400 "Invalid limit"). Doc officielle dit
+ * 1-50 mais en pratique Spotify rejette > 10 sur ce client.
+ * À ré-évaluer si la politique Spotify change.
+ */
+const SPOTIFY_MAX_LIMIT = 10;
+
 // ─── Mapping Spotify → TrackResult ────────────────────────────────────────
 
 function toTrackResult(t: SpotifyTrackApi): TrackResult {
@@ -467,6 +475,14 @@ async function spotifyErrorFrom(res: Response, url?: string): Promise<SpotifyErr
     // body non-JSON, on garde le message par défaut
   }
   console.error('[Spotify Error]', url ?? '', '→', res.status, bodyRaw.slice(0, 500));
+  // Warn explicite si politique de quota Spotify a changé (limit > N rejeté)
+  if (message.toLowerCase().includes('invalid limit')) {
+    console.warn(
+      '[Spotify Warn] "Invalid limit" reçu — Spotify cap actuel = ' +
+        String(SPOTIFY_MAX_LIMIT) +
+        ". Si l'erreur persiste, baisser SPOTIFY_MAX_LIMIT dans SpotifyProvider.ts",
+    );
+  }
   return new SpotifyError(res.status, `Spotify: ${message}`);
 }
 

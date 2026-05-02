@@ -24,7 +24,8 @@ const DECADES = [
   { label: '2020s', min: 2020, max: 2029 },
 ];
 
-const PAGE_SIZE = 20;
+// Spotify rejette limit > 10 sur ce client (400 "Invalid limit"). Cap dur.
+const PAGE_SIZE = 10;
 
 export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Element {
   const [artist, setArtist] = useState('');

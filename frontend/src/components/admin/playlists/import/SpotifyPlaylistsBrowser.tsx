@@ -21,8 +21,9 @@ interface Props {
   onImported: (count: number) => void;
 }
 
-const PAGE_SIZE = 20;
-const TRACKS_PAGE_SIZE = 50;
+// Spotify rejette limit > 10 sur ce client (400 "Invalid limit"). Cap dur.
+const PAGE_SIZE = 10;
+const TRACKS_PAGE_SIZE = 10;
 
 export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props): JSX.Element {
   const [query, setQuery] = useState('');
