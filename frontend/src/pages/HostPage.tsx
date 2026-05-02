@@ -508,12 +508,29 @@ function HostPageInner(): JSX.Element {
   };
 
   const handleNextTrack = async (): Promise<void> => {
-    if (!session || !playingRound) return;
+    console.info(
+      '[Next Track] Click bouton — session:',
+      session?.id,
+      '| round:',
+      playingRound?.id,
+      '| current track index:',
+      currentTrack?.track_index,
+      '| busy:',
+      busy,
+    );
+    if (!session || !playingRound) {
+      console.warn('[Next Track] ABORT — pas de session ou playingRound');
+      return;
+    }
     setBusy(true);
     try {
-      await nextTrack(session.id, playingRound.id);
-      // round:ended est broadcast auto si fin de playlist
+      console.info('[Next Track] POST /next-track');
+      const result = await nextTrack(session.id, playingRound.id);
+      console.info('[Next Track] Response:', result);
+      // Le nouveau track arrive via socket track:start. Le useEffect audio
+      // appellera spotify.play() avec le nouveau provider_track_id.
     } catch (err: unknown) {
+      console.error('[Next Track] ERROR:', err);
       setError((err as Error).message);
     } finally {
       setBusy(false);
@@ -521,11 +538,17 @@ function HostPageInner(): JSX.Element {
   };
 
   const handleSkipTrack = async (): Promise<void> => {
-    if (!session || !playingRound) return;
+    console.info('[Skip Track] Click — session:', session?.id, '| round:', playingRound?.id);
+    if (!session || !playingRound) {
+      console.warn('[Skip Track] ABORT — pas de session ou playingRound');
+      return;
+    }
     setBusy(true);
     try {
-      await skipTrack(session.id, playingRound.id);
+      const result = await skipTrack(session.id, playingRound.id);
+      console.info('[Skip Track] Response:', result);
     } catch (err: unknown) {
+      console.error('[Skip Track] ERROR:', err);
       setError((err as Error).message);
     } finally {
       setBusy(false);

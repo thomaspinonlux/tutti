@@ -39,20 +39,40 @@ import { Badge, Button, Card, TitleHandwritten, Underline } from '../../componen
 
 // ── Hooks utilitaires ─────────────────────────────────────────────────────
 
-function useTimeRemaining(startedAtIso: string, durationMs: number): number {
-  const [remaining, setRemaining] = useState(() => {
-    const elapsed = Date.now() - new Date(startedAtIso).getTime();
-    return Math.max(0, durationMs - elapsed);
-  });
+/**
+ * Timer pause-aware : décompte vers 0 sur durationMs, gelé quand isPaused=true.
+ * Reset auto quand startedAtIso change.
+ *
+ * Implémentation : on décrémente `remaining` par delta réel entre 2 ticks
+ * UNIQUEMENT quand !isPaused. Pendant pause, on rafraîchit la ref de
+ * dernier tick mais on ne décrémente pas, donc le timer fige.
+ */
+function useTimeRemaining(startedAtIso: string, durationMs: number, isPaused = false): number {
+  const [remaining, setRemaining] = useState(durationMs);
+  const lastTickRef = useRef<number>(Date.now());
+
+  // Reset à chaque nouveau started_at (= nouveau morceau ou phase)
+  useEffect(() => {
+    setRemaining(durationMs);
+    lastTickRef.current = Date.now();
+  }, [startedAtIso, durationMs]);
+
   useEffect(() => {
     const tick = (): void => {
-      const elapsed = Date.now() - new Date(startedAtIso).getTime();
-      setRemaining(Math.max(0, durationMs - elapsed));
+      const now = Date.now();
+      const delta = now - lastTickRef.current;
+      lastTickRef.current = now;
+      if (!isPaused) {
+        setRemaining((r) => Math.max(0, r - delta));
+      }
     };
-    tick();
+    // Met à jour immédiatement la ref pour ne pas accumuler le delta de la
+    // période de pause si on entre/sort de pause.
+    lastTickRef.current = Date.now();
     const id = window.setInterval(tick, 250);
     return () => window.clearInterval(id);
-  }, [startedAtIso, durationMs]);
+  }, [isPaused]);
+
   return remaining;
 }
 
@@ -230,9 +250,15 @@ function FoundStack({ correctAnswers }: { correctAnswers: CorrectAnswerEntry[] }
 
 // ── Phase 2 — Timer jaune décollé à droite du stage ───────────────────────
 
-function Phase2YellowTimer({ phase2StartedAt }: { phase2StartedAt: string }): JSX.Element {
+function Phase2YellowTimer({
+  phase2StartedAt,
+  isPaused,
+}: {
+  phase2StartedAt: string;
+  isPaused: boolean;
+}): JSX.Element {
   const { t } = useTranslation();
-  const remaining = useTimeRemaining(phase2StartedAt, 15_000);
+  const remaining = useTimeRemaining(phase2StartedAt, 15_000, isPaused);
   const seconds = Math.max(0, Math.ceil(remaining / 1000));
   return (
     <div
@@ -636,9 +662,9 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
                 <FoundStack correctAnswers={correctAnswers} />
               )}
 
-              {/* Phase 2 — timer jaune décollé droite */}
+              {/* Phase 2 — timer jaune décollé droite (gelé si pause) */}
               {isPhase2 && phase2StartedAt && (
-                <Phase2YellowTimer phase2StartedAt={phase2StartedAt} />
+                <Phase2YellowTimer phase2StartedAt={phase2StartedAt} isPaused={session.is_paused} />
               )}
 
               {/* Cover — mystère en phase 1+2, révélée en phase 3 */}

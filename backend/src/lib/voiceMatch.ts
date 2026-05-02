@@ -202,7 +202,14 @@ export function matchTranscript(input: MatchInput): MatchResult {
   const tokens = tokenizeMeaningful(input.transcript);
   const transcriptNormalized = tokens.join(' ');
 
+  console.info('[Voice Match] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.info('[Voice Match] Transcription Whisper brute:', JSON.stringify(input.transcript));
+  console.info('[Voice Match] Transcription normalisée :', JSON.stringify(transcriptNormalized));
+  console.info('[Voice Match] Track:', input.track.canonical_title);
+  console.info('[Voice Match] Artist:', input.artist.canonical_name);
+
   if (tokens.length === 0) {
+    console.warn('[Voice Match] ❌ tokens vides après filtre fillers');
     return {
       matched_artist: false,
       matched_title: false,
@@ -214,6 +221,7 @@ export function matchTranscript(input: MatchInput): MatchResult {
   // n-grams 1 à 5 mots — couvre "stromae", "alors on danse", titres
   // composés type "All You Need is Love".
   const ngrams = generateNgrams(tokens, 5);
+  console.info('[Voice Match] N-grams testés:', JSON.stringify(ngrams));
 
   const artistAliases = [input.artist.canonical_name, ...input.artist.aliases]
     .map(normalize)
@@ -223,8 +231,35 @@ export function matchTranscript(input: MatchInput): MatchResult {
     .map(normalize)
     .filter((s) => s.length >= 2);
 
+  console.info('[Voice Match] Aliases artiste (normalisés):', JSON.stringify(artistAliases));
+  console.info('[Voice Match] Aliases titre (normalisés):', JSON.stringify(titleAliases));
+
   const artistMatch = matchAnyAlias(ngrams, artistAliases);
   const titleMatch = matchAnyAlias(ngrams, titleAliases);
+
+  console.info(
+    '[Voice Match] Artist match:',
+    artistMatch.matched,
+    '(confidence:',
+    artistMatch.confidence.toFixed(3),
+    ')',
+  );
+  console.info(
+    '[Voice Match] Title match:',
+    titleMatch.matched,
+    '(confidence:',
+    titleMatch.confidence.toFixed(3),
+    ')',
+  );
+  if (!artistMatch.matched) {
+    console.warn(
+      '[Voice Match] ⚠️ Pas de match artiste. Threshold = ',
+      1 - FUZZY_THRESHOLD,
+      '. Confidence max trouvée:',
+      artistMatch.confidence.toFixed(3),
+    );
+  }
+  console.info('[Voice Match] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   return {
     matched_artist: artistMatch.matched,
