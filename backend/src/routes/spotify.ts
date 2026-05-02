@@ -65,10 +65,36 @@ router.get(
       res.json(result);
     } catch (err: unknown) {
       console.error('[GET /api/spotify/search-tracks]', err);
-      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: (err as Error).message } });
+      const msg = (err as Error).message;
+      const hint = needsReconnectHint(msg);
+      const fullMessage = hint ? `${msg} — ${hint}` : msg;
+      res.status(hint ? 409 : 500).json({
+        error: {
+          code: hint ? 'SPOTIFY_RECONNECT_NEEDED' : 'INTERNAL_ERROR',
+          message: fullMessage,
+          hint,
+        },
+      });
     }
   },
 );
+
+/** Détecte les messages d'erreur Spotify qui suggèrent un token périmé /
+ *  scope manquant / app en mode dev avec user non whitelisté → propose une
+ *  reconnexion Spotify. */
+function needsReconnectHint(msg: string): string | undefined {
+  const m = msg.toLowerCase();
+  if (
+    m.includes('invalid limit') ||
+    m.includes('invalid token') ||
+    m.includes('insufficient client scope') ||
+    m.includes('access denied') ||
+    m.includes('expired')
+  ) {
+    return 'Reconnecte Spotify (Settings → Disconnect → Reconnect) pour rafraîchir le token avec les nouveaux scopes.';
+  }
+  return undefined;
+}
 
 // ── GET /my-playlists ─────────────────────────────────────────────────────
 
@@ -97,7 +123,16 @@ router.get(
       res.json(result);
     } catch (err: unknown) {
       console.error('[GET /api/spotify/my-playlists]', err);
-      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: (err as Error).message } });
+      const msg = (err as Error).message;
+      const hint = needsReconnectHint(msg);
+      const fullMessage = hint ? `${msg} — ${hint}` : msg;
+      res.status(hint ? 409 : 500).json({
+        error: {
+          code: hint ? 'SPOTIFY_RECONNECT_NEEDED' : 'INTERNAL_ERROR',
+          message: fullMessage,
+          hint,
+        },
+      });
     }
   },
 );
@@ -136,7 +171,16 @@ router.get(
       res.json(result);
     } catch (err: unknown) {
       console.error('[GET /api/spotify/search-playlists]', err);
-      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: (err as Error).message } });
+      const msg = (err as Error).message;
+      const hint = needsReconnectHint(msg);
+      const fullMessage = hint ? `${msg} — ${hint}` : msg;
+      res.status(hint ? 409 : 500).json({
+        error: {
+          code: hint ? 'SPOTIFY_RECONNECT_NEEDED' : 'INTERNAL_ERROR',
+          message: fullMessage,
+          hint,
+        },
+      });
     }
   },
 );
@@ -170,7 +214,16 @@ router.get(
       res.json(result);
     } catch (err: unknown) {
       console.error('[GET /api/spotify/playlist/:id/tracks]', err);
-      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: (err as Error).message } });
+      const msg = (err as Error).message;
+      const hint = needsReconnectHint(msg);
+      const fullMessage = hint ? `${msg} — ${hint}` : msg;
+      res.status(hint ? 409 : 500).json({
+        error: {
+          code: hint ? 'SPOTIFY_RECONNECT_NEEDED' : 'INTERNAL_ERROR',
+          message: fullMessage,
+          hint,
+        },
+      });
     }
   },
 );

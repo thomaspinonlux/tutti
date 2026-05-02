@@ -78,15 +78,21 @@ export interface SpotifyPlaylistSummary {
 }
 
 function toPlaylistSummary(p: SpotifyPlaylistApi): SpotifyPlaylistSummary {
+  // Defensive : Spotify peut renvoyer tracks/owner/images partiellement null
+  // sur certaines playlists "edge case" (collaboratives folder, partagées,
+  // dossiers internes). On évite tout crash via fallback.
   const cover = p.images?.[0]?.url ?? null;
+  const ownerName = p.owner?.display_name ?? p.owner?.id ?? '?';
+  const ownerId = p.owner?.id ?? '?';
+  const tracksCount = p.tracks?.total ?? 0;
   return {
     id: p.id,
-    name: p.name,
+    name: p.name ?? '(sans titre)',
     description: p.description ?? null,
     cover_url: cover,
-    owner_name: p.owner.display_name ?? p.owner.id,
-    owner_id: p.owner.id,
-    tracks_count: p.tracks.total,
+    owner_name: ownerName,
+    owner_id: ownerId,
+    tracks_count: tracksCount,
     is_public: p.public ?? false,
     is_collaborative: p.collaborative ?? false,
     followers_count: p.followers?.total ?? null,
@@ -268,7 +274,9 @@ export class SpotifyProvider implements MusicProvider {
   private async spotifyFetch<T>(path: string): Promise<T> {
     const token = await this.getValidAccessToken();
     const fullUrl = `${SPOTIFY_API}${path}`;
+    const tokenPreview = `Bearer ${token.substring(0, 10)}…(${token.length} chars)`;
     console.info('[Spotify Fetch] URL:', fullUrl);
+    console.info('[Spotify Fetch] Authorization:', tokenPreview);
     const res = await fetch(fullUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -286,14 +294,19 @@ export class SpotifyProvider implements MusicProvider {
         const err = await spotifyErrorFrom(retry, fullUrl);
         throw err;
       }
-      return (await retry.json()) as T;
+      const retryText = await retry.text();
+      console.info('[Spotify Fetch] Retry body (first 1000):', retryText.substring(0, 1000));
+      return JSON.parse(retryText) as T;
     }
 
     if (!res.ok) {
       const err = await spotifyErrorFrom(res, fullUrl);
       throw err;
     }
-    return (await res.json()) as T;
+    // Log raw body pour debug structure inattendue (200 mais parsing crash)
+    const bodyText = await res.text();
+    console.info('[Spotify Fetch] Response body (first 1000):', bodyText.substring(0, 1000));
+    return JSON.parse(bodyText) as T;
   }
 
   private async getValidAccessToken(): Promise<string> {
