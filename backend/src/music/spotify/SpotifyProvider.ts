@@ -81,6 +81,22 @@ export interface SpotifyPlaylistSummary {
   is_spotify_owned: boolean;
 }
 
+/**
+ * Détecte si une playlist est éditoriale Spotify (inaccessible via API depuis
+ * nov 2024). Spotify utilise plusieurs IDs/noms pour ses playlists curées :
+ *   - owner.id = 'spotify' (le plus courant)
+ *   - owner.id commence par 'spotify' (spotifycharts, spotifyfrance…)
+ *   - owner.display_name === 'Spotify'
+ */
+function detectSpotifyOwned(ownerId: string, ownerName: string): boolean {
+  const id = ownerId.toLowerCase();
+  const name = ownerName.toLowerCase();
+  if (id === 'spotify') return true;
+  if (id.startsWith('spotify')) return true;
+  if (name === 'spotify') return true;
+  return false;
+}
+
 function toPlaylistSummary(p: SpotifyPlaylistApi): SpotifyPlaylistSummary {
   // Defensive : Spotify peut renvoyer tracks/owner/images partiellement null
   // sur certaines playlists "edge case" (collaboratives folder, partagées,
@@ -100,7 +116,7 @@ function toPlaylistSummary(p: SpotifyPlaylistApi): SpotifyPlaylistSummary {
     is_public: p.public ?? false,
     is_collaborative: p.collaborative ?? false,
     followers_count: p.followers?.total ?? null,
-    is_spotify_owned: ownerId === 'spotify',
+    is_spotify_owned: detectSpotifyOwned(ownerId, ownerName),
   };
 }
 

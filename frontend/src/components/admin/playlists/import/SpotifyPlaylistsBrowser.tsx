@@ -173,16 +173,26 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
             ← Retour
           </Button>
         </div>
-        {isForbidden && (
-          <div className="p-3 border-2 border-raspberry rounded bg-raspberry/10">
-            <p className="font-display text-base mb-1">🔒 Playlist éditoriale Spotify</p>
-            <p className="text-sm text-ink-soft">
-              Cette playlist a été créée par Spotify. Depuis novembre 2024, l'API Spotify ne permet
-              plus l'accès à ces playlists pour les apps en Development Mode. Choisis une playlist
-              créée par un utilisateur (badge <Badge tone="basil">Communauté</Badge>).
-            </p>
-          </div>
-        )}
+        {isForbidden &&
+          (selectedPlaylist.is_spotify_owned ? (
+            <div className="p-3 border-2 border-raspberry rounded bg-raspberry/10">
+              <p className="font-display text-base mb-1">🔒 Playlist éditoriale Spotify</p>
+              <p className="text-sm text-ink-soft">
+                Cette playlist a été créée par Spotify. Depuis novembre 2024, l'API Spotify ne
+                permet plus l'accès à ces playlists pour les apps en Development Mode. Choisis une
+                playlist créée par un utilisateur (badge <Badge tone="basil">Communauté</Badge>).
+              </p>
+            </div>
+          ) : (
+            <div className="p-3 border-2 border-raspberry rounded bg-raspberry/10">
+              <p className="font-display text-base mb-1">🔒 Playlist inaccessible</p>
+              <p className="text-sm text-ink-soft">
+                Spotify refuse l'accès aux morceaux de cette playlist (créée par{' '}
+                {selectedPlaylist.owner_name}). Causes possibles : playlist privée, restriction
+                régionale, ou flag interne Spotify. Choisis une autre playlist.
+              </p>
+            </div>
+          ))}
         {tracksError && !isForbidden && (
           <p role="alert" className="text-raspberry text-sm">
             {tracksError}

@@ -35,6 +35,7 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
   const [tracks, setTracks] = useState<TrackResult[]>([]);
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
@@ -62,6 +63,8 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
       });
       setTracks(res.items);
       setTotal(res.total);
+      setHasNext(res.next !== null || res.items.length === PAGE_SIZE);
+      setOffset(0);
       setHasSearched(true);
     } catch (err: unknown) {
       setError((err as Error).message);
@@ -86,6 +89,8 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
       });
       setTracks((prev) => [...prev, ...res.items]);
       setOffset(nextOffset);
+      // hasNext = Spotify a un next URL OU dernière page pleine (peut être plus)
+      setHasNext(res.next !== null || res.items.length === PAGE_SIZE);
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {
@@ -172,11 +177,11 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
         </p>
       )}
 
-      {hasSearched && total > 0 && (
+      {hasSearched && tracks.length > 0 && (
         <p className="font-mono text-xs text-ink-soft">
-          {tracks.length === total
-            ? `${total} résultat${total > 1 ? 's' : ''} (Spotify)`
-            : `${tracks.length} sur ${total} chargés (Spotify)`}
+          {tracks.length} chargé{tracks.length > 1 ? 's' : ''}
+          {total > tracks.length ? ` sur ${total} estimés` : ''}
+          {hasNext ? ' · plus disponibles ↓' : ''}
         </p>
       )}
 
@@ -190,7 +195,7 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
         }
         playlistId={playlistId}
         onImported={onImported}
-        hasMore={tracks.length < total}
+        hasMore={hasNext}
         onLoadMore={() => void loadMore()}
       />
     </div>
