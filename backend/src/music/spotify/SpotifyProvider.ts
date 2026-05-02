@@ -274,13 +274,35 @@ export class SpotifyProvider implements MusicProvider {
   private async spotifyFetch<T>(path: string): Promise<T> {
     const token = await this.getValidAccessToken();
     const fullUrl = `${SPOTIFY_API}${path}`;
-    const tokenPreview = `Bearer ${token.substring(0, 10)}…(${token.length} chars)`;
+    // Trim any whitespace/newline qui aurait pu se glisser dans le token DB
+    const cleanToken = token.trim();
+    const tokenPreview = `Bearer ${cleanToken.substring(0, 10)}…(${cleanToken.length} chars)`;
+    // Options minimales : GET explicite, AUCUN body, AUCUN Content-Type,
+    // AUCUN custom header. Spotify renvoie parfois "Invalid limit" trompeur
+    // sur des requêtes qui contiennent des choses en trop.
+    const fetchOpts: RequestInit = {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${cleanToken}` },
+    };
     console.info('[Spotify Fetch] URL:', fullUrl);
     console.info('[Spotify Fetch] Authorization:', tokenPreview);
-    const res = await fetch(fullUrl, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    console.info('[Spotify Fetch] Token has whitespace?', token !== cleanToken);
+    console.info(
+      '[Spotify Fetch] Options:',
+      JSON.stringify({
+        method: fetchOpts.method,
+        headers: { Authorization: tokenPreview },
+        body: 'body' in fetchOpts ? 'PRESENT (BUG)' : 'absent',
+      }),
+    );
+    const res = await fetch(fullUrl, fetchOpts);
     console.info('[Spotify Fetch] Response status:', res.status);
+    // Log tous les headers de réponse pour debug
+    const respHeaders: Record<string, string> = {};
+    res.headers.forEach((v, k) => {
+      respHeaders[k] = v;
+    });
+    console.info('[Spotify Fetch] Response headers:', JSON.stringify(respHeaders));
 
     if (res.status === 401) {
       // Token rejeté malgré check d'expiration : refresh forcé puis retry une fois.

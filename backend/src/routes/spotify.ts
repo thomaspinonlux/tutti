@@ -228,4 +228,79 @@ router.get(
   },
 );
 
+// ── GET /_debug ──────────────────────────────────────────────────────────
+// Test minimaliste : appelle Spotify avec EXACTEMENT le même format que curl,
+// sans passer par SpotifyProvider. Permet d'isoler si le bug vient du
+// provider ou de Spotify lui-même (App Dev Mode / user pas whitelist).
+
+router.get(
+  '/_debug',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const cred = await prisma.musicProviderCredential.findUnique({
+        where: {
+          workspace_id_provider: { workspace_id: req.workspaceId!, provider: 'spotify' },
+        },
+      });
+      if (!cred) {
+        res.status(409).json({ error: { code: 'NOT_CONNECTED' } });
+        return;
+      }
+      const token = cred.access_token.trim();
+      const url =
+        'https://api.spotify.com/v1/search?q=stromae&type=track&limit=20&offset=0&market=FR';
+      const r = await fetch(url, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const body = await r.text();
+      const headers: Record<string, string> = {};
+      r.headers.forEach((v, k) => {
+        headers[k] = v;
+      });
+      // Test 2 : avec opérateurs de query
+      const url2 =
+        'https://api.spotify.com/v1/search?q=' +
+        encodeURIComponent('artist:"stromae"') +
+        '&type=track&limit=20&offset=0&market=FR';
+      const r2 = await fetch(url2, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const body2 = await r2.text();
+      // Test 3 : profil user (vérifie scopes)
+      const r3 = await fetch('https://api.spotify.com/v1/me', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const body3 = await r3.text();
+      res.json({
+        token_length: token.length,
+        token_first_10: token.substring(0, 10),
+        token_has_whitespace: cred.access_token !== token,
+        token_expires_at: cred.expires_at,
+        test1_simple_search: {
+          url,
+          status: r.status,
+          headers,
+          body_first_500: body.substring(0, 500),
+        },
+        test2_with_operators: {
+          url: url2,
+          status: r2.status,
+          body_first_500: body2.substring(0, 500),
+        },
+        test3_me_profile: {
+          status: r3.status,
+          body_first_500: body3.substring(0, 500),
+        },
+      });
+    } catch (err: unknown) {
+      res.status(500).json({ error: (err as Error).message });
+    }
+  },
+);
+
 export default router;
