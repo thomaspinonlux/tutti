@@ -75,6 +75,10 @@ export interface SpotifyPlaylistSummary {
   is_public: boolean;
   is_collaborative: boolean;
   followers_count: number | null;
+  /** true si playlist éditoriale Spotify (owner.id === 'spotify') —
+   *  l'API Spotify a restreint l'accès aux tracks de ces playlists pour les
+   *  apps en Development Mode (depuis nov 2024). À filtrer côté UI. */
+  is_spotify_owned: boolean;
 }
 
 function toPlaylistSummary(p: SpotifyPlaylistApi): SpotifyPlaylistSummary {
@@ -96,6 +100,7 @@ function toPlaylistSummary(p: SpotifyPlaylistApi): SpotifyPlaylistSummary {
     is_public: p.public ?? false,
     is_collaborative: p.collaborative ?? false,
     followers_count: p.followers?.total ?? null,
+    is_spotify_owned: ownerId === 'spotify',
   };
 }
 

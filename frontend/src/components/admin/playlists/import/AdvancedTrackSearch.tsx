@@ -174,7 +174,9 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
 
       {hasSearched && total > 0 && (
         <p className="font-mono text-xs text-ink-soft">
-          {total} résultat{total > 1 ? 's' : ''} (Spotify) · {tracks.length} chargés
+          {tracks.length === total
+            ? `${total} résultat${total > 1 ? 's' : ''} (Spotify)`
+            : `${tracks.length} sur ${total} chargés (Spotify)`}
         </p>
       )}
 

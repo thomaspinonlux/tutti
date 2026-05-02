@@ -222,6 +222,21 @@ router.get(
     } catch (err: unknown) {
       console.error('[GET /api/spotify/playlist/:id/tracks]', err);
       const msg = (err as Error).message;
+      // Spotify a restreint l'accès aux playlists éditoriales (owner=spotify)
+      // pour les apps en Development Mode (depuis nov 2024). On retourne un
+      // code spécifique pour que l'UI affiche un message clair.
+      if (msg.toLowerCase().includes('forbidden') || msg.includes('403')) {
+        res.status(403).json({
+          error: {
+            code: 'SPOTIFY_PLAYLIST_FORBIDDEN',
+            message:
+              'Cette playlist est probablement éditoriale Spotify (owner=spotify). ' +
+              "Ces playlists ne sont plus accessibles via l'API depuis novembre 2024 " +
+              'pour les apps en Development Mode. Choisis une playlist créée par un user.',
+          },
+        });
+        return;
+      }
       const hint = needsReconnectHint(msg);
       const fullMessage = hint ? `${msg} — ${hint}` : msg;
       res.status(hint ? 409 : 500).json({

@@ -18,6 +18,9 @@ export interface SpotifyPlaylistSummary {
   is_public: boolean;
   is_collaborative: boolean;
   followers_count: number | null;
+  /** true si playlist éditoriale Spotify (owner=spotify) — inaccessible
+   *  via API depuis nov 2024 pour apps en Development Mode. */
+  is_spotify_owned: boolean;
 }
 
 export interface PaginatedTracks {
