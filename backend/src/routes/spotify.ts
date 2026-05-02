@@ -319,6 +319,53 @@ router.get(
       const r6 = await fetch(url6, { method: 'GET', headers: auth });
       const body6 = await r6.text();
 
+      // Tests 7-10 : vary limit values + check headers
+      const variations: Array<{ name: string; url: string }> = [
+        { name: 'limit=1', url: 'https://api.spotify.com/v1/search?q=stromae&type=track&limit=1' },
+        {
+          name: 'limit=10',
+          url: 'https://api.spotify.com/v1/search?q=stromae&type=track&limit=10',
+        },
+        {
+          name: 'limit=50',
+          url: 'https://api.spotify.com/v1/search?q=stromae&type=track&limit=50',
+        },
+        {
+          name: 'limit=20_offset=0',
+          url: 'https://api.spotify.com/v1/search?q=stromae&type=track&limit=20&offset=0',
+        },
+        {
+          name: 'with_include_external',
+          url: 'https://api.spotify.com/v1/search?q=stromae&type=track&limit=20&include_external=audio',
+        },
+        {
+          name: 'different_query',
+          url: 'https://api.spotify.com/v1/search?q=hello&type=track&limit=20',
+        },
+      ];
+      const variants: Record<
+        string,
+        {
+          url: string;
+          status: number;
+          body_first_300: string;
+          ratelimit?: string;
+          retry_after?: string;
+        }
+      > = {};
+      for (const v of variations) {
+        const r = await fetch(v.url, { method: 'GET', headers: auth });
+        const txt = await r.text();
+        variants[v.name] = {
+          url: v.url,
+          status: r.status,
+          body_first_300: txt.substring(0, 300),
+          ratelimit:
+            r.headers.get('x-ratelimit-remaining') ?? r.headers.get('retry-after') ?? undefined,
+          retry_after: r.headers.get('retry-after') ?? undefined,
+        };
+      }
+
       res.json({
         token_length: token.length,
         token_has_whitespace: cred.access_token !== token,
@@ -347,6 +394,7 @@ router.get(
           status: r6.status,
           body_first_500: body6.substring(0, 500),
         },
+        variations: variants,
       });
     } catch (err: unknown) {
       res.status(500).json({ error: (err as Error).message });
