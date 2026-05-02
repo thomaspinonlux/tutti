@@ -162,22 +162,47 @@ export class SpotifyProvider implements MusicProvider {
     limit?: number;
     offset?: number;
   }): Promise<{ items: TrackResult[]; total: number; next: string | null }> {
-    const parts: string[] = [];
-    if (opts.artist) parts.push(`artist:"${opts.artist.replace(/"/g, '')}"`);
-    if (opts.track) parts.push(`track:"${opts.track.replace(/"/g, '')}"`);
-    if (opts.genre) parts.push(`genre:"${opts.genre.replace(/"/g, '')}"`);
-    if (opts.year_min && opts.year_max) {
-      parts.push(`year:${opts.year_min}-${opts.year_max}`);
-    } else if (opts.year_min) {
-      parts.push(`year:${opts.year_min}-${new Date().getFullYear()}`);
-    } else if (opts.year_max) {
-      parts.push(`year:1900-${opts.year_max}`);
+    console.info('[searchTracks] input opts:', JSON.stringify(opts));
+    // Stratégie : utiliser les opérateurs Spotify SI au moins 2 critères
+    // sont fournis (artist+track, ou artist+year). Sinon, fallback en
+    // recherche plain text pour avoir plus de résultats (les opérateurs
+    // sont stricts et limitent souvent à <10 résultats).
+    const hasArtist = !!opts.artist?.trim();
+    const hasTrack = !!opts.track?.trim();
+    const hasYear = opts.year_min || opts.year_max;
+    const useOperators = (hasArtist && hasTrack) || (hasArtist && hasYear) || (hasTrack && hasYear);
+
+    let q = '';
+    if (useOperators) {
+      const parts: string[] = [];
+      if (opts.artist) parts.push(`artist:"${opts.artist.replace(/"/g, '')}"`);
+      if (opts.track) parts.push(`track:"${opts.track.replace(/"/g, '')}"`);
+      if (opts.genre) parts.push(`genre:"${opts.genre.replace(/"/g, '')}"`);
+      if (opts.year_min && opts.year_max) {
+        parts.push(`year:${opts.year_min}-${opts.year_max}`);
+      } else if (opts.year_min) {
+        parts.push(`year:${opts.year_min}-${new Date().getFullYear()}`);
+      } else if (opts.year_max) {
+        parts.push(`year:1900-${opts.year_max}`);
+      }
+      q = parts.join(' ').trim();
+    } else {
+      // Recherche plain text — Spotify renvoie plus de résultats avec un mot
+      // simple qu'avec un opérateur strict (artist:"x" ne retourne souvent
+      // que ~5 tracks alors que x retourne >100).
+      q = (opts.artist ?? '').trim() || (opts.track ?? '').trim();
     }
-    const q = parts.join(' ').trim();
+    console.info(
+      '[searchTracks] strategy:',
+      useOperators ? 'operators' : 'plain_text',
+      '| query:',
+      q,
+    );
     if (!q) return { items: [], total: 0, next: null };
 
     const limit = clampInt(opts.limit, SPOTIFY_MAX_LIMIT, 1, SPOTIFY_MAX_LIMIT);
     const offset = clampInt(opts.offset, 0, 0, 1000);
+    console.info('[searchTracks] limit input:', opts.limit, 'limit clamped:', limit);
     const params = new URLSearchParams({
       q,
       type: 'track',
@@ -187,6 +212,14 @@ export class SpotifyProvider implements MusicProvider {
     if (opts.market) params.set('market', opts.market);
 
     const data = await this.spotifyFetch<SpotifySearchResponse>(`/search?${params.toString()}`);
+    console.info(
+      '[searchTracks] Spotify returned:',
+      data.tracks.items.length,
+      'items | total:',
+      data.tracks.total,
+      '| next:',
+      data.tracks.next ? 'present' : 'null',
+    );
     return {
       items: data.tracks.items.map(toTrackResult),
       total: data.tracks.total ?? 0,
