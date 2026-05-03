@@ -292,7 +292,12 @@ function HostPageInner(): JSX.Element {
         socket.emit(
           'session:join_by_code',
           { shortCode: publicView.short_code },
-          (resp: { ok: boolean; session?: SessionWithParticipants; error?: string }) => {
+          (resp: {
+            ok: boolean;
+            session?: SessionWithParticipants;
+            active_track?: CurrentTrackState | null;
+            error?: string;
+          }) => {
             if (cancelled) return;
             if (!resp.ok || !resp.session) {
               setError(resp.error ?? t('host.notFound'));
@@ -300,6 +305,14 @@ function HostPageInner(): JSX.Element {
             }
             sessionIdRef.current = resp.session.id;
             setSession(resp.session);
+            // Phase 2.3 : restore activeTrack au reload — si un round est
+            // PLAYING et qu'on a un snapshot mémoire, on rehydrate currentTrack
+            // sans attendre un nouveau track:start.
+            if (resp.active_track) {
+              setCurrentTrack(resp.active_track);
+              setCorrectAnswers(resp.active_track.correct_answers);
+              setPhase2StartedAt(resp.active_track.phase2_started_at);
+            }
             void getSession(resp.session.id)
               .then((res) => {
                 if (!cancelled) setCumulative(res.cumulative);

@@ -237,6 +237,60 @@ export async function endRoundInternal(
  * Renvoie false si la phase n'est pas 'listening' (déjà buzzé / cooldown /
  * pas de track actif).
  */
+/**
+ * Phase 2.3 — snapshot CurrentTrackState pour restore au reload.
+ *
+ * Construit un CurrentTrackState complet à partir :
+ *  - de l'état mémoire (phase, phase2_started_at, correct_answers, started_at)
+ *  - des métadonnées DB (artist, title, year, cover_url, duration_ms)
+ *
+ * Retourne null si :
+ *  - le round n'a pas d'activeTrack en mémoire (backend redémarré, ou round
+ *    pas encore lancé via play-track),
+ *  - ou si le track DB est introuvable.
+ *
+ * Pas de broadcast — usage côté handshake socket pour rehydrater le frontend.
+ */
+export async function buildCurrentTrackStateSnapshot(
+  roundId: string,
+): Promise<CurrentTrackState | null> {
+  const active = getActiveTrack(roundId);
+  if (!active) return null;
+  const track = await prisma.track.findUnique({
+    where: { id: active.track_id },
+    include: { artist: { select: { canonical_name: true } } },
+  });
+  if (!track) return null;
+  return {
+    round_id: active.round_id,
+    track_index: active.track_index,
+    track_id: track.id,
+    provider: track.provider as CurrentTrackState['provider'],
+    provider_track_id: track.provider_track_id,
+    artist: track.artist.canonical_name,
+    title: track.canonical_title,
+    album: track.album,
+    year: track.year,
+    cover_url: track.cover_url,
+    started_at: new Date(active.started_at_ms).toISOString(),
+    duration_ms: track.duration_ms,
+    phase: active.phase,
+    phase2_started_at: active.phase2_started_at_ms
+      ? new Date(active.phase2_started_at_ms).toISOString()
+      : null,
+    correct_answers: active.correct_answers.map((a) => ({
+      participant_id: a.participant_id,
+      pseudo: a.pseudo,
+      team_id: a.team_id,
+      position: a.position,
+      answered_at_ms: a.answered_at_ms,
+      matched_artist: a.matched_artist,
+      matched_title: a.matched_title,
+      score: a.score,
+    })),
+  };
+}
+
 export async function revealCurrentTrack(
   sessionId: string,
   roundId: string,

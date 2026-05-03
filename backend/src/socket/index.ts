@@ -23,10 +23,12 @@
  */
 
 import type { Server as HttpServer } from 'node:http';
+import type { CurrentTrackState } from '@tutti/shared';
 import { Server as SocketIOServer, type Socket } from 'socket.io';
 import { supabaseAdmin } from '../lib/supabase.js';
 import { verifyParticipantToken } from '../lib/participantToken.js';
 import { prisma } from '../lib/prisma.js';
+import { buildCurrentTrackStateSnapshot } from '../lib/gameplayCore.js';
 
 type SocketIdentity =
   | { kind: 'host'; userId: string; userEmail: string | null }
@@ -73,6 +75,20 @@ function serializeSession(session: SessionWithIncludes) {
       },
     })),
   };
+}
+
+/**
+ * Phase 2.3 — pour un session avec un round PLAYING, retourne le snapshot
+ * CurrentTrackState courant si dispo en mémoire, sinon null. Permet au host
+ * qui se reconnecte (reload page) de rehydrater currentTrack sans attendre
+ * le prochain track:start.
+ */
+async function buildSessionSnapshot(
+  session: SessionWithIncludes,
+): Promise<CurrentTrackState | null> {
+  const playingRound = session.rounds.find((r) => r.status === 'PLAYING');
+  if (!playingRound) return null;
+  return buildCurrentTrackStateSnapshot(playingRound.id);
 }
 
 interface AuthedSocket extends Socket {
@@ -197,7 +213,8 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
             });
             if (!session) throw new Error('Session introuvable ou non autorisée');
             await socket.join(roomName(sessionId));
-            ack?.({ ok: true, session: serializeSession(session) });
+            const active_track = await buildSessionSnapshot(session);
+            ack?.({ ok: true, session: serializeSession(session), active_track });
             return;
           }
 
@@ -210,7 +227,8 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
           });
           if (!session) throw new Error('Session introuvable');
           await socket.join(roomName(sessionId));
-          ack?.({ ok: true, session: serializeSession(session) });
+          const active_track = await buildSessionSnapshot(session);
+          ack?.({ ok: true, session: serializeSession(session), active_track });
         } catch (err) {
           ack?.({ ok: false, error: (err as Error).message });
         }
@@ -236,7 +254,8 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
           });
           if (!session) throw new Error('Session introuvable ou non autorisée');
           await socket.join(roomName(session.id));
-          ack?.({ ok: true, session: serializeSession(session) });
+          const active_track = await buildSessionSnapshot(session);
+          ack?.({ ok: true, session: serializeSession(session), active_track });
         } catch (err) {
           ack?.({ ok: false, error: (err as Error).message });
         }
