@@ -133,11 +133,26 @@ export async function buildAndBroadcastTrack(
  *
  * Conserve track_id + track_index (même morceau). N'utilise PAS d'event
  * spécial 'track:restart' — single source of truth = track:start.
+ *
+ * Bug 1.3 : si la session est en pause, on la dépause + broadcast
+ * session:resumed AVANT le track:start. Sinon les clients reçoivent le
+ * track:start mais Spotify reste paused (is_paused=true bloque play).
  */
 export async function restartCurrentTrackAndBroadcast(
   sessionId: string,
   round: RoundWithTracks,
 ): Promise<CurrentTrackState | null> {
+  const current = await prisma.session.findUnique({
+    where: { id: sessionId },
+    select: { is_paused: true },
+  });
+  if (current?.is_paused) {
+    await prisma.session.update({
+      where: { id: sessionId },
+      data: { is_paused: false },
+    });
+    broadcastToSession(sessionId, 'session:resumed', { session_id: sessionId });
+  }
   // Le track courant = round.current_track_index
   return buildAndBroadcastTrack(sessionId, round, round.current_track_index);
 }
