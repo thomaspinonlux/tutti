@@ -551,22 +551,29 @@ export function useSpotifyPlayer({
     });
   };
 
+  // Bug 1 fix — sérialisation des play() pour éviter race entre Recommencer
+  // (play sameURI pos=0) et Morceau suivant (play newURI pos=0). Sans cela,
+  // les 2 PUT /me/player/play partent en parallèle et Spotify peut appliquer
+  // l'ancien après le nouveau (ordre arbitraire), résultat = audio "ancien
+  // morceau" alors que l'UI affiche "nouveau morceau".
+  const playSeqRef = useRef(0);
+  const playAbortRef = useRef<AbortController | null>(null);
+
   const play = async (spotifyUri: string): Promise<boolean> => {
     if (!deviceId || !tokenRef.current) {
       console.info('[Spotify Play] Device pas prêt, mise en file:', spotifyUri);
       pendingPlayRef.current = spotifyUri;
       return false;
     }
-    console.info(
-      '[Spotify Play] Tentative play — device:',
-      deviceId,
-      '| uri:',
-      spotifyUri,
-      '| status:',
-      status,
-      '| isPlaying:',
-      isPlaying,
-    );
+    // Cancel toute tentative play() précédente encore en vol.
+    if (playAbortRef.current) {
+      console.info('[Track Change] Cancelled pending play (previous request superseded)');
+      playAbortRef.current.abort();
+    }
+    const seq = ++playSeqRef.current;
+    const ctrl = new AbortController();
+    playAbortRef.current = ctrl;
+    console.info(`[Track Change] Playing new URI: ${spotifyUri} | seq=${seq} | device=${deviceId}`);
     // Re-active la pipeline audio par sécurité (idempotent). Important si
     // Chrome a reset le contexte audio entre 2 plays.
     const p = playerRef.current;
@@ -577,18 +584,33 @@ export function useSpotifyPlayer({
         console.warn('[Spotify Play] activateElement before play failed:', err);
       }
     }
-    const res = await fetch(
-      `${SPOTIFY_API}/me/player/play?device_id=${encodeURIComponent(deviceId)}`,
-      {
+    let res: Response;
+    try {
+      res = await fetch(`${SPOTIFY_API}/me/player/play?device_id=${encodeURIComponent(deviceId)}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${tokenRef.current}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ uris: [spotifyUri], position_ms: 0 }),
-      },
-    );
-    console.info('[Spotify Play] Response status:', res.status, '| device used:', deviceId);
+        signal: ctrl.signal,
+      });
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') {
+        console.info(`[Spotify Play] seq=${seq} aborted (newer play() in flight)`);
+        return false;
+      }
+      throw err;
+    }
+    // Si une requête plus récente a été déclenchée pendant qu'on attendait,
+    // on ignore la réponse pour éviter de re-déclencher verifyPlayback sur
+    // un URI obsolète.
+    if (seq !== playSeqRef.current) {
+      console.info(`[Spotify Play] seq=${seq} stale response — ignoring`);
+      return false;
+    }
+    if (playAbortRef.current === ctrl) playAbortRef.current = null;
+    console.info(`[Spotify Play] Response status: ${res.status} | seq=${seq} | uri=${spotifyUri}`);
     if (res.status === 204 || res.ok) {
       verifyPlayback(spotifyUri);
       return true;
