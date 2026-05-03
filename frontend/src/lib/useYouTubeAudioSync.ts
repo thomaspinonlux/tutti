@@ -58,8 +58,19 @@ export function useYouTubeAudioSync({
       return;
     }
 
-    // Cas 3 : provider non-YouTube → on ne pilote pas (laisse Spotify ou autre gérer)
-    if (currentTrack.provider !== 'youtube') return;
+    // Cas 3 : provider non-YouTube → on pause YouTube s'il jouait avant.
+    // Sans ce pause, le morceau YouTube continue en parallèle d'un nouveau
+    // morceau Spotify (overlap audio cross-provider). Bug fix Mix S/YT.
+    if (currentTrack.provider !== 'youtube') {
+      if (prevTrackIdRef.current !== null) {
+        console.info('[Audio Switch] Stopping YouTube (current is', currentTrack.provider, ')');
+        youtube.pause();
+        prevTrackIdRef.current = null;
+        prevStartedAtRef.current = null;
+        prevIsPausedRef.current = false;
+      }
+      return;
+    }
 
     const trackIdChanged = trackId !== prevTrackIdRef.current;
     const startedAtChanged = startedAt !== prevStartedAtRef.current;
@@ -67,9 +78,9 @@ export function useYouTubeAudioSync({
     // Cas 4 : nouveau track ou restart → loadVideoById (avec start/end anti-pub)
     if (trackIdChanged || startedAtChanged) {
       console.info(
-        '[YT AudioSync]',
+        '[Audio Switch] Starting YouTube',
         trackIdChanged ? 'new_track' : 'restart',
-        '→ play videoId:',
+        '→ videoId:',
         currentTrack.provider_track_id,
       );
       void youtube.play(currentTrack.provider_track_id);

@@ -76,8 +76,17 @@ export function useSpotifyAudioSync({
       return;
     }
 
-    // Cas 3 : provider non-Spotify → on ne pilote pas
+    // Cas 3 : provider non-Spotify → on pause Spotify s'il jouait avant.
+    // Sans ce pause, le morceau Spotify continue en parallèle d'un nouveau
+    // morceau YouTube (overlap audio cross-provider). Bug fix Mix S/YT.
     if (currentTrack.provider !== 'spotify') {
+      if (prevTrackIdRef.current !== null) {
+        console.info('[Audio Switch] Stopping Spotify (current is', currentTrack.provider, ')');
+        void spotify.pause();
+        prevTrackIdRef.current = null;
+        prevStartedAtRef.current = null;
+        prevIsPausedRef.current = false;
+      }
       return;
     }
 
@@ -88,9 +97,9 @@ export function useSpotifyAudioSync({
     if (trackIdChanged || startedAtChanged) {
       const reason = trackIdChanged ? 'new_track' : 'restart_same_track';
       console.info(
-        '[AudioSync]',
+        '[Audio Switch] Starting Spotify',
         reason,
-        '→ play uri:',
+        '→ uri:',
         currentTrack.provider_track_id,
         '| started_at:',
         startedAt,
