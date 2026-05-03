@@ -277,7 +277,10 @@ router.get(
           teams_config: session.teams_config,
           language: session.language,
           game_type: session.game_type,
-          establishment_name: session.establishment.name,
+          // Pivot B2C — pas d'exposition du nom d'établissement aux joueurs.
+          // On envoie session.name (nom personnalisé de la partie) si présent,
+          // sinon "Tutti". Le nom de l'établissement reste interne.
+          establishment_name: session.name ?? 'Tutti',
           branding_color: session.establishment.branding_color,
           participants_count: session.participants.length,
           has_animator: session.has_animator,
@@ -363,7 +366,10 @@ router.get(
         session: {
           ...session,
           rounds,
-          establishment_name: session.establishment.name,
+          // Pivot B2C — pas d'exposition du nom d'établissement aux joueurs.
+          // On envoie session.name (nom personnalisé de la partie) si présent,
+          // sinon "Tutti". Le nom de l'établissement reste interne.
+          establishment_name: session.name ?? 'Tutti',
           branding_color: session.establishment.branding_color,
           branding_logo: session.establishment.branding_logo,
         },
@@ -956,11 +962,9 @@ router.patch(
     const workspaceId = req.workspaceId!;
     const parsed = adjustPointsBody.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: { code: 'VALIDATION_ERROR', message: 'delta requis (entier -1000..1000)' },
-        });
+      res.status(400).json({
+        error: { code: 'VALIDATION_ERROR', message: 'delta requis (entier -1000..1000)' },
+      });
       return;
     }
     // Vérifie que la session appartient au workspace

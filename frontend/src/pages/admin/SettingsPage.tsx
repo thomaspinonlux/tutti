@@ -25,7 +25,7 @@ import {
   type SpotifyStatus,
   type YouTubeStatus,
 } from '../../lib/music.js';
-import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
+import { Button, Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { WorkspaceMembersCard } from '../../components/admin/settings/WorkspaceMembersCard.js';
 
 const PROVIDER_IDS = ['demo', 'spotify', 'youtube', 'deezer', 'apple_music'] as const;
@@ -305,17 +305,10 @@ export function SettingsPage(): JSX.Element {
       <p className="font-editorial italic text-ink-2 mb-8">{t('settings.description')}</p>
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
-        <Card>
-          <Input
-            label={t('settings.establishmentName')}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            hint={t('settings.establishmentNameHint')}
-            required
-            minLength={2}
-            maxLength={120}
-          />
-        </Card>
+        {/* Pivot B2C — champ "Nom affiché" caché par défaut. Le nom interne
+            de l'establishment reste éditable via API mais n'est plus exposé
+            dans l'UI normale. L'utilisateur nomme chaque session
+            individuellement (champ name à la création de session). */}
 
         <Card>
           <label className="block">

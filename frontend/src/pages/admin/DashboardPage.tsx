@@ -35,7 +35,10 @@ export function DashboardPage(): JSX.Element {
             {t('dashboard.welcomeTo')}
           </p>
           <TitleHandwritten as="h1" className="mb-4">
-            <Swirl>{establishment.name}</Swirl>
+            {/* Pivot B2C — on n'affiche plus le nom d'établissement.
+                Brand Tutti en titre. Si l'utilisateur veut personnaliser
+                ses parties, il peut nommer chaque session individuellement. */}
+            <Swirl>{t('common.brand')}</Swirl>
           </TitleHandwritten>
           <p className="font-editorial italic text-lg text-ink-2">{t('dashboard.chooseGame')}</p>
         </div>

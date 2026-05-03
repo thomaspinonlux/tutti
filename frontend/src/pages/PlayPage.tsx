@@ -525,7 +525,9 @@ export function PlayPage(): JSX.Element {
                 {t('common.brand')}
               </p>
               <TitleHandwritten as="h1" className="text-3xl">
-                <Underline>{view?.establishment_name ?? '…'}</Underline>
+                {/* Pivot B2C — backend renvoie session.name (custom) ou "Tutti"
+                    par défaut, jamais le nom d'établissement. */}
+                <Underline>{view?.establishment_name ?? t('common.brand')}</Underline>
               </TitleHandwritten>
               <p className="font-mono text-xs tracking-[0.2em] text-ink-soft mt-2">{shortCode}</p>
               {currentRound && (
@@ -1103,8 +1105,9 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         />
       )}
 
-      {/* Phase 1 — track status mystery (avant tout buzz) */}
-      {isPhase1 && recState.kind === 'idle' && !myCorrect && <TrackStatusMystery />}
+      {/* Correction 2 — bandeau "EN COURS ♪?????" supprimé côté joueur.
+          Le joueur sait qu'il joue et n'a pas besoin du mystère "?????"
+          sur l'écran de buzz. Composant TrackStatusMystery retiré du flow. */}
 
       {/* Phase 3 — result panel : reveal partagé avec tous */}
       {isPhase3Reveal && (
@@ -1279,17 +1282,8 @@ function PlayerInfoBar({
   );
 }
 
-function TrackStatusMystery(): JSX.Element {
-  const { t } = useTranslation();
-  return (
-    <div className="bg-cream-2 border-3 border-ink rounded-xl px-4 py-3 text-center">
-      <p className="text-[10px] uppercase tracking-widest font-bold opacity-70 mb-0.5">
-        {t('play.trackStatusLabel')}
-      </p>
-      <p className="font-display text-lg">♪ ? ? ? ? ?</p>
-    </div>
-  );
-}
+// Correction 2 — TrackStatusMystery supprimé (bandeau "EN COURS ♪?????"
+// inutile sur l'écran de buzz côté joueur).
 
 function LateBanner({
   isFinder,

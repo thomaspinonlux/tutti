@@ -1196,11 +1196,7 @@ function RoundPlayingScreen({
         ) : (
           // Position progress mini-bar (info utile à l'animateur sans
           // dupliquer cover/titre/artiste — déjà dans Programme manche).
-          <CompactProgressBar
-            track={currentTrack}
-            positionMs={positionMs}
-            durationMs={durationMs}
-          />
+          <AnimatorTrackInfo track={currentTrack} positionMs={positionMs} durationMs={durationMs} />
         )}
 
         <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
@@ -1320,11 +1316,11 @@ function RoundPlayingScreen({
 // ── Sous-vues du track en cours ──────────────────────────────────────────
 
 /**
- * Bug 5 — barre de progression compacte en remplacement du gros carré central
- * "EN COURS ♪?????". Affiche juste elapsed / remaining + barre, sans dupliquer
- * cover + titre + artiste (déjà dans le panneau Programme manche à droite).
+ * Correction 2 — Panel d'info animateur avec pochette + titre + artiste +
+ * barre de progression. Visible UNIQUEMENT côté animateur (jamais côté
+ * joueurs ou écran TV). Permet à l'animateur de savoir ce qui joue.
  */
-function CompactProgressBar({
+function AnimatorTrackInfo({
   track,
   positionMs,
   durationMs,
@@ -1342,23 +1338,45 @@ function CompactProgressBar({
     .toString()
     .padStart(2, '0');
   return (
-    <div className="py-4 max-w-md mx-auto">
-      <div className="h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden">
-        <div
-          className="h-full bg-spritz-deep transition-[width] duration-150 ease-linear"
-          style={{ width: `${Math.round(progress * 100)}%` }}
-        />
+    <div className="py-4">
+      {/* Pochette + titre + artiste — affichage privé animateur */}
+      <div className="flex items-center justify-center gap-4 mb-4">
+        {track.cover_url ? (
+          <img
+            src={track.cover_url}
+            alt=""
+            className="w-24 h-24 rounded border-2 border-ink object-cover shadow-pop-sm"
+          />
+        ) : (
+          <div className="w-24 h-24 rounded border-2 border-ink bg-cream-2 flex items-center justify-center font-display text-3xl text-ink-soft">
+            ♪
+          </div>
+        )}
+        <div className="text-left min-w-0 max-w-[260px]">
+          <p className="font-display text-2xl text-ink truncate">{track.title}</p>
+          <p className="font-editorial italic text-ink-2 truncate">{track.artist}</p>
+          {track.year && <p className="font-mono text-xs text-ink-soft">{track.year}</p>}
+        </div>
       </div>
-      <div className="flex justify-between mt-1 font-mono text-xs text-ink-soft tabular-nums">
-        <span>
-          {Math.floor(elapsed / 60_000)}:
-          {Math.floor((elapsed % 60_000) / 1000)
-            .toString()
-            .padStart(2, '0')}
-        </span>
-        <span>
-          -{remainingMin}:{remainingSec}
-        </span>
+      {/* Barre de progression + temps restant */}
+      <div className="max-w-md mx-auto">
+        <div className="h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden">
+          <div
+            className="h-full bg-spritz-deep transition-[width] duration-150 ease-linear"
+            style={{ width: `${Math.round(progress * 100)}%` }}
+          />
+        </div>
+        <div className="flex justify-between mt-1 font-mono text-xs text-ink-soft tabular-nums">
+          <span>
+            {Math.floor(elapsed / 60_000)}:
+            {Math.floor((elapsed % 60_000) / 1000)
+              .toString()
+              .padStart(2, '0')}
+          </span>
+          <span>
+            -{remainingMin}:{remainingSec}
+          </span>
+        </div>
       </div>
     </div>
   );
