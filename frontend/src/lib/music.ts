@@ -27,6 +27,35 @@ export async function searchTracks(
   );
 }
 
+// ───── YouTube OAuth (Phase 3.5) ─────────────────────────────────────────
+
+export interface YouTubeStatus {
+  connected: boolean;
+  account_email?: string | null;
+  premium?: boolean;
+  connected_at?: string | null;
+  expires_at?: string | null;
+}
+
+export async function startYouTubeConnect(): Promise<string> {
+  const { authUrl } = await api<{ authUrl: string }>('/api/auth/youtube/authorize', {
+    method: 'POST',
+  });
+  return authUrl;
+}
+
+export async function getYouTubeStatus(): Promise<YouTubeStatus> {
+  return api<YouTubeStatus>('/api/auth/youtube/status');
+}
+
+export async function disconnectYouTube(): Promise<void> {
+  await api('/api/auth/youtube/disconnect', { method: 'DELETE' });
+}
+
+export async function setYouTubePremium(premium: boolean): Promise<void> {
+  await api('/api/auth/youtube/premium', { method: 'PATCH', body: { premium } });
+}
+
 // ───── Spotify OAuth ──────────────────────────────────────────────────────
 
 export interface SpotifyStatus {

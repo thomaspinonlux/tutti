@@ -589,7 +589,16 @@
     "spotifyAccount": "Connected account",
     "spotifyConnectFirst": "Connect your Spotify account first.",
     "spotifyConnectedToast": "Spotify connected successfully.",
-    "spotifyErrorToast": "Error connecting Spotify"
+    "spotifyErrorToast": "Error connecting Spotify",
+    "youtubeTitle": "YouTube Premium",
+    "youtubeDescription": "Connect your Google account for enhanced YouTube playback. If you have YouTube Premium, playback is ad-free. Otherwise, Tutti's ad-skip strategy applies (skip 15s intro, stop at 60s).",
+    "youtubeConnect": "Connect YouTube",
+    "youtubeDisconnect": "Disconnect YouTube",
+    "youtubeAccount": "Connected Google account",
+    "youtubePremiumToggle": "I have YouTube Premium (ad-free playback)",
+    "youtubePremiumHint": "Auto-detection via Google API not available. Toggle manually if you have Premium.",
+    "youtubeConnectedToast": "YouTube connected successfully.",
+    "youtubeErrorToast": "Error connecting YouTube"
   },
   "account": {
     "title": "My account",

@@ -18,7 +18,12 @@ import {
   startSpotifyConnect,
   getSpotifyStatus,
   disconnectSpotify,
+  startYouTubeConnect,
+  getYouTubeStatus,
+  disconnectYouTube,
+  setYouTubePremium,
   type SpotifyStatus,
+  type YouTubeStatus,
 } from '../../lib/music.js';
 import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { WorkspaceMembersCard } from '../../components/admin/settings/WorkspaceMembersCard.js';
@@ -58,6 +63,13 @@ export function SettingsPage(): JSX.Element {
     kind: 'success' | 'error';
     msg: string;
   } | null>(null);
+  // YouTube (Phase 3.5)
+  const [youtube, setYoutube] = useState<YouTubeStatus | null>(null);
+  const [youtubeBusy, setYoutubeBusy] = useState(false);
+  const [youtubeToast, setYoutubeToast] = useState<{
+    kind: 'success' | 'error';
+    msg: string;
+  } | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
@@ -74,6 +86,34 @@ export function SettingsPage(): JSX.Element {
       .catch(() => {
         /* ignore : statut non critique */
       });
+    void getYouTubeStatus()
+      .then(setYoutube)
+      .catch(() => {
+        /* ignore */
+      });
+  }, []);
+
+  // Callback OAuth YouTube
+  useEffect(() => {
+    const flag = searchParams.get('youtube');
+    if (!flag) return;
+    if (flag === 'connected') {
+      setYoutubeToast({ kind: 'success', msg: t('settings.youtubeConnectedToast') });
+      void getYouTubeStatus().then(setYoutube);
+    } else if (flag === 'error') {
+      const reason = searchParams.get('reason') ?? '';
+      setYoutubeToast({
+        kind: 'error',
+        msg: `${t('settings.youtubeErrorToast')}${reason ? ` (${reason})` : ''}`,
+      });
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete('youtube');
+    next.delete('reason');
+    setSearchParams(next, { replace: true });
+    const timer = window.setTimeout(() => setYoutubeToast(null), 5000);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Toast après callback OAuth (?spotify=connected ou ?spotify=error&detail=…)
@@ -188,6 +228,40 @@ export function SettingsPage(): JSX.Element {
       await refetch(); // peut basculer activeProvider de spotify→demo côté backend
     } finally {
       setSpotifyBusy(false);
+    }
+  };
+
+  const handleYouTubeConnect = async (): Promise<void> => {
+    setYoutubeBusy(true);
+    try {
+      const authUrl = await startYouTubeConnect();
+      window.location.href = authUrl;
+    } catch (err: unknown) {
+      setYoutubeToast({
+        kind: 'error',
+        msg: (err as Error).message ?? t('settings.youtubeErrorToast'),
+      });
+      setYoutubeBusy(false);
+    }
+  };
+
+  const handleYouTubeDisconnect = async (): Promise<void> => {
+    setYoutubeBusy(true);
+    try {
+      await disconnectYouTube();
+      setYoutube({ connected: false });
+    } finally {
+      setYoutubeBusy(false);
+    }
+  };
+
+  const handleYouTubePremiumToggle = async (next: boolean): Promise<void> => {
+    setYoutubeBusy(true);
+    try {
+      await setYouTubePremium(next);
+      setYoutube((y) => (y ? { ...y, premium: next } : y));
+    } finally {
+      setYoutubeBusy(false);
     }
   };
 
@@ -371,6 +445,74 @@ export function SettingsPage(): JSX.Element {
               }`}
             >
               {spotifyToast.msg}
+            </p>
+          )}
+        </Card>
+
+        {/* ── YouTube Premium connect (Phase 3.5) ─────────────────────── */}
+        <Card tone={youtube?.connected ? 'basil' : 'default'}>
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+                {t('settings.youtubeTitle')}
+              </p>
+              <p className="font-editorial italic text-sm text-ink-2">
+                {t('settings.youtubeDescription')}
+              </p>
+            </div>
+            {youtube?.connected ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={youtubeBusy}
+                onClick={() => void handleYouTubeDisconnect()}
+              >
+                {t('settings.youtubeDisconnect')}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                disabled={youtubeBusy}
+                onClick={() => void handleYouTubeConnect()}
+              >
+                {youtubeBusy ? t('common.loading') : t('settings.youtubeConnect')}
+              </Button>
+            )}
+          </div>
+          {youtube?.connected && (
+            <>
+              {youtube.account_email && (
+                <p className="font-mono text-xs text-ink-soft mb-2">
+                  {t('settings.youtubeAccount')}:{' '}
+                  <span className="text-ink">{youtube.account_email}</span>
+                </p>
+              )}
+              <label className="flex items-center gap-2 text-sm font-mono">
+                <input
+                  type="checkbox"
+                  checked={youtube.premium ?? false}
+                  disabled={youtubeBusy}
+                  onChange={(e) => void handleYouTubePremiumToggle(e.target.checked)}
+                  className="w-4 h-4 accent-spritz-deep"
+                />
+                <span>{t('settings.youtubePremiumToggle')}</span>
+              </label>
+              <p className="font-editorial italic text-xs text-ink-soft mt-1">
+                {t('settings.youtubePremiumHint')}
+              </p>
+            </>
+          )}
+          {youtubeToast && (
+            <p
+              role="alert"
+              className={`mt-3 text-sm font-medium ${
+                youtubeToast.kind === 'success' ? 'text-basil-deep' : 'text-raspberry'
+              }`}
+            >
+              {youtubeToast.msg}
             </p>
           )}
         </Card>

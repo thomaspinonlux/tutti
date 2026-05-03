@@ -589,7 +589,16 @@
     "spotifyAccount": "Compte connecté",
     "spotifyConnectFirst": "Connecte d'abord ton compte Spotify.",
     "spotifyConnectedToast": "Spotify connecté avec succès.",
-    "spotifyErrorToast": "Erreur lors de la connexion Spotify"
+    "spotifyErrorToast": "Erreur lors de la connexion Spotify",
+    "youtubeTitle": "YouTube Premium",
+    "youtubeDescription": "Connecte ton compte Google pour lecture YouTube améliorée. Si tu as YouTube Premium, l'écoute se fait sans pub. Sinon, on applique l'anti-pub Tutti (skip 15s d'intro, coupe à 60s).",
+    "youtubeConnect": "Connecter YouTube",
+    "youtubeDisconnect": "Déconnecter YouTube",
+    "youtubeAccount": "Compte Google connecté",
+    "youtubePremiumToggle": "J'ai YouTube Premium (lecture sans pub)",
+    "youtubePremiumHint": "Détection auto via API non disponible côté Google. Coche manuellement si tu as Premium.",
+    "youtubeConnectedToast": "YouTube connecté avec succès.",
+    "youtubeErrorToast": "Erreur lors de la connexion YouTube"
   },
   "account": {
     "title": "Mon compte",
