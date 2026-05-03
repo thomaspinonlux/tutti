@@ -730,6 +730,8 @@ function HostPageInner(): JSX.Element {
               onEndRound={handleEndCurrentRound}
               busy={busy}
               isPaused={session.is_paused}
+              positionMs={spotify.positionMs}
+              durationMs={spotify.durationMs}
               spotifyStatus={spotify.status}
               spotifyError={spotify.error}
               spotifyErrorCode={spotify.errorCode}
@@ -988,6 +990,8 @@ function RoundPlayingScreen({
   onEndRound,
   busy,
   isPaused,
+  positionMs,
+  durationMs,
   spotifyStatus,
   spotifyError,
   spotifyErrorCode,
@@ -1004,6 +1008,8 @@ function RoundPlayingScreen({
   onEndRound: () => Promise<void>;
   busy: boolean;
   isPaused: boolean;
+  positionMs: number;
+  durationMs: number;
   spotifyStatus: import('../lib/useSpotifyPlayer.js').SpotifyPlayerStatus;
   spotifyError: string | null;
   spotifyErrorCode: string | null;
@@ -1058,7 +1064,7 @@ function RoundPlayingScreen({
         {!currentTrack ? (
           <p className="font-editorial italic text-ink-2 my-8">{t('host.noTrackYet')}</p>
         ) : currentTrack.phase === 'phase1' ? (
-          <ListeningView track={currentTrack} />
+          <ListeningView track={currentTrack} positionMs={positionMs} durationMs={durationMs} />
         ) : currentTrack.phase === 'phase2' ? (
           <BuzzedView track={currentTrack} />
         ) : (
@@ -1167,43 +1173,64 @@ function RoundPlayingScreen({
 
 // ── Sous-vues du track en cours ──────────────────────────────────────────
 
-function useTimeRemaining(startedAtIso: string, durationMs: number): number {
-  const [remaining, setRemaining] = useState(() => {
-    const elapsed = Date.now() - new Date(startedAtIso).getTime();
-    return Math.max(0, durationMs - elapsed);
-  });
-  useEffect(() => {
-    const tick = (): void => {
-      const elapsed = Date.now() - new Date(startedAtIso).getTime();
-      setRemaining(Math.max(0, durationMs - elapsed));
-    };
-    tick();
-    const id = window.setInterval(tick, 100);
-    return () => window.clearInterval(id);
-  }, [startedAtIso, durationMs]);
-  return remaining;
-}
-
-function ListeningView({ track }: { track: CurrentTrackState }): JSX.Element {
+function ListeningView({
+  track,
+  positionMs,
+  durationMs,
+}: {
+  track: CurrentTrackState;
+  positionMs: number;
+  durationMs: number;
+}): JSX.Element {
   const { t } = useTranslation();
-  // Phase C : la durée du morceau vient de track.duration_ms (Spotify), null
-  // pour les morceaux Demo. Fallback 30s en attendant la rewrite commit 6.
-  const durationMs = track.duration_ms ?? 30_000;
-  const remaining = useTimeRemaining(track.started_at, durationMs);
-  const seconds = Math.ceil(remaining / 1000);
-  const progress = 1 - remaining / durationMs;
+  // Source de vérité Spotify SDK. Si durationMs=0 (track Demo / pas chargé),
+  // fallback duration_ms du track. Position 0 si paused/stopped.
+  const total = durationMs || track.duration_ms || 0;
+  const elapsed = Math.min(positionMs, total);
+  const remaining = Math.max(0, total - elapsed);
+  const progress = total > 0 ? elapsed / total : 0;
+  const remainingMin = Math.floor(remaining / 60_000);
+  const remainingSec = Math.floor((remaining % 60_000) / 1000)
+    .toString()
+    .padStart(2, '0');
   return (
     <div className="py-6">
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
         {t('host.listening')}
       </p>
-      <p className="font-display text-7xl text-ink mb-1">{seconds}s</p>
-      <p className="font-editorial italic text-ink-2 mb-4">{t('host.waitingForBuzz')}</p>
-      <div className="h-2 border-2 border-ink rounded bg-cream-2 overflow-hidden max-w-sm mx-auto">
-        <div
-          className="h-full bg-spritz-deep transition-[width] duration-100 ease-linear"
-          style={{ width: `${Math.round(progress * 100)}%` }}
-        />
+      {/* Affiche pochette + titre + artiste côté animateur (pas côté joueurs) */}
+      <div className="flex items-center justify-center gap-4 mb-4">
+        {track.cover_url && (
+          <img
+            src={track.cover_url}
+            alt=""
+            className="w-20 h-20 rounded border-2 border-ink object-cover shadow-pop-sm"
+          />
+        )}
+        <div className="text-left min-w-0">
+          <p className="font-display text-2xl text-ink truncate">{track.title}</p>
+          <p className="font-editorial italic text-ink-2 truncate">{track.artist}</p>
+          {track.year && <p className="font-mono text-xs text-ink-soft">{track.year}</p>}
+        </div>
+      </div>
+      <div className="max-w-md mx-auto">
+        <div className="h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden">
+          <div
+            className="h-full bg-spritz-deep transition-[width] duration-150 ease-linear"
+            style={{ width: `${Math.round(progress * 100)}%` }}
+          />
+        </div>
+        <div className="flex justify-between mt-1 font-mono text-xs text-ink-soft tabular-nums">
+          <span>
+            {Math.floor(elapsed / 60_000)}:
+            {Math.floor((elapsed % 60_000) / 1000)
+              .toString()
+              .padStart(2, '0')}
+          </span>
+          <span>
+            -{remainingMin}:{remainingSec}
+          </span>
+        </div>
       </div>
     </div>
   );

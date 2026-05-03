@@ -51,6 +51,10 @@ export interface UseSpotifyPlayerResult {
   currentTrackUri: string | null;
   /** Si le SDK considère le player comme actuellement en lecture (paused=false). */
   isPlaying: boolean;
+  /** Position courante (ms) interpolée. Source unique de vérité audio. */
+  positionMs: number;
+  /** Durée totale du track courant (ms). */
+  durationMs: number;
   /**
    * Joue un morceau. Retourne true si l'API a accepté la requête.
    * Si le device n'est pas encore prêt, met l'URI en attente et retourne false.
@@ -118,11 +122,32 @@ export function useSpotifyPlayer({
   const [lastEvent, setLastEvent] = useState<string | null>(null);
   const [currentTrackUri, setCurrentTrackUri] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  /** Position courante (ms) lue depuis le SDK. Source unique de vérité audio. */
+  const [positionMs, setPositionMs] = useState(0);
+  /** Durée totale du track courant (ms). */
+  const [durationMs, setDurationMs] = useState(0);
 
   const playerRef = useRef<SpotifyPlayer | null>(null);
   const tokenRef = useRef<string | null>(null);
   const tokenExpiresAtRef = useRef<number>(0);
   const pendingPlayRef = useRef<string | null>(null);
+  /** Anchor pour interpolation position : ms à l'instant timestamp + paused flag.
+   *  state_changed met à jour l'anchor, le tick interpole entre les events. */
+  const positionAnchorRef = useRef<{ ms: number; timestamp: number; paused: boolean }>({
+    ms: 0,
+    timestamp: Date.now(),
+    paused: true,
+  });
+
+  // Tick 250ms pour interpoler positionMs entre les state_changed events
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const a = positionAnchorRef.current;
+      if (a.paused) return;
+      setPositionMs(a.ms + (Date.now() - a.timestamp));
+    }, 250);
+    return () => window.clearInterval(id);
+  }, []);
 
   // ── Chargement SDK + token initial + connexion ─────────────────────────
   useEffect(() => {
@@ -272,6 +297,14 @@ export function useSpotifyPlayer({
           );
           setIsPlaying(!state.paused);
           setCurrentTrackUri(trackUri);
+          setPositionMs(state.position);
+          setDurationMs(state.duration);
+          // Update anchor pour interpolation
+          positionAnchorRef.current = {
+            ms: state.position,
+            timestamp: Date.now(),
+            paused: state.paused,
+          };
         });
         player.addListener('initialization_error', ({ message }) =>
           fail('INIT_ERROR', `Init: ${message}`),
@@ -569,6 +602,8 @@ export function useSpotifyPlayer({
     lastEvent,
     currentTrackUri,
     isPlaying,
+    positionMs,
+    durationMs,
     play,
     pause,
     resume,

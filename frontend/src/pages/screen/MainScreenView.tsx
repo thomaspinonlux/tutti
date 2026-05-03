@@ -331,6 +331,8 @@ function IPadHeader({
   currentTrack,
   phaseLabel,
   isPaused,
+  positionMs,
+  durationMs,
 }: {
   round: SessionRoundWithPlaylist | null;
   totalTracks: number;
@@ -338,10 +340,15 @@ function IPadHeader({
   currentTrack: CurrentTrackState | null;
   phaseLabel: string;
   isPaused: boolean;
+  positionMs?: number;
+  durationMs?: number;
 }): JSX.Element {
   const { t } = useTranslation();
-  const elapsed = useTimeElapsed(currentTrack?.started_at ?? null, isPaused);
-  const totalMs = currentTrack?.duration_ms ?? null;
+  // Source de vérité Spotify si dispo, sinon fallback interpolation
+  const fallbackElapsed = useTimeElapsed(currentTrack?.started_at ?? null, isPaused);
+  const elapsed = positionMs ?? fallbackElapsed;
+  const totalMs = durationMs ?? currentTrack?.duration_ms ?? null;
+  const remaining = totalMs ? Math.max(0, totalMs - elapsed) : null;
   return (
     <header
       className="relative bg-ink text-cream px-8 flex items-center justify-between"
@@ -368,9 +375,9 @@ function IPadHeader({
         </div>
       </div>
       <div className="flex items-center gap-6">
-        {currentTrack && totalMs && (
+        {currentTrack && totalMs && remaining !== null && (
           <div className="font-mono text-base font-bold text-lemon tabular-nums">
-            {formatTime(elapsed)} / {formatTime(totalMs)}
+            -{formatTime(remaining)}
           </div>
         )}
         <div className="bg-spritz text-ink font-black text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider">
@@ -397,6 +404,8 @@ function IPadFooter({
   phase,
   busy,
   isPaused,
+  positionMs,
+  durationMs,
   onSkipTrack,
   onGiveAnswer,
   onNextTrack,
@@ -406,13 +415,16 @@ function IPadFooter({
   phase: CurrentTrackState['phase'] | null;
   busy: boolean;
   isPaused: boolean;
+  positionMs?: number;
+  durationMs?: number;
   onSkipTrack?: () => void;
   onGiveAnswer?: () => void;
   onNextTrack?: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
-  const elapsed = useTimeElapsed(currentTrack?.started_at ?? null, isPaused);
-  const totalMs = currentTrack?.duration_ms ?? null;
+  const fallbackElapsed = useTimeElapsed(currentTrack?.started_at ?? null, isPaused);
+  const elapsed = positionMs ?? fallbackElapsed;
+  const totalMs = durationMs ?? currentTrack?.duration_ms ?? null;
   const progress = totalMs && totalMs > 0 ? Math.min(1, elapsed / totalMs) : 0;
   // Bouton "Suivant" mis en évidence en phase 3
   const nextHighlighted =
@@ -610,6 +622,10 @@ export interface MainScreenViewProps {
   lastReveal: { artist: string; title: string } | null;
   /** Compte de joueurs avec un buzz ouvert (phase 1 counter). */
   activeBuzzCount: number;
+  /** Position audio en ms (depuis Spotify SDK si dispo, sinon interpolation). */
+  positionMs?: number;
+  /** Durée totale track en ms (depuis SDK ou track meta). */
+  durationMs?: number;
   /** Handlers admin (footer iPad — disponibles si auth Supabase). */
   busy?: boolean;
   onSkipTrack?: () => void;
@@ -626,6 +642,8 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
     phase2StartedAt,
     lastReveal,
     activeBuzzCount,
+    positionMs,
+    durationMs,
     busy = false,
     onSkipTrack,
     onGiveAnswer,
@@ -672,6 +690,8 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
         currentTrack={currentTrack}
         phaseLabel={phaseLabel}
         isPaused={session.is_paused}
+        positionMs={positionMs}
+        durationMs={durationMs}
       />
 
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 p-6 relative z-10">
@@ -762,6 +782,8 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
         phase={phase}
         busy={busy}
         isPaused={session.is_paused}
+        positionMs={positionMs}
+        durationMs={durationMs}
         onSkipTrack={onSkipTrack}
         onGiveAnswer={onGiveAnswer}
         onNextTrack={onNextTrack}
