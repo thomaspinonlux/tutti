@@ -36,6 +36,7 @@ import type {
   SessionWithParticipants,
 } from '@tutti/shared';
 import { Badge, Button, Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
+import { QRCode } from '../../components/host/QRCode.js';
 
 // ── Hooks utilitaires ─────────────────────────────────────────────────────
 
@@ -567,6 +568,27 @@ function LiveLeaderboard({ cumulative }: { cumulative: CumulativeScore[] }): JSX
 
 // ── Sidebar : "Sur ce morceau" recap (phase 3 only) ───────────────────────
 
+/**
+ * Feature — QR code permanent sur l'écran TV pour permettre aux joueurs de
+ * rejoindre la partie à tout moment (en cours de morceau inclus).
+ */
+function JoinQrPanel({ shortCode }: { shortCode: string }): JSX.Element {
+  const { t } = useTranslation();
+  const url = `${window.location.origin}/play?session=${shortCode}`;
+  return (
+    <Card size="sm" tone="cream" className="text-center">
+      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-spritz-deep mb-2">
+        {t('screen.joinTitle')}
+      </p>
+      <div className="flex justify-center mb-2">
+        <QRCode value={url} size={140} />
+      </div>
+      <p className="font-mono text-lg font-bold tracking-[0.2em] text-ink">{shortCode}</p>
+      <p className="font-editorial italic text-[10px] text-ink-soft mt-1">{t('screen.joinHint')}</p>
+    </Card>
+  );
+}
+
 function FindersRecap({ correctAnswers }: { correctAnswers: CorrectAnswerEntry[] }): JSX.Element {
   const { t } = useTranslation();
   if (correctAnswers.length === 0) return <></>;
@@ -779,6 +801,8 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
           {isPhase3 && correctAnswers.length > 0 && (
             <FindersRecap correctAnswers={correctAnswers} />
           )}
+          {/* Feature — QR code permanent pour rejoindre en cours de partie */}
+          <JoinQrPanel shortCode={session.short_code} />
         </aside>
       </main>
 

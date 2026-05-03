@@ -287,6 +287,8 @@
     "phase2TimerLabel": "Encore",
     "phase2TimerSub": "secondes",
     "online": "EN LIGNE",
+    "joinTitle": "Rejoindre",
+    "joinHint": "Scanne ou tape le code sur tuttiparty.app/play",
     "btnSkip": "Sauter",
     "btnGiveAnswer": "Révéler la réponse",
     "btnNext": "Morceau suivant",
