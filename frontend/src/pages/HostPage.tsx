@@ -71,8 +71,11 @@ interface Toast {
 }
 
 export function HostPage(): JSX.Element {
+  // Phase 2.2 : on accepte mobile pour les écrans non-gameplay (waiting,
+  // roundSelection, intermission, ended). La vue mode B festive (MainScreenView)
+  // est gardée en min="lg" via un wrap interne — voir le bloc isModeB+inGameplay.
   return (
-    <MinScreen min="lg">
+    <MinScreen min="sm">
       <HostPageInner />
     </MinScreen>
   );
@@ -593,9 +596,11 @@ function HostPageInner(): JSX.Element {
     effectivePhase === 'intermission';
 
   // ── Mode B en cours de jeu : vue festive publique sans contrôles ─────
+  // Cette vue est dimensionnée pour iPad/TV en landscape (min="lg") — on
+  // affiche le message "écran trop petit" sur mobile via MinScreen interne.
   if (isModeB && inGameplay) {
     return (
-      <>
+      <MinScreen min="lg">
         {/* Badge master + change-master accessible discrètement en haut-droite */}
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <ExternalScreenButton shortCode={session.short_code} />
@@ -634,7 +639,7 @@ function HostPageInner(): JSX.Element {
             </div>
           ))}
         </div>
-      </>
+      </MinScreen>
     );
   }
 
@@ -642,8 +647,8 @@ function HostPageInner(): JSX.Element {
     <div className="min-h-screen flex flex-col">
       <MultiColorBar height="md" />
 
-      <main className="flex-1 px-6 lg:px-10 py-8">
-        <header className="max-w-7xl mx-auto mb-8 flex items-center justify-between flex-wrap gap-3">
+      <main className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-8">
+        <header className="max-w-7xl mx-auto mb-4 sm:mb-8 flex items-center justify-between flex-wrap gap-3">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-1">
               {effectivePhase === 'waiting'
