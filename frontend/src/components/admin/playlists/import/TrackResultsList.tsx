@@ -119,15 +119,27 @@ export function TrackResultsList({
     setImporting(true);
     setError(null);
     try {
-      const ids = tracks
-        .filter((t) => selected.has(t.provider_track_id))
-        .map((t) => t.provider_track_id);
-      const res = await importTracks(playlistId, 'spotify', ids);
-      const total = res.imported;
-      onImported(total);
+      const selectedTracks = tracks.filter((t) => selected.has(t.provider_track_id));
+      // Phase 3 — multi-source : groupe par provider et fait un call par groupe
+      // (le backend exige un provider unique par requête /import-tracks).
+      const byProvider = new Map<string, string[]>();
+      for (const t of selectedTracks) {
+        const key = t.provider;
+        const list = byProvider.get(key) ?? [];
+        list.push(t.provider_track_id);
+        byProvider.set(key, list);
+      }
+      let totalImported = 0;
+      let totalSkipped = 0;
+      for (const [provider, ids] of byProvider.entries()) {
+        const res = await importTracks(playlistId, provider as 'spotify' | 'youtube' | 'demo', ids);
+        totalImported += res.imported;
+        totalSkipped += res.skipped;
+      }
+      onImported(totalImported);
       setImportedToast(
-        `✓ ${total} morceau${total > 1 ? 'x' : ''} importé${total > 1 ? 's' : ''}` +
-          (res.skipped > 0 ? ` · ${res.skipped} déjà présents` : ''),
+        `✓ ${totalImported} morceau${totalImported > 1 ? 'x' : ''} importé${totalImported > 1 ? 's' : ''}` +
+          (totalSkipped > 0 ? ` · ${totalSkipped} déjà présents` : ''),
       );
       window.setTimeout(() => setImportedToast(null), 3000);
       // Décoche les imports pour éviter double-click

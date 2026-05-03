@@ -673,7 +673,7 @@ router.delete(
 // Auto-create Artist + Track + aliases.
 
 const importTracksSchema = z.object({
-  provider: z.enum(['demo', 'spotify', 'deezer', 'apple_music']),
+  provider: z.enum(['demo', 'spotify', 'youtube', 'deezer', 'apple_music']),
   /** Liste de provider_track_id à importer (max 500). */
   provider_track_ids: z.array(z.string().min(1).max(128)).min(1).max(500),
 });

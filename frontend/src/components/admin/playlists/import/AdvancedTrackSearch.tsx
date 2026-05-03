@@ -1,12 +1,15 @@
 /**
- * <AdvancedTrackSearch /> — Tab 1 : recherche track multi-critères Spotify.
- * Champs : artist, track, year range (slider double), decade chips.
+ * <AdvancedTrackSearch /> — Tab 1 : recherche track multi-source.
+ * Spotify : artist + title + year range + decade chips (recherche structurée).
+ * YouTube : query libre (l'API ne supporte pas les filtres structurés —
+ * on bascule sur l'endpoint générique /api/music/search?provider=youtube).
  */
 
 import { useEffect, useState, type FormEvent } from 'react';
-import type { TrackResult } from '@tutti/shared';
+import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { Input } from '../../../ui/index.js';
-import { searchTracks } from '../../../../lib/spotifyApi.js';
+import { searchTracks as searchSpotify } from '../../../../lib/spotifyApi.js';
+import { searchTracks as searchGeneric } from '../../../../lib/music.js';
 import { TrackResultsList } from './TrackResultsList.js';
 
 interface Props {
@@ -27,11 +30,20 @@ const DECADES = [
 // Spotify rejette limit > 10 sur ce client (400 "Invalid limit"). Cap dur.
 const PAGE_SIZE = 10;
 
+const PROVIDERS: Array<{ id: MusicProviderId; label: string }> = [
+  { id: 'spotify', label: 'Spotify' },
+  { id: 'youtube', label: 'YouTube' },
+];
+
 export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Element {
+  // Phase 3 — provider toggle (Spotify / YouTube)
+  const [provider, setProvider] = useState<MusicProviderId>('spotify');
   const [artist, setArtist] = useState('');
   const [track, setTrack] = useState('');
   const [yearMin, setYearMin] = useState<number | ''>('');
   const [yearMax, setYearMax] = useState<number | ''>('');
+  // YouTube : query libre (artist + title concaténés, ou tape ce que tu veux)
+  const [youtubeQuery, setYoutubeQuery] = useState('');
   const [tracks, setTracks] = useState<TrackResult[]>([]);
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
@@ -45,26 +57,50 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
     setYearMax(max);
   };
 
+  const runSpotify = async (nextOffset: number, append: boolean): Promise<void> => {
+    const res = await searchSpotify({
+      artist: artist.trim() || undefined,
+      track: track.trim() || undefined,
+      year_min: yearMin === '' ? undefined : yearMin,
+      year_max: yearMax === '' ? undefined : yearMax,
+      market: 'FR',
+      limit: PAGE_SIZE,
+      offset: nextOffset,
+    });
+    setTracks((prev) => (append ? [...prev, ...res.items] : res.items));
+    setTotal(res.total);
+    setHasNext(res.next !== null || res.items.length === PAGE_SIZE);
+    setOffset(nextOffset);
+  };
+
+  const runYouTube = async (): Promise<void> => {
+    const q = youtubeQuery.trim();
+    if (q.length < 2) {
+      setTracks([]);
+      setHasNext(false);
+      return;
+    }
+    const res = await searchGeneric(q, { provider: 'youtube', limit: 25 });
+    setTracks(res.results);
+    setTotal(res.results.length);
+    setHasNext(false); // YouTube : pas de pagination V1
+    setOffset(0);
+  };
+
   const submit = async (e?: FormEvent): Promise<void> => {
     e?.preventDefault();
-    if (!artist.trim() && !track.trim() && !yearMin && !yearMax) return;
     setLoading(true);
     setError(null);
-    setOffset(0);
     try {
-      const res = await searchTracks({
-        artist: artist.trim() || undefined,
-        track: track.trim() || undefined,
-        year_min: yearMin === '' ? undefined : yearMin,
-        year_max: yearMax === '' ? undefined : yearMax,
-        market: 'FR',
-        limit: PAGE_SIZE,
-        offset: 0,
-      });
-      setTracks(res.items);
-      setTotal(res.total);
-      setHasNext(res.next !== null || res.items.length === PAGE_SIZE);
-      setOffset(0);
+      if (provider === 'spotify') {
+        if (!artist.trim() && !track.trim() && !yearMin && !yearMax) {
+          setLoading(false);
+          return;
+        }
+        await runSpotify(0, false);
+      } else {
+        await runYouTube();
+      }
       setHasSearched(true);
     } catch (err: unknown) {
       setError((err as Error).message);
@@ -74,23 +110,10 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
   };
 
   const loadMore = async (): Promise<void> => {
-    if (loading) return;
+    if (loading || provider !== 'spotify') return;
     setLoading(true);
     try {
-      const nextOffset = offset + PAGE_SIZE;
-      const res = await searchTracks({
-        artist: artist.trim() || undefined,
-        track: track.trim() || undefined,
-        year_min: yearMin === '' ? undefined : yearMin,
-        year_max: yearMax === '' ? undefined : yearMax,
-        market: 'FR',
-        limit: PAGE_SIZE,
-        offset: nextOffset,
-      });
-      setTracks((prev) => [...prev, ...res.items]);
-      setOffset(nextOffset);
-      // hasNext = Spotify a un next URL OU dernière page pleine (peut être plus)
-      setHasNext(res.next !== null || res.items.length === PAGE_SIZE);
+      await runSpotify(offset + PAGE_SIZE, true);
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {
@@ -98,77 +121,128 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
     }
   };
 
-  // Debounce auto-search 500ms si critères non vides
+  // Debounce auto-search 500ms
   useEffect(() => {
-    if (!artist && !track && !yearMin && !yearMax) {
-      setTracks([]);
-      setHasSearched(false);
-      return;
+    if (provider === 'spotify') {
+      if (!artist && !track && !yearMin && !yearMax) {
+        setTracks([]);
+        setHasSearched(false);
+        return;
+      }
+    } else {
+      if (!youtubeQuery.trim()) {
+        setTracks([]);
+        setHasSearched(false);
+        return;
+      }
     }
     const id = window.setTimeout(() => {
       void submit();
     }, 500);
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [artist, track, yearMin, yearMax]);
+  }, [provider, artist, track, yearMin, yearMax, youtubeQuery]);
+
+  // Reset résultats quand on change de provider
+  useEffect(() => {
+    setTracks([]);
+    setHasSearched(false);
+    setError(null);
+    setOffset(0);
+    setTotal(0);
+    setHasNext(false);
+  }, [provider]);
 
   return (
     <div className="space-y-3">
+      {/* ── Toggle provider ────────────────────────────────────────── */}
+      <div className="flex gap-2" role="tablist" aria-label="Source musique">
+        {PROVIDERS.map((p) => {
+          const selected = provider === p.id;
+          return (
+            <button
+              key={p.id}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              onClick={() => setProvider(p.id)}
+              className={`px-3 py-1.5 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider transition-colors ${
+                selected ? 'bg-spritz-deep text-cream' : 'bg-cream-2 text-ink hover:bg-cream-3'
+              }`}
+            >
+              {p.label}
+            </button>
+          );
+        })}
+      </div>
+
       <form onSubmit={(e) => void submit(e)} className="space-y-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        {provider === 'spotify' ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <Input
+                label="Artiste"
+                value={artist}
+                onChange={(e) => setArtist(e.target.value)}
+                placeholder="Stromae"
+                maxLength={100}
+              />
+              <Input
+                label="Titre"
+                value={track}
+                onChange={(e) => setTrack(e.target.value)}
+                placeholder="Alors on danse"
+                maxLength={200}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                label="Année min"
+                type="number"
+                min={1900}
+                max={2100}
+                value={yearMin}
+                onChange={(e) => setYearMin(e.target.value === '' ? '' : Number(e.target.value))}
+                placeholder="1990"
+              />
+              <Input
+                label="Année max"
+                type="number"
+                min={1900}
+                max={2100}
+                value={yearMax}
+                onChange={(e) => setYearMax(e.target.value === '' ? '' : Number(e.target.value))}
+                placeholder="1999"
+              />
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {DECADES.map((d) => {
+                const active = yearMin === d.min && yearMax === d.max;
+                return (
+                  <button
+                    key={d.label}
+                    type="button"
+                    onClick={() => pickDecade(d.min, d.max)}
+                    aria-pressed={active}
+                    className={`px-3 py-1 border-2 border-ink rounded text-xs font-mono uppercase transition-colors ${
+                      active ? 'bg-ink text-cream' : 'bg-cream hover:bg-cream-2'
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : (
           <Input
-            label="Artiste"
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
-            placeholder="Stromae"
-            maxLength={100}
-          />
-          <Input
-            label="Titre"
-            value={track}
-            onChange={(e) => setTrack(e.target.value)}
-            placeholder="Alors on danse"
+            label="Recherche YouTube"
+            value={youtubeQuery}
+            onChange={(e) => setYoutubeQuery(e.target.value)}
+            placeholder="Ex : Stromae Alors on danse"
             maxLength={200}
           />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Input
-            label="Année min"
-            type="number"
-            min={1900}
-            max={2100}
-            value={yearMin}
-            onChange={(e) => setYearMin(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="1990"
-          />
-          <Input
-            label="Année max"
-            type="number"
-            min={1900}
-            max={2100}
-            value={yearMax}
-            onChange={(e) => setYearMax(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="1999"
-          />
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {DECADES.map((d) => {
-            const active = yearMin === d.min && yearMax === d.max;
-            return (
-              <button
-                key={d.label}
-                type="button"
-                onClick={() => pickDecade(d.min, d.max)}
-                aria-pressed={active}
-                className={`px-3 py-1 border-2 border-ink rounded text-xs font-mono uppercase transition-colors ${
-                  active ? 'bg-ink text-cream' : 'bg-cream hover:bg-cream-2'
-                }`}
-              >
-                {d.label}
-              </button>
-            );
-          })}
-        </div>
+        )}
       </form>
 
       {error && (
@@ -180,7 +254,7 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
       {hasSearched && tracks.length > 0 && (
         <p className="font-mono text-xs text-ink-soft">
           {tracks.length} chargé{tracks.length > 1 ? 's' : ''}
-          {total > tracks.length ? ` sur ${total} estimés` : ''}
+          {provider === 'spotify' && total > tracks.length ? ` sur ${total} estimés` : ''}
           {hasNext ? ' · plus disponibles ↓' : ''}
         </p>
       )}
@@ -191,7 +265,9 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
         emptyHint={
           hasSearched
             ? 'Aucun morceau trouvé. Essaye de simplifier les critères.'
-            : 'Renseigne au moins un critère pour lancer la recherche.'
+            : provider === 'spotify'
+              ? 'Renseigne au moins un critère pour lancer la recherche.'
+              : 'Tape une recherche YouTube (artiste + titre).'
         }
         playlistId={playlistId}
         onImported={onImported}

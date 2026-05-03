@@ -97,7 +97,7 @@ export interface ImportTracksResult {
 
 export async function importTracks(
   playlistId: string,
-  provider: 'spotify' | 'demo',
+  provider: 'spotify' | 'demo' | 'youtube',
   providerTrackIds: string[],
 ): Promise<ImportTracksResult> {
   return api<ImportTracksResult>(`/api/playlists/${encodeURIComponent(playlistId)}/import-tracks`, {
