@@ -46,6 +46,8 @@ import {
 import { connectAsHost } from '../lib/socket.js';
 import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
 import { useSpotifyAudioSync } from '../lib/useSpotifyAudioSync.js';
+import { useYouTubePlayer } from '../lib/useYouTubePlayer.js';
+import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
 import { MinScreen } from '../components/MinScreen.js';
 import {
   Badge,
@@ -363,19 +365,32 @@ function HostPageInner(): JSX.Element {
   const currentMaster = session?.participants.find((p) => p.is_master) ?? null;
 
   // ── Audio playback (Phase B) ───────────────────────────────────────────
-  // On charge le SDK Spotify dès qu'on est en phase de lecture. Le hook se
-  // débrouille pour ignorer si aucun track:start ne demande Spotify.
+  // On charge les deux SDK (Spotify + YouTube) dès qu'on est en phase de
+  // lecture. Chaque hook ne fait rien tant que currentTrack.provider ne le
+  // sélectionne pas — pas de coût visible.
   const spotify = useSpotifyPlayer({ enabled: phase === 'roundPlaying' });
+  const youtube = useYouTubePlayer({ enabled: phase === 'roundPlaying' });
 
   // ── Audio sync unifié — single source of truth = état serveur ────────
-  // Le hook réagit à currentTrack (track:start broadcast) et session.is_paused
-  // (session:paused broadcast) pour piloter Spotify. Aucune mutation locale.
+  // Chaque sync hook ne pilote SON provider que si currentTrack.provider
+  // matche. Pas de conflit : un seul provider actif à la fois.
   useSpotifyAudioSync({
     spotify,
     currentTrack,
     isPaused: session?.is_paused ?? false,
     enabled: phase === 'roundPlaying',
   });
+  useYouTubeAudioSync({
+    youtube,
+    currentTrack,
+    isPaused: session?.is_paused ?? false,
+    enabled: phase === 'roundPlaying',
+  });
+
+  // ── Phase 3d — provider courant pour position/durée/affichage ──────────
+  const isYouTubeTrack = currentTrack?.provider === 'youtube';
+  const audioPositionMs = isYouTubeTrack ? youtube.positionMs : spotify.positionMs;
+  const audioDurationMs = isYouTubeTrack ? youtube.durationMs : spotify.durationMs;
 
   // ── Actions ────────────────────────────────────────────────────────────
   const refreshCumulative = async (sid: string): Promise<void> => {
@@ -623,6 +638,20 @@ function HostPageInner(): JSX.Element {
             onToggleMaster={handleToggleMaster}
           />
         </div>
+        {/* Phase 3d — container DOM YouTube IFrame Player (mode B aussi). */}
+        <div
+          id="youtube-player-host"
+          aria-hidden
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: 1,
+            height: 1,
+            opacity: 0,
+            pointerEvents: 'none',
+          }}
+        />
         <MainScreenView
           session={session}
           currentTrack={currentTrack}
@@ -632,6 +661,8 @@ function HostPageInner(): JSX.Element {
           lastReveal={lastReveal}
           activeBuzzCount={activeBuzzers.size}
           busy={busy}
+          positionMs={audioPositionMs}
+          durationMs={audioDurationMs}
           onSkipTrack={handleSkipTrack}
           onGiveAnswer={handleGiveAnswer}
           onNextTrack={handleNextTrack}
@@ -750,8 +781,8 @@ function HostPageInner(): JSX.Element {
               onEndRound={handleEndCurrentRound}
               busy={busy}
               isPaused={session.is_paused}
-              positionMs={spotify.positionMs}
-              durationMs={spotify.durationMs}
+              positionMs={audioPositionMs}
+              durationMs={audioDurationMs}
               spotifyStatus={spotify.status}
               spotifyError={spotify.error}
               spotifyErrorCode={spotify.errorCode}
@@ -805,6 +836,25 @@ function HostPageInner(): JSX.Element {
       </div>
 
       <MultiColorBar height="md" />
+
+      {/* Phase 3d — container DOM pour YouTube IFrame Player. Toujours présent
+          quand on est en gameplay pour que useYouTubePlayer puisse y monter
+          l'iframe. Taille 0×0 — la lecture est audio-only blind test. */}
+      {phase === 'roundPlaying' && (
+        <div
+          id="youtube-player-host"
+          aria-hidden
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: 1,
+            height: 1,
+            opacity: 0,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
 
       {/* Debug Spotify (visible uniquement quand SDK actif) */}
       {spotify.status !== 'idle' && (
