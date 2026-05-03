@@ -790,6 +790,7 @@ function HostPageInner(): JSX.Element {
               onPauseAudio={() => void handlePauseAudio()}
               onResumeAudio={() => void handleResumeAudio()}
               onRestartTrack={() => void handleRestartTrack()}
+              onRevealAnswer={() => void handleGiveAnswer()}
             />
           )}
 
@@ -1070,6 +1071,7 @@ function RoundPlayingScreen({
   onPauseAudio,
   onResumeAudio,
   onRestartTrack,
+  onRevealAnswer,
 }: {
   sessionId: string;
   round: SessionRoundWithPlaylist;
@@ -1089,6 +1091,7 @@ function RoundPlayingScreen({
   onPauseAudio: () => void;
   onResumeAudio: () => void;
   onRestartTrack: () => void;
+  onRevealAnswer: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const top5 = cumulative.slice(0, 5);
@@ -1157,7 +1160,7 @@ function RoundPlayingScreen({
           </Button>
         </div>
 
-        {/* ── Contrôles audio (pause / reprendre / recommencer) ────────── */}
+        {/* ── Contrôles audio (pause / reprendre / recommencer / révéler) ── */}
         {currentTrack && (
           <div className="mt-3 pt-3 border-t-2 border-ink/10 flex items-center justify-center gap-2 flex-wrap">
             {!isPaused ? (
@@ -1172,6 +1175,12 @@ function RoundPlayingScreen({
             <Button variant="ghost" size="sm" onClick={onRestartTrack} disabled={busy}>
               🔄 {t('host.restartTrack')}
             </Button>
+            {/* Refonte #1 — Révéler la réponse : phase 1 + phase 2 */}
+            {(currentTrack.phase === 'phase1' || currentTrack.phase === 'phase2') && (
+              <Button variant="ghost" size="sm" onClick={onRevealAnswer} disabled={busy}>
+                💡 {t('host.revealAnswer')}
+              </Button>
+            )}
           </div>
         )}
       </Card>

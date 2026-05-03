@@ -242,6 +242,7 @@
     "pauseAudio": "Pause",
     "resumeAudio": "Resume",
     "restartTrack": "Restart",
+    "revealAnswer": "Reveal answer",
     "externalScreen": {
       "openButton": "TV screen",
       "openHint": "Open the public view on external screen or new tab",
@@ -286,7 +287,7 @@
     "phase2TimerSub": "seconds",
     "online": "ONLINE",
     "btnSkip": "Skip",
-    "btnGiveAnswer": "Give answer",
+    "btnGiveAnswer": "Reveal answer",
     "btnNext": "Next track",
     "thisTrack": "On this track",
     "finderArtistAndTitle": "Artist + title · {{seconds}}s",

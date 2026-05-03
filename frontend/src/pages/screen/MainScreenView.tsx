@@ -429,8 +429,8 @@ function IPadFooter({
   // Bouton "Suivant" mis en évidence en phase 3
   const nextHighlighted =
     phase === 'phase3' || phase === 'phase3-revealed' || phase === 'phase3-skipped';
-  // Bouton "Donner réponse" disponible uniquement phase 1 (avant que quelqu'un trouve)
-  const canGiveAnswer = phase === 'phase1';
+  // Refonte #1 — bouton "Révéler la réponse" : phase 1 ET phase 2 (avant la festive)
+  const canGiveAnswer = phase === 'phase1' || phase === 'phase2';
   // Bouton "Sauter" disponible phase 1 et phase 2 (avant la festive)
   const canSkip = phase === 'phase1' || phase === 'phase2';
 

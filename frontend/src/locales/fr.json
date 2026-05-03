@@ -242,6 +242,7 @@
     "pauseAudio": "Pause",
     "resumeAudio": "Reprendre",
     "restartTrack": "Recommencer",
+    "revealAnswer": "Révéler la réponse",
     "externalScreen": {
       "openButton": "Écran TV",
       "openHint": "Ouvre la vue grand public sur l'écran externe ou nouvel onglet",
@@ -286,7 +287,7 @@
     "phase2TimerSub": "secondes",
     "online": "EN LIGNE",
     "btnSkip": "Sauter",
-    "btnGiveAnswer": "Donner réponse",
+    "btnGiveAnswer": "Révéler la réponse",
     "btnNext": "Morceau suivant",
     "thisTrack": "Sur ce morceau",
     "finderArtistAndTitle": "Artiste + titre · {{seconds}}s",
