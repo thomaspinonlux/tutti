@@ -165,6 +165,12 @@ const io = initSocketIO(httpServer);
 httpServer.listen(PORT, () => {
   console.info(`[tutti-backend] démarré en mode ${NODE_ENV} sur http://localhost:${PORT}`);
   console.info(`[tutti-backend] CORS autorisé pour: ${FRONTEND_URL}`);
+  // Audit des providers musique chargés (Phase 3 — préparation YouTube)
+  const spotifyOk = Boolean(process.env.SPOTIFY_CLIENT_ID && process.env.SPOTIFY_CLIENT_SECRET);
+  const youtubeOk = Boolean(process.env.YOUTUBE_API_KEY);
+  console.info(
+    `[tutti-backend] providers — spotify=${spotifyOk ? 'OK' : 'MISSING'} youtube=${youtubeOk ? 'OK' : 'MISSING'}`,
+  );
 });
 
 // Gestion propre des arrêts
