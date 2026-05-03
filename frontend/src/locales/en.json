@@ -370,6 +370,7 @@
     "buzzerHintPhase3": "Round done — congrats to finders!",
     "buzzerHintSkipped": "Track skipped.",
     "buzzerHintAnalyzing": "Analyzing…",
+    "joinMidGame": "🎵 You're joining mid-game — buzz on the current track!",
     "phoneFooter_one": "of {{count}} player",
     "phoneFooter_other": "of {{count}} players",
     "recording": "Your turn!",

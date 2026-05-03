@@ -237,6 +237,12 @@ export function PlayPage(): JSX.Element {
             const myEntry = resp.cumulative.find((e) => e.id === identity.participantId);
             if (myEntry) setMyScore(myEntry.total_points);
           }
+          // Mid-game join — toast d'accueil quand on rejoint pendant que la
+          // session est PLAYING avec un morceau actif. !wasReconnect = 1ʳᵉ
+          // connexion socket de cette identité (pas un reload).
+          if (!wasReconnect && resp.session?.status === 'PLAYING' && resp.active_track) {
+            pushToast(setToasts, t('play.joinMidGame'), 'spritz');
+          }
           if (wasReconnect) {
             pushToast(setToasts, t('connection.toastReconnected'), 'basil');
             // Vérif silencieuse de la permission micro après une coupure prolongée

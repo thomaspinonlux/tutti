@@ -370,6 +370,7 @@
     "buzzerHintPhase3": "Manche terminée — bravo aux trouveurs !",
     "buzzerHintSkipped": "Morceau passé.",
     "buzzerHintAnalyzing": "Analyse en cours…",
+    "joinMidGame": "🎵 Tu rejoins en cours de partie — buzze sur le morceau actuel !",
     "phoneFooter_one": "sur {{count}} joueur",
     "phoneFooter_other": "sur {{count}} joueurs",
     "recording": "À toi !",
