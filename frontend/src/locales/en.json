@@ -477,6 +477,14 @@
     "stepPack": "Create your first Tutti Quizz pack",
     "go": "Go"
   },
+  "resumeBanner": {
+    "title": "Game in progress",
+    "waiting": "Waiting for players",
+    "playing": "Playing",
+    "old": "inactive 30+ min",
+    "resume": "Resume",
+    "dismiss": "Dismiss"
+  },
   "playQuizz": {
     "waitingNextQuestion": "Waiting for next question…",
     "waitingHint": "The host is launching the next question.",

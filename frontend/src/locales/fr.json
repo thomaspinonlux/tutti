@@ -477,6 +477,14 @@
     "stepPack": "Créer ton premier pack Tutti Quizz",
     "go": "Aller"
   },
+  "resumeBanner": {
+    "title": "Partie en cours",
+    "waiting": "En attente des joueurs",
+    "playing": "En cours",
+    "old": "inactive depuis 30 min",
+    "resume": "Reprendre",
+    "dismiss": "Ignorer"
+  },
   "playQuizz": {
     "waitingNextQuestion": "En attente de la prochaine question…",
     "waitingHint": "Le maître du jeu démarre la prochaine question.",

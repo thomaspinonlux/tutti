@@ -150,6 +150,61 @@ router.post(
   },
 );
 
+// ── GET /current (host) ──────────────────────────────────────────────────
+// Retourne la session active la plus récente du workspace (status WAITING
+// ou PLAYING). Permet de proposer "Reprendre la partie" après reload.
+
+router.get(
+  '/current',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    try {
+      const session = await prisma.session.findFirst({
+        where: {
+          establishment: { workspace_id: workspaceId },
+          status: { in: ['WAITING', 'PLAYING'] },
+        },
+        orderBy: { created_at: 'desc' },
+        select: {
+          id: true,
+          short_code: true,
+          name: true,
+          status: true,
+          game_type: true,
+          mode: true,
+          started_at: true,
+          created_at: true,
+          _count: { select: { participants: true } },
+        },
+      });
+      if (!session) {
+        res.status(204).end();
+        return;
+      }
+      res.json({
+        session: {
+          id: session.id,
+          short_code: session.short_code,
+          name: session.name,
+          status: session.status,
+          game_type: session.game_type,
+          mode: session.mode,
+          started_at: session.started_at,
+          created_at: session.created_at,
+          participants_count: session._count.participants,
+        },
+      });
+    } catch (err: unknown) {
+      console.error('[GET /sessions/current] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur récupération session' } });
+    }
+  },
+);
+
 // ── GET /by-id/:id (host) ─────────────────────────────────────────────────
 
 router.get(

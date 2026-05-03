@@ -53,6 +53,28 @@ export async function endSession(
   );
 }
 
+export interface CurrentActiveSession {
+  id: string;
+  short_code: string;
+  name: string | null;
+  status: 'WAITING' | 'PLAYING' | 'ENDED';
+  game_type: GameType;
+  mode: GameMode;
+  started_at: string | null;
+  created_at: string;
+  participants_count: number;
+}
+
+/** Récupère la session active du workspace (WAITING ou PLAYING) ou null. */
+export async function getCurrentSession(): Promise<CurrentActiveSession | null> {
+  try {
+    const data = await api<{ session: CurrentActiveSession } | null>('/api/sessions/current');
+    return data?.session ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Vue publique (joueur, sans auth). */
 export async function getPublicSession(shortCode: string): Promise<PublicSessionView> {
   const data = await api<{ session: PublicSessionView }>(

@@ -13,6 +13,7 @@ import { Sidebar } from '../../components/admin/Sidebar.js';
 import { MinScreen } from '../../components/MinScreen.js';
 import { api, ApiError } from '../../lib/api.js';
 import { MultiColorBar } from '../../components/ui/index.js';
+import { ResumeSessionBanner } from '../../components/admin/ResumeSessionBanner.js';
 
 export interface Establishment {
   id: string;
@@ -68,6 +69,7 @@ export function AdminLayout(): JSX.Element {
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <MultiColorBar height="sm" />
+          <ResumeSessionBanner />
           <main className="flex-1 px-6 md:px-10 py-8">
             <Outlet context={ctx} />
           </main>
