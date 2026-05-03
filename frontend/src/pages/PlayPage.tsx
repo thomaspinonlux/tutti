@@ -1085,14 +1085,6 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
           onSubmit={() => void finalizeRecording()}
           onCancel={handleCancelRec}
         />
-      ) : recState.kind === 'uploading' ? (
-        <Card size="md" tone="spritz" className="text-center">
-          <p className="text-5xl mb-3">🎧</p>
-          <TitleHandwritten as="h2" className="mb-2">
-            {t('play.transcribing')}
-          </TitleHandwritten>
-          <p className="font-editorial italic text-ink-2 text-sm">{t('play.transcribingHint')}</p>
-        </Card>
       ) : myCorrect ? (
         // J'ai trouvé : ValidatedBanner remplace le buzzer.
         // Confettis seulement en phase 3 (correction spec — pas avant).
@@ -1106,7 +1098,9 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
           showConfetti={isPhase3Reveal}
         />
       ) : (
-        // Buzzer (idle) — actif en phase 1+2, désactivé en phase 3
+        // Buzzer (idle ou uploading) — actif en phase 1+2, désactivé en phase 3.
+        // Bug 3 — pas d'écran intermédiaire Whisper : on reste sur le buzzer
+        // pendant l'analyse, avec un spinner discret. UX rapidité.
         <>
           <BuzzerArea
             onBuzz={() => void handleBuzz()}
@@ -1114,6 +1108,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
             isPhase3={isPhase3}
             isPhase3Skipped={phase === 'phase3-skipped'}
             error={error}
+            analyzing={recState.kind === 'uploading'}
           />
           {/* Refonte #3 — saisie texte alternative au buzz vocal */}
           {(isPhase1 || isPhase2) && !myCorrect && !isPaused && (
@@ -1421,19 +1416,25 @@ function BuzzerArea({
   isPhase3,
   isPhase3Skipped,
   error,
+  analyzing = false,
 }: {
   onBuzz: () => void;
   disabled: boolean;
   isPhase3: boolean;
   isPhase3Skipped: boolean;
   error: string | null;
+  /** Bug 3 — true pendant l'analyse Whisper. Affiche spinner discret sur
+   * le bouton sans masquer le reste, pour préserver l'UX rapidité. */
+  analyzing?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
   const hint = isPhase3Skipped
     ? t('play.buzzerHintSkipped')
     : isPhase3
       ? t('play.buzzerHintPhase3')
-      : t('play.buzzerHintActive');
+      : analyzing
+        ? t('play.buzzerHintAnalyzing')
+        : t('play.buzzerHintActive');
   return (
     <div className="flex flex-col items-center gap-3.5 my-2">
       <button
@@ -1441,7 +1442,7 @@ function BuzzerArea({
         onClick={onBuzz}
         disabled={disabled}
         className={[
-          'w-[220px] h-[220px] rounded-full border-[6px] border-ink',
+          'relative w-[220px] h-[220px] rounded-full border-[6px] border-ink',
           'flex flex-col items-center justify-center font-display text-2xl',
           'transition-all',
           disabled
@@ -1453,6 +1454,14 @@ function BuzzerArea({
           🎤
         </span>
         <span className="text-2xl">BUZZ</span>
+        {analyzing && (
+          // Spinner discret superposé pendant l'analyse Whisper. Pas d'écran
+          // intermédiaire — le joueur sait que ça analyse en cours.
+          <span
+            aria-hidden
+            className="absolute inset-0 rounded-full border-[6px] border-spritz-deep border-t-transparent animate-spin"
+          />
+        )}
       </button>
       <p className="font-editorial italic text-sm text-ink/80 text-center max-w-[280px]">{hint}</p>
       {error && (

@@ -367,6 +367,7 @@
     "buzzerHintActive": "Appuie quand tu connais !",
     "buzzerHintPhase3": "Manche terminée — bravo aux trouveurs !",
     "buzzerHintSkipped": "Morceau passé.",
+    "buzzerHintAnalyzing": "Analyse en cours…",
     "phoneFooter_one": "sur {{count}} joueur",
     "phoneFooter_other": "sur {{count}} joueurs",
     "recording": "À toi !",

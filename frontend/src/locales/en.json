@@ -367,6 +367,7 @@
     "buzzerHintActive": "Tap when you know it!",
     "buzzerHintPhase3": "Round done — congrats to finders!",
     "buzzerHintSkipped": "Track skipped.",
+    "buzzerHintAnalyzing": "Analyzing…",
     "phoneFooter_one": "of {{count}} player",
     "phoneFooter_other": "of {{count}} players",
     "recording": "Your turn!",
