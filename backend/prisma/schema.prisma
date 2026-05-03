@@ -118,6 +118,28 @@ model WhitelistEmail {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  PLAYLIST_SHARE_CODES (Phase 5 — partage playlist par code court)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Code court (6 chars) qui pointe sur une playlist. Permet à un autre
+/// animateur de cloner la playlist dans son workspace via /admin/import.
+/// Single-use ou multi-usage selon max_uses. Expiration optionnelle.
+model PlaylistShareCode {
+  id           String   @id @default(uuid()) @db.Uuid
+  code         String   @unique @db.VarChar(8)
+  playlist_id  String   @db.Uuid
+  created_by   String   @db.Uuid // user_id auth.users
+  max_uses     Int?
+  uses_count   Int      @default(0)
+  expires_at   DateTime? @db.Timestamptz(6)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([code])
+  @@index([playlist_id])
+  @@map("playlist_share_codes")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  INVITATION_CODES (Phase 4 — codes one-shot pour inscription auto-approuvée)
 // ─────────────────────────────────────────────────────────────────────────────
 

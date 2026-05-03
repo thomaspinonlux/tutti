@@ -28,6 +28,7 @@ import { Button, Card, Badge, TitleHandwritten, Underline } from '../../componen
 import { SortableTrackList } from '../../components/admin/playlists/SortableTrackList.js';
 import { TrackDetailsPanel } from '../../components/admin/playlists/TrackDetailsPanel.js';
 import { AddTracksTabs } from '../../components/admin/playlists/import/AddTracksTabs.js';
+import { SharePlaylistModal } from '../../components/admin/playlists/SharePlaylistModal.js';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -44,6 +45,7 @@ export function PlaylistEditPage(): JSX.Element {
   const [saveState, setSaveState] = useState<SaveState>('idle');
 
   const [name, setName] = useState('');
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   // Bootstrap
   useEffect(() => {
@@ -269,6 +271,14 @@ export function PlaylistEditPage(): JSX.Element {
               </Link>
             )}
             <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShareModalOpen(true)}
+              className="w-full"
+            >
+              ↗ {t('playlists.share')}
+            </Button>
+            <Button
               variant="ghost"
               size="sm"
               onClick={() => void handleDelete()}
@@ -339,6 +349,13 @@ export function PlaylistEditPage(): JSX.Element {
           />
         )}
       </aside>
+
+      <SharePlaylistModal
+        playlistId={playlist.id}
+        playlistName={playlist.name}
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+      />
     </div>
   );
 }

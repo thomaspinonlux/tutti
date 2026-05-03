@@ -81,3 +81,58 @@ export async function updateTrackAliases(
   );
   return data.track;
 }
+
+// ───── Phase 5 — partage par code court ──────────────────────────────────
+
+export interface PlaylistShareEntry {
+  id: string;
+  code: string;
+  playlist_id: string;
+  created_by: string;
+  max_uses: number | null;
+  uses_count: number;
+  expires_at: string | null;
+  created_at: string;
+}
+
+export interface PlaylistSharePreview {
+  code: string;
+  playlist: {
+    id: string;
+    name: string;
+    description: string | null;
+    cover_url: string | null;
+    level: string;
+    language: string;
+    tracks_count: number;
+  };
+  uses_count: number;
+  max_uses: number | null;
+  expires_at: string | null;
+}
+
+export async function createPlaylistShareCode(
+  playlistId: string,
+  opts: { max_uses?: number; expires_at?: string } = {},
+): Promise<PlaylistShareEntry> {
+  const data = await api<{ share: PlaylistShareEntry }>(
+    `/api/playlists/${encodeURIComponent(playlistId)}/share`,
+    { method: 'POST', body: opts },
+  );
+  return data.share;
+}
+
+export async function getPlaylistSharePreview(code: string): Promise<PlaylistSharePreview> {
+  return api<PlaylistSharePreview>(
+    `/api/playlists/share/${encodeURIComponent(code.toUpperCase())}`,
+  );
+}
+
+export async function importPlaylistFromShare(
+  code: string,
+): Promise<{ playlist: Playlist; tracks_imported: number }> {
+  return api<{ playlist: Playlist; tracks_imported: number }>(
+    `/api/playlists/share/${encodeURIComponent(code.toUpperCase())}/import`,
+    { method: 'POST' },
+  );
+}

@@ -850,6 +850,178 @@ router.post('/duplicates-check', async (req: Request, res: Response): Promise<vo
   }
 });
 
+// ─── Phase 5 — Partage par code court ────────────────────────────────────
+
+import { randomBytes } from 'node:crypto';
+
+function generateShareCode(): string {
+  // 6 chars alphabet sans ambiguïtés
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = randomBytes(6);
+  let out = '';
+  for (let i = 0; i < 6; i++) out += alphabet[bytes[i]! % alphabet.length];
+  return out;
+}
+
+const createShareBody = z.object({
+  max_uses: z.number().int().min(1).max(10000).optional(),
+  expires_at: z
+    .string()
+    .datetime()
+    .optional()
+    .transform((v) => (v ? new Date(v) : undefined)),
+});
+
+/** POST /api/playlists/:id/share — génère un code de partage */
+router.post('/:id/share', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const workspaceId = req.workspaceId!;
+  const ok = await ensureOwnPlaylist(req.params.id, workspaceId);
+  if (!ok) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Playlist introuvable' } });
+    return;
+  }
+  const parsed = createShareBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+    return;
+  }
+  // Tentative max 5x si collision
+  let code = generateShareCode();
+  for (let i = 0; i < 5; i++) {
+    const exists = await prisma.playlistShareCode.findUnique({ where: { code } });
+    if (!exists) break;
+    code = generateShareCode();
+  }
+  const entry = await prisma.playlistShareCode.create({
+    data: {
+      code,
+      playlist_id: req.params.id,
+      created_by: req.userId!,
+      max_uses: parsed.data.max_uses,
+      expires_at: parsed.data.expires_at,
+    },
+  });
+  res.status(201).json({ share: entry });
+});
+
+/** GET /api/playlists/share/:code — preview (auth requise pour limiter abuse) */
+router.get('/share/:code', async (req: Request<{ code: string }>, res: Response): Promise<void> => {
+  const code = req.params.code.toUpperCase();
+  const share = await prisma.playlistShareCode.findUnique({
+    where: { code },
+  });
+  if (!share) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Code introuvable' } });
+    return;
+  }
+  if (share.expires_at && share.expires_at <= new Date()) {
+    res.status(410).json({ error: { code: 'EXPIRED', message: 'Code expiré' } });
+    return;
+  }
+  if (share.max_uses && share.uses_count >= share.max_uses) {
+    res
+      .status(410)
+      .json({ error: { code: 'EXHAUSTED', message: 'Code épuisé (utilisations max atteintes)' } });
+    return;
+  }
+  const playlist = await prisma.playlist.findUnique({
+    where: { id: share.playlist_id },
+    include: {
+      _count: { select: { playlist_tracks: true } },
+    },
+  });
+  if (!playlist) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Playlist source supprimée' } });
+    return;
+  }
+  res.json({
+    code: share.code,
+    playlist: {
+      id: playlist.id,
+      name: playlist.name,
+      description: playlist.description,
+      cover_url: playlist.cover_url,
+      level: playlist.level,
+      language: playlist.language,
+      tracks_count: playlist._count.playlist_tracks,
+    },
+    uses_count: share.uses_count,
+    max_uses: share.max_uses,
+    expires_at: share.expires_at,
+  });
+});
+
+/** POST /api/playlists/share/:code/import — clone playlist dans le workspace caller */
+router.post(
+  '/share/:code/import',
+  async (req: Request<{ code: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const code = req.params.code.toUpperCase();
+    const share = await prisma.playlistShareCode.findUnique({ where: { code } });
+    if (!share) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Code introuvable' } });
+      return;
+    }
+    if (share.expires_at && share.expires_at <= new Date()) {
+      res.status(410).json({ error: { code: 'EXPIRED', message: 'Code expiré' } });
+      return;
+    }
+    if (share.max_uses && share.uses_count >= share.max_uses) {
+      res.status(410).json({ error: { code: 'EXHAUSTED', message: 'Code épuisé' } });
+      return;
+    }
+    const source = await prisma.playlist.findUnique({
+      where: { id: share.playlist_id },
+      include: {
+        playlist_tracks: {
+          orderBy: { position: 'asc' },
+          include: { track: true },
+        },
+      },
+    });
+    if (!source) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Playlist source supprimée' } });
+      return;
+    }
+    const establishment = await getCurrentEstablishment(workspaceId);
+    if (!establishment) {
+      res.status(404).json({ error: { code: 'NO_ESTABLISHMENT', message: "Pas d'établissement" } });
+      return;
+    }
+    // Clone playlist + relink playlist_tracks vers les Track partagés (catalogue
+    // global). Pas de nouveau Track créé : on réutilise le catalogue.
+    const cloned = await prisma.$transaction(async (tx) => {
+      const newPlaylist = await tx.playlist.create({
+        data: {
+          establishment_id: establishment.id,
+          name: `${source.name} (importée)`,
+          description: source.description,
+          cover_url: source.cover_url,
+          level: source.level,
+          language: source.language,
+          is_published: false, // l'animateur doit valider avant publish
+          is_express: source.is_express,
+        },
+      });
+      if (source.playlist_tracks.length > 0) {
+        await tx.playlistTrack.createMany({
+          data: source.playlist_tracks.map((pt, idx) => ({
+            playlist_id: newPlaylist.id,
+            track_id: pt.track_id,
+            position: idx,
+          })),
+        });
+      }
+      await tx.playlistShareCode.update({
+        where: { id: share.id },
+        data: { uses_count: { increment: 1 } },
+      });
+      return newPlaylist;
+    });
+    res.status(201).json({ playlist: cloned, tracks_imported: source.playlist_tracks.length });
+  },
+);
+
 export default router;
 
 // Re-export for type checking only — callers should import from @tutti/shared.
