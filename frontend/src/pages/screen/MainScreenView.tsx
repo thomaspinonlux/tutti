@@ -770,6 +770,12 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
         {/* Right panel */}
         <aside className="flex flex-col gap-5 min-w-0">
           <LiveLeaderboard cumulative={cumulative} />
+          {/* Refonte #5 — affichage live phase 2 (entre 1er gagnant et fin) :
+              les retardataires voient les positions actuelles + qui a déjà
+              le bonus titre, pour estimer s'ils peuvent encore scorer. */}
+          {isPhase2 && correctAnswers.length > 0 && (
+            <FindersRecap correctAnswers={correctAnswers} />
+          )}
           {isPhase3 && correctAnswers.length > 0 && (
             <FindersRecap correctAnswers={correctAnswers} />
           )}
