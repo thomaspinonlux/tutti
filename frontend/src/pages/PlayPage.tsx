@@ -852,12 +852,22 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
   const [recState, setRecState] = useState<RecState>({ kind: 'idle' });
   const [buzzCooldownUntil, setBuzzCooldownUntil] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  // Refonte #2 — toast top "Pas reconnu" quand voice fail, retour buzzer direct
+  const [failToast, setFailToast] = useState<string | null>(null);
+
+  // Auto-clear fail toast 1.5s
+  useEffect(() => {
+    if (!failToast) return;
+    const id = window.setTimeout(() => setFailToast(null), 1500);
+    return () => window.clearTimeout(id);
+  }, [failToast]);
 
   // Reset le state d'enregistrement à chaque nouveau track.
   useEffect(() => {
     setRecState({ kind: 'idle' });
     setError(null);
     setBuzzCooldownUntil(0);
+    setFailToast(null);
   }, [currentTrack?.track_id]);
 
   // À l'entrée en phase 3 (reveal global), on sort de l'écran "résultat" pour
@@ -947,6 +957,13 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         audio: blob,
         filename: capture.mimeType.includes('mp4') ? 'buzz.mp4' : 'buzz.webm',
       });
+      // Refonte #2 — si pas matché : retour direct buzzer + toast 1.5s.
+      // Pas d'écran intermédiaire, pas de transcript Whisper affiché.
+      if (!result.matched) {
+        setRecState({ kind: 'idle' });
+        setFailToast(t('play.notMatchedShort'));
+        return;
+      }
       setRecState({ kind: 'result', result });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Upload échoué');
@@ -978,6 +995,13 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Refonte #2 — toast top "Pas reconnu" 1.5s, retour buzzer immédiat. */}
+      {failToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 border-2 border-ink rounded shadow-pop bg-raspberry text-cream font-medium text-sm animate-pop-in">
+          {failToast}
+        </div>
+      )}
+
       {/* Header tel : logo + manche + connection + boutons (master) */}
       <PhoneHeader
         roundPosition={roundPosition}
@@ -1042,14 +1066,6 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
           </TitleHandwritten>
           <p className="font-editorial italic text-ink-2 text-sm">{t('play.transcribingHint')}</p>
         </Card>
-      ) : recState.kind === 'result' && !recState.result.matched ? (
-        // Pas matché en phase 1/2 → encourage à retenter
-        <ResultView
-          result={recState.result}
-          canRebuzz={(isPhase1 || isPhase2) && !myCorrect}
-          onRebuzz={() => setRecState({ kind: 'idle' })}
-          myScore={myScore}
-        />
       ) : myCorrect ? (
         // J'ai trouvé : ValidatedBanner remplace le buzzer.
         // Confettis seulement en phase 3 (correction spec — pas avant).
@@ -1450,76 +1466,16 @@ function RecordingView({
   );
 }
 
-function ResultView({
-  result,
-  canRebuzz,
-  onRebuzz,
-  myScore,
-}: {
-  result: VoiceAnswerResult;
-  canRebuzz: boolean;
-  onRebuzz: () => void;
-  myScore: number;
-}): JSX.Element {
-  const { t } = useTranslation();
-
-  if (result.matched && result.scored) {
-    // Correction spec : on n'affiche PAS l'artiste/titre ici (le joueur les
-    // connaît déjà puisqu'il les a dits, mais un voisin pourrait regarder
-    // par-dessus son épaule). Le reveal complet arrive en phase 3 pour tous.
-    // On ne montre PAS non plus le transcript (idem, anti-leak).
-    return (
-      <Card size="md" tone="basil" className="text-center">
-        <p className="text-6xl mb-3">✓</p>
-        <TitleHandwritten as="h2" className="mb-2">
-          {t('play.answerValidated')}
-        </TitleHandwritten>
-        <p className="font-display text-3xl text-basil-deep mb-3">+{result.score ?? 0} pts</p>
-        {result.position && (
-          <Badge tone="lemon" tilt={-1}>
-            {t('play.position', { n: result.position })}
-          </Badge>
-        )}
-        <p className="font-editorial italic text-ink-soft text-sm mt-4">
-          {t('play.waitForReveal')}
-        </p>
-        <ScoreBadge score={myScore + (result.score ?? 0)} />
-      </Card>
-    );
-  }
-
-  // Pas matché → on encourage à retenter (en phase 1/2 only).
-  return (
-    <Card size="md" tone="cream" className="text-center">
-      <p className="text-5xl mb-2">🤔</p>
-      <TitleHandwritten as="h2" className="mb-2">
-        {t('play.notMatched')}
-      </TitleHandwritten>
-      {result.transcript && (
-        <p className="font-mono text-xs text-ink-soft mt-1 italic mb-3">
-          {t('play.weHeard')} : « {result.transcript} »
-        </p>
-      )}
-      {canRebuzz ? (
-        <Button variant="primary" size="md" onClick={onRebuzz} className="w-full mt-2">
-          {t('play.rebuzz')}
-        </Button>
-      ) : (
-        <p className="font-editorial italic text-ink-soft text-sm">{t('play.tooLate')}</p>
-      )}
-      <ScoreBadge score={myScore} />
-    </Card>
-  );
-}
+// Refonte #2 — ResultView (écran intermédiaire "Pas reconnu" + bouton Rebuzzer)
+// supprimé. Le retour au buzzer est désormais immédiat avec un toast top
+// 1.5s "❌ Pas reconnu, retente !". Plus de transcript Whisper affiché.
+//
+// La validation après match correct passe directement par <ValidatedBanner />
+// (déclenché via myCorrect une fois le broadcast track:correct_answer reçu).
 
 // Phase2Countdown : remplacé par LateBanner (maquette 07). Conservé pour
 // référence si besoin de revenir à un affichage compact.
-
-function ScoreBadge({ score }: { score: number }): JSX.Element {
-  const { t } = useTranslation();
-  return (
-    <p className="font-mono text-sm text-ink-soft mt-6">
-      {t('play.yourScore')}: <span className="font-display text-lg text-ink">{score}</span>
-    </p>
-  );
-}
+//
+// Refonte #2 : ScoreBadge supprimé — il n'était utilisé que dans ResultView
+// (lui-même supprimé puisque l'écran intermédiaire "Pas reconnu" disparaît).
+// Si besoin futur d'afficher un score inline, recréer ce composant.

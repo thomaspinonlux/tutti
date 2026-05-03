@@ -371,6 +371,7 @@
     "recordingHint": "Dis l'artiste (et le titre pour bonus) bien fort.",
     "recordingSubmit": "Envoyer maintenant",
     "notMatched": "Pas reconnu, retente !",
+    "notMatchedShort": "❌ Pas reconnu, retente !",
     "weHeard": "On a entendu",
     "rebuzz": "Rebuzzer",
     "position": "{{n}}ᵉ à trouver",
