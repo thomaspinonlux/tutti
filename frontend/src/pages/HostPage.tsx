@@ -122,6 +122,169 @@ function HostPageInner(): JSX.Element {
           if (cancelled) return;
           setError(`Socket: ${err.message}`);
         });
+
+        // ⚠️ Listeners attachés AVANT l'emit join_by_code — si on les
+        // attache dans le callback, on rate les broadcasts émis pendant
+        // la latence callback (race condition).
+        const sessionIdRef: { current: string | null } = { current: null };
+        socket.on('participant:joined', ({ participant }: { participant: Participant }) => {
+          setSession((s) => (s ? { ...s, participants: [...s.participants, participant] } : s));
+          pushToast(setToasts, t('host.toastJoined', { pseudo: participant.pseudo }), 'spritz');
+        });
+        socket.on('participant:moved_team', ({ participant }: { participant: Participant }) => {
+          setSession((s) =>
+            s
+              ? {
+                  ...s,
+                  participants: s.participants.map((p) =>
+                    p.id === participant.id ? participant : p,
+                  ),
+                }
+              : s,
+          );
+        });
+        socket.on('participant:kicked', ({ participant }: { participant: Participant }) => {
+          setSession((s) =>
+            s ? { ...s, participants: s.participants.filter((p) => p.id !== participant.id) } : s,
+          );
+          pushToast(setToasts, t('host.toastKicked', { pseudo: participant.pseudo }), 'raspberry');
+        });
+        socket.on(
+          'participant:master_changed',
+          ({ participant, is_master }: { participant: Participant; is_master: boolean }) => {
+            setSession((s) =>
+              s
+                ? {
+                    ...s,
+                    participants: s.participants.map((p) =>
+                      p.id === participant.id ? { ...p, is_master } : { ...p, is_master: false },
+                    ),
+                  }
+                : s,
+            );
+          },
+        );
+        socket.on('session:started', ({ session: s }: { session: Session }) => {
+          setSession((prev) => (prev ? { ...prev, ...s } : prev));
+          pushToast(setToasts, t('host.toastStarted'), 'basil');
+        });
+        socket.on(
+          'session:ended',
+          ({ session: s, cumulative: c }: { session: Session; cumulative: CumulativeScore[] }) => {
+            setSession((prev) => (prev ? { ...prev, ...s } : prev));
+            setCumulative(c);
+          },
+        );
+        socket.on('round:created', ({ round }: { round: SessionRoundWithPlaylist }) => {
+          setSession((prev) => (prev ? { ...prev, rounds: [...prev.rounds, round] } : prev));
+        });
+        socket.on('round:started', ({ round }: { round: SessionRoundWithPlaylist }) => {
+          setSession((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  rounds: prev.rounds.map((r) =>
+                    r.id === round.id
+                      ? round
+                      : r.status === 'PLAYING'
+                        ? { ...r, status: 'ENDED' }
+                        : r,
+                  ),
+                }
+              : prev,
+          );
+        });
+        socket.on('round:ended', ({ round }: { round: SessionRoundWithPlaylist }) => {
+          setSession((prev) =>
+            prev
+              ? { ...prev, rounds: prev.rounds.map((r) => (r.id === round.id ? round : r)) }
+              : prev,
+          );
+          setCurrentTrack(null);
+        });
+        socket.on('track:start', ({ state }: { state: CurrentTrackState }) => {
+          setCurrentTrack(state);
+          setCorrectAnswers([]);
+          setPhase2StartedAt(null);
+          setLastReveal(null);
+          setActiveBuzzers(new Set());
+        });
+        socket.on(
+          'buzz:received',
+          (payload: {
+            round_id: string;
+            participant_id: string;
+            participant_pseudo: string;
+            buzzed_at_ms: number;
+            expires_at_ms: number;
+          }) => {
+            setActiveBuzzers((prev) => {
+              const next = new Set(prev);
+              next.add(payload.participant_id);
+              return next;
+            });
+            const remainingMs = Math.max(0, payload.expires_at_ms - Date.now());
+            window.setTimeout(() => {
+              setActiveBuzzers((prev) => {
+                if (!prev.has(payload.participant_id)) return prev;
+                const next = new Set(prev);
+                next.delete(payload.participant_id);
+                return next;
+              });
+            }, remainingMs);
+          },
+        );
+        socket.on('track:correct_answer', (entry: CorrectAnswerEntry) => {
+          setCorrectAnswers((prev) => [...prev, entry]);
+          const sid = sessionIdRef.current;
+          if (sid) {
+            void getSession(sid)
+              .then((res) => setCumulative(res.cumulative))
+              .catch(() => {});
+          }
+        });
+        socket.on(
+          'track:phase_changed',
+          (payload: {
+            round_id: string;
+            phase: CurrentTrackState['phase'];
+            phase2_started_at?: string;
+            artist?: string;
+            title?: string;
+          }) => {
+            setCurrentTrack((prev) => (prev ? { ...prev, phase: payload.phase } : prev));
+            if (payload.phase === 'phase2' && payload.phase2_started_at) {
+              setPhase2StartedAt(payload.phase2_started_at);
+            }
+            if (payload.phase === 'phase3-revealed' && payload.artist && payload.title) {
+              setLastReveal({ artist: payload.artist, title: payload.title });
+            }
+          },
+        );
+        socket.on(
+          'track:revealed',
+          (payload: { round_id: string; artist: string; title: string }) => {
+            setLastReveal({ artist: payload.artist, title: payload.title });
+          },
+        );
+        socket.on('session:paused', () => {
+          console.info('[Socket] session:paused received');
+          setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
+        });
+        socket.on('session:resumed', () => {
+          console.info('[Socket] session:resumed received');
+          setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
+        });
+        socket.on('scores:invalidated', () => {
+          const sid = sessionIdRef.current;
+          if (sid) {
+            void getSession(sid)
+              .then((res) => setCumulative(res.cumulative))
+              .catch(() => {});
+          }
+        });
+
+        // Maintenant on emit le join — listeners déjà en place.
         socket.emit(
           'session:join_by_code',
           { shortCode: publicView.short_code },
@@ -131,196 +294,13 @@ function HostPageInner(): JSX.Element {
               setError(resp.error ?? t('host.notFound'));
               return;
             }
+            sessionIdRef.current = resp.session.id;
             setSession(resp.session);
             void getSession(resp.session.id)
               .then((res) => {
                 if (!cancelled) setCumulative(res.cumulative);
               })
               .catch(() => {});
-
-            socket?.on('participant:joined', ({ participant }: { participant: Participant }) => {
-              setSession((s) => (s ? { ...s, participants: [...s.participants, participant] } : s));
-              pushToast(setToasts, t('host.toastJoined', { pseudo: participant.pseudo }), 'spritz');
-            });
-            socket?.on(
-              'participant:moved_team',
-              ({ participant }: { participant: Participant }) => {
-                setSession((s) =>
-                  s
-                    ? {
-                        ...s,
-                        participants: s.participants.map((p) =>
-                          p.id === participant.id ? participant : p,
-                        ),
-                      }
-                    : s,
-                );
-              },
-            );
-            socket?.on('participant:kicked', ({ participant }: { participant: Participant }) => {
-              setSession((s) =>
-                s
-                  ? { ...s, participants: s.participants.filter((p) => p.id !== participant.id) }
-                  : s,
-              );
-              pushToast(
-                setToasts,
-                t('host.toastKicked', { pseudo: participant.pseudo }),
-                'raspberry',
-              );
-            });
-            socket?.on(
-              'participant:master_changed',
-              ({ participant, is_master }: { participant: Participant; is_master: boolean }) => {
-                // Côté backend, on a démasterisé tous les autres avant de
-                // (dé)masteriser la cible. On reflète ça côté UI.
-                setSession((s) =>
-                  s
-                    ? {
-                        ...s,
-                        participants: s.participants.map((p) =>
-                          p.id === participant.id
-                            ? { ...p, is_master }
-                            : { ...p, is_master: false },
-                        ),
-                      }
-                    : s,
-                );
-              },
-            );
-            socket?.on('session:started', ({ session: s }: { session: Session }) => {
-              setSession((prev) => (prev ? { ...prev, ...s } : prev));
-              pushToast(setToasts, t('host.toastStarted'), 'basil');
-            });
-            socket?.on(
-              'session:ended',
-              ({
-                session: s,
-                cumulative: c,
-              }: {
-                session: Session;
-                cumulative: CumulativeScore[];
-              }) => {
-                setSession((prev) => (prev ? { ...prev, ...s } : prev));
-                setCumulative(c);
-              },
-            );
-            socket?.on('round:created', ({ round }: { round: SessionRoundWithPlaylist }) => {
-              setSession((prev) => (prev ? { ...prev, rounds: [...prev.rounds, round] } : prev));
-            });
-            socket?.on('round:started', ({ round }: { round: SessionRoundWithPlaylist }) => {
-              setSession((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      rounds: prev.rounds.map((r) =>
-                        r.id === round.id
-                          ? round
-                          : r.status === 'PLAYING'
-                            ? { ...r, status: 'ENDED' }
-                            : r,
-                      ),
-                    }
-                  : prev,
-              );
-            });
-            socket?.on('round:ended', ({ round }: { round: SessionRoundWithPlaylist }) => {
-              setSession((prev) =>
-                prev
-                  ? { ...prev, rounds: prev.rounds.map((r) => (r.id === round.id ? round : r)) }
-                  : prev,
-              );
-              setCurrentTrack(null);
-            });
-            // Gameplay events (Phase C voice-first)
-            socket?.on('track:start', ({ state }: { state: CurrentTrackState }) => {
-              setCurrentTrack(state);
-              // Reset les états par-track
-              setCorrectAnswers([]);
-              setPhase2StartedAt(null);
-              setLastReveal(null);
-              setActiveBuzzers(new Set());
-            });
-            socket?.on(
-              'buzz:received',
-              (payload: {
-                round_id: string;
-                participant_id: string;
-                participant_pseudo: string;
-                buzzed_at_ms: number;
-                expires_at_ms: number;
-              }) => {
-                // Compteur de buzzes pour la phase 1 (maquette 06 — top-left
-                // du center stage). On ajoute le participant au set, et on le
-                // retire automatiquement à expires_at_ms (fin de la fenêtre
-                // micro 10s).
-                setActiveBuzzers((prev) => {
-                  const next = new Set(prev);
-                  next.add(payload.participant_id);
-                  return next;
-                });
-                const remainingMs = Math.max(0, payload.expires_at_ms - Date.now());
-                window.setTimeout(() => {
-                  setActiveBuzzers((prev) => {
-                    if (!prev.has(payload.participant_id)) return prev;
-                    const next = new Set(prev);
-                    next.delete(payload.participant_id);
-                    return next;
-                  });
-                }, remainingMs);
-              },
-            );
-            socket?.on('track:correct_answer', (entry: CorrectAnswerEntry) => {
-              setCorrectAnswers((prev) => [...prev, entry]);
-              // Le toast festif XL est déclenché côté MainScreenView via l'effect
-              // qui watch correctAnswers.length.
-              if (resp.session) {
-                void getSession(resp.session.id)
-                  .then((res) => setCumulative(res.cumulative))
-                  .catch(() => {});
-              }
-            });
-            socket?.on(
-              'track:phase_changed',
-              (payload: {
-                round_id: string;
-                phase: CurrentTrackState['phase'];
-                phase2_started_at?: string;
-                artist?: string;
-                title?: string;
-              }) => {
-                setCurrentTrack((prev) => (prev ? { ...prev, phase: payload.phase } : prev));
-                if (payload.phase === 'phase2' && payload.phase2_started_at) {
-                  setPhase2StartedAt(payload.phase2_started_at);
-                }
-                if (payload.phase === 'phase3-revealed' && payload.artist && payload.title) {
-                  setLastReveal({ artist: payload.artist, title: payload.title });
-                }
-              },
-            );
-            socket?.on(
-              'track:revealed',
-              (payload: { round_id: string; artist: string; title: string }) => {
-                setLastReveal({ artist: payload.artist, title: payload.title });
-              },
-            );
-            socket?.on('session:paused', () => {
-              console.info('[Socket] session:paused received');
-              setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
-            });
-            socket?.on('session:resumed', () => {
-              console.info('[Socket] session:resumed received');
-              setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
-            });
-            // track:restart attaché dans un useEffect séparé pour éviter
-            // closure stale sur spotify.restartCurrentTrack (cf. ci-dessous).
-            socket?.on('scores:invalidated', () => {
-              if (resp.session) {
-                void getSession(resp.session.id)
-                  .then((res) => setCumulative(res.cumulative))
-                  .catch(() => {});
-              }
-            });
           },
         );
       } catch (err: unknown) {
