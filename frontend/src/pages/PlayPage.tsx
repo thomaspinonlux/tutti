@@ -1064,7 +1064,12 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     isPaused;
 
   return (
-    <div className="flex flex-col gap-3">
+    // Bug 4 — refonte layout iPhone : flex column avec hauteur 100dvh.
+    // Le 'dvh' (dynamic viewport height) s'adapte automatiquement quand
+    // le clavier mobile s'ouvre/se ferme — pas de scroll nécessaire,
+    // tous les éléments restent visibles. Le BUZZ shrink si peu de hauteur
+    // (clavier ouvert) via la classe responsive sur sa taille.
+    <div className="flex flex-col gap-3 min-h-[100dvh]">
       {/* Refonte #2 — toast top "Pas reconnu" 1.5s, retour buzzer immédiat. */}
       {failToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 border-2 border-ink rounded shadow-pop bg-raspberry text-cream font-medium text-sm animate-pop-in">
@@ -1144,24 +1149,34 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         // Buzzer (idle ou uploading) — actif en phase 1+2, désactivé en phase 3.
         // Bug 3 — pas d'écran intermédiaire Whisper : on reste sur le buzzer
         // pendant l'analyse, avec un spinner discret. UX rapidité.
-        <>
-          <BuzzerArea
-            onBuzz={() => void handleBuzz()}
-            disabled={buzzerDisabled}
-            isPhase3={isPhase3}
-            isPhase3Skipped={phase === 'phase3-skipped'}
-            error={error}
-            analyzing={recState.kind === 'uploading'}
-          />
-          {/* Refonte #3 — saisie texte alternative au buzz vocal */}
-          {(isPhase1 || isPhase2) && !myCorrect && !isPaused && (
-            <TextAnswerInput
-              onSubmit={(text) => void handleTextAnswer(text)}
-              busy={textBusy}
-              disabled={recState.kind !== 'idle' || !!myCorrect}
+        // Bug 4 — wrapper flex-1 pour que le BUZZ prenne l'espace disponible
+        // et le text input reste sticky en bas (mt-auto).
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex items-center justify-center min-h-0">
+            <BuzzerArea
+              onBuzz={() => void handleBuzz()}
+              disabled={buzzerDisabled}
+              isPhase3={isPhase3}
+              isPhase3Skipped={phase === 'phase3-skipped'}
+              error={error}
+              analyzing={recState.kind === 'uploading'}
             />
+          </div>
+          {/* Refonte #3 — saisie texte alternative au buzz vocal.
+              Bug 4 — sticky bottom pour rester au-dessus du clavier iOS.
+              Avec h-100dvh sur le container parent, le clavier mobile
+              fait shrink le viewport → ce sticky reste visible juste
+              au-dessus du clavier, sans scroller la page. */}
+          {(isPhase1 || isPhase2) && !myCorrect && !isPaused && (
+            <div className="sticky bottom-0 left-0 right-0 -mx-4 px-4 py-2 bg-cream border-t-2 border-ink mt-2">
+              <TextAnswerInput
+                onSubmit={(text) => void handleTextAnswer(text)}
+                busy={textBusy}
+                disabled={recState.kind !== 'idle' || !!myCorrect}
+              />
+            </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Phone footer : position cumulée + total joueurs */}
@@ -1484,8 +1499,16 @@ function BuzzerArea({
         type="button"
         onClick={onBuzz}
         disabled={disabled}
+        // Bug 4 — taille responsive : 220px sur viewport haut, shrink jusqu'à
+        // 120px si la hauteur visible est limitée (clavier mobile ouvert).
+        // clamp(min, preferred, max) — preferred 36dvh = ~36% de la hauteur
+        // dynamique du viewport, qui s'ajuste avec le clavier iOS.
+        style={{
+          width: 'clamp(120px, 36dvh, 220px)',
+          height: 'clamp(120px, 36dvh, 220px)',
+        }}
         className={[
-          'relative w-[220px] h-[220px] rounded-full border-[6px] border-ink',
+          'relative rounded-full border-[6px] border-ink',
           'flex flex-col items-center justify-center font-display text-2xl',
           'transition-all',
           disabled
@@ -1530,33 +1553,10 @@ function TextAnswerInput({
 }): JSX.Element {
   const { t } = useTranslation();
   const [text, setText] = useState('');
-  const [focused, setFocused] = useState(false);
-  // Bug 2 — iOS keyboard offset via visualViewport API. Quand le clavier
-  // s'ouvre, visualViewport.height < window.innerHeight. On translate le
-  // form vers le haut de cette différence pour qu'il reste visible
-  // au-dessus du clavier sans scroller la page (qui casserait l'affichage
-  // du buzzer).
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
 
-  useEffect(() => {
-    if (!focused) {
-      setKeyboardOffset(0);
-      return;
-    }
-    if (typeof window === 'undefined' || !window.visualViewport) return;
-    const vv = window.visualViewport;
-    const update = (): void => {
-      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKeyboardOffset(offset);
-    };
-    update();
-    vv.addEventListener('resize', update);
-    vv.addEventListener('scroll', update);
-    return () => {
-      vv.removeEventListener('resize', update);
-      vv.removeEventListener('scroll', update);
-    };
-  }, [focused]);
+  // Bug 4 — refonte iOS : combinaison min-h-[100dvh] (parent) + sticky bottom
+  // suffit pour que le clavier mobile pousse le form sans scroller la page.
+  // Plus besoin de visualViewport / position fixed manuel.
 
   const submit = (e: React.FormEvent): void => {
     e.preventDefault();
@@ -1566,30 +1566,12 @@ function TextAnswerInput({
     setText('');
   };
 
-  // Quand focused, on passe en position fixed bottom, lifted par
-  // keyboardOffset → reste juste au-dessus du clavier iOS.
-  // Sinon, position relative classique (flow normal sous le buzzer).
-  const containerStyle = focused
-    ? {
-        position: 'fixed' as const,
-        bottom: keyboardOffset,
-        left: 0,
-        right: 0,
-        zIndex: 50,
-      }
-    : undefined;
-  const containerClass = focused
-    ? 'flex items-center gap-2 px-4 py-2 bg-cream-2 border-t-2 border-ink shadow-pop'
-    : 'flex items-center gap-2 mt-2';
-
   return (
-    <form onSubmit={submit} className={containerClass} style={containerStyle}>
+    <form onSubmit={submit} className="flex items-center gap-2">
       <input
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
         placeholder={t('play.textAnswerPlaceholder')}
         disabled={busy || disabled}
         maxLength={200}
@@ -1604,12 +1586,9 @@ function TextAnswerInput({
       <button
         type="submit"
         disabled={busy || disabled || !text.trim()}
-        // onMouseDown au lieu de onClick : le mousedown se déclenche AVANT
-        // que l'input perde le focus (blur), donc submit() s'exécute encore
-        // dans le contexte focused. Sans ça, le tap sur "Envoyer" déclenche
-        // d'abord blur → keyboardOffset=0 → form bouge vers le bas → le bouton
-        // se retrouve sous le doigt qui le rate. Avec onMouseDown, on submit
-        // avant que ce reflow ne se produise.
+        // onMouseDown au lieu de onClick : se déclenche AVANT le blur de
+        // l'input. Sans ça, sur iOS, le tap "Envoyer" peut rater le bouton
+        // si le clavier se ferme + reflow entre mousedown et click.
         onMouseDown={(e) => {
           if (!text.trim() || busy || disabled) return;
           e.preventDefault();
