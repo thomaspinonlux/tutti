@@ -246,7 +246,7 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
           workspace_id: workspace.id,
           name: establishmentName ?? workspaceName,
           default_language: 'fr',
-          active_provider: 'demo',
+          active_providers: ['demo'],
         },
       });
 

@@ -35,11 +35,11 @@ router.use(requireAuth, requireWorkspace);
 
 async function getCurrentEstablishment(
   workspaceId: string,
-): Promise<{ id: string; active_provider: string } | null> {
+): Promise<{ id: string; active_providers: string[] } | null> {
   return prisma.establishment.findFirst({
     where: { workspace_id: workspaceId },
     orderBy: { created_at: 'asc' },
-    select: { id: true, active_provider: true },
+    select: { id: true, active_providers: true },
   });
 }
 

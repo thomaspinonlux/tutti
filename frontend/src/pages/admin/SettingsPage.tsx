@@ -28,14 +28,16 @@ import {
 import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { WorkspaceMembersCard } from '../../components/admin/settings/WorkspaceMembersCard.js';
 
-const PROVIDER_IDS = ['demo', 'spotify', 'deezer', 'apple_music'] as const;
+const PROVIDER_IDS = ['demo', 'spotify', 'youtube', 'deezer', 'apple_music'] as const;
 type ProviderRow = {
   id: (typeof PROVIDER_IDS)[number];
   i18n:
     | 'settings.providerDemo'
     | 'settings.providerSpotify'
+    | 'settings.providerYoutube'
     | 'settings.providerDeezer'
     | 'settings.providerAppleMusic';
+  /** Activable : la source répond aux critères (Spotify connecté, YouTube key OK, etc.). */
   enabled: boolean;
 };
 
@@ -48,7 +50,9 @@ export function SettingsPage(): JSX.Element {
   const [name, setName] = useState('');
   const [brandingColor, setBrandingColor] = useState('');
   const [defaultLanguage, setDefaultLanguage] = useState<'fr' | 'en'>('fr');
-  const [activeProvider, setActiveProvider] = useState<(typeof PROVIDER_IDS)[number]>('demo');
+  const [activeProviders, setActiveProviders] = useState<Array<(typeof PROVIDER_IDS)[number]>>([
+    'demo',
+  ]);
 
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -77,7 +81,8 @@ export function SettingsPage(): JSX.Element {
     setName(establishment.name);
     setBrandingColor(establishment.branding_color ?? '');
     setDefaultLanguage((establishment.default_language as 'fr' | 'en') ?? 'fr');
-    setActiveProvider(establishment.active_provider as (typeof PROVIDER_IDS)[number]);
+    const incoming = establishment.active_providers as Array<(typeof PROVIDER_IDS)[number]>;
+    setActiveProviders(incoming.length > 0 ? incoming : ['demo']);
   }, [establishment]);
 
   useEffect(() => {
@@ -156,13 +161,18 @@ export function SettingsPage(): JSX.Element {
     setSaveState('saving');
     setSaveError(null);
     try {
+      if (activeProviders.length === 0) {
+        setSaveError(t('settings.providersAtLeastOne'));
+        setSaveState('error');
+        return;
+      }
       await api('/api/establishment', {
         method: 'PATCH',
         body: {
           name: name.trim(),
           branding_color: brandingColor || null,
           default_language: defaultLanguage,
-          active_provider: activeProvider,
+          active_providers: activeProviders,
         },
       });
       await refetch();
@@ -265,13 +275,27 @@ export function SettingsPage(): JSX.Element {
     }
   };
 
-  // Liste des providers : Spotify devient sélectionnable seulement si connecté.
+  // Liste des providers : Spotify activable seulement si connecté ; YouTube
+  // activable dès que la clé YOUTUBE_API_KEY est en place côté backend (toujours
+  // true côté UI — le backend renverra une erreur si non).
   const providers: ProviderRow[] = [
     { id: 'demo', i18n: 'settings.providerDemo', enabled: true },
     { id: 'spotify', i18n: 'settings.providerSpotify', enabled: spotify?.connected ?? false },
+    { id: 'youtube', i18n: 'settings.providerYoutube', enabled: true },
     { id: 'deezer', i18n: 'settings.providerDeezer', enabled: false },
     { id: 'apple_music', i18n: 'settings.providerAppleMusic', enabled: false },
   ];
+
+  const toggleProvider = (id: (typeof PROVIDER_IDS)[number]): void => {
+    setActiveProviders((prev) => {
+      if (prev.includes(id)) {
+        const next = prev.filter((p) => p !== id);
+        // Garantit qu'au moins une source reste active
+        return next.length > 0 ? next : prev;
+      }
+      return [...prev, id];
+    });
+  };
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -518,30 +542,56 @@ export function SettingsPage(): JSX.Element {
         </Card>
 
         <Card>
-          <label className="block">
-            <span className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-2 block">
-              {t('settings.activeProvider')}
-            </span>
-            <select
-              value={activeProvider}
-              onChange={(e) => setActiveProvider(e.target.value as (typeof PROVIDER_IDS)[number])}
-              className="w-full px-3 py-2 border-2 border-ink rounded bg-cream/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz"
-            >
-              {providers.map((p) => (
-                <option key={p.id} value={p.id} disabled={!p.enabled}>
-                  {t(p.i18n)}
-                  {p.id === 'spotify' && !p.enabled
-                    ? ' — ' + t('settings.spotifyConnectFirst')
-                    : ''}
-                </option>
-              ))}
-            </select>
-            {activeProvider === 'spotify' && !spotify?.connected && (
-              <span className="block text-xs text-raspberry mt-2 font-medium">
-                {t('settings.spotifyConnectFirst')}
-              </span>
-            )}
-          </label>
+          <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-3">
+            {t('settings.activeProviders')}
+          </p>
+          <p className="font-editorial italic text-xs text-ink-soft mb-3">
+            {t('settings.activeProvidersHint')}
+          </p>
+          <ul className="space-y-2">
+            {providers.map((p) => {
+              const checked = activeProviders.includes(p.id);
+              const disabled = !p.enabled;
+              const isPremium = p.id === 'youtube' && (youtube?.premium ?? false);
+              return (
+                <li key={p.id}>
+                  <label
+                    className={`flex items-center gap-3 px-3 py-2 border-2 rounded transition-colors ${
+                      disabled
+                        ? 'border-ink/20 bg-ink/5 cursor-not-allowed opacity-60'
+                        : checked
+                          ? 'border-ink bg-spritz/20 cursor-pointer'
+                          : 'border-ink bg-white hover:bg-cream-2 cursor-pointer'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={disabled}
+                      onChange={() => toggleProvider(p.id)}
+                      className="w-4 h-4 accent-spritz-deep"
+                    />
+                    <span className="font-medium flex-1">{t(p.i18n)}</span>
+                    {isPremium && checked && (
+                      <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-basil text-ink">
+                        Premium
+                      </span>
+                    )}
+                    {p.id === 'spotify' && !p.enabled && (
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-raspberry">
+                        {t('settings.spotifyConnectFirst')}
+                      </span>
+                    )}
+                    {(p.id === 'deezer' || p.id === 'apple_music') && (
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft">
+                        {t('settings.providerComingSoon')}
+                      </span>
+                    )}
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
         </Card>
 
         <div className="flex items-center gap-3">

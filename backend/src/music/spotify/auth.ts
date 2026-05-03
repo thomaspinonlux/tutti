@@ -330,12 +330,20 @@ router.delete(
       await prisma.musicProviderCredential.deleteMany({
         where: { workspace_id: workspaceId, provider: 'spotify' },
       });
-      // Si l'establishment utilisait Spotify, retomber sur 'demo' pour éviter
-      // les erreurs côté UI.
-      await prisma.establishment.updateMany({
-        where: { workspace_id: workspaceId, active_provider: 'spotify' },
-        data: { active_provider: 'demo' },
+      // Si l'establishment utilisait Spotify dans ses sources actives, le retire
+      // pour éviter les erreurs côté UI. Si plus rien, retombe sur 'demo'.
+      const ests = await prisma.establishment.findMany({
+        where: { workspace_id: workspaceId },
+        select: { id: true, active_providers: true },
       });
+      for (const e of ests) {
+        const without = e.active_providers.filter((p) => p !== 'spotify');
+        const next = without.length > 0 ? without : ['demo'];
+        await prisma.establishment.update({
+          where: { id: e.id },
+          data: { active_providers: next },
+        });
+      }
       res.json({ ok: true });
     } catch (err: unknown) {
       console.error('[spotify disconnect] error:', err);

@@ -189,7 +189,9 @@ model Establishment {
   branding_logo    String?
   branding_color   String?
   default_language String   @default("fr") @db.VarChar(8)
-  active_provider  String   @default("demo") @db.VarChar(32)
+  /// Phase 3.5+ — sources musicales actives (multi-select). Premier élément
+  /// = provider par défaut pour les recherches sans param explicite.
+  active_providers String[] @default(["demo"])
   created_at       DateTime @default(now()) @db.Timestamptz(6)
   updated_at       DateTime @updatedAt @db.Timestamptz(6)
 

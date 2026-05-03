@@ -30,7 +30,7 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
                 id: true,
                 name: true,
                 default_language: true,
-                active_provider: true,
+                active_providers: true,
               },
             },
           },

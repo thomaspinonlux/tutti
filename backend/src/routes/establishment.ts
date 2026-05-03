@@ -28,7 +28,16 @@ const patchBodySchema = z.object({
     .optional(),
   branding_logo: z.string().url().nullable().optional(),
   default_language: z.enum(['fr', 'en']).optional(),
-  active_provider: z.enum(['demo', 'spotify', 'deezer', 'apple_music']).optional(),
+  /**
+   * Phase 3.5+ — sources musicales actives (multi-select). Au moins une
+   * source. Le premier élément sert de provider par défaut pour les routes
+   * sans paramètre explicite (ex: TrackSearch quand 1 seule source active).
+   */
+  active_providers: z
+    .array(z.enum(['demo', 'spotify', 'youtube', 'deezer', 'apple_music']))
+    .min(1, { message: 'Au moins une source doit être sélectionnée' })
+    .max(5)
+    .optional(),
 });
 
 router.get('/', async (req: Request, res: Response): Promise<void> => {

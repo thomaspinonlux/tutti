@@ -5,12 +5,13 @@
  * on bascule sur l'endpoint générique /api/music/search?provider=youtube).
  */
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { Input } from '../../../ui/index.js';
 import { searchTracks as searchSpotify } from '../../../../lib/spotifyApi.js';
 import { searchTracks as searchGeneric } from '../../../../lib/music.js';
 import { TrackResultsList } from './TrackResultsList.js';
+import { useEstablishment } from '../../../../pages/admin/AdminLayout.js';
 
 interface Props {
   playlistId: string;
@@ -30,14 +31,30 @@ const DECADES = [
 // Spotify rejette limit > 10 sur ce client (400 "Invalid limit"). Cap dur.
 const PAGE_SIZE = 10;
 
-const PROVIDERS: Array<{ id: MusicProviderId; label: string }> = [
-  { id: 'spotify', label: 'Spotify' },
-  { id: 'youtube', label: 'YouTube' },
-];
+const PROVIDER_LABELS: Record<string, string> = {
+  spotify: 'Spotify',
+  youtube: 'YouTube',
+  demo: 'Démo',
+};
 
 export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Element {
-  // Phase 3 — provider toggle (Spotify / YouTube)
-  const [provider, setProvider] = useState<MusicProviderId>('spotify');
+  // Phase 3 — provider toggle filtré par les sources actives du workspace
+  const { establishment } = useEstablishment();
+  const availableProviders = useMemo<MusicProviderId[]>(() => {
+    const active = (establishment?.active_providers ?? ['spotify']) as MusicProviderId[];
+    // On ne propose que spotify et youtube dans le toggle (demo n'est pas
+    // une vraie source de recherche, deezer/apple_music = à venir)
+    return active.filter((p): p is MusicProviderId => p === 'spotify' || p === 'youtube');
+  }, [establishment]);
+  const [provider, setProvider] = useState<MusicProviderId>(availableProviders[0] ?? 'spotify');
+
+  // Si la liste des providers actifs change (ex: l'utilisateur active YouTube
+  // dans Settings et revient sur cette page), aligne le provider courant.
+  useEffect(() => {
+    if (availableProviders.length > 0 && !availableProviders.includes(provider)) {
+      setProvider(availableProviders[0]!);
+    }
+  }, [availableProviders, provider]);
   const [artist, setArtist] = useState('');
   const [track, setTrack] = useState('');
   const [yearMin, setYearMin] = useState<number | ''>('');
@@ -155,26 +172,28 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
 
   return (
     <div className="space-y-3">
-      {/* ── Toggle provider ────────────────────────────────────────── */}
-      <div className="flex gap-2" role="tablist" aria-label="Source musique">
-        {PROVIDERS.map((p) => {
-          const selected = provider === p.id;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              onClick={() => setProvider(p.id)}
-              className={`px-3 py-1.5 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider transition-colors ${
-                selected ? 'bg-spritz-deep text-cream' : 'bg-cream-2 text-ink hover:bg-cream-3'
-              }`}
-            >
-              {p.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* ── Toggle provider — visible uniquement si ≥2 sources actives ── */}
+      {availableProviders.length >= 2 && (
+        <div className="flex gap-2" role="tablist" aria-label="Source musique">
+          {availableProviders.map((p) => {
+            const selected = provider === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setProvider(p)}
+                className={`px-3 py-1.5 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider transition-colors ${
+                  selected ? 'bg-spritz-deep text-cream' : 'bg-cream-2 text-ink hover:bg-cream-3'
+                }`}
+              >
+                {PROVIDER_LABELS[p] ?? p}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <form onSubmit={(e) => void submit(e)} className="space-y-2">
         {provider === 'spotify' ? (

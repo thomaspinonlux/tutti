@@ -24,7 +24,7 @@ export interface Establishment {
   branding_color: string | null;
   branding_logo: string | null;
   default_language: string;
-  active_provider: string;
+  active_providers: string[];
   created_at: string;
   updated_at: string;
 }

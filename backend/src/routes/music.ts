@@ -89,8 +89,8 @@ router.get('/track/:id', async (req: Request<{ id: string }>, res: Response): Pr
 // ───── Helpers ────────────────────────────────────────────────────────────
 
 /**
- * Résout le MusicProvider actif pour le workspace courant :
- *   1. Lit `establishment.active_provider`
+ * Résout le MusicProvider par défaut pour le workspace courant :
+ *   1. Lit `establishment.active_providers` et prend le premier
  *   2. Charge les credentials du provider (si OAuth)
  *   3. Instancie via le registry
  */
@@ -103,7 +103,7 @@ async function resolveActiveProvider(workspaceId: string): Promise<ReturnType<ty
     throw new ProviderError(404, 'NO_ESTABLISHMENT', 'Aucun établissement pour ce workspace');
   }
 
-  const providerId = establishment.active_provider as MusicProviderId;
+  const providerId = (establishment.active_providers[0] ?? 'demo') as MusicProviderId;
   const credentials = await prisma.musicProviderCredential.findFirst({
     where: { workspace_id: workspaceId, provider: providerId },
   });
