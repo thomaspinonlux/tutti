@@ -21,14 +21,22 @@
 
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
-import { GameType, GameMode, SessionStatus, RoundStatus, Prisma } from '@prisma/client';
+import {
+  GameType,
+  GameMode,
+  SessionStatus,
+  RoundStatus,
+  Prisma,
+  ScoreEventType,
+} from '@prisma/client';
 import type { Team, GameMode as GameModeType } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { generateUniqueShortCode } from '../lib/shortCode.js';
-import { signParticipantToken } from '../lib/participantToken.js';
 import { broadcastToSession } from '../socket/index.js';
+import { getActiveTrack } from '../lib/gameState.js';
+import { signParticipantToken } from '../lib/participantToken.js';
 import { getCumulativeScores } from '../lib/scores.js';
 
 const router: Router = Router();
@@ -927,6 +935,82 @@ router.delete(
     } catch (err: unknown) {
       console.error('[DELETE /sessions/:id/participants/:pid] error:', err);
       res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur kick' } });
+    }
+  },
+);
+
+// ── PATCH /:id/players/:pid/score (host adjust points) ────────────────────
+// Feature 3 — édition manuelle des points par l'animateur (mode A iPad).
+// Mirror du /master/adjust-points (mode B) avec auth Supabase + workspace.
+
+const adjustPointsBody = z.object({
+  delta: z.number().int().min(-1000).max(1000),
+  reason: z.string().trim().max(200).optional(),
+});
+
+router.patch(
+  '/:id/players/:pid/score',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; pid: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const parsed = adjustPointsBody.safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({
+          error: { code: 'VALIDATION_ERROR', message: 'delta requis (entier -1000..1000)' },
+        });
+      return;
+    }
+    // Vérifie que la session appartient au workspace
+    const session = await prisma.session.findFirst({
+      where: { id: req.params.id, establishment: { workspace_id: workspaceId } },
+      select: { id: true },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    const target = await prisma.participant.findUnique({
+      where: { id: req.params.pid },
+      select: { id: true, session_id: true, team_id: true, is_kicked: true },
+    });
+    if (!target || target.is_kicked || target.session_id !== session.id) {
+      res
+        .status(404)
+        .json({ error: { code: 'TARGET_INVALID', message: 'Participant cible invalide' } });
+      return;
+    }
+    const round = await prisma.sessionRound.findFirst({
+      where: { session_id: session.id },
+      orderBy: { position: 'desc' },
+      select: { id: true },
+    });
+    const active = round ? getActiveTrack(round.id) : null;
+    try {
+      await prisma.scoreEvent.create({
+        data: {
+          session_id: session.id,
+          session_round_id: round?.id ?? null,
+          participant_id: target.id,
+          team_id: target.team_id,
+          round_index: active?.track_index ?? -1,
+          type: ScoreEventType.MANUAL_ADJUSTMENT,
+          points: parsed.data.delta,
+          match_artist: false,
+          match_title: false,
+          is_public: false,
+          reason: parsed.data.reason ?? `host:${req.userEmail ?? req.userId}`,
+        } as Prisma.ScoreEventUncheckedCreateInput,
+      });
+      broadcastToSession(session.id, 'scores:invalidated', {});
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      console.error('[PATCH /sessions/:id/players/:pid/score] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur ajustement points' } });
     }
   },
 );

@@ -62,6 +62,7 @@ import { RoundSelectionScreen } from '../components/host/RoundSelectionScreen.js
 import { RoundIntermissionScreen } from '../components/host/RoundIntermissionScreen.js';
 import { ExpressPlaylistModal } from '../components/host/ExpressPlaylistModal.js';
 import { RoundProgramPanel } from '../components/host/RoundProgramPanel.js';
+import { PlayersPanel } from '../components/host/PlayersPanel.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { ExternalScreenButton } from '../components/host/ExternalScreenButton.js';
@@ -820,6 +821,7 @@ function HostPageInner(): JSX.Element {
               sessionId={session.id}
               round={playingRound}
               cumulative={cumulative}
+              participants={session.participants}
               currentTrack={currentTrack}
               recentBuzzes={recentBuzzes}
               onNextTrack={handleNextTrack}
@@ -1101,6 +1103,7 @@ function RoundPlayingScreen({
   sessionId,
   round,
   cumulative,
+  participants,
   currentTrack,
   recentBuzzes,
   onNextTrack,
@@ -1121,6 +1124,7 @@ function RoundPlayingScreen({
   sessionId: string;
   round: SessionRoundWithPlaylist;
   cumulative: CumulativeScore[];
+  participants: Participant[];
   currentTrack: CurrentTrackState | null;
   recentBuzzes: BuzzResult[];
   onNextTrack: () => Promise<void>;
@@ -1238,13 +1242,15 @@ function RoundPlayingScreen({
         )}
       </Card>
 
-      {/* ── Colonne droite : classement + programme + buzz feed ─────── */}
+      {/* ── Colonne droite : classement + programme + joueurs + buzz feed ── */}
       <div className="space-y-4">
         <RoundProgramPanel
           sessionId={sessionId}
           roundId={round.id}
           refetchKey={`${currentTrack?.track_index ?? -1}-${currentTrack?.started_at ?? ''}`}
         />
+        {/* Feature 3 — liste joueurs + édition manuelle des points */}
+        <PlayersPanel sessionId={sessionId} participants={participants} cumulative={cumulative} />
 
         <Card size="md">
           <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">

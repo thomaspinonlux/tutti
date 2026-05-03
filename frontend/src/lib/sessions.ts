@@ -288,6 +288,23 @@ export async function getRoundProgram(
   );
 }
 
+/**
+ * Feature 3 — édition manuelle des points par l'animateur (mode A).
+ * delta peut être négatif. broadcast scores:invalidated → tous les clients
+ * rafraîchissent leur cumulative.
+ */
+export async function hostAdjustPoints(
+  sessionId: string,
+  participantId: string,
+  delta: number,
+  reason?: string,
+): Promise<void> {
+  await api(
+    `/api/sessions/${encodeURIComponent(sessionId)}/players/${encodeURIComponent(participantId)}/score`,
+    { method: 'PATCH', body: { delta, reason } },
+  );
+}
+
 // ───── Tutti Quizz gameplay (étape 15) ────────────────────────────────────
 
 export async function playQuestion(
