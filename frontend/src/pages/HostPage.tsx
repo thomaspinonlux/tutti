@@ -1070,7 +1070,7 @@ function RoundPlayingScreen({
             variant="primary"
             size="md"
             onClick={() => void onNextTrack()}
-            disabled={busy || !currentTrack || currentTrack.phase === 'phase1'}
+            disabled={busy || !currentTrack}
           >
             {t('host.nextTrack')} →
           </Button>
