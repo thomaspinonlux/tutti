@@ -372,6 +372,8 @@
     "recordingSubmit": "Send now",
     "notMatched": "Not recognized, try again!",
     "notMatchedShort": "❌ Not recognized, try again!",
+    "textAnswerPlaceholder": "📝 Type your answer…",
+    "textAnswerSubmit": "Send",
     "weHeard": "We heard",
     "rebuzz": "Buzz again",
     "position": "{{n}}th to find",

@@ -373,6 +373,180 @@ router.post(
   },
 );
 
+// ── POST /text-answer ────────────────────────────────────────────────────
+// Refonte #3 — saisie texte alternative au buzz vocal. Le joueur peut écrire
+// la réponse au lieu de la prononcer. Même logique de matching + scoring +
+// broadcast que /voice-answer, sans Whisper.
+//
+// Body JSON :
+//   - token (string, requis) : JWT participant
+//   - text  (string, requis) : réponse écrite (max 200 chars)
+
+const textAnswerSchema = z.object({
+  token: z.string().min(1),
+  text: z.string().trim().min(1).max(200),
+});
+
+router.post(
+  '/text-answer',
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const parsed = textAnswerSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'token + text requis' } });
+      return;
+    }
+    const { token, text } = parsed.data;
+
+    const auth = verifyParticipantOrFail(req, res, token);
+    if (!auth) return;
+
+    const participant = await prisma.participant.findUnique({
+      where: { id: auth.participantId },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+    });
+    if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
+      res
+        .status(403)
+        .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+
+    // Pas de closeBuzz (texte = pas de fenêtre micro ouverte).
+    const active = getActiveTrack(req.params.roundId);
+    if (!active) {
+      res.status(409).json({ error: { code: 'NO_TRACK', message: 'Pas de track en cours' } });
+      return;
+    }
+
+    if (hasCorrectAnswer(req.params.roundId, auth.participantId)) {
+      res.json({ matched: false, alreadyAnswered: true });
+      return;
+    }
+
+    const track = await prisma.track.findUnique({
+      where: { id: active.track_id },
+      include: { artist: true },
+    });
+    if (!track) {
+      res.status(500).json({ error: { code: 'TRACK_LOST', message: 'Track introuvable' } });
+      return;
+    }
+
+    // Matching fuzzy (même logique que voice-answer).
+    const matchResult = matchTranscript({
+      transcript: text,
+      artist: { canonical_name: track.artist.canonical_name, aliases: track.artist.aliases },
+      track: { canonical_title: track.canonical_title, aliases: track.aliases },
+    });
+
+    // Log dans voice_transcripts pour cohérence stats (source = "text").
+    await prisma.voiceTranscript
+      .create({
+        data: {
+          session_id: req.params.id,
+          participant_id: auth.participantId,
+          track_id: track.id,
+          transcript: `[TEXT] ${text.slice(0, 980)}`,
+          matched_artist: matchResult.matched_artist,
+          matched_title: matchResult.matched_title,
+          confidence: matchResult.confidence,
+        },
+      })
+      .catch((err) => console.warn('[text-answer] log error:', err));
+
+    if (!matchResult.matched_artist) {
+      res.json({ matched: false });
+      return;
+    }
+
+    const tentativePosition = (active.correct_answers.length ?? 0) + 1;
+    const tentativeScore = computeAnswerScore({
+      matched_artist: true,
+      matched_title: matchResult.matched_title,
+      position: tentativePosition,
+      answered_at_ms: Date.now() - active.started_at_ms,
+    });
+
+    const registered = registerCorrectAnswer(req.params.roundId, {
+      participant_id: auth.participantId,
+      pseudo: participant.pseudo,
+      team_id: participant.team_id,
+      matched_artist: true,
+      matched_title: matchResult.matched_title,
+      score: tentativeScore.total,
+    });
+    if (!registered) {
+      res.json({ matched: true, scored: false, reason: 'PHASE_2_EXPIRED' });
+      return;
+    }
+
+    await persistScoreEvents({
+      sessionId: req.params.id,
+      sessionRoundId: req.params.roundId,
+      participantId: participant.id,
+      teamId: participant.team_id,
+      trackIndex: active.track_index,
+      breakdown: tentativeScore,
+      matchedTitle: matchResult.matched_title,
+      buzzTimeMs: registered.entry.answered_at_ms,
+      transcriptPreview: `[TEXT] ${text.slice(0, 200)}`,
+    });
+
+    const sessionForCumul = await prisma.session.findUnique({
+      where: { id: req.params.id },
+      select: {
+        mode: true,
+        teams_config: true,
+        participants: {
+          where: { is_kicked: false },
+          select: { id: true, pseudo: true, team_id: true },
+        },
+      },
+    });
+    const cumulative = sessionForCumul
+      ? await getCumulativeScores({
+          sessionId: req.params.id,
+          mode: sessionForCumul.mode as GameMode,
+          teams: (sessionForCumul.teams_config as Team[] | null) ?? null,
+          participants: sessionForCumul.participants,
+        })
+      : [];
+
+    broadcastToSession(req.params.id, 'track:correct_answer', {
+      round_id: req.params.roundId,
+      track_index: active.track_index,
+      participant_id: participant.id,
+      pseudo: participant.pseudo,
+      team_id: participant.team_id,
+      position: registered.entry.position,
+      answered_at_ms: registered.entry.answered_at_ms,
+      matched_artist: true,
+      matched_title: matchResult.matched_title,
+      score: registered.entry.score,
+      cumulative,
+    });
+
+    if (registered.isFirst) {
+      broadcastToSession(req.params.id, 'track:phase_changed', {
+        round_id: req.params.roundId,
+        phase: 'phase2',
+        phase2_started_at: new Date().toISOString(),
+        artist: track.artist.canonical_name,
+        title: track.canonical_title,
+      });
+      schedulePhase3Transition(req.params.id, req.params.roundId);
+    }
+
+    res.json({
+      matched: true,
+      scored: true,
+      position: registered.entry.position,
+      score: registered.entry.score,
+      breakdown: tentativeScore,
+    });
+  },
+);
+
 // ── Helpers internes ─────────────────────────────────────────────────────
 
 interface PersistArgs {

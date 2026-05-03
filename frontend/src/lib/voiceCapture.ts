@@ -219,6 +219,30 @@ export async function uploadVoiceAnswer(args: {
   return (await res.json()) as VoiceAnswerResult;
 }
 
+/**
+ * Refonte #3 — saisie texte alternative au buzz vocal.
+ * Même logique de matching côté backend (matchTranscript), mais sans Whisper.
+ */
+export async function submitTextAnswer(args: {
+  apiUrl: string;
+  sessionId: string;
+  roundId: string;
+  token: string;
+  text: string;
+}): Promise<VoiceAnswerResult> {
+  const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/text-answer`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: args.token, text: args.text }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`text-answer ${res.status}: ${text.slice(0, 200)}`);
+  }
+  return (await res.json()) as VoiceAnswerResult;
+}
+
 export interface VoiceAnswerResult {
   matched: boolean;
   scored?: boolean;

@@ -372,6 +372,8 @@
     "recordingSubmit": "Envoyer maintenant",
     "notMatched": "Pas reconnu, retente !",
     "notMatchedShort": "❌ Pas reconnu, retente !",
+    "textAnswerPlaceholder": "📝 Écris ta réponse…",
+    "textAnswerSubmit": "Envoyer",
     "weHeard": "On a entendu",
     "rebuzz": "Rebuzzer",
     "position": "{{n}}ᵉ à trouver",

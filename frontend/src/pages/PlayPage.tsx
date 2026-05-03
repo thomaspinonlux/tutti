@@ -44,6 +44,7 @@ import type { CorrectAnswerEntry, CumulativeScore } from '@tutti/shared';
 import {
   startVoiceCapture,
   uploadVoiceAnswer,
+  submitTextAnswer,
   type VoiceAnswerResult,
   type VoiceCapture,
 } from '../lib/voiceCapture.js';
@@ -980,6 +981,32 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     });
   };
 
+  // Refonte #3 — saisie texte alternative au buzz vocal.
+  const [textBusy, setTextBusy] = useState(false);
+  const handleTextAnswer = async (text: string): Promise<void> => {
+    if (!currentTrack || textBusy) return;
+    setTextBusy(true);
+    try {
+      const result = await submitTextAnswer({
+        apiUrl: API_BASE,
+        sessionId: identity.sessionId,
+        roundId: currentTrack.round_id,
+        token: identity.token,
+        text,
+      });
+      if (!result.matched) {
+        setFailToast(t('play.notMatchedShort'));
+        return;
+      }
+      // matched → broadcast track:correct_answer arrivera, myCorrect basculera,
+      // ValidatedBanner remplacera le buzzer + input. Pas d'autre action ici.
+    } catch (err) {
+      setFailToast((err as Error).message);
+    } finally {
+      setTextBusy(false);
+    }
+  };
+
   // Pseudo du 1ᵉʳ trouveur — pour le late banner non-finder phase 2.
   const firstFinder = correctAnswers[0] ?? null;
 
@@ -1076,13 +1103,23 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         />
       ) : (
         // Buzzer (idle) — actif en phase 1+2, désactivé en phase 3
-        <BuzzerArea
-          onBuzz={() => void handleBuzz()}
-          disabled={buzzerDisabled}
-          isPhase3={isPhase3}
-          isPhase3Skipped={phase === 'phase3-skipped'}
-          error={error}
-        />
+        <>
+          <BuzzerArea
+            onBuzz={() => void handleBuzz()}
+            disabled={buzzerDisabled}
+            isPhase3={isPhase3}
+            isPhase3Skipped={phase === 'phase3-skipped'}
+            error={error}
+          />
+          {/* Refonte #3 — saisie texte alternative au buzz vocal */}
+          {(isPhase1 || isPhase2) && !myCorrect && !isPaused && (
+            <TextAnswerInput
+              onSubmit={(text) => void handleTextAnswer(text)}
+              busy={textBusy}
+              disabled={recState.kind !== 'idle' || !!myCorrect}
+            />
+          )}
+        </>
       )}
 
       {/* Phone footer : position cumulée + total joueurs */}
@@ -1390,6 +1427,52 @@ function BuzzerArea({
         </p>
       )}
     </div>
+  );
+}
+
+// Refonte #3 — Saisie texte alternative au buzz vocal. Toujours visible
+// sous le buzzer en phase 1+2 (sauf si le joueur a déjà trouvé). Le
+// matching backend est strictement le même (artiste + titre + aliases).
+function TextAnswerInput({
+  onSubmit,
+  busy,
+  disabled,
+}: {
+  onSubmit: (text: string) => void;
+  busy: boolean;
+  disabled: boolean;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const [text, setText] = useState('');
+
+  const submit = (e: React.FormEvent): void => {
+    e.preventDefault();
+    const trimmed = text.trim();
+    if (!trimmed || busy || disabled) return;
+    onSubmit(trimmed);
+    setText('');
+  };
+
+  return (
+    <form onSubmit={submit} className="flex items-center gap-2 mt-2">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={t('play.textAnswerPlaceholder')}
+        disabled={busy || disabled}
+        maxLength={200}
+        autoComplete="off"
+        className="flex-1 px-3 py-2 border-2 border-ink rounded bg-white text-sm focus:outline-none focus:ring-2 focus:ring-spritz disabled:bg-ink/10 disabled:text-ink-soft"
+      />
+      <button
+        type="submit"
+        disabled={busy || disabled || !text.trim()}
+        className="px-3 py-2 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider bg-basil text-ink hover:bg-basil-deep hover:text-cream transition-colors disabled:bg-ink/10 disabled:text-ink-soft disabled:cursor-not-allowed"
+      >
+        {busy ? '…' : t('play.textAnswerSubmit')}
+      </button>
+    </form>
   );
 }
 
