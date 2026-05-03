@@ -10,7 +10,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { TrackResult } from '@tutti/shared';
+import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { searchTracks } from '../../lib/music.js';
 import { Input } from '../ui/index.js';
 
@@ -23,6 +23,12 @@ interface Props {
   limit?: number;
   /** Affichage compact (résultats inline) ou large (carte par résultat). */
   variant?: 'compact' | 'detailed';
+  /**
+   * Phase 3c — providers proposés en toggle. Si non fourni, on utilise
+   * le provider actif du workspace (comportement historique). Si fourni
+   * avec ≥2 valeurs, un sélecteur visuel est affiché au-dessus du champ.
+   */
+  providers?: MusicProviderId[];
 }
 
 type SearchState =
@@ -36,9 +42,11 @@ export function TrackSearch({
   placeholder,
   limit = 10,
   variant = 'detailed',
+  providers,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
+  const [activeProvider, setActiveProvider] = useState<MusicProviderId | undefined>(providers?.[0]);
   const [state, setState] = useState<SearchState>({ kind: 'idle' });
   const abortRef = useRef<AbortController | null>(null);
 
@@ -55,7 +63,7 @@ export function TrackSearch({
 
     const timer = window.setTimeout(() => {
       setState({ kind: 'loading' });
-      searchTracks(trimmed, { limit, signal: controller.signal })
+      searchTracks(trimmed, { limit, signal: controller.signal, provider: activeProvider })
         .then(({ results }) => {
           if (controller.signal.aborted) return;
           setState({ kind: 'results', results });
@@ -74,10 +82,34 @@ export function TrackSearch({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [query, limit]);
+  }, [query, limit, activeProvider]);
+
+  const showToggle = providers && providers.length >= 2;
 
   return (
     <div>
+      {showToggle && (
+        <div className="flex gap-2 mb-2" role="tablist" aria-label={t('tracks.providerLabel')}>
+          {providers!.map((p) => {
+            const selected = activeProvider === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setActiveProvider(p)}
+                className={`px-3 py-1 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider transition-colors ${
+                  selected ? 'bg-spritz-deep text-cream' : 'bg-cream-2 text-ink hover:bg-cream-3'
+                }`}
+              >
+                {p}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <Input
         type="search"
         value={query}
@@ -164,6 +196,9 @@ function ResultRow({
           {track.year ? ` · ${track.year}` : ''}
         </p>
       </div>
+      <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-ink/10 text-ink-soft shrink-0">
+        {track.provider}
+      </span>
       {typeof track.popularity === 'number' && (
         <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft shrink-0">
           {track.popularity}

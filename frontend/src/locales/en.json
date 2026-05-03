@@ -87,7 +87,8 @@
     "searchPlaceholder": "Type an artist, a title…",
     "pickedSection": "Shortlist",
     "pickedEmpty": "No track shortlisted yet.",
-    "noResults": "No results. Try other keywords."
+    "noResults": "No results. Try other keywords.",
+    "providerLabel": "Music source"
   },
   "playlists": {
     "newPlaylist": "New playlist",

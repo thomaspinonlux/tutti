@@ -31,6 +31,12 @@ router.get('/providers', (_req: Request, res: Response): void => {
 const searchQuerySchema = z.object({
   q: z.string().trim().min(1).max(120),
   limit: z.coerce.number().int().min(1).max(50).optional(),
+  /**
+   * Phase 3c — provider override pour la recherche. Sans ce paramètre on
+   * utilise le provider actif du workspace. Permet à l'admin de forcer
+   * youtube/spotify dans le TrackSearch sans changer la conf workspace.
+   */
+  provider: z.enum(['demo', 'spotify', 'youtube', 'deezer', 'apple_music']).optional(),
 });
 
 router.get('/search', async (req: Request, res: Response): Promise<void> => {
@@ -41,10 +47,12 @@ router.get('/search', async (req: Request, res: Response): Promise<void> => {
     });
     return;
   }
-  const { q, limit } = parsed.data;
+  const { q, limit, provider: forcedProvider } = parsed.data;
 
   try {
-    const provider = await resolveActiveProvider(req.workspaceId!);
+    const provider = forcedProvider
+      ? await resolveSpecificProvider(req.workspaceId!, forcedProvider)
+      : await resolveActiveProvider(req.workspaceId!);
     const results = await provider.search(q, { limit });
     res.json({
       provider: provider.id,
@@ -96,6 +104,32 @@ async function resolveActiveProvider(workspaceId: string): Promise<ReturnType<ty
   }
 
   const providerId = establishment.active_provider as MusicProviderId;
+  const credentials = await prisma.musicProviderCredential.findFirst({
+    where: { workspace_id: workspaceId, provider: providerId },
+  });
+
+  const ctx: ProviderContext = {
+    workspaceId,
+    credentials: credentials
+      ? {
+          access_token: credentials.access_token,
+          refresh_token: credentials.refresh_token,
+          expires_at: credentials.expires_at,
+        }
+      : null,
+  };
+
+  return getProvider(providerId, ctx);
+}
+
+/**
+ * Résout un provider spécifique (override Phase 3c) — charge les credentials
+ * du provider demandé si OAuth, sinon ctx vide.
+ */
+async function resolveSpecificProvider(
+  workspaceId: string,
+  providerId: MusicProviderId,
+): Promise<ReturnType<typeof getProvider>> {
   const credentials = await prisma.musicProviderCredential.findFirst({
     where: { workspace_id: workspaceId, provider: providerId },
   });

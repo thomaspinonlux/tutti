@@ -87,7 +87,8 @@
     "searchPlaceholder": "Tape un artiste, un titre…",
     "pickedSection": "Présélection",
     "pickedEmpty": "Aucun morceau présélectionné pour l'instant.",
-    "noResults": "Aucun résultat. Essaie avec d'autres mots-clés."
+    "noResults": "Aucun résultat. Essaie avec d'autres mots-clés.",
+    "providerLabel": "Source musique"
   },
   "playlists": {
     "newPlaylist": "Nouvelle playlist",

@@ -45,7 +45,11 @@ export function TrackDetailsPanel({ selected, onAddTrack, onUpdateAliases }: Pro
 
       {tab === 'search' && (
         <Card size="sm">
-          <TrackSearch onSelect={(track) => void onAddTrack(track)} variant="compact" />
+          <TrackSearch
+            onSelect={(track) => void onAddTrack(track)}
+            variant="compact"
+            providers={['spotify', 'youtube']}
+          />
         </Card>
       )}
 

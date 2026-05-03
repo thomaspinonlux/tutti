@@ -16,10 +16,11 @@ export async function listProviders(): Promise<ProviderInfo[]> {
 
 export async function searchTracks(
   query: string,
-  opts: { limit?: number; signal?: AbortSignal } = {},
+  opts: { limit?: number; signal?: AbortSignal; provider?: MusicProviderId } = {},
 ): Promise<{ provider: MusicProviderId; results: TrackResult[] }> {
   const params = new URLSearchParams({ q: query });
   if (opts.limit) params.set('limit', String(opts.limit));
+  if (opts.provider) params.set('provider', opts.provider);
   return api<{ provider: MusicProviderId; query: string; results: TrackResult[] }>(
     `/api/music/search?${params.toString()}`,
     { signal: opts.signal },

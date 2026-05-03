@@ -143,7 +143,7 @@ export function ExpressPlaylistModal({
           <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-2">
             {t('tracks.searchSection')}
           </p>
-          <TrackSearch onSelect={addPicked} variant="compact" />
+          <TrackSearch onSelect={addPicked} variant="compact" providers={['spotify', 'youtube']} />
         </div>
 
         {error && (
