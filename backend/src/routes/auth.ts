@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { Plan, Role } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
+import { isSuperAdminEmail } from '../lib/superAdmin.js';
 
 const router: Router = Router();
 
@@ -22,7 +23,79 @@ const initializeBodySchema = z.object({
   establishmentName: z.string().trim().min(2).max(120).optional(),
   /** Code parrain — si fourni + valide, rattache au workspace existant. */
   referrerCode: z.string().trim().min(4).max(8).optional(),
+  /**
+   * Phase 4e — code invitation (one-shot ou multi-usage). Si fourni et
+   * valide, le membre est créé directement en APPROVED. Sinon le membre
+   * passe par PENDING (sauf whitelist email).
+   */
+  invitationCode: z.string().trim().toUpperCase().min(4).max(16).optional(),
 });
+
+/**
+ * Phase 4e — détermine le statut d'approbation à la création d'un membre.
+ * Renvoie aussi le code invitation à consommer (si applicable).
+ */
+async function resolveApprovalStatus(args: {
+  email: string | undefined;
+  invitationCode: string | undefined;
+}): Promise<{
+  status: 'PENDING' | 'APPROVED';
+  invitationCodeUsed: string | null;
+  invitationCodeId: string | null;
+  approvedAt: Date | null;
+}> {
+  // 1) Super admin → toujours approuvé
+  if (isSuperAdminEmail(args.email)) {
+    return {
+      status: 'APPROVED',
+      invitationCodeUsed: null,
+      invitationCodeId: null,
+      approvedAt: new Date(),
+    };
+  }
+
+  // 2) Whitelist email → approuvé auto
+  if (args.email) {
+    const wl = await prisma.whitelistEmail.findUnique({
+      where: { email: args.email.toLowerCase() },
+    });
+    if (wl) {
+      return {
+        status: 'APPROVED',
+        invitationCodeUsed: null,
+        invitationCodeId: null,
+        approvedAt: new Date(),
+      };
+    }
+  }
+
+  // 3) Code invitation valide → approuvé auto + consommer
+  if (args.invitationCode) {
+    const code = await prisma.invitationCode.findUnique({
+      where: { code: args.invitationCode },
+    });
+    if (
+      code &&
+      (!code.expires_at || code.expires_at > new Date()) &&
+      (!code.max_uses || code.uses_count < code.max_uses)
+    ) {
+      return {
+        status: 'APPROVED',
+        invitationCodeUsed: code.code,
+        invitationCodeId: code.id,
+        approvedAt: new Date(),
+      };
+    }
+  }
+
+  // 4) Sinon : PENDING (file d'attente super admin)
+  return {
+    status: 'PENDING',
+    invitationCodeUsed: null,
+    invitationCodeId: null,
+    approvedAt: null,
+  };
+}
 
 /** Génère un referral_code unique (6 chars alphanumériques majuscules). */
 function generateReferralCode(): string {
@@ -76,7 +149,7 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
     });
     return;
   }
-  const { workspaceName, establishmentName, referrerCode } = parsed.data;
+  const { workspaceName, establishmentName, referrerCode, invitationCode } = parsed.data;
 
   try {
     // Idempotence: vérifier si le user a déjà un workspace
@@ -92,13 +165,24 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
     if (existingMember) {
       res.json({
         workspace: existingMember.workspace,
-        member: { id: existingMember.id, role: existingMember.role },
+        member: {
+          id: existingMember.id,
+          role: existingMember.role,
+          status: existingMember.status,
+        },
         created: false,
       });
       return;
     }
 
-    // Si referrerCode fourni : rattacher au workspace du parrain comme HOST
+    // Phase 4e : résoudre le statut d'approbation
+    const approval = await resolveApprovalStatus({
+      email: req.userEmail,
+      invitationCode,
+    });
+
+    // Si referrerCode fourni : rattacher au workspace du parrain comme HOST.
+    // Le parrainage donne accès direct (workspace déjà approuvé), donc APPROVED auto.
     if (referrerCode) {
       const referrer = await prisma.workspaceMember.findUnique({
         where: { referral_code: referrerCode.toUpperCase() },
@@ -111,13 +195,21 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
             workspace_id: referrer.workspace_id,
             user_id: userId,
             role: Role.HOST,
+            status: 'APPROVED',
+            email: req.userEmail ?? null,
+            approved_at: new Date(),
             referral_code: myReferralCode,
             referrer_code: referrerCode.toUpperCase(),
           },
         });
         res.status(201).json({
           workspace: referrer.workspace,
-          member: { id: member.id, role: member.role, referral_code: myReferralCode },
+          member: {
+            id: member.id,
+            role: member.role,
+            status: member.status,
+            referral_code: myReferralCode,
+          },
           created: true,
           joined: true,
         });
@@ -141,6 +233,10 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
           workspace_id: workspace.id,
           user_id: userId,
           role: Role.OWNER,
+          status: approval.status,
+          email: req.userEmail ?? null,
+          invitation_code_used: approval.invitationCodeUsed,
+          approved_at: approval.approvedAt,
           referral_code: myReferralCode,
         },
       });
@@ -154,6 +250,17 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
         },
       });
 
+      // Consommer le code invitation si utilisé
+      if (approval.invitationCodeId) {
+        await tx.invitationCode.update({
+          where: { id: approval.invitationCodeId },
+          data: {
+            uses_count: { increment: 1 },
+            first_used_at: approval.approvedAt ? approval.approvedAt : new Date(),
+          },
+        });
+      }
+
       return { workspace, member, establishment };
     });
 
@@ -162,6 +269,7 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
       member: {
         id: result.member.id,
         role: result.member.role,
+        status: result.member.status,
         referral_code: result.member.referral_code,
       },
       created: true,

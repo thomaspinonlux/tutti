@@ -11,6 +11,7 @@
 
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import { prisma } from '../lib/prisma.js';
+import { isSuperAdminEmail } from '../lib/superAdmin.js';
 
 export const requireWorkspace: RequestHandler = async (
   req: Request,
@@ -40,6 +41,18 @@ export const requireWorkspace: RequestHandler = async (
       return;
     }
 
+    // Phase 4 — gating Mode C : seuls les membres APPROVED passent.
+    // Les super admins bypass (peuvent administrer même sans workspace approuvé).
+    if (member.status !== 'APPROVED' && !isSuperAdminEmail(req.userEmail)) {
+      const code = member.status === 'PENDING' ? 'ACCOUNT_PENDING' : 'ACCOUNT_REJECTED';
+      const message =
+        member.status === 'PENDING'
+          ? 'Compte en attente de validation par un administrateur.'
+          : 'Compte refusé. Contacte un administrateur.';
+      res.status(403).json({ error: { code, message } });
+      return;
+    }
+
     req.workspaceId = member.workspace_id;
     next();
   } catch (err: unknown) {
@@ -48,4 +61,24 @@ export const requireWorkspace: RequestHandler = async (
       error: { code: 'INTERNAL_ERROR', message: 'Erreur lors de la résolution du workspace' },
     });
   }
+};
+
+/**
+ * Phase 4 — middleware super admin only.
+ *
+ * À appliquer APRÈS `requireAuth`. Vérifie que l'email du user courant est
+ * dans process.env.SUPER_ADMIN_EMAILS. Sinon 403.
+ */
+export const requireSuperAdmin: RequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void => {
+  if (!isSuperAdminEmail(req.userEmail)) {
+    res.status(403).json({
+      error: { code: 'FORBIDDEN', message: 'Réservé aux super admins.' },
+    });
+    return;
+  }
+  next();
 };
