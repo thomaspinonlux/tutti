@@ -14,6 +14,7 @@ import type { MusicProviderId, ProviderInfo } from '@tutti/shared';
 import type { MusicProvider, ProviderContext } from './types.js';
 import { DemoProvider } from './demo/DemoProvider.js';
 import { SPOTIFY_CAPABILITIES, SpotifyProvider } from './spotify/SpotifyProvider.js';
+import { YOUTUBE_CAPABILITIES, YouTubeProvider } from './youtube/YouTubeProvider.js';
 
 /**
  * Liste les providers disponibles + leurs capacités.
@@ -22,6 +23,7 @@ import { SPOTIFY_CAPABILITIES, SpotifyProvider } from './spotify/SpotifyProvider
 export const LIST_PROVIDERS: ProviderInfo[] = [
   { id: 'demo', capabilities: new DemoProvider().capabilities },
   { id: 'spotify', capabilities: SPOTIFY_CAPABILITIES },
+  { id: 'youtube', capabilities: YOUTUBE_CAPABILITIES },
 ];
 
 /**
@@ -43,6 +45,10 @@ export function getProvider(id: MusicProviderId, ctx: ProviderContext): MusicPro
         );
       }
       return new SpotifyProvider(ctx.workspaceId, ctx.credentials);
+
+    case 'youtube':
+      // API key statique (process.env.YOUTUBE_API_KEY) — pas de credentials tenant.
+      return new YouTubeProvider();
 
     case 'deezer':
     case 'apple_music':

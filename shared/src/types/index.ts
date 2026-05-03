@@ -36,7 +36,7 @@ export interface ApiError {
  * Doit rester aligné avec l'enum côté backend (registry.ts) et la colonne
  * `establishments.active_provider`.
  */
-export type MusicProviderId = 'demo' | 'spotify' | 'deezer' | 'apple_music';
+export type MusicProviderId = 'demo' | 'spotify' | 'youtube' | 'deezer' | 'apple_music';
 
 /**
  * Résultat d'une recherche / lecture d'un morceau, format unifié entre
