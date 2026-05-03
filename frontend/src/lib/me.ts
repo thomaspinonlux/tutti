@@ -1,0 +1,29 @@
+/**
+ * Wrapper /api/me — Phase 4
+ *
+ * Renvoie l'identité utilisateur, son workspace, son statut d'approbation,
+ * et son éventuel rôle de super admin.
+ *
+ * Pas de gating workspace — accessible même pour les comptes PENDING.
+ */
+
+import { api } from './api.js';
+
+export interface MeResponse {
+  user: { id: string; email: string | null };
+  workspace: {
+    id: string;
+    name: string;
+    plan: string;
+    establishments?: unknown[];
+  } | null;
+  role: string | null;
+  referral_code: string | null;
+  hasWorkspace: boolean;
+  memberStatus: 'PENDING' | 'APPROVED' | 'REJECTED' | null;
+  isSuperAdmin: boolean;
+}
+
+export async function getMe(): Promise<MeResponse> {
+  return api<MeResponse>('/api/me');
+}

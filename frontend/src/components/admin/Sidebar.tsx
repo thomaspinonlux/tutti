@@ -8,11 +8,13 @@
  * V1 : largeur fixe 240px, toujours visible sur ≥768px.
  */
 
+import { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/auth.js';
 import { LanguageSwitch } from '../LanguageSwitch.js';
 import { Button, MultiColorBar, TitleHandwritten } from '../ui/index.js';
+import { getMe } from '../../lib/me.js';
 
 interface NavItem {
   to: string;
@@ -32,6 +34,16 @@ export function Sidebar(): JSX.Element {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, signOut } = useAuthStore();
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  // Phase 4 — détecte le rôle super admin pour afficher l'entrée de nav.
+  useEffect(() => {
+    void getMe()
+      .then((me) => setIsSuperAdmin(me.isSuperAdmin))
+      .catch(() => {
+        /* ignore — pas grave si on ne sait pas, on cache l'entrée */
+      });
+  }, []);
 
   const handleSignOut = async (): Promise<void> => {
     await signOut();
@@ -71,6 +83,21 @@ export function Sidebar(): JSX.Element {
             <span>{t(item.i18nKey)}</span>
           </NavLink>
         ))}
+        {isSuperAdmin && (
+          <NavLink
+            to="/admin/super-admin"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-ink text-cream border-ink shadow-pop-sm'
+                  : 'border-transparent text-raspberry hover:bg-cream hover:border-ink'
+              }`
+            }
+          >
+            <span className="w-5 h-5 shrink-0 flex items-center justify-center">★</span>
+            <span>{t('admin.superNav')}</span>
+          </NavLink>
+        )}
       </nav>
 
       <div className="px-4 pb-5 pt-4 border-t-2 border-ink space-y-3">

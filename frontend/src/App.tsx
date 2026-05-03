@@ -27,6 +27,7 @@ import { TracksPage } from './pages/admin/TracksPage.js';
 import { QuizzPage } from './pages/admin/QuizzPage.js';
 import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { AccountPage } from './pages/admin/AccountPage.js';
+import { SuperAdminPage } from './pages/admin/SuperAdminPage.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 
 // Lazy : chunks dédiés aux pages volumineuses (audio, dnd, qrcode, socket.io…)
@@ -94,6 +95,7 @@ function App(): JSX.Element {
           />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="account" element={<AccountPage />} />
+          <Route path="super-admin" element={<SuperAdminPage />} />
           <Route
             path="sessions/new"
             element={

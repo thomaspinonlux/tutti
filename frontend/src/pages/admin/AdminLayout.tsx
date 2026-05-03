@@ -14,6 +14,8 @@ import { MinScreen } from '../../components/MinScreen.js';
 import { api, ApiError } from '../../lib/api.js';
 import { MultiColorBar } from '../../components/ui/index.js';
 import { ResumeSessionBanner } from '../../components/admin/ResumeSessionBanner.js';
+import { getMe, type MeResponse } from '../../lib/me.js';
+import { PendingApprovalScreen } from '../../components/auth/PendingApprovalScreen.js';
 
 export interface Establishment {
   id: string;
@@ -32,10 +34,13 @@ export interface EstablishmentContext {
   refetch: () => Promise<void>;
   loading: boolean;
   error: string | null;
+  me: MeResponse | null;
 }
 
 export function AdminLayout(): JSX.Element {
   const [establishment, setEstablishment] = useState<Establishment | null>(null);
+  const [me, setMe] = useState<MeResponse | null>(null);
+  const [meLoading, setMeLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,15 +57,51 @@ export function AdminLayout(): JSX.Element {
     }
   };
 
+  const fetchMe = async (): Promise<void> => {
+    try {
+      const data = await getMe();
+      setMe(data);
+    } catch {
+      // ignore — l'auth déjà gating, on tombe sur PENDING/REJECTED si applicable
+    } finally {
+      setMeLoading(false);
+    }
+  };
+
   useEffect(() => {
-    void fetchEstablishment();
+    void fetchMe();
   }, []);
+
+  // Phase 4 — ne fetch establishment que si le compte est APPROVED ou super admin.
+  // Sinon on évite le 403 cosmétique côté API et on affiche directement le pending screen.
+  useEffect(() => {
+    if (!me) return;
+    if (me.memberStatus === 'APPROVED' || me.isSuperAdmin) {
+      void fetchEstablishment();
+    } else {
+      setLoading(false);
+    }
+  }, [me]);
+
+  // Phase 4e — pending / rejected → écran bloquant
+  if (!meLoading && me && !me.isSuperAdmin) {
+    if (me.memberStatus === 'PENDING' || me.memberStatus === 'REJECTED') {
+      return (
+        <PendingApprovalScreen
+          status={me.memberStatus}
+          email={me.user.email}
+          onApproved={() => void fetchMe()}
+        />
+      );
+    }
+  }
 
   const ctx: EstablishmentContext = {
     establishment,
     refetch: fetchEstablishment,
     loading,
     error,
+    me,
   };
 
   return (
