@@ -20,7 +20,11 @@
  *   - Firefox : audio/webm OK
  */
 
-const SILENCE_DURATION_MS_DEFAULT = 1500; // 1.5s de silence = "fini de parler"
+// Optim Whisper — 500ms de silence après speech = "fini de parler" → cut.
+// Avant : 1.5s (trop long, casse l'UX rapidité). Hystérésis maintenue
+// via SPEECH_RMS_THRESHOLD pour ne pas couper sur micro-pause au milieu
+// d'une phrase.
+const SILENCE_DURATION_MS_DEFAULT = 500;
 const SILENCE_RMS_THRESHOLD = 0.01; // seuil sous lequel c'est du silence
 const SPEECH_RMS_THRESHOLD = 0.02; // seuil au-dessus = speech (hystérésis)
 const ANALYSER_INTERVAL_MS = 100; // sample RMS toutes les 100ms

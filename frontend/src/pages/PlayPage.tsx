@@ -905,9 +905,13 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       const buzzRes = await postBuzz(identity.sessionId, currentTrack.round_id, identity.token);
       const maxDurationMs = (buzzRes as { buzz_window_ms?: number }).buzz_window_ms ?? 10_000;
 
+      console.info('[Voice] Recording started');
       const capture = await startVoiceCapture({
         maxDurationMs,
+        // Optim Whisper — VAD agressif (500ms silence après speech) cut early
+        // dès que le joueur a fini de parler, sans attendre les 10s max.
         onSilence: () => {
+          console.info('[Voice] VAD detected silence → cut');
           void finalizeRecording();
         },
         onLevel: (rms) => {
@@ -948,8 +952,14 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
 
   const uploadAndShowResult = async (capture: VoiceCapture): Promise<void> => {
     if (!currentTrack) return;
+    // Optim Whisper — logs de timing pour identifier les bottlenecks.
+    const t0 = Date.now();
+    console.info('[Voice] Recording stopped — finalizing');
     try {
       const blob = await capture.stop();
+      const t1 = Date.now();
+      const sizeKb = Math.round(blob.size / 1024);
+      console.info(`[Voice] Audio finalized (size: ${sizeKb}KB, +${t1 - t0}ms)`);
       const result = await uploadVoiceAnswer({
         apiUrl: API_BASE,
         sessionId: identity.sessionId,
@@ -958,6 +968,10 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         audio: blob,
         filename: capture.mimeType.includes('mp4') ? 'buzz.mp4' : 'buzz.webm',
       });
+      const t2 = Date.now();
+      console.info(
+        `[Voice] Whisper response received (latency: ${t2 - t1}ms) | matched=${result.matched} | total=${t2 - t0}ms`,
+      );
       // Refonte #2 — si pas matché : retour direct buzzer + toast 1.5s.
       // Pas d'écran intermédiaire, pas de transcript Whisper affiché.
       if (!result.matched) {
@@ -967,6 +981,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       }
       setRecState({ kind: 'result', result });
     } catch (err: unknown) {
+      console.error('[Voice] Upload failed:', err);
       setError(err instanceof Error ? err.message : 'Upload échoué');
       setRecState({ kind: 'idle' });
     }

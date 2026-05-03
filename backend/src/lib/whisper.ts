@@ -10,7 +10,11 @@
  */
 
 const OPENAI_TRANSCRIPTION_URL = 'https://api.openai.com/v1/audio/transcriptions';
-const WHISPER_MODEL = 'whisper-1'; // toujours dispo, fiable
+// Optim — gpt-4o-mini-transcribe : modèle plus rapide que whisper-1
+// (~50% latence en moins selon OpenAI sur de courts extraits). Précision
+// équivalente sur des phrases courtes type "celine dion my heart will go on".
+// Override possible via env WHISPER_MODEL pour fallback whisper-1 si besoin.
+const WHISPER_MODEL = process.env.WHISPER_MODEL ?? 'gpt-4o-mini-transcribe';
 
 export class WhisperError extends Error {
   constructor(
@@ -71,6 +75,13 @@ export async function transcribeAudio(args: TranscribeArgs): Promise<TranscribeR
   // response_format text = retourne le transcript brut sans timestamps.
   form.append('response_format', 'text');
 
+  // Logs timing pour mesurer la latence Whisper côté backend.
+  const audioSizeKb = Math.round((audioBlob.size ?? 0) / 1024);
+  const startMs = Date.now();
+  console.info(
+    `[Whisper] ⏱  transcribe start | model=${WHISPER_MODEL} | size=${audioSizeKb}KB | lang=${args.language ?? 'auto'}`,
+  );
+
   let res: Response;
   try {
     res = await fetch(OPENAI_TRANSCRIPTION_URL, {
@@ -99,5 +110,9 @@ export async function transcribeAudio(args: TranscribeArgs): Promise<TranscribeR
   }
 
   const text = (await res.text()).trim();
+  const elapsedMs = Date.now() - startMs;
+  console.info(
+    `[Whisper] ✓ transcribe done | latency=${elapsedMs}ms | text="${text.slice(0, 80)}${text.length > 80 ? '…' : ''}"`,
+  );
   return { text };
 }
