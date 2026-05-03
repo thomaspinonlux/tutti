@@ -732,7 +732,22 @@ function HostPageInner(): JSX.Element {
                   : t('host.eyebrowPlaying', { round: playingRoundsCount })}
             </p>
             <TitleHandwritten as="h1">
-              {session.name ? <Underline>{session.name}</Underline> : t('host.title')}
+              {/* Bug 2 — titre dynamique selon l'état de la partie. Si la
+                  session a un nom custom on le garde toujours, sinon
+                  fallback contextuel. */}
+              {session.name ? (
+                <Underline>{session.name}</Underline>
+              ) : effectivePhase === 'waiting' ? (
+                t('host.titleWaiting')
+              ) : effectivePhase === 'roundPlaying' ? (
+                t('host.titleRoundPlaying')
+              ) : effectivePhase === 'intermission' ? (
+                t('host.titleIntermission')
+              ) : effectivePhase === 'ended' ? (
+                t('host.titleEnded')
+              ) : (
+                t('host.title')
+              )}
             </TitleHandwritten>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -1166,14 +1181,22 @@ function RoundPlayingScreen({
           <p className="font-mono text-xs text-ink-soft my-3">{t('host.demoProviderHint')}</p>
         )}
 
+        {/* Bug 5 — suppression du gros carré central "EN COURS ♪?????".
+            Le morceau en cours est déjà mis en évidence dans le panneau
+            "Programme de la manche" à droite (highlight spritz + badge
+            "En cours"). Plus besoin de duplicate ici.
+            On garde juste le placeholder quand !currentTrack pour donner
+            un signal visible que le morceau n'a pas encore démarré. */}
         {!currentTrack ? (
           <p className="font-editorial italic text-ink-2 my-8">{t('host.noTrackYet')}</p>
-        ) : currentTrack.phase === 'phase1' ? (
-          <ListeningView track={currentTrack} positionMs={positionMs} durationMs={durationMs} />
-        ) : currentTrack.phase === 'phase2' ? (
-          <BuzzedView track={currentTrack} />
         ) : (
-          <CooldownView track={currentTrack} lastBuzz={recentBuzzes[0] ?? null} />
+          // Position progress mini-bar (info utile à l'animateur sans
+          // dupliquer cover/titre/artiste — déjà dans Programme manche).
+          <CompactProgressBar
+            track={currentTrack}
+            positionMs={positionMs}
+            durationMs={durationMs}
+          />
         )}
 
         <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
@@ -1290,7 +1313,12 @@ function RoundPlayingScreen({
 
 // ── Sous-vues du track en cours ──────────────────────────────────────────
 
-function ListeningView({
+/**
+ * Bug 5 — barre de progression compacte en remplacement du gros carré central
+ * "EN COURS ♪?????". Affiche juste elapsed / remaining + barre, sans dupliquer
+ * cover + titre + artiste (déjà dans le panneau Programme manche à droite).
+ */
+function CompactProgressBar({
   track,
   positionMs,
   durationMs,
@@ -1299,9 +1327,6 @@ function ListeningView({
   positionMs: number;
   durationMs: number;
 }): JSX.Element {
-  const { t } = useTranslation();
-  // Source de vérité Spotify SDK. Si durationMs=0 (track Demo / pas chargé),
-  // fallback duration_ms du track. Position 0 si paused/stopped.
   const total = durationMs || track.duration_ms || 0;
   const elapsed = Math.min(positionMs, total);
   const remaining = Math.max(0, total - elapsed);
@@ -1311,64 +1336,33 @@ function ListeningView({
     .toString()
     .padStart(2, '0');
   return (
-    <div className="py-6">
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
-        {t('host.listening')}
-      </p>
-      {/* Affiche pochette + titre + artiste côté animateur (pas côté joueurs) */}
-      <div className="flex items-center justify-center gap-4 mb-4">
-        {track.cover_url && (
-          <img
-            src={track.cover_url}
-            alt=""
-            className="w-20 h-20 rounded border-2 border-ink object-cover shadow-pop-sm"
-          />
-        )}
-        <div className="text-left min-w-0">
-          <p className="font-display text-2xl text-ink truncate">{track.title}</p>
-          <p className="font-editorial italic text-ink-2 truncate">{track.artist}</p>
-          {track.year && <p className="font-mono text-xs text-ink-soft">{track.year}</p>}
-        </div>
+    <div className="py-4 max-w-md mx-auto">
+      <div className="h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden">
+        <div
+          className="h-full bg-spritz-deep transition-[width] duration-150 ease-linear"
+          style={{ width: `${Math.round(progress * 100)}%` }}
+        />
       </div>
-      <div className="max-w-md mx-auto">
-        <div className="h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden">
-          <div
-            className="h-full bg-spritz-deep transition-[width] duration-150 ease-linear"
-            style={{ width: `${Math.round(progress * 100)}%` }}
-          />
-        </div>
-        <div className="flex justify-between mt-1 font-mono text-xs text-ink-soft tabular-nums">
-          <span>
-            {Math.floor(elapsed / 60_000)}:
-            {Math.floor((elapsed % 60_000) / 1000)
-              .toString()
-              .padStart(2, '0')}
-          </span>
-          <span>
-            -{remainingMin}:{remainingSec}
-          </span>
-        </div>
+      <div className="flex justify-between mt-1 font-mono text-xs text-ink-soft tabular-nums">
+        <span>
+          {Math.floor(elapsed / 60_000)}:
+          {Math.floor((elapsed % 60_000) / 1000)
+            .toString()
+            .padStart(2, '0')}
+        </span>
+        <span>
+          -{remainingMin}:{remainingSec}
+        </span>
       </div>
     </div>
   );
 }
 
-function BuzzedView({ track }: { track: CurrentTrackState }): JSX.Element {
-  const { t } = useTranslation();
-  // Stub commit 2 — la BuzzedView complète arrive en commit 6 avec les
-  // multi-correct-answers + chrono phase 2.
-  void track;
-  return (
-    <div className="py-6">
-      <p className="font-display text-6xl text-spritz-deep mb-2 animate-pop-in">
-        {t('host.buzzed')} !
-      </p>
-      <p className="font-editorial italic text-ink-2">
-        {t('host.awaitingAnswer', { pseudo: '…' })}
-      </p>
-    </div>
-  );
-}
+// Bug 5 — ListeningView, BuzzedView et CooldownView supprimés.
+// Le morceau en cours + sa pochette + son titre sont déjà dans le panneau
+// "Programme de la manche" (RoundProgramPanel) à droite. Le carré central
+// "EN COURS ♪?????" était un duplicate inutile. Remplacé par
+// CompactProgressBar (juste la barre de progression + temps restant).
 
 function SpotifyStatusBanner({
   status,
@@ -1402,30 +1396,7 @@ function SpotifyStatusBanner({
   );
 }
 
-function CooldownView({
-  track,
-  lastBuzz,
-}: {
-  track: CurrentTrackState;
-  lastBuzz: BuzzResult | null;
-}): JSX.Element {
-  const { t } = useTranslation();
-  return (
-    <div className="py-4">
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft mb-2">
-        {t('host.reveal')}
-      </p>
-      <p className="font-display text-3xl text-ink leading-tight">{track.title}</p>
-      <p className="font-editorial italic text-xl text-ink-2 mb-4">{track.artist}</p>
-      {lastBuzz && (
-        <Badge tone={lastBuzz.total_points > 0 ? 'basil' : 'plum'} tilt={-2}>
-          {lastBuzz.participant_pseudo} :{' '}
-          {lastBuzz.total_points > 0 ? `+${lastBuzz.total_points}` : '0'} pts
-        </Badge>
-      )}
-    </div>
-  );
-}
+// CooldownView supprimé (Bug 5) — voir commentaire au-dessus de SpotifyStatusBanner.
 
 function EndedScreen({ cumulative }: { cumulative: CumulativeScore[] }): JSX.Element {
   const { t } = useTranslation();
