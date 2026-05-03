@@ -71,6 +71,12 @@ export interface UseSpotifyPlayerResult {
   activate: () => Promise<boolean>;
   /** Recommence le morceau courant depuis le début (position_ms = 0). */
   restartCurrentTrack: () => Promise<boolean>;
+  /** Bug 2 — true si Chrome/Safari ont bloqué la lecture audio. UI doit
+   * afficher un bouton "🔊 Forcer audio" qui appelle unblockAudio(). */
+  audioBlocked: boolean;
+  /** Bug 2 — déclenche activate() + resume() depuis un clic user direct.
+   * Clears audioBlocked si la lecture redémarre. */
+  unblockAudio: () => Promise<boolean>;
 }
 
 /**
@@ -126,6 +132,9 @@ export function useSpotifyPlayer({
   const [positionMs, setPositionMs] = useState(0);
   /** Durée totale du track courant (ms). */
   const [durationMs, setDurationMs] = useState(0);
+  /** Bug 2 — flag déclenché quand Chrome/Safari bloquent la lecture
+   * (autoplay_failed OU still_paused 3s après play()). UI affiche fallback. */
+  const [audioBlocked, setAudioBlocked] = useState(false);
 
   const playerRef = useRef<SpotifyPlayer | null>(null);
   const tokenRef = useRef<string | null>(null);
@@ -235,16 +244,12 @@ export function useSpotifyPlayer({
           setDeviceId(device_id);
           setStatus('ready');
           setLastEvent(`ready: ${device_id.substring(0, 12)}…`);
-          // ⚠️ activateElement() : indispensable sur Chrome/Safari pour
-          // débloquer la pipeline audio HTMLMediaElement interne au SDK.
-          // Sans ça, le device apparaît dans Spotify Connect mais aucun son.
-          if (player) {
-            void player.activateElement().then(
-              () => console.info('[Spotify SDK] activateElement OK (auto)'),
-              (err) =>
-                console.warn('[Spotify SDK] activateElement auto failed (need user click):', err),
-            );
-          }
+          // Bug 2 fix — NE PAS appeler activateElement() ici. Chrome/Safari
+          // bloquent silencieusement les appels qui ne viennent pas d'un
+          // event handler de clic utilisateur direct. activateElement() est
+          // désormais appelé UNIQUEMENT depuis activate() (lui-même appelé
+          // par handleStartSession au clic "Démarrer le blind test").
+          //
           // Transfert explicite de la lecture sur ce device + délai 500ms
           // avant play() (Spotify Connect peut throttle si trop rapide).
           void (async () => {
@@ -305,6 +310,14 @@ export function useSpotifyPlayer({
             timestamp: Date.now(),
             paused: state.paused,
           };
+          // Bug 2 — si la lecture redémarre vraiment (paused=false avec
+          // position qui avance), le blocage autoplay est levé. Clear flag.
+          if (!state.paused) {
+            setAudioBlocked(false);
+            // Si l'erreur affichée était l'autoplay block, on la clear aussi
+            setErrorCode((prev) => (prev === 'AUTOPLAY_BLOCKED' ? null : prev));
+            setError((prev) => (prev?.startsWith('Le navigateur a bloqué') ? null : prev));
+          }
         });
         player.addListener('initialization_error', ({ message }) =>
           fail('INIT_ERROR', `Init: ${message}`),
@@ -334,6 +347,8 @@ export function useSpotifyPlayer({
             'Le navigateur a bloqué la lecture. Clique le bouton "Démarrer audio" pour autoriser.',
           );
           setLastEvent('autoplay_failed');
+          // Bug 2 — déclenche affichage du fallback UI
+          setAudioBlocked(true);
         });
 
         const ok = await player.connect();
@@ -445,6 +460,34 @@ export function useSpotifyPlayer({
     }
   };
 
+  /**
+   * Bug 2 — fallback débloquant audio depuis un clic user direct.
+   * Appelle activate() (activateElement + retransfer) puis resume().
+   * Le state_changed listener clearera audioBlocked dès que la lecture
+   * démarre vraiment (paused=false).
+   */
+  const unblockAudio = async (): Promise<boolean> => {
+    console.info('[Spotify SDK] unblockAudio() — fallback user click');
+    const p = playerRef.current;
+    if (!p) return false;
+    try {
+      await p.activateElement();
+      if (deviceId) await transferPlaybackInternal(deviceId, false);
+      // Resume sur le device — si un track est déjà chargé, ça relance la lecture
+      try {
+        await p.resume();
+      } catch (err) {
+        console.warn('[Spotify SDK] resume after unblock failed:', err);
+      }
+      // Optimistic clear : le state_changed listener clearera vraiment quand
+      // la lecture démarre. On laisse le flag sauf erreur.
+      return true;
+    } catch (err) {
+      console.error('[Spotify SDK] unblockAudio failed:', err);
+      return false;
+    }
+  };
+
   /** Recommence le morceau courant depuis le début (position_ms = 0). */
   const restartCurrentTrack = async (): Promise<boolean> => {
     if (!deviceId || !tokenRef.current) return false;
@@ -498,6 +541,10 @@ export function useSpotifyPlayer({
               '[Spotify Verify] ❌ Toujours paused 3s après play() — autoplay bloqué OU device inactif',
             );
             setLastEvent('verify:still_paused_3s');
+            // Bug 2 — déclenche affichage du fallback UI (autoplay bloqué silencieusement)
+            setAudioBlocked(true);
+            setErrorCode('AUTOPLAY_BLOCKED');
+            setError('Le navigateur a bloqué la lecture. Clique pour activer.');
           }
         });
       }, delayMs);
@@ -610,5 +657,7 @@ export function useSpotifyPlayer({
     transferToTutti,
     activate,
     restartCurrentTrack,
+    audioBlocked,
+    unblockAudio,
   };
 }

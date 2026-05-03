@@ -629,6 +629,19 @@ function HostPageInner(): JSX.Element {
   if (isModeB && inGameplay) {
     return (
       <MinScreen min="lg">
+        {/* Bug 2 — Banner fallback audio bloqué (mode B festif aussi) */}
+        {spotify.audioBlocked && (
+          <button
+            type="button"
+            onClick={() => void spotify.unblockAudio()}
+            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-ink flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
+          >
+            <span className="text-2xl" aria-hidden>
+              🔊
+            </span>
+            <span>{t('host.audioBlockedBanner')}</span>
+          </button>
+        )}
         {/* Badge master + change-master accessible discrètement en haut-droite */}
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <ExternalScreenButton shortCode={session.short_code} />
@@ -690,6 +703,23 @@ function HostPageInner(): JSX.Element {
   return (
     <div className="min-h-screen flex flex-col">
       <MultiColorBar height="md" />
+
+      {/* Bug 2 — Banner fallback "🔊 son bloqué par le navigateur".
+          Visible quand le SDK Spotify a détecté un blocage Chrome/Safari
+          (autoplay_failed OU still_paused 3s après play). Click =
+          activateElement() + resume() depuis un user-gesture handler. */}
+      {spotify.audioBlocked && (
+        <button
+          type="button"
+          onClick={() => void spotify.unblockAudio()}
+          className="w-full bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-ink flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
+        >
+          <span className="text-2xl" aria-hidden>
+            🔊
+          </span>
+          <span>{t('host.audioBlockedBanner')}</span>
+        </button>
+      )}
 
       <main className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-8">
         <header className="max-w-7xl mx-auto mb-4 sm:mb-8 flex items-center justify-between flex-wrap gap-3">

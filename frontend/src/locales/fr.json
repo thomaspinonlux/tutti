@@ -243,6 +243,7 @@
     "resumeAudio": "Reprendre",
     "restartTrack": "Recommencer",
     "revealAnswer": "Révéler la réponse",
+    "audioBlockedBanner": "Le son est bloqué par ton navigateur — Clique pour activer",
     "externalScreen": {
       "openButton": "Écran TV",
       "openHint": "Ouvre la vue grand public sur l'écran externe ou nouvel onglet",

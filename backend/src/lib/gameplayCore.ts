@@ -316,6 +316,17 @@ export async function revealCurrentTrack(
     artist: track.artist.canonical_name,
     title: track.canonical_title,
   };
+  // Bug fix — broadcast track:phase_changed AVANT track:revealed pour que
+  // les clients (HostPage, ScreenPage, PlayPage) mettent à jour
+  // currentTrack.phase en 'phase3-revealed' et fassent transitionner leur
+  // UI (ResultPanel, FindersRecap, ValidatedBanner phase3, etc.).
+  // Sans cet event, lastReveal était bien set mais phase restait phase1/2.
+  broadcastToSession(sessionId, 'track:phase_changed', {
+    round_id: roundId,
+    phase: 'phase3-revealed',
+    artist: track.artist.canonical_name,
+    title: track.canonical_title,
+  });
   broadcastToSession(sessionId, 'track:revealed', payload);
   return {
     artist: track.artist.canonical_name,

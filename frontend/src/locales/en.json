@@ -243,6 +243,7 @@
     "resumeAudio": "Resume",
     "restartTrack": "Restart",
     "revealAnswer": "Reveal answer",
+    "audioBlockedBanner": "Sound is blocked by your browser — Click to enable",
     "externalScreen": {
       "openButton": "TV screen",
       "openHint": "Open the public view on external screen or new tab",
