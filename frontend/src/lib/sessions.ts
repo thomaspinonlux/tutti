@@ -13,6 +13,7 @@ import type {
   JoinResponse,
   Participant,
   PublicSessionView,
+  RoundProgramResponse,
   Session,
   SessionRoundWithPlaylist,
   SessionWithParticipants,
@@ -271,6 +272,19 @@ export async function hostRestartTrack(sessionId: string, roundId: string): Prom
   await api(
     `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/restart-track`,
     { method: 'POST' },
+  );
+}
+
+/**
+ * GET /api/sessions/:id/rounds/:rid/program — Phase 2.1
+ * Programme complet de la manche (tracks + statut PLAYED/CURRENT/UPCOMING).
+ */
+export async function getRoundProgram(
+  sessionId: string,
+  roundId: string,
+): Promise<RoundProgramResponse> {
+  return api<RoundProgramResponse>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/program`,
   );
 }
 

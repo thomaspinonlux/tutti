@@ -14,6 +14,7 @@
  */
 
 import { Router, type Request, type Response } from 'express';
+import type { RoundProgramItem, RoundProgramResponse, RoundStatus } from '@tutti/shared';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { broadcastToSession } from '../socket/index.js';
@@ -168,6 +169,48 @@ router.post(
       console.error('[POST host/resume] error:', err);
       res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur reprise' } });
     }
+  },
+);
+
+// ── GET /program (host) ───────────────────────────────────────────────────
+// Phase 2.1 : panel "Programme manche" — liste ordonnée des tracks de la
+// manche avec statut PLAYED/CURRENT/UPCOMING. Lecture seule, pas de broadcast.
+
+router.get(
+  '/program',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const round = await findRoundForWorkspace(req.params.roundId, req.params.id, workspaceId);
+    if (!round) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
+      return;
+    }
+    const currentIdx = round.current_track_index;
+    const tracks: RoundProgramItem[] = round.playlist.playlist_tracks.map((pt, idx) => ({
+      position: idx,
+      track_id: pt.track.id,
+      artist: pt.track.artist.canonical_name,
+      title: pt.track.canonical_title,
+      year: pt.track.year,
+      cover_url: pt.track.cover_url,
+      duration_ms: pt.track.duration_ms,
+      status:
+        idx < currentIdx
+          ? 'PLAYED'
+          : idx === currentIdx && round.status === 'PLAYING'
+            ? 'CURRENT'
+            : 'UPCOMING',
+    }));
+    const body: RoundProgramResponse = {
+      round_id: round.id,
+      round_status: round.status as RoundStatus,
+      current_track_index: currentIdx,
+      total_tracks: tracks.length,
+      tracks,
+    };
+    res.json(body);
   },
 );
 

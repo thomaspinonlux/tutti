@@ -259,6 +259,35 @@ export interface CurrentTrackState {
 /** Durée de la phase 2 en ms (constante partagée frontend ↔ backend). */
 export const PHASE_2_DURATION_MS = 15_000;
 
+// ───── Programme manche (Phase 2.1) ────────────────────────────────────────
+
+/**
+ * Statut d'un track dans le programme d'une manche, vu côté animateur.
+ *  - PLAYED   : déjà joué (avant current_track_index)
+ *  - CURRENT  : le track en cours
+ *  - UPCOMING : à venir (après current_track_index)
+ */
+export type RoundProgramTrackStatus = 'PLAYED' | 'CURRENT' | 'UPCOMING';
+
+export interface RoundProgramItem {
+  position: number;
+  track_id: string;
+  artist: string;
+  title: string;
+  year: number | null;
+  cover_url: string | null;
+  duration_ms: number | null;
+  status: RoundProgramTrackStatus;
+}
+
+export interface RoundProgramResponse {
+  round_id: string;
+  round_status: RoundStatus;
+  current_track_index: number;
+  total_tracks: number;
+  tracks: RoundProgramItem[];
+}
+
 // ───── Tutti Quizz (étape 15) ─────────────────────────────────────────────
 
 export type QuestionType = 'MCQ' | 'TRUE_FALSE' | 'FREE_TEXT' | 'ESTIMATION';

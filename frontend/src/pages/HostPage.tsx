@@ -59,6 +59,7 @@ import { QRCode } from '../components/host/QRCode.js';
 import { RoundSelectionScreen } from '../components/host/RoundSelectionScreen.js';
 import { RoundIntermissionScreen } from '../components/host/RoundIntermissionScreen.js';
 import { ExpressPlaylistModal } from '../components/host/ExpressPlaylistModal.js';
+import { RoundProgramPanel } from '../components/host/RoundProgramPanel.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { ExternalScreenButton } from '../components/host/ExternalScreenButton.js';
@@ -722,6 +723,7 @@ function HostPageInner(): JSX.Element {
 
           {effectivePhase === 'roundPlaying' && playingRound && (
             <RoundPlayingScreen
+              sessionId={session.id}
               round={playingRound}
               cumulative={cumulative}
               currentTrack={currentTrack}
@@ -982,6 +984,7 @@ function WaitingPhase({
 }
 
 function RoundPlayingScreen({
+  sessionId,
   round,
   cumulative,
   currentTrack,
@@ -1000,6 +1003,7 @@ function RoundPlayingScreen({
   onResumeAudio,
   onRestartTrack,
 }: {
+  sessionId: string;
   round: SessionRoundWithPlaylist;
   cumulative: CumulativeScore[];
   currentTrack: CurrentTrackState | null;
@@ -1104,8 +1108,14 @@ function RoundPlayingScreen({
         )}
       </Card>
 
-      {/* ── Colonne droite : classement + buzz feed ──────────────────── */}
+      {/* ── Colonne droite : classement + programme + buzz feed ─────── */}
       <div className="space-y-4">
+        <RoundProgramPanel
+          sessionId={sessionId}
+          roundId={round.id}
+          refetchKey={`${currentTrack?.track_index ?? -1}-${currentTrack?.started_at ?? ''}`}
+        />
+
         <Card size="md">
           <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
             {t('host.cumulativeScores')}
