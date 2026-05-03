@@ -192,7 +192,13 @@ export function PlayPage(): JSX.Element {
       sock.emit(
         'session:join',
         { sessionId: identity.sessionId },
-        (resp: { ok: boolean; session?: SessionWithParticipants; error?: string }) => {
+        (resp: {
+          ok: boolean;
+          session?: SessionWithParticipants;
+          active_track?: CurrentTrackState | null;
+          cumulative?: CumulativeScore[];
+          error?: string;
+        }) => {
           if (!resp.ok) {
             clearParticipantContext(shortCode);
             setError(resp.error ?? t('play.kicked'));
@@ -214,6 +220,22 @@ export function PlayPage(): JSX.Element {
               clearParticipantContext(shortCode);
               setStep('ended');
             } else setStep('waiting');
+          }
+          // Reconnexion joueur — restore current track + cumulative score
+          // pour que le joueur retrouve immédiatement son état (pseudo, score,
+          // rang, morceau en cours, phase). Sans ça, il faut attendre le
+          // prochain broadcast (track:start ou track:correct_answer).
+          if (resp.active_track) {
+            setCurrentTrack(resp.active_track);
+            setCorrectAnswers(resp.active_track.correct_answers);
+            setPhase2StartedAt(resp.active_track.phase2_started_at);
+          }
+          if (resp.cumulative) {
+            setCumulative(resp.cumulative);
+            // Recalcule myScore (somme de mes points individuels — en SOLO)
+            // ou la part qui me revient en TEAMS via team_id.
+            const myEntry = resp.cumulative.find((e) => e.id === identity.participantId);
+            if (myEntry) setMyScore(myEntry.total_points);
           }
           if (wasReconnect) {
             pushToast(setToasts, t('connection.toastReconnected'), 'basil');

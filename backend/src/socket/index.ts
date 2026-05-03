@@ -23,12 +23,13 @@
  */
 
 import type { Server as HttpServer } from 'node:http';
-import type { CurrentTrackState } from '@tutti/shared';
+import type { CumulativeScore, CurrentTrackState, GameMode, Team } from '@tutti/shared';
 import { Server as SocketIOServer, type Socket } from 'socket.io';
 import { supabaseAdmin } from '../lib/supabase.js';
 import { verifyParticipantToken } from '../lib/participantToken.js';
 import { prisma } from '../lib/prisma.js';
 import { buildCurrentTrackStateSnapshot } from '../lib/gameplayCore.js';
+import { getCumulativeScores } from '../lib/scores.js';
 
 type SocketIdentity =
   | { kind: 'host'; userId: string; userEmail: string | null }
@@ -89,6 +90,28 @@ async function buildSessionSnapshot(
   const playingRound = session.rounds.find((r) => r.status === 'PLAYING');
   if (!playingRound) return null;
   return buildCurrentTrackStateSnapshot(playingRound.id);
+}
+
+/**
+ * Reconnexion joueur — calcule la cumulative actuelle pour que le frontend
+ * restaure le myScore + classement direct, sans attendre un track:correct_answer.
+ */
+async function buildCumulativeSnapshot(session: SessionWithIncludes): Promise<CumulativeScore[]> {
+  try {
+    return await getCumulativeScores({
+      sessionId: session.id,
+      mode: session.mode as GameMode,
+      teams: (session.teams_config as Team[] | null) ?? null,
+      participants: session.participants.map((p) => ({
+        id: p.id,
+        pseudo: p.pseudo,
+        team_id: p.team_id,
+      })),
+    });
+  } catch (err) {
+    console.warn('[socket] buildCumulativeSnapshot failed:', err);
+    return [];
+  }
 }
 
 interface AuthedSocket extends Socket {
@@ -214,7 +237,13 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
             if (!session) throw new Error('Session introuvable ou non autorisée');
             await socket.join(roomName(sessionId));
             const active_track = await buildSessionSnapshot(session);
-            ack?.({ ok: true, session: serializeSession(session), active_track });
+            const cumulative = await buildCumulativeSnapshot(session);
+            ack?.({
+              ok: true,
+              session: serializeSession(session),
+              active_track,
+              cumulative,
+            });
             return;
           }
 
@@ -228,7 +257,13 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
           if (!session) throw new Error('Session introuvable');
           await socket.join(roomName(sessionId));
           const active_track = await buildSessionSnapshot(session);
-          ack?.({ ok: true, session: serializeSession(session), active_track });
+          const cumulative = await buildCumulativeSnapshot(session);
+          ack?.({
+            ok: true,
+            session: serializeSession(session),
+            active_track,
+            cumulative,
+          });
         } catch (err) {
           ack?.({ ok: false, error: (err as Error).message });
         }
@@ -255,7 +290,13 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
           if (!session) throw new Error('Session introuvable ou non autorisée');
           await socket.join(roomName(session.id));
           const active_track = await buildSessionSnapshot(session);
-          ack?.({ ok: true, session: serializeSession(session), active_track });
+          const cumulative = await buildCumulativeSnapshot(session);
+          ack?.({
+            ok: true,
+            session: serializeSession(session),
+            active_track,
+            cumulative,
+          });
         } catch (err) {
           ack?.({ ok: false, error: (err as Error).message });
         }
