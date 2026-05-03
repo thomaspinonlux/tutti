@@ -42,6 +42,10 @@ export interface CorrectAnswer {
   matched_title: boolean;
   /** Score total attribué (base dégressive + bonus titre + bonus vitesse). */
   score: number;
+  /** Refonte #4 — détail breakdown pour affichage clarifié UI. */
+  score_position: number;
+  score_title_bonus: number;
+  score_speed_bonus: number;
 }
 
 export interface ActiveTrackState {
@@ -199,6 +203,9 @@ export function registerCorrectAnswer(
     matched_artist: boolean;
     matched_title: boolean;
     score: number;
+    score_position: number;
+    score_title_bonus: number;
+    score_speed_bonus: number;
   },
 ): { entry: CorrectAnswer; isFirst: boolean } | null {
   const state = activeTracks.get(roundId);
@@ -239,6 +246,9 @@ export function registerCorrectAnswer(
     matched_artist: args.matched_artist,
     matched_title: args.matched_title,
     score: args.score,
+    score_position: args.score_position,
+    score_title_bonus: args.score_title_bonus,
+    score_speed_bonus: args.score_speed_bonus,
   };
   state.correct_answers.push(entry);
   return { entry, isFirst };

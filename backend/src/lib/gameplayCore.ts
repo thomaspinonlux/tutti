@@ -287,6 +287,9 @@ export async function buildCurrentTrackStateSnapshot(
       matched_artist: a.matched_artist,
       matched_title: a.matched_title,
       score: a.score,
+      score_position: a.score_position,
+      score_title_bonus: a.score_title_bonus,
+      score_speed_bonus: a.score_speed_bonus,
     })),
   };
 }

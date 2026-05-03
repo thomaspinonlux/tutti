@@ -283,6 +283,9 @@ router.post(
       matched_artist: true,
       matched_title: matchResult.matched_title,
       score: tentativeScore.total,
+      score_position: tentativeScore.artist_base,
+      score_title_bonus: tentativeScore.title_bonus,
+      score_speed_bonus: tentativeScore.speed_bonus,
     });
     if (!registered) {
       // Race condition (phase 2 expirée pendant le traitement) : on log mais
@@ -346,6 +349,9 @@ router.post(
       matched_artist: true,
       matched_title: matchResult.matched_title,
       score: registered.entry.score,
+      score_position: registered.entry.score_position,
+      score_title_bonus: registered.entry.score_title_bonus,
+      score_speed_bonus: registered.entry.score_speed_bonus,
       cumulative,
     });
 
@@ -474,6 +480,9 @@ router.post(
       matched_artist: true,
       matched_title: matchResult.matched_title,
       score: tentativeScore.total,
+      score_position: tentativeScore.artist_base,
+      score_title_bonus: tentativeScore.title_bonus,
+      score_speed_bonus: tentativeScore.speed_bonus,
     });
     if (!registered) {
       res.json({ matched: true, scored: false, reason: 'PHASE_2_EXPIRED' });
@@ -523,6 +532,9 @@ router.post(
       matched_artist: true,
       matched_title: matchResult.matched_title,
       score: registered.entry.score,
+      score_position: registered.entry.score_position,
+      score_title_bonus: registered.entry.score_title_bonus,
+      score_speed_bonus: registered.entry.score_speed_bonus,
       cumulative,
     });
 

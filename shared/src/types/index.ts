@@ -216,7 +216,16 @@ export interface CorrectAnswerEntry {
   answered_at_ms: number;
   matched_artist: boolean;
   matched_title: boolean;
+  /** Total points attribués (somme du breakdown ci-dessous). */
   score: number;
+  /**
+   * Refonte #4 — détail des points pour affichage clarifié côté UI :
+   *   "+20 pts artiste (1ʳᵉ place) / +8 pts bonus vitesse / +5 pts bonus titre".
+   * Optionnels pour rétrocompat avec les broadcasts plus anciens.
+   */
+  score_position?: number;
+  score_title_bonus?: number;
+  score_speed_bonus?: number;
 }
 
 /**

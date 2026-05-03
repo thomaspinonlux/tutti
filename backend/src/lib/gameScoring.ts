@@ -1,36 +1,32 @@
 /**
- * Scoring voice-first (Phase C) : barème dégressif + bonus titre + bonus vitesse.
+ * Scoring voice-first (Phase C) — Refonte #4
  *
- * Barème de base par position d'arrivée (artiste trouvé) :
- *   1ʳᵉ : 150 pts
- *   2ᵉ  : 100 pts
- *   3ᵉ  :  75 pts
- *   4ᵉ+ :  50 pts
+ * Nouveau barème (mai 2026) :
  *
- * Bonus titre (si l'artiste ET le titre sont reconnus dans la même fenêtre,
- * peu importe l'ordre dans le transcript) :
- *   +50 pts (toutes positions confondues)
+ * Position points (artiste trouvé) :
+ *   1ʳᵉ      : 20 pts
+ *   2ᵉ      : 15 pts
+ *   3ᵉ      : 10 pts
+ *   4ᵉ      :  5 pts
+ *   5ᵉ-6ᵉ   :  3 pts
+ *   7ᵉ et + :  2 pts
  *
- * Bonus vitesse pour la 1ʳᵉ position uniquement :
- *   bonus = max(0, 50 - secondes_ecoulees * 2)
- *   - réponse à 5s   : +40
- *   - réponse à 15s  : +20
- *   - réponse ≥ 25s  :  +0
+ * Bonus titre (toutes positions confondues, cumulable) :
+ *   +5 pts
  *
- * Score max théorique sur un morceau (1ʳᵉ + titre + vitesse 5s) :
- *   150 + 50 + 40 = 240 points.
+ * Bonus vitesse 1ʳᵉ position uniquement :
+ *   bonus = max(0, 10 - secondes_ecoulees)
+ *   - réponse à 0s  : +10
+ *   - réponse à 5s  : +5
+ *   - réponse ≥ 10s :  +0
+ *
+ * Score max théorique 1ʳᵉ + titre + vitesse 0s : 20 + 10 + 5 = 35 pts.
  */
 
-export const ARTIST_BASE_BY_POSITION: Record<number, number> = {
-  1: 150,
-  2: 100,
-  3: 75,
-  // 4+ : 50 (hors map, fallback dans la fonction)
-};
-export const ARTIST_BASE_FALLBACK = 50;
-export const TITLE_BONUS = 50;
-export const SPEED_BONUS_MAX = 50;
-export const SPEED_BONUS_DECAY_PER_SEC = 2;
+const POSITION_POINTS = [20, 15, 10, 5, 3, 3] as const;
+const POSITION_FALLBACK = 2; // 7e et au-delà
+export const TITLE_BONUS = 5;
+export const SPEED_BONUS_MAX_SECONDS = 10; // bonus = max(0, 10 - seconds_elapsed)
 
 export interface ScoringInput {
   matched_artist: boolean;
@@ -42,10 +38,24 @@ export interface ScoringInput {
 }
 
 export interface ScoringBreakdown {
+  /** Points de la position (20 pour 1ʳᵉ, 15 pour 2ᵉ, etc.). */
   artist_base: number;
+  /** Bonus titre (+5 si matched_title, sinon 0). */
   title_bonus: number;
+  /** Bonus vitesse — uniquement pour la 1ʳᵉ position. */
   speed_bonus: number;
   total: number;
+}
+
+/**
+ * Renvoie les points de position pour une 1-based position d'arrivée.
+ *   pos=1 → 20, pos=2 → 15, pos=3 → 10, pos=4 → 5,
+ *   pos=5 → 3,  pos=6 → 3,  pos≥7 → 2.
+ */
+export function pointsForPosition(position: number): number {
+  if (position < 1) return 0;
+  // POSITION_POINTS index 0 = 1ère position
+  return POSITION_POINTS[position - 1] ?? POSITION_FALLBACK;
 }
 
 /**
@@ -57,14 +67,12 @@ export function computeAnswerScore(input: ScoringInput): ScoringBreakdown {
     return { artist_base: 0, title_bonus: 0, speed_bonus: 0, total: 0 };
   }
 
-  const artistBase = ARTIST_BASE_BY_POSITION[input.position] ?? ARTIST_BASE_FALLBACK;
-
+  const artistBase = pointsForPosition(input.position);
   const titleBonus = input.matched_title ? TITLE_BONUS : 0;
 
-  // Bonus vitesse pour la 1ʳᵉ position uniquement.
-  const seconds = input.answered_at_ms / 1000;
-  const speedBonusRaw = SPEED_BONUS_MAX - seconds * SPEED_BONUS_DECAY_PER_SEC;
-  const speedBonus = input.position === 1 ? Math.max(0, Math.round(speedBonusRaw)) : 0;
+  // Bonus vitesse pour la 1ʳᵉ position uniquement : max(0, 10 - secondes).
+  const seconds = Math.floor(input.answered_at_ms / 1000);
+  const speedBonus = input.position === 1 ? Math.max(0, SPEED_BONUS_MAX_SECONDS - seconds) : 0;
 
   return {
     artist_base: artistBase,
@@ -73,3 +81,16 @@ export function computeAnswerScore(input: ScoringInput): ScoringBreakdown {
     total: artistBase + titleBonus + speedBonus,
   };
 }
+
+/**
+ * Compat — anciennes constantes utilisées ailleurs dans le code base.
+ * @deprecated utiliser pointsForPosition() ou computeAnswerScore().
+ */
+export const ARTIST_BASE_BY_POSITION: Record<number, number> = {
+  1: pointsForPosition(1),
+  2: pointsForPosition(2),
+  3: pointsForPosition(3),
+};
+export const ARTIST_BASE_FALLBACK = POSITION_FALLBACK;
+export const SPEED_BONUS_MAX = SPEED_BONUS_MAX_SECONDS;
+export const SPEED_BONUS_DECAY_PER_SEC = 1;

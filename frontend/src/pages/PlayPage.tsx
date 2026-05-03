@@ -1099,6 +1099,10 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         <ValidatedBanner
           score={myCorrect.score}
           position={myCorrect.position}
+          matchedTitle={myCorrect.matched_title}
+          scorePosition={myCorrect.score_position}
+          scoreTitleBonus={myCorrect.score_title_bonus}
+          scoreSpeedBonus={myCorrect.score_speed_bonus}
           showConfetti={isPhase3Reveal}
         />
       ) : (
@@ -1318,13 +1322,24 @@ function DanceMessage({ isFinder, score }: { isFinder: boolean; score: number })
 function ValidatedBanner({
   score,
   position,
+  matchedTitle,
+  scorePosition,
+  scoreTitleBonus,
+  scoreSpeedBonus,
   showConfetti,
 }: {
   score: number;
   position: number;
+  matchedTitle: boolean;
+  scorePosition?: number;
+  scoreTitleBonus?: number;
+  scoreSpeedBonus?: number;
   showConfetti: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
+  // Refonte #4 — affichage clarifié du détail des points si breakdown fourni.
+  const hasBreakdown =
+    scorePosition !== undefined || scoreTitleBonus !== undefined || scoreSpeedBonus !== undefined;
   return (
     <div className="relative my-4 overflow-hidden rounded-2xl">
       {/* Confettis confinés au banner — déclenchés en phase 3 pour les finders.
@@ -1333,8 +1348,27 @@ function ValidatedBanner({
       <div className="bg-basil border-4 border-ink rounded-2xl px-5 py-7 text-center shadow-pop-lg animate-valid-pop relative z-10">
         <span className="font-display text-6xl block mb-1.5 text-cream">✓</span>
         <p className="font-display text-2xl text-cream mb-1.5">{t('play.answerValidated')}</p>
+        {hasBreakdown && (
+          <ul className="space-y-0.5 mb-2 text-cream-2 font-mono text-sm">
+            {!!scorePosition && (
+              <li>
+                +{scorePosition} {t('play.scoreArtist', { n: position })}
+              </li>
+            )}
+            {!!scoreSpeedBonus && (
+              <li>
+                +{scoreSpeedBonus} {t('play.scoreSpeed')}
+              </li>
+            )}
+            {matchedTitle && !!scoreTitleBonus && (
+              <li>
+                +{scoreTitleBonus} {t('play.scoreTitleBonus')}
+              </li>
+            )}
+          </ul>
+        )}
         <p className="font-mono text-3xl bg-lemon text-ink inline-block px-4 py-1 rounded-xl font-bold">
-          +{score} pts
+          {t('play.scoreTotal')} : +{score} pts
         </p>
         <p className="font-mono text-xs text-cream-2 mt-3 uppercase tracking-widest">
           {t('play.position', { n: position })}
