@@ -516,7 +516,7 @@ export function PlayPage(): JSX.Element {
   return (
     <div className="min-h-screen flex flex-col">
       <MultiColorBar height="md" />
-      <main className="flex-1 px-4 py-6 flex items-start justify-center">
+      <main className="flex-1 px-4 py-3 flex items-start justify-center">
         <div className="w-full max-w-[500px]">
           <header className="mb-6 relative">
             <div className="absolute top-0 right-0">
@@ -1081,7 +1081,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     // (clavier ouvert) via la classe responsive sur sa taille.
     // Bug 2 — overflow-x-hidden pour empêcher tout enfant en negative margin
     // ou animation translate de déborder horizontalement (bande noire iPhone).
-    <div className="flex flex-col gap-3 min-h-[100dvh] overflow-x-hidden">
+    <div className="flex flex-col gap-2 min-h-[100dvh] overflow-x-hidden">
       {/* Refonte #2 — toast top "Pas reconnu" 1.5s, retour buzzer immédiat. */}
       {failToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 border-2 border-ink rounded shadow-pop bg-raspberry text-cream font-medium text-sm animate-pop-in">
@@ -1181,7 +1181,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
               fait shrink le viewport → ce sticky reste visible juste
               au-dessus du clavier, sans scroller la page. */}
           {(isPhase1 || isPhase2) && !myCorrect && !isPaused && (
-            <div className="sticky bottom-0 left-0 right-0 -mx-4 px-4 py-2 bg-cream border-t-2 border-ink mt-2">
+            <div className="sticky bottom-0 left-0 right-0 -mx-4 px-4 py-1.5 bg-cream border-t-2 border-ink">
               <TextAnswerInput
                 onSubmit={(text) => void handleTextAnswer(text)}
                 busy={textBusy}
@@ -1498,18 +1498,19 @@ function BuzzerArea({
         ? t('play.buzzerHintAnalyzing')
         : t('play.buzzerHintActive');
   return (
-    <div className="flex flex-col items-center gap-3.5 my-2">
+    // Bug 3 — compactage : gap réduit (1.5 au lieu de 3.5), my supprimé.
+    <div className="flex flex-col items-center gap-1.5">
       <button
         type="button"
         onClick={onBuzz}
         disabled={disabled}
-        // Bug 4 — taille responsive : 220px sur viewport haut, shrink jusqu'à
-        // 120px si la hauteur visible est limitée (clavier mobile ouvert).
-        // clamp(min, preferred, max) — preferred 36dvh = ~36% de la hauteur
-        // dynamique du viewport, qui s'ajuste avec le clavier iOS.
+        // Bug 3 — BUZZ plus petit pour libérer de l'espace vertical sur iPhone.
+        // clamp 110px → 26dvh → 180px (vs 120/36/220 avant). Reste lisible
+        // tactile (>44px standard iOS) et laisse plus de place au texte +
+        // champ texte sticky bottom sans débordement.
         style={{
-          width: 'clamp(120px, 36dvh, 220px)',
-          height: 'clamp(120px, 36dvh, 220px)',
+          width: 'clamp(110px, 26dvh, 180px)',
+          height: 'clamp(110px, 26dvh, 180px)',
         }}
         className={[
           'relative rounded-full border-[6px] border-ink',
