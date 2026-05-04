@@ -14,15 +14,16 @@
     --paper: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.5'/%3E%3C/svg%3E");
   }
 
-  /* Bug 5 — iOS Safari zoom auto sur tout <input> dont la font-size est
-     inférieure à 16px. On force tous les inputs/textarea/select Tutti à
-     16px minimum pour empêcher ce zoom qui casse le layout (BUZZ disparu,
-     bouton "Envoyer" hors écran). 16px reste lisible et cohérent avec
-     le design Pop Cocktail. */
+  /* Bug 5 (récurrent — fix définitif) — iOS Safari zoom auto sur tout
+     <input>/<textarea>/<select> dont la font-size rendue est < 16px. Les
+     classes Tailwind `text-sm` (14px) ou `text-xs` (12px) sur des inputs
+     écrasent la règle base. On force 16px avec !important pour battre la
+     spécificité Tailwind et garantir qu'aucun input ne déclenche de zoom
+     iOS Safari, peu importe les classes appliquées. */
   input,
   textarea,
   select {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 
   html,

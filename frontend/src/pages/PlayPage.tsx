@@ -1575,7 +1575,10 @@ function TextAnswerInput({
         spellCheck={false}
         // enterkeyhint = "send" → le bouton clavier mobile devient "Envoyer"
         enterKeyHint="send"
-        className="flex-1 px-3 py-2 border-2 border-ink rounded bg-white text-sm focus:outline-none focus:ring-2 focus:ring-spritz disabled:bg-ink/10 disabled:text-ink-soft"
+        // Bug 5 — PAS de text-sm/text-xs sur les inputs : iOS Safari zoom auto
+        // sur tout input < 16px. La règle globale index.css force 16px sur
+        // input/textarea/select.
+        className="flex-1 px-3 py-2 border-2 border-ink rounded bg-white focus:outline-none focus:ring-2 focus:ring-spritz disabled:bg-ink/10 disabled:text-ink-soft"
       />
       <button
         type="submit"
