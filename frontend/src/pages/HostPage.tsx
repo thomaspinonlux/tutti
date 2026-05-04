@@ -48,7 +48,7 @@ import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
 import { useSpotifyAudioSync } from '../lib/useSpotifyAudioSync.js';
 import { useYouTubePlayer } from '../lib/useYouTubePlayer.js';
 import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
-import { MinScreen } from '../components/MinScreen.js';
+// MinScreen retiré — console animateur utilisable depuis tout écran (iPhone inclus).
 import {
   Badge,
   Button,
@@ -74,14 +74,9 @@ interface Toast {
 }
 
 export function HostPage(): JSX.Element {
-  // Phase 2.2 : on accepte mobile pour les écrans non-gameplay (waiting,
-  // roundSelection, intermission, ended). La vue mode B festive (MainScreenView)
-  // est gardée en min="lg" via un wrap interne — voir le bloc isModeB+inGameplay.
-  return (
-    <MinScreen min="sm">
-      <HostPageInner />
-    </MinScreen>
-  );
+  // Console animateur accessible TOUTES tailles (iPhone 375px inclus).
+  // Plus de wrap MinScreen — le layout interne s'adapte responsive.
+  return <HostPageInner />;
 }
 
 function HostPageInner(): JSX.Element {
@@ -625,11 +620,11 @@ function HostPageInner(): JSX.Element {
     effectivePhase === 'intermission';
 
   // ── Mode B en cours de jeu : vue festive publique sans contrôles ─────
-  // Cette vue est dimensionnée pour iPad/TV en landscape (min="lg") — on
-  // affiche le message "écran trop petit" sur mobile via MinScreen interne.
+  // Vue désormais accessible mobile aussi (plus de blocage MinScreen).
+  // L'animateur peut piloter sa partie depuis n'importe quel écran.
   if (isModeB && inGameplay) {
     return (
-      <MinScreen min="lg">
+      <>
         {/* Bug 2 — Banner fallback audio bloqué (mode B festif aussi) */}
         {spotify.audioBlocked && (
           <button
@@ -697,7 +692,7 @@ function HostPageInner(): JSX.Element {
             </div>
           ))}
         </div>
-      </MinScreen>
+      </>
     );
   }
 

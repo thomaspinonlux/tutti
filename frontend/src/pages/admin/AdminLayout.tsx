@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useOutletContext } from 'react-router-dom';
 import { Sidebar } from '../../components/admin/Sidebar.js';
 import { MobileNav } from '../../components/admin/MobileNav.js';
-import { MinScreen } from '../../components/MinScreen.js';
+// MinScreen retiré — admin utilisable depuis tout écran (iPhone 375px inclus).
 import { api, ApiError } from '../../lib/api.js';
 import { MultiColorBar } from '../../components/ui/index.js';
 import { ResumeSessionBanner } from '../../components/admin/ResumeSessionBanner.js';
@@ -105,23 +105,22 @@ export function AdminLayout(): JSX.Element {
     me,
   };
 
-  // Bug 2 — admin accessible mobile (375-414px). Sidebar masquée sub-md
-  // (déjà géré par className `hidden md:flex` dans Sidebar). Padding main
-  // adapté mobile (px-4 sm:px-6 md:px-10).
+  // Admin accessible TOUTES tailles d'écran (incluant iPhone 375px).
+  // Sidebar masquée sub-md (`hidden md:flex` interne) + MobileNav bottom-fixed
+  // sub-md. Plus de blocage MinScreen — toutes les pages admin utilisables
+  // depuis n'importe quel mobile moderne.
   return (
-    <MinScreen min="sm">
-      <div className="min-h-screen flex bg-cream">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0 pb-[60px] md:pb-0">
-          <MultiColorBar height="sm" />
-          <ResumeSessionBanner />
-          <main className="flex-1 px-4 sm:px-6 md:px-10 py-4 sm:py-8">
-            <Outlet context={ctx} />
-          </main>
-        </div>
-        <MobileNav />
+    <div className="min-h-screen flex bg-cream">
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0 pb-[60px] md:pb-0">
+        <MultiColorBar height="sm" />
+        <ResumeSessionBanner />
+        <main className="flex-1 px-4 sm:px-6 md:px-10 py-4 sm:py-8">
+          <Outlet context={ctx} />
+        </main>
       </div>
-    </MinScreen>
+      <MobileNav />
+    </div>
   );
 }
 
