@@ -53,6 +53,8 @@ export interface UseYouTubePlayerResult {
   resume: () => void;
   /** Repart à 0 (post-startSec). */
   restart: () => void;
+  /** Bug 4 — débloque audio YouTube depuis un clic user direct. */
+  unblockAudio: () => void;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -252,6 +254,33 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     }
   }, []);
 
+  /**
+   * Bug 4 — fallback audio bloqué côté YouTube. À appeler depuis un clic
+   * user direct (button onClick). Re-tape playVideo() pour débloquer la
+   * pipeline iframe iOS/Chrome.
+   */
+  const unblockAudio = useCallback((): void => {
+    const p = playerRef.current;
+    if (!p) return;
+    try {
+      // Si un track est en cours, juste playVideo. Sinon, refresh la lecture
+      // depuis le dernier videoId connu (lastVideoRef).
+      const last = lastVideoRef.current;
+      if (last && p.loadVideoById) {
+        p.loadVideoById({
+          videoId: last.id,
+          startSeconds: last.startSec,
+          endSeconds: last.endSec,
+        });
+      } else {
+        p.playVideo?.();
+      }
+      setIsPlaying(true);
+    } catch (err) {
+      console.warn('[YouTube] unblockAudio failed:', err);
+    }
+  }, []);
+
   return {
     status,
     error,
@@ -262,5 +291,6 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     pause,
     resume,
     restart,
+    unblockAudio,
   };
 }

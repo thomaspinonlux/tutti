@@ -37,6 +37,7 @@ import {
 } from '../components/ui/index.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
+import { QRCode } from '../components/host/QRCode.js';
 
 export function ScreenPage(): JSX.Element {
   const { t } = useTranslation();
@@ -279,9 +280,14 @@ export function ScreenPage(): JSX.Element {
   }
 
   // ── Render selon game_type ──────────────────────────────────────────────
+  // Bug 1 — Si la session est ENDED, on bascule sur l'écran Podium final
+  // pour que la TV reflète immédiatement l'event session:ended (sans
+  // rechargement manuel). Idem pour QUIZZ.
   return (
     <FullscreenWrapper>
-      {session.game_type === 'QUIZZ' ? (
+      {session.status === 'ENDED' ? (
+        <ScreenEndedView session={session} cumulative={cumulative} shortCode={session.short_code} />
+      ) : session.game_type === 'QUIZZ' ? (
         <HostQuizzView
           session={session}
           cumulative={cumulative}
@@ -302,6 +308,88 @@ export function ScreenPage(): JSX.Element {
         />
       )}
     </FullscreenWrapper>
+  );
+}
+
+/**
+ * Bug 1 — vue Podium final pour l'écran TV. Affichée quand session.status
+ * passe à ENDED (broadcast 'session:ended' reçu).
+ */
+function ScreenEndedView({
+  session,
+  cumulative,
+  shortCode,
+}: {
+  session: SessionWithParticipants;
+  cumulative: CumulativeScore[];
+  shortCode: string;
+}): JSX.Element {
+  const { t } = useTranslation();
+  void session;
+  const [first, second, third, ...rest] = cumulative;
+  const winnerName = first?.label ?? '';
+  const url = `${window.location.origin}/play?session=${shortCode}`;
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-cream p-8">
+      <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-4">
+        {t('screen.endedEyebrow')}
+      </p>
+      <h1 className="font-display text-7xl mb-2 text-center">{t('screen.endedTitle')}</h1>
+      {winnerName && (
+        <p className="font-editorial italic text-3xl text-raspberry mb-8 text-center">
+          {t('screen.endedWinner', { name: winnerName })}
+        </p>
+      )}
+      {cumulative.length > 0 ? (
+        <ol className="space-y-3 max-w-2xl w-full mb-8">
+          {[first, second, third].filter(Boolean).map((entry, idx) => (
+            <li
+              key={entry!.id}
+              className="flex items-center gap-4 px-5 py-4 border-4 border-ink rounded-xl bg-white shadow-pop-lg"
+            >
+              <span aria-hidden className="text-4xl">
+                {['🥇', '🥈', '🥉'][idx]}
+              </span>
+              {entry!.color && (
+                <span
+                  aria-hidden
+                  className="w-5 h-5 rounded-full border-2 border-ink shrink-0"
+                  style={{ backgroundColor: entry!.color }}
+                />
+              )}
+              <span className="font-display text-3xl flex-1 truncate">{entry!.label}</span>
+              <span className="font-mono text-2xl font-bold">{entry!.total_points}</span>
+            </li>
+          ))}
+          {rest.length > 0 && (
+            <li className="px-5 py-3 border-2 border-ink/30 rounded bg-cream-2/40">
+              <ul className="space-y-1">
+                {rest.map((entry, idx) => (
+                  <li
+                    key={entry.id}
+                    className="flex items-center gap-3 font-mono text-sm text-ink-soft"
+                  >
+                    <span className="w-6 text-right">{idx + 4}.</span>
+                    <span className="flex-1 truncate">{entry.label}</span>
+                    <span className="tabular-nums">{entry.total_points}</span>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          )}
+        </ol>
+      ) : (
+        <p className="font-editorial italic text-ink-soft mb-8">{t('screen.endedNoScores')}</p>
+      )}
+      {/* QR pour rejouer / nouvelle partie */}
+      <div className="text-center">
+        <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
+          {t('screen.endedRematch')}
+        </p>
+        <QRCode value={url} size={140} />
+        <p className="font-mono text-lg font-bold tracking-[0.2em] text-ink mt-2">{shortCode}</p>
+      </div>
+    </div>
   );
 }
 

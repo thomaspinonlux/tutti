@@ -833,7 +833,14 @@ function HostPageInner(): JSX.Element {
               spotifyStatus={spotify.status}
               spotifyError={spotify.error}
               spotifyErrorCode={spotify.errorCode}
-              onForceAudio={() => void spotify.transferToTutti()}
+              onForceAudio={() => {
+                // Bug 4 — route le clic vers le provider du morceau courant
+                if (currentTrack?.provider === 'youtube') {
+                  youtube.unblockAudio();
+                } else {
+                  void spotify.transferToTutti();
+                }
+              }}
               onPauseAudio={() => void handlePauseAudio()}
               onResumeAudio={() => void handleResumeAudio()}
               onRestartTrack={() => void handleRestartTrack()}
@@ -1047,6 +1054,13 @@ function WaitingPhase({
       </Card>
 
       <div className="space-y-4">
+        {/* Feature 3 — rappel ouverture écran TV pour afficher le QR aux joueurs */}
+        <Card tone="lemon" size="sm">
+          <p className="font-mono text-xs uppercase tracking-wider text-ink mb-1">
+            💡 {t('host.tvHintTitle')}
+          </p>
+          <p className="font-editorial italic text-sm text-ink-2">{t('host.tvHintBody')}</p>
+        </Card>
         <div className="flex items-center justify-between flex-wrap gap-3">
           <p className="font-display text-2xl">
             {t('host.participants')} <span className="text-ink-soft">({participants.length})</span>
@@ -1177,6 +1191,13 @@ function RoundPlayingScreen({
           />
         )}
         {showSpotifyStatus && spotifyStatus === 'ready' && currentTrack && (
+          <Button variant="ghost" size="sm" onClick={onForceAudio} className="mt-2">
+            🔊 {t('host.forceAudioOnDevice')}
+          </Button>
+        )}
+        {/* Bug 4 — bouton "Forcer audio" identique pour les morceaux YouTube,
+            au cas où Chrome/Safari bloquent l'autoplay de l'iframe YT. */}
+        {currentTrack?.provider === 'youtube' && (
           <Button variant="ghost" size="sm" onClick={onForceAudio} className="mt-2">
             🔊 {t('host.forceAudioOnDevice')}
           </Button>

@@ -518,7 +518,13 @@ router.post(
       });
       const session = await prisma.session.update({
         where: { id: req.params.id },
-        data: { status: 'ENDED', ended_at: new Date() },
+        data: {
+          status: 'ENDED',
+          ended_at: new Date(),
+          // Bug 1 — Reset is_paused à la fin de session pour que les clients
+          // sortent de l'état "pause" et affichent le podium proprement.
+          is_paused: false,
+        },
       });
 
       // Scores cumulés finaux pour le podium
