@@ -55,6 +55,10 @@ export default {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        'fade-out': {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
         'pop-in': {
           '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
@@ -96,8 +100,12 @@ export default {
           '50%': { transform: 'scale(1.05)' },
         },
         'dance-pulse': {
-          '0%, 100%': { transform: 'translateX(-50%) scale(1)' },
-          '50%': { transform: 'translateX(-50%) scale(1.03)' },
+          // Bug 2 fix — translateX(-50%) supposait un élément absolute centré
+          // (left: 50%). Le DanceMessage est en flow normal sur le tel —
+          // translateX décalait toute la card 50% à gauche, créant la bande
+          // noire qui dépasse de l'écran iPhone. Animation scale uniquement.
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.03)' },
         },
         'emoji-wave': {
           '0%, 100%': { transform: 'rotate(-15deg)' },
@@ -140,6 +148,7 @@ export default {
       },
       animation: {
         'fade-in': 'fade-in 200ms ease-out',
+        'fade-out': 'fade-out 500ms ease-out forwards',
         'pop-in': 'pop-in 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
         'confetti-fall': 'confetti-fall linear infinite',
         'color-pulse': 'color-pulse 18s ease-in-out infinite',

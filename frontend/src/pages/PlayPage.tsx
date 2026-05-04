@@ -96,6 +96,8 @@ interface Toast {
   id: string;
   text: string;
   tone: 'basil' | 'spritz' | 'raspberry';
+  /** Bonus — fading=true déclenche l'animation fade-out avant retrait DOM. */
+  fading?: boolean;
 }
 
 export function PlayPage(): JSX.Element {
@@ -786,7 +788,9 @@ export function PlayPage(): JSX.Element {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-3 py-2 border-2 border-ink rounded shadow-pop bg-white animate-pop-in font-medium text-sm ${
+            className={`px-3 py-2 border-2 border-ink rounded shadow-pop bg-white font-medium text-sm ${
+              toast.fading ? 'animate-fade-out' : 'animate-pop-in'
+            } ${
               toast.tone === 'basil'
                 ? 'border-l-8 border-l-basil'
                 : toast.tone === 'spritz'
@@ -811,9 +815,13 @@ function pushToast(
 ): void {
   const id = crypto.randomUUID();
   set((prev) => [...prev, { id, text, tone }]);
+  // Bonus — fade-out après 2.5s, retrait du DOM à 3s.
+  window.setTimeout(() => {
+    set((prev) => prev.map((tt) => (tt.id === id ? { ...tt, fading: true } : tt)));
+  }, 2500);
   window.setTimeout(() => {
     set((prev) => prev.filter((tt) => tt.id !== id));
-  }, 4000);
+  }, 3000);
 }
 
 // ── Vue de jeu voice-first (Phase C) ───────────────────────────────────────
@@ -1071,7 +1079,9 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     // le clavier mobile s'ouvre/se ferme — pas de scroll nécessaire,
     // tous les éléments restent visibles. Le BUZZ shrink si peu de hauteur
     // (clavier ouvert) via la classe responsive sur sa taille.
-    <div className="flex flex-col gap-3 min-h-[100dvh]">
+    // Bug 2 — overflow-x-hidden pour empêcher tout enfant en negative margin
+    // ou animation translate de déborder horizontalement (bande noire iPhone).
+    <div className="flex flex-col gap-3 min-h-[100dvh] overflow-x-hidden">
       {/* Refonte #2 — toast top "Pas reconnu" 1.5s, retour buzzer immédiat. */}
       {failToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 border-2 border-ink rounded shadow-pop bg-raspberry text-cream font-medium text-sm animate-pop-in">

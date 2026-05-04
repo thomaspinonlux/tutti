@@ -25,7 +25,7 @@ import type {
   SessionRoundWithPlaylist,
   SessionWithParticipants,
 } from '@tutti/shared';
-import { getSessionSnapshot } from '../lib/sessions.js';
+import { getSessionSnapshot, getCurrentSession } from '../lib/sessions.js';
 import { connectAsSpectator } from '../lib/socket.js';
 import {
   Button,
@@ -220,6 +220,33 @@ export function ScreenPage(): JSX.Element {
       setSocket(null);
     };
   }, [shortCode]);
+
+  // ── Bug 1 — Auto-sync TV sans code : poll workspace active session ──────
+  // Si la TV est ouverte sans ?session=CODE et que l'utilisateur est logged
+  // in admin (cookies Supabase partagés), on poll /api/sessions/current
+  // toutes les 3 secondes. Dès qu'une session active est trouvée, on
+  // auto-fill le code → la TV se connecte à la session via le useEffect
+  // principal (ligne 59-222) qui réagit au changement de shortCode.
+  useEffect(() => {
+    if (shortCode) return;
+    let cancelled = false;
+    const poll = async (): Promise<void> => {
+      try {
+        const current = await getCurrentSession();
+        if (!cancelled && current?.short_code) {
+          setParams({ session: current.short_code });
+        }
+      } catch {
+        // ignore — utilisateur pas logged in admin, fallback saisie manuelle
+      }
+    };
+    void poll(); // immediate first try
+    const id = window.setInterval(() => void poll(), 3000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [shortCode, setParams]);
 
   // ── No code yet : Feature 4 État 1 — page d'attente Tutti ─────────────────
   // Quand l'écran TV est ouvert sans session active (ex: depuis le bouton
