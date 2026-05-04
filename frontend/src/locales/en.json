@@ -90,7 +90,8 @@
     "quizzTagline": "Bilingual multimedia quiz",
     "quizzDescription": "MCQ, true/false, free text, estimations. Bilingual FR/EN.",
     "quizzCta": "Start Quizz",
-    "newSession": "New session"
+    "newSession": "New session",
+    "openTvScreen": "TV Screen"
   },
   "tracks": {
     "title": "Tutti Tracks",
@@ -303,6 +304,7 @@
     "endedWinner": "Congrats {{name}}!",
     "endedNoScores": "No scores recorded.",
     "endedRematch": "Rematch? Scan to start a new game",
+    "taglineWaiting": "The premium blind test for your parties",
     "btnSkip": "Skip",
     "btnGiveAnswer": "Reveal answer",
     "btnNext": "Next track",

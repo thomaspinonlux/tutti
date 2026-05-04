@@ -537,6 +537,10 @@ function HostPageInner(): JSX.Element {
     setBusy(true);
     try {
       await endRound(session.id, playingRound.id);
+      // Bug 2 — sortir de pause locale immédiatement (sinon overlay pause
+      // peut bloquer le rendu du podium intermédiaire) + clear currentTrack
+      setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
+      setCurrentTrack(null);
       await refreshCumulative(session.id);
     } catch (err: unknown) {
       setError((err as Error).message);
@@ -561,8 +565,11 @@ function HostPageInner(): JSX.Element {
     setBusy(true);
     try {
       const res = await endSession(session.id);
-      setSession((prev) => (prev ? { ...prev, ...res.session } : prev));
+      // Bug 1 — applique l'état ENDED + is_paused=false + clear currentTrack
+      // immédiatement pour passer au podium sans page blanche.
+      setSession((prev) => (prev ? { ...prev, ...res.session, is_paused: false } : prev));
       setCumulative(res.cumulative);
+      setCurrentTrack(null);
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {

@@ -42,9 +42,22 @@ export function DashboardPage(): JSX.Element {
           </TitleHandwritten>
           <p className="font-editorial italic text-lg text-ink-2">{t('dashboard.chooseGame')}</p>
         </div>
-        <Link to="/admin/sessions/new">
-          <Button size="lg">▶ {t('dashboard.newSession')}</Button>
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Feature 3 — bouton "Écran TV" global accessible depuis le dashboard.
+              Ouvre /screen sans session pour afficher la page d'attente Tutti
+              en attendant qu'une session soit créée. */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="lg"
+            onClick={() => window.open('/screen', '_blank', 'noopener')}
+          >
+            📺 {t('dashboard.openTvScreen')}
+          </Button>
+          <Link to="/admin/sessions/new">
+            <Button size="lg">▶ {t('dashboard.newSession')}</Button>
+          </Link>
+        </div>
       </header>
 
       <GettingStartedChecklist />

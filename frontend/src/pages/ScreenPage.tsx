@@ -221,7 +221,11 @@ export function ScreenPage(): JSX.Element {
     };
   }, [shortCode]);
 
-  // ── No code yet : ask for it ────────────────────────────────────────────
+  // ── No code yet : Feature 4 État 1 — page d'attente Tutti ─────────────────
+  // Quand l'écran TV est ouvert sans session active (ex: depuis le bouton
+  // Écran TV global du dashboard), on affiche un écran festif d'accueil
+  // avec brand + tagline + visuel animé. Champ "saisir un code" reste
+  // accessible si l'utilisateur veut caster manuellement une session.
   if (!shortCode) {
     const submit = (e: FormEvent): void => {
       e.preventDefault();
@@ -230,30 +234,57 @@ export function ScreenPage(): JSX.Element {
       setParams({ session: v });
     };
     return (
-      <div className="min-h-screen flex flex-col bg-cream">
+      <div className="min-h-screen flex flex-col bg-cream relative overflow-hidden">
         <MultiColorBar height="md" />
-        <main className="flex-1 flex items-center justify-center p-8">
-          <Card size="lg" className="max-w-md w-full text-center">
-            <TitleHandwritten as="h1" className="mb-4">
+        {/* Visuel festif animé : vinyles qui flottent + notes qui pulsent */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+          <FloatingVinyl size={140} top="12%" left="8%" delay="0s" />
+          <FloatingVinyl size={100} top="65%" left="6%" delay="2s" />
+          <FloatingVinyl size={120} top="20%" right="10%" delay="1s" />
+          <FloatingVinyl size={90} top="70%" right="14%" delay="3s" />
+          <FloatingNote size={48} top="35%" left="20%" delay="0.5s">
+            ♪
+          </FloatingNote>
+          <FloatingNote size={56} top="50%" right="22%" delay="2.5s">
+            ♫
+          </FloatingNote>
+          <FloatingNote size={40} top="78%" left="40%" delay="1.5s">
+            ♩
+          </FloatingNote>
+        </div>
+        <main className="flex-1 flex items-center justify-center p-8 relative z-10">
+          <div className="max-w-2xl w-full text-center">
+            <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-4">
+              {t('common.brand')}
+            </p>
+            <TitleHandwritten as="h1" className="mb-4 text-7xl">
               <Underline>{t('screen.castTitle')}</Underline>
             </TitleHandwritten>
-            <p className="font-editorial italic text-ink-soft mb-4">{t('screen.castSubtitle')}</p>
-            <form onSubmit={submit} className="space-y-3">
-              <Input
-                label={t('screen.codeLabel')}
-                value={codeInput}
-                onChange={(e) => setCodeInput(e.target.value)}
-                placeholder="KOMP-XXXX"
-                autoFocus
-                maxLength={20}
-                className="text-center font-mono uppercase tracking-widest"
-              />
-              <Button type="submit" size="lg" className="w-full" disabled={!codeInput.trim()}>
-                {t('screen.castButton')}
-              </Button>
-            </form>
-          </Card>
+            <p className="font-editorial italic text-2xl text-ink-2 mb-12">
+              {t('screen.taglineWaiting')}
+            </p>
+            <Card size="md" tone="cream" className="max-w-md mx-auto">
+              <p className="font-editorial italic text-ink-soft mb-3 text-sm">
+                {t('screen.castSubtitle')}
+              </p>
+              <form onSubmit={submit} className="space-y-3">
+                <Input
+                  label={t('screen.codeLabel')}
+                  value={codeInput}
+                  onChange={(e) => setCodeInput(e.target.value)}
+                  placeholder="KOMP-XXXX"
+                  autoFocus
+                  maxLength={20}
+                  className="text-center font-mono uppercase tracking-widest"
+                />
+                <Button type="submit" size="lg" className="w-full" disabled={!codeInput.trim()}>
+                  {t('screen.castButton')}
+                </Button>
+              </form>
+            </Card>
+          </div>
         </main>
+        <MultiColorBar height="md" />
       </div>
     );
   }
@@ -450,5 +481,81 @@ function FullscreenWrapper({ children }: { children: React.ReactNode }): JSX.Ele
         )}
       </div>
     </div>
+  );
+}
+
+/** Feature 4 — vinyle qui tourne lentement pour le visuel d'accueil TV. */
+function FloatingVinyl({
+  size,
+  top,
+  left,
+  right,
+  delay,
+}: {
+  size: number;
+  top: string;
+  left?: string;
+  right?: string;
+  delay: string;
+}): JSX.Element {
+  return (
+    <div
+      className="absolute opacity-30 animate-float-question"
+      style={{
+        top,
+        left,
+        right,
+        width: size,
+        height: size,
+        animationDelay: delay,
+        animationDuration: '6s',
+      }}
+    >
+      <svg
+        viewBox="0 0 120 120"
+        className="w-full h-full animate-spin"
+        style={{ animationDuration: '8s' }}
+      >
+        <circle cx="60" cy="60" r="56" fill="#1a1410" />
+        <circle cx="60" cy="60" r="42" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
+        <circle cx="60" cy="60" r="34" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
+        <circle cx="60" cy="60" r="26" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
+        <circle cx="60" cy="60" r="18" fill="#ee6c2a" stroke="#1a1410" strokeWidth="2" />
+        <circle cx="60" cy="60" r="3" fill="#1a1410" />
+      </svg>
+    </div>
+  );
+}
+
+/** Feature 4 — note de musique qui pulse pour le visuel d'accueil TV. */
+function FloatingNote({
+  size,
+  top,
+  left,
+  right,
+  delay,
+  children,
+}: {
+  size: number;
+  top: string;
+  left?: string;
+  right?: string;
+  delay: string;
+  children: React.ReactNode;
+}): JSX.Element {
+  return (
+    <span
+      aria-hidden
+      className="absolute font-display text-raspberry/40 animate-pulse-buzz"
+      style={{
+        top,
+        left,
+        right,
+        fontSize: size,
+        animationDelay: delay,
+      }}
+    >
+      {children}
+    </span>
   );
 }

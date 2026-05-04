@@ -90,7 +90,8 @@
     "quizzTagline": "Le quizz multimédia bilingue",
     "quizzDescription": "QCM, vrai/faux, réponse libre, estimations. Bilingue FR/EN.",
     "quizzCta": "Lancer Quizz",
-    "newSession": "Nouvelle session"
+    "newSession": "Nouvelle session",
+    "openTvScreen": "Écran TV"
   },
   "tracks": {
     "title": "Tutti Tracks",
@@ -303,6 +304,7 @@
     "endedWinner": "Bravo {{name}} !",
     "endedNoScores": "Aucun score enregistré.",
     "endedRematch": "Rejouer ? Scanne pour démarrer une nouvelle partie",
+    "taglineWaiting": "Le blind test premium pour vos soirées",
     "btnSkip": "Sauter",
     "btnGiveAnswer": "Révéler la réponse",
     "btnNext": "Morceau suivant",
