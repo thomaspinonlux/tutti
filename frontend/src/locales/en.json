@@ -328,7 +328,17 @@
     "waitingAnyPick": "The animator will pick the next playlist…",
     "takeABreak": "Quick break — grab a drink, more coming.",
     "pauseTitle": "Paused",
-    "pauseHint": "The animator paused the game."
+    "pauseHint": "The animator paused the game.",
+    "lobbyEyebrow": "Waiting room",
+    "scanToJoin": "Scan to join",
+    "playersConnected_one": "{{count}} player connected",
+    "playersConnected_other": "{{count}} players connected",
+    "lobbyWaiting": "The animator will start when everyone is ready.",
+    "roundLabel": "Round {{current}} / {{total}}",
+    "scoreboard": "Leaderboard",
+    "roundPodiumEyebrow": "End of round {{n}}",
+    "roundPodiumTitle": "Top of the moment",
+    "roundPodiumWaiting": "The animator is preparing the next round…"
   },
   "play": {
     "missingCode": "Invalid link. Ask the host to scan the QR code.",

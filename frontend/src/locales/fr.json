@@ -328,7 +328,17 @@
     "waitingAnyPick": "L'animateur va choisir la prochaine playlist…",
     "takeABreak": "Petite pause — buvez un coup, ça repart bientôt.",
     "pauseTitle": "Pause",
-    "pauseHint": "L'animateur a mis le jeu en pause."
+    "pauseHint": "L'animateur a mis le jeu en pause.",
+    "lobbyEyebrow": "Salle d'attente",
+    "scanToJoin": "Scanne pour rejoindre",
+    "playersConnected_one": "{{count}} joueur connecté",
+    "playersConnected_other": "{{count}} joueurs connectés",
+    "lobbyWaiting": "L'animateur lance la partie quand vous êtes prêts.",
+    "roundLabel": "Manche {{current}} / {{total}}",
+    "scoreboard": "Classement",
+    "roundPodiumEyebrow": "Fin de manche {{n}}",
+    "roundPodiumTitle": "Top du moment",
+    "roundPodiumWaiting": "L'animateur prépare la prochaine manche…"
   },
   "play": {
     "missingCode": "Lien invalide. Demande à l'animateur de te scanner le QR code.",

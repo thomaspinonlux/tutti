@@ -548,6 +548,53 @@ router.post(
   },
 );
 
+// ── POST /:id/abandon (host) — abandon silencieux de la session ───────────
+// Utilisé quand l'admin clique "Retour au tableau de bord" sans avoir cliqué
+// "Terminer le blind test". Marque la session ENDED en DB sans broadcast
+// public (joueurs/écran TV repassent en IDLE au prochain poll screen-state).
+// Pas de cumulative final, pas de notification.
+
+router.post(
+  '/:id/abandon',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const own = await ensureOwnSession(req.params.id, workspaceId);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    if (own.status === 'ENDED') {
+      res.json({ ok: true, alreadyEnded: true });
+      return;
+    }
+    try {
+      console.info(`[Cleanup] Abandoning session ${own.id} (admin returned to dashboard)`);
+      await prisma.sessionRound.updateMany({
+        where: { session_id: req.params.id, status: 'PLAYING' },
+        data: { status: 'ENDED', ended_at: new Date() },
+      });
+      await prisma.session.update({
+        where: { id: req.params.id },
+        data: {
+          status: 'ENDED',
+          ended_at: new Date(),
+          is_paused: false,
+        },
+      });
+      // Pas de broadcast 'session:ended' — abandon silencieux. L'écran TV
+      // détectera le passage à IDLE via polling /screen-state.
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/abandon] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur abandon session' } });
+    }
+  },
+);
+
 // ── ROUNDS ────────────────────────────────────────────────────────────────
 
 const createRoundSchema = z.object({

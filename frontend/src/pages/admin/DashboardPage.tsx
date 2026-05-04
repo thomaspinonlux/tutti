@@ -43,14 +43,21 @@ export function DashboardPage(): JSX.Element {
           <p className="font-editorial italic text-lg text-ink-2">{t('dashboard.chooseGame')}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Feature 3 — bouton "Écran TV" global accessible depuis le dashboard.
-              Ouvre /screen sans session pour afficher la page d'attente Tutti
-              en attendant qu'une session soit créée. */}
+          {/* Feature 3 — bouton "Écran TV" global avec workspaceId en param URL
+              pour fonctionner cross-browser/profil (pas dépendant des cookies
+              admin). Le polling /api/workspace/screen-state/:workspaceId lit
+              la DB et calcule l'état déterministe. */}
           <Button
             type="button"
             variant="ghost"
             size="lg"
-            onClick={() => window.open('/screen', '_blank', 'noopener')}
+            onClick={() =>
+              window.open(
+                `/screen?workspace=${encodeURIComponent(establishment.workspace_id)}`,
+                '_blank',
+                'noopener',
+              )
+            }
           >
             📺 {t('dashboard.openTvScreen')}
           </Button>

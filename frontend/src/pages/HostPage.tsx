@@ -43,6 +43,7 @@ import {
   startSession,
   toggleParticipantMaster,
 } from '../lib/sessions.js';
+import { abandonSession } from '../lib/screenState.js';
 import { connectAsHost } from '../lib/socket.js';
 import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
 import { useSpotifyAudioSync } from '../lib/useSpotifyAudioSync.js';
@@ -577,6 +578,20 @@ function HostPageInner(): JSX.Element {
     }
   };
 
+  // Retour dashboard SANS terminer la session = abandon silencieux.
+  // Marque la session ENDED en DB pour que l'écran TV ne reste pas bloqué
+  // sur PAUSED/PLAYING zombie. Erreur swallowed (pas bloquant pour navigation).
+  const handleBackToDashboard = async (): Promise<void> => {
+    if (session && session.status !== 'ENDED') {
+      try {
+        await abandonSession(session.id);
+      } catch (err) {
+        console.warn('[HostPage] abandon failed (non-blocking):', err);
+      }
+    }
+    navigate('/admin/dashboard');
+  };
+
   // ── Render ─────────────────────────────────────────────────────────────
   if (error) {
     return (
@@ -585,7 +600,7 @@ function HostPageInner(): JSX.Element {
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="max-w-md text-center">
             <p className="text-raspberry font-medium mb-4">{error}</p>
-            <Button variant="secondary" onClick={() => navigate('/admin/dashboard')}>
+            <Button variant="secondary" onClick={() => void handleBackToDashboard()}>
               {t('host.backDashboard')}
             </Button>
           </div>
