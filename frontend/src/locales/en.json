@@ -91,7 +91,8 @@
     "quizzDescription": "MCQ, true/false, free text, estimations. Bilingual FR/EN.",
     "quizzCta": "Start Quizz",
     "newSession": "New session",
-    "openTvScreen": "TV Screen"
+    "openTvScreen": "TV Screen",
+    "noticeSessionEnded": "Game ended. The final podium is showing on the TV screen for 5 minutes."
   },
   "tracks": {
     "title": "Tutti Tracks",

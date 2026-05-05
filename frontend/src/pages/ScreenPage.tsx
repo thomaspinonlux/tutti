@@ -36,11 +36,13 @@ import {
   MultiColorBar,
   TitleHandwritten,
   Underline,
-  Badge,
 } from '../components/ui/index.js';
 import { QRCode } from '../components/host/QRCode.js';
 import { getScreenState, type ScreenState } from '../lib/screenState.js';
 import { getMe } from '../lib/me.js';
+import { connectAsSpectator } from '../lib/socket.js';
+import { MainScreenView } from './screen/MainScreenView.js';
+import { screenStateToMainScreenProps } from './screen/adapters/screenStateToMainScreenProps.js';
 
 const POLL_FAST_MS = 2000;
 const POLL_SLOW_MS = 5000;
@@ -70,13 +72,21 @@ export function ScreenPage(): JSX.Element {
 
   const workspaceId = workspaceParam || autoWorkspaceId;
 
+  // Trigger ref : permet aux events socket de demander un re-poll immédiat
+  // (cf. useEffect socket plus bas). Le polling 2s reste actif en parallèle
+  // comme filet de sécurité si le socket meurt.
+  const triggerPollRef = useRef<(() => void) | null>(null);
+
   // Polling state machine
   useEffect(() => {
     if (!workspaceId) return;
     let cancelled = false;
     let timeoutId: number | null = null;
+    let inFlight = false;
 
     const poll = async (): Promise<void> => {
+      if (inFlight) return; // dédup : pas 2 fetchs concurrents
+      inFlight = true;
       try {
         const next = await getScreenState(workspaceId);
         if (cancelled) return;
@@ -88,18 +98,63 @@ export function ScreenPage(): JSX.Element {
         if (cancelled) return;
         setError((err as Error).message);
       } finally {
+        inFlight = false;
         if (cancelled) return;
+        if (timeoutId !== null) window.clearTimeout(timeoutId);
         const interval =
           idleStreakRef.current >= SLOW_THRESHOLD_IDLE_TICKS ? POLL_SLOW_MS : POLL_FAST_MS;
         timeoutId = window.setTimeout(() => void poll(), interval);
       }
     };
+
+    triggerPollRef.current = () => {
+      // Annule le timeout en cours et déclenche un poll immédiat. Le finally
+      // re-armera le timeout suivant.
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      void poll();
+    };
+
     void poll();
     return () => {
       cancelled = true;
+      triggerPollRef.current = null;
       if (timeoutId !== null) window.clearTimeout(timeoutId);
     };
   }, [workspaceId]);
+
+  // Socket spectator : trigger re-poll immédiat sur events critiques.
+  // Best-effort overlay au-dessus du polling 2s (qui reste source de vérité).
+  // Si le socket meurt → polling rattrape au prochain tick.
+  const joinCode = screenState && 'joinCode' in screenState ? screenState.joinCode : null;
+  useEffect(() => {
+    if (!joinCode) return;
+    const socket = connectAsSpectator(joinCode);
+    const trigger = (): void => {
+      console.info('[Screen socket] event reçu → re-poll immédiat');
+      triggerPollRef.current?.();
+    };
+    const events = [
+      'session:paused',
+      'session:resumed',
+      'session:ended',
+      'session:started',
+      'track:start',
+      'track:phase',
+      'track:correct_answer',
+      'track:reveal',
+      'round:created',
+      'round:started',
+      'round:ended',
+    ];
+    events.forEach((ev) => socket.on(ev, trigger));
+    return () => {
+      events.forEach((ev) => socket.off(ev, trigger));
+      socket.disconnect();
+    };
+  }, [joinCode]);
 
   // ── Pas de workspaceId encore : saisie manuelle code ou loading auto ────
   if (!workspaceId) {
@@ -182,26 +237,12 @@ export function ScreenPage(): JSX.Element {
         />
       );
     case 'PLAYING':
-      return (
-        <ScreenPlayingView
-          joinCode={screenState.joinCode}
-          sessionName={screenState.sessionName}
-          currentTrack={screenState.currentTrack}
-          cumulative={screenState.cumulative}
-          correctAnswers={screenState.correctAnswers}
-          phase2StartedAt={screenState.phase2StartedAt}
-          roundPosition={screenState.roundPosition}
-          roundsTotal={screenState.roundsTotal}
-        />
-      );
+      // Rebranchement MainScreenView via adapter — récupère confettis,
+      // countdown phase 2, vinyl rotation, dance pulse, reveal cover, phase
+      // eyebrow, toasts firstFound, etc. (cf. PR fix/tv-screen-regressions).
+      return <MainScreenView {...screenStateToMainScreenProps(screenState)} />;
     case 'PAUSED':
-      return (
-        <ScreenPausedView
-          joinCode={screenState.joinCode}
-          sessionName={screenState.sessionName}
-          currentTrack={screenState.currentTrack}
-        />
-      );
+      return <MainScreenView {...screenStateToMainScreenProps(screenState)} />;
     case 'ROUND_PODIUM':
       return (
         <ScreenRoundPodiumView
@@ -324,146 +365,10 @@ function ScreenLobbyView({
   );
 }
 
-function ScreenPlayingView({
-  joinCode,
-  sessionName,
-  currentTrack,
-  cumulative,
-  correctAnswers,
-  roundPosition,
-  roundsTotal,
-}: {
-  joinCode: string;
-  sessionName: string | null;
-  currentTrack: import('@tutti/shared').CurrentTrackState | null;
-  cumulative: import('@tutti/shared').CumulativeScore[];
-  correctAnswers: import('@tutti/shared').CorrectAnswerEntry[];
-  phase2StartedAt: string | null;
-  roundPosition: number;
-  roundsTotal: number;
-}): JSX.Element {
-  const { t } = useTranslation();
-  const phase = currentTrack?.phase ?? null;
-  const isReveal = phase === 'phase3' || phase === 'phase3-revealed';
-  const url = `${window.location.origin}/play?session=${joinCode}`;
-  return (
-    <div className="min-h-screen flex flex-col bg-cream">
-      <MultiColorBar height="sm" />
-      <header className="px-8 py-4 bg-ink text-cream flex items-center justify-between">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-wider text-spritz">
-            {sessionName ?? t('common.brand')}
-          </p>
-          <p className="font-display text-2xl">
-            {t('screen.roundLabel', { current: roundPosition, total: roundsTotal })}
-          </p>
-        </div>
-        <Badge tone="lemon">{phase ?? '…'}</Badge>
-      </header>
-      <main className="flex-1 grid lg:grid-cols-[2fr_1fr] gap-6 p-6">
-        <section className="text-center flex flex-col items-center justify-center">
-          {currentTrack?.cover_url ? (
-            <div
-              className={`w-72 h-72 sm:w-[360px] sm:h-[360px] mx-auto border-4 border-ink rounded-2xl overflow-hidden shadow-pop-xl ${
-                !isReveal ? 'blur-2xl' : ''
-              }`}
-              style={{
-                backgroundImage: `url(${currentTrack.cover_url})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
-          ) : (
-            <div className="w-72 h-72 sm:w-[360px] sm:h-[360px] mx-auto border-4 border-ink rounded-2xl bg-gradient-to-br from-plum to-raspberry flex items-center justify-center">
-              <span className="font-display text-9xl text-cream">?</span>
-            </div>
-          )}
-          {isReveal && currentTrack && (
-            <div className="mt-6 animate-slide-up">
-              <p className="font-display text-5xl text-ink mb-1">{currentTrack.artist}</p>
-              <p className="font-editorial italic text-2xl text-raspberry">{currentTrack.title}</p>
-            </div>
-          )}
-        </section>
-        <aside className="flex flex-col gap-4">
-          <Card size="md">
-            <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
-              {t('screen.scoreboard')}
-            </p>
-            <ol className="space-y-1.5">
-              {cumulative.slice(0, 8).map((entry, idx) => (
-                <li
-                  key={entry.id}
-                  className="flex items-center gap-2 px-2 py-1 border-2 border-ink rounded bg-white"
-                >
-                  <span className="font-display text-lg w-6 text-spritz-deep text-center">
-                    {idx + 1}
-                  </span>
-                  <span className="font-medium flex-1 truncate">{entry.label}</span>
-                  <Badge tone="ink">{entry.total_points}</Badge>
-                </li>
-              ))}
-            </ol>
-          </Card>
-          {correctAnswers.length > 0 && (
-            <Card size="md" tone="basil">
-              <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
-                {t('screen.thisTrack')}
-              </p>
-              <ul className="space-y-1">
-                {correctAnswers.map((a) => (
-                  <li key={a.participant_id} className="text-sm font-mono">
-                    {a.position}. {a.pseudo} +{a.score}
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          )}
-          <Card size="sm" tone="cream" className="text-center">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-spritz-deep mb-1">
-              {t('screen.joinTitle')}
-            </p>
-            <QRCode value={url} size={120} />
-            <p className="font-mono text-base font-bold tracking-[0.2em] text-ink mt-1">
-              {joinCode}
-            </p>
-          </Card>
-        </aside>
-      </main>
-    </div>
-  );
-}
-
-function ScreenPausedView({
-  joinCode,
-  sessionName,
-  currentTrack,
-}: {
-  joinCode: string;
-  sessionName: string | null;
-  currentTrack: import('@tutti/shared').CurrentTrackState | null;
-}): JSX.Element {
-  const { t } = useTranslation();
-  void currentTrack;
-  return (
-    <div className="min-h-screen flex flex-col bg-cream relative">
-      <MultiColorBar height="md" />
-      <main className="flex-1 flex items-center justify-center p-8">
-        <Card size="lg" tone="cream" className="text-center max-w-2xl">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-spritz-deep mb-4">
-            {sessionName ?? t('common.brand')}
-          </p>
-          <TitleHandwritten as="h1" className="text-7xl mb-4">
-            <Underline>{t('screen.pauseTitle')}</Underline>
-          </TitleHandwritten>
-          <p className="font-editorial italic text-2xl text-ink-2">{t('screen.pauseHint')}</p>
-          <p className="font-mono text-lg tracking-[0.3em] text-ink mt-8">{joinCode}</p>
-        </Card>
-      </main>
-      <MultiColorBar height="md" />
-    </div>
-  );
-}
+// ScreenPlayingView et ScreenPausedView inline retirés — remplacés par
+// MainScreenView via screenStateToMainScreenProps adapter (cf. switch render
+// + import en haut). Récupère vinyl rotation, confettis, countdown 15s,
+// dance pulse, reveal cover, phase eyebrow, etc. d'un coup.
 
 function ScreenRoundPodiumView({
   joinCode,

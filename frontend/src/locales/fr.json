@@ -91,7 +91,8 @@
     "quizzDescription": "QCM, vrai/faux, réponse libre, estimations. Bilingue FR/EN.",
     "quizzCta": "Lancer Quizz",
     "newSession": "Nouvelle session",
-    "openTvScreen": "Écran TV"
+    "openTvScreen": "Écran TV",
+    "noticeSessionEnded": "Partie terminée. Le podium final s'affiche sur l'écran TV pendant 5 minutes."
   },
   "tracks": {
     "title": "Tutti Tracks",

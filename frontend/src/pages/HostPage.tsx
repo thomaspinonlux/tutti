@@ -176,6 +176,12 @@ function HostPageInner(): JSX.Element {
           ({ session: s, cumulative: c }: { session: Session; cumulative: CumulativeScore[] }) => {
             setSession((prev) => (prev ? { ...prev, ...s } : prev));
             setCumulative(c);
+            // Cleanup défensif : si le socket arrive AVANT la résolution du
+            // POST /end (cas mode B où master termine via /play, host reçoit
+            // l'event mais n'a pas appelé endSession lui-même), on s'assure
+            // que le state local est cohérent.
+            setCurrentTrack(null);
+            setActiveBuzzers(new Set());
           },
         );
         socket.on('round:created', ({ round }: { round: SessionRoundWithPlaylist }) => {
@@ -565,15 +571,16 @@ function HostPageInner(): JSX.Element {
     if (!window.confirm(t('host.endBlindTestConfirm'))) return;
     setBusy(true);
     try {
-      const res = await endSession(session.id);
-      // Bug 1 — applique l'état ENDED + is_paused=false + clear currentTrack
-      // immédiatement pour passer au podium sans page blanche.
-      setSession((prev) => (prev ? { ...prev, ...res.session, is_paused: false } : prev));
-      setCumulative(res.cumulative);
-      setCurrentTrack(null);
+      await endSession(session.id);
+      // Pattern terminal : navigate explicite au lieu de dépendre du render
+      // derived (qui a montré son fragile — Bug 4 récurrent). Le podium final
+      // s'affiche sur l'écran TV (FINAL_PODIUM via ScreenState polling), pas
+      // besoin de doublon sur la console host. URL param ?notice=session-ended
+      // déclenche un banner de confirmation sur le dashboard.
+      navigate('/admin/dashboard?notice=session-ended');
+      // Pas de setBusy(false) — composant unmount avant.
     } catch (err: unknown) {
       setError((err as Error).message);
-    } finally {
       setBusy(false);
     }
   };

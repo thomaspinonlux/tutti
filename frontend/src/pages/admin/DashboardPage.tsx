@@ -6,7 +6,8 @@
  *   - Tutti Quizz (illustration ampoule)
  */
 
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEstablishment } from './AdminLayout.js';
 import { Button, Card, TitleHandwritten, Swirl, Underline } from '../../components/ui/index.js';
@@ -15,6 +16,27 @@ import { GettingStartedChecklist } from '../../components/admin/dashboard/Gettin
 export function DashboardPage(): JSX.Element {
   const { t } = useTranslation();
   const { establishment, loading, error } = useEstablishment();
+
+  // Banner de confirmation après actions terminales (Fin de partie depuis
+  // /host). Le query param ?notice=session-ended est posé par HostPage avant
+  // navigate(). On l'affiche 4s puis on nettoie l'URL.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const noticeKey = searchParams.get('notice');
+  const [noticeVisible, setNoticeVisible] = useState(Boolean(noticeKey));
+  useEffect(() => {
+    if (!noticeKey) return;
+    setNoticeVisible(true);
+    const t1 = window.setTimeout(() => setNoticeVisible(false), 4000);
+    const t2 = window.setTimeout(() => {
+      const next = new URLSearchParams(searchParams);
+      next.delete('notice');
+      setSearchParams(next, { replace: true });
+    }, 4500);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [noticeKey, searchParams, setSearchParams]);
 
   if (error) {
     return (
@@ -29,6 +51,19 @@ export function DashboardPage(): JSX.Element {
 
   return (
     <div className="max-w-5xl mx-auto">
+      {/* Banner de notice (apparition fade-in 4s puis nettoyage URL). */}
+      {noticeKey === 'session-ended' && noticeVisible && (
+        <div
+          role="status"
+          className="mb-6 px-4 py-3 border-2 border-basil bg-basil/10 text-basil-deep rounded-lg flex items-center gap-3 animate-fade-in"
+        >
+          <span className="text-2xl" aria-hidden>
+            ✅
+          </span>
+          <span className="font-medium">{t('dashboard.noticeSessionEnded')}</span>
+        </div>
+      )}
+
       <header className="mb-8 flex items-start justify-between flex-wrap gap-4">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-3">
