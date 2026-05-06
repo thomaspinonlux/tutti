@@ -1074,14 +1074,12 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     isPaused;
 
   return (
-    // Bug 4 — refonte layout iPhone : flex column avec hauteur 100dvh.
-    // Le 'dvh' (dynamic viewport height) s'adapte automatiquement quand
-    // le clavier mobile s'ouvre/se ferme — pas de scroll nécessaire,
-    // tous les éléments restent visibles. Le BUZZ shrink si peu de hauteur
-    // (clavier ouvert) via la classe responsive sur sa taille.
-    // Bug 2 — overflow-x-hidden pour empêcher tout enfant en negative margin
-    // ou animation translate de déborder horizontalement (bande noire iPhone).
-    <div className="flex flex-col gap-2 min-h-[100dvh] overflow-x-hidden">
+    // Layout iPhone (6 mai #2 spec brief) :
+    //   - PAS de min-h-[100dvh] qui crée de l'espace crème vide en bas.
+    //   - PAS de justify-center sur ce parent.
+    //   - gap-2 entre header / infoBar / BUZZ / TextInput / footer.
+    //   - overflow-x-hidden conservé pour bande noire iPhone.
+    <div className="flex flex-col gap-2 overflow-x-hidden">
       {/* Refonte #2 — toast top "Pas reconnu" 1.5s, retour buzzer immédiat. */}
       {failToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 border-2 border-ink rounded shadow-pop bg-raspberry text-cream font-medium text-sm animate-pop-in">
@@ -1160,12 +1158,12 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         />
       ) : (
         // Buzzer (idle ou uploading) — actif en phase 1+2, désactivé en phase 3.
-        // Bug 3 — pas d'écran intermédiaire Whisper : on reste sur le buzzer
-        // pendant l'analyse, avec un spinner discret. UX rapidité.
-        // Bug 4 — wrapper flex-1 pour que le BUZZ prenne l'espace disponible
-        // et le text input reste sticky en bas (mt-auto).
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 flex items-center justify-center min-h-0">
+        //
+        // Layout 6 mai #2 — pas de flex-1, pas de justify-center : on COLLE
+        // BUZZ + TextInput sous le header avec un gap fixe minimal. Le BUZZ
+        // est en taille FIXE 240×240 (cf BuzzerArea) pour iPhone SE/14.
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-center">
             <BuzzerArea
               onBuzz={() => void handleBuzz()}
               disabled={buzzerDisabled}
@@ -1175,13 +1173,11 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
               analyzing={recState.kind === 'uploading'}
             />
           </div>
-          {/* Refonte #3 — saisie texte alternative au buzz vocal.
-              Bug 4 — sticky bottom pour rester au-dessus du clavier iOS.
-              Avec h-100dvh sur le container parent, le clavier mobile
-              fait shrink le viewport → ce sticky reste visible juste
-              au-dessus du clavier, sans scroller la page. */}
+          {/* Saisie texte alternative au buzz vocal — collée sous le BUZZ
+              (pas sticky bottom, pas mt-auto). 16px de gap max via gap-2 du
+              parent. */}
           {(isPhase1 || isPhase2) && !myCorrect && !isPaused && (
-            <div className="sticky bottom-0 left-0 right-0 -mx-4 px-4 py-1.5 bg-cream border-t-2 border-ink">
+            <div className="px-1">
               <TextAnswerInput
                 onSubmit={(text) => void handleTextAnswer(text)}
                 busy={textBusy}
@@ -1498,34 +1494,34 @@ function BuzzerArea({
         ? t('play.buzzerHintAnalyzing')
         : t('play.buzzerHintActive');
   return (
-    // Issue 4 (6 mai) — compactage supplémentaire iPhone SE/14 : BUZZ encore
-    // ~30% plus petit, gap quasi-nul, hint plus serré. Garde tactile >44px iOS.
-    <div className="flex flex-col items-center gap-0.5">
+    // BUZZ FIXE 240×240 px (6 mai #2 — spec brief) :
+    //   width:240px, height:240px, border-radius:50%
+    //   Pas de clamp(), pas de dvh, pas de vh, pas de vw, pas de %.
+    //   Source UNIQUE de vérité pour la taille (cherchée + confirmée via grep).
+    // gap-1 entre bouton et hint (pas de marge/padding parasites).
+    <div className="flex flex-col items-center gap-1">
       <button
         type="button"
         onClick={onBuzz}
         disabled={disabled}
-        // Issue 4 — BUZZ ~30% plus petit (clamp 90px → 18dvh → 150px vs 110/
-        // 26/180 avant) pour que la saisie texte sticky bottom reste visible
-        // sans scroll sur iPhone SE (375×667) + iPhone 14 (390×844). Tactile
-        // OK : 90px largement >44px standard iOS.
         style={{
-          width: 'clamp(90px, 18dvh, 150px)',
-          height: 'clamp(90px, 18dvh, 150px)',
+          width: '240px',
+          height: '240px',
+          borderRadius: '50%',
         }}
         className={[
-          'relative rounded-full border-[6px] border-ink',
-          'flex flex-col items-center justify-center font-display text-2xl',
+          'relative border-[6px] border-ink',
+          'flex flex-col items-center justify-center font-display',
           'transition-all',
           disabled
             ? 'bg-ink-faded cursor-not-allowed shadow-[0_4px_0_#1a1410]'
             : 'bg-spritz text-ink shadow-[0_8px_0_#1a1410] active:translate-y-1 active:shadow-[0_4px_0_#1a1410] animate-pulse-buzz',
         ].join(' ')}
       >
-        <span className={['text-4xl mb-0.5', disabled ? 'opacity-50' : ''].join(' ')} aria-hidden>
+        <span className={['text-6xl mb-1', disabled ? 'opacity-50' : ''].join(' ')} aria-hidden>
           🎤
         </span>
-        <span className="text-xl">BUZZ</span>
+        <span className="text-3xl">BUZZ</span>
         {analyzing && (
           // Spinner discret superposé pendant l'analyse Whisper. Pas d'écran
           // intermédiaire — le joueur sait que ça analyse en cours.

@@ -30,6 +30,7 @@ export function DashboardPage(): JSX.Element {
   const [noticeVisible, setNoticeVisible] = useState(Boolean(noticeKey));
   const setSearchParamsRef = useRef(setSearchParams);
   setSearchParamsRef.current = setSearchParams;
+
   useEffect(() => {
     if (!noticeKey) return;
     setNoticeVisible(true);

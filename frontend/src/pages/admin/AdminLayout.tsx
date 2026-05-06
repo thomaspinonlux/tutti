@@ -62,8 +62,16 @@ export function AdminLayout(): JSX.Element {
     try {
       const data = await getMe();
       setMe(data);
-    } catch {
-      // ignore — l'auth déjà gating, on tombe sur PENDING/REJECTED si applicable
+    } catch (err) {
+      // Fix root cause "page reste vide après navigate depuis /host" :
+      // si getMe() throw, on log + on libère le loading establishment pour
+      // que la page ne reste pas figée sur "loading" forever. Avant : me
+      // stayed null → 2nd useEffect early return → loading=true forever →
+      // page apparaît vide pour l'utilisateur. console.error légitime en
+      // prod (signal une vraie défaillance, pas un debug log).
+      console.error('[AdminLayout] fetchMe failed:', err);
+      setLoading(false);
+      setError((err as Error).message ?? 'getMe failed');
     } finally {
       setMeLoading(false);
     }
