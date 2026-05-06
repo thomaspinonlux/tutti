@@ -31,6 +31,7 @@ import spotifyAuthRouter from './music/spotify/auth.js';
 import spotifyApiRouter from './routes/spotify.js';
 import adminRouter from './routes/admin.js';
 import adminLibraryRouter from './routes/adminLibrary.js';
+import libraryRouter from './routes/library.js';
 import youtubeAuthRouter from './routes/youtubeAuth.js';
 import screenStateRouter from './routes/screenState.js';
 import { prisma } from './lib/prisma.js';
@@ -154,6 +155,7 @@ app.use('/api/auth/spotify', spotifyAuthRouter);
 app.use('/api/spotify', spotifyApiRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/admin/library', adminLibraryRouter);
+app.use('/api/library', libraryRouter);
 app.use('/api/auth/youtube', youtubeAuthRouter);
 app.use('/api/workspace', screenStateRouter);
 

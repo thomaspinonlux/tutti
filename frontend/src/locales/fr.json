@@ -259,6 +259,40 @@
     "backDashboard": "Retour au tableau de bord",
     "cancelWaitingConfirm_one": "Annuler la session ? {{count}} joueur est déjà connecté et sera déconnecté.",
     "cancelWaitingConfirm_other": "Annuler la session ? {{count}} joueurs sont déjà connectés et seront déconnectés.",
+    "session": {
+      "tabs": {
+        "myPlaylists": "Mes playlists",
+        "officialLibrary": "Bibliothèque officielle"
+      },
+      "officialBadge": "Officiel Tutti",
+      "premiumRequired": "Premium Tutti requis",
+      "source": {
+        "spotify": "Spotify",
+        "youtube": "YouTube",
+        "both": "Spotify + YouTube",
+        "partial": "Spotify ({{s}}/{{t}}) · YouTube ({{y}}/{{t}})"
+      },
+      "modal": {
+        "noProvider": {
+          "title": "Connecte un compte avant de lancer",
+          "body": "Pour jouer cette playlist, tu as besoin d'un compte Spotify Premium ou YouTube.",
+          "connectSpotify": "Connecter Spotify",
+          "connectYoutube": "Connecter YouTube"
+        },
+        "preview": {
+          "title": "Aperçu de la session",
+          "tracksAvailable": "morceaux jouables avec tes comptes",
+          "cancel": "Annuler",
+          "start": "Lancer la session"
+        }
+      },
+      "toast": {
+        "trackUnavailable": "Morceau indisponible avec tes comptes connectés"
+      },
+      "empty": {
+        "officialLibrary": "La bibliothèque officielle Tutti arrive bientôt 🎵"
+      }
+    },
     "toastJoined": "{{pseudo}} a rejoint la partie",
     "toastKicked": "{{pseudo}} a été exclu",
     "toastStarted": "Le blind test démarre !",

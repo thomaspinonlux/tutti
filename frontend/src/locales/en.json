@@ -259,6 +259,40 @@
     "backDashboard": "Back to dashboard",
     "cancelWaitingConfirm_one": "Cancel the session? {{count}} player is already connected and will be disconnected.",
     "cancelWaitingConfirm_other": "Cancel the session? {{count}} players are already connected and will be disconnected.",
+    "session": {
+      "tabs": {
+        "myPlaylists": "My playlists",
+        "officialLibrary": "Official library"
+      },
+      "officialBadge": "Tutti Official",
+      "premiumRequired": "Tutti Premium required",
+      "source": {
+        "spotify": "Spotify",
+        "youtube": "YouTube",
+        "both": "Spotify + YouTube",
+        "partial": "Spotify ({{s}}/{{t}}) · YouTube ({{y}}/{{t}})"
+      },
+      "modal": {
+        "noProvider": {
+          "title": "Connect an account before launching",
+          "body": "To play this playlist, you need a Spotify Premium or YouTube account.",
+          "connectSpotify": "Connect Spotify",
+          "connectYoutube": "Connect YouTube"
+        },
+        "preview": {
+          "title": "Session preview",
+          "tracksAvailable": "tracks playable with your accounts",
+          "cancel": "Cancel",
+          "start": "Start session"
+        }
+      },
+      "toast": {
+        "trackUnavailable": "Track unavailable with your connected accounts"
+      },
+      "empty": {
+        "officialLibrary": "The Tutti official library is coming soon 🎵"
+      }
+    },
     "toastJoined": "{{pseudo}} joined the game",
     "toastKicked": "{{pseudo}} was kicked",
     "toastStarted": "Blind test starting!",
