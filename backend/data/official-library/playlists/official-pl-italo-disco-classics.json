@@ -1,0 +1,122 @@
+{
+  "slug": "official-pl-italo-disco-classics",
+  "name_fr": "Italo Disco — Les classiques",
+  "name_en": "Italo Disco — The classics",
+  "description_fr": "Les hymnes italo-disco des années 1980 — synthés cosmiques, voix vocodées et beats à 120 BPM.",
+  "description_en": "The italo-disco anthems of the 1980s — cosmic synths, vocoded vocals and 120 BPM beats.",
+  "locale_primary": "it-IT",
+  "theme": "italo-disco-classics",
+  "difficulty": "MEDIUM",
+  "visibility": "public",
+  "import_hints": {
+    "filter_remix_live_cover_karaoke": true,
+    "year_range_strict": true,
+    "year_range_years": 2
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Self Control",
+      "artist": "Raffaella Carrà",
+      "year": 1984,
+      "difficulty": "EASY",
+      "spotify_id": "42FUNUTTu4dhDhca834rd6",
+      "youtube_id": null,
+      "answers_accepted": {
+        "artist": ["Raffaella Carra", "Raffaella Carrà", "Carrà"],
+        "title": ["Self Control", "self-control"]
+      }
+    },
+    {
+      "position": 2,
+      "title": "Dolce Vita",
+      "artist": "Ryan Paris",
+      "year": 1983,
+      "difficulty": "MEDIUM",
+      "spotify_id": "2fv6Qeb7Z3uaqBeYINvJ0f",
+      "youtube_id": null,
+      "answers_accepted": {
+        "artist": ["Ryan Paris"],
+        "title": ["Dolce Vita", "La Dolce Vita"]
+      }
+    },
+    {
+      "position": 3,
+      "title": "Tarzan Boy",
+      "artist": "Baltimora",
+      "year": 1985,
+      "difficulty": "EASY",
+      "spotify_id": "273uCXd7NPrInaiNqtkOrA",
+      "youtube_id": null,
+      "answers_accepted": {
+        "artist": ["Baltimora"],
+        "title": ["Tarzan Boy"]
+      }
+    },
+    {
+      "position": 4,
+      "title": "Self Control",
+      "artist": "Laura Branigan",
+      "year": 1984,
+      "difficulty": "EASY",
+      "spotify_id": "6JNJERZGJwDVgkmbohBw7u",
+      "youtube_id": null,
+      "answers_accepted": {
+        "artist": ["Laura Branigan", "Branigan"],
+        "title": ["Self Control"]
+      }
+    },
+    {
+      "position": 5,
+      "title": "Spacer Woman",
+      "artist": "Charlie",
+      "year": 1983,
+      "difficulty": "EXPERT",
+      "spotify_id": "045G4R2wNFYoLamsXAWb6v",
+      "youtube_id": null,
+      "answers_accepted": {
+        "artist": ["Charlie"],
+        "title": ["Spacer Woman"]
+      }
+    },
+    {
+      "position": 6,
+      "title": "I Like Chopin",
+      "artist": "Gazebo",
+      "year": 1983,
+      "difficulty": "MEDIUM",
+      "spotify_id": "2FHnN5ELL83TGbtXMDzoiJ",
+      "youtube_id": null,
+      "answers_accepted": {
+        "artist": ["Gazebo"],
+        "title": ["I Like Chopin", "Chopin"]
+      }
+    },
+    {
+      "position": 7,
+      "title": "Living on Video",
+      "artist": "Trans-X",
+      "year": 1983,
+      "difficulty": "MEDIUM",
+      "spotify_id": "4T4GFHCelpWURCVrF2xetE",
+      "youtube_id": null,
+      "answers_accepted": {
+        "artist": ["Trans-X", "Trans X", "TransX"],
+        "title": ["Living on Video"]
+      }
+    },
+    {
+      "position": 8,
+      "title": "Cara Mia",
+      "artist": "Baby Gate",
+      "year": 1984,
+      "difficulty": "EXPERT",
+      "spotify_id": null,
+      "youtube_id": null,
+      "answers_accepted": {
+        "artist": ["Baby Gate"],
+        "title": ["Cara Mia"]
+      }
+    }
+  ]
+}
