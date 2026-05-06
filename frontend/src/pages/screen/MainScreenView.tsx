@@ -36,6 +36,7 @@ import type {
   SessionWithParticipants,
 } from '@tutti/shared';
 import { Badge, Button, Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
+import { fireConfetti } from '../../components/ui/Confetti.js';
 import { QRCode } from '../../components/host/QRCode.js';
 
 // ── Hooks utilitaires ─────────────────────────────────────────────────────
@@ -686,6 +687,25 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
   const isPhase3 = isRevealed || phase === 'phase3-skipped';
   const isPhase2 = phase === 'phase2';
   const isPhase1 = phase === 'phase1';
+  // Confettis SEULEMENT s'il y a au moins un gagnant (correctAnswers > 0).
+  // "Donner la réponse" sans gagnant → reveal sans fête.
+  const hadWinner = correctAnswers.length > 0;
+  const showConfetti = isRevealed && hadWinner;
+
+  // Burst canvas-confetti plein-écran quand on bascule en phase reveal+gagnant.
+  // Un burst PAR track (key = track_id) — pas de double-tir si re-render.
+  // Tir multi-points pour effet plus impressionnant que la salve unique au centre.
+  const lastConfettiTrackRef = useRef<string | null>(null);
+  const trackKey = currentTrack?.track_id ?? null;
+  useEffect(() => {
+    if (!showConfetti || !trackKey) return;
+    if (lastConfettiTrackRef.current === trackKey) return;
+    lastConfettiTrackRef.current = trackKey;
+    // Triple burst : centre + 2 côtés
+    fireConfetti({ x: 0.5, y: 0.5, particleCount: 100 });
+    window.setTimeout(() => fireConfetti({ x: 0.2, y: 0.4, particleCount: 60 }), 200);
+    window.setTimeout(() => fireConfetti({ x: 0.8, y: 0.4, particleCount: 60 }), 400);
+  }, [showConfetti, trackKey]);
 
   const phaseLabel = useMemo(() => {
     if (phase === 'phase1') return t('screen.phaseLabel1');
@@ -703,7 +723,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      <FestiveBackground confettiActive={isRevealed} />
+      <FestiveBackground confettiActive={showConfetti} />
 
       <IPadHeader
         round={playingRound}
@@ -779,8 +799,8 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
               {/* Phase 3 — bandeau dance call */}
               {isRevealed && <Phase3DanceCall />}
 
-              {/* Confettis confinés au stage */}
-              {isRevealed && (
+              {/* Confettis confinés au stage — seulement si gagnant. */}
+              {showConfetti && (
                 <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
                   <ConfettiBurst />
                 </div>

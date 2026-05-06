@@ -89,46 +89,25 @@ const FINAL_PODIUM_WINDOW_MS = 5 * 60 * 1000; // 5 min après ended_at
 const ZOMBIE_CREATED_WINDOW_MS = 4 * 60 * 60 * 1000; // 4h max depuis création
 
 /**
- * Cherche la session "représentative" du workspace pour le screen-state :
- *   1. Session ENDED < 5min ago (pour podium final)
- *   2. Sinon session WAITING/PLAYING dans fenêtre temporelle valide
+ * Cherche la session "représentative" du workspace pour le screen-state.
+ *
+ * Priorité (révisée — Issue 2 du 6 mai) :
+ *   1. Session WAITING/PLAYING active (créée dans les 4h anti-zombie)
+ *      → l'admin a démarré une nouvelle session, on bascule dessus
+ *   2. Sinon session ENDED < 5min ago (pour podium final résiduel)
  *   3. Sinon null → IDLE
+ *
+ * Avant : ENDED prioritaire → bug TV restée bloquée sur podium ancien
+ * pendant 5min même quand une nouvelle session était lancée. Fix : active
+ * d'abord, podium final seulement quand plus rien d'actif.
  */
 async function findRepresentativeSession(workspaceId: string) {
   const now = new Date();
   const finalPodiumCutoff = new Date(now.getTime() - FINAL_PODIUM_WINDOW_MS);
   const zombieCreatedCutoff = new Date(now.getTime() - ZOMBIE_CREATED_WINDOW_MS);
 
-  // 1. ENDED récente — la + récente, dans la fenêtre podium final
-  const endedRecent = await prisma.session.findFirst({
-    where: {
-      establishment: { workspace_id: workspaceId },
-      status: 'ENDED',
-      ended_at: { gte: finalPodiumCutoff },
-    },
-    orderBy: { ended_at: 'desc' },
-    include: {
-      participants: { where: { is_kicked: false } },
-      rounds: {
-        orderBy: { position: 'asc' },
-        include: {
-          playlist: {
-            select: {
-              id: true,
-              name: true,
-              level: true,
-              _count: { select: { playlist_tracks: true } },
-            },
-          },
-        },
-      },
-    },
-  });
-  if (endedRecent) return endedRecent;
-
-  // 2. WAITING/PLAYING active, créée dans les 4h (anti-zombie). Note V1 :
-  // pas de filtre sur "activité dernière 30min" car Session model n'a pas
-  // de updated_at. À ajouter via migration si besoin futur.
+  // 1. WAITING/PLAYING active, créée dans les 4h (anti-zombie). Prioritaire
+  // pour que la TV bascule sur une nouvelle session dès qu'elle est créée.
   const active = await prisma.session.findFirst({
     where: {
       establishment: { workspace_id: workspaceId },
@@ -153,7 +132,36 @@ async function findRepresentativeSession(workspaceId: string) {
       },
     },
   });
-  return active ?? null;
+  if (active) return active;
+
+  // 2. Pas d'active → fallback ENDED <5min pour afficher le podium final
+  // résiduel. Si l'admin lance une nouvelle session après, la session active
+  // (étape 1 ci-dessus) la masquera immédiatement.
+  const endedRecent = await prisma.session.findFirst({
+    where: {
+      establishment: { workspace_id: workspaceId },
+      status: 'ENDED',
+      ended_at: { gte: finalPodiumCutoff },
+    },
+    orderBy: { ended_at: 'desc' },
+    include: {
+      participants: { where: { is_kicked: false } },
+      rounds: {
+        orderBy: { position: 'asc' },
+        include: {
+          playlist: {
+            select: {
+              id: true,
+              name: true,
+              level: true,
+              _count: { select: { playlist_tracks: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+  return endedRecent ?? null;
 }
 
 /**

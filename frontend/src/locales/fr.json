@@ -92,7 +92,8 @@
     "quizzCta": "Lancer Quizz",
     "newSession": "Nouvelle session",
     "openTvScreen": "Écran TV",
-    "noticeSessionEnded": "Partie terminée. Le podium final s'affiche sur l'écran TV pendant 5 minutes."
+    "noticeSessionEnded": "Partie terminée. Le podium final s'affiche sur l'écran TV pendant 5 minutes.",
+    "noticeSessionCancelled": "Session annulée. Tu peux en créer une nouvelle quand tu veux."
   },
   "tracks": {
     "title": "Tutti Tracks",
@@ -200,6 +201,8 @@
     "starting": "Démarrage…",
     "alreadyStarted": "Blind test en cours",
     "backDashboard": "Retour au tableau de bord",
+    "cancelWaitingConfirm_one": "Annuler la session ? {{count}} joueur est déjà connecté et sera déconnecté.",
+    "cancelWaitingConfirm_other": "Annuler la session ? {{count}} joueurs sont déjà connectés et seront déconnectés.",
     "toastJoined": "{{pseudo}} a rejoint la partie",
     "toastKicked": "{{pseudo}} a été exclu",
     "toastStarted": "Le blind test démarre !",

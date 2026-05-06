@@ -6,7 +6,7 @@
  *   - Tutti Quizz (illustration ampoule)
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEstablishment } from './AdminLayout.js';
@@ -20,38 +20,44 @@ export function DashboardPage(): JSX.Element {
   // Banner de confirmation après actions terminales (Fin de partie depuis
   // /host). Le query param ?notice=session-ended est posé par HostPage avant
   // navigate(). On l'affiche 4s puis on nettoie l'URL.
+  //
+  // IMPORTANT — les deps de l'effect contiennent UNIQUEMENT noticeKey. Inclure
+  // searchParams ou setSearchParams faisait re-déclencher l'effect quand on
+  // nettoyait l'URL, créant un cycle qui pouvait coïncider avec le mount
+  // d'AdminLayout (Issue 1 : page reste vide après navigate).
   const [searchParams, setSearchParams] = useSearchParams();
   const noticeKey = searchParams.get('notice');
   const [noticeVisible, setNoticeVisible] = useState(Boolean(noticeKey));
+  const setSearchParamsRef = useRef(setSearchParams);
+  setSearchParamsRef.current = setSearchParams;
   useEffect(() => {
     if (!noticeKey) return;
     setNoticeVisible(true);
     const t1 = window.setTimeout(() => setNoticeVisible(false), 4000);
     const t2 = window.setTimeout(() => {
-      const next = new URLSearchParams(searchParams);
-      next.delete('notice');
-      setSearchParams(next, { replace: true });
+      // Nettoyage URL via ref : pas dans les deps pour éviter le cycle.
+      setSearchParamsRef.current(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete('notice');
+          return next;
+        },
+        { replace: true },
+      );
     }, 4500);
     return () => {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
     };
-  }, [noticeKey, searchParams, setSearchParams]);
+  }, [noticeKey]);
 
-  if (error) {
-    return (
-      <p role="alert" className="text-raspberry">
-        {t('common.error')} : {error}
-      </p>
-    );
-  }
-  if (loading || !establishment) {
-    return <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>;
-  }
-
+  // Render structure : on rend toujours le wrapper + le banner notice, même
+  // pendant le loading de l'establishment, pour que le toast soit visible
+  // immédiatement après navigate (avant la fin du fetch /api/establishment).
+  // Le contenu principal (header + cards) ne montre que quand establishment OK.
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Banner de notice (apparition fade-in 4s puis nettoyage URL). */}
+      {/* Banner de notice (toujours rendu, indépendant du loading establishment). */}
       {noticeKey === 'session-ended' && noticeVisible && (
         <div
           role="status"
@@ -63,7 +69,41 @@ export function DashboardPage(): JSX.Element {
           <span className="font-medium">{t('dashboard.noticeSessionEnded')}</span>
         </div>
       )}
+      {noticeKey === 'session-cancelled' && noticeVisible && (
+        <div
+          role="status"
+          className="mb-6 px-4 py-3 border-2 border-spritz bg-spritz/10 text-spritz-deep rounded-lg flex items-center gap-3 animate-fade-in"
+        >
+          <span className="text-2xl" aria-hidden>
+            ↩️
+          </span>
+          <span className="font-medium">{t('dashboard.noticeSessionCancelled')}</span>
+        </div>
+      )}
 
+      {error && (
+        <p role="alert" className="text-raspberry mb-4">
+          {t('common.error')} : {error}
+        </p>
+      )}
+
+      {(loading || !establishment) && (
+        <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>
+      )}
+
+      {establishment && <DashboardContent t={t} establishment={establishment} />}
+    </div>
+  );
+}
+
+interface DashboardContentProps {
+  t: ReturnType<typeof useTranslation>['t'];
+  establishment: NonNullable<ReturnType<typeof useEstablishment>['establishment']>;
+}
+
+function DashboardContent({ t, establishment }: DashboardContentProps): JSX.Element {
+  return (
+    <>
       <header className="mb-8 flex items-start justify-between flex-wrap gap-4">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-3">
@@ -124,7 +164,7 @@ export function DashboardPage(): JSX.Element {
           cta={t('dashboard.quizzCta')}
         />
       </div>
-    </div>
+    </>
   );
 }
 

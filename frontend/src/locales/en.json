@@ -92,7 +92,8 @@
     "quizzCta": "Start Quizz",
     "newSession": "New session",
     "openTvScreen": "TV Screen",
-    "noticeSessionEnded": "Game ended. The final podium is showing on the TV screen for 5 minutes."
+    "noticeSessionEnded": "Game ended. The final podium is showing on the TV screen for 5 minutes.",
+    "noticeSessionCancelled": "Session cancelled. You can create a new one anytime."
   },
   "tracks": {
     "title": "Tutti Tracks",
@@ -200,6 +201,8 @@
     "starting": "Starting…",
     "alreadyStarted": "Blind test in progress",
     "backDashboard": "Back to dashboard",
+    "cancelWaitingConfirm_one": "Cancel the session? {{count}} player is already connected and will be disconnected.",
+    "cancelWaitingConfirm_other": "Cancel the session? {{count}} players are already connected and will be disconnected.",
     "toastJoined": "{{pseudo}} joined the game",
     "toastKicked": "{{pseudo}} was kicked",
     "toastStarted": "Blind test starting!",
