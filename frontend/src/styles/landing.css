@@ -1,0 +1,409 @@
+/*
+ * Tutti — Landing v2 styles scopés
+ *
+ * Tous les styles landing sont scopés sous `[data-scope="landing"]` pour
+ * éviter toute collision avec l'app admin/host/play (Pop Cocktail).
+ *
+ * Tokens CSS dédiés brand v2 (rose, orange, yellow, green, blue, plum,
+ * cream/ink avec hex officiels). N'utilise PAS les tokens Tailwind existants
+ * (raspberry/spritz/basil/plum) — ces derniers conservent leurs hex actuels
+ * pour ne pas casser le rendu admin.
+ */
+
+[data-scope='landing'] {
+  /* Brand v2 palette */
+  --landing-cream: #f5efe0;
+  --landing-cream-deep: #ede3ce;
+  --landing-cream-darker: #e2d5b8;
+  --landing-ink: #1a1814;
+  --landing-ink-soft: #3f3a30;
+  --landing-ink-faded: #6b6457;
+  --landing-rose: #c93b6b;
+  --landing-rose-deep: #a82856;
+  --landing-orange: #ee6c2a;
+  --landing-orange-deep: #d85510;
+  --landing-yellow: #f2c94c;
+  --landing-green: #2f8f4d;
+  --landing-blue: #3b6bc9;
+  --landing-plum: #5b2a6b;
+
+  /* Typography landing (Fraunces serif + Inter sans) */
+  --landing-font-serif: 'Fraunces', Georgia, serif;
+  --landing-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --landing-font-mono: 'JetBrains Mono', monospace;
+
+  background: var(--landing-cream);
+  color: var(--landing-ink);
+  font-family: var(--landing-font-sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* Bruit subtil sur la landing (compense les textures Pop Cocktail globales) */
+[data-scope='landing']::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0 0.07 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+/* ============ Utilitaires ============ */
+
+[data-scope='landing'] .landing-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 720px) {
+  [data-scope='landing'] .landing-container {
+    padding: 0 20px;
+  }
+}
+
+/* Bandeau coloré sticky (5 couleurs) */
+.landing-color-band {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  z-index: 100;
+  background: linear-gradient(
+    90deg,
+    #ee6c2a 0%,
+    #ee6c2a 18%,
+    #2f8f4d 18%,
+    #2f8f4d 36%,
+    #c93b6b 36%,
+    #c93b6b 54%,
+    #f2c94c 54%,
+    #f2c94c 72%,
+    #5b2a6b 72%,
+    #5b2a6b 100%
+  );
+  pointer-events: none;
+}
+
+/* Soulignement jaune incliné scopé via classe (pas de sélecteur tag global) */
+.highlight-yellow {
+  font-style: italic;
+  color: var(--landing-rose);
+  font-weight: 400;
+  position: relative;
+  white-space: nowrap;
+}
+.highlight-yellow::after {
+  content: '';
+  position: absolute;
+  bottom: 0.05em;
+  left: -3%;
+  right: -3%;
+  height: 0.28em;
+  background: var(--landing-yellow);
+  z-index: -1;
+  transform: skewX(-8deg);
+}
+.highlight-yellow.highlight-orange {
+  color: var(--landing-orange);
+}
+
+/* Beta badge pulse */
+.landing-beta-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--landing-green);
+  box-shadow: 0 0 0 3px rgba(47, 143, 77, 0.15);
+  animation: landing-pulse 2.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes landing-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(47, 143, 77, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(47, 143, 77, 0);
+  }
+}
+
+/* Sticker "2 min de démo" sur la vidéo hero */
+.landing-video-sticker {
+  position: absolute;
+  top: -22px;
+  right: -22px;
+  background: var(--landing-yellow);
+  color: var(--landing-ink);
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-family: var(--landing-font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 16px;
+  transform: rotate(8deg);
+  border: 1.5px solid var(--landing-ink);
+  box-shadow: 0 3px 0 var(--landing-ink);
+  z-index: 3;
+}
+
+/* Vidéo hero : conteneur stylé */
+.landing-hero-video {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 60px -10px rgba(26, 24, 20, 0.18),
+    0 4px 0 var(--landing-ink);
+  transform: rotate(0.6deg);
+  aspect-ratio: 16 / 9;
+  background: var(--landing-cream-deep);
+}
+.landing-hero-video video,
+.landing-hero-video img.landing-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Section eyebrow (mono uppercase) */
+.landing-eyebrow {
+  font-family: var(--landing-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--landing-orange);
+  margin-bottom: 16px;
+  display: inline-block;
+}
+
+/* Titres section (Fraunces 700) */
+.landing-section-title {
+  font-family: var(--landing-font-serif);
+  font-weight: 700;
+  font-size: clamp(34px, 4.5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  max-width: 760px;
+}
+
+.landing-section-intro {
+  font-size: 18px;
+  color: var(--landing-ink-soft);
+  max-width: 600px;
+  margin-bottom: 64px;
+  line-height: 1.6;
+}
+
+/* Boutons */
+.landing-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--landing-rose);
+  color: var(--landing-cream);
+  padding: 16px 32px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: 0 3px 0 var(--landing-ink);
+  transition:
+    background 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+  text-decoration: none;
+}
+.landing-btn-primary:hover {
+  background: var(--landing-rose-deep);
+  transform: translate(-1px, -1px);
+  box-shadow: 0 4px 0 var(--landing-ink);
+}
+.landing-btn-primary::after {
+  content: '→';
+  font-size: 18px;
+  transition: transform 0.2s;
+}
+.landing-btn-primary:hover::after {
+  transform: translateX(3px);
+}
+
+.landing-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 28px;
+  border: 1.5px solid var(--landing-ink);
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 16px;
+  background: transparent;
+  color: var(--landing-ink);
+  transition:
+    background 0.2s,
+    color 0.2s;
+  text-decoration: none;
+}
+.landing-btn-secondary:hover {
+  background: var(--landing-ink);
+  color: var(--landing-cream);
+}
+
+.landing-cta-mini {
+  background: var(--landing-orange);
+  color: var(--landing-cream);
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  box-shadow: 0 2px 0 var(--landing-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.landing-cta-mini:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 0 3px 0 var(--landing-ink);
+}
+
+/* Lang switch pill */
+.landing-lang-switch {
+  display: inline-flex;
+  border: 1.5px solid var(--landing-ink);
+  border-radius: 999px;
+  overflow: hidden;
+  font-family: var(--landing-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+.landing-lang-switch button {
+  padding: 6px 14px;
+  color: var(--landing-ink);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.landing-lang-switch button[aria-pressed='true'] {
+  background: var(--landing-ink);
+  color: var(--landing-cream);
+}
+
+/* FAQ accordion */
+.landing-faq-q {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  text-align: left;
+  font-family: var(--landing-font-serif);
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--landing-ink);
+  letter-spacing: -0.01em;
+  transition: color 0.2s;
+  line-height: 1.3;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.landing-faq-q:hover {
+  color: var(--landing-rose);
+}
+.landing-faq-q .landing-faq-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: transform 0.25s;
+}
+.landing-faq-q[aria-expanded='true'] .landing-faq-icon {
+  transform: rotate(45deg);
+  background: var(--landing-rose);
+  color: var(--landing-cream);
+  border-color: var(--landing-rose);
+}
+
+/* Use cases tags rotation alternée */
+[data-scope='landing'] .landing-use-tag:nth-child(odd) {
+  transform: rotate(-1deg);
+}
+[data-scope='landing'] .landing-use-tag:nth-child(even) {
+  transform: rotate(1deg);
+}
+[data-scope='landing'] .landing-use-tag {
+  transition:
+    background 0.2s,
+    color 0.2s,
+    transform 0.2s;
+}
+[data-scope='landing'] .landing-use-tag:hover {
+  background: var(--landing-ink);
+  color: var(--landing-cream);
+  transform: rotate(0) scale(1.05);
+}
+
+/* CTA section décorations ♪ et ? en arrière-plan */
+.landing-cta-section {
+  position: relative;
+  overflow: hidden;
+  background: var(--landing-cream);
+}
+.landing-cta-section::before {
+  content: '♪';
+  position: absolute;
+  font-family: var(--landing-font-serif);
+  font-size: 320px;
+  color: var(--landing-rose);
+  opacity: 0.06;
+  top: -40px;
+  left: -10px;
+  pointer-events: none;
+}
+.landing-cta-section::after {
+  content: '?';
+  position: absolute;
+  font-family: var(--landing-font-serif);
+  font-size: 280px;
+  color: var(--landing-orange);
+  opacity: 0.08;
+  bottom: -60px;
+  right: 20px;
+  transform: rotate(15deg);
+  pointer-events: none;
+}
+
+/* Smooth scroll pour les ancres internes */
+[data-scope='landing'] {
+  scroll-behavior: smooth;
+}
+
+/* Lien dans la FAQ */
+[data-scope='landing'] .landing-faq-link {
+  color: var(--landing-rose);
+  text-decoration: underline;
+}
