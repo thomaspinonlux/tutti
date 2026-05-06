@@ -29,6 +29,8 @@ import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { AccountPage } from './pages/admin/AccountPage.js';
 import { SuperAdminPage } from './pages/admin/SuperAdminPage.js';
 import { ImportPlaylistPage } from './pages/admin/ImportPlaylistPage.js';
+import { LibraryPage } from './pages/admin/LibraryPage.js';
+import { LibraryPlaylistDetailPage } from './pages/admin/LibraryPlaylistDetailPage.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 
 // Lazy : chunks dédiés aux pages volumineuses (audio, dnd, qrcode, socket.io…)
@@ -98,6 +100,8 @@ function App(): JSX.Element {
           <Route path="account" element={<AccountPage />} />
           <Route path="super-admin" element={<SuperAdminPage />} />
           <Route path="import-playlist" element={<ImportPlaylistPage />} />
+          <Route path="library" element={<LibraryPage />} />
+          <Route path="library/playlists/:id" element={<LibraryPlaylistDetailPage />} />
           <Route
             path="sessions/new"
             element={

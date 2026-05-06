@@ -587,3 +587,85 @@ model VoiceTranscript {
   @@index([track_id])
   @@map("voice_transcripts")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  BIBLIOTHÈQUE OFFICIELLE TUTTI (catalogue propriétaire)
+//
+//  Stockage en DB Supabase. Les tracks sont matchés via Spotify Search +
+//  YouTube Data v3 au moment de l'import (script scripts/import-official-
+//  library.ts). Au runtime, le joueur lit ces morceaux via Web Playback SDK
+//  avec son propre compte Spotify Premium (ou via YouTube IFrame Player s'il
+//  préfère). Tutti ne stocke ni ne redistribue aucun fichier audio.
+//
+//  Visibility :
+//    - public      : disponible à tous les workspaces (free + premium)
+//    - premium_only: réservé aux plans payants (plus tard, V1.1)
+//    - private     : caché — usage interne / brouillon admin
+// ─────────────────────────────────────────────────────────────────────────────
+
+model OfficialPlaylist {
+  id               String   @id @default(uuid()) @db.Uuid
+  /// Slug stable utilisé dans le JSON source pour upsert idempotent
+  /// (ex: "official-pl-italo-disco-classics"). Sert de clé naturelle.
+  slug             String   @unique @db.VarChar(120)
+  name_fr          String
+  name_en          String
+  description_fr   String?
+  description_en   String?
+  /// Locale principale du contenu (utile pour la reconnaissance vocale et
+  /// pour filtrer par langue côté UI). Ex: "fr-FR", "en-US", "it-IT", "es-ES".
+  locale_primary   String   @db.VarChar(32)
+  /// Thème éditorial (libre, ex: "italo-disco-classics", "french-pop-2010s").
+  theme            String?  @db.VarChar(80)
+  /// Niveau de difficulté global (EASY/MEDIUM/EXPERT — réutilise enum Level).
+  difficulty       Level    @default(MEDIUM)
+  visibility       OfficialVisibility @default(public)
+  track_count      Int      @default(0)
+  /// User_id Supabase de l'admin qui a créé/maintient la playlist (audit).
+  /// Optionnel — un script qui tourne en CI peut être null.
+  created_by_admin String?  @db.Uuid
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @updatedAt       @db.Timestamptz(6)
+
+  tracks OfficialPlaylistTrack[]
+
+  @@index([visibility])
+  @@index([locale_primary])
+  @@map("official_playlists")
+}
+
+enum OfficialVisibility {
+  public
+  premium_only
+  private
+
+  @@map("official_visibility")
+}
+
+model OfficialPlaylistTrack {
+  id               String   @id @default(uuid()) @db.Uuid
+  playlist_id      String   @db.Uuid
+  /// Position dans la playlist (1-indexed, unique par playlist).
+  position         Int
+  title            String
+  artist           String
+  /// Année de sortie — utile pour le matching Spotify (year_range_strict).
+  year             Int?
+  /// Niveau du morceau (peut différer du niveau global de la playlist).
+  difficulty       Level    @default(MEDIUM)
+  /// IDs canoniques résolus par le script d'import. null tant que pas matché.
+  spotify_id       String?  @db.VarChar(40)
+  youtube_id       String?  @db.VarChar(40)
+  /// Réponses acceptées (artist + title aliases pour la reco vocale Whisper).
+  /// Format JSON : { artist: string[], title: string[], full: string[] }
+  answers_accepted Json?
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+
+  playlist OfficialPlaylist @relation(fields: [playlist_id], references: [id], onDelete: Cascade)
+
+  @@unique([playlist_id, position])
+  @@index([playlist_id])
+  @@index([spotify_id])
+  @@index([youtube_id])
+  @@map("official_playlist_tracks")
+}

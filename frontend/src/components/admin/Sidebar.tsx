@@ -18,14 +18,23 @@ import { getMe } from '../../lib/me.js';
 
 interface NavItem {
   to: string;
-  i18nKey: 'nav.dashboard' | 'nav.tracks' | 'nav.quizz' | 'nav.settings' | 'nav.account';
+  i18nKey:
+    | 'nav.dashboard'
+    | 'nav.tracks'
+    | 'nav.quizz'
+    | 'nav.library'
+    | 'nav.settings'
+    | 'nav.account';
   icon: JSX.Element;
+  superAdminOnly?: boolean;
 }
 
 const NAV: NavItem[] = [
   { to: '/admin/dashboard', i18nKey: 'nav.dashboard', icon: <DashIcon /> },
   { to: '/admin/tracks', i18nKey: 'nav.tracks', icon: <DiscIcon /> },
   { to: '/admin/quizz', i18nKey: 'nav.quizz', icon: <BulbIcon /> },
+  // Bibliothèque officielle Tutti — gérée uniquement par les super admins V1.
+  { to: '/admin/library', i18nKey: 'nav.library', icon: <LibraryIcon />, superAdminOnly: true },
   { to: '/admin/settings', i18nKey: 'nav.settings', icon: <CogIcon /> },
   { to: '/admin/account', i18nKey: 'nav.account', icon: <UserIcon /> },
 ];
@@ -67,7 +76,7 @@ export function Sidebar(): JSX.Element {
           <span>▶</span>
           <span>{t('dashboard.newSession')}</span>
         </NavLink>
-        {NAV.map((item) => (
+        {NAV.filter((item) => !item.superAdminOnly || isSuperAdmin).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -202,6 +211,23 @@ function UserIcon(): JSX.Element {
     >
       <circle cx="10" cy="7" r="3" />
       <path d="M3 17c1-3 4-5 7-5s6 2 7 5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LibraryIcon(): JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <rect x="3" y="3" width="3" height="14" rx="1" />
+      <rect x="8" y="3" width="3" height="14" rx="1" />
+      <path d="M14 3l3 14" strokeLinecap="round" />
     </svg>
   );
 }
