@@ -387,12 +387,20 @@ function HostPageInner(): JSX.Element {
   const playingRoundsCount = session?.rounds.filter((r) => r.status !== 'PENDING').length ?? 0;
   const currentMaster = session?.participants.find((p) => p.is_master) ?? null;
 
-  // ── Audio playback (Phase B) ───────────────────────────────────────────
-  // On charge les deux SDK (Spotify + YouTube) dès qu'on est en phase de
-  // lecture. Chaque hook ne fait rien tant que currentTrack.provider ne le
-  // sélectionne pas — pas de coût visible.
-  const spotify = useSpotifyPlayer({ enabled: phase === 'roundPlaying' });
-  const youtube = useYouTubePlayer({ enabled: phase === 'roundPlaying' });
+  // ── Audio playback ─────────────────────────────────────────────────────
+  // Issue 3 (zombie-sessions-and-host-ux) — Pre-warm les SDK dès que la
+  // session TRACKS est chargée (pas seulement quand phase=roundPlaying).
+  // Bug observé : la 1ère chanson démarrait sans son pendant ~20s puis
+  // l'audio arrivait au milieu du morceau. Cause : Spotify Web Playback SDK
+  // prend ~5-15s pour atteindre le 'ready' event. Si on charge le SDK
+  // SEULEMENT quand phase=roundPlaying (donc après le clic playlist), la
+  // 1ère piste joue silencieusement pendant l'init SDK puis le son s'active
+  // à la position courante (pas 0). Pre-warm = SDK déjà 'ready' au moment
+  // du clic → play() à 0ms avec son immédiat.
+  // Coût pre-warm : ~1 fetch token + script SDK + WebSocket → négligeable.
+  const isTracksSession = session?.game_type === 'TRACKS';
+  const spotify = useSpotifyPlayer({ enabled: isTracksSession });
+  const youtube = useYouTubePlayer({ enabled: isTracksSession });
 
   // ── Audio sync unifié — single source of truth = état serveur ────────
   // Chaque sync hook ne pilote SON provider que si currentTrack.provider
@@ -703,6 +711,18 @@ function HostPageInner(): JSX.Element {
     navigate('/admin/dashboard');
   };
 
+  // Bouton "Retour dashboard" affiché pendant le blind test (gameplay actif).
+  // Différent de handleBackToDashboard direct : confirme d'abord car action
+  // destructive (abandonne la partie en cours, déconnecte les joueurs).
+  const handleAbandonDuringBlindTest = async (): Promise<void> => {
+    if (!session) {
+      navigate('/admin/dashboard');
+      return;
+    }
+    if (!window.confirm(t('host.abandonDuringBlindTestConfirm'))) return;
+    await handleBackToDashboard();
+  };
+
   // Issue 5 (6 mai) — bouton "Retour dashboard" en salle d'attente.
   // - 0 joueur connecté : navigate direct (pas de confirm).
   // - >=1 joueur : confirm() avant d'abandon + navigate (pour ne pas
@@ -910,6 +930,21 @@ function HostPageInner(): JSX.Element {
                 variant="ghost"
                 size="sm"
                 onClick={() => void handleCancelWaiting()}
+                disabled={busy}
+              >
+                ← {t('host.backDashboard')}
+              </Button>
+            )}
+            {/* Issue 2 (zombie-sessions-and-host-ux) — bouton "Retour" pendant
+                le blind test pour permettre au host de quitter sans terminer
+                proprement. Confirme avant car action destructive. */}
+            {(effectivePhase === 'roundPlaying' ||
+              effectivePhase === 'roundSelection' ||
+              effectivePhase === 'intermission') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => void handleAbandonDuringBlindTest()}
                 disabled={busy}
               >
                 ← {t('host.backDashboard')}

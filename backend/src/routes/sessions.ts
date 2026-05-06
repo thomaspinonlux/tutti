@@ -132,6 +132,36 @@ router.post(
 
       const shortCode = await generateUniqueShortCode(establishment.name);
 
+      // Auto-cleanup zombie sessions — règle : une seule session active par
+      // workspace à la fois. Toute session WAITING/PLAYING antérieure (admin
+      // a fermé l'onglet sans abandonner / crashée / abandon non commité) est
+      // forcée à ENDED avant de créer la nouvelle. Cause racine du bug
+      // findRepresentativeSession qui retournait la zombie au lieu de la
+      // dernière ENDED → TV bloquée sur PAUSED de l'ancienne.
+      const cleanupSessions = await prisma.session.updateMany({
+        where: {
+          establishment: { workspace_id: workspaceId },
+          status: { in: ['WAITING', 'PLAYING'] },
+        },
+        data: {
+          status: 'ENDED',
+          ended_at: new Date(),
+          is_paused: false,
+        },
+      });
+      if (cleanupSessions.count > 0) {
+        console.info(
+          `[Cleanup] Auto-closed ${cleanupSessions.count} zombie session(s) before creating new session in workspace=${workspaceId}`,
+        );
+        await prisma.sessionRound.updateMany({
+          where: {
+            session: { establishment: { workspace_id: workspaceId } },
+            status: 'PLAYING',
+          },
+          data: { status: 'ENDED', ended_at: new Date() },
+        });
+      }
+
       const session = await prisma.session.create({
         data: {
           establishment_id: establishment.id,

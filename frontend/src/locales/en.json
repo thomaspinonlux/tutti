@@ -259,6 +259,7 @@
     "backDashboard": "Back to dashboard",
     "cancelWaitingConfirm_one": "Cancel the session? {{count}} player is already connected and will be disconnected.",
     "cancelWaitingConfirm_other": "Cancel the session? {{count}} players are already connected and will be disconnected.",
+    "abandonDuringBlindTestConfirm": "Leave the blind test? The game will be abandoned and players disconnected.",
     "session": {
       "tabs": {
         "myPlaylists": "My playlists",
