@@ -599,6 +599,28 @@ function HostPageInner(): JSX.Element {
     navigate('/admin/dashboard');
   };
 
+  // Issue 5 (6 mai) — bouton "Retour dashboard" en salle d'attente.
+  // - 0 joueur connecté : navigate direct (pas de confirm).
+  // - >=1 joueur : confirm() avant d'abandon + navigate (pour ne pas
+  //   faire disparaître la partie sous les yeux des joueurs déjà sur /play).
+  // Pose ?notice=session-cancelled pour banner de confirmation côté dashboard.
+  const handleCancelWaiting = async (): Promise<void> => {
+    if (!session) {
+      navigate('/admin/dashboard');
+      return;
+    }
+    const playersCount = session.participants.filter((p) => !p.is_kicked).length;
+    if (playersCount > 0) {
+      if (!window.confirm(t('host.cancelWaitingConfirm', { count: playersCount }))) return;
+    }
+    try {
+      await abandonSession(session.id);
+    } catch (err) {
+      console.warn('[HostPage] abandon failed (non-blocking):', err);
+    }
+    navigate('/admin/dashboard?notice=session-cancelled');
+  };
+
   // ── Render ─────────────────────────────────────────────────────────────
   if (error) {
     return (
@@ -776,6 +798,19 @@ function HostPageInner(): JSX.Element {
             </TitleHandwritten>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
+            {/* Issue 5 (6 mai) — bouton "Retour dashboard" visible uniquement
+                en salle d'attente. Permet d'annuler la session avant qu'elle
+                ne démarre. Confirme si des joueurs sont déjà connectés. */}
+            {effectivePhase === 'waiting' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => void handleCancelWaiting()}
+                disabled={busy}
+              >
+                ← {t('host.backDashboard')}
+              </Button>
+            )}
             <ExternalScreenButton shortCode={session.short_code} />
             {!session.has_animator &&
               (effectivePhase === 'roundPlaying' ||

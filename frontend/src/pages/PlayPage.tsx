@@ -1498,19 +1498,20 @@ function BuzzerArea({
         ? t('play.buzzerHintAnalyzing')
         : t('play.buzzerHintActive');
   return (
-    // Bug 3 — compactage : gap réduit (1.5 au lieu de 3.5), my supprimé.
-    <div className="flex flex-col items-center gap-1.5">
+    // Issue 4 (6 mai) — compactage supplémentaire iPhone SE/14 : BUZZ encore
+    // ~30% plus petit, gap quasi-nul, hint plus serré. Garde tactile >44px iOS.
+    <div className="flex flex-col items-center gap-0.5">
       <button
         type="button"
         onClick={onBuzz}
         disabled={disabled}
-        // Bug 3 — BUZZ plus petit pour libérer de l'espace vertical sur iPhone.
-        // clamp 110px → 26dvh → 180px (vs 120/36/220 avant). Reste lisible
-        // tactile (>44px standard iOS) et laisse plus de place au texte +
-        // champ texte sticky bottom sans débordement.
+        // Issue 4 — BUZZ ~30% plus petit (clamp 90px → 18dvh → 150px vs 110/
+        // 26/180 avant) pour que la saisie texte sticky bottom reste visible
+        // sans scroll sur iPhone SE (375×667) + iPhone 14 (390×844). Tactile
+        // OK : 90px largement >44px standard iOS.
         style={{
-          width: 'clamp(110px, 26dvh, 180px)',
-          height: 'clamp(110px, 26dvh, 180px)',
+          width: 'clamp(90px, 18dvh, 150px)',
+          height: 'clamp(90px, 18dvh, 150px)',
         }}
         className={[
           'relative rounded-full border-[6px] border-ink',
@@ -1521,10 +1522,10 @@ function BuzzerArea({
             : 'bg-spritz text-ink shadow-[0_8px_0_#1a1410] active:translate-y-1 active:shadow-[0_4px_0_#1a1410] animate-pulse-buzz',
         ].join(' ')}
       >
-        <span className={['text-5xl mb-1', disabled ? 'opacity-50' : ''].join(' ')} aria-hidden>
+        <span className={['text-4xl mb-0.5', disabled ? 'opacity-50' : ''].join(' ')} aria-hidden>
           🎤
         </span>
-        <span className="text-2xl">BUZZ</span>
+        <span className="text-xl">BUZZ</span>
         {analyzing && (
           // Spinner discret superposé pendant l'analyse Whisper. Pas d'écran
           // intermédiaire — le joueur sait que ça analyse en cours.
@@ -1534,7 +1535,9 @@ function BuzzerArea({
           />
         )}
       </button>
-      <p className="font-editorial italic text-sm text-ink/80 text-center max-w-[280px]">{hint}</p>
+      <p className="font-editorial italic text-xs sm:text-sm text-ink/80 text-center max-w-[280px] leading-tight">
+        {hint}
+      </p>
       {error && (
         <p role="alert" className="text-sm text-raspberry text-center">
           {error}
