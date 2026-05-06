@@ -46,15 +46,12 @@ export function AdminLayout(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const fetchEstablishment = async (): Promise<void> => {
-    console.log('[DBG AdminLayout] fetchEstablishment START');
     try {
       const data = await api<{ establishment: Establishment }>('/api/establishment');
-      console.log('[DBG AdminLayout] fetchEstablishment OK', { id: data.establishment.id });
       setEstablishment(data.establishment);
       setError(null);
     } catch (err: unknown) {
       const msg = err instanceof ApiError ? err.message : (err as Error).message;
-      console.error('[DBG AdminLayout] fetchEstablishment ERROR', msg);
       setError(msg);
     } finally {
       setLoading(false);
@@ -62,20 +59,17 @@ export function AdminLayout(): JSX.Element {
   };
 
   const fetchMe = async (): Promise<void> => {
-    console.log('[DBG AdminLayout] fetchMe START');
     try {
       const data = await getMe();
-      console.log('[DBG AdminLayout] fetchMe OK', {
-        memberStatus: data.memberStatus,
-        isSuperAdmin: data.isSuperAdmin,
-      });
       setMe(data);
     } catch (err) {
-      // Sujet 2 fix : si getMe() throw, on log + on libère le loading
-      // establishment pour que la page ne reste pas figée sur "loading"
-      // forever. Avant : me stayed null → 2nd useEffect early return →
-      // loading=true forever → page apparaît vide pour l'utilisateur.
-      console.error('[DBG AdminLayout] fetchMe ERROR (page stuck risk)', err);
+      // Fix root cause "page reste vide après navigate depuis /host" :
+      // si getMe() throw, on log + on libère le loading establishment pour
+      // que la page ne reste pas figée sur "loading" forever. Avant : me
+      // stayed null → 2nd useEffect early return → loading=true forever →
+      // page apparaît vide pour l'utilisateur. console.error légitime en
+      // prod (signal une vraie défaillance, pas un debug log).
+      console.error('[AdminLayout] fetchMe failed:', err);
       setLoading(false);
       setError((err as Error).message ?? 'getMe failed');
     } finally {
@@ -84,17 +78,12 @@ export function AdminLayout(): JSX.Element {
   };
 
   useEffect(() => {
-    console.log('[DBG AdminLayout] MOUNTED');
     void fetchMe();
-    return () => {
-      console.log('[DBG AdminLayout] UNMOUNTED');
-    };
   }, []);
 
   // Phase 4 — ne fetch establishment que si le compte est APPROVED ou super admin.
   // Sinon on évite le 403 cosmétique côté API et on affiche directement le pending screen.
   useEffect(() => {
-    console.log('[DBG AdminLayout] me changed →', me ? me.memberStatus : null);
     if (!me) return;
     if (me.memberStatus === 'APPROVED' || me.isSuperAdmin) {
       void fetchEstablishment();
