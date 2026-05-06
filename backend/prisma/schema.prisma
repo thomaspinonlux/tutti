@@ -614,7 +614,7 @@ model OfficialPlaylist {
   description_en   String?
   /// Locale principale du contenu (utile pour la reconnaissance vocale et
   /// pour filtrer par langue côté UI). Ex: "fr-FR", "en-US", "it-IT", "es-ES".
-  locale_primary   String   @db.VarChar(8)
+  locale_primary   String   @db.VarChar(32)
   /// Thème éditorial (libre, ex: "italo-disco-classics", "french-pop-2010s").
   theme            String?  @db.VarChar(80)
   /// Niveau de difficulté global (EASY/MEDIUM/EXPERT — réutilise enum Level).

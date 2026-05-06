@@ -43,40 +43,119 @@ const prisma = new PrismaClient();
 
 // ───── Types JSON source ──────────────────────────────────────────────────
 
-type Difficulty = 'EASY' | 'MEDIUM' | 'EXPERT';
-type Visibility = 'public' | 'premium_only' | 'private';
+type DifficultyDb = 'EASY' | 'MEDIUM' | 'EXPERT';
+type VisibilityDb = 'public' | 'premium_only' | 'private';
 
+/**
+ * Format JSON source — flexible pour accepter les 2 conventions :
+ *   - convention "id" + difficulty lowercase + year_range_strict [yMin, yMax]
+ *     + avoid[] (utilisée par les fichiers curés actuels)
+ *   - convention "slug" + difficulty uppercase + year_range_strict boolean
+ *     + filter_remix_live_cover_karaoke (legacy template)
+ *
+ * Les 2 sont normalisés via normalizePlaylist() avant traitement.
+ */
 interface SourceTrack {
   position: number;
   title: string;
   artist: string;
   year?: number | null;
-  difficulty?: Difficulty;
+  difficulty?: string; // "easy" | "medium" | "expert" | "EASY" | "MEDIUM" | "EXPERT"
   spotify_id?: string | null;
   youtube_id?: string | null;
-  answers_accepted?: {
-    artist?: string[];
-    title?: string[];
-    full?: string[];
-  } | null;
+  /** JSONB libre — stocké tel quel en DB (variantes pour reco vocale Whisper). */
+  answers_accepted?: Record<string, unknown> | null;
 }
 
 interface SourcePlaylist {
-  slug: string;
+  /** Slug stable. Lu depuis "slug" OU "id" (legacy curated format). */
+  id?: string;
+  slug?: string;
   name_fr: string;
   name_en: string;
   description_fr?: string | null;
   description_en?: string | null;
   locale_primary: string;
   theme?: string | null;
-  difficulty?: Difficulty;
-  visibility?: Visibility;
+  difficulty?: string;
+  visibility?: VisibilityDb;
+  track_count?: number;
   import_hints?: {
+    /** Boolean legacy — défaut activé. */
     filter_remix_live_cover_karaoke?: boolean;
-    year_range_strict?: boolean;
-    year_range_years?: number; // ±N années (default 2 si strict, 5 sinon)
+    /**
+     * 2 conventions acceptées :
+     *   - boolean : true → utilise year_range_years (default 2)
+     *   - [yMin, yMax] : plage explicite, prioritaire
+     */
+    year_range_strict?: boolean | [number, number];
+    year_range_years?: number;
+    /** Termes additionnels à filtrer (concat avec FORBIDDEN_TERMS). */
+    avoid?: string[];
+    /** Préférence éditoriale (informatif, pas utilisé pour le scoring). */
+    preferred_version?: string;
   } | null;
   tracks: SourceTrack[];
+}
+
+interface NormalizedPlaylist {
+  slug: string;
+  name_fr: string;
+  name_en: string;
+  description_fr: string | null;
+  description_en: string | null;
+  locale_primary: string;
+  theme: string | null;
+  difficulty: DifficultyDb;
+  visibility: VisibilityDb;
+  yearMin: number | null;
+  yearMax: number | null;
+  yearStrict: boolean;
+  yearRange: number;
+  filterForbidden: boolean;
+  extraForbidden: string[];
+  tracks: SourceTrack[];
+}
+
+function normalizeDifficulty(d: string | undefined): DifficultyDb {
+  if (!d) return 'MEDIUM';
+  const u = d.toUpperCase();
+  if (u === 'EASY' || u === 'MEDIUM' || u === 'EXPERT') return u;
+  return 'MEDIUM';
+}
+
+function normalizePlaylist(src: SourcePlaylist): NormalizedPlaylist {
+  const slug = src.slug ?? src.id ?? '';
+  const yearStrictRaw = src.import_hints?.year_range_strict;
+  let yearMin: number | null = null;
+  let yearMax: number | null = null;
+  let yearStrict = false;
+  if (Array.isArray(yearStrictRaw) && yearStrictRaw.length === 2) {
+    yearMin = yearStrictRaw[0];
+    yearMax = yearStrictRaw[1];
+    yearStrict = true;
+  } else if (yearStrictRaw === true) {
+    yearStrict = true;
+  }
+  const yearRange = src.import_hints?.year_range_years ?? (yearStrict ? 2 : 5);
+  return {
+    slug,
+    name_fr: src.name_fr,
+    name_en: src.name_en,
+    description_fr: src.description_fr ?? null,
+    description_en: src.description_en ?? null,
+    locale_primary: src.locale_primary,
+    theme: src.theme ?? null,
+    difficulty: normalizeDifficulty(src.difficulty),
+    visibility: src.visibility ?? 'public',
+    yearMin,
+    yearMax,
+    yearStrict,
+    yearRange,
+    filterForbidden: src.import_hints?.filter_remix_live_cover_karaoke !== false,
+    extraForbidden: (src.import_hints?.avoid ?? []).map((s) => s.toLowerCase()),
+    tracks: src.tracks,
+  };
 }
 
 // ───── Config + helpers ────────────────────────────────────────────────────
@@ -188,7 +267,7 @@ interface SpotifySearchTrack {
 
 async function searchSpotifyTrack(
   track: SourceTrack,
-  hints: SourcePlaylist['import_hints'],
+  pl: NormalizedPlaylist,
 ): Promise<string | null> {
   const token = await getSpotifyAppToken();
   if (!token) return null;
@@ -200,15 +279,18 @@ async function searchSpotifyTrack(
   // Le ranking compense via Levenshtein post-fetch.
   const cleanArtist = track.artist.replace(/[":]/g, ' ').trim();
   const cleanTitle = track.title.replace(/[":]/g, ' ').trim();
-  const yearRange = hints?.year_range_years ?? (hints?.year_range_strict ? 2 : 5);
   const baseQ = `${cleanArtist} ${cleanTitle}`;
   // Pass 1 : avec filtre year si strict. Pass 2 fallback : sans year. Spotify
   // utilise souvent la date de l'album/re-release qui peut être hors plage
   // stricte sur les catalogues anciens (italo disco 1980s ressort souvent en
   // 1994/2000+).
   const queries: string[] = [];
-  if (track.year && hints?.year_range_strict !== false) {
-    queries.push(`${baseQ} year:${track.year - yearRange}-${track.year + yearRange}`);
+  if (track.year && pl.yearStrict) {
+    // Plage explicite [yMin, yMax] définie au niveau playlist prioritaire
+    // sinon ±yearRange autour de l'année du track.
+    const yMin = pl.yearMin ?? track.year - pl.yearRange;
+    const yMax = pl.yearMax ?? track.year + pl.yearRange;
+    queries.push(`${baseQ} year:${yMin}-${yMax}`);
   }
   queries.push(baseQ);
 
@@ -230,12 +312,17 @@ async function searchSpotifyTrack(
   }
   let candidates = allItems.filter((t) => !t.is_local);
 
-  // Filtre remix/live/cover/karaoke si hint actif (default true)
-  const filterForbidden = hints?.filter_remix_live_cover_karaoke !== false;
-  if (filterForbidden) {
-    candidates = candidates.filter(
-      (t) => !containsForbidden(t.name) && !containsForbidden(t.album.name),
-    );
+  // Filtre remix/live/cover/karaoke + termes additionnels playlist.import_hints.avoid
+  if (pl.filterForbidden) {
+    candidates = candidates.filter((t) => {
+      const combined = `${t.name} ${t.album.name}`;
+      if (containsForbidden(combined)) return false;
+      const lc = lower(combined);
+      for (const term of pl.extraForbidden) {
+        if (lc.includes(term)) return false;
+      }
+      return true;
+    });
   }
 
   // Score par distance Levenshtein artiste + titre + bonus année exacte
@@ -335,35 +422,25 @@ async function searchYouTubeVideo(track: SourceTrack): Promise<string | null> {
 // ───── Upsert DB ───────────────────────────────────────────────────────────
 
 async function upsertPlaylistInDb(
-  source: SourcePlaylist,
+  pl: NormalizedPlaylist,
   resolvedTracks: SourceTrack[],
 ): Promise<void> {
   // Upsert playlist par slug
+  const data = {
+    name_fr: pl.name_fr,
+    name_en: pl.name_en,
+    description_fr: pl.description_fr,
+    description_en: pl.description_en,
+    locale_primary: pl.locale_primary,
+    theme: pl.theme,
+    difficulty: pl.difficulty,
+    visibility: pl.visibility,
+    track_count: resolvedTracks.length,
+  };
   const playlist = await prisma.officialPlaylist.upsert({
-    where: { slug: source.slug },
-    create: {
-      slug: source.slug,
-      name_fr: source.name_fr,
-      name_en: source.name_en,
-      description_fr: source.description_fr ?? null,
-      description_en: source.description_en ?? null,
-      locale_primary: source.locale_primary,
-      theme: source.theme ?? null,
-      difficulty: source.difficulty ?? 'MEDIUM',
-      visibility: source.visibility ?? 'public',
-      track_count: resolvedTracks.length,
-    },
-    update: {
-      name_fr: source.name_fr,
-      name_en: source.name_en,
-      description_fr: source.description_fr ?? null,
-      description_en: source.description_en ?? null,
-      locale_primary: source.locale_primary,
-      theme: source.theme ?? null,
-      difficulty: source.difficulty ?? 'MEDIUM',
-      visibility: source.visibility ?? 'public',
-      track_count: resolvedTracks.length,
-    },
+    where: { slug: pl.slug },
+    create: { slug: pl.slug, ...data },
+    update: data,
   });
 
   // Replace-all stratégie pour les tracks (idempotent et simple).
@@ -378,7 +455,7 @@ async function upsertPlaylistInDb(
         title: t.title,
         artist: t.artist,
         year: t.year ?? null,
-        difficulty: t.difficulty ?? source.difficulty ?? 'MEDIUM',
+        difficulty: normalizeDifficulty(t.difficulty ?? pl.difficulty),
         spotify_id: t.spotify_id ?? null,
         youtube_id: t.youtube_id ?? null,
         answers_accepted: (t.answers_accepted ?? null) as Prisma.InputJsonValue | null,
@@ -412,14 +489,16 @@ async function processFile(filePath: string): Promise<FileReport> {
   const filename = basename(filePath);
   const raw = await readFile(filePath, 'utf-8');
   const source = JSON.parse(raw) as SourcePlaylist;
-  if (!source.slug || !Array.isArray(source.tracks)) {
-    throw new Error(`${filename}: format invalide (slug ou tracks manquant)`);
+  const slug = source.slug ?? source.id ?? '';
+  if (!slug || !Array.isArray(source.tracks)) {
+    throw new Error(`${filename}: format invalide (slug/id ou tracks manquant)`);
   }
+  const pl = normalizePlaylist(source);
 
   const report: FileReport = {
     filename,
-    slug: source.slug,
-    total: source.tracks.length,
+    slug: pl.slug,
+    total: pl.tracks.length,
     spotifyMatched: 0,
     spotifyAlreadyCached: 0,
     spotifyMissed: 0,
@@ -429,10 +508,10 @@ async function processFile(filePath: string): Promise<FileReport> {
     unmatched: [],
   };
 
-  console.info(`\n[${filename}] processing ${source.tracks.length} tracks…`);
+  console.info(`\n[${filename}] processing ${pl.tracks.length} tracks…`);
 
   const resolvedTracks: SourceTrack[] = [];
-  for (const track of source.tracks) {
+  for (const track of pl.tracks) {
     const next: SourceTrack = { ...track };
 
     // Spotify
@@ -440,7 +519,7 @@ async function processFile(filePath: string): Promise<FileReport> {
       report.spotifyAlreadyCached += 1;
     } else {
       try {
-        const id = await searchSpotifyTrack(track, source.import_hints ?? null);
+        const id = await searchSpotifyTrack(track, pl);
         if (id) {
           next.spotify_id = id;
           report.spotifyMatched += 1;
@@ -485,9 +564,11 @@ async function processFile(filePath: string): Promise<FileReport> {
   }
 
   // Upsert DB
-  await upsertPlaylistInDb(source, resolvedTracks);
+  await upsertPlaylistInDb(pl, resolvedTracks);
 
-  // Réécrit le JSON avec les IDs résolus (cache pour run suivant)
+  // Réécrit le JSON avec les IDs résolus (cache pour run suivant). On préserve
+  // le format exact de l'auteur (id ou slug, casse difficulty, structure
+  // import_hints) — on ne change que les spotify_id/youtube_id résolus.
   const updatedSource: SourcePlaylist = { ...source, tracks: resolvedTracks };
   await writeFile(filePath, JSON.stringify(updatedSource, null, 2) + '\n', 'utf-8');
 
