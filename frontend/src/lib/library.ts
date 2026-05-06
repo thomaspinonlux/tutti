@@ -35,6 +35,7 @@ export interface LibraryTrack {
   difficulty: 'EASY' | 'MEDIUM' | 'EXPERT';
   spotify_id: string | null;
   youtube_id: string | null;
+  cover_url: string | null;
 }
 
 export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {

@@ -26,7 +26,8 @@
         "title_variants": ["vamos a la playa", "vamos la playa", "vamos playa", "a la playa"],
         "artist_variants": ["righeira", "rigueira", "righera"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737cbca125e1444d573329c198"
     },
     {
       "position": 2,
@@ -40,7 +41,8 @@
         "title_variants": ["tarzan boy", "tarzan", "tarzanboy", "tarzan boys"],
         "artist_variants": ["baltimora", "baltimore", "baltimoura"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273de82204a5baa683ce85d57cb"
     },
     {
       "position": 3,
@@ -54,7 +56,8 @@
         "title_variants": ["boys", "boys summertime love", "summertime love", "boys boys boys"],
         "artist_variants": ["sabrina", "sabrina salerno", "sabrina salerne"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735d8f95b19e565cd616f9d9aa"
     },
     {
       "position": 4,
@@ -74,7 +77,8 @@
         ],
         "artist_variants": ["gazebo", "gazébo", "gazzebo", "gazeboo"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27318489610a4971e31173ef6a9"
     },
     {
       "position": 5,
@@ -89,7 +93,8 @@
         "artist_variants": ["raf", "raf italian", "raph", "laura branigan", "branigan"],
         "scoring": "title_or_artist",
         "notes": "Version originale italo disco par Raf (1984). Laura Branigan a sorti une reprise simultanée la même année qui a cartonné à l'international. Les deux artistes sont acceptés."
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736df80d979f5a27d14cc88ca3"
     },
     {
       "position": 6,
@@ -103,7 +108,8 @@
         "title_variants": ["dolce vita", "la dolce vita", "dolcevita", "dolce vie"],
         "artist_variants": ["ryan paris", "rian paris", "ryan parisse", "rayan paris"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d3d5e5ab5786e450e8a46128"
     },
     {
       "position": 7,
@@ -117,7 +123,8 @@
         "title_variants": ["easy lady", "easylady", "izi lady"],
         "artist_variants": ["spagna", "ivana spagna", "espagna", "spania"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738ee8fe4ad745ed4f70d75c55"
     },
     {
       "position": 8,
@@ -131,7 +138,8 @@
         "title_variants": ["future brain", "futurebrain", "future", "futur brain"],
         "artist_variants": ["den harrow", "dan harrow", "denharrow", "den arrow", "den haro"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739acc70040b3425d4912bab4c"
     },
     {
       "position": 9,
@@ -151,7 +159,8 @@
         ],
         "artist_variants": ["sandy marton", "sandi marton", "sandy martone", "sandy mardon"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273399da87537d267c18a8493bd"
     },
     {
       "position": 10,
@@ -171,7 +180,8 @@
         ],
         "artist_variants": ["savage", "savadge", "sauvage"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733407fb45c1218424bbe276dd"
     },
     {
       "position": 11,
@@ -185,7 +195,8 @@
         "title_variants": ["slice me nice", "slicemenice", "slais mi nais"],
         "artist_variants": ["fancy", "fanci", "fancie"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738b069ace524a206329dc25bf"
     },
     {
       "position": 12,
@@ -199,7 +210,8 @@
         "title_variants": ["happy children", "happychildren", "happy childrens"],
         "artist_variants": ["p lion", "p. lion", "plion", "pierro lion", "pietro lion", "pee lion"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732dceedf285ebc24b67b15cff"
     },
     {
       "position": 13,
@@ -219,7 +231,8 @@
         ],
         "artist_variants": ["my mine", "mymine", "mi main", "may mine"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732e7eed660e1fcf62c3f8f969"
     },
     {
       "position": 14,
@@ -245,7 +258,8 @@
           "silver pozzo"
         ],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736894c139050cc84c325960e3"
     },
     {
       "position": 15,
@@ -259,7 +273,8 @@
         "title_variants": ["tonight", "ce soir", "tunaite"],
         "artist_variants": ["ken laszlo", "ken lazlo", "ken lasso", "ken lazslo", "kent laszlo"],
         "scoring": "title_or_artist"
-      }
+      },
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ec6e1c20ed3d3f6a1d73fd41"
     }
   ]
 }
