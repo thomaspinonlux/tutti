@@ -106,6 +106,49 @@ async function findRepresentativeSession(workspaceId: string) {
   const finalPodiumCutoff = new Date(now.getTime() - FINAL_PODIUM_WINDOW_MS);
   const zombieCreatedCutoff = new Date(now.getTime() - ZOMBIE_CREATED_WINDOW_MS);
 
+  // [DIAG fix/library-end-session-strict-alignment] log all candidates
+  const allCandidates = await prisma.session.findMany({
+    where: { establishment: { workspace_id: workspaceId } },
+    orderBy: { created_at: 'desc' },
+    take: 5,
+    select: {
+      id: true,
+      status: true,
+      is_paused: true,
+      created_at: true,
+      ended_at: true,
+      short_code: true,
+      rounds: {
+        select: {
+          id: true,
+          status: true,
+          position: true,
+          playlist: { select: { is_official_tutti: true } },
+        },
+        orderBy: { position: 'asc' },
+      },
+    },
+  });
+  console.info(
+    `[DIAG findRepSession] workspace=${workspaceId} candidates(top5)=`,
+    JSON.stringify(
+      allCandidates.map((s) => ({
+        id: s.id,
+        status: s.status,
+        is_paused: s.is_paused,
+        short_code: s.short_code,
+        created_at: s.created_at.toISOString(),
+        ended_at: s.ended_at?.toISOString() ?? null,
+        age_min: ((now.getTime() - s.created_at.getTime()) / 60000).toFixed(1),
+        ended_age_min: s.ended_at
+          ? ((now.getTime() - s.ended_at.getTime()) / 60000).toFixed(1)
+          : null,
+        has_official_round: s.rounds.some((r) => r.playlist?.is_official_tutti === true),
+        rounds: s.rounds.map((r) => `${r.position}:${r.status}`).join(','),
+      })),
+    ),
+  );
+
   // 1. WAITING/PLAYING active, créée dans les 4h (anti-zombie). Prioritaire
   // pour que la TV bascule sur une nouvelle session dès qu'elle est créée.
   const active = await prisma.session.findFirst({
@@ -125,6 +168,7 @@ async function findRepresentativeSession(workspaceId: string) {
               id: true,
               name: true,
               level: true,
+              is_official_tutti: true,
               _count: { select: { playlist_tracks: true } },
             },
           },
@@ -132,7 +176,12 @@ async function findRepresentativeSession(workspaceId: string) {
       },
     },
   });
-  if (active) return active;
+  if (active) {
+    console.info(
+      `[DIAG findRepSession] -> ACTIVE session=${active.id} status=${active.status} is_paused=${active.is_paused} rounds=${active.rounds.map((r) => `${r.position}:${r.status}:${r.playlist.is_official_tutti ? 'OFFI' : 'PERSO'}`).join(',')}`,
+    );
+    return active;
+  }
 
   // 2. Pas d'active → fallback ENDED <5min pour afficher le podium final
   // résiduel. Si l'admin lance une nouvelle session après, la session active
@@ -154,6 +203,7 @@ async function findRepresentativeSession(workspaceId: string) {
               id: true,
               name: true,
               level: true,
+              is_official_tutti: true,
               _count: { select: { playlist_tracks: true } },
             },
           },
@@ -161,6 +211,9 @@ async function findRepresentativeSession(workspaceId: string) {
       },
     },
   });
+  console.info(
+    `[DIAG findRepSession] -> ${endedRecent ? `ENDED_RECENT session=${endedRecent.id} ended_at=${endedRecent.ended_at?.toISOString()}` : 'NULL (idle)'}`,
+  );
   return endedRecent ?? null;
 }
 

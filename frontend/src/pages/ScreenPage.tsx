@@ -90,12 +90,18 @@ export function ScreenPage(): JSX.Element {
       try {
         const next = await getScreenState(workspaceId);
         if (cancelled) return;
+        // [DIAG fix/library-end-session-strict-alignment]
+        const sessId = 'sessionId' in next ? next.sessionId : 'n/a';
+        console.info(
+          `[DIAG ScreenPage poll] state=${next.state} session=${sessId} ts=${next.lastUpdate}`,
+        );
         setScreenState(next);
         setError(null);
         // Polling adaptatif : ralenti après 10 IDLE consécutifs
         idleStreakRef.current = next.state === 'IDLE' ? idleStreakRef.current + 1 : 0;
       } catch (err) {
         if (cancelled) return;
+        console.error(`[DIAG ScreenPage poll] FAIL`, err);
         setError((err as Error).message);
       } finally {
         inFlight = false;

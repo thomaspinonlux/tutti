@@ -673,17 +673,33 @@ function HostPageInner(): JSX.Element {
   const handleEndSession = async (): Promise<void> => {
     if (!session) return;
     if (!window.confirm(t('host.endBlindTestConfirm'))) return;
+    // [DIAG fix/library-end-session-strict-alignment] context capture
+    const hasOfficialRound = session.rounds.some(
+      (r) =>
+        (r as unknown as { playlist?: { is_official_tutti?: boolean } }).playlist
+          ?.is_official_tutti === true,
+    );
+    console.info(
+      `[DIAG handleEndSession] START session=${session.id} status=${session.status} is_paused=${session.is_paused} hasOfficialRound=${hasOfficialRound} rounds=${session.rounds.map((r) => `${r.position}:${r.status}`).join(',')}`,
+    );
     setBusy(true);
     try {
-      await endSession(session.id);
+      const t0 = performance.now();
+      const result = await endSession(session.id);
+      const dt = (performance.now() - t0).toFixed(0);
+      console.info(
+        `[DIAG handleEndSession] endSession OK in ${dt}ms response.session.status=${result?.session?.status ?? 'undef'} cumulative.count=${result?.cumulative?.length ?? 0}`,
+      );
       // Pattern terminal : navigate explicite au lieu de dépendre du render
       // derived (qui a montré son fragile — Bug 4 récurrent). Le podium final
       // s'affiche sur l'écran TV (FINAL_PODIUM via ScreenState polling), pas
       // besoin de doublon sur la console host. URL param ?notice=session-ended
       // déclenche un banner de confirmation sur le dashboard.
       navigate('/admin/dashboard?notice=session-ended');
+      console.info(`[DIAG handleEndSession] navigate -> /admin/dashboard?notice=session-ended`);
       // Pas de setBusy(false) — composant unmount avant.
     } catch (err: unknown) {
+      console.error(`[DIAG handleEndSession] FAIL`, err);
       setError((err as Error).message);
       setBusy(false);
     }

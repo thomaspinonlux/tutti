@@ -511,11 +511,43 @@ router.post(
       return;
     }
     try {
+      // [DIAG fix/library-end-session-strict-alignment] log session pre-end
+      const preState = await prisma.session.findUnique({
+        where: { id: req.params.id },
+        select: {
+          id: true,
+          status: true,
+          is_paused: true,
+          rounds: {
+            select: {
+              id: true,
+              status: true,
+              position: true,
+              playlist: { select: { is_official_tutti: true, name: true } },
+            },
+            orderBy: { position: 'asc' },
+          },
+        },
+      });
+      console.info(
+        `[DIAG POST /end] PRE session=${req.params.id}`,
+        JSON.stringify({
+          status: preState?.status,
+          is_paused: preState?.is_paused,
+          rounds: preState?.rounds.map(
+            (r) =>
+              `${r.position}:${r.status}:${r.playlist?.is_official_tutti ? 'OFFI' : 'PERSO'}:${r.playlist?.name}`,
+          ),
+        }),
+      );
+
       // Termine d'abord le round courant éventuel
-      await prisma.sessionRound.updateMany({
+      const updatedRounds = await prisma.sessionRound.updateMany({
         where: { session_id: req.params.id, status: 'PLAYING' },
         data: { status: 'ENDED', ended_at: new Date() },
       });
+      console.info(`[DIAG POST /end] rounds PLAYING->ENDED count=${updatedRounds.count}`);
+
       const session = await prisma.session.update({
         where: { id: req.params.id },
         data: {
@@ -526,6 +558,9 @@ router.post(
           is_paused: false,
         },
       });
+      console.info(
+        `[DIAG POST /end] POST session=${session.id} status=${session.status} ended_at=${session.ended_at?.toISOString()} is_paused=${session.is_paused}`,
+      );
 
       // Scores cumulés finaux pour le podium
       const teams = (own.teams_config as Team[] | null) ?? null;
@@ -539,7 +574,12 @@ router.post(
           team_id: p.team_id,
         })),
       });
+      console.info(
+        `[DIAG POST /end] cumulative count=${cumulative.length} entries=${cumulative.map((c) => `${c.label}:${c.total_points}`).join(',')}`,
+      );
+
       broadcastToSession(session.id, 'session:ended', { session, cumulative });
+      console.info(`[DIAG POST /end] broadcast session:ended emitted`);
       res.json({ session, cumulative });
     } catch (err: unknown) {
       console.error('[POST /sessions/:id/end] error:', err);
