@@ -18,7 +18,12 @@
  *     (au-delà = abandonnée silencieusement)
  */
 
-import type { CorrectAnswerEntry, CumulativeScore, CurrentTrackState } from '@tutti/shared';
+import type {
+  CorrectAnswerEntry,
+  CumulativeScore,
+  CurrentTrackState,
+  SessionWithParticipants,
+} from '@tutti/shared';
 import { prisma } from './prisma.js';
 import { getCumulativeScores } from './scores.js';
 import { buildCurrentTrackStateSnapshot } from './gameplayCore.js';
@@ -39,6 +44,12 @@ export type ScreenState =
       sessionId: string;
       joinCode: string;
       sessionName: string | null;
+      /**
+       * Vue session enrichie pour MainScreenView (rounds + participants +
+       * is_paused + has_animator + mode). Sérialisée à chaque tick — payload
+       * borné (~30 joueurs × ~10 rounds = ~5KB max).
+       */
+      session: SessionWithParticipants;
       currentTrack: CurrentTrackState | null;
       cumulative: CumulativeScore[];
       correctAnswers: CorrectAnswerEntry[];
@@ -52,6 +63,7 @@ export type ScreenState =
       sessionId: string;
       joinCode: string;
       sessionName: string | null;
+      session: SessionWithParticipants;
       currentTrack: CurrentTrackState | null;
       lastUpdate: string;
     }
@@ -99,7 +111,16 @@ async function findRepresentativeSession(workspaceId: string) {
       participants: { where: { is_kicked: false } },
       rounds: {
         orderBy: { position: 'asc' },
-        include: { playlist: { select: { id: true, name: true, level: true } } },
+        include: {
+          playlist: {
+            select: {
+              id: true,
+              name: true,
+              level: true,
+              _count: { select: { playlist_tracks: true } },
+            },
+          },
+        },
       },
     },
   });
@@ -119,11 +140,78 @@ async function findRepresentativeSession(workspaceId: string) {
       participants: { where: { is_kicked: false } },
       rounds: {
         orderBy: { position: 'asc' },
-        include: { playlist: { select: { id: true, name: true, level: true } } },
+        include: {
+          playlist: {
+            select: {
+              id: true,
+              name: true,
+              level: true,
+              _count: { select: { playlist_tracks: true } },
+            },
+          },
+        },
       },
     },
   });
   return active ?? null;
+}
+
+/**
+ * Sérialise une session Prisma chargée (avec participants + rounds.playlist
+ * incluant _count.playlist_tracks) au format SessionWithParticipants pour le
+ * frontend. Convertit aussi _count.playlist_tracks → tracks_count.
+ */
+function serializeSession(
+  session: Awaited<ReturnType<typeof findRepresentativeSession>>,
+): SessionWithParticipants {
+  if (!session) {
+    throw new Error('serializeSession called with null session');
+  }
+  return {
+    id: session.id,
+    establishment_id: session.establishment_id,
+    name: session.name,
+    game_type: session.game_type,
+    status: session.status,
+    short_code: session.short_code,
+    mode: session.mode,
+    teams_config: (session.teams_config as Team[] | null) ?? null,
+    language: session.language,
+    question_set_id: session.question_set_id ?? null,
+    has_animator: session.has_animator,
+    is_paused: session.is_paused,
+    buzz_window_seconds: session.buzz_window_seconds,
+    max_participants: session.max_participants,
+    created_at: session.created_at.toISOString(),
+    started_at: session.started_at ? session.started_at.toISOString() : null,
+    ended_at: session.ended_at ? session.ended_at.toISOString() : null,
+    participants: session.participants.map((p) => ({
+      id: p.id,
+      session_id: p.session_id,
+      pseudo: p.pseudo,
+      team_id: p.team_id,
+      is_master: p.is_master,
+      is_kicked: p.is_kicked,
+      joined_at: p.joined_at.toISOString(),
+    })),
+    rounds: session.rounds.map((r) => ({
+      id: r.id,
+      session_id: r.session_id,
+      playlist_id: r.playlist_id,
+      position: r.position,
+      status: r.status,
+      current_track_index: r.current_track_index,
+      started_at: r.started_at ? r.started_at.toISOString() : null,
+      ended_at: r.ended_at ? r.ended_at.toISOString() : null,
+      created_at: r.created_at.toISOString(),
+      playlist: {
+        id: r.playlist.id,
+        name: r.playlist.name,
+        level: r.playlist.level,
+        tracks_count: r.playlist._count.playlist_tracks,
+      },
+    })),
+  };
 }
 
 /**
@@ -179,6 +267,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       sessionId: session.id,
       joinCode: session.short_code,
       sessionName: session.name,
+      session: serializeSession(session),
       currentTrack,
       lastUpdate,
     };
@@ -201,6 +290,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       sessionId: session.id,
       joinCode: session.short_code,
       sessionName: session.name,
+      session: serializeSession(session),
       currentTrack,
       cumulative,
       correctAnswers: currentTrack?.correct_answers ?? [],

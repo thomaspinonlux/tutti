@@ -5,7 +5,12 @@
  * Le backend calcule l'état from scratch en lisant la DB à chaque appel.
  */
 
-import type { CorrectAnswerEntry, CumulativeScore, CurrentTrackState } from '@tutti/shared';
+import type {
+  CorrectAnswerEntry,
+  CumulativeScore,
+  CurrentTrackState,
+  SessionWithParticipants,
+} from '@tutti/shared';
 import { api } from './api.js';
 
 export type ScreenStateValue =
@@ -31,6 +36,12 @@ export type ScreenState =
       sessionId: string;
       joinCode: string;
       sessionName: string | null;
+      /**
+       * Vue session enrichie pour MainScreenView (rounds + participants +
+       * is_paused + has_animator + mode). Permet à la TV v2 d'afficher
+       * vinyl rotation, confettis, countdown, etc. via MainScreenView.
+       */
+      session: SessionWithParticipants;
       currentTrack: CurrentTrackState | null;
       cumulative: CumulativeScore[];
       correctAnswers: CorrectAnswerEntry[];
@@ -44,6 +55,7 @@ export type ScreenState =
       sessionId: string;
       joinCode: string;
       sessionName: string | null;
+      session: SessionWithParticipants;
       currentTrack: CurrentTrackState | null;
       lastUpdate: string;
     }
