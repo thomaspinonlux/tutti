@@ -11,7 +11,7 @@
  */
 
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEstablishment } from './AdminLayout.js';
 import { Button, Card, TitleHandwritten, Swirl, Underline } from '../../components/ui/index.js';
@@ -42,13 +42,9 @@ class DebugBoundary extends Component<{ children: ReactNode }, DebugBoundaryStat
   }
 }
 
-// Compteur global de renders pour détecter les boucles (H4)
-let renderCount = 0;
-
 export function DashboardPage(): JSX.Element {
   const { t } = useTranslation();
   const { establishment, loading, error } = useEstablishment();
-  const location = useLocation();
 
   // Banner de confirmation après actions terminales (Fin de partie depuis
   // /host). Le query param ?notice=session-ended est posé par HostPage avant
