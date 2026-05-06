@@ -64,41 +64,6 @@ export function DashboardPage(): JSX.Element {
   const setSearchParamsRef = useRef(setSearchParams);
   setSearchParamsRef.current = setSearchParams;
 
-  // ───── DEBUG render log ─────
-  renderCount += 1;
-  console.log('[DBG dashboard] render #' + renderCount, {
-    pathname: location.pathname,
-    search: location.search,
-    searchParams: Object.fromEntries(searchParams.entries()),
-    loading,
-    error,
-    establishment: establishment ? `id=${establishment.id}` : null,
-    noticeKey,
-    noticeVisible,
-  });
-
-  useEffect(() => {
-    console.log('[DBG dashboard] MOUNTED');
-    return () => {
-      console.log('[DBG dashboard] UNMOUNTED');
-    };
-  }, []);
-
-  useEffect(() => {
-    console.log(
-      '[DBG dashboard] searchParams changed →',
-      Object.fromEntries(searchParams.entries()),
-    );
-  }, [searchParams]);
-
-  useEffect(() => {
-    console.log('[DBG dashboard] establishment changed →', establishment?.id ?? null);
-  }, [establishment]);
-
-  useEffect(() => {
-    console.log('[DBG dashboard] loading/error →', { loading, error });
-  }, [loading, error]);
-
   useEffect(() => {
     if (!noticeKey) return;
     setNoticeVisible(true);

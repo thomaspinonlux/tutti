@@ -71,11 +71,7 @@ export function AdminLayout(): JSX.Element {
       });
       setMe(data);
     } catch (err) {
-      // Sujet 2 fix : si getMe() throw, on log + on libère le loading
-      // establishment pour que la page ne reste pas figée sur "loading"
-      // forever. Avant : me stayed null → 2nd useEffect early return →
-      // loading=true forever → page apparaît vide pour l'utilisateur.
-      console.error('[DBG AdminLayout] fetchMe ERROR (page stuck risk)', err);
+      
       setLoading(false);
       setError((err as Error).message ?? 'getMe failed');
     } finally {
