@@ -35,9 +35,19 @@
  */
 
 import 'dotenv/config';
+import * as dotenv from 'dotenv';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { PrismaClient, Prisma } from '@prisma/client';
+
+// Charge aussi credentials.env.local à la racine du repo (en plus de
+// backend/.env déjà chargé par 'dotenv/config'). YOUTUBE_API_KEY y est rangée
+// — pas dupliquée dans backend/.env. override:false → backend/.env prime si
+// une clé existe des 2 côtés.
+dotenv.config({
+  path: join(process.cwd(), '..', 'credentials.env.local'),
+  override: false,
+});
 
 const prisma = new PrismaClient();
 
