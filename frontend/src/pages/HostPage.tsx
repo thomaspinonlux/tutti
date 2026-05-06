@@ -60,6 +60,26 @@ import {
 } from '../components/ui/index.js';
 import { QRCode } from '../components/host/QRCode.js';
 import { RoundSelectionScreen } from '../components/host/RoundSelectionScreen.js';
+import { NoProviderModal } from '../components/host/library/NoProviderModal.js';
+import { PreviewModal } from '../components/host/library/PreviewModal.js';
+import {
+  getLibraryPlaylist,
+  launchLibraryPlaylist,
+  type LibraryPlaylistDetail,
+  type LibraryPlaylistSummary,
+} from '../lib/library.js';
+import {
+  computePlayability,
+  preferredProvider,
+  type HostProviders,
+  type PlayabilityReport,
+} from '../lib/providerSelection.js';
+import {
+  getSpotifyStatus,
+  getYouTubeStatus,
+  startSpotifyConnect,
+  startYouTubeConnect,
+} from '../lib/music.js';
 import { RoundIntermissionScreen } from '../components/host/RoundIntermissionScreen.js';
 import { ExpressPlaylistModal } from '../components/host/ExpressPlaylistModal.js';
 import { RoundProgramPanel } from '../components/host/RoundProgramPanel.js';
@@ -479,6 +499,90 @@ function HostPageInner(): JSX.Element {
     }
   };
 
+  // ── Bibliothèque officielle Tutti — flow lancement ───────────────────────
+  const [hostProviders, setHostProviders] = useState<HostProviders | null>(null);
+  const [noProviderOpen, setNoProviderOpen] = useState(false);
+  const [previewPlaylist, setPreviewPlaylist] = useState<LibraryPlaylistDetail | null>(null);
+  const [previewReport, setPreviewReport] = useState<PlayabilityReport | null>(null);
+
+  const fetchHostProviders = async (): Promise<HostProviders> => {
+    const [sp, yt] = await Promise.allSettled([getSpotifyStatus(), getYouTubeStatus()]);
+    const spotify = sp.status === 'fulfilled' ? sp.value : null;
+    const youtube = yt.status === 'fulfilled' ? yt.value : null;
+    const providers: HostProviders = {
+      spotify: { connected: spotify?.connected ?? false, premium: true },
+      youtube: { connected: youtube?.connected ?? false, premium: youtube?.premium ?? false },
+    };
+    setHostProviders(providers);
+    return providers;
+  };
+
+  const handlePickOfficial = async (summary: LibraryPlaylistSummary): Promise<void> => {
+    if (!session) return;
+    if (summary.locked) return; // ne devrait pas arriver — card disabled
+
+    // 1. Charge providers connectés
+    const providers = await fetchHostProviders();
+    const hasAny = providers.spotify.connected || providers.youtube.connected;
+    if (!hasAny) {
+      setNoProviderOpen(true);
+      return;
+    }
+
+    // 2. Charge détail playlist + calcule playability
+    try {
+      const detail = await getLibraryPlaylist(summary.id);
+      const report = computePlayability(detail.tracks, providers);
+      setPreviewPlaylist(detail);
+      setPreviewReport(report);
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
+  const handleConfirmLaunchOfficial = async (): Promise<void> => {
+    if (!session || !previewPlaylist || !hostProviders) return;
+    const prefer = preferredProvider(hostProviders);
+    if (!prefer) {
+      setNoProviderOpen(true);
+      setPreviewPlaylist(null);
+      setPreviewReport(null);
+      return;
+    }
+    setBusy(true);
+    try {
+      await spotify.activate();
+      const result = await launchLibraryPlaylist(previewPlaylist.id, session.id, prefer);
+      // Backend a créé le round. Maintenant on le démarre comme un round normal.
+      await startRound(session.id, result.round.id);
+      await playTrack(session.id, result.round.id);
+      setPreviewPlaylist(null);
+      setPreviewReport(null);
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleConnectSpotify = async (): Promise<void> => {
+    try {
+      const url = await startSpotifyConnect();
+      window.location.href = url;
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
+  const handleConnectYoutube = async (): Promise<void> => {
+    try {
+      const url = await startYouTubeConnect();
+      window.location.href = url;
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
   const handleNextTrack = async (): Promise<void> => {
     console.info(
       '[Next Track] Click bouton — session:',
@@ -869,6 +973,7 @@ function HostPageInner(): JSX.Element {
             <RoundSelectionScreen
               isFirstRound={session.rounds.length === 0}
               onPickPlaylist={handlePickPlaylist}
+              onPickOfficial={handlePickOfficial}
               onCreateExpress={() => setExpressModalOpen(true)}
               onEndSession={handleEndSession}
               loading={busy}
@@ -930,6 +1035,25 @@ function HostPageInner(): JSX.Element {
           setExpressModalOpen(false);
           return handlePickPlaylist(playlistId);
         }}
+      />
+
+      {/* Bibliothèque officielle Tutti — flow validation + lancement */}
+      <NoProviderModal
+        open={noProviderOpen}
+        onClose={() => setNoProviderOpen(false)}
+        onConnectSpotify={() => void handleConnectSpotify()}
+        onConnectYoutube={() => void handleConnectYoutube()}
+      />
+      <PreviewModal
+        open={!!previewPlaylist}
+        playlist={previewPlaylist}
+        report={previewReport}
+        busy={busy}
+        onCancel={() => {
+          setPreviewPlaylist(null);
+          setPreviewReport(null);
+        }}
+        onConfirm={() => void handleConfirmLaunchOfficial()}
       />
 
       <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-xs">

@@ -198,7 +198,13 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   const workspaceId = req.workspaceId!;
   try {
     const playlists = await prisma.playlist.findMany({
-      where: { establishment: { workspace_id: workspaceId } },
+      where: {
+        establishment: { workspace_id: workspaceId },
+        // Hide official Tutti clones (is_official_tutti=true) — créées par
+        // POST /api/library/playlists/:id/launch en interne. L'utilisateur ne
+        // doit pas les voir dans "Mes playlists".
+        is_official_tutti: false,
+      },
       orderBy: { updated_at: 'desc' },
       include: { _count: { select: { playlist_tracks: true } } },
     });
