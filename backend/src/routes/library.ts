@@ -122,6 +122,7 @@ router.post(
       year: number | null;
       provider: 'spotify' | 'youtube';
       provider_track_id: string;
+      cover_url: string | null;
       answers_accepted: Record<string, unknown> | null;
     };
     const chosen: ChosenTrack[] = [];
@@ -146,6 +147,11 @@ router.post(
         }
       }
       if (!provider || !providerId) continue; // track non jouable, skip
+      // Fallback cover : si pas de cover_url stockée et qu'on a un youtube_id,
+      // on dérive la thumbnail YouTube. Garantit un visuel pour chaque track.
+      const coverUrl =
+        t.cover_url ??
+        (t.youtube_id ? `https://img.youtube.com/vi/${t.youtube_id}/hqdefault.jpg` : null);
       chosen.push({
         position: t.position,
         title: t.title,
@@ -153,6 +159,7 @@ router.post(
         year: t.year,
         provider,
         provider_track_id: providerId,
+        cover_url: coverUrl,
         answers_accepted: null,
       });
     }
@@ -182,11 +189,22 @@ router.post(
 
       const existingTrack = await prisma.track.findFirst({
         where: { provider: c.provider, provider_track_id: c.provider_track_id },
-        select: { id: true },
+        select: { id: true, cover_url: true },
       });
-      const track =
-        existingTrack ??
-        (await prisma.track.create({
+      let trackId: string;
+      if (existingTrack) {
+        // Backfill cover_url si la Track existe mais n'a pas de cover (anciennes
+        // imports ou import perso sans cover) — utile pour faire apparaître
+        // les covers sur les sessions officielles existantes.
+        if (!existingTrack.cover_url && c.cover_url) {
+          await prisma.track.update({
+            where: { id: existingTrack.id },
+            data: { cover_url: c.cover_url },
+          });
+        }
+        trackId = existingTrack.id;
+      } else {
+        const created = await prisma.track.create({
           data: {
             artist_id: artist.id,
             canonical_title: c.title,
@@ -194,10 +212,13 @@ router.post(
             year: c.year,
             provider: c.provider,
             provider_track_id: c.provider_track_id,
+            cover_url: c.cover_url,
           },
           select: { id: true },
-        }));
-      trackIds.push(track.id);
+        });
+        trackId = created.id;
+      }
+      trackIds.push(trackId);
     }
 
     // 5. Créer Playlist clone (is_official_tutti=true → caché de "Mes playlists")

@@ -659,6 +659,9 @@ model OfficialPlaylistTrack {
   /// Réponses acceptées (artist + title aliases pour la reco vocale Whisper).
   /// Format JSON : { artist: string[], title: string[], full: string[] }
   answers_accepted Json?
+  /// URL cover album/track (récupérée via Spotify lors de l'import). Null si
+  /// non résolue. Copiée dans Track.cover_url au moment du clone-on-launch.
+  cover_url        String?
   created_at       DateTime @default(now()) @db.Timestamptz(6)
 
   playlist OfficialPlaylist @relation(fields: [playlist_id], references: [id], onDelete: Cascade)

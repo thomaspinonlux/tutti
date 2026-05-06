@@ -37,6 +37,9 @@ export interface SourceTrack {
   difficulty?: string;
   spotify_id?: string | null;
   youtube_id?: string | null;
+  /** URL cover album/track. Récupérée auto via Spotify lors de l'import.
+   *  Fallback YouTube thumbnail si Spotify indispo. */
+  cover_url?: string | null;
   answers_accepted?: Record<string, unknown> | null;
 }
 
@@ -245,15 +248,28 @@ interface SpotifySearchTrack {
   id: string;
   name: string;
   artists: Array<{ name: string }>;
-  album: { name: string; release_date?: string };
+  album: {
+    name: string;
+    release_date?: string;
+    images?: Array<{ url: string; width?: number; height?: number }>;
+  };
   explicit?: boolean;
   is_local?: boolean;
+}
+
+/**
+ * Résultat de la recherche Spotify : id + cover URL extraite de
+ * album.images[0] (la plus grande, ~640x640).
+ */
+interface SpotifyMatch {
+  id: string;
+  cover_url: string | null;
 }
 
 async function searchSpotifyTrack(
   track: SourceTrack,
   pl: NormalizedPlaylist,
-): Promise<string | null> {
+): Promise<SpotifyMatch | null> {
   const token = await getSpotifyAppToken();
   if (!token) return null;
   const cleanArtist = track.artist.replace(/[":]/g, ' ').trim();
@@ -319,7 +335,25 @@ async function searchSpotifyTrack(
     );
     return null;
   }
-  return best.track.id;
+  // Extrait cover URL : album.images[0] est la plus grande (~640x640).
+  const coverUrl = best.track.album.images?.[0]?.url ?? null;
+  return { id: best.track.id, cover_url: coverUrl };
+}
+
+/**
+ * Récupère cover_url pour un spotify_id déjà connu (cas re-import après
+ * ajout du champ cover_url : les tracks ont déjà spotify_id mais pas de cover).
+ * GET /v1/tracks/:id retourne album.images[0].url. Null si fail.
+ */
+async function fetchSpotifyTrackCover(spotifyId: string): Promise<string | null> {
+  const token = await getSpotifyAppToken();
+  if (!token) return null;
+  const res = await fetch(`https://api.spotify.com/v1/tracks/${encodeURIComponent(spotifyId)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as SpotifySearchTrack;
+  return data.album?.images?.[0]?.url ?? null;
 }
 
 // ───── YouTube Data v3 ─────────────────────────────────────────────────────
@@ -414,6 +448,7 @@ async function upsertPlaylistInDb(
         difficulty: normalizeDifficulty(t.difficulty ?? pl.difficulty),
         spotify_id: t.spotify_id ?? null,
         youtube_id: t.youtube_id ?? null,
+        cover_url: t.cover_url ?? null,
         // Prisma JSONB nullable : utiliser Prisma.JsonNull pour stocker null
         // explicitement ; cast InputJsonValue sinon.
         answers_accepted: t.answers_accepted
@@ -455,11 +490,25 @@ export async function processFile(filePath: string): Promise<FileReport> {
 
     if (next.spotify_id) {
       report.spotifyAlreadyCached += 1;
+      // Backfill cover_url pour les tracks dont spotify_id est cached mais
+      // cover_url manque (cas re-import après ajout du champ cover_url).
+      if (!next.cover_url) {
+        try {
+          const cover = await fetchSpotifyTrackCover(next.spotify_id);
+          if (cover) next.cover_url = cover;
+        } catch (err) {
+          console.warn(`[Spotify] cover fetch failed for ${next.spotify_id}:`, err);
+        }
+      }
     } else {
       try {
-        const id = await searchSpotifyTrack(track, pl);
-        if (id) {
-          next.spotify_id = id;
+        const match = await searchSpotifyTrack(track, pl);
+        if (match) {
+          next.spotify_id = match.id;
+          // Stocke la cover Spotify si dispo (priorité sur fallback YouTube)
+          if (match.cover_url && !next.cover_url) {
+            next.cover_url = match.cover_url;
+          }
           report.spotifyMatched += 1;
         } else {
           report.spotifyMissed += 1;
@@ -485,6 +534,12 @@ export async function processFile(filePath: string): Promise<FileReport> {
         console.warn(`[YouTube] error for "${track.artist} - ${track.title}":`, err);
         report.youtubeMissed += 1;
       }
+    }
+
+    // Fallback cover : si pas de Spotify cover (Spotify miss ou album sans
+    // images) mais youtube_id résolu, on prend la thumbnail YouTube hqdefault.
+    if (!next.cover_url && next.youtube_id) {
+      next.cover_url = `https://img.youtube.com/vi/${next.youtube_id}/hqdefault.jpg`;
     }
 
     if (!next.spotify_id || !next.youtube_id) {

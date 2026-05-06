@@ -46,6 +46,7 @@ export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
     difficulty: string;
     spotify_id: string | null;
     youtube_id: string | null;
+    cover_url: string | null;
   }>;
 }
 
@@ -165,6 +166,7 @@ export async function getVisiblePlaylistDetail(
       difficulty: t.difficulty,
       spotify_id: t.spotify_id,
       youtube_id: t.youtube_id,
+      cover_url: t.cover_url,
     })),
   };
 }
