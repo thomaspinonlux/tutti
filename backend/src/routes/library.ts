@@ -19,6 +19,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { listVisiblePlaylists, getVisiblePlaylistDetail } from '../lib/officialLibraryQueries.js';
 import { generateAliases } from '../lib/aliases.js';
+import { broadcastToSession } from '../socket/index.js';
 
 const router: Router = Router();
 
@@ -243,24 +244,31 @@ router.post(
       },
     });
 
-    res.json({
-      round: {
-        id: round.id,
-        session_id: round.session_id,
-        playlist_id: round.playlist_id,
-        position: round.position,
-        status: round.status,
-        current_track_index: round.current_track_index,
-        started_at: round.started_at,
-        ended_at: round.ended_at,
-        created_at: round.created_at,
-        playlist: {
-          id: round.playlist.id,
-          name: round.playlist.name,
-          level: round.playlist.level,
-          tracks_count: round.playlist._count.playlist_tracks,
-        },
+    // 7. Broadcast round:created (Issue 1 fix : sans ce broadcast, le HostPage
+    // socket listener ne met pas à jour session.rounds → derived phase reste
+    // 'roundSelection' → host coincé sur l'écran de sélection alors que la
+    // session est active backend-side. Symétrie avec POST /sessions/:id/rounds.
+    const enriched = {
+      id: round.id,
+      session_id: round.session_id,
+      playlist_id: round.playlist_id,
+      position: round.position,
+      status: round.status,
+      current_track_index: round.current_track_index,
+      started_at: round.started_at,
+      ended_at: round.ended_at,
+      created_at: round.created_at,
+      playlist: {
+        id: round.playlist.id,
+        name: round.playlist.name,
+        level: round.playlist.level,
+        tracks_count: round.playlist._count.playlist_tracks,
       },
+    };
+    broadcastToSession(session.id, 'round:created', { round: enriched });
+
+    res.json({
+      round: enriched,
       playable_count: chosen.length,
       total_count: detail.tracks.length,
       provider_used: preferProvider,

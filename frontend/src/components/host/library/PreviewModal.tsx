@@ -51,17 +51,26 @@ export function PreviewModal({
       className="fixed inset-0 z-50 bg-ink/60 flex items-center justify-center p-4"
       onClick={onCancel}
     >
-      <div onClick={(e) => e.stopPropagation()} className="max-w-md w-full">
-        <Card size="md" tone="cream">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="max-w-lg w-full max-h-[90vh] flex flex-col"
+      >
+        <Card size="md" tone="cream" className="flex flex-col max-h-full overflow-hidden">
+          {/* Header */}
           <h2 id="preview-title" className="font-display text-2xl mb-2">
             {t('host.session.modal.preview.title')}
           </h2>
           <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-1">
-            {t('host.session.officialBadge')}
+            ⭐ {t('host.session.officialBadge')}
           </p>
-          <p className="font-medium mb-4">{name}</p>
+          <p className="font-medium mb-1">{name}</p>
+          <p className="font-mono text-xs text-ink-soft mb-3">
+            {playlist.theme ?? '—'} · {playlist.difficulty.toLowerCase()} ·{' '}
+            {playlist.locale_primary} · {playlist.track_count} {t('playlists.tracksCount')}
+          </p>
 
-          <div className={`px-3 py-3 border-2 rounded-lg mb-4 ${tone}`}>
+          {/* Ratio coloré + warning explicite si <50% (Issue 3 polish brief V2) */}
+          <div className={`px-3 py-3 border-2 rounded-lg mb-3 ${tone}`}>
             <p className="font-display text-2xl tabular-nums">
               {report.playable} / {report.total}
             </p>
@@ -72,9 +81,33 @@ export function PreviewModal({
             {report.via_youtube > 0 && (
               <p className="text-xs font-mono">via YouTube : {report.via_youtube}</p>
             )}
+            {ratio < 0.5 && (
+              <p className="text-xs font-bold mt-2">
+                ⚠️ {t('host.session.modal.preview.warningLow')}
+              </p>
+            )}
           </div>
 
-          <div className="flex gap-2">
+          {/* Liste tracks scrollable (Issue 3 brief) */}
+          <div className="flex-1 min-h-0 overflow-y-auto border-2 border-ink/20 rounded mb-3 bg-cream-2">
+            <ol className="divide-y divide-ink/10">
+              {playlist.tracks.map((tr) => (
+                <li key={tr.id} className="flex items-baseline gap-2 px-3 py-1.5 text-sm">
+                  <span className="font-mono text-[11px] tabular-nums text-ink-soft w-6">
+                    {tr.position}.
+                  </span>
+                  <span className="flex-1 truncate">
+                    <span className="font-medium">{tr.title}</span>
+                    <span className="text-ink-soft"> — {tr.artist}</span>
+                    {tr.year ? <span className="text-ink-faded text-xs"> · {tr.year}</span> : null}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          {/* Boutons actions */}
+          <div className="flex gap-2 shrink-0">
             <Button variant="ghost" onClick={onCancel} className="flex-1" disabled={busy}>
               {t('host.session.modal.preview.cancel')}
             </Button>

@@ -19,20 +19,30 @@ import { useTranslation } from 'react-i18next';
 import { getCurrentSession, type CurrentActiveSession } from '../../lib/sessions.js';
 import { Button } from '../ui/index.js';
 
-const DISMISS_KEY = 'tutti.resume_banner_dismissed';
+// Issue 2 fix : dismiss PAR session (clé inclut session.id) au lieu d'un flag
+// global qui cachait la bannière de TOUTES les sessions futures jusqu'à
+// fermeture onglet. Avec la clé per-session, dismisser la bannière d'une
+// session A n'empêche pas l'apparition pour la session B suivante.
+const DISMISS_KEY_PREFIX = 'tutti.resume_banner_dismissed:';
 
 export function ResumeSessionBanner(): JSX.Element | null {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [session, setSession] = useState<CurrentActiveSession | null>(null);
-  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem(DISMISS_KEY) === '1');
+  const [dismissedSessionId, setDismissedSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     void getCurrentSession()
       .then((s) => {
-        if (!cancelled) setSession(s);
+        if (cancelled) return;
+        setSession(s);
+        // Re-lit le flag dismiss pour la session courante (per-session).
+        if (s) {
+          const dismissed = sessionStorage.getItem(DISMISS_KEY_PREFIX + s.id) === '1';
+          setDismissedSessionId(dismissed ? s.id : null);
+        }
       })
       .catch(() => {});
     return () => {
@@ -40,15 +50,16 @@ export function ResumeSessionBanner(): JSX.Element | null {
     };
   }, [location.pathname]);
 
-  if (!session || dismissed) return null;
+  if (!session) return null;
+  if (dismissedSessionId === session.id) return null;
 
   const handleResume = (): void => {
     navigate(`/host?session=${session.short_code}`);
   };
 
   const handleDismiss = (): void => {
-    sessionStorage.setItem(DISMISS_KEY, '1');
-    setDismissed(true);
+    sessionStorage.setItem(DISMISS_KEY_PREFIX + session.id, '1');
+    setDismissedSessionId(session.id);
   };
 
   const isOld =

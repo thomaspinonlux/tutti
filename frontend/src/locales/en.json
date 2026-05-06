@@ -282,6 +282,7 @@
         "preview": {
           "title": "Session preview",
           "tracksAvailable": "tracks playable with your accounts",
+          "warningLow": "Less than half of the tracks are playable. Connect another provider to improve the ratio.",
           "cancel": "Cancel",
           "start": "Start session"
         }

@@ -282,6 +282,7 @@
         "preview": {
           "title": "Aperçu de la session",
           "tracksAvailable": "morceaux jouables avec tes comptes",
+          "warningLow": "Moins de la moitié des morceaux sont jouables. Connecte un autre provider pour améliorer le taux.",
           "cancel": "Annuler",
           "start": "Lancer la session"
         }
