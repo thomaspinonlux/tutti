@@ -4,18 +4,51 @@
  * Affiche "Bienvenue dans <establishment.name>" + 2 grandes cartes :
  *   - Tutti Tracks (illustration disque vinyle)
  *   - Tutti Quizz (illustration ampoule)
+ *
+ * INSTRUMENTATION TEMPORAIRE (Sujet 2 PR fix/buzz-size-and-dashboard-empty) :
+ * logs `[DBG dashboard]` + ErrorBoundary capturent le bug "page reste vide
+ * après navigate depuis /host". À retirer après diagnostic confirmé.
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEstablishment } from './AdminLayout.js';
 import { Button, Card, TitleHandwritten, Swirl, Underline } from '../../components/ui/index.js';
 import { GettingStartedChecklist } from '../../components/admin/dashboard/GettingStartedChecklist.js';
 
+// ───── DEBUG : ErrorBoundary temporaire ──────────────────────────────────
+// À retirer après confirmation du diagnostic.
+interface DebugBoundaryState {
+  error: Error | null;
+}
+class DebugBoundary extends Component<{ children: ReactNode }, DebugBoundaryState> {
+  state: DebugBoundaryState = { error: null };
+  static getDerivedStateFromError(error: Error): DebugBoundaryState {
+    return { error };
+  }
+  componentDidCatch(error: Error, info: { componentStack?: string | null }): void {
+    console.error('[DBG dashboard] CRASH', error, info);
+  }
+  render(): ReactNode {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 20, background: '#fee', color: '#900', border: '2px solid #900' }}>
+          <strong>[DBG dashboard] Crash:</strong> {String(this.state.error)}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// Compteur global de renders pour détecter les boucles (H4)
+let renderCount = 0;
+
 export function DashboardPage(): JSX.Element {
   const { t } = useTranslation();
   const { establishment, loading, error } = useEstablishment();
+  const location = useLocation();
 
   // Banner de confirmation après actions terminales (Fin de partie depuis
   // /host). Le query param ?notice=session-ended est posé par HostPage avant
@@ -57,43 +90,45 @@ export function DashboardPage(): JSX.Element {
   // immédiatement après navigate (avant la fin du fetch /api/establishment).
   // Le contenu principal (header + cards) ne montre que quand establishment OK.
   return (
-    <div className="max-w-5xl mx-auto">
-      {/* Banner de notice (toujours rendu, indépendant du loading establishment). */}
-      {noticeKey === 'session-ended' && noticeVisible && (
-        <div
-          role="status"
-          className="mb-6 px-4 py-3 border-2 border-basil bg-basil/10 text-basil-deep rounded-lg flex items-center gap-3 animate-fade-in"
-        >
-          <span className="text-2xl" aria-hidden>
-            ✅
-          </span>
-          <span className="font-medium">{t('dashboard.noticeSessionEnded')}</span>
-        </div>
-      )}
-      {noticeKey === 'session-cancelled' && noticeVisible && (
-        <div
-          role="status"
-          className="mb-6 px-4 py-3 border-2 border-spritz bg-spritz/10 text-spritz-deep rounded-lg flex items-center gap-3 animate-fade-in"
-        >
-          <span className="text-2xl" aria-hidden>
-            ↩️
-          </span>
-          <span className="font-medium">{t('dashboard.noticeSessionCancelled')}</span>
-        </div>
-      )}
+    <DebugBoundary>
+      <div className="max-w-5xl mx-auto">
+        {/* Banner de notice (toujours rendu, indépendant du loading establishment). */}
+        {noticeKey === 'session-ended' && noticeVisible && (
+          <div
+            role="status"
+            className="mb-6 px-4 py-3 border-2 border-basil bg-basil/10 text-basil-deep rounded-lg flex items-center gap-3 animate-fade-in"
+          >
+            <span className="text-2xl" aria-hidden>
+              ✅
+            </span>
+            <span className="font-medium">{t('dashboard.noticeSessionEnded')}</span>
+          </div>
+        )}
+        {noticeKey === 'session-cancelled' && noticeVisible && (
+          <div
+            role="status"
+            className="mb-6 px-4 py-3 border-2 border-spritz bg-spritz/10 text-spritz-deep rounded-lg flex items-center gap-3 animate-fade-in"
+          >
+            <span className="text-2xl" aria-hidden>
+              ↩️
+            </span>
+            <span className="font-medium">{t('dashboard.noticeSessionCancelled')}</span>
+          </div>
+        )}
 
-      {error && (
-        <p role="alert" className="text-raspberry mb-4">
-          {t('common.error')} : {error}
-        </p>
-      )}
+        {error && (
+          <p role="alert" className="text-raspberry mb-4">
+            {t('common.error')} : {error}
+          </p>
+        )}
 
-      {(loading || !establishment) && (
-        <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>
-      )}
+        {(loading || !establishment) && (
+          <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>
+        )}
 
-      {establishment && <DashboardContent t={t} establishment={establishment} />}
-    </div>
+        {establishment && <DashboardContent t={t} establishment={establishment} />}
+      </div>
+    </DebugBoundary>
   );
 }
 
