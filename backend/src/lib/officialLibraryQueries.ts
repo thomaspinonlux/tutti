@@ -47,6 +47,8 @@ export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
     spotify_id: string | null;
     youtube_id: string | null;
     cover_url: string | null;
+    is_playable: boolean;
+    playability_reason: string | null;
   }>;
 }
 
@@ -167,6 +169,8 @@ export async function getVisiblePlaylistDetail(
       spotify_id: t.spotify_id,
       youtube_id: t.youtube_id,
       cover_url: t.cover_url,
+      is_playable: t.is_playable,
+      playability_reason: t.playability_reason,
     })),
   };
 }
