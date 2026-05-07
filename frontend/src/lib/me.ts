@@ -22,6 +22,13 @@ export interface MeResponse {
   hasWorkspace: boolean;
   memberStatus: 'PENDING' | 'APPROVED' | 'REJECTED' | null;
   isSuperAdmin: boolean;
+  /**
+   * fix/disable-spotify-sdk-non-allowlist — true si l'user est allowlisté
+   * pour Spotify. Frontend skip l'init du SDK + tous les appels providers
+   * Spotify si false (défaut). Évite les NotFoundError cascade DOM cleanup
+   * + le bruit dans la console pour les users normaux post-pivot YouTube.
+   */
+  spotify_allowlist: boolean;
 }
 
 export async function getMe(): Promise<MeResponse> {

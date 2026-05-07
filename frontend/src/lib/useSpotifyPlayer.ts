@@ -140,6 +140,14 @@ export function useSpotifyPlayer({
   const tokenRef = useRef<string | null>(null);
   const tokenExpiresAtRef = useRef<number>(0);
   const pendingPlayRef = useRef<string | null>(null);
+  // fix/disable-spotify-sdk-non-allowlist — garde l'état enabled à jour pour
+  // les méthodes (activate, play, etc.) qui sont des closures sans deps. Si
+  // !enabled, toutes les méthodes deviennent des no-op SILENCIEUX (pas de
+  // log [Spotify SDK]) → console propre pour les users non allowlistés.
+  const enabledRef = useRef(enabled);
+  useEffect(() => {
+    enabledRef.current = enabled;
+  }, [enabled]);
   /** Anchor pour interpolation position : ms à l'instant timestamp + paused flag.
    *  state_changed met à jour l'anchor, le tick interpole entre les events. */
   const positionAnchorRef = useRef<{ ms: number; timestamp: number; paused: boolean }>({
@@ -157,6 +165,53 @@ export function useSpotifyPlayer({
     }, 250);
     return () => window.clearInterval(id);
   }, []);
+
+  // ── Suppression NotFoundError cascade Spotify SDK ──────────────────────
+  // fix/disable-spotify-sdk-non-allowlist — le SDK Spotify retire ses
+  // iframes/<audio> après que React ait déjà démonté la subtree. Le SDK
+  // throw alors "NotFoundError: The object can not be found here" en
+  // cascade (parfois 30+ erreurs) qui peuvent corrompre le rendu React.
+  // Solution : window error handler global qui swallow ces erreurs SI
+  // l'origine est le SDK Spotify (stack contient sdk.scdn.co OU message
+  // "The object can not be found here").
+  useEffect(() => {
+    if (!enabled) return;
+
+    const isSpotifyCleanupError = (msg: string | Event): boolean => {
+      const text = typeof msg === 'string' ? msg : '';
+      if (text.includes('The object can not be found here')) return true;
+      return false;
+    };
+
+    const onError = (event: ErrorEvent): void => {
+      if (
+        isSpotifyCleanupError(event.message) ||
+        (event.filename && event.filename.includes('sdk.scdn.co'))
+      ) {
+        event.preventDefault();
+        // Log warn 1 seule fois aurait été plus propre, mais counter inutile
+        // en V1 : l'important est de SWALLOW pour ne pas crash le render.
+      }
+    };
+
+    const onUnhandledRejection = (event: PromiseRejectionEvent): void => {
+      const reason = event.reason;
+      const msg =
+        reason && typeof reason === 'object' && 'message' in reason
+          ? String((reason as { message: unknown }).message)
+          : String(reason);
+      if (isSpotifyCleanupError(msg)) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onUnhandledRejection);
+    return () => {
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onUnhandledRejection);
+    };
+  }, [enabled]);
 
   // ── Chargement SDK + token initial + connexion ─────────────────────────
   useEffect(() => {
@@ -362,16 +417,26 @@ export function useSpotifyPlayer({
 
     return () => {
       cancelled = true;
+      // fix/disable-spotify-sdk-non-allowlist — try/catch défensif autour
+      // de TOUTES les ops cleanup. Le SDK Spotify retire ses iframes/audio
+      // élements après que React ait déjà unmount le tree → DOM cleanup
+      // throw NotFoundError "The object can not be found here" en cascade.
+      // Un seul catch global évite les erreurs visibles en console + fallout
+      // sur le rendu (page host vide après end-round/end-session).
       if (player) {
         try {
           player.disconnect();
-        } catch {
-          /* noop */
+        } catch (err) {
+          console.warn('[Spotify SDK] Cleanup disconnect error (non-fatal):', err);
         }
       }
-      playerRef.current = null;
-      setStatus('idle');
-      setDeviceId(null);
+      try {
+        playerRef.current = null;
+        setStatus('idle');
+        setDeviceId(null);
+      } catch (err) {
+        console.warn('[Spotify SDK] Cleanup state reset error (non-fatal):', err);
+      }
       // Pas de reset error pour laisser l'éventuel message visible au remount
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -441,6 +506,11 @@ export function useSpotifyPlayer({
    * plusieurs fois sans effet de bord).
    */
   const activate = async (): Promise<boolean> => {
+    if (!enabledRef.current) {
+      // Pas allowlisté → no-op silencieux. Pas de log pour ne pas polluer
+      // la console des users normaux.
+      return false;
+    }
     const p = playerRef.current;
     if (!p) {
       console.warn('[Spotify SDK] activateElement non disponible (player pas prêt)');

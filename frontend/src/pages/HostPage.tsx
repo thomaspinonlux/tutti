@@ -46,6 +46,7 @@ import {
 } from '../lib/sessions.js';
 import { abandonSession } from '../lib/screenState.js';
 import { connectAsHost } from '../lib/socket.js';
+import { getMe } from '../lib/me.js';
 import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
 import { useSpotifyAudioSync } from '../lib/useSpotifyAudioSync.js';
 import { useYouTubePlayer } from '../lib/useYouTubePlayer.js';
@@ -396,11 +397,34 @@ function HostPageInner(): JSX.Element {
   const playingRoundsCount = session?.rounds.filter((r) => r.status !== 'PENDING').length ?? 0;
   const currentMaster = session?.participants.find((p) => p.is_master) ?? null;
 
-  // ── Audio playback (Phase B) ───────────────────────────────────────────
-  // On charge les deux SDK (Spotify + YouTube) dès qu'on est en phase de
-  // lecture. Chaque hook ne fait rien tant que currentTrack.provider ne le
-  // sélectionne pas — pas de coût visible.
-  const spotify = useSpotifyPlayer({ enabled: phase === 'roundPlaying' });
+  // ── Audio playback ─────────────────────────────────────────────────────
+  // YouTube SDK : chargé pour tous les users (provider principal post-pivot).
+  // Spotify SDK : chargé UNIQUEMENT pour les users allowlistés (Thomas + 4
+  // testeurs, gating fix/disable-spotify-sdk-non-allowlist). Évite les
+  // NotFoundError cascade DOM cleanup en transition end-round/end-session
+  // pour les users normaux + élimine bruit console [Spotify SDK].
+  const [spotifyAllowlisted, setSpotifyAllowlisted] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void getMe()
+      .then((me) => {
+        if (cancelled) return;
+        setSpotifyAllowlisted(me.spotify_allowlist === true);
+        console.info(
+          `[HostPage] Spotify allowlist : ${me.spotify_allowlist === true ? 'OK' : 'OFF (SDK skip)'}`,
+        );
+      })
+      .catch(() => {
+        // Si /api/me fail → on reste OFF (sécurité). YouTube fonctionne quand même.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const spotify = useSpotifyPlayer({
+    enabled: spotifyAllowlisted && phase === 'roundPlaying',
+  });
   const youtube = useYouTubePlayer({ enabled: phase === 'roundPlaying' });
 
   // ── Audio sync unifié — single source of truth = état serveur ────────
@@ -410,7 +434,7 @@ function HostPageInner(): JSX.Element {
     spotify,
     currentTrack,
     isPaused: session?.is_paused ?? false,
-    enabled: phase === 'roundPlaying',
+    enabled: spotifyAllowlisted && phase === 'roundPlaying',
   });
   useYouTubeAudioSync({
     youtube,
@@ -532,7 +556,13 @@ function HostPageInner(): JSX.Element {
   const [previewReport, setPreviewReport] = useState<PlayabilityReport | null>(null);
 
   const fetchHostProviders = async (): Promise<HostProviders> => {
-    const [sp, yt] = await Promise.allSettled([getSpotifyStatus(), getYouTubeStatus()]);
+    // fix/disable-spotify-sdk-non-allowlist — skip /api/providers/spotify/*
+    // pour les users non allowlistés. Évite l'appel HTTP + le risque
+    // d'erreur 404/410 si Spotify Connect a été désactivé pour ce user.
+    const [sp, yt] = await Promise.allSettled([
+      spotifyAllowlisted ? getSpotifyStatus() : Promise.resolve(null),
+      getYouTubeStatus(),
+    ]);
     const spotify = sp.status === 'fulfilled' ? sp.value : null;
     const youtube = yt.status === 'fulfilled' ? yt.value : null;
     const providers: HostProviders = {
