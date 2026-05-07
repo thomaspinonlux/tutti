@@ -4,9 +4,10 @@
  * Charge l'IFrame Player API de YouTube et expose une interface alignée sur
  * useSpotifyPlayer (status, positionMs, durationMs, isPlaying, play/pause).
  *
- * Anti-pub : on utilise les paramètres `start` et `end` du player pour
- * couper directement aux secondes utiles. Par défaut on saute les 15
- * premières secondes (intro) et on coupe à 60s (durée d'écoute Tutti).
+ * Bug 1 (fix/critical-bugs-v3) — défault startSec=0 (au lieu de 15).
+ * Hypothèse historique : sauter 15s pour passer le pre-roll ad. Avec un
+ * compte YouTube Premium, pas de pre-roll → la musique commençait à 0:15
+ * au lieu de 0:00. La cap end à 60s (durée d'écoute Tutti) reste.
  *
  * Le player a besoin d'un élément DOM cible (id `youtube-player-host` par
  * défaut). Un <div /> doit exister dans le rendu pour que l'API puisse y
@@ -35,7 +36,7 @@ export interface UseYouTubePlayerOptions {
   enabled: boolean;
   /** ID du div container (défaut: youtube-player-host). */
   containerId?: string;
-  /** Démarre la lecture en sautant les N premières secondes (défaut 15). */
+  /** Démarre la lecture en sautant les N premières secondes (défaut 0). */
   defaultStartSec?: number;
   /** Coupe la lecture à N secondes (défaut 60 = durée d'écoute Tutti). */
   defaultEndSec?: number;
@@ -99,7 +100,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   const {
     enabled,
     containerId = DEFAULT_CONTAINER_ID,
-    defaultStartSec = 15,
+    defaultStartSec = 0,
     defaultEndSec = 60,
   } = opts;
   const [status, setStatus] = useState<YouTubePlayerStatus>('idle');
@@ -144,6 +145,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
           events: {
             onReady: () => {
               if (cancelled) return;
+              console.info('[Player] Ready');
               setStatus('ready');
             },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -214,10 +216,14 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   const play = useCallback(
     async (videoId: string, o?: { startSec?: number; endSec?: number }): Promise<boolean> => {
       const p = playerRef.current;
-      if (!p?.loadVideoById) return false;
+      if (!p?.loadVideoById) {
+        console.warn(`[Player] play(${videoId}) ignored — player not ready`);
+        return false;
+      }
       const startSec = o?.startSec ?? defaultStartSec;
       const endSec = o?.endSec ?? defaultEndSec;
       lastVideoRef.current = { id: videoId, startSec, endSec };
+      console.info(`[Player] Loading video ${videoId} (startSec=${startSec}, endSec=${endSec})`);
       try {
         p.loadVideoById({
           videoId,
