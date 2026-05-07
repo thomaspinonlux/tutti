@@ -140,6 +140,79 @@ router.post(
   },
 );
 
+// ───── PATCH /tracks/:trackId — édition manuelle d'un track officiel ─────
+//
+// Permet aux super-admins de corriger les youtube_id/spotify_id/cover_url
+// foireux après import auto, ET de curer manuellement les alias de
+// prononciation pour le matching vocal Whisper. Mêmes sémantiques que
+// PATCH /api/playlists/:id/tracks/:trackId côté playlists perso.
+//
+// Side-effect : les alias officiels sont mergés au clone-on-launch dans
+// Track.aliases (titre) + Artist.aliases (artiste) côté workspace user
+// pour que voiceMatch les reconnaisse.
+
+const patchTrackBody = z.object({
+  spotify_id: z.string().min(1).max(40).nullable().optional(),
+  youtube_id: z.string().min(1).max(40).nullable().optional(),
+  cover_url: z.string().url().nullable().optional(),
+  artist_aliases: z.array(z.string().min(1).max(120)).max(50).optional(),
+  title_aliases: z.array(z.string().min(1).max(120)).max(50).optional(),
+});
+
+router.patch(
+  '/tracks/:trackId',
+  async (req: Request<{ trackId: string }>, res: Response): Promise<void> => {
+    const parsed = patchTrackBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'INVALID_BODY', message: parsed.error.message } });
+      return;
+    }
+    const exists = await prisma.officialPlaylistTrack.findUnique({
+      where: { id: req.params.trackId },
+      select: { id: true, youtube_id: true, cover_url: true },
+    });
+    if (!exists) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Track introuvable' } });
+      return;
+    }
+
+    // Si youtube_id change et la cover_url actuelle est la thumbnail YT
+    // dérivée (ou pas de cover du tout), on régénère la thumbnail pour la
+    // nouvelle vidéo. Sinon on respecte le cover_url custom.
+    const data: Record<string, unknown> = { ...parsed.data };
+    if (
+      parsed.data.youtube_id !== undefined &&
+      parsed.data.youtube_id &&
+      parsed.data.cover_url === undefined
+    ) {
+      const looksLikeYtThumb =
+        !exists.cover_url ||
+        exists.cover_url.startsWith(`https://img.youtube.com/vi/${exists.youtube_id ?? ''}/`);
+      if (looksLikeYtThumb) {
+        data.cover_url = `https://img.youtube.com/vi/${parsed.data.youtube_id}/hqdefault.jpg`;
+      }
+    }
+
+    // Dédoublonnage + trim côté backend pour les alias.
+    if (parsed.data.artist_aliases) {
+      data.artist_aliases = Array.from(
+        new Set(parsed.data.artist_aliases.map((a) => a.trim()).filter((a) => a.length > 0)),
+      );
+    }
+    if (parsed.data.title_aliases) {
+      data.title_aliases = Array.from(
+        new Set(parsed.data.title_aliases.map((a) => a.trim()).filter((a) => a.length > 0)),
+      );
+    }
+
+    const track = await prisma.officialPlaylistTrack.update({
+      where: { id: req.params.trackId },
+      data,
+    });
+    res.json({ track });
+  },
+);
+
 // ───── POST /reimport — re-import toutes les playlists ───────────────────
 
 router.post('/reimport', async (_req: Request, res: Response): Promise<void> => {

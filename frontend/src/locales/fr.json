@@ -133,7 +133,15 @@
     "tracksTitleCol": "Titre",
     "tracksArtist": "Artiste",
     "tracksYear": "Année",
-    "tracksDifficulty": "Diff."
+    "tracksDifficulty": "Diff.",
+    "tracksAliases": "Alias",
+    "tracksAliasesEdit": "Éditer les alias de prononciation",
+    "aliasArtistLabel": "Alias artiste",
+    "aliasArtistHint": "Variantes de prononciation acceptées par la reco vocale (ex: \"les Beatles\", \"Beatles\").",
+    "aliasTitleLabel": "Alias titre",
+    "aliasTitleHint": "Variantes du titre acceptées (ex: \"hey jude\", \"hej jude\").",
+    "aliasPlaceholder": "Ajoute un alias…",
+    "aliasRemove": "Supprimer"
   },
   "dashboard": {
     "welcomeTo": "Bienvenue dans",

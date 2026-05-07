@@ -49,6 +49,8 @@ export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
     cover_url: string | null;
     is_playable: boolean;
     playability_reason: string | null;
+    artist_aliases: string[];
+    title_aliases: string[];
   }>;
 }
 
@@ -171,6 +173,8 @@ export async function getVisiblePlaylistDetail(
       cover_url: t.cover_url,
       is_playable: t.is_playable,
       playability_reason: t.playability_reason,
+      artist_aliases: t.artist_aliases,
+      title_aliases: t.title_aliases,
     })),
   };
 }
