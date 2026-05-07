@@ -1405,9 +1405,13 @@ function WaitingPhase({
   onToggleMaster: (participantId: string) => Promise<void>;
 }): JSX.Element {
   const { t } = useTranslation();
-  // Mode B exige qu'un master soit désigné avant de démarrer.
+  // F2 (feat/playlist-search-and-host-improvements) — autoriser démarrage
+  // avec 0 joueur (mode démo / test / animateur seul). Mode B exige
+  // toujours un master désigné — sans master, l'animateur n'a personne
+  // pour piloter le round.
   const needsMaster = !hasAnimator && !currentMasterId;
-  const canStart = !busy && participants.length >= 1 && !needsMaster;
+  const noPlayers = participants.length === 0;
+  const canStart = !busy && !needsMaster;
   return (
     <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-[auto_1fr]">
       <Card size="lg" tone="cream" className="text-center">
@@ -1431,7 +1435,16 @@ function WaitingPhase({
           <p className="font-display text-2xl">
             {t('host.participants')} <span className="text-ink-soft">({participants.length})</span>
           </p>
-          <Button onClick={() => void onStart()} disabled={!canStart} size="lg">
+          <Button
+            onClick={() => {
+              if (noPlayers && !window.confirm(t('host.startWithZeroPlayersConfirm'))) {
+                return;
+              }
+              void onStart();
+            }}
+            disabled={!canStart}
+            size="lg"
+          >
             {busy
               ? t('host.starting')
               : hasPendingRound

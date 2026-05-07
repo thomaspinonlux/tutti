@@ -29,6 +29,7 @@ import {
   getPublicSession,
   joinSession,
   masterAdjustPoints,
+  masterEndRound,
   masterEndSession,
   masterGiveAnswer,
   masterListScores,
@@ -496,6 +497,13 @@ export function PlayPage(): JSX.Element {
       await masterEndSession(identity.sessionId, identity.token);
       // L'event session:ended fera basculer step → 'ended'
     });
+  // F3 — terminer la manche courante depuis l'interface master mode B.
+  const handleMasterEndRound = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity || !currentRound) return;
+      await masterEndRound(identity.sessionId, currentRound.id, identity.token);
+      // L'event round:ended déclenchera la transition vers intermission.
+    });
   const handleMasterPickPlaylist = async (playlistId: string): Promise<void> => {
     setMasterPickerOpen(false);
     return masterCall(async () => {
@@ -729,6 +737,7 @@ export function PlayPage(): JSX.Element {
                     onPause={handleMasterPause}
                     onResume={handleMasterResume}
                     onRestartTrack={handleMasterRestart}
+                    onEndRound={handleMasterEndRound}
                     onEndSession={handleMasterEndSession}
                     onPickRound={() => setMasterPickerOpen(true)}
                     onAdjustPoints={() => setAdjustSheetOpen(true)}

@@ -272,6 +272,7 @@
     "moveToTeam": "Change team",
     "kick": "Kick",
     "kickConfirm": "Kick this player out of the session?",
+    "startWithZeroPlayersConfirm": "No players connected. Start anyway?",
     "startBlindTest": "Start the blind test",
     "startBlindTestWithFirstRound": "Start round 1",
     "endBlindTest": "End the blind test",
@@ -287,6 +288,8 @@
         "myPlaylists": "My playlists",
         "officialLibrary": "Official library"
       },
+      "searchPlaceholder": "Search for a playlist...",
+      "searchNoResults": "No playlist found for \"{{query}}\"",
       "officialBadge": "Tutti Official",
       "premiumRequired": "Tutti Premium required",
       "source": {
@@ -553,6 +556,9 @@
     "masterAdjustReason": "Reason (optional, private)",
     "masterAdjustReasonPlaceholder": "Ex: had the song replayed",
     "masterAdjustConfirm": "Apply",
+    "masterEndRound": "End round",
+    "masterEndRoundConfirm": "End the current round?",
+    "masterEndRoundYes": "Yes, end it",
     "masterEndSession": "End the game",
     "masterEndSessionConfirm": "End now? Final podium will show.",
     "masterEndSessionYes": "Yes, end it",

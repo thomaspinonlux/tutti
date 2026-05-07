@@ -504,13 +504,10 @@ router.post(
         .json({ error: { code: 'INVALID_STATUS', message: 'Session pas en WAITING' } });
       return;
     }
-    const MIN_PLAYERS_TO_START = 1; // V1 dev/test (2 en prod commerciale)
-    if (own.participants.length < MIN_PLAYERS_TO_START) {
-      res
-        .status(400)
-        .json({ error: { code: 'NOT_ENOUGH_PLAYERS', message: 'Au moins 1 joueur requis' } });
-      return;
-    }
+    // feat/playlist-search-and-host-improvements F2 — autoriser le démarrage
+    // sans joueur connecté (mode démo / test / animateur seul). L'host peut
+    // toujours choisir d'attendre via l'UI s'il préfère.
+    // Ancienne valeur : MIN_PLAYERS_TO_START = 1.
     try {
       const session = await prisma.session.update({
         where: { id: req.params.id },
