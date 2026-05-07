@@ -132,6 +132,40 @@ router.post(
 
       const shortCode = await generateUniqueShortCode(establishment.name);
 
+      // Bug 4 (fix/critical-bugs-v3) — Auto-cleanup zombies AVANT de créer
+      // la nouvelle session. Toute session WAITING/PLAYING antérieure du
+      // workspace (admin a fermé l'onglet sans abandonner / crashée /
+      // abandon non commit) est forcée à ENDED + reset is_paused. Idem
+      // pour les rounds PLAYING associés.
+      //
+      // Règle : une seule session active par workspace à la fois. Sans
+      // ce cleanup, findRepresentativeSession retournait la zombie au
+      // lieu de la session ENDED récente → TV bloquée sur PAUSED de
+      // l'ancienne, dashboard host vide.
+      const cleanup = await prisma.session.updateMany({
+        where: {
+          establishment: { workspace_id: workspaceId },
+          status: { in: ['WAITING', 'PLAYING'] },
+        },
+        data: {
+          status: 'ENDED',
+          ended_at: new Date(),
+          is_paused: false,
+        },
+      });
+      if (cleanup.count > 0) {
+        console.info(
+          `[Session Cleanup] Abandoned ${cleanup.count} zombie session(s) before creating new one in workspace=${workspaceId}`,
+        );
+        await prisma.sessionRound.updateMany({
+          where: {
+            session: { establishment: { workspace_id: workspaceId } },
+            status: 'PLAYING',
+          },
+          data: { status: 'ENDED', ended_at: new Date() },
+        });
+      }
+
       const session = await prisma.session.create({
         data: {
           establishment_id: establishment.id,

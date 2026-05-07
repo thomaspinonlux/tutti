@@ -430,6 +430,11 @@ model Session {
   // Cap technique de participants par session (15 V1 pour B2C).
   max_participants Int           @default(15)
   created_at       DateTime      @default(now()) @db.Timestamptz(6)
+  /// Bumpé à chaque update Prisma. Utilisé par findRepresentativeSession
+  /// pour ordonner les candidats (orderBy updated_at desc) — un session
+  /// ENDED via POST /:id/end aura un updated_at plus récent qu'une zombie
+  /// PLAYING jamais touchée. Anti-bug "TV bloquée sur ancienne session".
+  updated_at       DateTime      @updatedAt @db.Timestamptz(6)
   started_at       DateTime?     @db.Timestamptz(6)
   ended_at         DateTime?     @db.Timestamptz(6)
 

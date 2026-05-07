@@ -108,13 +108,18 @@ async function findRepresentativeSession(workspaceId: string) {
 
   // 1. WAITING/PLAYING active, créée dans les 4h (anti-zombie). Prioritaire
   // pour que la TV bascule sur une nouvelle session dès qu'elle est créée.
+  // Bug 4 (fix/critical-bugs-v3) — orderBy updated_at desc (au lieu de
+  // created_at). Une session récemment terminée a un updated_at plus
+  // récent qu'une zombie PLAYING jamais touchée. Avec ce orderBy + le
+  // cleanup auto au POST /sessions, une zombie ne peut plus masquer une
+  // session ENDED récente.
   const active = await prisma.session.findFirst({
     where: {
       establishment: { workspace_id: workspaceId },
       status: { in: ['WAITING', 'PLAYING'] },
       created_at: { gte: zombieCreatedCutoff },
     },
-    orderBy: { created_at: 'desc' },
+    orderBy: { updated_at: 'desc' },
     include: {
       participants: { where: { is_kicked: false } },
       rounds: {
