@@ -122,18 +122,21 @@ export function DashboardPage(): JSX.Element {
           <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>
         )}
 
-        {establishment && <DashboardContent t={t} establishment={establishment} />}
+        {establishment && <DashboardContent establishment={establishment} />}
       </div>
     </DebugBoundary>
   );
 }
 
 interface DashboardContentProps {
-  t: ReturnType<typeof useTranslation>['t'];
+  // Pas de prop `t` typé : passer le TFunction de react-i18next à travers
+  // une boundary de component créait une instantiation infinie côté TS
+  // (TS2589). useTranslation est appelé directement dans DashboardContent.
   establishment: NonNullable<ReturnType<typeof useEstablishment>['establishment']>;
 }
 
-function DashboardContent({ t, establishment }: DashboardContentProps): JSX.Element {
+function DashboardContent({ establishment }: DashboardContentProps): JSX.Element {
+  const { t } = useTranslation();
   return (
     <>
       <header className="mb-8 flex items-start justify-between flex-wrap gap-4">

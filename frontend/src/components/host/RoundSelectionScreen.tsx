@@ -22,8 +22,9 @@ type Tab = 'mine' | 'library';
 
 interface Props {
   isFirstRound: boolean;
-  /** Pick playlist perso (existante). */
-  onPickPlaylist: (playlistId: string) => void | Promise<void>;
+  /** Pick playlist perso (existante). Reçoit l'objet complet pour afficher
+   *  le PreGameStartScreen avec name + tracks_count sans re-fetch. */
+  onPickPlaylist: (playlist: Playlist) => void | Promise<void>;
   /** Pick playlist officielle Tutti — déclenche flow validation + clone. */
   onPickOfficial: (playlist: LibraryPlaylistSummary) => void | Promise<void>;
   onCreateExpress: () => void;
@@ -127,7 +128,7 @@ export function RoundSelectionScreen({
             <button
               key={p.id}
               type="button"
-              onClick={() => void onPickPlaylist(p.id)}
+              onClick={() => void onPickPlaylist(p)}
               disabled={loading}
               className="group text-left disabled:opacity-50"
             >

@@ -228,6 +228,15 @@
     "create": "Créer la partie",
     "creating": "Création…"
   },
+  "preGame": {
+    "readyTitle": "Prêt à jouer ?",
+    "trackCount_one": "{{count}} morceau",
+    "trackCount_other": "{{count}} morceaux",
+    "startButton": "Démarrer le blind test",
+    "starting": "Démarrage…",
+    "cancel": "Annuler",
+    "officialBadge": "Bibliothèque officielle Tutti"
+  },
   "host": {
     "eyebrow": "Salle d'attente",
     "eyebrowPlaying": "Manche {{round}}",

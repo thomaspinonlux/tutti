@@ -21,7 +21,7 @@ interface Props {
   nextRoundPosition: number;
   /** Langue par défaut (héritée de la session). */
   language: 'fr' | 'en';
-  onLaunch: (playlistId: string) => void | Promise<void>;
+  onLaunch: (playlist: { id: string; name: string; tracks_count: number }) => void | Promise<void>;
 }
 
 const MIN_TRACKS = 3;
@@ -86,7 +86,7 @@ export function ExpressPlaylistModal({
       // L'API ne permet pas de set is_express via updatePlaylist (champ non
       // exposé V1 dans patchSchema) : à ajouter plus tard si besoin de filtrer.
       // Pour l'instant le préfixe "Express" dans le nom suffit visuellement.
-      await onLaunch(playlist.id);
+      await onLaunch({ id: playlist.id, name: playlist.name, tracks_count: picked.length });
       reset();
       onClose();
     } catch (err: unknown) {

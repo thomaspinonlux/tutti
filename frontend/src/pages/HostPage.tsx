@@ -19,6 +19,7 @@ import type {
   CumulativeScore,
   CurrentTrackState,
   Participant,
+  Playlist,
   Session,
   SessionRoundWithPlaylist,
   SessionWithParticipants,
@@ -67,7 +68,9 @@ import {
   launchLibraryPlaylist,
   type LibraryPlaylistDetail,
   type LibraryPlaylistSummary,
+  type PreferProvider,
 } from '../lib/library.js';
+import { PreGameStartScreen } from './host/PreGameStartScreen.js';
 import {
   computePlayability,
   preferredProvider,
@@ -482,21 +485,38 @@ function HostPageInner(): JSX.Element {
     }
   };
 
-  const handlePickPlaylist = async (playlistId: string): Promise<void> => {
+  // Bug 3 (fix/critical-bugs-v3) — pré-game state. Le clic sur une playlist
+  // ne lance plus la création/play directement : on stage les infos puis on
+  // affiche <PreGameStartScreen>. Le clic "▶ Démarrer" sur cet écran fournit
+  // un user gesture frais qui débloque l'autoplay policy navigateur.
+  type PendingFirstPlay =
+    | { source: 'perso'; playlistId: string; name: string; trackCount: number }
+    | {
+        source: 'official';
+        previewPlaylist: LibraryPlaylistDetail;
+        prefer: PreferProvider;
+        trackCount: number;
+      };
+  const [pendingFirstPlay, setPendingFirstPlay] = useState<PendingFirstPlay | null>(null);
+
+  const handlePickPlaylist = (playlist: Playlist): void => {
     if (!session) return;
-    setBusy(true);
-    try {
-      // Idempotent — réactive l'audio si l'utilisateur arrive direct depuis
-      // roundSelection (cas où handleStartSession ne s'est pas exécuté).
-      await spotify.activate();
-      const round = await createRound(session.id, playlistId);
-      await startRound(session.id, round.id);
-      await playTrack(session.id, round.id);
-    } catch (err: unknown) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    setPendingFirstPlay({
+      source: 'perso',
+      playlistId: playlist.id,
+      name: playlist.name,
+      trackCount: playlist.tracks_count ?? 0,
+    });
+  };
+
+  const handlePickExpress = (info: { id: string; name: string; tracks_count: number }): void => {
+    if (!session) return;
+    setPendingFirstPlay({
+      source: 'perso',
+      playlistId: info.id,
+      name: info.name,
+      trackCount: info.tracks_count,
+    });
   };
 
   // ── Bibliothèque officielle Tutti — flow lancement ───────────────────────
@@ -540,7 +560,7 @@ function HostPageInner(): JSX.Element {
     }
   };
 
-  const handleConfirmLaunchOfficial = async (): Promise<void> => {
+  const handleConfirmLaunchOfficial = (): void => {
     if (!session || !previewPlaylist || !hostProviders) return;
     const prefer = preferredProvider(hostProviders);
     if (!prefer) {
@@ -549,20 +569,53 @@ function HostPageInner(): JSX.Element {
       setPreviewReport(null);
       return;
     }
+    // Bug 3 — stage state pré-game au lieu de lancer directement.
+    const playableCount = previewReport?.playable ?? previewPlaylist.tracks.length;
+    setPendingFirstPlay({
+      source: 'official',
+      previewPlaylist,
+      prefer,
+      trackCount: playableCount,
+    });
+    setPreviewPlaylist(null);
+    setPreviewReport(null);
+  };
+
+  // Bug 3 — exécute la chaîne async réelle (create/launch + startRound +
+  // playTrack) depuis le clic "▶ Démarrer" du PreGameStartScreen. Le clic
+  // est le user gesture qui débloque l'autoplay des deux SDK.
+  const handleStartFirstPlay = async (): Promise<void> => {
+    if (!session || !pendingFirstPlay) return;
     setBusy(true);
     try {
+      // Activate les deux pipelines audio (idempotent). Important : depuis
+      // ce click handler direct → gesture user frais consommé.
       await spotify.activate();
-      const result = await launchLibraryPlaylist(previewPlaylist.id, session.id, prefer);
-      // Backend a créé le round. Maintenant on le démarre comme un round normal.
-      await startRound(session.id, result.round.id);
-      await playTrack(session.id, result.round.id);
-      setPreviewPlaylist(null);
-      setPreviewReport(null);
+      let roundId: string;
+      if (pendingFirstPlay.source === 'perso') {
+        const round = await createRound(session.id, pendingFirstPlay.playlistId);
+        roundId = round.id;
+      } else {
+        const result = await launchLibraryPlaylist(
+          pendingFirstPlay.previewPlaylist.id,
+          session.id,
+          pendingFirstPlay.prefer,
+        );
+        roundId = result.round.id;
+      }
+      await startRound(session.id, roundId);
+      await playTrack(session.id, roundId);
+      setPendingFirstPlay(null);
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleCancelFirstPlay = (): void => {
+    if (busy) return;
+    setPendingFirstPlay(null);
   };
 
   const handleConnectSpotify = async (): Promise<void> => {
@@ -851,6 +904,33 @@ function HostPageInner(): JSX.Element {
     );
   }
 
+  // Bug 3 — overlay full-screen "Prêt à jouer ?" affiché entre la sélection
+  // de playlist et le lancement effectif du round. Le clic sur le bouton
+  // fournit un user gesture frais qui débloque l'autoplay des SDK audio.
+  if (pendingFirstPlay) {
+    const isOfficial = pendingFirstPlay.source === 'official';
+    const playlistName =
+      pendingFirstPlay.source === 'perso'
+        ? pendingFirstPlay.name
+        : (pendingFirstPlay.previewPlaylist.name_fr ?? pendingFirstPlay.previewPlaylist.name_en);
+    const providerLabel = isOfficial
+      ? pendingFirstPlay.prefer === 'youtube'
+        ? 'YouTube'
+        : 'Spotify'
+      : null;
+    return (
+      <PreGameStartScreen
+        playlistName={playlistName}
+        trackCount={pendingFirstPlay.trackCount}
+        badge={isOfficial ? t('preGame.officialBadge') : null}
+        providerLabel={providerLabel}
+        busy={busy}
+        onStart={() => void handleStartFirstPlay()}
+        onCancel={handleCancelFirstPlay}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <MultiColorBar height="md" />
@@ -1031,9 +1111,9 @@ function HostPageInner(): JSX.Element {
         onClose={() => setExpressModalOpen(false)}
         nextRoundPosition={session.rounds.length + 1}
         language={(session.language as 'fr' | 'en') ?? 'fr'}
-        onLaunch={(playlistId) => {
+        onLaunch={(info) => {
           setExpressModalOpen(false);
-          return handlePickPlaylist(playlistId);
+          handlePickExpress(info);
         }}
       />
 

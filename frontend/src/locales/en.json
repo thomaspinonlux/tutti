@@ -228,6 +228,15 @@
     "create": "Create the game",
     "creating": "Creating…"
   },
+  "preGame": {
+    "readyTitle": "Ready to play?",
+    "trackCount_one": "{{count}} track",
+    "trackCount_other": "{{count}} tracks",
+    "startButton": "Start the blind test",
+    "starting": "Starting…",
+    "cancel": "Cancel",
+    "officialBadge": "Tutti official library"
+  },
   "host": {
     "eyebrow": "Waiting room",
     "eyebrowPlaying": "Round {{round}}",
