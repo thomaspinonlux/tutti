@@ -667,6 +667,16 @@ model OfficialPlaylistTrack {
   /// URL cover album/track (récupérée via Spotify lors de l'import). Null si
   /// non résolue. Copiée dans Track.cover_url au moment du clone-on-launch.
   cover_url        String?
+  /// Validé via YouTube Data API (status.embeddable + regionRestriction).
+  /// false si vidéo non-embeddable, retirée, ou bloquée FR/LU. Le frontend
+  /// host skip ces tracks au moment du clone-on-launch.
+  is_playable      Boolean  @default(true)
+  /// Raison de l'invalidation (null si is_playable=true). Ex: "not_embeddable",
+  /// "blocked_FR", "blocked_LU", "video_not_found", "private_video".
+  playability_reason String?
+  /// Timestamp de la dernière vérification YouTube API. Null si jamais validé.
+  /// Re-run du script validate-youtube-ids met à jour cette colonne.
+  playability_checked_at DateTime? @db.Timestamptz(6)
   /// Alias de prononciation curés par les super-admins pour le matching
   /// vocal Whisper. Mêmes sémantiques que Artist.aliases / Track.aliases côté
   /// playlists perso. Mergés au clone-on-launch dans Artist.aliases (artiste)
@@ -682,5 +692,6 @@ model OfficialPlaylistTrack {
   @@index([playlist_id])
   @@index([spotify_id])
   @@index([youtube_id])
+  @@index([is_playable])
   @@map("official_playlist_tracks")
 }

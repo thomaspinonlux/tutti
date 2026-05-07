@@ -170,6 +170,11 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   const playerRef = useRef<any>(null);
   const tickRef = useRef<number | null>(null);
   const lastVideoRef = useRef<{ id: string; startSec: number; endSec: number } | null>(null);
+  // Problème B (fix/playback-and-zombies-v4) — flag pour déclencher
+  // playVideo() depuis l'event onStateChange CUED. cueVideoById met le
+  // player en CUED sans démarrer la lecture ; on appelle playVideo() au
+  // moment où l'état CUED est atteint pour garantir le lancement.
+  const pendingPlayAfterCueRef = useRef(false);
 
   // ── Init iframe API + player ──────────────────────────────────────────
   useEffect(() => {
@@ -210,6 +215,30 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
             onStateChange: (e: any) => {
               if (cancelled) return;
               const st = e.data;
+              const stateMap: Record<number, string> = {
+                [-1]: 'UNSTARTED',
+                [0]: 'ENDED',
+                [1]: 'PLAYING',
+                [2]: 'PAUSED',
+                [3]: 'BUFFERING',
+                [5]: 'CUED',
+              };
+              const stateName = stateMap[st as number] ?? `UNKNOWN(${st})`;
+              console.info(`[Player] State ${stateName}`);
+
+              if (st === YT_STATE.CUED && pendingPlayAfterCueRef.current) {
+                // Problème B — état CUED atteint après cueVideoById, on
+                // déclenche maintenant playVideo() depuis ce handler.
+                pendingPlayAfterCueRef.current = false;
+                console.info('[Player] PlayVideo called (after CUED)');
+                try {
+                  playerRef.current?.playVideo?.();
+                } catch (err) {
+                  console.warn('[Player] playVideo after CUED failed:', err);
+                }
+                return;
+              }
+
               if (st === YT_STATE.PLAYING) {
                 setIsPlaying(true);
                 if (playerRef.current?.getDuration) {
@@ -274,20 +303,52 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   const play = useCallback(
     async (videoId: string, o?: { startSec?: number; endSec?: number }): Promise<boolean> => {
       const p = playerRef.current;
-      if (!p?.loadVideoById) {
+      if (!p?.cueVideoById || !p?.playVideo) {
         console.warn(`[Player] play(${videoId}) ignored — player not ready`);
         return false;
       }
       const startSec = o?.startSec ?? defaultStartSec;
       const endSec = o?.endSec ?? defaultEndSec;
       lastVideoRef.current = { id: videoId, startSec, endSec };
-      console.info(`[Player] Loading video ${videoId} (startSec=${startSec}, endSec=${endSec})`);
+      console.info(`[Player] CueVideo ${videoId} (startSec=${startSec}, endSec=${endSec})`);
       try {
-        p.loadVideoById({
+        // Problème B (fix/playback-and-zombies-v4) — flow explicite en 2
+        // étapes : cueVideoById met le player en CUED (vidéo prête mais
+        // pas en lecture), puis le handler onStateChange CUED appelle
+        // playVideo() → garantit que la lecture démarre depuis un état
+        // connu, même au 1er morceau de la session.
+        //
+        // Avant : loadVideoById tentait load+autoplay en même temps.
+        // Sur 1ère vidéo après init du player, l'autoplay échouait
+        // silencieusement (état UNSTARTED → BUFFERING parfois sans
+        // PLAYING) → 1er morceau muet.
+        pendingPlayAfterCueRef.current = true;
+        p.cueVideoById({
           videoId,
           startSeconds: startSec,
           endSeconds: endSec,
         });
+        // Belt-and-suspenders : si le player est déjà CUED ou PAUSED, le
+        // onStateChange ne re-fire pas → on appelle playVideo direct
+        // après un micro-delay pour couvrir le cas idempotent.
+        window.setTimeout(() => {
+          if (!pendingPlayAfterCueRef.current) return;
+          const currentState = p.getPlayerState?.();
+          console.info(`[Player] Belt-and-suspenders check (state=${currentState ?? 'unknown'})`);
+          if (
+            currentState === YT_STATE.CUED ||
+            currentState === YT_STATE.PAUSED ||
+            currentState === YT_STATE.UNSTARTED
+          ) {
+            pendingPlayAfterCueRef.current = false;
+            console.info('[Player] PlayVideo called (belt-and-suspenders timeout)');
+            try {
+              p.playVideo?.();
+            } catch (err) {
+              console.warn('[Player] playVideo timeout fallback failed:', err);
+            }
+          }
+        }, 600);
         setIsPlaying(true);
         return true;
       } catch (err) {

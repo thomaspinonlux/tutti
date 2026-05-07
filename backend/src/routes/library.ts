@@ -132,7 +132,16 @@ router.post(
       official_title_aliases: string[];
     };
     const chosen: ChosenTrack[] = [];
+    let skippedNotPlayable = 0;
     for (const t of detail.tracks) {
+      // Problème A (fix/playback-and-zombies-v4) — skip tracks invalidées par
+      // validate-youtube-ids (vidéo retirée, non-embeddable, blocked FR/LU).
+      // Sans ce filtre, le SDK YouTube tombait sur "video not embeddable" en
+      // pleine partie → blocage host.
+      if (t.is_playable === false) {
+        skippedNotPlayable += 1;
+        continue;
+      }
       let provider: 'spotify' | 'youtube' | null = null;
       let providerId: string | null = null;
       if (preferProvider === 'spotify') {
@@ -176,6 +185,11 @@ router.post(
         .status(400)
         .json({ error: { code: 'NO_PLAYABLE_TRACK', message: 'Aucun morceau jouable' } });
       return;
+    }
+    if (skippedNotPlayable > 0) {
+      console.info(
+        `[Launch] Playlist ${detail.slug}: skipped ${skippedNotPlayable} track(s) marked is_playable=false`,
+      );
     }
 
     // 4. Upsert Artist (par canonical_name) + Track (par provider+id)
