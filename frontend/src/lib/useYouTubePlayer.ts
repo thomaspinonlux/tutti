@@ -69,29 +69,86 @@ declare global {
 
 let apiLoadPromise: Promise<void> | null = null;
 
+/**
+ * Bug 2 (fix/critical-bugs-v3) — race condition : refresh nécessaire pour
+ * lancer la musique sur la 1ère session.
+ *
+ * Cause : si le script `iframe_api` était déjà injecté par une 1ère mount
+ * + le callback global onYouTubeIframeAPIReady déjà appelé une fois (avant
+ * notre re-registration), aucune autre invocation ne se fait → la promise
+ * ne résout jamais → status reste 'loading_api' → play() ignoré.
+ *
+ * Fix : ajout d'un safety net polling — si après 5s `window.YT.Player` est
+ * dispo mais le callback n'a pas tiré, on résout quand même.
+ */
 function loadIframeApi(): Promise<void> {
   if (typeof window === 'undefined') return Promise.reject(new Error('SSR'));
-  if (window.YT && window.YT.Player) return Promise.resolve();
+  if (window.YT && window.YT.Player) {
+    console.info('[YT API] Ready (already loaded)');
+    return Promise.resolve();
+  }
   if (apiLoadPromise) return apiLoadPromise;
 
   apiLoadPromise = new Promise<void>((resolve, reject) => {
+    let resolved = false;
+    const safeResolve = (reason: string): void => {
+      if (resolved) return;
+      resolved = true;
+      console.info(`[YT API] Ready (${reason})`);
+      resolve();
+    };
+
     const existing = document.getElementById(SCRIPT_ID);
     if (existing) {
-      // déjà inséré, attendre callback global
+      console.info('[YT API] Script already in DOM, waiting for ready');
     } else {
+      console.info('[YT API] Injecting script', IFRAME_API_URL);
       const tag = document.createElement('script');
       tag.id = SCRIPT_ID;
       tag.src = IFRAME_API_URL;
       tag.async = true;
-      tag.onerror = () => reject(new Error('Failed to load YouTube IFrame API'));
+      tag.onerror = () => {
+        if (!resolved) {
+          resolved = true;
+          reject(new Error('Failed to load YouTube IFrame API'));
+        }
+      };
       document.head.appendChild(tag);
     }
-    // YouTube appelle ce callback global une fois prêt
+
+    // Hook officiel YouTube — appelé une seule fois quand l'API est prête
     const prev = window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady = (): void => {
       prev?.();
-      resolve();
+      safeResolve('onYouTubeIframeAPIReady fired');
     };
+
+    // Safety net : poll window.YT.Player toutes les 100ms pendant 5s.
+    // Couvre le cas où le callback global a déjà tiré avant qu'on register.
+    const startedAt = Date.now();
+    const pollId = window.setInterval(() => {
+      if (resolved) {
+        window.clearInterval(pollId);
+        return;
+      }
+      if (window.YT && window.YT.Player) {
+        window.clearInterval(pollId);
+        safeResolve('safety net poll detected YT.Player');
+        return;
+      }
+      if (Date.now() - startedAt > 5000) {
+        window.clearInterval(pollId);
+        if (!resolved) {
+          // Dernier check au timeout, sinon reject
+          if (window.YT && window.YT.Player) {
+            safeResolve('safety net timeout, YT.Player available');
+          } else {
+            resolved = true;
+            reject(new Error('YouTube IFrame API not ready after 5s'));
+          }
+        }
+      }
+    }, 100);
   });
   return apiLoadPromise;
 }
@@ -132,6 +189,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const YT = (window as any).YT;
+        console.info(`[Player] Created on #${containerId}`);
         playerRef.current = new YT.Player(containerId, {
           height: '0',
           width: '0',
