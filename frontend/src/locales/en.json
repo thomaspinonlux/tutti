@@ -243,7 +243,13 @@
     "startButton": "Start the blind test",
     "starting": "Starting…",
     "cancel": "Cancel",
-    "officialBadge": "Tutti official library"
+    "officialBadge": "Tutti official library",
+    "autoplayBlockedTitle": "Autoplay blocked",
+    "autoplayBlockedHint": "Your browser blocked audio playback. Tap to start.",
+    "autoplayRetryButton": "Start playback",
+    "safariBannerTitle": "Safari detected.",
+    "safariBannerHint": "For the best blind test audio experience, allow media in your site settings (AA icon in the address bar → Website Settings).",
+    "safariBannerDismiss": "Dismiss banner"
   },
   "host": {
     "eyebrow": "Waiting room",

@@ -56,6 +56,22 @@ export interface UseYouTubePlayerResult {
   restart: () => void;
   /** Bug 4 — débloque audio YouTube depuis un clic user direct. */
   unblockAudio: () => void;
+  /**
+   * Bug autoplay v6 (fix/cross-browser-autoplay-unlock) — primitive
+   * d'unlock SYNCHRONE appelée depuis un click handler direct user. Le
+   * tap consomme le user gesture pour le contexte audio du document.
+   * Tente playVideo() puis pauseVideo() 50ms plus tard sur le SDK déjà
+   * monté. No-op si SDK pas encore prêt (pas d'erreur).
+   * Pour Safari + content blockers : combiné avec un Audio() silent qui
+   * agit en parallèle (caller side).
+   */
+  warmupSync: () => void;
+  /**
+   * Lit l'état courant du player YT (UNSTARTED=-1, ENDED=0, PLAYING=1,
+   * PAUSED=2, BUFFERING=3, CUED=5). null si player pas instancié.
+   * Utilisé par PreGameStartScreen pour détecter unlock raté après 1.5s.
+   */
+  getPlayerState: () => number | null;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -406,6 +422,51 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     }
   }, []);
 
+  /**
+   * Bug autoplay v6 — playVideo() SYNC depuis click handler pour libérer
+   * l'autoplay policy navigateur. Suivi d'un pauseVideo() après 50ms pour
+   * ne pas démarrer la vraie lecture (qui sera déclenchée plus tard via
+   * play() une fois le 1er track sélectionné). Le tap suffit à dire au
+   * browser "ok l'user veut de l'audio dans cette page".
+   */
+  const warmupSync = useCallback((): void => {
+    const p = playerRef.current;
+    if (!p) {
+      console.info('[YouTube] warmupSync : player pas encore instancié, skip');
+      return;
+    }
+    try {
+      // playVideo synchrone — déclenche autoplay claim côté browser.
+      // Si pas de video chargée, no-op silencieux côté SDK.
+      if (typeof p.playVideo === 'function') {
+        p.playVideo();
+        console.info('[YouTube] warmupSync : playVideo() appelé sync');
+      }
+    } catch (err) {
+      console.warn('[YouTube] warmupSync playVideo failed:', err);
+    }
+    // Pause 50ms plus tard pour ne pas démarrer une lecture parasite.
+    window.setTimeout(() => {
+      try {
+        playerRef.current?.pauseVideo?.();
+        console.info('[YouTube] warmupSync : pauseVideo() après 50ms');
+      } catch {
+        /* ignore */
+      }
+    }, 50);
+  }, []);
+
+  const getPlayerState = useCallback((): number | null => {
+    const p = playerRef.current;
+    if (!p || typeof p.getPlayerState !== 'function') return null;
+    try {
+      const state = p.getPlayerState();
+      return typeof state === 'number' ? state : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   return {
     status,
     error,
@@ -417,5 +478,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     resume,
     restart,
     unblockAudio,
+    warmupSync,
+    getPlayerState,
   };
 }

@@ -243,7 +243,13 @@
     "startButton": "Démarrer le blind test",
     "starting": "Démarrage…",
     "cancel": "Annuler",
-    "officialBadge": "Bibliothèque officielle Tutti"
+    "officialBadge": "Bibliothèque officielle Tutti",
+    "autoplayBlockedTitle": "Lecture automatique bloquée",
+    "autoplayBlockedHint": "Ton navigateur a bloqué la lecture audio. Clique pour démarrer.",
+    "autoplayRetryButton": "Démarrer la lecture",
+    "safariBannerTitle": "Safari détecté.",
+    "safariBannerHint": "Pour la meilleure expérience audio des blind tests, autorise les médias dans les Réglages du site (icône AA dans la barre d'adresse → Réglages du site).",
+    "safariBannerDismiss": "Fermer la bannière"
   },
   "host": {
     "eyebrow": "Salle d'attente",
