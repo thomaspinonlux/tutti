@@ -71,7 +71,10 @@ export function PreGameStartScreen({
             size="lg"
             variant="primary"
             disabled={busy}
-            onClick={() => onStart()}
+            onClick={() => {
+              console.info('[PreGame] Click — Démarrer le blind test');
+              onStart();
+            }}
             className="!min-w-[260px] !py-5 !text-2xl !font-bold uppercase tracking-wide"
           >
             {busy ? '⏳ ' + t('preGame.starting') : '▶ ' + t('preGame.startButton')}

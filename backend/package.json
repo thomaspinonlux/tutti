@@ -13,7 +13,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "import:official-library": "tsx scripts/import-official-library.ts"
+    "import:official-library": "tsx scripts/import-official-library.ts",
+    "validate:youtube-ids": "tsx scripts/validate-youtube-ids.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
