@@ -30,6 +30,11 @@ export interface MasterMenuProps {
   onPause: () => Promise<void>;
   onResume: () => Promise<void>;
   onRestartTrack?: () => Promise<void>;
+  /** F3 (feat/playlist-search-and-host-improvements) — terminer la manche
+   *  courante depuis l'interface du master en mode B. Affiche un bouton
+   *  visible uniquement quand hasActiveRound. Avant : seul l'host desktop
+   *  classique avait ce contrôle, le master mode B était bloqué. */
+  onEndRound?: () => Promise<void>;
   onEndSession: () => Promise<void>;
   onPickRound: () => void; // ouvre le picker (modale gérée à l'extérieur)
   onAdjustPoints: () => void; // ouvre la sheet (modale gérée à l'extérieur)
@@ -38,6 +43,7 @@ export interface MasterMenuProps {
 export function MasterMenu(props: MasterMenuProps): JSX.Element {
   const { t } = useTranslation();
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [confirmEndRound, setConfirmEndRound] = useState(false);
   const phase = props.currentTrack?.phase ?? null;
 
   return (
@@ -143,6 +149,44 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         >
           ⚖ {t('play.masterAdjust')}
         </Button>
+
+        {/* ── F3 — Terminer la manche (visible quand hasActiveRound) ──── */}
+        {props.hasActiveRound && props.onEndRound && (
+          <>
+            {!confirmEndRound ? (
+              <button
+                type="button"
+                onClick={() => setConfirmEndRound(true)}
+                disabled={props.busy}
+                className="col-span-2 text-xs font-mono text-ink-soft hover:text-ink hover:underline mt-1"
+              >
+                ⏹ {t('play.masterEndRound')}
+              </button>
+            ) : (
+              <div className="col-span-2 mt-2 p-2 border-2 border-ink rounded bg-cream-2">
+                <p className="text-xs font-medium text-ink mb-2">
+                  {t('play.masterEndRoundConfirm')}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      setConfirmEndRound(false);
+                      void props.onEndRound!();
+                    }}
+                    disabled={props.busy}
+                  >
+                    {t('play.masterEndRoundYes')}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setConfirmEndRound(false)}>
+                    {t('common.cancel')}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
 
         {/* ── Terminer (avec confirm in-place) ─────────────────────────── */}
         {!confirmEnd ? (

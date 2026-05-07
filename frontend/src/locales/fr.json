@@ -274,6 +274,7 @@
     "kickConfirm": "Exclure ce joueur de la session ?",
     "startBlindTest": "Démarrer le blind test",
     "startBlindTestWithFirstRound": "Démarrer la 1ʳᵉ manche",
+    "startWithZeroPlayersConfirm": "Aucun joueur connecté. Lancer quand même ?",
     "endBlindTest": "Terminer le blind test",
     "endBlindTestConfirm": "Terminer le blind test ? Le podium final s'affichera.",
     "endRound": "Terminer la manche",
@@ -287,6 +288,8 @@
         "myPlaylists": "Mes playlists",
         "officialLibrary": "Bibliothèque officielle"
       },
+      "searchPlaceholder": "Rechercher une playlist...",
+      "searchNoResults": "Aucune playlist trouvée pour « {{query}} »",
       "officialBadge": "Officiel Tutti",
       "premiumRequired": "Premium Tutti requis",
       "source": {
@@ -556,6 +559,9 @@
     "masterEndSession": "Terminer la soirée",
     "masterEndSessionConfirm": "Terminer maintenant ? Le podium final s'affichera.",
     "masterEndSessionYes": "Oui, terminer",
+    "masterEndRound": "Terminer la manche",
+    "masterEndRoundConfirm": "Terminer la manche en cours ?",
+    "masterEndRoundYes": "Oui, terminer",
     "masterPausedBadge": "Jeu en pause"
   },
   "onboarding": {

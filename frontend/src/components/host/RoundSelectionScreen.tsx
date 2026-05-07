@@ -10,13 +10,28 @@
  *   - Si ce n'est pas la 1ʳᵉ manche : bouton "Terminer le blind test"
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Playlist } from '@tutti/shared';
 import { listPlaylists } from '../../lib/playlists.js';
 import { listLibraryPlaylists, type LibraryPlaylistSummary } from '../../lib/library.js';
-import { Badge, Button, Card, TitleHandwritten, Underline } from '../ui/index.js';
+import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/index.js';
 import { OfficialPlaylistCard } from './library/OfficialPlaylistCard.js';
+
+// F1 (feat/playlist-search-and-host-improvements) — normalize pour
+// matcher insensible casse + accents. "été" → "ete", "Été" → "ete".
+function normalize(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function matchesQuery(query: string, ...haystacks: (string | null | undefined)[]): boolean {
+  if (!query) return true;
+  const needle = normalize(query);
+  for (const h of haystacks) {
+    if (h && normalize(h).includes(needle)) return true;
+  }
+  return false;
+}
 
 type Tab = 'mine' | 'library';
 
@@ -45,6 +60,9 @@ export function RoundSelectionScreen({
   const [playlists, setPlaylists] = useState<Playlist[] | null>(null);
   const [official, setOfficial] = useState<LibraryPlaylistSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // F1 — query partagé entre les 2 onglets pour cohérence UX (un seul
+  // input visible au-dessus des 2 onglets).
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     listPlaylists()
@@ -62,6 +80,28 @@ export function RoundSelectionScreen({
 
   const usable = playlists?.filter((p) => (p.tracks_count ?? 0) > 0) ?? [];
 
+  // F1 — filtrage côté client. Mes playlists : name + language. Officielles :
+  // name_fr + name_en + slug + theme + locale_primary + difficulty.
+  const filteredUsable = useMemo(
+    () => usable.filter((p) => matchesQuery(searchQuery, p.name, p.language)),
+    [usable, searchQuery],
+  );
+  const filteredOfficial = useMemo(
+    () =>
+      (official ?? []).filter((p) =>
+        matchesQuery(
+          searchQuery,
+          p.name_fr,
+          p.name_en,
+          p.slug,
+          p.theme,
+          p.locale_primary,
+          p.difficulty,
+        ),
+      ),
+    [official, searchQuery],
+  );
+
   return (
     <div>
       <header className="mb-6 flex items-center justify-between flex-wrap gap-3">
@@ -74,6 +114,18 @@ export function RoundSelectionScreen({
           </Button>
         )}
       </header>
+
+      {/* F1 — search input partagé entre les 2 onglets */}
+      <div className="mb-3">
+        <Input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={t('host.session.searchPlaceholder')}
+          className="!text-base"
+          aria-label={t('host.session.searchPlaceholder')}
+        />
+      </div>
 
       {/* Onglets Mes playlists | Bibliothèque officielle */}
       <div className="flex gap-2 border-b-2 border-ink mb-4">
@@ -103,7 +155,8 @@ export function RoundSelectionScreen({
 
       {tab === 'mine' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-          {/* Express card en 1ʳᵉ position */}
+          {/* Express card en 1ʳᵉ position — toujours visible, ne dépend
+              pas de la recherche (action de création de playlist). */}
           <button
             type="button"
             onClick={onCreateExpress}
@@ -123,8 +176,8 @@ export function RoundSelectionScreen({
             </Card>
           </button>
 
-          {/* Cards des playlists existantes */}
-          {usable.map((p, idx) => (
+          {/* Cards des playlists existantes — filtrées par recherche */}
+          {filteredUsable.map((p, idx) => (
             <button
               key={p.id}
               type="button"
@@ -168,9 +221,15 @@ export function RoundSelectionScreen({
                 {t('host.session.empty.officialLibrary')}
               </p>
             </Card>
+          ) : filteredOfficial.length === 0 ? (
+            <Card tone="cream" size="md" className="text-center">
+              <p className="font-editorial italic text-ink-soft">
+                {t('host.session.searchNoResults', { query: searchQuery })}
+              </p>
+            </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-              {official.map((p) => (
+              {filteredOfficial.map((p) => (
                 <OfficialPlaylistCard
                   key={p.id}
                   playlist={p}
@@ -183,6 +242,20 @@ export function RoundSelectionScreen({
           )}
         </div>
       )}
+
+      {/* F1 — message "0 résultat" pour onglet Mes playlists si recherche
+          ne matche rien (mais des playlists existent). */}
+      {tab === 'mine' &&
+        playlists !== null &&
+        usable.length > 0 &&
+        filteredUsable.length === 0 &&
+        searchQuery.trim() !== '' && (
+          <Card tone="cream" size="md" className="text-center">
+            <p className="font-editorial italic text-ink-soft">
+              {t('host.session.searchNoResults', { query: searchQuery })}
+            </p>
+          </Card>
+        )}
 
       {error && (
         <p role="alert" className="text-sm text-raspberry">
