@@ -124,6 +124,12 @@ router.post(
       provider_track_id: string;
       cover_url: string | null;
       answers_accepted: Record<string, unknown> | null;
+      // feat/official-library-aliases — alias curés par les super-admins.
+      // Mergés au moment du clone-on-launch dans Artist.aliases + Track.aliases
+      // côté workspace user pour que voiceMatch les reconnaisse pendant le
+      // blind test.
+      official_artist_aliases: string[];
+      official_title_aliases: string[];
     };
     const chosen: ChosenTrack[] = [];
     for (const t of detail.tracks) {
@@ -161,6 +167,8 @@ router.post(
         provider_track_id: providerId,
         cover_url: coverUrl,
         answers_accepted: null,
+        official_artist_aliases: t.artist_aliases ?? [],
+        official_title_aliases: t.title_aliases ?? [],
       });
     }
     if (chosen.length === 0) {
@@ -171,44 +179,81 @@ router.post(
     }
 
     // 4. Upsert Artist (par canonical_name) + Track (par provider+id)
+    // feat/official-library-aliases — Merge des alias officiels curés avec
+    // les alias auto-générés. Si Artist/Track existent déjà, on ajoute les
+    // nouveaux alias en dédoublonnant (Set) pour ne pas perdre ceux déjà
+    // ajoutés manuellement par l'admin (ex: même artiste dans plusieurs
+    // playlists officielles).
     const trackIds: string[] = [];
     for (const c of chosen) {
+      const generatedArtistAliases = generateAliases(c.artist, 'artist');
+      const mergedArtistAliases = Array.from(
+        new Set([...generatedArtistAliases, ...c.official_artist_aliases]),
+      );
+
       const existingArtist = await prisma.artist.findUnique({
         where: { canonical_name: c.artist },
-        select: { id: true },
+        select: { id: true, aliases: true },
       });
-      const artist =
-        existingArtist ??
-        (await prisma.artist.create({
+      let artistId: string;
+      if (existingArtist) {
+        // Merge alias officiels avec ceux déjà en DB pour cet Artist.
+        const allArtistAliases = Array.from(
+          new Set([...existingArtist.aliases, ...c.official_artist_aliases]),
+        );
+        if (allArtistAliases.length !== existingArtist.aliases.length) {
+          await prisma.artist.update({
+            where: { id: existingArtist.id },
+            data: { aliases: allArtistAliases },
+          });
+        }
+        artistId = existingArtist.id;
+      } else {
+        const createdArtist = await prisma.artist.create({
           data: {
             canonical_name: c.artist,
-            aliases: generateAliases(c.artist, 'artist'),
+            aliases: mergedArtistAliases,
           },
           select: { id: true },
-        }));
+        });
+        artistId = createdArtist.id;
+      }
+
+      const generatedTitleAliases = generateAliases(c.title);
+      const mergedTitleAliases = Array.from(
+        new Set([...generatedTitleAliases, ...c.official_title_aliases]),
+      );
 
       const existingTrack = await prisma.track.findFirst({
         where: { provider: c.provider, provider_track_id: c.provider_track_id },
-        select: { id: true, cover_url: true },
+        select: { id: true, cover_url: true, aliases: true },
       });
       let trackId: string;
       if (existingTrack) {
-        // Backfill cover_url si la Track existe mais n'a pas de cover (anciennes
-        // imports ou import perso sans cover) — utile pour faire apparaître
-        // les covers sur les sessions officielles existantes.
+        // Backfill cover_url + merge alias officiels avec ceux déjà en DB.
+        const allTitleAliases = Array.from(
+          new Set([...existingTrack.aliases, ...c.official_title_aliases]),
+        );
+        const updateData: Record<string, unknown> = {};
         if (!existingTrack.cover_url && c.cover_url) {
+          updateData.cover_url = c.cover_url;
+        }
+        if (allTitleAliases.length !== existingTrack.aliases.length) {
+          updateData.aliases = allTitleAliases;
+        }
+        if (Object.keys(updateData).length > 0) {
           await prisma.track.update({
             where: { id: existingTrack.id },
-            data: { cover_url: c.cover_url },
+            data: updateData,
           });
         }
         trackId = existingTrack.id;
       } else {
         const created = await prisma.track.create({
           data: {
-            artist_id: artist.id,
+            artist_id: artistId,
             canonical_title: c.title,
-            aliases: generateAliases(c.title),
+            aliases: mergedTitleAliases,
             year: c.year,
             provider: c.provider,
             provider_track_id: c.provider_track_id,

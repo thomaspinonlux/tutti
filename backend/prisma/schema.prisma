@@ -667,6 +667,13 @@ model OfficialPlaylistTrack {
   /// URL cover album/track (récupérée via Spotify lors de l'import). Null si
   /// non résolue. Copiée dans Track.cover_url au moment du clone-on-launch.
   cover_url        String?
+  /// Alias de prononciation curés par les super-admins pour le matching
+  /// vocal Whisper. Mêmes sémantiques que Artist.aliases / Track.aliases côté
+  /// playlists perso. Mergés au clone-on-launch dans Artist.aliases (artiste)
+  /// et Track.aliases (titre) — propagation pour que voiceMatch les
+  /// reconnaisse comme les playlists perso.
+  artist_aliases   String[] @default([])
+  title_aliases    String[] @default([])
   created_at       DateTime @default(now()) @db.Timestamptz(6)
 
   playlist OfficialPlaylist @relation(fields: [playlist_id], references: [id], onDelete: Cascade)

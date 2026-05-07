@@ -10,16 +10,18 @@
  * Out of scope V1 : édition de tracks, drag & drop.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import {
   getOfficialPlaylist,
   patchOfficialPlaylist,
+  patchOfficialTrack,
   resyncOfficialPlaylist,
   type ImportFileReport,
   type OfficialPlaylistDetail,
+  type OfficialTrack,
   type Visibility,
 } from '../../lib/adminLibrary.js';
 
@@ -31,6 +33,32 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
   const [savingField, setSavingField] = useState<string | null>(null);
   const [resyncing, setResyncing] = useState(false);
   const [resyncReport, setResyncReport] = useState<ImportFileReport | null>(null);
+  // feat/official-library-aliases — expand/collapse une ligne de track pour
+  // afficher l'éditeur d'alias prononciation (artist + title).
+  const [expandedTrackId, setExpandedTrackId] = useState<string | null>(null);
+  const [savingTrackId, setSavingTrackId] = useState<string | null>(null);
+
+  const handleUpdateAliases = async (
+    trackId: string,
+    patch: { artist_aliases?: string[]; title_aliases?: string[] },
+  ): Promise<void> => {
+    setSavingTrackId(trackId);
+    try {
+      const updated = await patchOfficialTrack(trackId, patch);
+      setPlaylist((prev) =>
+        prev
+          ? {
+              ...prev,
+              tracks: prev.tracks.map((t) => (t.id === trackId ? { ...t, ...updated } : t)),
+            }
+          : prev,
+      );
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSavingTrackId(null);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -255,52 +283,82 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
                 <th className="px-2 py-1.5 text-left">{t('library.tracksDifficulty')}</th>
                 <th className="px-2 py-1.5 text-center">Spotify</th>
                 <th className="px-2 py-1.5 text-center">YouTube</th>
+                <th className="px-2 py-1.5 text-center">{t('library.tracksAliases')}</th>
               </tr>
             </thead>
             <tbody>
-              {playlist.tracks.map((tr) => (
-                <tr key={tr.id} className="border-t border-ink/20 hover:bg-cream-2">
-                  <td className="px-2 py-1.5 text-right font-mono text-xs tabular-nums">
-                    {tr.position}
-                  </td>
-                  <td className="px-2 py-1.5 font-medium">{tr.title}</td>
-                  <td className="px-2 py-1.5 text-ink-soft">{tr.artist}</td>
-                  <td className="px-2 py-1.5 text-right tabular-nums text-ink-soft">
-                    {tr.year ?? '—'}
-                  </td>
-                  <td className="px-2 py-1.5 font-mono text-[10px] uppercase">
-                    {tr.difficulty.toLowerCase()}
-                  </td>
-                  <td className="px-2 py-1.5 text-center">
-                    {tr.spotify_id ? (
-                      <a
-                        href={`https://open.spotify.com/track/${tr.spotify_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-basil-deep hover:underline"
-                      >
-                        ▶
-                      </a>
-                    ) : (
-                      <span className="text-ink-faded">—</span>
+              {playlist.tracks.map((tr) => {
+                const expanded = expandedTrackId === tr.id;
+                const aliasCount = tr.artist_aliases.length + tr.title_aliases.length;
+                return (
+                  <>
+                    <tr key={tr.id} className="border-t border-ink/20 hover:bg-cream-2">
+                      <td className="px-2 py-1.5 text-right font-mono text-xs tabular-nums">
+                        {tr.position}
+                      </td>
+                      <td className="px-2 py-1.5 font-medium">{tr.title}</td>
+                      <td className="px-2 py-1.5 text-ink-soft">{tr.artist}</td>
+                      <td className="px-2 py-1.5 text-right tabular-nums text-ink-soft">
+                        {tr.year ?? '—'}
+                      </td>
+                      <td className="px-2 py-1.5 font-mono text-[10px] uppercase">
+                        {tr.difficulty.toLowerCase()}
+                      </td>
+                      <td className="px-2 py-1.5 text-center">
+                        {tr.spotify_id ? (
+                          <a
+                            href={`https://open.spotify.com/track/${tr.spotify_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-basil-deep hover:underline"
+                          >
+                            ▶
+                          </a>
+                        ) : (
+                          <span className="text-ink-faded">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 text-center">
+                        {tr.youtube_id ? (
+                          <a
+                            href={`https://www.youtube.com/watch?v=${tr.youtube_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-raspberry hover:underline"
+                          >
+                            ▶
+                          </a>
+                        ) : (
+                          <span className="text-ink-faded">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 text-center">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedTrackId(expanded ? null : tr.id)}
+                          className="px-2 py-0.5 text-xs font-mono border-2 border-ink rounded bg-cream hover:bg-cream-2"
+                          title={t('library.tracksAliasesEdit')}
+                        >
+                          {expanded ? '▾ ' : '▸ '}
+                          {aliasCount > 0 ? `${aliasCount}` : '+'}
+                        </button>
+                      </td>
+                    </tr>
+                    {expanded && (
+                      <tr key={`${tr.id}-aliases`} className="border-t border-ink/20 bg-cream-3">
+                        <td colSpan={8} className="px-4 py-3">
+                          <TrackAliasEditor
+                            track={tr}
+                            saving={savingTrackId === tr.id}
+                            onSave={handleUpdateAliases}
+                            onClose={() => setExpandedTrackId(null)}
+                          />
+                        </td>
+                      </tr>
                     )}
-                  </td>
-                  <td className="px-2 py-1.5 text-center">
-                    {tr.youtube_id ? (
-                      <a
-                        href={`https://www.youtube.com/watch?v=${tr.youtube_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-raspberry hover:underline"
-                      >
-                        ▶
-                      </a>
-                    ) : (
-                      <span className="text-ink-faded">—</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                  </>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -383,6 +441,142 @@ function ReadOnlyMeta({ label, value, mono, small }: ReadOnlyMetaProps): JSX.Ele
       >
         {value}
       </dd>
+    </div>
+  );
+}
+
+interface TrackAliasEditorProps {
+  track: OfficialTrack;
+  saving: boolean;
+  onSave: (
+    trackId: string,
+    patch: { artist_aliases?: string[]; title_aliases?: string[] },
+  ) => Promise<void>;
+  onClose: () => void;
+}
+
+function TrackAliasEditor({ track, saving, onSave, onClose }: TrackAliasEditorProps): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <p className="font-display text-base">{track.title}</p>
+          <p className="text-xs text-ink-soft">{track.artist}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-xs font-mono text-ink-soft hover:text-ink underline"
+        >
+          {t('common.close')}
+        </button>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <AliasListEditor
+          label={t('library.aliasArtistLabel')}
+          hint={t('library.aliasArtistHint')}
+          values={track.artist_aliases}
+          saving={saving}
+          onChange={(next) => void onSave(track.id, { artist_aliases: next })}
+        />
+        <AliasListEditor
+          label={t('library.aliasTitleLabel')}
+          hint={t('library.aliasTitleHint')}
+          values={track.title_aliases}
+          saving={saving}
+          onChange={(next) => void onSave(track.id, { title_aliases: next })}
+        />
+      </div>
+    </div>
+  );
+}
+
+interface AliasListEditorProps {
+  label: string;
+  hint: string;
+  values: string[];
+  saving: boolean;
+  onChange: (next: string[]) => void;
+}
+
+function AliasListEditor({
+  label,
+  hint,
+  values,
+  saving,
+  onChange,
+}: AliasListEditorProps): JSX.Element {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState('');
+
+  const add = (): void => {
+    const v = draft.trim();
+    if (!v) return;
+    if (values.includes(v)) {
+      setDraft('');
+      return;
+    }
+    onChange([...values, v]);
+    setDraft('');
+  };
+
+  const remove = (alias: string): void => {
+    onChange(values.filter((v) => v !== alias));
+  };
+
+  const handleKey = (e: KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      add();
+    }
+  };
+
+  return (
+    <div>
+      <label className="block">
+        <span className="block text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+          {label}
+          {saving && <span className="ml-2 text-ink-soft">⏳</span>}
+        </span>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder={t('library.aliasPlaceholder')}
+            disabled={saving}
+            className="flex-1 px-2 py-1 border-2 border-ink rounded bg-cream/30 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz disabled:opacity-50"
+          />
+          <button
+            type="button"
+            onClick={add}
+            disabled={saving}
+            className="px-3 py-1 text-sm bg-cream text-ink border-2 border-ink rounded font-bold shadow-pop-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-50"
+          >
+            +
+          </button>
+        </div>
+      </label>
+      <span className="block text-xs text-ink-soft mt-1 italic">{hint}</span>
+      {values.length > 0 && (
+        <ul className="mt-2 flex flex-wrap gap-1">
+          {values.map((alias) => (
+            <li key={alias}>
+              <button
+                type="button"
+                onClick={() => remove(alias)}
+                disabled={saving}
+                className="px-2 py-0.5 text-xs font-mono border-2 border-ink rounded bg-cream-2 hover:bg-raspberry hover:text-cream transition-colors disabled:opacity-50"
+                title={t('library.aliasRemove')}
+              >
+                {alias} <span className="ml-1 opacity-60">✕</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

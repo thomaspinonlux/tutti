@@ -31,7 +31,11 @@ export interface OfficialTrack {
   difficulty: Difficulty;
   spotify_id: string | null;
   youtube_id: string | null;
+  cover_url: string | null;
   answers_accepted: Record<string, unknown> | null;
+  /** Alias prononciation curés super-admin (matching vocal Whisper). */
+  artist_aliases: string[];
+  title_aliases: string[];
   created_at: string;
 }
 
@@ -114,4 +118,21 @@ export async function resyncOfficialPlaylist(id: string): Promise<ImportFileRepo
 
 export async function reimportOfficialLibrary(): Promise<ImportResult> {
   return api<ImportResult>('/api/admin/library/reimport', { method: 'POST' });
+}
+
+export async function patchOfficialTrack(
+  trackId: string,
+  changes: Partial<{
+    spotify_id: string | null;
+    youtube_id: string | null;
+    cover_url: string | null;
+    artist_aliases: string[];
+    title_aliases: string[];
+  }>,
+): Promise<OfficialTrack> {
+  const data = await api<{ track: OfficialTrack }>(
+    `/api/admin/library/tracks/${encodeURIComponent(trackId)}`,
+    { method: 'PATCH', body: changes },
+  );
+  return data.track;
 }
