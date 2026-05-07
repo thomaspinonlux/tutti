@@ -998,6 +998,8 @@ function HostPageInner(): JSX.Element {
         busy={busy}
         onStart={() => void handleStartFirstPlay()}
         onCancel={handleCancelFirstPlay}
+        onYoutubeWarmup={youtube.warmupSync}
+        getYoutubeState={youtube.getPlayerState}
       />
     );
   }
