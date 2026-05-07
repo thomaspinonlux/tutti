@@ -197,6 +197,9 @@ function HostPageInner(): JSX.Element {
         socket.on(
           'session:ended',
           ({ session: s, cumulative: c }: { session: Session; cumulative: CumulativeScore[] }) => {
+            console.info(
+              `[HostPage] Socket event session:ended at ${Date.now()} status=${s.status} cumulative.count=${c.length}`,
+            );
             setSession((prev) => (prev ? { ...prev, ...s } : prev));
             setCumulative(c);
             // Cleanup défensif : si le socket arrive AVANT la résolution du
@@ -227,6 +230,9 @@ function HostPageInner(): JSX.Element {
           );
         });
         socket.on('round:ended', ({ round }: { round: SessionRoundWithPlaylist }) => {
+          console.info(
+            `[HostPage] Socket event round:ended at ${Date.now()} roundId=${round.id} position=${round.position} status=${round.status}`,
+          );
           setSession((prev) =>
             prev
               ? { ...prev, rounds: prev.rounds.map((r) => (r.id === round.id ? round : r)) }
@@ -700,13 +706,34 @@ function HostPageInner(): JSX.Element {
     if (!session || !playingRound) return;
     setBusy(true);
     try {
-      await endRound(session.id, playingRound.id);
-      // Bug 2 — sortir de pause locale immédiatement (sinon overlay pause
-      // peut bloquer le rendu du podium intermédiaire) + clear currentTrack
-      setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
+      console.info(
+        `[HostPage] handleEndCurrentRound START playingRoundId=${playingRound.id} position=${playingRound.position}`,
+      );
+      const updatedRound = await endRound(session.id, playingRound.id);
+      console.info(
+        `[HostPage] endRound resolved roundId=${updatedRound.id} status=${updatedRound.status}`,
+      );
+      // Bug C v5 — update LOCAL state directement avec le round retourné par
+      // l'API. Avant : on attendait le socket round:ended pour mettre à jour
+      // session.rounds → race condition possible (socket lent ou perdu) →
+      // phase reste 'roundPlaying' avec playingRound stale → page vide entre
+      // RoundPlayingScreen (pas de currentTrack) et RoundIntermissionScreen
+      // (pas encore de lastEndedRound). Avec setSession optimistic ici, le
+      // rendu passe IMMÉDIATEMENT à 'intermission' (rounds map a la nouvelle
+      // version ENDED), donc RoundIntermissionScreen rend tout de suite.
+      setSession((prev) =>
+        prev
+          ? {
+              ...prev,
+              is_paused: false,
+              rounds: prev.rounds.map((r) => (r.id === updatedRound.id ? updatedRound : r)),
+            }
+          : prev,
+      );
       setCurrentTrack(null);
       await refreshCumulative(session.id);
     } catch (err: unknown) {
+      console.error('[HostPage] handleEndCurrentRound FAIL', err);
       setError((err as Error).message);
     } finally {
       setBusy(false);
@@ -728,12 +755,25 @@ function HostPageInner(): JSX.Element {
     if (!window.confirm(t('host.endBlindTestConfirm'))) return;
     setBusy(true);
     try {
-      await endSession(session.id);
+      console.info(
+        `[HostPage] handleEndSession START sessionId=${session.id} status=${session.status}`,
+      );
+      const result = await endSession(session.id);
+      console.info(
+        `[HostPage] endSession resolved status=${result.session.status} cumulative.count=${result.cumulative.length}`,
+      );
+      // Bug C v5 — update LOCAL state aussi pour cas où navigate échoue (ex:
+      // erreur React Router, popup confirm bloqué). Le user voit alors au
+      // moins l'EndedScreen au lieu d'une page vide.
+      setSession((prev) => (prev ? { ...prev, ...result.session } : prev));
+      setCumulative(result.cumulative);
+      setCurrentTrack(null);
       // Pattern terminal : navigate explicite au lieu de dépendre du render
       // derived (qui a montré son fragile — Bug 4 récurrent). Le podium final
       // s'affiche sur l'écran TV (FINAL_PODIUM via ScreenState polling), pas
       // besoin de doublon sur la console host. URL param ?notice=session-ended
       // déclenche un banner de confirmation sur le dashboard.
+      console.info('[HostPage] handleEndSession navigate → /admin/dashboard?notice=session-ended');
       navigate('/admin/dashboard?notice=session-ended');
       // Pas de setBusy(false) — composant unmount avant.
     } catch (err: unknown) {
@@ -779,7 +819,27 @@ function HostPageInner(): JSX.Element {
   };
 
   // ── Render ─────────────────────────────────────────────────────────────
+
+  // Bug C v5 (fix/playback-and-host-render-v5) — logs massifs pour
+  // diagnostiquer la page host vide après end-session ou end-round.
+  // Permet de voir dans la console :
+  //   - status session (WAITING / PLAYING / ENDED)
+  //   - phase dérivée (waiting / roundSelection / roundPlaying /
+  //     intermission / ended)
+  //   - rounds list + status par round
+  //   - quel composant va être rendu (early return vs main vs ModeB)
+  console.info(
+    `[HostPage] Render status=${session?.status ?? 'no-session'} ` +
+      `phase=${phase} effectivePhase=${effectivePhase} ` +
+      `sessionId=${session?.id ?? 'n/a'} ` +
+      `rounds=[${session?.rounds.map((r) => `${r.position}:${r.status}`).join(',') ?? 'none'}] ` +
+      `hasError=${error !== null} hasPlayingRound=${playingRound !== null} ` +
+      `lastEndedRound=${lastEndedRound?.id ?? 'null'} ` +
+      `inGameplay=will-compute hasAnimator=${session?.has_animator ?? '?'}`,
+  );
+
   if (error) {
+    console.info(`[HostPage] About to render <ErrorScreen /> (error="${error}")`);
     return (
       <div className="min-h-screen flex flex-col">
         <MultiColorBar height="md" />
@@ -796,6 +856,7 @@ function HostPageInner(): JSX.Element {
   }
 
   if (!session) {
+    console.info('[HostPage] About to render <LoadingScreen /> (session=null)');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="font-mono text-ink-soft">{t('common.loading')}</p>
@@ -803,10 +864,13 @@ function HostPageInner(): JSX.Element {
     );
   }
 
+  console.info(`[HostPage] Past early returns. Session game_type=${session.game_type}`);
+
   // ── Branche Tutti Quizz : vue dédiée pour les sessions QUIZZ ─────────────
   // Mode A (has_animator) : iPad = console host avec contrôles.
   // Mode B (!has_animator) : iPad = vue publique festive XL, master pilote depuis tel.
   if (session.game_type === 'QUIZZ') {
+    console.info('[HostPage] About to render <HostQuizzView />');
     return (
       <HostQuizzView
         session={session}
@@ -827,10 +891,16 @@ function HostPageInner(): JSX.Element {
     effectivePhase === 'roundSelection' ||
     effectivePhase === 'intermission';
 
+  console.info(
+    `[HostPage] Decision : isModeB=${isModeB} inGameplay=${inGameplay} → ` +
+      `${isModeB && inGameplay ? '<MainScreenView /> (early ModeB return)' : 'main render block'}`,
+  );
+
   // ── Mode B en cours de jeu : vue festive publique sans contrôles ─────
   // Vue désormais accessible mobile aussi (plus de blocage MinScreen).
   // L'animateur peut piloter sa partie depuis n'importe quel écran.
   if (isModeB && inGameplay) {
+    console.info('[HostPage] About to render <MainScreenView /> (ModeB inGameplay path)');
     return (
       <>
         {/* Bug 2 — Banner fallback audio bloqué (mode B festif aussi) */}
@@ -908,6 +978,7 @@ function HostPageInner(): JSX.Element {
   // de playlist et le lancement effectif du round. Le clic sur le bouton
   // fournit un user gesture frais qui débloque l'autoplay des SDK audio.
   if (pendingFirstPlay) {
+    console.info('[HostPage] About to render <PreGameStartScreen />');
     const isOfficial = pendingFirstPlay.source === 'official';
     const playlistName =
       pendingFirstPlay.source === 'perso'
