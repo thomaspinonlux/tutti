@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { isSuperAdminEmail } from '../lib/superAdmin.js';
+import { isSpotifyAllowlisted } from '../lib/spotifyAllowlist.js';
 
 const router: Router = Router();
 
@@ -45,6 +46,10 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
       // Phase 4 — exposer status + isSuperAdmin pour gating frontend
       memberStatus: member?.status ?? null,
       isSuperAdmin: isSuperAdminEmail(req.userEmail),
+      // fix/disable-spotify-sdk-non-allowlist — gating chargement Spotify
+      // SDK côté frontend. false par défaut → useSpotifyPlayer skip
+      // entièrement, aucun script chargé, aucun appel /api/providers/spotify.
+      spotify_allowlist: isSpotifyAllowlisted(req.userEmail),
     });
   } catch (err: unknown) {
     console.error('[GET /api/me] error:', err);
