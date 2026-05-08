@@ -9,7 +9,7 @@
  *   - ended          : session terminée, podium final cumulé
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { Component, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
@@ -96,6 +96,36 @@ interface Toast {
   id: string;
   text: string;
   tone: 'spritz' | 'basil' | 'raspberry';
+}
+
+// Bug v2 (fix/end-round-blank-page-v2) — ErrorBoundary autour du contenu
+// dynamique pour éviter qu'un crash dans RoundIntermissionScreen /
+// RoundPlayingScreen / RoundSelectionScreen ne fasse unmount tout le
+// HostPage en silence (= page vide). Au lieu de ça : on log l'erreur +
+// affiche un fallback avec bouton "Continuer" pour reset le boundary.
+interface HostContentBoundaryState {
+  error: Error | null;
+}
+class HostContentBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  HostContentBoundaryState
+> {
+  state: HostContentBoundaryState = { error: null };
+  static getDerivedStateFromError(error: Error): HostContentBoundaryState {
+    return { error };
+  }
+  componentDidCatch(error: Error, info: { componentStack?: string | null }): void {
+    console.error('[HostContentBoundary] Caught render error', error, info);
+  }
+  render(): ReactNode {
+    if (this.state.error) {
+      console.warn(
+        '[HostContentBoundary] Rendering fallback (error=' + String(this.state.error) + ')',
+      );
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
 }
 
 export function HostPage(): JSX.Element {
@@ -1128,84 +1158,152 @@ function HostPageInner(): JSX.Element {
         </header>
 
         <div className="max-w-7xl mx-auto">
-          {effectivePhase === 'waiting' && (
-            <WaitingPhase
-              shortCode={session.short_code}
-              playUrl={playUrl}
-              participants={session.participants}
-              teams={teams}
-              mode={session.mode}
-              busy={busy}
-              hasPendingRound={!!pendingRound}
-              hasAnimator={session.has_animator}
-              currentMasterId={currentMaster?.id ?? null}
-              onStart={handleStartSession}
-              onMove={async (pid, tid) => {
-                await moveParticipantTeam(session.id, pid, tid);
-              }}
-              onKick={async (pid) => {
-                if (window.confirm(t('host.kickConfirm'))) {
-                  await kickParticipant(session.id, pid);
+          <HostContentBoundary
+            fallback={
+              <Card tone="cream" size="lg" className="text-center max-w-2xl mx-auto">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-raspberry mb-2">
+                  ⚠️
+                </p>
+                <TitleHandwritten as="h2" className="mb-3">
+                  <Underline>{t('host.contentCrashTitle')}</Underline>
+                </TitleHandwritten>
+                <p className="font-editorial italic text-ink-2 mb-4">
+                  {t('host.contentCrashHint')}
+                </p>
+                <div className="flex gap-3 justify-center flex-wrap">
+                  <Button variant="primary" size="lg" onClick={() => window.location.reload()}>
+                    {t('host.contentCrashReload')}
+                  </Button>
+                  <Button variant="ghost" size="lg" onClick={() => void handleBackToDashboard()}>
+                    {t('host.backDashboard')}
+                  </Button>
+                </div>
+              </Card>
+            }
+          >
+            {effectivePhase === 'waiting' && (
+              <WaitingPhase
+                shortCode={session.short_code}
+                playUrl={playUrl}
+                participants={session.participants}
+                teams={teams}
+                mode={session.mode}
+                busy={busy}
+                hasPendingRound={!!pendingRound}
+                hasAnimator={session.has_animator}
+                currentMasterId={currentMaster?.id ?? null}
+                onStart={handleStartSession}
+                onMove={async (pid, tid) => {
+                  await moveParticipantTeam(session.id, pid, tid);
+                }}
+                onKick={async (pid) => {
+                  if (window.confirm(t('host.kickConfirm'))) {
+                    await kickParticipant(session.id, pid);
+                  }
+                }}
+                onToggleMaster={handleToggleMaster}
+              />
+            )}
+
+            {effectivePhase === 'roundSelection' && (
+              <RoundSelectionScreen
+                isFirstRound={session.rounds.length === 0}
+                onPickPlaylist={handlePickPlaylist}
+                onPickOfficial={handlePickOfficial}
+                onCreateExpress={() => setExpressModalOpen(true)}
+                onEndSession={handleEndSession}
+                loading={busy}
+              />
+            )}
+
+            {effectivePhase === 'roundPlaying' && playingRound && (
+              <RoundPlayingScreen
+                sessionId={session.id}
+                round={playingRound}
+                cumulative={cumulative}
+                participants={session.participants}
+                currentTrack={currentTrack}
+                recentBuzzes={recentBuzzes}
+                onNextTrack={handleNextTrack}
+                onEndRound={handleEndCurrentRound}
+                busy={busy}
+                isPaused={session.is_paused}
+                positionMs={audioPositionMs}
+                durationMs={audioDurationMs}
+                spotifyStatus={spotify.status}
+                spotifyError={spotify.error}
+                spotifyErrorCode={spotify.errorCode}
+                onForceAudio={() => {
+                  // Bug 4 — route le clic vers le provider du morceau courant
+                  if (currentTrack?.provider === 'youtube') {
+                    youtube.unblockAudio();
+                  } else {
+                    void spotify.transferToTutti();
+                  }
+                }}
+                onPauseAudio={() => void handlePauseAudio()}
+                onResumeAudio={() => void handleResumeAudio()}
+                onRestartTrack={() => void handleRestartTrack()}
+                onRevealAnswer={() => void handleGiveAnswer()}
+              />
+            )}
+
+            {effectivePhase === 'intermission' &&
+              (() => {
+                // Bug v2 (fix/end-round-blank-page-v2) — log + fallback :
+                // si lastEndedRound est falsy alors que phase===intermission
+                // (race condition theorique), afficher un placeholder au
+                // lieu de blank. Garantit que le user voit TOUJOURS un
+                // contenu en intermission, jamais une page vide.
+                console.info(
+                  `[HostPage] Render intermission branch lastEndedRound=${
+                    lastEndedRound ? `${lastEndedRound.id}/${lastEndedRound.position}` : 'NULL'
+                  } cumulative.count=${cumulative.length}`,
+                );
+                if (lastEndedRound) {
+                  return (
+                    <RoundIntermissionScreen
+                      round={lastEndedRound}
+                      cumulative={cumulative}
+                      onNextRound={() => setForcedSelection(true)}
+                      onEndSession={handleEndSession}
+                      loading={busy}
+                    />
+                  );
                 }
-              }}
-              onToggleMaster={handleToggleMaster}
-            />
-          )}
+                return (
+                  <Card tone="cream" size="lg" className="text-center max-w-2xl mx-auto">
+                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
+                      {t('host.eyebrowPlaying', { round: playingRoundsCount })}
+                    </p>
+                    <TitleHandwritten as="h2" className="mb-4">
+                      <Underline>{t('host.titleIntermission')}</Underline>
+                    </TitleHandwritten>
+                    <p className="font-editorial italic text-ink-2 mb-4">{t('host.noScoresYet')}</p>
+                    <div className="flex gap-3 justify-center flex-wrap">
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        onClick={() => setForcedSelection(true)}
+                        disabled={busy}
+                      >
+                        {t('host.nextRound')} →
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        onClick={() => void handleEndSession()}
+                        disabled={busy}
+                      >
+                        {t('host.endBlindTest')}
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })()}
 
-          {effectivePhase === 'roundSelection' && (
-            <RoundSelectionScreen
-              isFirstRound={session.rounds.length === 0}
-              onPickPlaylist={handlePickPlaylist}
-              onPickOfficial={handlePickOfficial}
-              onCreateExpress={() => setExpressModalOpen(true)}
-              onEndSession={handleEndSession}
-              loading={busy}
-            />
-          )}
-
-          {effectivePhase === 'roundPlaying' && playingRound && (
-            <RoundPlayingScreen
-              sessionId={session.id}
-              round={playingRound}
-              cumulative={cumulative}
-              participants={session.participants}
-              currentTrack={currentTrack}
-              recentBuzzes={recentBuzzes}
-              onNextTrack={handleNextTrack}
-              onEndRound={handleEndCurrentRound}
-              busy={busy}
-              isPaused={session.is_paused}
-              positionMs={audioPositionMs}
-              durationMs={audioDurationMs}
-              spotifyStatus={spotify.status}
-              spotifyError={spotify.error}
-              spotifyErrorCode={spotify.errorCode}
-              onForceAudio={() => {
-                // Bug 4 — route le clic vers le provider du morceau courant
-                if (currentTrack?.provider === 'youtube') {
-                  youtube.unblockAudio();
-                } else {
-                  void spotify.transferToTutti();
-                }
-              }}
-              onPauseAudio={() => void handlePauseAudio()}
-              onResumeAudio={() => void handleResumeAudio()}
-              onRestartTrack={() => void handleRestartTrack()}
-              onRevealAnswer={() => void handleGiveAnswer()}
-            />
-          )}
-
-          {effectivePhase === 'intermission' && lastEndedRound && (
-            <RoundIntermissionScreen
-              round={lastEndedRound}
-              cumulative={cumulative}
-              onNextRound={() => setForcedSelection(true)}
-              onEndSession={handleEndSession}
-              loading={busy}
-            />
-          )}
-
-          {effectivePhase === 'ended' && <EndedScreen cumulative={cumulative} />}
+            {effectivePhase === 'ended' && <EndedScreen cumulative={cumulative} />}
+          </HostContentBoundary>
         </div>
       </main>
 

@@ -26,16 +26,27 @@ export function RoundIntermissionScreen({
   loading,
 }: Props): JSX.Element {
   const { t } = useTranslation();
+  // Bug v2 (fix/end-round-blank-page-v2) — logs entry + crash defense.
+  // Le composant lit round.playlist.name : si playlist absent (race ou
+  // payload socket dégradé), throw au render → React unmount subtree →
+  // page host vide. Defensive : fallback sur title générique si plus rien.
+  console.info(
+    `[RoundIntermissionScreen] Mounted round.id=${round?.id ?? 'NULL'} position=${
+      round?.position ?? '?'
+    } playlist.name=${round?.playlist?.name ?? 'MISSING'} cumulative.count=${cumulative.length}`,
+  );
   const top3 = cumulative.slice(0, 3);
+  const playlistName = round?.playlist?.name ?? '—';
+  const roundPosition = round?.position ?? 0;
 
   return (
     <div className="max-w-3xl mx-auto">
       <header className="text-center mb-8">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
-          {t('host.roundEnded', { n: round.position })}
+          {t('host.roundEnded', { n: roundPosition })}
         </p>
         <TitleHandwritten as="h2">
-          <Underline>{round.playlist.name}</Underline>
+          <Underline>{playlistName}</Underline>
         </TitleHandwritten>
       </header>
 
