@@ -9,7 +9,7 @@
  * Out of scope V1 : édition manuelle, ajout/suppression, drag & drop.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
@@ -74,6 +74,44 @@ export function LibraryPage(): JSX.Element {
 
 // ───── Playlists tab ───────────────────────────────────────────────────────
 
+// feat/admin-library-sortable-columns — colonnes triables côté client.
+// Ordre par défaut = updated_at desc (renvoyé par l'API). Le user clique
+// un en-tête → asc → desc → default. Un seul critère actif à la fois.
+type SortKey =
+  | 'name'
+  | 'theme'
+  | 'difficulty'
+  | 'locale'
+  | 'visibility'
+  | 'updated_at'
+  | 'track_count';
+type SortOrder = 'asc' | 'desc' | null; // null = ordre par défaut (API)
+
+const DIFFICULTY_RANK: Record<string, number> = { EASY: 1, MEDIUM: 2, EXPERT: 3 };
+
+function comparePlaylists(
+  a: OfficialPlaylistSummary,
+  b: OfficialPlaylistSummary,
+  key: SortKey,
+): number {
+  switch (key) {
+    case 'name':
+      return a.name_fr.localeCompare(b.name_fr, 'fr', { sensitivity: 'base' });
+    case 'theme':
+      return (a.theme ?? '').localeCompare(b.theme ?? '', 'fr', { sensitivity: 'base' });
+    case 'difficulty':
+      return (DIFFICULTY_RANK[a.difficulty] ?? 99) - (DIFFICULTY_RANK[b.difficulty] ?? 99);
+    case 'locale':
+      return a.locale_primary.localeCompare(b.locale_primary, 'fr', { sensitivity: 'base' });
+    case 'visibility':
+      return a.visibility.localeCompare(b.visibility);
+    case 'updated_at':
+      return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
+    case 'track_count':
+      return a.track_count - b.track_count;
+  }
+}
+
 function PlaylistsTab(): JSX.Element {
   const { t } = useTranslation();
   const [playlists, setPlaylists] = useState<OfficialPlaylistSummary[] | null>(null);
@@ -82,6 +120,32 @@ function PlaylistsTab(): JSX.Element {
   const [visibility, setVisibility] = useState<Visibility | 'all'>('all');
   const [reimporting, setReimporting] = useState(false);
   const [lastImport, setLastImport] = useState<ImportResult | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+
+  // Toggle 3 états par colonne : default → asc → desc → default.
+  const handleSort = (key: SortKey): void => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortOrder('asc');
+      return;
+    }
+    if (sortOrder === 'asc') {
+      setSortOrder('desc');
+      return;
+    }
+    // sortOrder === 'desc' → reset
+    setSortKey(null);
+    setSortOrder(null);
+  };
+
+  // Liste triée côté frontend (ne touche pas l'API).
+  const sortedPlaylists = useMemo(() => {
+    if (!playlists) return null;
+    if (!sortKey || !sortOrder) return playlists;
+    const sorted = [...playlists].sort((a, b) => comparePlaylists(a, b, sortKey));
+    return sortOrder === 'desc' ? sorted.reverse() : sorted;
+  }, [playlists, sortKey, sortOrder]);
 
   const fetchPlaylists = async (): Promise<void> => {
     try {
@@ -185,18 +249,74 @@ function PlaylistsTab(): JSX.Element {
           <table className="w-full text-sm">
             <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
               <tr>
-                <th className="px-3 py-2 text-left">{t('library.colName')}</th>
-                <th className="px-3 py-2 text-left">{t('library.colTheme')}</th>
-                <th className="px-3 py-2 text-left">{t('library.colDifficulty')}</th>
-                <th className="px-3 py-2 text-left">{t('library.colLocale')}</th>
-                <th className="px-3 py-2 text-right">{t('library.colTracks')}</th>
-                <th className="px-3 py-2 text-left">{t('library.colVisibility')}</th>
-                <th className="px-3 py-2 text-left">{t('library.colUpdated')}</th>
+                <SortableHeader
+                  sortKey="name"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colName')}
+                </SortableHeader>
+                <SortableHeader
+                  sortKey="theme"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colTheme')}
+                </SortableHeader>
+                <SortableHeader
+                  sortKey="difficulty"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colDifficulty')}
+                </SortableHeader>
+                <SortableHeader
+                  sortKey="locale"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colLocale')}
+                </SortableHeader>
+                <SortableHeader
+                  sortKey="track_count"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="right"
+                >
+                  {t('library.colTracks')}
+                </SortableHeader>
+                <SortableHeader
+                  sortKey="visibility"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colVisibility')}
+                </SortableHeader>
+                <SortableHeader
+                  sortKey="updated_at"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colUpdated')}
+                </SortableHeader>
                 <th className="px-3 py-2 text-left">{t('library.colActions')}</th>
               </tr>
             </thead>
             <tbody>
-              {playlists.map((p) => (
+              {(sortedPlaylists ?? playlists).map((p) => (
                 <tr key={p.id} className="border-t border-ink/20 hover:bg-cream-2">
                   <td className="px-3 py-2 font-medium">
                     <Link to={`/admin/library/playlists/${p.id}`} className="hover:underline">
@@ -251,6 +371,45 @@ function QuizzesTab(): JSX.Element {
 }
 
 // ───── Sub-components ─────────────────────────────────────────────────────
+
+// feat/admin-library-sortable-columns — header cliquable avec indicateur ↑/↓.
+// Hover : fond plus foncé. Active : indicateur visible + fond accent.
+interface SortableHeaderProps {
+  sortKey: SortKey;
+  active: SortKey | null;
+  order: SortOrder;
+  onClick: (key: SortKey) => void;
+  align: 'left' | 'right';
+  children: React.ReactNode;
+}
+function SortableHeader({
+  sortKey,
+  active,
+  order,
+  onClick,
+  align,
+  children,
+}: SortableHeaderProps): JSX.Element {
+  const isActive = active === sortKey && order !== null;
+  const arrow = isActive ? (order === 'asc' ? ' ↑' : ' ↓') : '';
+  const alignClass = align === 'right' ? 'text-right' : 'text-left';
+  const activeClass = isActive ? 'bg-spritz/30 text-cream' : 'hover:bg-ink/80';
+  return (
+    <th
+      scope="col"
+      className={`px-3 py-2 ${alignClass} cursor-pointer select-none transition-colors ${activeClass}`}
+      onClick={() => onClick(sortKey)}
+      aria-sort={isActive ? (order === 'asc' ? 'ascending' : 'descending') : 'none'}
+    >
+      <span className="inline-flex items-center gap-1">
+        {children}
+        <span aria-hidden className="font-bold">
+          {arrow}
+        </span>
+      </span>
+    </th>
+  );
+}
 
 function VisibilityBadge({ visibility }: { visibility: Visibility }): JSX.Element {
   const cfg = {
