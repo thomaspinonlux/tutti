@@ -141,7 +141,10 @@
     "aliasTitleLabel": "Title aliases",
     "aliasTitleHint": "Title variants accepted (e.g. \"hey jude\", \"hej jude\").",
     "aliasPlaceholder": "Add an alias…",
-    "aliasRemove": "Remove"
+    "aliasRemove": "Remove",
+    "colCategory": "Category",
+    "colQuestions": "Questions",
+    "quizQuestionsTitle": "Questions"
   },
   "dashboard": {
     "welcomeTo": "Welcome to",

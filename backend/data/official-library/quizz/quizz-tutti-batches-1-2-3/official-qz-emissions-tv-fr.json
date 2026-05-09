@@ -1,0 +1,235 @@
+{
+  "id": "official-qz-emissions-tv-fr",
+  "name_fr": "Émissions TV françaises",
+  "name_en": "French TV Shows",
+  "description_fr": "Koh-Lanta, Top Chef, The Voice, QPUC, Roue de la Fortune. Les émissions cultes de la TV française.",
+  "description_en": "Koh-Lanta, Top Chef, The Voice, QPUC, Wheel of Fortune. Iconic French TV shows.",
+  "category": "emissions_tv",
+  "difficulty": "mix",
+  "locale_primary": "fr",
+  "question_count": 15,
+  "questions": [
+    {
+      "position": 1,
+      "type": "multiple_choice",
+      "question_fr": "Qui anime Koh-Lanta depuis 2001 ?",
+      "question_en": "Who has hosted Koh-Lanta since 2001?",
+      "answers_fr": ["Nagui", "Denis Brogniart", "Stéphane Plaza", "Jean-Luc Reichmann"],
+      "answers_en": ["Nagui", "Denis Brogniart", "Stéphane Plaza", "Jean-Luc Reichmann"],
+      "correct_answer_index": 1,
+      "explanation_fr": "Denis Brogniart anime Koh-Lanta depuis la deuxième saison en 2002.",
+      "explanation_en": "Denis Brogniart has hosted Koh-Lanta since the second season in 2002.",
+      "difficulty": "easy",
+      "media": null
+    },
+    {
+      "position": 2,
+      "type": "multiple_choice",
+      "question_fr": "Sur quelle chaîne est diffusé Top Chef ?",
+      "question_en": "On which channel does Top Chef air?",
+      "answers_fr": ["TF1", "France 2", "M6", "Canal+"],
+      "answers_en": ["TF1", "France 2", "M6", "Canal+"],
+      "correct_answer_index": 2,
+      "explanation_fr": "Top Chef est diffusé sur M6 depuis 2010.",
+      "explanation_en": "Top Chef has aired on M6 since 2010.",
+      "difficulty": "easy",
+      "media": null
+    },
+    {
+      "position": 3,
+      "type": "true_false",
+      "question_fr": "Patrick Sébastien a animé 'Le Plus Grand Cabaret du Monde'.",
+      "question_en": "Patrick Sébastien hosted 'Le Plus Grand Cabaret du Monde'.",
+      "correct_answer": true,
+      "explanation_fr": "Patrick Sébastien a animé l'émission de France 2 de 1998 à 2019.",
+      "explanation_en": "Patrick Sébastien hosted the France 2 show from 1998 to 2019.",
+      "difficulty": "medium",
+      "media": null
+    },
+    {
+      "position": 4,
+      "type": "multiple_choice",
+      "question_fr": "Qui anime Quotidien sur TMC ?",
+      "question_en": "Who hosts Quotidien on TMC?",
+      "answers_fr": ["Cyril Hanouna", "Yann Barthès", "Mouloud Achour", "Augustin Trapenard"],
+      "answers_en": ["Cyril Hanouna", "Yann Barthès", "Mouloud Achour", "Augustin Trapenard"],
+      "correct_answer_index": 1,
+      "explanation_fr": "Yann Barthès anime Quotidien depuis 2016, après Le Petit Journal sur Canal+.",
+      "explanation_en": "Yann Barthès has hosted Quotidien since 2016, after Le Petit Journal on Canal+.",
+      "difficulty": "easy",
+      "media": null
+    },
+    {
+      "position": 5,
+      "type": "multiple_choice",
+      "question_fr": "Quelle est l'émission animée par Jean-Pierre Foucault depuis 2000 ?",
+      "question_en": "Which show has Jean-Pierre Foucault hosted since 2000?",
+      "answers_fr": [
+        "Fort Boyard",
+        "Qui veut gagner des millions ?",
+        "Tournez Manège",
+        "La Roue de la Fortune"
+      ],
+      "answers_en": [
+        "Fort Boyard",
+        "Who Wants to Be a Millionaire",
+        "Tournez Manège",
+        "Wheel of Fortune"
+      ],
+      "correct_answer_index": 1,
+      "explanation_fr": "Jean-Pierre Foucault anime Qui veut gagner des millions ? sur TF1 depuis 2000.",
+      "explanation_en": "Jean-Pierre Foucault has hosted Who Wants to Be a Millionaire on TF1 since 2000.",
+      "difficulty": "easy",
+      "media": null
+    },
+    {
+      "position": 6,
+      "type": "fill_blank",
+      "question_fr": "Dans Questions pour un Champion, on doit gagner ___ étoiles pour participer au Carré.",
+      "question_en": "In Questions pour un Champion, you need ___ stars to qualify for Le Carré.",
+      "correct_answer_fr": "9",
+      "correct_answer_en": "9",
+      "alternatives_fr": ["9", "neuf"],
+      "alternatives_en": ["9", "nine"],
+      "explanation_fr": "Le Carré final accueille les 4 meilleurs candidats avec leurs étoiles cumulées.",
+      "explanation_en": "The final round (Le Carré) features the 4 best candidates with their accumulated stars.",
+      "difficulty": "hard",
+      "media": null
+    },
+    {
+      "position": 7,
+      "type": "multiple_choice",
+      "question_fr": "Qui anime Touche pas à mon poste (TPMP) ?",
+      "question_en": "Who hosts Touche pas à mon poste (TPMP)?",
+      "answers_fr": ["Nagui", "Cyril Hanouna", "Christophe Dechavanne", "Arthur"],
+      "answers_en": ["Nagui", "Cyril Hanouna", "Christophe Dechavanne", "Arthur"],
+      "correct_answer_index": 1,
+      "explanation_fr": "Cyril Hanouna anime TPMP depuis 2010.",
+      "explanation_en": "Cyril Hanouna has hosted TPMP since 2010.",
+      "difficulty": "easy",
+      "media": null
+    },
+    {
+      "position": 8,
+      "type": "true_false",
+      "question_fr": "Fort Boyard a été créé dans les années 1990.",
+      "question_en": "Fort Boyard was created in the 1990s.",
+      "correct_answer": true,
+      "explanation_fr": "Fort Boyard a été lancée le 7 juillet 1990 sur Antenne 2 (devenue France 2).",
+      "explanation_en": "Fort Boyard launched on July 7, 1990 on Antenne 2 (now France 2).",
+      "difficulty": "medium",
+      "media": null
+    },
+    {
+      "position": 9,
+      "type": "multiple_choice",
+      "question_fr": "Quelle émission propose le célèbre 'jeu de la pyramide' avec Nagui ?",
+      "question_en": "Which show features the famous 'pyramid game' with Nagui?",
+      "answers_fr": [
+        "Tout le monde veut prendre sa place",
+        "N'oubliez pas les paroles",
+        "Slam",
+        "Mot de Passe"
+      ],
+      "answers_en": [
+        "Tout le monde veut prendre sa place",
+        "N'oubliez pas les paroles",
+        "Slam",
+        "Mot de Passe"
+      ],
+      "correct_answer_index": 0,
+      "explanation_fr": "Tout le monde veut prendre sa place est animé par Nagui depuis 2006 sur France 2.",
+      "explanation_en": "'Tout le monde veut prendre sa place' has been hosted by Nagui since 2006 on France 2.",
+      "difficulty": "medium",
+      "media": null
+    },
+    {
+      "position": 10,
+      "type": "multiple_choice",
+      "question_fr": "Qui était le premier animateur de The Voice en France ?",
+      "question_en": "Who was the first host of The Voice in France?",
+      "answers_fr": ["Nikos Aliagas", "Jenifer", "Patrick Bruel", "Garou"],
+      "answers_en": ["Nikos Aliagas", "Jenifer", "Patrick Bruel", "Garou"],
+      "correct_answer_index": 0,
+      "explanation_fr": "Nikos Aliagas anime The Voice depuis le début (2012) sur TF1.",
+      "explanation_en": "Nikos Aliagas has hosted The Voice since the start (2012) on TF1.",
+      "difficulty": "medium",
+      "media": null
+    },
+    {
+      "position": 11,
+      "type": "fill_blank",
+      "question_fr": "Dans 12 Coups de Midi, le candidat principal est appelé ___.",
+      "question_en": "In 12 Coups de Midi, the main candidate is called ___.",
+      "correct_answer_fr": "maître de midi",
+      "correct_answer_en": "midday master",
+      "alternatives_fr": ["maître de midi", "maitre de midi", "le maître"],
+      "alternatives_en": ["midday master"],
+      "explanation_fr": "Le Maître de Midi affronte 4 challengers chaque jour. Animée par Jean-Luc Reichmann.",
+      "explanation_en": "The Midday Master faces 4 challengers daily. Hosted by Jean-Luc Reichmann.",
+      "difficulty": "medium",
+      "media": null
+    },
+    {
+      "position": 12,
+      "type": "true_false",
+      "question_fr": "Pékin Express se déroule uniquement en Chine.",
+      "question_en": "Pékin Express only takes place in China.",
+      "correct_answer": false,
+      "explanation_fr": "Faux. Malgré son nom, Pékin Express se déroule dans différents pays selon les saisons.",
+      "explanation_en": "False. Despite its name, Pékin Express is set in different countries each season.",
+      "difficulty": "medium",
+      "media": null
+    },
+    {
+      "position": 13,
+      "type": "multiple_choice",
+      "question_fr": "Quel jeu télé français a pour générique la musique 'Doot doot'?",
+      "question_en": "Which French game show has 'Doot doot' as its theme music?",
+      "answers_fr": [
+        "Slam",
+        "N'oubliez pas les paroles",
+        "Le Juste Prix",
+        "Des Chiffres et des Lettres"
+      ],
+      "answers_en": [
+        "Slam",
+        "N'oubliez pas les paroles",
+        "Le Juste Prix",
+        "Des Chiffres et des Lettres"
+      ],
+      "correct_answer_index": 3,
+      "explanation_fr": "Des Chiffres et des Lettres, lancée en 1965, a un générique culte.",
+      "explanation_en": "Des Chiffres et des Lettres, launched in 1965, has an iconic theme.",
+      "difficulty": "hard",
+      "media": null
+    },
+    {
+      "position": 14,
+      "type": "multiple_choice",
+      "question_fr": "Quel humoriste a animé On a tout essayé sur France 2 ?",
+      "question_en": "Which comedian hosted On a tout essayé on France 2?",
+      "answers_fr": ["Laurent Ruquier", "Stéphane Bern", "Michel Drucker", "Jean-Marc Morandini"],
+      "answers_en": ["Laurent Ruquier", "Stéphane Bern", "Michel Drucker", "Jean-Marc Morandini"],
+      "correct_answer_index": 0,
+      "explanation_fr": "Laurent Ruquier anime On a tout essayé de 2000 à 2007.",
+      "explanation_en": "Laurent Ruquier hosted On a tout essayé from 2000 to 2007.",
+      "difficulty": "medium",
+      "media": null
+    },
+    {
+      "position": 15,
+      "type": "fill_blank",
+      "question_fr": "L'émission animée par Stéphane Plaza qui aide à acheter une maison s'appelle '___ Recherche Appartement ou Maison'.",
+      "question_en": "Stéphane Plaza's home-buying show is called '___ Recherche Appartement ou Maison'.",
+      "correct_answer_fr": "chasseurs d'appart",
+      "correct_answer_en": "house hunters",
+      "alternatives_fr": ["chasseurs d'appart", "stéphane"],
+      "alternatives_en": ["house hunters", "stéphane"],
+      "explanation_fr": "Recherche Appartement ou Maison, animée par Stéphane Plaza sur M6 depuis 2006.",
+      "explanation_en": "Recherche Appartement ou Maison, hosted by Stéphane Plaza on M6 since 2006.",
+      "difficulty": "hard",
+      "media": null
+    }
+  ]
+}

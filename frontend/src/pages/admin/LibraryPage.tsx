@@ -15,9 +15,11 @@ import { useTranslation } from 'react-i18next';
 import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import {
   listOfficialPlaylists,
+  listOfficialQuizPacks,
   reimportOfficialLibrary,
   type ImportResult,
   type OfficialPlaylistSummary,
+  type OfficialQuizPackSummary,
   type Visibility,
 } from '../../lib/adminLibrary.js';
 
@@ -358,15 +360,287 @@ function PlaylistsTab(): JSX.Element {
   );
 }
 
-// ───── Quizzes tab (placeholder V1) ───────────────────────────────────────
+// ───── Quizzes tab — feat/official-quiz-library ─────────────────────────
+
+type QuizSortKey =
+  | 'name_fr'
+  | 'category'
+  | 'difficulty'
+  | 'locale'
+  | 'visibility'
+  | 'updated_at'
+  | 'question_count';
+
+function compareQuizPacks(
+  a: OfficialQuizPackSummary,
+  b: OfficialQuizPackSummary,
+  key: QuizSortKey,
+): number {
+  switch (key) {
+    case 'name_fr':
+      return a.name_fr.localeCompare(b.name_fr, 'fr', { sensitivity: 'base' });
+    case 'category':
+      return (a.category ?? '').localeCompare(b.category ?? '', 'fr', { sensitivity: 'base' });
+    case 'difficulty':
+      return (DIFFICULTY_RANK[a.difficulty] ?? 99) - (DIFFICULTY_RANK[b.difficulty] ?? 99);
+    case 'locale':
+      return a.locale_primary.localeCompare(b.locale_primary, 'fr', { sensitivity: 'base' });
+    case 'visibility':
+      return a.visibility.localeCompare(b.visibility);
+    case 'updated_at':
+      return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
+    case 'question_count':
+      return a.question_count - b.question_count;
+  }
+}
 
 function QuizzesTab(): JSX.Element {
   const { t } = useTranslation();
+  const [packs, setPacks] = useState<OfficialQuizPackSummary[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [q, setQ] = useState('');
+  const [visibility, setVisibility] = useState<Visibility | 'all'>('all');
+  const [sortKey, setSortKey] = useState<QuizSortKey | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+
+  const fetchPacks = async (): Promise<void> => {
+    try {
+      const data = await listOfficialQuizPacks({
+        visibility: visibility === 'all' ? undefined : visibility,
+        q: q.trim() || undefined,
+      });
+      setPacks(data);
+      setError(null);
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
+  useEffect(() => {
+    void fetchPacks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  const handleSearch = (e: React.FormEvent): void => {
+    e.preventDefault();
+    void fetchPacks();
+  };
+
+  const handleSort = (k: QuizSortKey): void => {
+    if (sortKey !== k) {
+      setSortKey(k);
+      setSortOrder('asc');
+      return;
+    }
+    if (sortOrder === 'asc') {
+      setSortOrder('desc');
+      return;
+    }
+    setSortKey(null);
+    setSortOrder(null);
+  };
+
+  const sortedPacks = useMemo(() => {
+    if (!packs) return null;
+    if (!sortKey || !sortOrder) return packs;
+    const sorted = [...packs].sort((a, b) => compareQuizPacks(a, b, sortKey));
+    return sortOrder === 'desc' ? sorted.reverse() : sorted;
+  }, [packs, sortKey, sortOrder]);
+
   return (
-    <Card tone="cream" size="lg" className="text-center">
-      <p className="font-display text-2xl mb-2">🚧</p>
-      <p className="font-editorial italic text-ink-2">{t('library.quizzesPlaceholder')}</p>
-    </Card>
+    <div>
+      <div className="flex items-end gap-3 flex-wrap mb-5">
+        <form onSubmit={handleSearch} className="flex items-end gap-2">
+          <Input
+            label={t('library.search')}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t('library.searchPlaceholder')}
+            className="w-64"
+          />
+          <Button type="submit" variant="secondary" size="md">
+            🔍 {t('library.searchSubmit')}
+          </Button>
+        </form>
+        <div>
+          <label className="block text-xs font-mono uppercase tracking-wider text-ink-soft mb-1">
+            {t('library.visibility')}
+          </label>
+          <select
+            value={visibility}
+            onChange={(e) => setVisibility(e.target.value as Visibility | 'all')}
+            className="border-2 border-ink rounded px-3 py-2 bg-cream font-medium"
+          >
+            <option value="all">{t('library.visibilityAll')}</option>
+            <option value="public">{t('library.visibilityPublic')}</option>
+            <option value="premium_only">{t('library.visibilityPremium')}</option>
+            <option value="private">{t('library.visibilityPrivate')}</option>
+          </select>
+        </div>
+      </div>
+
+      {error && (
+        <Card tone="cream" className="border-raspberry mb-4">
+          <p role="alert" className="text-raspberry font-medium">
+            {error}
+          </p>
+        </Card>
+      )}
+
+      {!packs ? (
+        <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>
+      ) : packs.length === 0 ? (
+        <Card tone="cream" size="lg" className="text-center">
+          <p className="font-editorial italic text-ink-soft">{t('library.empty')}</p>
+        </Card>
+      ) : (
+        <div className="border-2 border-ink rounded-lg overflow-x-auto bg-cream">
+          <table className="w-full text-sm">
+            <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
+              <tr>
+                <QuizSortableHeader
+                  sortKey="name_fr"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colName')}
+                </QuizSortableHeader>
+                <QuizSortableHeader
+                  sortKey="category"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colCategory')}
+                </QuizSortableHeader>
+                <QuizSortableHeader
+                  sortKey="difficulty"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colDifficulty')}
+                </QuizSortableHeader>
+                <QuizSortableHeader
+                  sortKey="locale"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colLocale')}
+                </QuizSortableHeader>
+                <QuizSortableHeader
+                  sortKey="question_count"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="right"
+                >
+                  {t('library.colQuestions')}
+                </QuizSortableHeader>
+                <QuizSortableHeader
+                  sortKey="visibility"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colVisibility')}
+                </QuizSortableHeader>
+                <QuizSortableHeader
+                  sortKey="updated_at"
+                  active={sortKey}
+                  order={sortOrder}
+                  onClick={handleSort}
+                  align="left"
+                >
+                  {t('library.colUpdated')}
+                </QuizSortableHeader>
+                <th className="px-3 py-2 text-left">{t('library.colActions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(sortedPacks ?? packs).map((p) => (
+                <tr key={p.id} className="border-t border-ink/20 hover:bg-cream-2">
+                  <td className="px-3 py-2 font-medium">
+                    <Link to={`/admin/library/quiz-packs/${p.id}`} className="hover:underline">
+                      {p.name_fr}
+                    </Link>
+                    <p className="text-[10px] font-mono text-ink-soft">{p.slug}</p>
+                  </td>
+                  <td className="px-3 py-2 text-ink-soft">{p.category ?? '—'}</td>
+                  <td className="px-3 py-2">
+                    <DifficultyBadge difficulty={p.difficulty} />
+                  </td>
+                  <td className="px-3 py-2 font-mono text-xs">{p.locale_primary}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{p.question_count}</td>
+                  <td className="px-3 py-2">
+                    <VisibilityBadge visibility={p.visibility} />
+                  </td>
+                  <td className="px-3 py-2 text-xs text-ink-soft">
+                    {new Date(p.updated_at).toLocaleDateString('fr-FR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    })}
+                  </td>
+                  <td className="px-3 py-2">
+                    <Link
+                      to={`/admin/library/quiz-packs/${p.id}`}
+                      className="text-spritz-deep font-medium hover:underline"
+                    >
+                      {t('library.colEdit')} →
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface QuizSortableHeaderProps {
+  sortKey: QuizSortKey;
+  active: QuizSortKey | null;
+  order: SortOrder;
+  onClick: (k: QuizSortKey) => void;
+  align: 'left' | 'right';
+  children: React.ReactNode;
+}
+function QuizSortableHeader({
+  sortKey,
+  active,
+  order,
+  onClick,
+  align,
+  children,
+}: QuizSortableHeaderProps): JSX.Element {
+  const isActive = active === sortKey && order !== null;
+  const arrow = isActive ? (order === 'asc' ? ' ↑' : ' ↓') : '';
+  const alignClass = align === 'right' ? 'text-right' : 'text-left';
+  const activeClass = isActive ? 'bg-spritz/30 text-cream' : 'hover:bg-ink/80';
+  return (
+    <th
+      scope="col"
+      className={`px-3 py-2 ${alignClass} cursor-pointer select-none transition-colors ${activeClass}`}
+      onClick={() => onClick(sortKey)}
+      aria-sort={isActive ? (order === 'asc' ? 'ascending' : 'descending') : 'none'}
+    >
+      <span className="inline-flex items-center gap-1">
+        {children}
+        <span aria-hidden className="font-bold">
+          {arrow}
+        </span>
+      </span>
+    </th>
   );
 }
 

@@ -33,6 +33,7 @@ import { UserDetailPage } from './pages/admin/UserDetailPage.js';
 import { ImportPlaylistPage } from './pages/admin/ImportPlaylistPage.js';
 import { LibraryPage } from './pages/admin/LibraryPage.js';
 import { LibraryPlaylistDetailPage } from './pages/admin/LibraryPlaylistDetailPage.js';
+import { LibraryQuizPackDetailPage } from './pages/admin/LibraryQuizPackDetailPage.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 
 // Lazy : chunks dédiés aux pages volumineuses (audio, dnd, qrcode, socket.io…)
@@ -106,6 +107,7 @@ function App(): JSX.Element {
           <Route path="import-playlist" element={<ImportPlaylistPage />} />
           <Route path="library" element={<LibraryPage />} />
           <Route path="library/playlists/:id" element={<LibraryPlaylistDetailPage />} />
+          <Route path="library/quiz-packs/:id" element={<LibraryQuizPackDetailPage />} />
           <Route
             path="sessions/new"
             element={

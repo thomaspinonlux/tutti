@@ -14,6 +14,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "import:official-library": "tsx scripts/import-official-library.ts",
+    "import:official-quiz": "tsx scripts/import-official-quiz.ts",
     "validate:youtube-ids": "tsx scripts/validate-youtube-ids.ts"
   },
   "prisma": {
