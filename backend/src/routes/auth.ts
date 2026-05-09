@@ -15,6 +15,42 @@ import { Plan, Role } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { isSuperAdminEmail } from '../lib/superAdmin.js';
+import {
+  getNotificationRecipients,
+  renderSignupNotificationHtml,
+  sendNotificationEmail,
+} from '../lib/email.js';
+
+/**
+ * Envoie une notification email au team admin pour chaque nouvelle
+ * inscription user. Fire-and-forget : non bloquant + try/catch défensif
+ * pour ne JAMAIS casser la flow signup en cas d'erreur Resend.
+ */
+function fireSignupNotification(args: {
+  email: string;
+  name: string | null;
+  locale: string;
+}): void {
+  const recipients = getNotificationRecipients();
+  if (recipients.length === 0) {
+    console.info('[Email] NOTIFICATION_EMAILS vide → notification signup skip');
+    return;
+  }
+  const html = renderSignupNotificationHtml({
+    email: args.email,
+    name: args.name,
+    locale: args.locale,
+    signupAt: new Date(),
+  });
+  // Pas d'await → la réponse signup ne bloque pas sur Resend.
+  void sendNotificationEmail({
+    to: recipients,
+    subject: `[Tutti] Nouvelle inscription - ${args.email}`,
+    html,
+  }).catch((err) => {
+    console.error('[Email] fireSignupNotification swallowed error:', err);
+  });
+}
 
 const router: Router = Router();
 
@@ -202,6 +238,12 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
             referrer_code: referrerCode.toUpperCase(),
           },
         });
+        // feat/admin-users-and-email-notifications — notif team
+        fireSignupNotification({
+          email: req.userEmail ?? '(email inconnu)',
+          name: null,
+          locale: 'fr',
+        });
         res.status(201).json({
           workspace: referrer.workspace,
           member: {
@@ -262,6 +304,13 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
       }
 
       return { workspace, member, establishment };
+    });
+
+    // feat/admin-users-and-email-notifications — notif team
+    fireSignupNotification({
+      email: req.userEmail ?? '(email inconnu)',
+      name: null,
+      locale: 'fr',
     });
 
     res.status(201).json({

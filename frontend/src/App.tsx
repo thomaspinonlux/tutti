@@ -28,6 +28,8 @@ import { QuizzPage } from './pages/admin/QuizzPage.js';
 import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { AccountPage } from './pages/admin/AccountPage.js';
 import { SuperAdminPage } from './pages/admin/SuperAdminPage.js';
+import { UsersPage } from './pages/admin/UsersPage.js';
+import { UserDetailPage } from './pages/admin/UserDetailPage.js';
 import { ImportPlaylistPage } from './pages/admin/ImportPlaylistPage.js';
 import { LibraryPage } from './pages/admin/LibraryPage.js';
 import { LibraryPlaylistDetailPage } from './pages/admin/LibraryPlaylistDetailPage.js';
@@ -99,6 +101,8 @@ function App(): JSX.Element {
           <Route path="settings" element={<SettingsPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="super-admin" element={<SuperAdminPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="import-playlist" element={<ImportPlaylistPage />} />
           <Route path="library" element={<LibraryPage />} />
           <Route path="library/playlists/:id" element={<LibraryPlaylistDetailPage />} />
