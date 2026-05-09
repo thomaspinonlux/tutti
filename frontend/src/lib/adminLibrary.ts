@@ -120,6 +120,86 @@ export async function reimportOfficialLibrary(): Promise<ImportResult> {
   return api<ImportResult>('/api/admin/library/reimport', { method: 'POST' });
 }
 
+// ───── Official Quiz Library — feat/official-quiz-library ────────────────
+
+export interface OfficialQuizPackSummary {
+  id: string;
+  slug: string;
+  name_fr: string;
+  name_en: string;
+  category: string | null;
+  difficulty: Difficulty;
+  locale_primary: string;
+  visibility: Visibility;
+  question_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OfficialQuizQuestion {
+  id: string;
+  pack_id: string;
+  position: number;
+  type: 'MCQ' | 'TRUE_FALSE' | 'FREE_TEXT';
+  question_fr: string;
+  question_en: string;
+  choices_fr: string[];
+  choices_en: string[];
+  correct_answer_index: number | null;
+  correct_answer_bool: boolean | null;
+  correct_answer_fr: string | null;
+  correct_answer_en: string | null;
+  alternatives_fr: string[];
+  alternatives_en: string[];
+  explanation_fr: string | null;
+  explanation_en: string | null;
+  difficulty: Difficulty;
+  media_url: string | null;
+}
+
+export interface OfficialQuizPackDetail extends OfficialQuizPackSummary {
+  description_fr: string | null;
+  description_en: string | null;
+  questions: OfficialQuizQuestion[];
+}
+
+export async function listOfficialQuizPacks(opts?: {
+  visibility?: Visibility;
+  q?: string;
+}): Promise<OfficialQuizPackSummary[]> {
+  const params = new URLSearchParams();
+  if (opts?.visibility) params.set('visibility', opts.visibility);
+  if (opts?.q) params.set('q', opts.q);
+  const qs = params.toString();
+  const path = `/api/admin/library/quiz-packs${qs ? `?${qs}` : ''}`;
+  const data = await api<{ packs: OfficialQuizPackSummary[] }>(path);
+  return data.packs;
+}
+
+export async function getOfficialQuizPack(id: string): Promise<OfficialQuizPackDetail> {
+  const data = await api<{ pack: OfficialQuizPackDetail }>(
+    `/api/admin/library/quiz-packs/${encodeURIComponent(id)}`,
+  );
+  return data.pack;
+}
+
+export async function patchOfficialQuizPack(
+  id: string,
+  changes: Partial<{
+    name_fr: string;
+    name_en: string;
+    description_fr: string | null;
+    description_en: string | null;
+    visibility: Visibility;
+  }>,
+): Promise<OfficialQuizPackDetail> {
+  const data = await api<{ pack: OfficialQuizPackDetail }>(
+    `/api/admin/library/quiz-packs/${encodeURIComponent(id)}`,
+    { method: 'PATCH', body: changes },
+  );
+  return data.pack;
+}
+
 export async function patchOfficialTrack(
   trackId: string,
   changes: Partial<{

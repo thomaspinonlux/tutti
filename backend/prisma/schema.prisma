@@ -713,3 +713,78 @@ model OfficialPlaylistTrack {
   @@index([is_playable])
   @@map("official_playlist_tracks")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  OFFICIAL QUIZ LIBRARY (feat/official-quiz-library)
+//  Bibliothèque officielle Tutti pour le mode Quizz. Parallèle à
+//  OfficialPlaylist / OfficialPlaylistTrack mais pour questions/réponses.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model OfficialQuizPack {
+  id               String   @id @default(uuid()) @db.Uuid
+  /// Slug stable utilisé dans le JSON source pour upsert idempotent
+  /// (ex: "official-qz-animaux-nature"). Sert de clé naturelle.
+  slug             String   @unique @db.VarChar(120)
+  name_fr          String
+  name_en          String
+  description_fr   String?
+  description_en   String?
+  /// Locale principale (ex: "international", "fr", "en").
+  locale_primary   String   @db.VarChar(32)
+  /// Catégorie éditoriale libre (ex: "animaux", "histoire", "cinema").
+  category         String?  @db.VarChar(80)
+  /// Niveau global (peut différer de la difficulté par question).
+  difficulty       Level    @default(MEDIUM)
+  visibility       OfficialVisibility @default(public)
+  question_count   Int      @default(0)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @updatedAt       @db.Timestamptz(6)
+
+  questions OfficialQuizQuestion[]
+
+  @@index([visibility])
+  @@index([locale_primary])
+  @@index([category])
+  @@map("official_quiz_packs")
+}
+
+model OfficialQuizQuestion {
+  id               String   @id @default(uuid()) @db.Uuid
+  pack_id          String   @db.Uuid
+  /// Position dans le pack (1-indexed, unique par pack).
+  position         Int
+  /// Type de question — mappé sur les 3 types présents dans les JSON
+  /// sources (multiple_choice / true_false / fill_blank). MCQ / TRUE_FALSE
+  /// / FREE_TEXT côté enum DB (réutilise QuestionType existant).
+  type             QuestionType
+  /// Énoncé bilingue.
+  question_fr      String
+  question_en      String
+  /// Choix MCQ (4 typiquement). Vide pour TRUE_FALSE / FREE_TEXT.
+  choices_fr       String[] @default([])
+  choices_en       String[] @default([])
+  /// Index réponse correcte pour MCQ (0-based). Null sinon.
+  correct_answer_index Int?
+  /// Réponse correcte pour TRUE_FALSE. Null sinon.
+  correct_answer_bool  Boolean?
+  /// Réponse texte canonique pour FREE_TEXT (fill_blank). Null sinon.
+  correct_answer_fr    String?
+  correct_answer_en    String?
+  /// Alternatives orthographiques pour FREE_TEXT (matching fuzzy).
+  alternatives_fr  String[] @default([])
+  alternatives_en  String[] @default([])
+  /// Explication affichée après réponse (bilingue).
+  explanation_fr   String?
+  explanation_en   String?
+  /// Difficulté par question (peut différer du pack).
+  difficulty       Level    @default(MEDIUM)
+  /// URL média optionnelle (image/audio illustrant la question).
+  media_url        String?
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+
+  pack OfficialQuizPack @relation(fields: [pack_id], references: [id], onDelete: Cascade)
+
+  @@unique([pack_id, position])
+  @@index([pack_id])
+  @@map("official_quiz_questions")
+}
