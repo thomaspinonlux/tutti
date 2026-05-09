@@ -72,6 +72,37 @@ export function UserDetailPage(): JSX.Element {
     }
   };
 
+  // feat/granular-tracks-quizz-access — toggle direct save permissions.
+  const [savedFlash, setSavedFlash] = useState<string | null>(null);
+  const handleToggleTracks = async (): Promise<void> => {
+    if (!user) return;
+    setBusy(true);
+    try {
+      const res = await patchAdminUser(user.id, { can_use_tracks: !user.can_use_tracks });
+      setUser({ ...user, can_use_tracks: res.can_use_tracks });
+      setSavedFlash(`Accès Tracks ${res.can_use_tracks ? 'activé' : 'désactivé'} ✓`);
+      window.setTimeout(() => setSavedFlash(null), 2500);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const handleToggleQuizz = async (): Promise<void> => {
+    if (!user) return;
+    setBusy(true);
+    try {
+      const res = await patchAdminUser(user.id, { can_use_quizz: !user.can_use_quizz });
+      setUser({ ...user, can_use_quizz: res.can_use_quizz });
+      setSavedFlash(`Accès Quizz ${res.can_use_quizz ? 'activé' : 'désactivé'} ✓`);
+      window.setTimeout(() => setSavedFlash(null), 2500);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleResetFreemium = async (): Promise<void> => {
     if (!user) return;
     if (
@@ -148,6 +179,52 @@ export function UserDetailPage(): JSX.Element {
           </Button>
         </div>
       </header>
+
+      {savedFlash && (
+        <div
+          role="status"
+          className="mb-4 px-4 py-2 border-2 border-basil bg-basil/15 text-basil-deep rounded font-mono text-sm animate-fade-in"
+        >
+          {savedFlash}
+        </div>
+      )}
+
+      {/* feat/granular-tracks-quizz-access — Permissions section */}
+      <Card size="md" className="mb-6">
+        <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">Permissions</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label className="flex items-center justify-between p-3 border-2 border-ink rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
+            <div>
+              <p className="font-display text-base">🎵 Accès Blind Test (Tracks)</p>
+              <p className="font-editorial italic text-xs text-ink-soft">
+                Le user peut créer des sessions Tracks
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={user.can_use_tracks}
+              disabled={busy}
+              onChange={() => void handleToggleTracks()}
+              className="w-6 h-6 cursor-pointer accent-spritz"
+            />
+          </label>
+          <label className="flex items-center justify-between p-3 border-2 border-ink rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
+            <div>
+              <p className="font-display text-base">❓ Accès Quizz</p>
+              <p className="font-editorial italic text-xs text-ink-soft">
+                Le user peut créer des sessions Quizz
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={user.can_use_quizz}
+              disabled={busy}
+              onChange={() => void handleToggleQuizz()}
+              className="w-6 h-6 cursor-pointer accent-basil"
+            />
+          </label>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Card size="md">

@@ -29,6 +29,12 @@ export interface MeResponse {
    * + le bruit dans la console pour les users normaux post-pivot YouTube.
    */
   spotify_allowlist: boolean;
+  /**
+   * feat/granular-tracks-quizz-access — flags par user pour gater l'UI
+   * dashboard host. Backend revérifie sur POST /api/sessions création.
+   */
+  can_use_tracks: boolean;
+  can_use_quizz: boolean;
 }
 
 export async function getMe(): Promise<MeResponse> {

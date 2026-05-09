@@ -50,6 +50,11 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
       // SDK côté frontend. false par défaut → useSpotifyPlayer skip
       // entièrement, aucun script chargé, aucun appel /api/providers/spotify.
       spotify_allowlist: isSpotifyAllowlisted(req.userEmail),
+      // feat/granular-tracks-quizz-access — flags par user pour gater
+      // l'UI dashboard host. Backend renvoie 403 sur création de session
+      // si flag false (defense in depth). Défaut true si pas de member.
+      can_use_tracks: member?.can_use_tracks ?? true,
+      can_use_quizz: member?.can_use_quizz ?? true,
     });
   } catch (err: unknown) {
     console.error('[GET /api/me] error:', err);

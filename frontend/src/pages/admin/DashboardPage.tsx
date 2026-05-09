@@ -137,6 +137,29 @@ interface DashboardContentProps {
 
 function DashboardContent({ establishment }: DashboardContentProps): JSX.Element {
   const { t } = useTranslation();
+  // feat/granular-tracks-quizz-access — récup flags via getMe au mount
+  // (existing useEstablishment context fournit l'establishment mais pas
+  // les flags de permission ; on appelle getMe direct ici).
+  const [canUseTracks, setCanUseTracks] = useState(true);
+  const [canUseQuizz, setCanUseQuizz] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    void import('../../lib/me.js').then(({ getMe }) =>
+      getMe()
+        .then((me) => {
+          if (cancelled) return;
+          setCanUseTracks(me.can_use_tracks);
+          setCanUseQuizz(me.can_use_quizz);
+        })
+        .catch(() => {
+          /* fallback : laisse true (rétro-compat) */
+        }),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const noAccess = !canUseTracks && !canUseQuizz;
   return (
     <>
       <header className="mb-8 flex items-start justify-between flex-wrap gap-4">
@@ -179,24 +202,38 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
 
       <GettingStartedChecklist />
 
+      {noAccess && (
+        <Card tone="cream" size="lg" className="text-center mb-6 border-raspberry">
+          <p className="text-3xl mb-2" aria-hidden>
+            🚫
+          </p>
+          <p className="font-display text-xl mb-2">{t('dashboard.noAccessTitle')}</p>
+          <p className="font-editorial italic text-ink-2">{t('dashboard.noAccessHint')}</p>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <GameCard
-          to="/admin/tracks"
+          to={canUseTracks ? '/admin/tracks' : null}
           tone="spritz"
           icon={<VinylIllustration />}
           title={t('dashboard.tracksTitle')}
           tagline={t('dashboard.tracksTagline')}
           description={t('dashboard.tracksDescription')}
           cta={t('dashboard.tracksCta')}
+          disabled={!canUseTracks}
+          disabledTooltip={t('dashboard.accessForbidden')}
         />
         <GameCard
-          to="/admin/quizz"
+          to={canUseQuizz ? '/admin/quizz' : null}
           tone="basil"
           icon={<BulbIllustration />}
           title={t('dashboard.quizzTitle')}
           tagline={t('dashboard.quizzTagline')}
           description={t('dashboard.quizzDescription')}
           cta={t('dashboard.quizzCta')}
+          disabled={!canUseQuizz}
+          disabledTooltip={t('dashboard.accessForbidden')}
         />
       </div>
     </>
@@ -204,13 +241,15 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
 }
 
 interface GameCardProps {
-  to: string;
+  to: string | null;
   tone: 'spritz' | 'basil';
   icon: JSX.Element;
   title: string;
   tagline: string;
   description: string;
   cta: string;
+  disabled?: boolean;
+  disabledTooltip?: string;
 }
 
 function GameCard({
@@ -221,26 +260,42 @@ function GameCard({
   tagline,
   description,
   cta,
+  disabled,
+  disabledTooltip,
 }: GameCardProps): JSX.Element {
+  const inner = (
+    <Card
+      tone={tone}
+      size="lg"
+      className={`h-full transition-transform ${
+        disabled
+          ? 'opacity-50 grayscale cursor-not-allowed'
+          : 'group-hover:-translate-y-1 group-hover:shadow-pop-xl'
+      }`}
+    >
+      <div className="flex justify-center mb-4 text-ink">{icon}</div>
+      <TitleHandwritten as="h2" className="text-center mb-2">
+        <Underline>{title}</Underline>
+      </TitleHandwritten>
+      <p className="font-editorial italic text-center text-ink-2 mb-3">{tagline}</p>
+      <p className="text-sm text-ink-soft text-center mb-5">{description}</p>
+      <div className="flex justify-center">
+        <Button variant={tone === 'spritz' ? 'primary' : 'secondary'} size="md" disabled={disabled}>
+          {disabled ? `🚫 ${cta}` : `${cta} →`}
+        </Button>
+      </div>
+    </Card>
+  );
+  if (disabled || !to) {
+    return (
+      <div className="group block" title={disabledTooltip ?? ''} aria-disabled="true">
+        {inner}
+      </div>
+    );
+  }
   return (
     <Link to={to} className="group block">
-      <Card
-        tone={tone}
-        size="lg"
-        className="h-full transition-transform group-hover:-translate-y-1 group-hover:shadow-pop-xl"
-      >
-        <div className="flex justify-center mb-4 text-ink">{icon}</div>
-        <TitleHandwritten as="h2" className="text-center mb-2">
-          <Underline>{title}</Underline>
-        </TitleHandwritten>
-        <p className="font-editorial italic text-center text-ink-2 mb-3">{tagline}</p>
-        <p className="text-sm text-ink-soft text-center mb-5">{description}</p>
-        <div className="flex justify-center">
-          <Button variant={tone === 'spritz' ? 'primary' : 'secondary'} size="md">
-            {cta} →
-          </Button>
-        </div>
-      </Card>
+      {inner}
     </Link>
   );
 }

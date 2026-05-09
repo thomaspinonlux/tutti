@@ -157,7 +157,10 @@
     "newSession": "Nouvelle session",
     "openTvScreen": "Écran TV",
     "noticeSessionEnded": "Partie terminée. Le podium final s'affiche sur l'écran TV pendant 5 minutes.",
-    "noticeSessionCancelled": "Session annulée. Tu peux en créer une nouvelle quand tu veux."
+    "noticeSessionCancelled": "Session annulée. Tu peux en créer une nouvelle quand tu veux.",
+    "noAccessTitle": "Aucun accès accordé",
+    "noAccessHint": "Aucun mode de jeu n'est activé sur ton compte. Contacte le support.",
+    "accessForbidden": "Accès non autorisé"
   },
   "tracks": {
     "title": "Tutti Tracks",
