@@ -51,7 +51,8 @@ export function selectProvider(
  * avec fallback intégré.
  */
 export function preferredProvider(host: HostProviders): 'spotify' | 'youtube' | null {
-  if (host.spotify.connected) return 'spotify';
+  // Pivot YouTube-only — Spotify sorti du flow officiel. On exige
+  // YouTube connecté ; ignore Spotify même si dispo.
   if (host.youtube.connected) return 'youtube';
   return null;
 }

@@ -70,13 +70,13 @@ router.get('/playlists/:id', async (req: Request<{ id: string }>, res: Response)
 // (is_official_tutti=true, hidden de listPlaylists côté UI), puis crée un
 // SessionRound pour la session passée en body.
 //
-// Choix provider par track : preferProvider du body (sinon "spotify"). Si la
-// track n'a pas l'id du provider préféré → fallback à l'autre. Si aucun id
-// dispo → track skipped.
+// Pivot YouTube-only : preferProvider toujours forcé à "youtube" côté
+// serveur. Le body peut envoyer ce champ pour compat, mais l'override
+// garantit qu'aucune track ne sera lue via Spotify pour la lib officielle.
 
 const launchBody = z.object({
   session_id: z.string().uuid(),
-  preferProvider: z.enum(['spotify', 'youtube']).default('spotify'),
+  preferProvider: z.enum(['spotify', 'youtube']).default('youtube'),
 });
 
 router.post(
@@ -89,7 +89,9 @@ router.post(
       res.status(400).json({ error: { code: 'INVALID_BODY', message: parsed.error.message } });
       return;
     }
-    const { session_id, preferProvider } = parsed.data;
+    const { session_id } = parsed.data;
+    // Force YouTube quel que soit le body — pivot YT-only officielle.
+    const preferProvider: 'spotify' | 'youtube' = 'youtube';
 
     // 1. Vérif accès playlist (visibilité + premium)
     const detail = await getVisiblePlaylistDetail(userId, req.params.id);
@@ -142,24 +144,17 @@ router.post(
         skippedNotPlayable += 1;
         continue;
       }
+      // Pivot YouTube-only : on tente youtube_id en priorité. Spotify
+      // reste un fallback ULTIME si une vieille track n'a pas de
+      // youtube_id (legacy) — sera supprimé après resync complet.
       let provider: 'spotify' | 'youtube' | null = null;
       let providerId: string | null = null;
-      if (preferProvider === 'spotify') {
-        if (t.spotify_id) {
-          provider = 'spotify';
-          providerId = t.spotify_id;
-        } else if (t.youtube_id) {
-          provider = 'youtube';
-          providerId = t.youtube_id;
-        }
-      } else {
-        if (t.youtube_id) {
-          provider = 'youtube';
-          providerId = t.youtube_id;
-        } else if (t.spotify_id) {
-          provider = 'spotify';
-          providerId = t.spotify_id;
-        }
+      if (t.youtube_id) {
+        provider = 'youtube';
+        providerId = t.youtube_id;
+      } else if (t.spotify_id) {
+        provider = 'spotify';
+        providerId = t.spotify_id;
       }
       if (!provider || !providerId) continue; // track non jouable, skip
       // Fallback cover : si pas de cover_url stockée et qu'on a un youtube_id,
