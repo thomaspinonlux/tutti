@@ -81,6 +81,8 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
       freemium_sessions_count: m.freemium_sessions_count,
       freemium_period_start: m.freemium_period_start.toISOString(),
       tier: m.workspace.plan === 'FREE' ? 'free' : 'premium',
+      can_use_tracks: m.can_use_tracks,
+      can_use_quizz: m.can_use_quizz,
       workspace: m.workspace,
       sessions_total: totalByWs.get(m.workspace_id) ?? 0,
       sessions_this_month: monthByWs.get(m.workspace_id) ?? 0,
@@ -192,6 +194,8 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response): Promise<
         freemium_sessions_count: m.freemium_sessions_count,
         freemium_period_start: m.freemium_period_start.toISOString(),
         tier: m.workspace.plan === 'FREE' ? 'free' : 'premium',
+        can_use_tracks: m.can_use_tracks,
+        can_use_quizz: m.can_use_quizz,
         referral_code: m.referral_code,
         referrer_code: m.referrer_code,
         workspace: {
@@ -233,6 +237,9 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response): Promise<
 const patchBody = z.object({
   is_blocked: z.boolean().optional(),
   reset_freemium: z.boolean().optional(),
+  // feat/granular-tracks-quizz-access — toggles par mode
+  can_use_tracks: z.boolean().optional(),
+  can_use_quizz: z.boolean().optional(),
 });
 
 router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
@@ -256,6 +263,12 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promis
     data.freemium_sessions_count = 0;
     data.freemium_period_start = new Date();
   }
+  if (parsed.data.can_use_tracks !== undefined) {
+    data.can_use_tracks = parsed.data.can_use_tracks;
+  }
+  if (parsed.data.can_use_quizz !== undefined) {
+    data.can_use_quizz = parsed.data.can_use_quizz;
+  }
   if (Object.keys(data).length === 0) {
     res.status(400).json({ error: { code: 'NO_CHANGES', message: 'Aucun changement' } });
     return;
@@ -274,6 +287,8 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promis
       blocked_at: updated.blocked_at?.toISOString() ?? null,
       freemium_sessions_count: updated.freemium_sessions_count,
       freemium_period_start: updated.freemium_period_start.toISOString(),
+      can_use_tracks: updated.can_use_tracks,
+      can_use_quizz: updated.can_use_quizz,
     },
   });
 });

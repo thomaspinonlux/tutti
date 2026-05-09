@@ -79,6 +79,11 @@ model WorkspaceMember {
   /// Dernière activité user (dernier login OU action API). Affiché dans
   /// /admin/users + tri "Dernière connexion".
   last_seen_at DateTime? @db.Timestamptz(6)
+  /// feat/granular-tracks-quizz-access — feature flags par user pour
+  /// contrôler l'accès aux 2 modes Tutti. Défaut true (rétro-compat).
+  /// Modifiable depuis /admin/users/:id par super-admin.
+  can_use_tracks Boolean @default(true)
+  can_use_quizz  Boolean @default(true)
   // Système de parrainage (V1.1) — auto-généré à la création du membre,
   // 6 caractères alphanumériques majuscules (ex. "K7P2X9").
   referral_code String?  @unique @db.VarChar(8)

@@ -157,7 +157,10 @@
     "newSession": "New session",
     "openTvScreen": "TV Screen",
     "noticeSessionEnded": "Game ended. The final podium is showing on the TV screen for 5 minutes.",
-    "noticeSessionCancelled": "Session cancelled. You can create a new one anytime."
+    "noticeSessionCancelled": "Session cancelled. You can create a new one anytime.",
+    "noAccessTitle": "No access granted",
+    "noAccessHint": "No game mode is enabled on your account. Contact support.",
+    "accessForbidden": "Access not allowed"
   },
   "tracks": {
     "title": "Tutti Tracks",

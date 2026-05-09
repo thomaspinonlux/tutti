@@ -119,6 +119,31 @@ router.post(
       return;
     }
     try {
+      // feat/granular-tracks-quizz-access — gate par game_type sur les
+      // flags member.can_use_tracks / can_use_quizz. Defense in depth :
+      // l'UI désactive les boutons côté frontend, mais on revérifie
+      // côté backend pour éviter contournement via call API direct.
+      if (req.userId) {
+        const member = await prisma.workspaceMember.findFirst({
+          where: { user_id: req.userId },
+          select: { can_use_tracks: true, can_use_quizz: true },
+        });
+        if (member) {
+          if (parsed.data.game_type === 'TRACKS' && !member.can_use_tracks) {
+            res.status(403).json({
+              error: { code: 'TRACKS_NOT_ALLOWED', message: 'Accès Tracks non autorisé' },
+            });
+            return;
+          }
+          if (parsed.data.game_type === 'QUIZZ' && !member.can_use_quizz) {
+            res.status(403).json({
+              error: { code: 'QUIZZ_NOT_ALLOWED', message: 'Accès Quizz non autorisé' },
+            });
+            return;
+          }
+        }
+      }
+
       const establishment = await prisma.establishment.findFirst({
         where: { workspace_id: workspaceId },
         orderBy: { created_at: 'asc' },

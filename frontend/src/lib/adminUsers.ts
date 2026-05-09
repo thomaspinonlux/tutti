@@ -19,6 +19,8 @@ export interface AdminUserSummary {
   freemium_sessions_count: number;
   freemium_period_start: string;
   tier: Tier;
+  can_use_tracks: boolean;
+  can_use_quizz: boolean;
   workspace: { id: string; name: string; plan: string };
   sessions_total: number;
   sessions_this_month: number;
@@ -67,11 +69,18 @@ export interface AdminUserPatchResult {
   blocked_at: string | null;
   freemium_sessions_count: number;
   freemium_period_start: string;
+  can_use_tracks: boolean;
+  can_use_quizz: boolean;
 }
 
 export async function patchAdminUser(
   id: string,
-  changes: { is_blocked?: boolean; reset_freemium?: boolean },
+  changes: {
+    is_blocked?: boolean;
+    reset_freemium?: boolean;
+    can_use_tracks?: boolean;
+    can_use_quizz?: boolean;
+  },
 ): Promise<AdminUserPatchResult> {
   const data = await api<{ user: AdminUserPatchResult }>(
     `/api/admin/users/${encodeURIComponent(id)}`,

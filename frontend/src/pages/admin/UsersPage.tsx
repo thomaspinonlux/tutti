@@ -20,7 +20,9 @@ type SortKey =
   | 'sessions_total'
   | 'sessions_this_month'
   | 'tier'
-  | 'is_blocked';
+  | 'is_blocked'
+  | 'can_use_tracks'
+  | 'can_use_quizz';
 type SortOrder = 'asc' | 'desc' | null;
 
 function normalize(s: string): string {
@@ -46,6 +48,10 @@ function compareUsers(a: AdminUserSummary, b: AdminUserSummary, key: SortKey): n
       return a.tier.localeCompare(b.tier);
     case 'is_blocked':
       return Number(a.is_blocked) - Number(b.is_blocked);
+    case 'can_use_tracks':
+      return Number(a.can_use_tracks) - Number(b.can_use_tracks);
+    case 'can_use_quizz':
+      return Number(a.can_use_quizz) - Number(b.can_use_quizz);
   }
 }
 
@@ -165,6 +171,12 @@ export function UsersPage(): JSX.Element {
                 <Th k="tier" sk={sortKey} so={sortOrder} on={handleSort} align="left">
                   Tier
                 </Th>
+                <Th k="can_use_tracks" sk={sortKey} so={sortOrder} on={handleSort} align="center">
+                  Tracks
+                </Th>
+                <Th k="can_use_quizz" sk={sortKey} so={sortOrder} on={handleSort} align="center">
+                  Quizz
+                </Th>
                 <Th k="is_blocked" sk={sortKey} so={sortOrder} on={handleSort} align="left">
                   Statut
                 </Th>
@@ -194,6 +206,28 @@ export function UsersPage(): JSX.Element {
                     >
                       {u.tier}
                     </span>
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    {u.can_use_tracks ? (
+                      <span className="text-basil-deep" title="Accès Tracks autorisé">
+                        ✅
+                      </span>
+                    ) : (
+                      <span className="text-raspberry" title="Accès Tracks bloqué">
+                        ❌
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    {u.can_use_quizz ? (
+                      <span className="text-basil-deep" title="Accès Quizz autorisé">
+                        ✅
+                      </span>
+                    ) : (
+                      <span className="text-raspberry" title="Accès Quizz bloqué">
+                        ❌
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-2">
                     <span
@@ -229,13 +263,14 @@ interface ThProps {
   sk: SortKey | null;
   so: SortOrder;
   on: (k: SortKey) => void;
-  align: 'left' | 'right';
+  align: 'left' | 'right' | 'center';
   children: React.ReactNode;
 }
 function Th({ k, sk, so, on, align, children }: ThProps): JSX.Element {
   const active = sk === k && so !== null;
   const arrow = active ? (so === 'asc' ? ' ↑' : ' ↓') : '';
-  const alignClass = align === 'right' ? 'text-right' : 'text-left';
+  const alignClass =
+    align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
   const activeClass = active ? 'bg-spritz/30 text-cream' : 'hover:bg-ink/80';
   return (
     <th
