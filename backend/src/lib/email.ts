@@ -57,36 +57,78 @@ interface SendArgs {
   html: string;
 }
 
+export interface SendResult {
+  ok: boolean;
+  /** Resend message id si succès. */
+  id?: string;
+  /** Code Resend ("validation_error", "rate_limit_exceeded"…) si échec. */
+  errorName?: string;
+  /** Message lisible si échec (ex: "domain not verified"). */
+  errorMessage?: string;
+  /** HTTP status retourné par Resend si applicable. */
+  statusCode?: number;
+  /** Raison d'un skip (no recipients, no api key). */
+  skipReason?: 'no_api_key' | 'no_recipients';
+}
+
 /**
  * Envoi un email transactionnel via Resend. No-op si SDK pas configuré
- * (RESEND_API_KEY absent) ou destinataires vides. Retourne true si
- * envoyé, false si skip (config absente ou erreur).
+ * (RESEND_API_KEY absent) ou destinataires vides.
+ *
+ * Retourne un SendResult détaillé pour le logging et l'endpoint de test
+ * /api/admin/test-email. fix/email-notification-not-sent — anciennement
+ * boolean, étendu pour propager statusCode + errorName + errorMessage
+ * (Resend 403 "domain not verified" était silencieux côté caller).
  */
-export async function sendNotificationEmail(args: SendArgs): Promise<boolean> {
+export async function sendNotificationEmail(args: SendArgs): Promise<SendResult> {
   const resend = getResend();
-  if (!resend) return false;
+  if (!resend) {
+    return { ok: false, skipReason: 'no_api_key' };
+  }
   if (args.to.length === 0) {
     console.warn('[Email] No recipients, skip send');
-    return false;
+    return { ok: false, skipReason: 'no_recipients' };
   }
+  const from = getMailFrom();
   try {
     const result = await resend.emails.send({
-      from: getMailFrom(),
+      from,
       to: args.to,
       subject: args.subject,
       html: args.html,
     });
     if (result.error) {
-      console.error('[Email] Resend error:', result.error);
-      return false;
+      // Resend SDK loggue déjà sa propre erreur, mais on expose une trace
+      // explicite pour Railway logs avec from + to + subject pour pouvoir
+      // diagnostiquer sans dump le payload html.
+      const err = result.error as { message?: string; name?: string; statusCode?: number };
+      console.error(
+        `[Email] Resend rejected from="${from}" to="${args.to.join(',')}" subject="${args.subject}" → ${err.statusCode ?? '?'} ${err.name ?? 'error'}: ${err.message ?? 'unknown'}`,
+      );
+      // Hint actionnable pour le cas le plus fréquent (domaine non vérifié).
+      if (err.statusCode === 403 && /domain.*not verified/i.test(err.message ?? '')) {
+        console.error(
+          `[Email] HINT: vérifie le domaine sur https://resend.com/domains, ou change MAIL_FROM vers un domaine déjà vérifié.`,
+        );
+      }
+      return {
+        ok: false,
+        errorName: err.name,
+        errorMessage: err.message,
+        statusCode: err.statusCode,
+      };
     }
     console.info(
-      `[Email] Sent to ${args.to.join(',')} subject="${args.subject}" id=${result.data?.id}`,
+      `[Email] Sent from="${from}" to="${args.to.join(',')}" subject="${args.subject}" id=${result.data?.id}`,
     );
-    return true;
-  } catch (err) {
-    console.error('[Email] Send threw:', err);
-    return false;
+    return { ok: true, id: result.data?.id };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      `[Email] Send threw from="${from}" to="${args.to.join(',')}" subject="${args.subject}":`,
+      err,
+    );
+    return { ok: false, errorMessage: message };
   }
 }
 
