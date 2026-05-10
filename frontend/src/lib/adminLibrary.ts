@@ -200,6 +200,26 @@ export async function patchOfficialQuizPack(
   return data.pack;
 }
 
+export interface UnplayableTrack {
+  id: string;
+  playlist_id: string;
+  playlist_slug: string;
+  playlist_name_fr: string;
+  position: number;
+  title: string;
+  artist: string;
+  year: number | null;
+  youtube_id: string | null;
+  cover_url: string | null;
+  is_playable: boolean;
+  playability_reason: string | null;
+}
+
+export async function listUnplayableTracks(): Promise<UnplayableTrack[]> {
+  const data = await api<{ tracks: UnplayableTrack[] }>('/api/admin/library/tracks/unplayable');
+  return data.tracks;
+}
+
 export async function patchOfficialTrack(
   trackId: string,
   changes: Partial<{
