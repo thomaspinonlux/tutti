@@ -21,6 +21,7 @@ import { randomBytes } from 'node:crypto';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireSuperAdmin } from '../middleware/tenant.js';
+import { getNotificationRecipients, sendNotificationEmail } from '../lib/email.js';
 
 const router: Router = Router();
 
@@ -223,5 +224,48 @@ router.delete(
     res.json({ ok: true });
   },
 );
+
+// ───── Test email — fix/email-notification-not-sent ───────────────────────
+//
+// POST /api/admin/test-email — super-admin only. Envoie un email de test
+// via le même pipeline que fireSignupNotification, et retourne le SendResult
+// avec statusCode + errorName + errorMessage. Utile pour diagnostiquer
+// rapidement après changement de RESEND_API_KEY / MAIL_FROM / domaine vérifié
+// sans devoir re-signup pour générer un événement.
+//
+// Body :
+//   { to?: string[], subject?: string, html?: string }
+// Defaults :
+//   to       = NOTIFICATION_EMAILS env
+//   subject  = "[Tutti] Test email depuis /api/admin/test-email"
+//   html     = "<p>Test email…</p>"
+
+const testEmailBody = z.object({
+  to: z.array(z.string().email()).max(20).optional(),
+  subject: z.string().min(1).max(200).optional(),
+  html: z.string().min(1).max(10_000).optional(),
+});
+
+router.post('/test-email', async (req: Request, res: Response): Promise<void> => {
+  const parsed = testEmailBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'INVALID_BODY', message: parsed.error.message } });
+    return;
+  }
+  const to = parsed.data.to ?? getNotificationRecipients();
+  const subject = parsed.data.subject ?? '[Tutti] Test email depuis /api/admin/test-email';
+  const html =
+    parsed.data.html ??
+    `<div style="font-family:system-ui,sans-serif;padding:24px"><h2>Test email Tutti</h2><p>Si tu lis ceci, le pipeline Resend fonctionne.</p><p style="color:#999;font-size:12px">Envoyé à ${new Date().toISOString()}.</p></div>`;
+  const result = await sendNotificationEmail({ to, subject, html });
+  // Renvoie tel quel — diagnostique direct côté admin UI ou curl.
+  res.status(result.ok ? 200 : 502).json({
+    ok: result.ok,
+    to,
+    from: process.env.MAIL_FROM ?? null,
+    apiKeyConfigured: Boolean(process.env.RESEND_API_KEY),
+    result,
+  });
+});
 
 export default router;
