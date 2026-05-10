@@ -297,6 +297,9 @@
         "myPlaylists": "Mes playlists",
         "officialLibrary": "Bibliothèque officielle"
       },
+      "subTabTracks": "Tracks",
+      "subTabQuizz": "Quizz",
+      "quizPackQuestionCount": "questions",
       "searchPlaceholder": "Rechercher une playlist...",
       "searchNoResults": "Aucune playlist trouvée pour « {{query}} »",
       "officialBadge": "Officiel Tutti",
@@ -326,7 +329,8 @@
         "trackUnavailable": "Morceau indisponible avec tes comptes connectés"
       },
       "empty": {
-        "officialLibrary": "La bibliothèque officielle Tutti arrive bientôt 🎵"
+        "officialLibrary": "La bibliothèque officielle Tutti arrive bientôt 🎵",
+        "officialQuizLibrary": "La bibliothèque Quizz officielle Tutti arrive bientôt 🎯"
       }
     },
     "toastJoined": "{{pseudo}} a rejoint la partie",

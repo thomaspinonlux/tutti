@@ -297,6 +297,9 @@
         "myPlaylists": "My playlists",
         "officialLibrary": "Official library"
       },
+      "subTabTracks": "Tracks",
+      "subTabQuizz": "Quizz",
+      "quizPackQuestionCount": "questions",
       "searchPlaceholder": "Search for a playlist...",
       "searchNoResults": "No playlist found for \"{{query}}\"",
       "officialBadge": "Tutti Official",
@@ -326,7 +329,8 @@
         "trackUnavailable": "Track unavailable with your connected accounts"
       },
       "empty": {
-        "officialLibrary": "The Tutti official library is coming soon 🎵"
+        "officialLibrary": "The Tutti official library is coming soon 🎵",
+        "officialQuizLibrary": "The Tutti Quizz library is coming soon 🎯"
       }
     },
     "toastJoined": "{{pseudo}} joined the game",
