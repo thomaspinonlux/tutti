@@ -217,7 +217,13 @@ function PlaylistsTab(): JSX.Element {
             <option value="private">{t('library.visibilityPrivate')}</option>
           </select>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2 flex-wrap">
+          <Link
+            to="/admin/library/audit"
+            className="font-mono text-sm px-3 py-2 border-2 border-ink rounded hover:bg-cream transition-colors"
+          >
+            🔍 Audit tracks non jouables
+          </Link>
           <Button
             type="button"
             variant="primary"

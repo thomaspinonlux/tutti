@@ -140,6 +140,40 @@ router.post(
   },
 );
 
+// ───── GET /tracks/unplayable — liste des tracks à corriger ─────────────
+//
+// Retourne tous les tracks officiels qui ne peuvent pas être lus (youtube_id
+// null OU is_playable false). Utilisé par /admin/library/audit pour permettre
+// aux super-admins de corriger manuellement les manqués de l'import auto.
+
+router.get('/tracks/unplayable', async (_req: Request, res: Response): Promise<void> => {
+  const tracks = await prisma.officialPlaylistTrack.findMany({
+    where: {
+      OR: [{ youtube_id: null }, { is_playable: false }],
+    },
+    orderBy: [{ playlist: { slug: 'asc' } }, { position: 'asc' }],
+    include: {
+      playlist: { select: { id: true, slug: true, name_fr: true } },
+    },
+  });
+  res.json({
+    tracks: tracks.map((t) => ({
+      id: t.id,
+      playlist_id: t.playlist_id,
+      playlist_slug: t.playlist.slug,
+      playlist_name_fr: t.playlist.name_fr,
+      position: t.position,
+      title: t.title,
+      artist: t.artist,
+      year: t.year,
+      youtube_id: t.youtube_id,
+      cover_url: t.cover_url,
+      is_playable: t.is_playable,
+      playability_reason: t.playability_reason,
+    })),
+  });
+});
+
 // ───── PATCH /tracks/:trackId — édition manuelle d'un track officiel ─────
 //
 // Permet aux super-admins de corriger les youtube_id/spotify_id/cover_url
