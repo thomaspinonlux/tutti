@@ -170,3 +170,71 @@ export function renderSignupNotificationHtml(vars: SignupNotifVars): string {
   <p style="color:#999;font-size:12px;margin-top:32px">Tutti — édité par Kleos Sàrl, Luxembourg</p>
 </div>`;
 }
+
+// ───── Welcome email (feat/welcome-email-user-signup) ─────────────────────
+//
+// Email envoyé directement au user juste après signup. Confirme la bonne
+// réception de l'inscription + onboarding rapide en 4 étapes. Sujet :
+//   FR : "Bienvenue sur Tutti — ton inscription est bien reçue"
+//   EN : "Welcome to Tutti — your signup is confirmed"
+//
+// Sélection FR/EN basée sur args.locale (commence par "en" → EN, sinon FR).
+// Réutilise le pipeline sendNotificationEmail (logs + Resend + SendResult).
+
+interface WelcomeEmailVars {
+  locale: string;
+}
+
+/** Renvoie le sujet localisé. */
+export function welcomeEmailSubject(locale: string): string {
+  return locale.startsWith('en')
+    ? 'Welcome to Tutti — your signup is confirmed'
+    : 'Bienvenue sur Tutti — ton inscription est bien reçue';
+}
+
+export function renderWelcomeEmailHtml(vars: WelcomeEmailVars): string {
+  const isEn = vars.locale.startsWith('en');
+  if (isEn) {
+    return `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fefae0;color:#1a1a1a">
+  <h1 style="color:#7a8a9a;margin:0 0 16px;font-size:28px">🎉 Welcome to Tutti</h1>
+  <p style="font-size:16px;line-height:1.6">Hi there,</p>
+  <p style="font-size:16px;line-height:1.6">Thanks for signing up to <strong>Tutti</strong>, the music blind test &amp; quizz platform for parties with friends.</p>
+  <p style="font-size:16px;line-height:1.6">We've received your registration. You can now access the platform and launch your first session.</p>
+  <h3 style="color:#7a8a9a;margin-top:32px">Getting started:</h3>
+  <ol style="line-height:1.8;font-size:15px;padding-left:20px">
+    <li>Create your first session from the dashboard</li>
+    <li>Pick an official Tutti playlist or create your own</li>
+    <li>Your friends scan the QR code to join from their phones</li>
+    <li>Launch the blind test and enjoy!</li>
+  </ol>
+  <p style="margin-top:32px"><a href="https://tuttiparty.app/host" style="background:#e76f51;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold">Create my first session</a></p>
+  <h3 style="color:#7a8a9a;margin-top:32px">Free tier</h3>
+  <p style="line-height:1.6;font-size:15px">You get 3 sessions per month on the free plan. Go Premium for unlimited sessions.</p>
+  <p style="color:#999;font-size:12px;margin-top:48px;border-top:1px solid #e0e0e0;padding-top:16px">
+    Tutti — published by Kleos Sàrl, Luxembourg<br/>
+    A question? Reply to this email or write to <a href="mailto:contact@tuttiparty.app" style="color:#7a8a9a">contact@tuttiparty.app</a>
+  </p>
+</div>`;
+  }
+  // FR default
+  return `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fefae0;color:#1a1a1a">
+  <h1 style="color:#7a8a9a;margin:0 0 16px;font-size:28px">🎉 Bienvenue sur Tutti</h1>
+  <p style="font-size:16px;line-height:1.6">Salut,</p>
+  <p style="font-size:16px;line-height:1.6">Merci de t'être inscrit sur <strong>Tutti</strong>, la plateforme de blind test musical &amp; quizz pour soirées entre amis.</p>
+  <p style="font-size:16px;line-height:1.6">Nous avons bien reçu ta demande d'inscription. Tu peux dès maintenant accéder à la plateforme et lancer ta première session.</p>
+  <h3 style="color:#7a8a9a;margin-top:32px">Pour bien démarrer :</h3>
+  <ol style="line-height:1.8;font-size:15px;padding-left:20px">
+    <li>Crée ta première session depuis le dashboard</li>
+    <li>Sélectionne une playlist officielle Tutti ou crée la tienne</li>
+    <li>Tes amis scannent le QR code pour rejoindre depuis leur smartphone</li>
+    <li>Lance le blind test et amuse-toi !</li>
+  </ol>
+  <p style="margin-top:32px"><a href="https://tuttiparty.app/host" style="background:#e76f51;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold">Créer ma première session</a></p>
+  <h3 style="color:#7a8a9a;margin-top:32px">Tier Gratuit</h3>
+  <p style="line-height:1.6;font-size:15px">Tu disposes de 3 sessions par mois en gratuit. Pour des sessions illimitées, passe en Premium.</p>
+  <p style="color:#999;font-size:12px;margin-top:48px;border-top:1px solid #e0e0e0;padding-top:16px">
+    Tutti — édité par Kleos Sàrl, Luxembourg<br/>
+    Une question ? Réponds à cet email ou écris à <a href="mailto:contact@tuttiparty.app" style="color:#7a8a9a">contact@tuttiparty.app</a>
+  </p>
+</div>`;
+}

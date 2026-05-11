@@ -18,7 +18,9 @@ import { isSuperAdminEmail } from '../lib/superAdmin.js';
 import {
   getNotificationRecipients,
   renderSignupNotificationHtml,
+  renderWelcomeEmailHtml,
   sendNotificationEmail,
+  welcomeEmailSubject,
 } from '../lib/email.js';
 
 /**
@@ -47,9 +49,58 @@ function fireSignupNotification(args: {
     to: recipients,
     subject: `[Tutti] Nouvelle inscription - ${args.email}`,
     html,
-  }).catch((err) => {
-    console.error('[Email] fireSignupNotification swallowed error:', err);
-  });
+  })
+    .then((result) => {
+      console.info(`[Email] Admin notification sent: ${JSON.stringify(result)}`);
+    })
+    .catch((err) => {
+      console.error('[Email] fireSignupNotification swallowed error:', err);
+    });
+}
+
+/**
+ * feat/welcome-email-user-signup — email de bienvenue envoyé au user
+ * directement après signup. Confirme la réception de l'inscription +
+ * onboarding rapide. Fire-and-forget, indépendant de la notification
+ * admin (la flow signup ne bloque jamais sur Resend).
+ *
+ * Sélection FR/EN via args.locale (browser Accept-Language ou défaut).
+ *
+ * Skip silencieux si pas d'email user valide (cas edge OAuth sans
+ * permission email, etc.) — pas d'erreur côté flow signup.
+ */
+function fireWelcomeEmail(args: { email: string | null; locale: string }): void {
+  if (!args.email || !args.email.includes('@')) {
+    console.info('[Email] User email manquant/invalide → welcome email skip');
+    return;
+  }
+  const html = renderWelcomeEmailHtml({ locale: args.locale });
+  const subject = welcomeEmailSubject(args.locale);
+  void sendNotificationEmail({
+    to: [args.email],
+    subject,
+    html,
+  })
+    .then((result) => {
+      console.info(
+        `[Email] User welcome sent to=${args.email} locale=${args.locale}: ${JSON.stringify(result)}`,
+      );
+    })
+    .catch((err) => {
+      console.error('[Email] fireWelcomeEmail swallowed error:', err);
+    });
+}
+
+/**
+ * Détecte la locale du user à partir du header Accept-Language. Retourne
+ * "en" si le navigateur préfère l'anglais en premier, sinon "fr" par
+ * défaut (catalogue Tutti FR par défaut). Best-effort, naïf : split sur
+ * "," + ";", lit le premier tag.
+ */
+function detectLocaleFromHeader(acceptLanguage: string | undefined): 'fr' | 'en' {
+  if (!acceptLanguage) return 'fr';
+  const first = acceptLanguage.split(',')[0]?.split(';')[0]?.trim().toLowerCase() ?? '';
+  return first.startsWith('en') ? 'en' : 'fr';
 }
 
 const router: Router = Router();
@@ -239,11 +290,17 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
           },
         });
         // feat/admin-users-and-email-notifications — notif team
+        const localeReferral = detectLocaleFromHeader(req.headers['accept-language']);
+        console.info(
+          `[Signup] User created (referral): email=${req.userEmail ?? '?'} locale=${localeReferral} workspace=${referrer.workspace_id}`,
+        );
         fireSignupNotification({
           email: req.userEmail ?? '(email inconnu)',
           name: null,
-          locale: 'fr',
+          locale: localeReferral,
         });
+        // feat/welcome-email-user-signup — email bienvenue au user
+        fireWelcomeEmail({ email: req.userEmail ?? null, locale: localeReferral });
         res.status(201).json({
           workspace: referrer.workspace,
           member: {
@@ -307,11 +364,17 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
     });
 
     // feat/admin-users-and-email-notifications — notif team
+    const localeNew = detectLocaleFromHeader(req.headers['accept-language']);
+    console.info(
+      `[Signup] User created (new tenant): email=${req.userEmail ?? '?'} locale=${localeNew} workspace=${result.workspace.id} status=${result.member.status}`,
+    );
     fireSignupNotification({
       email: req.userEmail ?? '(email inconnu)',
       name: null,
-      locale: 'fr',
+      locale: localeNew,
     });
+    // feat/welcome-email-user-signup — email bienvenue au user
+    fireWelcomeEmail({ email: req.userEmail ?? null, locale: localeNew });
 
     res.status(201).json({
       workspace: { ...result.workspace, establishments: [result.establishment] },
