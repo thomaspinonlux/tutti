@@ -67,8 +67,10 @@ import { PreviewModal } from '../components/host/library/PreviewModal.js';
 import {
   getLibraryPlaylist,
   launchLibraryPlaylist,
+  launchLibraryQuizPack,
   type LibraryPlaylistDetail,
   type LibraryPlaylistSummary,
+  type LibraryQuizPackSummary,
   type PreferProvider,
 } from '../lib/library.js';
 import { PreGameStartScreen } from './host/PreGameStartScreen.js';
@@ -434,14 +436,18 @@ function HostPageInner(): JSX.Element {
   // NotFoundError cascade DOM cleanup en transition end-round/end-session
   // pour les users normaux + élimine bruit console [Spotify SDK].
   const [spotifyAllowlisted, setSpotifyAllowlisted] = useState(false);
+  // feat/quiz-launch-host-ui — flag pour afficher le sub-onglet "Quizz"
+  // dans la bibliothèque officielle. Reflète WorkspaceMember.can_use_quizz.
+  const [canUseQuizz, setCanUseQuizz] = useState(false);
   useEffect(() => {
     let cancelled = false;
     void getMe()
       .then((me) => {
         if (cancelled) return;
         setSpotifyAllowlisted(me.spotify_allowlist === true);
+        setCanUseQuizz(me.can_use_quizz === true);
         console.info(
-          `[HostPage] Spotify allowlist : ${me.spotify_allowlist === true ? 'OK' : 'OFF (SDK skip)'}`,
+          `[HostPage] Spotify allowlist : ${me.spotify_allowlist === true ? 'OK' : 'OFF (SDK skip)'} · can_use_quizz : ${me.can_use_quizz === true ? 'ON' : 'OFF'}`,
         );
       })
       .catch(() => {
@@ -623,6 +629,28 @@ function HostPageInner(): JSX.Element {
       setPreviewReport(report);
     } catch (err) {
       setError((err as Error).message);
+    }
+  };
+
+  // feat/quiz-launch-host-ui — clone le pack officiel + crée nouvelle session
+  // game_type=QUIZZ, puis redirige vers /host?session=<short_code>. La session
+  // courante (TRACKS) reste intacte côté backend, mais le host bascule sur
+  // la nouvelle session quizz. Pas de PreGameStartScreen pour quizz : pas
+  // d'audio à débloquer, le SessionConfigPage s'occupera du démarrage.
+  const handlePickQuizOfficial = async (pack: LibraryQuizPackSummary): Promise<void> => {
+    if (pack.locked) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const lang: 'fr' | 'en' = pack.locale_primary.startsWith('en') ? 'en' : 'fr';
+      const result = await launchLibraryQuizPack(pack.id, lang);
+      // Hard navigation pour reset complet du HostPage state (la nouvelle
+      // session est game_type=QUIZZ, pas de round, pas d'audio).
+      navigate(`/host?session=${result.session.short_code}`);
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -1210,6 +1238,8 @@ function HostPageInner(): JSX.Element {
                 isFirstRound={session.rounds.length === 0}
                 onPickPlaylist={handlePickPlaylist}
                 onPickOfficial={handlePickOfficial}
+                onPickQuizOfficial={handlePickQuizOfficial}
+                canUseQuizz={canUseQuizz}
                 onCreateExpress={() => setExpressModalOpen(true)}
                 onEndSession={handleEndSession}
                 loading={busy}

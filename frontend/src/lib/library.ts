@@ -95,3 +95,60 @@ export async function launchLibraryPlaylist(
     body: { session_id: sessionId, preferProvider },
   });
 }
+
+// ───── Quiz packs (feat/official-quiz-library) ───────────────────────────
+
+export interface LibraryQuizPackSummary {
+  id: string;
+  slug: string;
+  name_fr: string;
+  name_en: string;
+  description_fr: string | null;
+  description_en: string | null;
+  locale_primary: string;
+  category: string | null;
+  difficulty: 'EASY' | 'MEDIUM' | 'EXPERT';
+  visibility: 'public' | 'premium_only' | 'private';
+  question_count: number;
+  /** true si premium_only et user pas premium → carte grisée + cadenas. */
+  locked: boolean;
+}
+
+export interface QuizLaunchResult {
+  session: {
+    id: string;
+    short_code: string;
+    status: string;
+    name: string;
+    game_type: 'TRACKS' | 'QUIZZ';
+    language: string;
+  };
+  question_set: { id: string; name: string; question_count: number };
+  pack: { id: string; slug: string };
+}
+
+export async function listLibraryQuizPacks(filters?: {
+  locale?: string;
+  category?: string;
+  difficulty?: string;
+}): Promise<LibraryQuizPackSummary[]> {
+  const params = new URLSearchParams();
+  if (filters?.locale) params.set('locale', filters.locale);
+  if (filters?.category) params.set('category', filters.category);
+  if (filters?.difficulty) params.set('difficulty', filters.difficulty);
+  const qs = params.toString();
+  const data = await api<{ packs: LibraryQuizPackSummary[] }>(
+    `/api/library/quiz-packs${qs ? `?${qs}` : ''}`,
+  );
+  return data.packs;
+}
+
+export async function launchLibraryQuizPack(
+  id: string,
+  language: 'fr' | 'en' = 'fr',
+): Promise<QuizLaunchResult> {
+  return api<QuizLaunchResult>(`/api/library/quiz-packs/${encodeURIComponent(id)}/launch`, {
+    method: 'POST',
+    body: { language },
+  });
+}
