@@ -39,7 +39,9 @@ export function MobileNav(): JSX.Element {
     { to: '/admin/account', label: t('nav.account'), icon: '👤' },
   ];
   if (isSuperAdmin) {
-    entries.push({ to: '/admin/super-admin', label: t('admin.superNav'), icon: '★' });
+    // fix/admin-users-integration — Users + Modération exposés en mobile aussi.
+    entries.push({ to: '/admin/users', label: t('nav.users'), icon: '👥' });
+    entries.push({ to: '/admin/super-admin', label: t('admin.moderationNav'), icon: '★' });
   }
 
   return (

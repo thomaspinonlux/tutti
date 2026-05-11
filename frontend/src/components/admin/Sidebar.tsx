@@ -23,6 +23,7 @@ interface NavItem {
     | 'nav.tracks'
     | 'nav.quizz'
     | 'nav.library'
+    | 'nav.users'
     | 'nav.settings'
     | 'nav.account';
   icon: JSX.Element;
@@ -35,6 +36,8 @@ const NAV: NavItem[] = [
   { to: '/admin/quizz', i18nKey: 'nav.quizz', icon: <BulbIcon /> },
   // Bibliothèque officielle Tutti — gérée uniquement par les super admins V1.
   { to: '/admin/library', i18nKey: 'nav.library', icon: <LibraryIcon />, superAdminOnly: true },
+  // fix/admin-users-integration — page super-admin gestion utilisateurs.
+  { to: '/admin/users', i18nKey: 'nav.users', icon: <UsersIcon />, superAdminOnly: true },
   { to: '/admin/settings', i18nKey: 'nav.settings', icon: <CogIcon /> },
   { to: '/admin/account', i18nKey: 'nav.account', icon: <UserIcon /> },
 ];
@@ -102,9 +105,10 @@ export function Sidebar(): JSX.Element {
                   : 'border-transparent text-raspberry hover:bg-cream hover:border-ink'
               }`
             }
+            title="Modération signup (approbations, whitelist, codes invitation)"
           >
             <span className="w-5 h-5 shrink-0 flex items-center justify-center">★</span>
-            <span>{t('admin.superNav')}</span>
+            <span>{t('admin.moderationNav')}</span>
           </NavLink>
         )}
       </nav>
@@ -211,6 +215,24 @@ function UserIcon(): JSX.Element {
     >
       <circle cx="10" cy="7" r="3" />
       <path d="M3 17c1-3 4-5 7-5s6 2 7 5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function UsersIcon(): JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <circle cx="7" cy="7" r="3" />
+      <path d="M2 17c.7-2.4 2.7-4 5-4s4.3 1.6 5 4" strokeLinecap="round" />
+      <circle cx="14" cy="6" r="2.2" />
+      <path d="M12.5 11.5c1-.3 1.7-.5 1.5-.5 2 0 3.7 1.2 4 3" strokeLinecap="round" />
     </svg>
   );
 }

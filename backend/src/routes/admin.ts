@@ -19,6 +19,7 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { randomBytes } from 'node:crypto';
 import { prisma } from '../lib/prisma.js';
+import { supabaseAdmin } from '../lib/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireSuperAdmin } from '../middleware/tenant.js';
 import { getNotificationRecipients, sendNotificationEmail } from '../lib/email.js';
@@ -47,7 +48,31 @@ router.get('/members', async (req: Request, res: Response): Promise<void> => {
       workspace: { select: { id: true, name: true, plan: true } },
     },
   });
-  res.json({ members });
+  // fix/admin-users-integration — backfill l'email manquant via Supabase
+  // auth admin. WorkspaceMember.email est un snapshot pris au signup, mais
+  // certains members legacy ont email=null (création avant l'ajout du
+  // champ). Résoudre via auth.admin.getUserById évite l'affichage
+  // "(email inconnu)" côté UI. Best-effort : si une lookup échoue, on
+  // garde la valeur null (pas blocant).
+  const missingEmail = members.filter((m) => !m.email).map((m) => m.user_id);
+  const resolvedEmails = new Map<string, string>();
+  if (missingEmail.length > 0) {
+    await Promise.all(
+      Array.from(new Set(missingEmail)).map(async (uid) => {
+        try {
+          const { data } = await supabaseAdmin.auth.admin.getUserById(uid);
+          if (data?.user?.email) resolvedEmails.set(uid, data.user.email);
+        } catch (err) {
+          console.warn(`[admin/members] getUserById fail uid=${uid}`, err);
+        }
+      }),
+    );
+  }
+  const enriched = members.map((m) => ({
+    ...m,
+    email: m.email ?? resolvedEmails.get(m.user_id) ?? null,
+  }));
+  res.json({ members: enriched });
 });
 
 router.post(

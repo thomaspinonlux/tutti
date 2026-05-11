@@ -14,6 +14,7 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
+import { supabaseAdmin } from '../lib/supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireSuperAdmin } from '../middleware/tenant.js';
 
@@ -68,10 +69,29 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
       if (ws) monthByWs.set(ws, (monthByWs.get(ws) ?? 0) + row._count._all);
     }
 
+    // fix/admin-users-integration — backfill email manquant via Supabase
+    // auth admin (mêmes raisons que /api/admin/members).
+    const missingEmailUids = Array.from(
+      new Set(members.filter((m) => !m.email).map((m) => m.user_id)),
+    );
+    const resolvedEmails = new Map<string, string>();
+    if (missingEmailUids.length > 0) {
+      await Promise.all(
+        missingEmailUids.map(async (uid) => {
+          try {
+            const { data } = await supabaseAdmin.auth.admin.getUserById(uid);
+            if (data?.user?.email) resolvedEmails.set(uid, data.user.email);
+          } catch (err) {
+            console.warn(`[admin/users] getUserById fail uid=${uid}`, err);
+          }
+        }),
+      );
+    }
+
     const users = members.map((m) => ({
       id: m.id,
       user_id: m.user_id,
-      email: m.email,
+      email: m.email ?? resolvedEmails.get(m.user_id) ?? null,
       role: m.role,
       status: m.status,
       is_blocked: m.is_blocked,
@@ -114,6 +134,18 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response): Promise<
     if (!m) {
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'User introuvable' } });
       return;
+    }
+
+    // fix/admin-users-integration — backfill email manquant via Supabase
+    // auth admin si snapshot WorkspaceMember.email est null (legacy).
+    let resolvedEmail: string | null = m.email;
+    if (!resolvedEmail) {
+      try {
+        const { data } = await supabaseAdmin.auth.admin.getUserById(m.user_id);
+        if (data?.user?.email) resolvedEmail = data.user.email;
+      } catch (err) {
+        console.warn(`[admin/users/:id] getUserById fail uid=${m.user_id}`, err);
+      }
     }
 
     const establishmentIds = m.workspace.establishments.map((e) => e.id);
@@ -182,7 +214,7 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response): Promise<
       user: {
         id: m.id,
         user_id: m.user_id,
-        email: m.email,
+        email: resolvedEmail,
         role: m.role,
         status: m.status,
         is_blocked: m.is_blocked,
