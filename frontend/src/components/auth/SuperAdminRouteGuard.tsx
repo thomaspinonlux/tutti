@@ -20,15 +20,21 @@
  */
 
 import { Navigate, Outlet } from 'react-router-dom';
-import { useEstablishment } from '../../pages/admin/AdminLayout.js';
+import { useEstablishment, type EstablishmentContext } from '../../pages/admin/AdminLayout.js';
 
 export function SuperAdminRouteGuard(): JSX.Element {
-  const { me } = useEstablishment();
+  const ctx = useEstablishment();
+  const { me } = ctx;
   if (!me) {
     return <p className="font-mono text-ink-soft animate-fade-in">Chargement…</p>;
   }
   if (!me.isSuperAdmin) {
     return <Navigate to="/admin/dashboard" replace />;
   }
-  return <Outlet />;
+  // fix/super-admin-routes-broken — bug critique : <Outlet /> sans `context`
+  // wrap les enfants dans un nouveau OutletContext.Provider value=undefined,
+  // ce qui casse useOutletContext() / useEstablishment() côté SuperAdminPage
+  // (qui consomme le ctx pour le check me.isSuperAdmin et autres). On
+  // re-forward explicitement le ctx parent (AdminLayout).
+  return <Outlet context={ctx satisfies EstablishmentContext} />;
 }

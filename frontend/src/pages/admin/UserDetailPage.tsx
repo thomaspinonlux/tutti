@@ -15,6 +15,12 @@ export function UserDetailPage(): JSX.Element {
   const [user, setUser] = useState<AdminUserDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // fix/super-admin-routes-broken — `savedFlash` était déclaré APRÈS les early
+  // returns `if (error)` / `if (!user)` plus bas dans le composant. Quand `user`
+  // passait de null à loaded, le render suivant exécutait un useState de plus
+  // que le précédent → Rules of Hooks violation, React crash, page blanche.
+  // TOUS les hooks doivent être au top avant tout return conditionnel.
+  const [savedFlash, setSavedFlash] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -108,7 +114,7 @@ export function UserDetailPage(): JSX.Element {
   };
 
   // feat/granular-tracks-quizz-access — toggle direct save permissions.
-  const [savedFlash, setSavedFlash] = useState<string | null>(null);
+  // (savedFlash useState déplacé au top du composant, cf. fix/super-admin-routes-broken)
   const handleToggleTracks = async (): Promise<void> => {
     if (!user) return;
     setBusy(true);
