@@ -36,6 +36,7 @@ import { LibraryPlaylistDetailPage } from './pages/admin/LibraryPlaylistDetailPa
 import { LibraryQuizPackDetailPage } from './pages/admin/LibraryQuizPackDetailPage.js';
 import { LibraryAuditPage } from './pages/admin/LibraryAuditPage.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
+import { SuperAdminRouteGuard } from './components/auth/SuperAdminRouteGuard.js';
 
 // Lazy : chunks dédiés aux pages volumineuses (audio, dnd, qrcode, socket.io…)
 const DesignSystemPage = lazy(() =>
@@ -102,14 +103,7 @@ function App(): JSX.Element {
           />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="account" element={<AccountPage />} />
-          <Route path="super-admin" element={<SuperAdminPage />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="import-playlist" element={<ImportPlaylistPage />} />
-          <Route path="library" element={<LibraryPage />} />
-          <Route path="library/audit" element={<LibraryAuditPage />} />
-          <Route path="library/playlists/:id" element={<LibraryPlaylistDetailPage />} />
-          <Route path="library/quiz-packs/:id" element={<LibraryQuizPackDetailPage />} />
           <Route
             path="sessions/new"
             element={
@@ -118,6 +112,18 @@ function App(): JSX.Element {
               </Suspense>
             }
           />
+
+          {/* Routes super-admin only — gardées par SuperAdminRouteGuard. */}
+          {/* Le backend gate aussi via requireSuperAdmin sur /api/admin/*. */}
+          <Route element={<SuperAdminRouteGuard />}>
+            <Route path="super-admin" element={<SuperAdminPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="users/:id" element={<UserDetailPage />} />
+            <Route path="library" element={<LibraryPage />} />
+            <Route path="library/audit" element={<LibraryAuditPage />} />
+            <Route path="library/playlists/:id" element={<LibraryPlaylistDetailPage />} />
+            <Route path="library/quiz-packs/:id" element={<LibraryQuizPackDetailPage />} />
+          </Route>
         </Route>
 
         {/* Pages session : /host (host iPad) et /play (joueur mobile). */}

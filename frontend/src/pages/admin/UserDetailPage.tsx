@@ -23,25 +23,60 @@ export function UserDetailPage(): JSX.Element {
       .catch((err) => setError((err as Error).message));
   }, [id]);
 
+  // fix/admin-users-integration — shell persistant (breadcrumb + back button)
+  // affiché en loading + error pour éviter une page "vide" sans contexte. Le
+  // <main> de AdminLayout reste, mais le contenu de la page elle-même perdait
+  // ses repères au chargement.
+  const Breadcrumb = (): JSX.Element => (
+    <nav
+      aria-label="Breadcrumb"
+      className="font-mono text-xs text-ink-soft mb-3 flex items-center gap-1 flex-wrap"
+    >
+      <Link to="/admin/super-admin" className="hover:underline">
+        Super-admin
+      </Link>
+      <span aria-hidden>›</span>
+      <Link to="/admin/users" className="hover:underline">
+        Utilisateurs
+      </Link>
+      <span aria-hidden>›</span>
+      <span className="text-ink truncate max-w-[200px]" title={user?.email ?? id}>
+        {user?.email ?? id ?? '—'}
+      </span>
+    </nav>
+  );
+
   if (error) {
     return (
       <div className="max-w-4xl mx-auto">
+        <Breadcrumb />
+        <Link
+          to="/admin/users"
+          className="font-mono text-sm text-ink-soft hover:underline mb-3 inline-block"
+        >
+          ← Retour à la liste
+        </Link>
         <Card tone="cream" className="border-raspberry">
           <p role="alert" className="text-raspberry font-medium">
             {error}
           </p>
-          <Link
-            to="/admin/users"
-            className="mt-3 inline-block font-mono text-sm text-ink-soft hover:underline"
-          >
-            ← Retour à la liste
-          </Link>
         </Card>
       </div>
     );
   }
   if (!user) {
-    return <p className="font-mono text-ink-soft animate-fade-in">Chargement…</p>;
+    return (
+      <div className="max-w-4xl mx-auto">
+        <Breadcrumb />
+        <Link
+          to="/admin/users"
+          className="font-mono text-sm text-ink-soft hover:underline mb-3 inline-block"
+        >
+          ← Retour à la liste
+        </Link>
+        <p className="font-mono text-ink-soft animate-fade-in">Chargement…</p>
+      </div>
+    );
   }
 
   const formatDate = (iso: string | null): string => {
@@ -131,6 +166,7 @@ export function UserDetailPage(): JSX.Element {
 
   return (
     <div className="max-w-5xl mx-auto">
+      <Breadcrumb />
       <header className="mb-6 flex items-start justify-between flex-wrap gap-3">
         <div>
           <Link

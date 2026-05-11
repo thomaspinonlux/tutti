@@ -77,6 +77,7 @@
     "tracks": "Tutti Tracks",
     "quizz": "Tutti Quizz",
     "library": "Bibliothèque",
+    "users": "Utilisateurs",
     "settings": "Paramètres",
     "account": "Compte"
   },
@@ -792,6 +793,7 @@
     "superEyebrow": "Console super admin",
     "superTitle": "Gestion des comptes",
     "superNav": "Super admin",
+    "moderationNav": "Modération",
     "tabMembers": "Membres",
     "tabWhitelist": "Whitelist",
     "tabInvitations": "Invitations",
