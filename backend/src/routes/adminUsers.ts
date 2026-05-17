@@ -69,18 +69,28 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
       if (ws) monthByWs.set(ws, (monthByWs.get(ws) ?? 0) + row._count._all);
     }
 
-    // fix/admin-users-integration — backfill email manquant via Supabase
-    // auth admin (mêmes raisons que /api/admin/members).
-    const missingEmailUids = Array.from(
-      new Set(members.filter((m) => !m.email).map((m) => m.user_id)),
-    );
-    const resolvedEmails = new Map<string, string>();
-    if (missingEmailUids.length > 0) {
+    // fix/admin-users-integration + feat/signup-firstname-lastname — résout
+    // pour chaque user : email (backfill si WorkspaceMember.email null) +
+    // first_name + last_name depuis Supabase user_metadata (source unique
+    // d'identité user, pas de model User Prisma dans Tutti).
+    const allUids = Array.from(new Set(members.map((m) => m.user_id)));
+    const resolvedUserInfo = new Map<
+      string,
+      { email?: string; first_name?: string; last_name?: string }
+    >();
+    if (allUids.length > 0) {
       await Promise.all(
-        missingEmailUids.map(async (uid) => {
+        allUids.map(async (uid) => {
           try {
             const { data } = await supabaseAdmin.auth.admin.getUserById(uid);
-            if (data?.user?.email) resolvedEmails.set(uid, data.user.email);
+            const meta = (data?.user?.user_metadata ?? {}) as Record<string, unknown>;
+            const fn = typeof meta.first_name === 'string' ? meta.first_name : undefined;
+            const ln = typeof meta.last_name === 'string' ? meta.last_name : undefined;
+            resolvedUserInfo.set(uid, {
+              ...(data?.user?.email ? { email: data.user.email } : {}),
+              ...(fn ? { first_name: fn } : {}),
+              ...(ln ? { last_name: ln } : {}),
+            });
           } catch (err) {
             console.warn(`[admin/users] getUserById fail uid=${uid}`, err);
           }
@@ -88,25 +98,35 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
       );
     }
 
-    const users = members.map((m) => ({
-      id: m.id,
-      user_id: m.user_id,
-      email: m.email ?? resolvedEmails.get(m.user_id) ?? null,
-      role: m.role,
-      status: m.status,
-      is_blocked: m.is_blocked,
-      blocked_at: m.blocked_at?.toISOString() ?? null,
-      created_at: m.created_at.toISOString(),
-      last_seen_at: m.last_seen_at?.toISOString() ?? null,
-      freemium_sessions_count: m.freemium_sessions_count,
-      freemium_period_start: m.freemium_period_start.toISOString(),
-      tier: m.workspace.plan === 'FREE' ? 'free' : 'premium',
-      can_use_tracks: m.can_use_tracks,
-      can_use_quizz: m.can_use_quizz,
-      workspace: m.workspace,
-      sessions_total: totalByWs.get(m.workspace_id) ?? 0,
-      sessions_this_month: monthByWs.get(m.workspace_id) ?? 0,
-    }));
+    const users = members.map((m) => {
+      const info = resolvedUserInfo.get(m.user_id);
+      const first_name = info?.first_name ?? null;
+      const last_name = info?.last_name ?? null;
+      const full_name =
+        first_name || last_name ? `${first_name ?? ''} ${last_name ?? ''}`.trim() : null;
+      return {
+        id: m.id,
+        user_id: m.user_id,
+        email: m.email ?? info?.email ?? null,
+        first_name,
+        last_name,
+        full_name,
+        role: m.role,
+        status: m.status,
+        is_blocked: m.is_blocked,
+        blocked_at: m.blocked_at?.toISOString() ?? null,
+        created_at: m.created_at.toISOString(),
+        last_seen_at: m.last_seen_at?.toISOString() ?? null,
+        freemium_sessions_count: m.freemium_sessions_count,
+        freemium_period_start: m.freemium_period_start.toISOString(),
+        tier: m.workspace.plan === 'FREE' ? 'free' : 'premium',
+        can_use_tracks: m.can_use_tracks,
+        can_use_quizz: m.can_use_quizz,
+        workspace: m.workspace,
+        sessions_total: totalByWs.get(m.workspace_id) ?? 0,
+        sessions_this_month: monthByWs.get(m.workspace_id) ?? 0,
+      };
+    });
 
     res.json({ users });
   } catch (err) {
@@ -136,16 +156,19 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response): Promise<
       return;
     }
 
-    // fix/admin-users-integration — backfill email manquant via Supabase
-    // auth admin si snapshot WorkspaceMember.email est null (legacy).
+    // fix/admin-users-integration + feat/signup-firstname-lastname — résout
+    // email (backfill si null) + first_name/last_name (Supabase metadata).
     let resolvedEmail: string | null = m.email;
-    if (!resolvedEmail) {
-      try {
-        const { data } = await supabaseAdmin.auth.admin.getUserById(m.user_id);
-        if (data?.user?.email) resolvedEmail = data.user.email;
-      } catch (err) {
-        console.warn(`[admin/users/:id] getUserById fail uid=${m.user_id}`, err);
-      }
+    let resolvedFirstName: string | null = null;
+    let resolvedLastName: string | null = null;
+    try {
+      const { data } = await supabaseAdmin.auth.admin.getUserById(m.user_id);
+      if (!resolvedEmail && data?.user?.email) resolvedEmail = data.user.email;
+      const meta = (data?.user?.user_metadata ?? {}) as Record<string, unknown>;
+      if (typeof meta.first_name === 'string') resolvedFirstName = meta.first_name;
+      if (typeof meta.last_name === 'string') resolvedLastName = meta.last_name;
+    } catch (err) {
+      console.warn(`[admin/users/:id] getUserById fail uid=${m.user_id}`, err);
     }
 
     const establishmentIds = m.workspace.establishments.map((e) => e.id);
@@ -210,11 +233,18 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response): Promise<
       monthly_distribution.push({ month: key, count: monthlyMap.get(key) ?? 0 });
     }
 
+    const full_name =
+      resolvedFirstName || resolvedLastName
+        ? `${resolvedFirstName ?? ''} ${resolvedLastName ?? ''}`.trim()
+        : null;
     res.json({
       user: {
         id: m.id,
         user_id: m.user_id,
         email: resolvedEmail,
+        first_name: resolvedFirstName,
+        last_name: resolvedLastName,
+        full_name,
         role: m.role,
         status: m.status,
         is_blocked: m.is_blocked,

@@ -182,8 +182,11 @@ export function UserDetailPage(): JSX.Element {
             ← Tous les utilisateurs
           </Link>
           <TitleHandwritten as="h1">
-            <Underline>{user.email ?? user.id}</Underline>
+            <Underline>{user.full_name ?? user.email ?? user.id}</Underline>
           </TitleHandwritten>
+          {user.full_name && user.email && (
+            <p className="font-mono text-sm text-ink-soft mt-1">{user.email}</p>
+          )}
           <p className="font-mono text-xs text-ink-soft mt-1">
             {user.workspace.name} · {user.role} ·{' '}
             <span

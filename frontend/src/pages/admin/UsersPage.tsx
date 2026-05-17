@@ -15,6 +15,7 @@ import { listAdminUsers, type AdminUserSummary } from '../../lib/adminUsers.js';
 
 type SortKey =
   | 'email'
+  | 'full_name'
   | 'created_at'
   | 'last_seen_at'
   | 'sessions_total'
@@ -33,6 +34,8 @@ function compareUsers(a: AdminUserSummary, b: AdminUserSummary, key: SortKey): n
   switch (key) {
     case 'email':
       return (a.email ?? '').localeCompare(b.email ?? '', 'fr', { sensitivity: 'base' });
+    case 'full_name':
+      return (a.full_name ?? '').localeCompare(b.full_name ?? '', 'fr', { sensitivity: 'base' });
     case 'created_at':
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     case 'last_seen_at': {
@@ -87,7 +90,10 @@ export function UsersPage(): JSX.Element {
     const q = normalize(query);
     let arr = users;
     if (q) {
-      arr = arr.filter((u) => normalize(u.email ?? '').includes(q));
+      // feat/signup-firstname-lastname — recherche aussi sur nom complet.
+      arr = arr.filter(
+        (u) => normalize(u.email ?? '').includes(q) || normalize(u.full_name ?? '').includes(q),
+      );
     }
     if (sortKey && sortOrder) {
       arr = [...arr].sort((a, b) => compareUsers(a, b, sortKey));
@@ -124,7 +130,7 @@ export function UsersPage(): JSX.Element {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher par email…"
+          placeholder="Rechercher par email ou nom…"
         />
       </div>
 
@@ -149,6 +155,9 @@ export function UsersPage(): JSX.Element {
               <tr>
                 <Th k="email" sk={sortKey} so={sortOrder} on={handleSort} align="left">
                   Email
+                </Th>
+                <Th k="full_name" sk={sortKey} so={sortOrder} on={handleSort} align="left">
+                  Nom
                 </Th>
                 <Th k="created_at" sk={sortKey} so={sortOrder} on={handleSort} align="left">
                   Inscription
@@ -191,6 +200,13 @@ export function UsersPage(): JSX.Element {
                       {u.email ?? '—'}
                     </Link>
                     <p className="text-[10px] font-mono text-ink-soft">{u.workspace.name}</p>
+                  </td>
+                  <td className="px-3 py-2 text-sm">
+                    {u.full_name ? (
+                      <span>{u.full_name}</span>
+                    ) : (
+                      <span className="text-ink-soft italic">—</span>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-xs text-ink-soft">{formatDate(u.created_at)}</td>
                   <td className="px-3 py-2 text-xs text-ink-soft">{formatDate(u.last_seen_at)}</td>
