@@ -10,6 +10,10 @@ export interface AdminUserSummary {
   id: string;
   user_id: string;
   email: string | null;
+  /** feat/signup-firstname-lastname — résolu depuis Supabase user_metadata. */
+  first_name: string | null;
+  last_name: string | null;
+  full_name: string | null;
   role: string;
   status: string | null;
   is_blocked: boolean;

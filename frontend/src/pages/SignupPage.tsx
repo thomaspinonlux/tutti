@@ -12,9 +12,12 @@ export function SignupPage(): JSX.Element {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const referrerCode = (params.get('ref') ?? '').trim().toUpperCase();
+  // feat/signup-firstname-lastname — remplace workspaceName par identité user.
+  // Le workspace est auto-généré côté backend ("Workspace de Prénom Nom").
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [workspaceName, setWorkspaceName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -24,9 +27,23 @@ export function SignupPage(): JSX.Element {
     setLoading(true);
 
     try {
+      const fn = firstName.trim();
+      const ln = lastName.trim();
+      // Supabase user_metadata est la source unique d'identité user (pas de
+      // model User Prisma dans Tutti). Stocké en raw_user_meta_data DB, lu
+      // côté backend via supabaseAdmin.auth.admin.getUserById().
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
+        options: {
+          data: {
+            first_name: fn,
+            last_name: ln,
+            // full_name = convention Supabase reconnue par les OAuth providers
+            // (Google/Microsoft set ce champ aussi) → cohérence cross-provider.
+            full_name: `${fn} ${ln}`.trim(),
+          },
+        },
       });
 
       if (signUpError) {
@@ -41,7 +58,8 @@ export function SignupPage(): JSX.Element {
       await api('/api/auth/initialize', {
         method: 'POST',
         body: {
-          workspaceName: referrerCode ? 'invited' : workspaceName.trim(),
+          first_name: fn,
+          last_name: ln,
           ...(referrerCode ? { referrerCode } : {}),
         },
       });
@@ -82,18 +100,30 @@ export function SignupPage(): JSX.Element {
           )}
 
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-            {!referrerCode && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input
-                label={t('auth.workspaceName')}
+                label={t('auth.firstName')}
                 type="text"
-                value={workspaceName}
-                onChange={(e) => setWorkspaceName(e.target.value)}
-                placeholder={t('auth.workspaceNamePlaceholder')}
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder={t('auth.firstNamePlaceholder')}
                 required
-                minLength={2}
-                autoComplete="organization"
+                minLength={1}
+                maxLength={60}
+                autoComplete="given-name"
               />
-            )}
+              <Input
+                label={t('auth.lastName')}
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder={t('auth.lastNamePlaceholder')}
+                required
+                minLength={1}
+                maxLength={60}
+                autoComplete="family-name"
+              />
+            </div>
             <Input
               label={t('auth.email')}
               type="email"

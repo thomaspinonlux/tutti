@@ -183,6 +183,8 @@ export function renderSignupNotificationHtml(vars: SignupNotifVars): string {
 
 interface WelcomeEmailVars {
   locale: string;
+  /** feat/signup-firstname-lastname — utilisé pour la salutation perso. */
+  firstName?: string | null;
 }
 
 /** Renvoie le sujet localisé. */
@@ -194,10 +196,14 @@ export function welcomeEmailSubject(locale: string): string {
 
 export function renderWelcomeEmailHtml(vars: WelcomeEmailVars): string {
   const isEn = vars.locale.startsWith('en');
+  // Salutation personnalisée si firstName fourni, sinon générique.
+  const firstNameTrim = vars.firstName?.trim();
+  const greetingFr = firstNameTrim ? `Salut ${escapeHtml(firstNameTrim)},` : 'Salut,';
+  const greetingEn = firstNameTrim ? `Hi ${escapeHtml(firstNameTrim)},` : 'Hi there,';
   if (isEn) {
     return `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fefae0;color:#1a1a1a">
   <h1 style="color:#7a8a9a;margin:0 0 16px;font-size:28px">🎉 Welcome to Tutti</h1>
-  <p style="font-size:16px;line-height:1.6">Hi there,</p>
+  <p style="font-size:16px;line-height:1.6">${greetingEn}</p>
   <p style="font-size:16px;line-height:1.6">Thanks for signing up to <strong>Tutti</strong>, the music blind test &amp; quizz platform for parties with friends.</p>
   <p style="font-size:16px;line-height:1.6">We've received your registration. You can now access the platform and launch your first session.</p>
   <h3 style="color:#7a8a9a;margin-top:32px">Getting started:</h3>
@@ -219,7 +225,7 @@ export function renderWelcomeEmailHtml(vars: WelcomeEmailVars): string {
   // FR default
   return `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fefae0;color:#1a1a1a">
   <h1 style="color:#7a8a9a;margin:0 0 16px;font-size:28px">🎉 Bienvenue sur Tutti</h1>
-  <p style="font-size:16px;line-height:1.6">Salut,</p>
+  <p style="font-size:16px;line-height:1.6">${greetingFr}</p>
   <p style="font-size:16px;line-height:1.6">Merci de t'être inscrit sur <strong>Tutti</strong>, la plateforme de blind test musical &amp; quizz pour soirées entre amis.</p>
   <p style="font-size:16px;line-height:1.6">Nous avons bien reçu ta demande d'inscription. Tu peux dès maintenant accéder à la plateforme et lancer ta première session.</p>
   <h3 style="color:#7a8a9a;margin-top:32px">Pour bien démarrer :</h3>

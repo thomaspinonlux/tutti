@@ -69,12 +69,18 @@ function fireSignupNotification(args: {
  * Skip silencieux si pas d'email user valide (cas edge OAuth sans
  * permission email, etc.) — pas d'erreur côté flow signup.
  */
-function fireWelcomeEmail(args: { email: string | null; locale: string }): void {
+function fireWelcomeEmail(args: {
+  email: string | null;
+  locale: string;
+  /** feat/signup-firstname-lastname — passe prénom pour personnaliser
+   *  la salutation ("Salut Thomas," au lieu de "Salut,"). null/absent OK. */
+  firstName?: string | null;
+}): void {
   if (!args.email || !args.email.includes('@')) {
     console.info('[Email] User email manquant/invalide → welcome email skip');
     return;
   }
-  const html = renderWelcomeEmailHtml({ locale: args.locale });
+  const html = renderWelcomeEmailHtml({ locale: args.locale, firstName: args.firstName });
   const subject = welcomeEmailSubject(args.locale);
   void sendNotificationEmail({
     to: [args.email],
@@ -83,7 +89,7 @@ function fireWelcomeEmail(args: { email: string | null; locale: string }): void 
   })
     .then((result) => {
       console.info(
-        `[Email] User welcome sent to=${args.email} locale=${args.locale}: ${JSON.stringify(result)}`,
+        `[Email] User welcome sent to=${args.email} locale=${args.locale} firstName="${args.firstName ?? ''}": ${JSON.stringify(result)}`,
       );
     })
     .catch((err) => {
@@ -106,7 +112,15 @@ function detectLocaleFromHeader(acceptLanguage: string | undefined): 'fr' | 'en'
 const router: Router = Router();
 
 const initializeBodySchema = z.object({
-  workspaceName: z.string().trim().min(2).max(120),
+  /**
+   * feat/signup-firstname-lastname — identité user (Supabase user_metadata
+   * source de vérité). Le workspace est auto-généré "Workspace de {first}
+   * {last}" — workspaceName legacy gardé en fallback pour rétro-compat
+   * client (OAuth flows + comptes créés avant ce changement).
+   */
+  first_name: z.string().trim().min(1).max(60).optional(),
+  last_name: z.string().trim().min(1).max(60).optional(),
+  workspaceName: z.string().trim().min(2).max(120).optional(),
   establishmentName: z.string().trim().min(2).max(120).optional(),
   /** Code parrain — si fourni + valide, rattache au workspace existant. */
   referrerCode: z.string().trim().min(4).max(8).optional(),
@@ -236,7 +250,25 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
     });
     return;
   }
-  const { workspaceName, establishmentName, referrerCode, invitationCode } = parsed.data;
+  const {
+    first_name,
+    last_name,
+    workspaceName: bodyWorkspaceName,
+    establishmentName,
+    referrerCode,
+    invitationCode,
+  } = parsed.data;
+
+  // feat/signup-firstname-lastname — résolution du workspace name + identité
+  // user. Le frontend signup envoie first_name + last_name (Supabase metadata
+  // mis à jour côté frontend). On dérive workspace.name = "Workspace de {first}
+  // {last}". Fallback : workspaceName legacy si pas de first/last (OAuth ou
+  // ancien client). Dernier recours : "Workspace de {email-before-@}".
+  const fullName = first_name && last_name ? `${first_name} ${last_name}`.trim() : null;
+  const emailLocalPart = req.userEmail?.split('@')[0] ?? null;
+  const derivedWorkspaceName = fullName
+    ? `Workspace de ${fullName}`
+    : (bodyWorkspaceName ?? (emailLocalPart ? `Workspace de ${emailLocalPart}` : 'Mon workspace'));
 
   try {
     // Idempotence: vérifier si le user a déjà un workspace
@@ -292,15 +324,20 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
         // feat/admin-users-and-email-notifications — notif team
         const localeReferral = detectLocaleFromHeader(req.headers['accept-language']);
         console.info(
-          `[Signup] User created (referral): email=${req.userEmail ?? '?'} locale=${localeReferral} workspace=${referrer.workspace_id}`,
+          `[Signup] User created (referral): email=${req.userEmail ?? '?'} name="${fullName ?? '?'}" locale=${localeReferral} workspace=${referrer.workspace_id}`,
         );
         fireSignupNotification({
           email: req.userEmail ?? '(email inconnu)',
-          name: null,
+          name: fullName,
           locale: localeReferral,
         });
-        // feat/welcome-email-user-signup — email bienvenue au user
-        fireWelcomeEmail({ email: req.userEmail ?? null, locale: localeReferral });
+        // feat/welcome-email-user-signup — email bienvenue au user (firstName
+        // pour personnalisation salutation, cf. feat/signup-firstname-lastname)
+        fireWelcomeEmail({
+          email: req.userEmail ?? null,
+          locale: localeReferral,
+          firstName: first_name ?? null,
+        });
         res.status(201).json({
           workspace: referrer.workspace,
           member: {
@@ -322,7 +359,7 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
     const result = await prisma.$transaction(async (tx) => {
       const workspace = await tx.workspace.create({
         data: {
-          name: workspaceName,
+          name: derivedWorkspaceName,
           plan: Plan.FREE,
         },
       });
@@ -343,7 +380,7 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
       const establishment = await tx.establishment.create({
         data: {
           workspace_id: workspace.id,
-          name: establishmentName ?? workspaceName,
+          name: establishmentName ?? derivedWorkspaceName,
           default_language: 'fr',
           active_providers: ['demo'],
         },
@@ -366,15 +403,20 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
     // feat/admin-users-and-email-notifications — notif team
     const localeNew = detectLocaleFromHeader(req.headers['accept-language']);
     console.info(
-      `[Signup] User created (new tenant): email=${req.userEmail ?? '?'} locale=${localeNew} workspace=${result.workspace.id} status=${result.member.status}`,
+      `[Signup] User created (new tenant): email=${req.userEmail ?? '?'} name="${fullName ?? '?'}" locale=${localeNew} workspace=${result.workspace.id} status=${result.member.status}`,
     );
     fireSignupNotification({
       email: req.userEmail ?? '(email inconnu)',
-      name: null,
+      name: fullName,
       locale: localeNew,
     });
-    // feat/welcome-email-user-signup — email bienvenue au user
-    fireWelcomeEmail({ email: req.userEmail ?? null, locale: localeNew });
+    // feat/welcome-email-user-signup — email bienvenue au user (firstName
+    // pour personnalisation salutation, cf. feat/signup-firstname-lastname)
+    fireWelcomeEmail({
+      email: req.userEmail ?? null,
+      locale: localeNew,
+      firstName: first_name ?? null,
+    });
 
     res.status(201).json({
       workspace: { ...result.workspace, establishments: [result.establishment] },
