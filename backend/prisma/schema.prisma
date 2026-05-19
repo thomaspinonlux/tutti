@@ -258,6 +258,11 @@ model Playlist {
   is_express        Boolean  @default(false) // V1 : créée à la volée pendant une session
   is_official_tutti Boolean  @default(false) // V1.1 : playlist curée par Tutti (catalogue partagé)
   external_links    Json? // V1.1 : { spotify: url, deezer: url, apple_music: url }
+  /// feat/playlist-cache-and-availability-check — dernière vérification de
+  /// disponibilité (POST /check-availability) + nombre de tracks non
+  /// jouables détectées. Affiché côté UI (badge / bouton coloré).
+  last_checked_at   DateTime? @db.Timestamptz(6)
+  unplayable_count  Int       @default(0)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   updated_at        DateTime @updatedAt @db.Timestamptz(6)
 
@@ -312,6 +317,14 @@ model Track {
   cover_url         String?
   provider          String   @db.VarChar(32) // "spotify", "demo"
   provider_track_id String   @db.VarChar(128)
+  /// feat/playlist-cache-and-availability-check — flag de jouabilité
+  /// alimenté par POST /api/playlists/:id/check-availability. Pour YouTube :
+  /// vérifie embeddable + privacy + region restriction. is_playable=false
+  /// → track skip lors du clone-on-launch côté host (cohérent avec
+  /// OfficialPlaylistTrack.is_playable).
+  is_playable            Boolean   @default(true)
+  playability_reason     String?
+  playability_checked_at DateTime? @db.Timestamptz(6)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
 
   artist          Artist          @relation(fields: [artist_id], references: [id], onDelete: Restrict)
@@ -320,6 +333,7 @@ model Track {
 
   @@index([artist_id])
   @@index([provider, provider_track_id])
+  @@index([is_playable])
   @@map("tracks")
 }
 

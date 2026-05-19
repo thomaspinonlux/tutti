@@ -14,6 +14,8 @@ import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
+import { AvailabilityCheckPanel } from '../../components/admin/playlists/AvailabilityCheckPanel.js';
+import { checkLibraryPlaylistAvailability } from '../../lib/playlists.js';
 import {
   getOfficialPlaylist,
   patchOfficialPlaylist,
@@ -151,6 +153,12 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
         </TitleHandwritten>
         <p className="font-mono text-[11px] text-ink-soft mt-1">{playlist.slug}</p>
       </header>
+
+      <AvailabilityCheckPanel
+        playlistId={playlist.id}
+        mode="library"
+        onCheck={(id) => checkLibraryPlaylistAvailability(id)}
+      />
 
       {/* Champs éditables inline */}
       <Card tone="cream" size="md" className="mb-4">

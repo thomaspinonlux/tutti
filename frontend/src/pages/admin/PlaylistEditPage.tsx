@@ -23,12 +23,14 @@ import {
   deleteTrack as apiDeleteTrack,
   reorderTracks,
   updateTrackAliases,
+  checkPlaylistAvailability,
 } from '../../lib/playlists.js';
 import { Button, Card, Badge, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { SortableTrackList } from '../../components/admin/playlists/SortableTrackList.js';
 import { TrackDetailsPanel } from '../../components/admin/playlists/TrackDetailsPanel.js';
 import { AddTracksTabs } from '../../components/admin/playlists/import/AddTracksTabs.js';
 import { SharePlaylistModal } from '../../components/admin/playlists/SharePlaylistModal.js';
+import { AvailabilityCheckPanel } from '../../components/admin/playlists/AvailabilityCheckPanel.js';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -321,6 +323,12 @@ export function PlaylistEditPage(): JSX.Element {
           </TitleHandwritten>
           <SaveIndicator state={saveState} />
         </header>
+
+        <AvailabilityCheckPanel
+          playlistId={playlist.id}
+          mode="workspace"
+          onCheck={(id) => checkPlaylistAvailability(id)}
+        />
 
         <SortableTrackList
           tracks={sortedTracks}

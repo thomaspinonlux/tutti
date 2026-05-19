@@ -13,6 +13,7 @@
  */
 
 import { prisma } from './prisma.js';
+import { getCachedPlaylist, setCachedPlaylist } from './playlistCache.js';
 
 export interface LibraryPlaylistSummary {
   id: string;
@@ -133,6 +134,21 @@ export async function getVisiblePlaylistDetail(
 ): Promise<LibraryPlaylistDetail | null> {
   const premium = await isUserPremium(userId);
 
+  // feat/playlist-cache-and-availability-check — premier round-trip DB
+  // léger : fetch uniquement updated_at + visibility pour décider du cache
+  // HIT/MISS. Si cache HIT, on évite le include tracks (le coût principal).
+  const meta = await prisma.officialPlaylist.findUnique({
+    where: { id: playlistId },
+    select: { id: true, updated_at: true, visibility: true },
+  });
+  if (!meta) return null;
+  if (meta.visibility === 'private') return null;
+  if (meta.visibility === 'premium_only' && !premium) return null;
+
+  const cached = getCachedPlaylist<LibraryPlaylistDetail>(playlistId, meta.updated_at);
+  if (cached) return cached;
+
+  // Cache MISS : full fetch + projection.
   const playlist = await prisma.officialPlaylist.findUnique({
     where: { id: playlistId },
     include: {
@@ -140,13 +156,11 @@ export async function getVisiblePlaylistDetail(
     },
   });
   if (!playlist) return null;
-  if (playlist.visibility === 'private') return null;
-  if (playlist.visibility === 'premium_only' && !premium) return null;
 
   const spotify_count = playlist.tracks.filter((t) => t.spotify_id !== null).length;
   const youtube_count = playlist.tracks.filter((t) => t.youtube_id !== null).length;
 
-  return {
+  const detail: LibraryPlaylistDetail = {
     id: playlist.id,
     slug: playlist.slug,
     name_fr: playlist.name_fr,
@@ -177,4 +191,6 @@ export async function getVisiblePlaylistDetail(
       title_aliases: t.title_aliases,
     })),
   };
+  setCachedPlaylist(playlistId, detail, playlist.updated_at);
+  return detail;
 }
