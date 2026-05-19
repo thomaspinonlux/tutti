@@ -4,11 +4,17 @@
  * Affichée tant que toutes les étapes ne sont pas complétées. Disparaît
  * automatiquement quand le workspace est "prêt à jouer".
  *
- * Étapes :
- *   ✓ Compte créé (toujours OK)
- *   ☐ Connecter Spotify (si provider non-demo + pas connecté)
- *   ☐ Créer 1ère playlist Tutti Tracks
- *   ☐ Créer 1er pack Tutti Quizz
+ * feat/onboarding-youtube-first — refonte post-pivot YouTube :
+ *   ✓ Account created (toujours OK)
+ *   ☐ Create your first Tutti Tracks playlist (valeur principale 1)
+ *   ☐ Create your first Tutti Quizz pack (valeur principale 2)
+ *   ☐ Explore the official Tutti Library (optionnel — ne bloque pas la
+ *     complétion de la checklist)
+ *
+ * Step "Connect Spotify" supprimé : Spotify est réservé à l'allowlist
+ * (fix/disable-spotify-sdk-non-allowlist) et n'est pas un parcours user
+ * normal. YouTube est intégré natif via la bibliothèque officielle, donc
+ * pas besoin de connecter d'OAuth pour jouer.
  */
 
 import { useEffect, useState } from 'react';
@@ -16,11 +22,9 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { listPlaylists } from '../../../lib/playlists.js';
 import { listQuestionSets } from '../../../lib/questionSets.js';
-import { getSpotifyStatus } from '../../../lib/music.js';
 import { Card } from '../../ui/index.js';
 
 interface ChecklistStatus {
-  spotifyConnected: boolean;
   hasPlaylist: boolean;
   hasPack: boolean;
   loaded: boolean;
@@ -29,7 +33,6 @@ interface ChecklistStatus {
 export function GettingStartedChecklist(): JSX.Element | null {
   const { t } = useTranslation();
   const [status, setStatus] = useState<ChecklistStatus>({
-    spotifyConnected: false,
     hasPlaylist: false,
     hasPack: false,
     loaded: false,
@@ -37,25 +40,24 @@ export function GettingStartedChecklist(): JSX.Element | null {
 
   useEffect(() => {
     let cancelled = false;
-    void Promise.allSettled([listPlaylists(), listQuestionSets(), getSpotifyStatus()]).then(
-      ([pls, qs, sp]) => {
-        if (cancelled) return;
-        setStatus({
-          spotifyConnected: sp.status === 'fulfilled' ? sp.value.connected : false,
-          hasPlaylist: pls.status === 'fulfilled' ? pls.value.length > 0 : false,
-          hasPack: qs.status === 'fulfilled' ? qs.value.length > 0 : false,
-          loaded: true,
-        });
-      },
-    );
+    void Promise.allSettled([listPlaylists(), listQuestionSets()]).then(([pls, qs]) => {
+      if (cancelled) return;
+      setStatus({
+        hasPlaylist: pls.status === 'fulfilled' ? pls.value.length > 0 : false,
+        hasPack: qs.status === 'fulfilled' ? qs.value.length > 0 : false,
+        loaded: true,
+      });
+    });
     return () => {
       cancelled = true;
     };
   }, []);
 
   if (!status.loaded) return null;
-  // Si tout est fait → disparait
-  if (status.spotifyConnected && status.hasPlaylist && status.hasPack) return null;
+  // feat/onboarding-youtube-first — disparaît une fois les 2 étapes
+  // principales (playlist + pack) faites. L'étape "Library" est optionnelle
+  // (toujours "todo") donc on ne l'inclut PAS dans la condition de disparition.
+  if (status.hasPlaylist && status.hasPack) return null;
 
   const items = [
     {
@@ -63,12 +65,6 @@ export function GettingStartedChecklist(): JSX.Element | null {
       label: t('gettingStarted.stepAccount'),
       done: true,
       href: null,
-    },
-    {
-      key: 'spotify',
-      label: t('gettingStarted.stepSpotify'),
-      done: status.spotifyConnected,
-      href: '/admin/settings',
     },
     {
       key: 'playlist',
@@ -82,17 +78,29 @@ export function GettingStartedChecklist(): JSX.Element | null {
       done: status.hasPack,
       href: '/admin/quizz',
     },
+    {
+      key: 'library',
+      label: t('gettingStarted.stepLibrary'),
+      // Optionnel : jamais marqué "done" automatiquement (pas de signal
+      // fiable côté API). Lien direct vers la bibliothèque officielle.
+      done: false,
+      href: '/admin/library',
+    },
   ];
 
-  const completed = items.filter((i) => i.done).length;
-  const pct = Math.round((completed / items.length) * 100);
+  // feat/onboarding-youtube-first — l'étape "library" est optionnelle, on
+  // ne la compte pas dans la progression (sinon checklist resterait
+  // toujours visible). Account/Playlist/Pack = required.
+  const requiredItems = items.filter((i) => i.key !== 'library');
+  const completed = requiredItems.filter((i) => i.done).length;
+  const pct = Math.round((completed / requiredItems.length) * 100);
 
   return (
     <Card tone="cream" size="lg" className="mb-8">
       <div className="flex items-center justify-between mb-3 gap-3">
         <h3 className="font-display text-2xl">🎯 {t('gettingStarted.title')}</h3>
         <span className="font-mono text-sm text-ink-soft">
-          {completed} / {items.length}
+          {completed} / {requiredItems.length}
         </span>
       </div>
       <div className="w-full h-2 border-2 border-ink rounded overflow-hidden bg-cream-2 mb-4">
