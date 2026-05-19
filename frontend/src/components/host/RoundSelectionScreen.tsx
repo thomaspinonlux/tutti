@@ -97,9 +97,12 @@ export function RoundSelectionScreen({
   }, [tab, librarySubTab, official]);
 
   // Lazy-load la bibliothèque officielle Quizz quand sub-onglet ouvert.
+  // fix/quiz-library-host-access — `canUseQuizz === false` (explicite) au
+  // lieu de `!canUseQuizz` pour ne pas bloquer pendant la race condition où
+  // le prop arrive en undefined avant le fetch /api/me côté HostPage.
   useEffect(() => {
     if (tab !== 'library' || librarySubTab !== 'quizz' || quizPacks !== null) return;
-    if (!canUseQuizz) return;
+    if (canUseQuizz === false) return;
     listLibraryQuizPacks()
       .then((all) => setQuizPacks(all))
       .catch((err: unknown) => setError((err as Error).message));
@@ -255,8 +258,10 @@ export function RoundSelectionScreen({
       ) : (
         // Onglet Bibliothèque officielle
         <div>
-          {/* Sub-onglets Tracks / Quizz — visible seulement si canUseQuizz */}
-          {canUseQuizz && (
+          {/* Sub-onglets Tracks / Quizz — visible sauf si canUseQuizz===false
+              explicite (fix/quiz-library-host-access — défaut visible pour
+              éviter race condition pendant fetch /api/me côté HostPage). */}
+          {canUseQuizz !== false && (
             <div className="flex gap-2 mb-3" role="tablist" aria-label="library sub-tabs">
               <button
                 type="button"
