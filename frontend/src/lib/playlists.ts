@@ -10,6 +10,40 @@ export async function listPlaylists(): Promise<Playlist[]> {
   return data.playlists;
 }
 
+// feat/playlist-cache-and-availability-check — résultat du bouton "Vérifier
+// la disponibilité". Réponse identique pour /api/playlists/:id/check-
+// availability (workspace) ET /api/library/playlists/:id/check-availability
+// (officielle, accessible aux hosts via UI).
+export interface AvailabilityCheckResult {
+  total: number;
+  playable: number;
+  unavailable: Array<{
+    track_id: string;
+    title: string;
+    artist: string;
+    reason: string;
+  }>;
+  checked_at: string;
+}
+
+export async function checkPlaylistAvailability(
+  playlistId: string,
+): Promise<AvailabilityCheckResult> {
+  return api<AvailabilityCheckResult>(
+    `/api/playlists/${encodeURIComponent(playlistId)}/check-availability`,
+    { method: 'POST' },
+  );
+}
+
+export async function checkLibraryPlaylistAvailability(
+  playlistId: string,
+): Promise<AvailabilityCheckResult> {
+  return api<AvailabilityCheckResult>(
+    `/api/library/playlists/${encodeURIComponent(playlistId)}/check-availability`,
+    { method: 'POST' },
+  );
+}
+
 export async function getPlaylist(id: string): Promise<PlaylistWithTracks> {
   const data = await api<{ playlist: PlaylistWithTracks }>(
     `/api/playlists/${encodeURIComponent(id)}`,

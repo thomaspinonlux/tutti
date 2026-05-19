@@ -1028,6 +1028,136 @@ router.post(
   },
 );
 
+// ─── POST /:id/check-availability — vérif YouTube de tous les tracks ────
+//
+// feat/playlist-cache-and-availability-check — bouton "🔍 Vérifier" host.
+// Pour chaque track de la playlist (provider=youtube), batch-fetch
+// l'endpoint YouTube Data API videos.list et classify
+// (embeddable/private/region/removed). Update Track.is_playable +
+// playability_reason + playability_checked_at en DB. Aggregate dans
+// Playlist.last_checked_at + unplayable_count.
+//
+// Retourne : { total, playable, unavailable: [{track_id, title, artist,
+// reason}], checked_at }. UI affiche badge vert / orange.
+
+router.post(
+  '/:id/check-availability',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const playlistId = req.params.id;
+
+    try {
+      const playlist = await prisma.playlist.findFirst({
+        where: { id: playlistId, establishment: { workspace_id: workspaceId } },
+        include: {
+          playlist_tracks: {
+            orderBy: { position: 'asc' },
+            include: { track: { include: { artist: true } } },
+          },
+        },
+      });
+      if (!playlist) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Playlist introuvable' } });
+        return;
+      }
+
+      const apiKey = process.env.YOUTUBE_API_KEY;
+      if (!apiKey) {
+        res.status(503).json({
+          error: {
+            code: 'YT_API_KEY_MISSING',
+            message: 'YouTube API non configurée côté serveur',
+          },
+        });
+        return;
+      }
+
+      // Collecte des youtube_id à vérifier. On ne valide QUE les tracks
+      // provider=youtube (Spotify/demo sont supposés toujours valides).
+      const ytTracks = playlist.playlist_tracks.filter(
+        (pt) => pt.track.provider === 'youtube' && pt.track.provider_track_id.length > 0,
+      );
+      if (ytTracks.length === 0) {
+        // Rien à vérifier. On flush quand même les compteurs et timestamp.
+        const updated = await prisma.playlist.update({
+          where: { id: playlistId },
+          data: { last_checked_at: new Date(), unplayable_count: 0 },
+          select: { last_checked_at: true, unplayable_count: true },
+        });
+        res.json({
+          total: playlist.playlist_tracks.length,
+          playable: playlist.playlist_tracks.length,
+          unavailable: [],
+          checked_at: updated.last_checked_at?.toISOString() ?? new Date().toISOString(),
+        });
+        return;
+      }
+
+      const ytIds = ytTracks.map((pt) => pt.track.provider_track_id);
+      const { classifyYoutubeIds } = await import('../lib/youtubeValidation.js');
+      const verdicts = await classifyYoutubeIds(apiKey, ytIds);
+
+      // Update chaque Track en parallèle. Track est shared globally → idempotent
+      // updates (la 1ʳᵉ playlist qui check fixe l'état pour tout le monde).
+      const now = new Date();
+      const unavailable: Array<{
+        track_id: string;
+        title: string;
+        artist: string;
+        reason: string;
+      }> = [];
+      await Promise.all(
+        ytTracks.map(async (pt) => {
+          const verdict = verdicts.get(pt.track.provider_track_id) ?? {
+            is_playable: false,
+            reason: 'no_response',
+          };
+          await prisma.track.update({
+            where: { id: pt.track.id },
+            data: {
+              is_playable: verdict.is_playable,
+              playability_reason: verdict.reason,
+              playability_checked_at: now,
+            },
+          });
+          if (!verdict.is_playable) {
+            unavailable.push({
+              track_id: pt.track.id,
+              title: pt.track.canonical_title,
+              artist: pt.track.artist.canonical_name,
+              reason: verdict.reason ?? 'unknown',
+            });
+          }
+        }),
+      );
+
+      const total = playlist.playlist_tracks.length;
+      const unplayable_count = unavailable.length;
+      const playable = total - unplayable_count;
+
+      await prisma.playlist.update({
+        where: { id: playlistId },
+        data: { last_checked_at: now, unplayable_count },
+      });
+
+      console.info(
+        `[Availability] playlist_id=${playlistId} workspace_id=${workspaceId} total=${total} playable=${playable} unavailable=${unplayable_count}`,
+      );
+
+      res.json({
+        total,
+        playable,
+        unavailable,
+        checked_at: now.toISOString(),
+      });
+    } catch (err: unknown) {
+      console.error('[POST /playlists/:id/check-availability] error:', err);
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      res.status(500).json({ error: { code: 'CHECK_FAILED', message } });
+    }
+  },
+);
+
 export default router;
 
 // Re-export for type checking only — callers should import from @tutti/shared.

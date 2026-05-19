@@ -20,6 +20,8 @@ import { requireWorkspace } from '../middleware/tenant.js';
 import { listVisiblePlaylists, getVisiblePlaylistDetail } from '../lib/officialLibraryQueries.js';
 import { generateAliases } from '../lib/aliases.js';
 import { broadcastToSession } from '../socket/index.js';
+import { invalidateCachedPlaylist } from '../lib/playlistCache.js';
+import { classifyYoutubeIds } from '../lib/youtubeValidation.js';
 
 const router: Router = Router();
 
@@ -348,6 +350,112 @@ router.post(
       total_count: detail.tracks.length,
       provider_used: preferProvider,
     });
+  },
+);
+
+// ───── POST /playlists/:id/check-availability ────────────────────────────
+//
+// feat/playlist-cache-and-availability-check — bouton host pour tester en
+// amont la jouabilité d'une playlist officielle SANS lancer de session.
+//
+// Stratégie : pour chaque OfficialPlaylistTrack avec youtube_id, batch YT
+// Data API videos.list + classify (embeddable/private/region/removed).
+// Update OfficialPlaylistTrack.is_playable + playability_reason +
+// playability_checked_at. INVALIDE le cache du detail (le payload change).
+//
+// Accessible à tous les hosts (lecture détail déjà filtrée par visibility).
+// Pour le bouton "Vérifier" côté UI hosts, peu importe qui paye le check
+// (résultat partagé via Track global).
+
+router.post(
+  '/playlists/:id/check-availability',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const userId = req.userId!;
+    const playlistId = req.params.id;
+
+    const detail = await getVisiblePlaylistDetail(userId, playlistId);
+    if (!detail) {
+      res
+        .status(404)
+        .json({ error: { code: 'NOT_FOUND', message: 'Playlist introuvable ou inaccessible' } });
+      return;
+    }
+
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    if (!apiKey) {
+      res.status(503).json({
+        error: { code: 'YT_API_KEY_MISSING', message: 'YouTube API non configurée côté serveur' },
+      });
+      return;
+    }
+
+    const tracksWithYt = detail.tracks.filter((t) => t.youtube_id !== null);
+    if (tracksWithYt.length === 0) {
+      res.json({
+        total: detail.tracks.length,
+        playable: detail.tracks.length,
+        unavailable: [],
+        checked_at: new Date().toISOString(),
+      });
+      return;
+    }
+
+    try {
+      const verdicts = await classifyYoutubeIds(
+        apiKey,
+        tracksWithYt.map((t) => t.youtube_id!),
+      );
+
+      const now = new Date();
+      const unavailable: Array<{
+        track_id: string;
+        title: string;
+        artist: string;
+        reason: string;
+      }> = [];
+
+      await Promise.all(
+        tracksWithYt.map(async (t) => {
+          const verdict = verdicts.get(t.youtube_id!) ?? {
+            is_playable: false,
+            reason: 'no_response',
+          };
+          await prisma.officialPlaylistTrack.update({
+            where: { id: t.id },
+            data: {
+              is_playable: verdict.is_playable,
+              playability_reason: verdict.reason,
+              playability_checked_at: now,
+            },
+          });
+          if (!verdict.is_playable) {
+            unavailable.push({
+              track_id: t.id,
+              title: t.title,
+              artist: t.artist,
+              reason: verdict.reason ?? 'unknown',
+            });
+          }
+        }),
+      );
+
+      invalidateCachedPlaylist(playlistId, 'check_availability');
+
+      console.info(
+        `[Availability:lib] playlist_id=${playlistId} total=${detail.tracks.length} unavailable=${unavailable.length}`,
+      );
+
+      res.json({
+        total: detail.tracks.length,
+        playable: detail.tracks.length - unavailable.length,
+        unavailable,
+        checked_at: now.toISOString(),
+      });
+    } catch (err: unknown) {
+      console.error('[POST /library/playlists/:id/check-availability] error:', err);
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      res.status(500).json({ error: { code: 'CHECK_FAILED', message } });
+    }
   },
 );
 
