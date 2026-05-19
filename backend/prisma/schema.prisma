@@ -396,6 +396,11 @@ model Question {
   points               Int          @default(100)
   media_type           MediaType    @default(NONE)
   media_url            String?
+  /// feat/quiz-question-media — embed YouTube structuré (AUDIO/VIDEO).
+  /// Propagé depuis OfficialQuizQuestion lors du clone-on-launch quiz pack.
+  media_youtube_id     String?
+  media_start_sec      Int?
+  media_duration_sec   Int?
   created_at           DateTime     @default(now()) @db.Timestamptz(6)
 
   set QuestionSet @relation(fields: [set_id], references: [id], onDelete: Cascade)
@@ -778,8 +783,19 @@ model OfficialQuizQuestion {
   explanation_en   String?
   /// Difficulté par question (peut différer du pack).
   difficulty       Level    @default(MEDIUM)
-  /// URL média optionnelle (image/audio illustrant la question).
+  /// URL média optionnelle (image/audio illustrant la question, legacy).
   media_url        String?
+  /// feat/quiz-question-media — type de média structuré (NONE/AUDIO/VIDEO/IMAGE).
+  /// Si AUDIO|VIDEO + media_youtube_id renseigné, le gameplay embed un IFrame
+  /// YouTube qui joue [media_start_sec, media_start_sec + media_duration_sec].
+  /// AUDIO = IFrame caché (audio only). VIDEO = IFrame visible.
+  media_type         MediaType @default(NONE)
+  /// ID YouTube (11 chars). Source du média si media_type=AUDIO|VIDEO.
+  media_youtube_id   String?
+  /// Offset de début de lecture en secondes (ex: 30 pour skip intro).
+  media_start_sec    Int?
+  /// Durée de lecture en secondes (max 30 côté UI). Coupé après ce délai.
+  media_duration_sec Int?
   created_at       DateTime @default(now()) @db.Timestamptz(6)
 
   pack OfficialQuizPack @relation(fields: [pack_id], references: [id], onDelete: Cascade)

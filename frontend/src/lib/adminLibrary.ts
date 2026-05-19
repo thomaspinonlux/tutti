@@ -136,6 +136,8 @@ export interface OfficialQuizPackSummary {
   updated_at: string;
 }
 
+export type QuizQuestionMediaType = 'NONE' | 'AUDIO' | 'VIDEO' | 'IMAGE';
+
 export interface OfficialQuizQuestion {
   id: string;
   pack_id: string;
@@ -155,6 +157,11 @@ export interface OfficialQuizQuestion {
   explanation_en: string | null;
   difficulty: Difficulty;
   media_url: string | null;
+  /** feat/quiz-question-media — extrait audio/vidéo YouTube structuré. */
+  media_type: QuizQuestionMediaType;
+  media_youtube_id: string | null;
+  media_start_sec: number | null;
+  media_duration_sec: number | null;
 }
 
 export interface OfficialQuizPackDetail extends OfficialQuizPackSummary {
@@ -198,6 +205,25 @@ export async function patchOfficialQuizPack(
     { method: 'PATCH', body: changes },
   );
   return data.pack;
+}
+
+// feat/quiz-question-media — édition d'une question individuelle (media uniquement).
+export async function patchOfficialQuizQuestion(
+  packId: string,
+  questionId: string,
+  changes: Partial<{
+    media_type: QuizQuestionMediaType;
+    media_youtube_id: string | null;
+    media_start_sec: number | null;
+    media_duration_sec: number | null;
+    media_url: string | null;
+  }>,
+): Promise<OfficialQuizQuestion> {
+  const data = await api<{ question: OfficialQuizQuestion }>(
+    `/api/admin/library/quiz-packs/${encodeURIComponent(packId)}/questions/${encodeURIComponent(questionId)}`,
+    { method: 'PATCH', body: changes },
+  );
+  return data.question;
 }
 
 export interface UnplayableTrack {
