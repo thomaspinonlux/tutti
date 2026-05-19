@@ -438,20 +438,30 @@ function HostPageInner(): JSX.Element {
   const [spotifyAllowlisted, setSpotifyAllowlisted] = useState(false);
   // feat/quiz-launch-host-ui — flag pour afficher le sub-onglet "Quizz"
   // dans la bibliothèque officielle. Reflète WorkspaceMember.can_use_quizz.
-  const [canUseQuizz, setCanUseQuizz] = useState(false);
+  //
+  // fix/quiz-library-host-access — défaut TRUE (au lieu de false) pour éviter
+  // la race condition pendant le fetch /api/me : avec false par défaut, le
+  // sub-onglet Quizz était caché pendant ~200ms au mount du HostPage, ce qui
+  // donnait l'impression que la feature était cassée. Le défaut DB de
+  // can_use_quizz est true (migration 20260508160000) donc cohérent. Si
+  // /api/me retourne false explicitement → on cache. Backend POST /launch
+  // reste la vraie sécurité (403 QUIZZ_NOT_ALLOWED).
+  const [canUseQuizz, setCanUseQuizz] = useState(true);
   useEffect(() => {
     let cancelled = false;
     void getMe()
       .then((me) => {
         if (cancelled) return;
         setSpotifyAllowlisted(me.spotify_allowlist === true);
-        setCanUseQuizz(me.can_use_quizz === true);
+        setCanUseQuizz(me.can_use_quizz !== false);
         console.info(
-          `[HostPage] Spotify allowlist : ${me.spotify_allowlist === true ? 'OK' : 'OFF (SDK skip)'} · can_use_quizz : ${me.can_use_quizz === true ? 'ON' : 'OFF'}`,
+          `[HostPage] /api/me OK · spotify_allowlist=${me.spotify_allowlist === true ? 'ON' : 'OFF'} · can_use_quizz=${me.can_use_quizz !== false ? 'ON' : 'OFF'}`,
         );
       })
-      .catch(() => {
-        // Si /api/me fail → on reste OFF (sécurité). YouTube fonctionne quand même.
+      .catch((err: unknown) => {
+        // Si /api/me fail → on garde le défaut optimiste (canUseQuizz=true) +
+        // spotify reste OFF (sécurité). Backend filtre les 2 cas.
+        console.warn('[HostPage] /api/me failed, falling back to defaults', err);
       });
     return () => {
       cancelled = true;
