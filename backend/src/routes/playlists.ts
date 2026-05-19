@@ -378,8 +378,11 @@ router.delete('/:id', async (req: Request<{ id: string }>, res: Response): Promi
 
 // ─── POST /:id/tracks — ajoute via provider actif ────────────────────────
 
+// fix/track-provider-enum-youtube — PR #23 (pivot YouTube-only) avait ajouté
+// 'youtube' à toutes les autres enum provider du backend mais pas celui-ci.
+// L'enum doit rester aligné avec shared.MusicProviderId.
 const addTrackSchema = z.object({
-  provider: z.enum(['demo', 'spotify', 'deezer', 'apple_music']),
+  provider: z.enum(['demo', 'spotify', 'youtube', 'deezer', 'apple_music']),
   provider_track_id: z.string().min(1).max(128),
 });
 
