@@ -105,6 +105,17 @@ export function QuestionConsole({
         )}
       </Card>
 
+      {/* feat/quiz-question-media — embed YouTube (audio caché / video visible) */}
+      {state.media_youtube_id && (state.media_type === 'AUDIO' || state.media_type === 'VIDEO') && (
+        <QuizMediaEmbed
+          youtubeId={state.media_youtube_id}
+          startSec={state.media_start_sec ?? 0}
+          durationSec={state.media_duration_sec ?? 10}
+          kind={state.media_type === 'AUDIO' ? 'audio' : 'video'}
+          xl={xl}
+        />
+      )}
+
       {/* Body type-specific */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {state.type === 'MCQ' && (
@@ -348,6 +359,68 @@ function EstimationDisplay({
           </p>
         </Card>
       )}
+    </div>
+  );
+}
+
+// feat/quiz-question-media — embed YouTube IFrame qui joue [start, start+duration].
+// `audio` = IFrame caché (0px display:none ne marche pas — YouTube refuse de
+// jouer si non-visible). On utilise position absolute hors écran + opacity 0
+// pour garder le player monté et audible mais invisible.
+// `video` = IFrame visible 16:9 dans une Card.
+interface QuizMediaEmbedProps {
+  youtubeId: string;
+  startSec: number;
+  durationSec: number;
+  kind: 'audio' | 'video';
+  xl?: boolean;
+}
+function QuizMediaEmbed({
+  youtubeId,
+  startSec,
+  durationSec,
+  kind,
+  xl,
+}: QuizMediaEmbedProps): JSX.Element {
+  const endSec = startSec + durationSec;
+  // autoplay=1 + mute=0 → l'host doit avoir interagi avec la page (cas en
+  // général car il a cliqué pour lancer la question). En cas de policy
+  // navigateur stricte, jouera muted mais l'utilisateur cliquera unmute.
+  const src =
+    `https://www.youtube.com/embed/${encodeURIComponent(youtubeId)}` +
+    `?autoplay=1&controls=${kind === 'video' ? 1 : 0}` +
+    `&start=${startSec}&end=${endSec}` +
+    `&modestbranding=1&rel=0&playsinline=1` +
+    `&iv_load_policy=3&disablekb=1`;
+
+  if (kind === 'audio') {
+    // Caché visuellement mais monté + actif. Position absolute hors écran.
+    return (
+      <div
+        aria-hidden="true"
+        style={{ position: 'absolute', left: '-9999px', top: 0, width: 1, height: 1 }}
+      >
+        <iframe
+          src={src}
+          width="1"
+          height="1"
+          allow="autoplay; encrypted-media"
+          title="YouTube audio extract"
+        />
+      </div>
+    );
+  }
+  return (
+    <div className={`mb-4 ${xl ? 'max-w-3xl mx-auto' : ''}`}>
+      <div className="relative w-full overflow-hidden rounded-lg border-2 border-ink shadow-pop bg-black aspect-video">
+        <iframe
+          src={src}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          className="absolute inset-0 w-full h-full"
+          title="YouTube video extract"
+        />
+      </div>
     </div>
   );
 }

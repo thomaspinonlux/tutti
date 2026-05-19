@@ -230,6 +230,10 @@ router.post(
         aliases_lang1 = q.alternatives_fr;
         aliases_lang2 = q.alternatives_en;
       }
+      // feat/quiz-question-media — propagation des champs média structurés
+      // depuis l'OfficialQuizQuestion vers le clone workspace. Le gameplay
+      // (RoundPlayingScreen mode QUIZZ) embed un IFrame YouTube qui joue
+      // [media_start_sec, media_start_sec + media_duration_sec] si AUDIO|VIDEO.
       return {
         set_id: clonedSet.id,
         position: q.position,
@@ -245,8 +249,11 @@ router.post(
         answer_aliases_lang2: aliases_lang2,
         time_limit_sec: 30,
         points: 100,
-        media_type: q.media_url ? MediaType.NONE : MediaType.NONE, // V1 : pas de médias
+        media_type: q.media_type ?? MediaType.NONE,
         media_url: q.media_url,
+        media_youtube_id: q.media_youtube_id,
+        media_start_sec: q.media_start_sec,
+        media_duration_sec: q.media_duration_sec,
       };
     });
     await prisma.question.createMany({ data: questionsData });

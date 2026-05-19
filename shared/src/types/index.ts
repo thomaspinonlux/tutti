@@ -379,6 +379,12 @@ export interface CurrentQuestionState {
   /** Médias optionnels. */
   media_type: QuestionMediaType;
   media_url: string | null;
+  /** feat/quiz-question-media — extrait YouTube structuré (AUDIO/VIDEO).
+   *  Si media_type=AUDIO|VIDEO + media_youtube_id renseigné, le gameplay
+   *  embed un IFrame YouTube qui joue [start, start+duration]. */
+  media_youtube_id?: string | null;
+  media_start_sec?: number | null;
+  media_duration_sec?: number | null;
   /** Date de démarrage (ISO) pour calculer le timer côté client. */
   started_at: string;
   /** Durée d'écoute autorisée avant timeout (s, défaut 30). */
