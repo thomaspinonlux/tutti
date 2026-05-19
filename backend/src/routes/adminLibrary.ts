@@ -20,6 +20,7 @@ import {
   processAllFiles,
   processOneSlug,
 } from '../lib/officialLibraryImport.js';
+import { invalidateCachedPlaylist } from '../lib/playlistCache.js';
 
 const router: Router = Router();
 
@@ -113,6 +114,11 @@ router.patch(
       where: { id: req.params.id },
       data: parsed.data,
     });
+    // feat/playlist-cache-and-availability-check — invalidate cache après
+    // mutation (le check version updated_at suffit théoriquement mais on
+    // force ici pour éviter une fenêtre de race si plusieurs requests
+    // parallèles).
+    invalidateCachedPlaylist(req.params.id, 'admin_patch_playlist');
     res.json({ playlist });
   },
 );
@@ -132,6 +138,7 @@ router.post(
     }
     try {
       const report = await processOneSlug(DEFAULT_PLAYLISTS_DIR, playlist.slug);
+      invalidateCachedPlaylist(req.params.id, 'admin_resync');
       res.json({ report });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur inconnue';
