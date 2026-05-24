@@ -331,6 +331,11 @@ model Track {
   is_playable            Boolean   @default(true)
   playability_reason     String?
   playability_checked_at DateTime? @db.Timestamptz(6)
+  /// feat/youtube-compliance — timestamp du dernier rafraîchissement automatique
+  /// (cron 30 jours) ou manuel (POST /api/admin/refresh-youtube-data).
+  /// YouTube API Services Developer Policies III.E.4 : les données API doivent
+  /// être rafraîchies/supprimées au moins tous les 30 jours.
+  last_refreshed_at      DateTime? @db.Timestamptz(6)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
 
   artist          Artist          @relation(fields: [artist_id], references: [id], onDelete: Restrict)
@@ -340,6 +345,7 @@ model Track {
   @@index([artist_id])
   @@index([provider, provider_track_id])
   @@index([is_playable])
+  @@index([last_refreshed_at])
   @@map("tracks")
 }
 
@@ -720,6 +726,11 @@ model OfficialPlaylistTrack {
   /// Timestamp de la dernière vérification YouTube API. Null si jamais validé.
   /// Re-run du script validate-youtube-ids met à jour cette colonne.
   playability_checked_at DateTime? @db.Timestamptz(6)
+  /// feat/youtube-compliance — timestamp du dernier rafraîchissement automatique
+  /// (cron 30 jours) ou manuel (POST /api/admin/refresh-youtube-data).
+  /// YouTube API Services Developer Policies III.E.4 : les données API doivent
+  /// être rafraîchies/supprimées au moins tous les 30 jours.
+  last_refreshed_at DateTime? @db.Timestamptz(6)
   /// Alias de prononciation curés par les super-admins pour le matching
   /// vocal Whisper. Mêmes sémantiques que Artist.aliases / Track.aliases côté
   /// playlists perso. Mergés au clone-on-launch dans Artist.aliases (artiste)
@@ -736,6 +747,7 @@ model OfficialPlaylistTrack {
   @@index([spotify_id])
   @@index([youtube_id])
   @@index([is_playable])
+  @@index([last_refreshed_at])
   @@map("official_playlist_tracks")
 }
 
