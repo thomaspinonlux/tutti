@@ -37,6 +37,8 @@ import { LibraryQuizPackDetailPage } from './pages/admin/LibraryQuizPackDetailPa
 import { LibraryAuditPage } from './pages/admin/LibraryAuditPage.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 import { SuperAdminRouteGuard } from './components/auth/SuperAdminRouteGuard.js';
+import { PrivacyPage } from './pages/legal/PrivacyPage.js';
+import { TermsPage } from './pages/legal/TermsPage.js';
 
 // Lazy : chunks dédiés aux pages volumineuses (audio, dnd, qrcode, socket.io…)
 const DesignSystemPage = lazy(() =>
@@ -67,6 +69,14 @@ function App(): JSX.Element {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+
+        {/* feat/youtube-compliance — pages légales publiques (Privacy/Terms)
+            requises par YouTube API Services. Liées depuis footer + signup. */}
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        {/* Compat ancien lien footer landing ("/cgu" historiquement). */}
+        <Route path="/cgu" element={<Navigate to="/terms" replace />} />
+
         <Route path="/auth/signup" element={<SignupPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
