@@ -293,4 +293,46 @@ router.post('/test-email', async (req: Request, res: Response): Promise<void> =>
   });
 });
 
+// ───── YouTube data refresh — feat/youtube-compliance ────────────────────
+//
+// POST /api/admin/refresh-youtube-data — super-admin only. Déclenche
+// manuellement un cycle de rafraîchissement des données YouTube stockées
+// (workspace Tracks + OfficialPlaylistTracks). Utile pour test + intervention
+// d'urgence si le cron automatique horaire est trop lent à propager une
+// correction.
+//
+// Body optionnel :
+//   { max?: number } — limite tracks par run (défaut 500)
+//
+// Réponse : { ok, stats: { checked, updated, unplayable, errored, durationMs, source } }
+//
+// Audit conformité YouTube API Services Developer Policies III.E.4.
+
+const refreshYtBody = z.object({
+  max: z.number().int().min(1).max(2000).optional(),
+});
+
+router.post('/refresh-youtube-data', async (req: Request, res: Response): Promise<void> => {
+  const parsed = refreshYtBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'INVALID_BODY', message: parsed.error.message } });
+    return;
+  }
+  if (!process.env.YOUTUBE_API_KEY) {
+    res.status(503).json({
+      error: { code: 'YT_API_KEY_MISSING', message: 'YouTube API non configurée côté serveur' },
+    });
+    return;
+  }
+  try {
+    const { refreshYouTubeData } = await import('../lib/youtubeRefresh.js');
+    const stats = await refreshYouTubeData('admin_manual', parsed.data.max ?? 500);
+    res.json({ ok: true, stats });
+  } catch (err: unknown) {
+    console.error('[POST /admin/refresh-youtube-data] error:', err);
+    const message = err instanceof Error ? err.message : 'Erreur inconnue';
+    res.status(500).json({ error: { code: 'REFRESH_FAILED', message } });
+  }
+});
+
 export default router;

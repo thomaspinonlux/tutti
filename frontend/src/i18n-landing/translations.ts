@@ -381,7 +381,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           title: 'Légal',
           links: [
             { label: 'Confidentialité', href: '/privacy' },
-            { label: 'CGU', href: '/cgu' },
+            { label: 'CGU', href: '/terms' },
             { label: 'Mentions légales', href: '/legal' },
           ],
         },
@@ -655,7 +655,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           title: 'Legal',
           links: [
             { label: 'Privacy', href: '/privacy' },
-            { label: 'Terms', href: '/cgu' },
+            { label: 'Terms', href: '/terms' },
             { label: 'Legal notice', href: '/legal' },
           ],
         },

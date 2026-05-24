@@ -18,6 +18,9 @@ export function SignupPage(): JSX.Element {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // feat/youtube-compliance — checkbox required (CGU + Privacy + YouTube ToS).
+  // Le bouton submit est disabled tant que false. Backend stocke timestamp.
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -60,6 +63,7 @@ export function SignupPage(): JSX.Element {
         body: {
           first_name: fn,
           last_name: ln,
+          acceptedTerms: true, // checkbox required côté UI, true ici
           ...(referrerCode ? { referrerCode } : {}),
         },
       });
@@ -145,7 +149,44 @@ export function SignupPage(): JSX.Element {
               error={error ?? undefined}
             />
 
-            <Button type="submit" disabled={loading} className="w-full">
+            {/* feat/youtube-compliance — checkbox d'acceptation CGU + Privacy
+                + YouTube ToS. Required, bouton submit disabled si non cochée. */}
+            <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                required
+                className="mt-1 shrink-0 w-4 h-4 accent-spritz-deep"
+              />
+              <span
+                className="leading-snug text-ink-2"
+                // i18n inline (texte avec liens JSX = pas adapté à t() trad
+                // dict simple). Trans component i18next aurait été plus
+                // robuste, mais ce string est trop court pour le justifier.
+              >
+                {t('auth.termsLabelPrefix')}{' '}
+                <Link to="/terms" className="text-spritz-deep hover:underline" target="_blank">
+                  {t('auth.termsLink')}
+                </Link>{' '}
+                {t('auth.termsAnd')}{' '}
+                <Link to="/privacy" className="text-spritz-deep hover:underline" target="_blank">
+                  {t('auth.privacyLink')}
+                </Link>
+                . {t('auth.termsYouTubeSuffix')}{' '}
+                <a
+                  href="https://www.youtube.com/t/terms"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="text-spritz-deep hover:underline"
+                >
+                  {t('auth.termsYouTubeLink')}
+                </a>
+                .
+              </span>
+            </label>
+
+            <Button type="submit" disabled={loading || !acceptedTerms} className="w-full">
               {loading ? t('auth.signupSubmitting') : t('auth.signupSubmit')}
             </Button>
           </form>

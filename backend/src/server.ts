@@ -187,6 +187,18 @@ httpServer.listen(PORT, () => {
   console.info(
     `[tutti-backend] providers — spotify=${spotifyOk ? 'OK' : 'MISSING'} youtube=${youtubeOk ? 'OK' : 'MISSING'}`,
   );
+  // feat/youtube-compliance — démarre le cron de refresh data YouTube
+  // (YouTube API Services Developer Policies III.E.4 : refresh ou suppression
+  // au moins tous les 30 jours). Skip en tests / dev sans YT API key.
+  if (youtubeOk && NODE_ENV === 'production') {
+    void import('./lib/youtubeRefresh.js').then(({ startYouTubeRefreshCron }) => {
+      startYouTubeRefreshCron();
+    });
+  } else if (!youtubeOk) {
+    console.warn(
+      '[tutti-backend] YT refresh cron skip — YOUTUBE_API_KEY absent (compliance 30j NOT enforced)',
+    );
+  }
 });
 
 // Gestion propre des arrêts

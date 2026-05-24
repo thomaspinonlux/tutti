@@ -16,6 +16,7 @@ import { api, ApiError } from '../../lib/api.js';
 import { MultiColorBar } from '../../components/ui/index.js';
 import { ResumeSessionBanner } from '../../components/admin/ResumeSessionBanner.js';
 import { SafariMediaBanner } from '../../components/admin/SafariMediaBanner.js';
+import { LegalFooter } from '../../components/legal/LegalFooter.js';
 import { getMe, type MeResponse } from '../../lib/me.js';
 import { PendingApprovalScreen } from '../../components/auth/PendingApprovalScreen.js';
 
@@ -134,6 +135,9 @@ export function AdminLayout(): JSX.Element {
         <main className="flex-1 px-4 sm:px-6 md:px-10 py-4 sm:py-8">
           <Outlet context={ctx} />
         </main>
+        {/* feat/youtube-compliance — liens légaux requis sur toutes les pages
+            (Privacy + Terms). Affichage léger, ne distrait pas du dashboard. */}
+        <LegalFooter />
       </div>
       <MobileNav />
     </div>
