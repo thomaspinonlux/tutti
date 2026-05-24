@@ -122,6 +122,14 @@ const initializeBodySchema = z.object({
   last_name: z.string().trim().min(1).max(60).optional(),
   workspaceName: z.string().trim().min(2).max(120).optional(),
   establishmentName: z.string().trim().min(2).max(120).optional(),
+  /**
+   * feat/youtube-compliance — true si l'utilisateur a coché la checkbox
+   * d'acceptation CGU + Privacy Policy au signup. Captured by frontend
+   * SignupPage. Stocké côté WorkspaceMember.accepted_terms_at = now() si
+   * true. Optional pour rétro-compat avec les anciens clients (les
+   * comptes créés sans checkbox auront accepted_terms_at = null).
+   */
+  acceptedTerms: z.boolean().optional(),
   /** Code parrain — si fourni + valide, rattache au workspace existant. */
   referrerCode: z.string().trim().min(4).max(8).optional(),
   /**
@@ -257,7 +265,11 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
     establishmentName,
     referrerCode,
     invitationCode,
+    acceptedTerms,
   } = parsed.data;
+  // feat/youtube-compliance — capture l'instant d'acceptation. null si
+  // legacy client n'envoie pas le flag.
+  const acceptedTermsAt = acceptedTerms === true ? new Date() : null;
 
   // feat/signup-firstname-lastname — résolution du workspace name + identité
   // user. Le frontend signup envoie first_name + last_name (Supabase metadata
@@ -319,6 +331,8 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
             approved_at: new Date(),
             referral_code: myReferralCode,
             referrer_code: referrerCode.toUpperCase(),
+            // feat/youtube-compliance — capture l'acceptation CGU/Privacy.
+            accepted_terms_at: acceptedTermsAt,
           },
         });
         // feat/admin-users-and-email-notifications — notif team
@@ -374,6 +388,8 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
           invitation_code_used: approval.invitationCodeUsed,
           approved_at: approval.approvedAt,
           referral_code: myReferralCode,
+          // feat/youtube-compliance — capture l'acceptation CGU/Privacy.
+          accepted_terms_at: acceptedTermsAt,
         },
       });
 

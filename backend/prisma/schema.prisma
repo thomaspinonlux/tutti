@@ -84,6 +84,12 @@ model WorkspaceMember {
   /// Modifiable depuis /admin/users/:id par super-admin.
   can_use_tracks Boolean @default(true)
   can_use_quizz  Boolean @default(true)
+  /// feat/youtube-compliance — timestamp d'acceptation des CGU + Politique
+  /// de confidentialité (checkbox required au signup). null pour les
+  /// comptes legacy créés avant l'introduction de la checkbox — backfill
+  /// possible via /admin/users/:id ou re-prompt à la prochaine connexion.
+  /// Audit conformité YouTube API Services + RGPD.
+  accepted_terms_at DateTime? @db.Timestamptz(6)
   // Système de parrainage (V1.1) — auto-généré à la création du membre,
   // 6 caractères alphanumériques majuscules (ex. "K7P2X9").
   referral_code String?  @unique @db.VarChar(8)
