@@ -413,6 +413,8 @@
     "restartTrack": "Restart",
     "revealAnswer": "Reveal answer",
     "audioBlockedBanner": "Sound is blocked by your browser — Click to enable",
+    "youtubeBlockedTitle": "Tap to start the music",
+    "youtubeBlockedCta": "Your browser blocked autoplay",
     "tvHintTitle": "TV screen tip",
     "tvHintBody": "Open the TV screen to show the QR code in large to players (📺 button top right).",
     "externalScreen": {

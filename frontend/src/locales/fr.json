@@ -413,6 +413,8 @@
     "restartTrack": "Recommencer",
     "revealAnswer": "Révéler la réponse",
     "audioBlockedBanner": "Le son est bloqué par ton navigateur — Clique pour activer",
+    "youtubeBlockedTitle": "Clique pour démarrer la musique",
+    "youtubeBlockedCta": "Le navigateur bloque l'autoplay",
     "tvHintTitle": "Astuce écran TV",
     "tvHintBody": "Ouvre l'écran TV pour afficher le QR code en grand aux joueurs (bouton 📺 en haut à droite).",
     "externalScreen": {

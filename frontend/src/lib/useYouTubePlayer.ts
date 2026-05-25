@@ -57,6 +57,19 @@ export interface UseYouTubePlayerResult {
   /** Bug 4 — débloque audio YouTube depuis un clic user direct. */
   unblockAudio: () => void;
   /**
+   * fix/robust-autoplay-no-refresh — true si après ready + unlock + 2 retries
+   * la vidéo n'a pas atteint l'état PLAYING. Frontend doit alors afficher un
+   * overlay "Tap to start" qui appelle `tapToStart()` au clic (user gesture
+   * fresh, garanti efficace pour bypass autoplay policy Safari/iOS).
+   */
+  audioBlocked: boolean;
+  /**
+   * fix/robust-autoplay-no-refresh — relance la dernière vidéo demandée
+   * depuis un user gesture frais. Reset audioBlocked. À câbler sur le clic
+   * de l'overlay "Démarrer la lecture" affiché en fallback.
+   */
+  tapToStart: () => void;
+  /**
    * Bug autoplay v6 (fix/cross-browser-autoplay-unlock) — primitive
    * d'unlock SYNCHRONE appelée depuis un click handler direct user. Le
    * tap consomme le user gesture pour le contexte audio du document.
@@ -181,6 +194,10 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   const [isPlaying, setIsPlaying] = useState(false);
   const [positionMs, setPositionMs] = useState(0);
   const [durationMs, setDurationMs] = useState(0);
+  // fix/robust-autoplay-no-refresh — true si autoplay a échoué après les
+  // retries auto. UI affiche un overlay "Démarrer la lecture" qui appelle
+  // tapToStart() pour relancer depuis un user gesture frais.
+  const [audioBlocked, setAudioBlocked] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null);
@@ -191,6 +208,22 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   // player en CUED sans démarrer la lecture ; on appelle playVideo() au
   // moment où l'état CUED est atteint pour garantir le lancement.
   const pendingPlayAfterCueRef = useRef(false);
+  // fix/robust-autoplay-no-refresh — file d'attente de play() appelés avant
+  // que le player ne soit ready. Exécutée dans onReady.
+  const pendingPlayRef = useRef<{
+    videoId: string;
+    startSec: number;
+    endSec: number;
+  } | null>(null);
+  // Tracking retries pour éviter boucle infinie. Reset à chaque nouvelle
+  // demande de play (cueVideoById).
+  const retryCountRef = useRef(0);
+  const retryTimerRef = useRef<number | null>(null);
+  // statusRef pour qu'un useCallback puisse lire la valeur courante sans
+  // dépendre de status (qui aurait recréé play() à chaque transition →
+  // perte de stabilité référentielle).
+  const statusRef = useRef<YouTubePlayerStatus>('idle');
+  statusRef.current = status;
 
   // ── Init iframe API + player ──────────────────────────────────────────
   useEffect(() => {
@@ -226,6 +259,9 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
               if (cancelled) return;
               console.info('[Player] Ready');
               setStatus('ready');
+              // fix/robust-autoplay-no-refresh — queue drain via useEffect
+              // séparé qui watch `status` (cf. ci-dessous). On ne touche pas
+              // au player ici directement pour éviter les race avec setState.
             },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onStateChange: (e: any) => {
@@ -257,6 +293,15 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
 
               if (st === YT_STATE.PLAYING) {
                 setIsPlaying(true);
+                // fix/robust-autoplay-no-refresh — autoplay a réussi, on
+                // peut cacher l'overlay "Démarrer la lecture" si visible.
+                setAudioBlocked(false);
+                // Cancel retry timer en cours (si la vidéo démarre avant
+                // qu'on ait fini d'attendre les 1.5s).
+                if (retryTimerRef.current !== null) {
+                  window.clearTimeout(retryTimerRef.current);
+                  retryTimerRef.current = null;
+                }
                 if (playerRef.current?.getDuration) {
                   setDurationMs(Math.round(playerRef.current.getDuration() * 1000));
                 }
@@ -316,16 +361,37 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   }, [enabled]);
 
   // ── Actions ───────────────────────────────────────────────────────────
+  //
+  // fix/robust-autoplay-no-refresh — play() ne return plus immédiatement
+  // si player pas ready : on QUEUE la demande dans pendingPlayRef et un
+  // useEffect (cf. ci-dessous) la drain dès que status='ready'. Si player
+  // déjà ready, on exécute immédiatement.
+  //
+  // Après cueVideoById + playVideo, on lance un timer 1.5s :
+  //   - si state == PLAYING → reset retry, audio joue, on est OK
+  //   - sinon retry 1/2 (playVideo direct)
+  //   - après 2 retries échoués → setAudioBlocked(true) → UI affiche
+  //     overlay "Démarrer la lecture" qui appelle tapToStart()
   const play = useCallback(
     async (videoId: string, o?: { startSec?: number; endSec?: number }): Promise<boolean> => {
-      const p = playerRef.current;
-      if (!p?.cueVideoById || !p?.playVideo) {
-        console.warn(`[Player] play(${videoId}) ignored — player not ready`);
-        return false;
-      }
       const startSec = o?.startSec ?? defaultStartSec;
       const endSec = o?.endSec ?? defaultEndSec;
       lastVideoRef.current = { id: videoId, startSec, endSec };
+      const p = playerRef.current;
+      // L1 — queue si player pas prêt
+      if (!p?.cueVideoById || !p?.playVideo || statusRef.current !== 'ready') {
+        console.info(
+          `[Player] play(${videoId}) queued — status=${statusRef.current}, will exec on ready`,
+        );
+        pendingPlayRef.current = { videoId, startSec, endSec };
+        return false;
+      }
+      // Reset retry counter pour cette nouvelle demande de lecture.
+      retryCountRef.current = 0;
+      if (retryTimerRef.current !== null) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
       console.info(`[Player] CueVideo ${videoId} (startSec=${startSec}, endSec=${endSec})`);
       try {
         // Problème B (fix/playback-and-zombies-v4) — flow explicite en 2
@@ -333,11 +399,6 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
         // pas en lecture), puis le handler onStateChange CUED appelle
         // playVideo() → garantit que la lecture démarre depuis un état
         // connu, même au 1er morceau de la session.
-        //
-        // Avant : loadVideoById tentait load+autoplay en même temps.
-        // Sur 1ère vidéo après init du player, l'autoplay échouait
-        // silencieusement (état UNSTARTED → BUFFERING parfois sans
-        // PLAYING) → 1er morceau muet.
         pendingPlayAfterCueRef.current = true;
         p.cueVideoById({
           videoId,
@@ -345,8 +406,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
           endSeconds: endSec,
         });
         // Belt-and-suspenders : si le player est déjà CUED ou PAUSED, le
-        // onStateChange ne re-fire pas → on appelle playVideo direct
-        // après un micro-delay pour couvrir le cas idempotent.
+        // onStateChange ne re-fire pas → on appelle playVideo direct.
         window.setTimeout(() => {
           if (!pendingPlayAfterCueRef.current) return;
           const currentState = p.getPlayerState?.();
@@ -366,6 +426,8 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
           }
         }, 600);
         setIsPlaying(true);
+        // L3 — schedule check 1.5s plus tard. Si pas PLAYING → retry.
+        scheduleAutoplayRetry();
         return true;
       } catch (err) {
         setError((err as Error).message);
@@ -374,6 +436,63 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     },
     [defaultStartSec, defaultEndSec],
   );
+
+  /**
+   * fix/robust-autoplay-no-refresh — vérifie 1.5s après cueVideo+playVideo
+   * que le player est passé en PLAYING. Si non, retry playVideo() up to 2
+   * fois. Si toujours pas PLAYING après 2 retries → setAudioBlocked(true).
+   *
+   * Pas un useCallback car appelé uniquement par play() qui le redéclenche
+   * à chaque nouvelle vidéo. La closure capture playerRef + setters via
+   * refs/setState (stables).
+   */
+  const scheduleAutoplayRetry = useCallback((): void => {
+    if (retryTimerRef.current !== null) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    retryTimerRef.current = window.setTimeout(() => {
+      retryTimerRef.current = null;
+      const p = playerRef.current;
+      if (!p) return;
+      const state = p.getPlayerState?.();
+      if (state === YT_STATE.PLAYING) {
+        // OK, déjà joué — onStateChange a déjà reset audioBlocked.
+        return;
+      }
+      if (retryCountRef.current >= 2) {
+        console.warn(
+          `[Player] play did not start after 2 retries (state=${state}) → audioBlocked=true, UI fallback`,
+        );
+        setAudioBlocked(true);
+        return;
+      }
+      retryCountRef.current += 1;
+      console.warn(
+        `[Player] play did not start (state=${state}), retry ${retryCountRef.current}/2`,
+      );
+      try {
+        p.playVideo?.();
+      } catch (err) {
+        console.warn('[Player] retry playVideo failed:', err);
+      }
+      // Re-schedule pour vérifier après ce retry.
+      scheduleAutoplayRetry();
+    }, 1500);
+  }, []);
+
+  // L1 — drain de la queue quand le player devient ready. Watching status
+  // (et non pas playerRef.current directement, qui ne déclenche pas de re-
+  // render). Garantit qu'un play() arrivé avant onReady soit exécuté dès
+  // que onReady fire.
+  useEffect(() => {
+    if (status !== 'ready') return;
+    const pending = pendingPlayRef.current;
+    if (!pending) return;
+    pendingPlayRef.current = null;
+    console.info(`[Player] Draining queued play (videoId=${pending.videoId}) — player now ready`);
+    void play(pending.videoId, { startSec: pending.startSec, endSec: pending.endSec });
+  }, [status, play]);
 
   const pause = useCallback((): void => {
     playerRef.current?.pauseVideo?.();
@@ -467,6 +586,62 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     }
   }, []);
 
+  /**
+   * fix/robust-autoplay-no-refresh — appelé depuis le bouton overlay
+   * "Démarrer la lecture" (user gesture frais, garanti efficace contre
+   * autoplay policy stricte Safari/iOS). Relance la dernière vidéo connue
+   * via loadVideoById (vs cueVideoById) qui combine load + autoplay dans
+   * le contexte du tap.
+   */
+  const tapToStart = useCallback((): void => {
+    const p = playerRef.current;
+    if (!p) {
+      console.warn('[Player] tapToStart called but player not instantiated');
+      return;
+    }
+    const last = lastVideoRef.current;
+    if (!last) {
+      // Pas de vidéo précédente connue — juste un playVideo()
+      console.info('[Player] tapToStart : no last video, calling playVideo()');
+      try {
+        p.playVideo?.();
+        setAudioBlocked(false);
+      } catch (err) {
+        console.warn('[Player] tapToStart playVideo failed:', err);
+      }
+      return;
+    }
+    console.info(`[Player] tapToStart : reloading ${last.id} from user gesture`);
+    retryCountRef.current = 0;
+    if (retryTimerRef.current !== null) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    setAudioBlocked(false);
+    try {
+      p.loadVideoById?.({
+        videoId: last.id,
+        startSeconds: last.startSec,
+        endSeconds: last.endSec,
+      });
+      setIsPlaying(true);
+      // Re-schedule retry au cas où le clic ne suffit toujours pas (rare).
+      scheduleAutoplayRetry();
+    } catch (err) {
+      console.warn('[Player] tapToStart loadVideoById failed:', err);
+    }
+  }, [scheduleAutoplayRetry]);
+
+  // Cleanup retryTimer au unmount pour éviter les setState après unmount.
+  useEffect(() => {
+    return () => {
+      if (retryTimerRef.current !== null) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
+  }, []);
+
   return {
     status,
     error,
@@ -480,5 +655,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     unblockAudio,
     warmupSync,
     getPlayerState,
+    audioBlocked,
+    tapToStart,
   };
 }
