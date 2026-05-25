@@ -383,6 +383,18 @@
     "reveal": "It was",
     "notFound": "Not found",
     "nextTrack": "Next track",
+    "viewRanking": "View ranking",
+    "intermission": {
+      "roundPodium": "Round podium",
+      "cumulative": "Overall ranking",
+      "fastest": "Fastest player",
+      "avgBuzz": "Avg buzz: {{ms}}s",
+      "firstBuzzCount_one": "first buzz on 1 track",
+      "firstBuzzCount_other": "first buzz on {{count}} tracks",
+      "noBuzz": "No buzz this round.",
+      "noPoints": "Nobody scored this round.",
+      "fetchError": "Error loading results"
+    },
     "buzzFeed": "Recent buzzes",
     "buzzFeedEmpty": "No buzz yet.",
     "spotifyLoading": "Loading Spotify player…",

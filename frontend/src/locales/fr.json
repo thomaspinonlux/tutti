@@ -383,6 +383,18 @@
     "reveal": "C'était",
     "notFound": "Pas trouvé",
     "nextTrack": "Morceau suivant",
+    "viewRanking": "Voir le classement",
+    "intermission": {
+      "roundPodium": "Podium de la manche",
+      "cumulative": "Classement général",
+      "fastest": "Joueur le plus rapide",
+      "avgBuzz": "Buzz moyen : {{ms}}s",
+      "firstBuzzCount_one": "premier buzz sur 1 morceau",
+      "firstBuzzCount_other": "premiers buzz sur {{count}} morceaux",
+      "noBuzz": "Aucun buzz cette manche.",
+      "noPoints": "Personne n'a marqué de point cette manche.",
+      "fetchError": "Erreur lors du chargement des résultats"
+    },
     "buzzFeed": "Derniers buzz",
     "buzzFeedEmpty": "Pas encore de buzz.",
     "spotifyLoading": "Chargement du player Spotify…",
