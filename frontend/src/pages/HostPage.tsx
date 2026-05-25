@@ -1274,6 +1274,36 @@ function HostPageInner(): JSX.Element {
         </button>
       )}
 
+      {/* fix/robust-autoplay-no-refresh — overlay YouTube fallback. Affiché
+          quand useYouTubePlayer a tenté ready + retries auto sans succès.
+          Click = user gesture frais → tapToStart() relance loadVideoById
+          dans le contexte du tap (bypass autoplay policy Safari/iOS).
+          JAMAIS de window.location.reload(). */}
+      {youtube.audioBlocked && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('host.youtubeBlockedTitle')}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 backdrop-blur-sm animate-fade-in p-6"
+        >
+          <button
+            type="button"
+            onClick={() => youtube.tapToStart()}
+            className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-ink shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <span className="text-5xl" aria-hidden>
+              ▶
+            </span>
+            <span className="font-display text-2xl text-center leading-tight">
+              {t('host.youtubeBlockedTitle')}
+            </span>
+            <span className="font-mono text-xs uppercase tracking-wider opacity-90">
+              {t('host.youtubeBlockedCta')}
+            </span>
+          </button>
+        </div>
+      )}
+
       <main className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-8">
         <header className="max-w-7xl mx-auto mb-4 sm:mb-8 flex items-center justify-between flex-wrap gap-3">
           <div>
