@@ -252,6 +252,40 @@ export async function postBuzz(
   );
 }
 
+// feat/round-end-rankings — résultats fin de manche (RoundIntermissionScreen).
+export interface RoundRankingEntry {
+  participant_id: string;
+  pseudo: string;
+  points: number;
+  rank: number;
+}
+export interface CumulativeRankingEntry {
+  participant_id: string;
+  pseudo: string;
+  total_points: number;
+  rank: number;
+}
+export interface FastestPlayer {
+  participant_id: string;
+  pseudo: string;
+  avg_buzz_ms: number;
+  first_buzz_count: number;
+  buzz_count: number;
+}
+export interface RoundResults {
+  round_id: string;
+  round_position: number;
+  round_ranking: RoundRankingEntry[];
+  cumulative_ranking: CumulativeRankingEntry[];
+  fastest_player: FastestPlayer | null;
+}
+
+export async function getRoundResults(sessionId: string, roundId: string): Promise<RoundResults> {
+  return api<RoundResults>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/results`,
+  );
+}
+
 // ───── Host (Supabase auth) — pause/resume/restart audio ──────────────────
 
 export async function hostPauseSession(sessionId: string, roundId: string): Promise<void> {

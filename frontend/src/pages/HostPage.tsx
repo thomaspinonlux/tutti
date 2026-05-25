@@ -760,8 +760,26 @@ function HostPageInner(): JSX.Element {
       console.info('[Next Track] POST /next-track');
       const result = await nextTrack(session.id, playingRound.id);
       console.info('[Next Track] Response:', result);
-      // Le nouveau track arrive via socket track:start. Le useEffect audio
-      // appellera spotify.play() avec le nouveau provider_track_id.
+      // feat/round-end-rankings — quand on est sur le dernier morceau,
+      // /next-track auto-end le round (advanceToNextOrEndRound). Le backend
+      // broadcast round:ended via socket mais on applique aussi un update
+      // optimistic local pour éviter la fenêtre "page vide" entre l'ack HTTP
+      // et le socket event (cf. handleEndCurrentRound qui fait pareil).
+      if (result.ended === true && result.round) {
+        setSession((prev) =>
+          prev
+            ? {
+                ...prev,
+                is_paused: false,
+                rounds: prev.rounds.map((r) => (r.id === result.round!.id ? result.round! : r)),
+              }
+            : prev,
+        );
+        setCurrentTrack(null);
+        await refreshCumulative(session.id);
+      }
+      // Sinon le nouveau track arrive via socket track:start. Le useEffect
+      // audio appellera spotify.play() avec le nouveau provider_track_id.
     } catch (err: unknown) {
       console.error('[Next Track] ERROR:', err);
       setError((err as Error).message);
@@ -780,6 +798,21 @@ function HostPageInner(): JSX.Element {
     try {
       const result = await skipTrack(session.id, playingRound.id);
       console.info('[Skip Track] Response:', result);
+      // feat/round-end-rankings — idem handleNextTrack : skip sur dernier
+      // morceau → auto-end → optimistic update pour éviter page vide.
+      if (result.ended === true && result.round) {
+        setSession((prev) =>
+          prev
+            ? {
+                ...prev,
+                is_paused: false,
+                rounds: prev.rounds.map((r) => (r.id === result.round!.id ? result.round! : r)),
+              }
+            : prev,
+        );
+        setCurrentTrack(null);
+        await refreshCumulative(session.id);
+      }
     } catch (err: unknown) {
       console.error('[Skip Track] ERROR:', err);
       setError((err as Error).message);
@@ -1303,6 +1336,7 @@ function HostPageInner(): JSX.Element {
                 if (lastEndedRound) {
                   return (
                     <RoundIntermissionScreen
+                      sessionId={session.id}
                       round={lastEndedRound}
                       cumulative={cumulative}
                       onNextRound={() => setForcedSelection(true)}
@@ -1744,7 +1778,14 @@ function RoundPlayingScreen({
             onClick={() => void onNextTrack()}
             disabled={busy || !currentTrack}
           >
-            {t('host.nextTrack')} →
+            {/* feat/round-end-rankings — label dynamique sur le DERNIER
+                morceau pour signaler que ce clic mènera à l'écran de fin
+                de manche (RoundIntermissionScreen avec classements), pas à
+                un morceau suivant inexistant qui menait à une page vide. */}
+            {currentTrack && currentTrack.track_index >= totalTracks - 1
+              ? t('host.viewRanking')
+              : t('host.nextTrack')}{' '}
+            →
           </Button>
           <Button variant="ghost" size="sm" onClick={() => void onEndRound()} disabled={busy}>
             {t('host.endRound')}
