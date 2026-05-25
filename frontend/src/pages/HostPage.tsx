@@ -133,7 +133,54 @@ class HostContentBoundary extends Component<
 export function HostPage(): JSX.Element {
   // Console animateur accessible TOUTES tailles (iPhone 375px inclus).
   // Plus de wrap MinScreen — le layout interne s'adapte responsive.
-  return <HostPageInner />;
+  //
+  // fix/eliminate-blank-pages-state-recovery — ErrorBoundary niveau racine
+  // pour garantir qu'aucun crash de composant (header, banner, sidebar, etc.)
+  // ne produit une page blanche. Le boundary intérieur (autour du content
+  // dynamique seul) gère les crashes de phase, celui-ci gère TOUT le reste.
+  return (
+    <HostContentBoundary fallback={<HostPageTopLevelFallback />}>
+      <HostPageInner />
+    </HostContentBoundary>
+  );
+}
+
+/**
+ * Fallback affiché si HostPageInner crash AVANT d'avoir pu monter quoi que ce
+ * soit (cas extrême : crash dans useState/useEffect au boot, broken import,
+ * etc.). Layout minimaliste hardcodé (pas de t()/components qui pourraient
+ * eux-mêmes throw) pour garantir une UI lisible quoi qu'il arrive.
+ */
+function HostPageTopLevelFallback(): JSX.Element {
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-cream p-6">
+      <div className="max-w-lg text-center border-2 border-ink rounded-lg bg-white p-6 shadow-pop">
+        <p className="text-3xl mb-2" aria-hidden>
+          ⚠️
+        </p>
+        <h1 className="font-display text-2xl mb-2">Erreur d'affichage</h1>
+        <p className="text-sm text-ink-2 mb-4">
+          La page host a rencontré un problème inattendu. Aucune donnée n'a été perdue côté serveur
+          — recharge la page pour reprendre où tu en étais.
+        </p>
+        <div className="flex flex-wrap gap-2 justify-center">
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-spritz-deep text-cream font-medium rounded border-2 border-ink"
+          >
+            Recharger
+          </button>
+          <a
+            href="/admin"
+            className="px-4 py-2 bg-cream-2 text-ink font-medium rounded border-2 border-ink"
+          >
+            Dashboard
+          </a>
+        </div>
+      </div>
+    </main>
+  );
 }
 
 function HostPageInner(): JSX.Element {
@@ -162,6 +209,11 @@ function HostPageInner(): JSX.Element {
   // Sert au compteur "X joueurs ont buzzé" en phase 1 (maquette 06).
   const [activeBuzzers, setActiveBuzzers] = useState<Set<string>>(new Set());
 
+  // fix/eliminate-blank-pages-state-recovery — état socket pour bandeau
+  // "Reconnexion..." discret en cas de coupure réseau. Connecté par défaut
+  // (optimiste) pour éviter le flash au boot avant que socket.io ait acked.
+  const [socketConnected, setSocketConnected] = useState(true);
+
   // ── Bootstrap : socket + state initial ─────────────────────────────────
   useEffect(() => {
     if (!shortCode) {
@@ -180,6 +232,58 @@ function HostPageInner(): JSX.Element {
         socket.on('connect_error', (err) => {
           if (cancelled) return;
           setError(`Socket: ${err.message}`);
+        });
+        // fix/eliminate-blank-pages-state-recovery — tracking de l'état
+        // socket pour bandeau "Reconnexion..." + re-sync auto au reconnect.
+        socket.on('disconnect', (reason) => {
+          if (cancelled) return;
+          console.warn(`[HostPage] Socket disconnect reason=${reason}`);
+          setSocketConnected(false);
+        });
+        socket.on('connect', () => {
+          if (cancelled) return;
+          console.info('[HostPage] Socket connect (initial or reconnect)');
+          setSocketConnected(true);
+        });
+        // socket.io fire 'reconnect' après reconnexions auto réussies (config
+        // reconnection: true, attempts: Infinity dans lib/socket.ts). Au
+        // reconnect, on re-emit join_by_code pour resync session + active_track
+        // depuis le serveur (source de vérité), évitant tout drift d'état
+        // pendant la déconnexion (track terminé, round changé, etc.).
+        socket.io.on('reconnect', () => {
+          if (cancelled || !socket) return;
+          console.info('[HostPage] Socket reconnected → re-syncing state');
+          setSocketConnected(true);
+          // Re-emit join_by_code → re-fetch full session + active_track via
+          // callback (même payload qu'au bootstrap initial).
+          socket.emit(
+            'session:join_by_code',
+            { shortCode: publicView.short_code },
+            (resp: {
+              ok: boolean;
+              session?: SessionWithParticipants;
+              active_track?: CurrentTrackState | null;
+              error?: string;
+            }) => {
+              if (cancelled) return;
+              if (resp.ok && resp.session) {
+                console.info('[HostPage] Reconnect re-sync OK');
+                setSession(resp.session);
+                setCurrentTrack(resp.active_track ?? null);
+                if (resp.active_track) {
+                  setCorrectAnswers(resp.active_track.correct_answers);
+                  setPhase2StartedAt(resp.active_track.phase2_started_at);
+                }
+                void getSession(resp.session.id)
+                  .then((r) => {
+                    if (!cancelled) setCumulative(r.cumulative);
+                  })
+                  .catch(() => {});
+              } else {
+                console.warn('[HostPage] Reconnect re-sync FAILED', resp.error);
+              }
+            },
+          );
         });
 
         // ⚠️ Listeners attachés AVANT l'emit join_by_code — si on les
@@ -1139,6 +1243,20 @@ function HostPageInner(): JSX.Element {
     <div className="min-h-screen flex flex-col">
       <MultiColorBar height="md" />
 
+      {/* fix/eliminate-blank-pages-state-recovery — bandeau discret quand
+          le socket est déconnecté. socket.io retente automatiquement
+          (reconnection: Infinity dans lib/socket.ts), au reconnect on
+          re-emit join_by_code pour re-sync l'état. */}
+      {!socketConnected && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="w-full bg-lemon text-ink px-4 py-2 text-sm font-mono text-center border-b-2 border-ink animate-fade-in"
+        >
+          🔄 {t('host.reconnecting')}
+        </div>
+      )}
+
       {/* Bug 2 — Banner fallback "🔊 son bloqué par le navigateur".
           Visible quand le SDK Spotify a détecté un blocage Chrome/Safari
           (autoplay_failed OU still_paused 3s après play). Click =
@@ -1289,6 +1407,26 @@ function HostPageInner(): JSX.Element {
               />
             )}
 
+            {/* fix/eliminate-blank-pages-state-recovery — fallback si phase
+                est roundPlaying mais playingRound est null (race condition
+                socket round:started attendu mais session.rounds pas encore
+                à jour côté local). Au lieu de blank, on affiche un état de
+                chargement avec bouton manuel "Recharger" si ça persiste. */}
+            {effectivePhase === 'roundPlaying' && !playingRound && (
+              <Card tone="cream" size="lg" className="text-center max-w-2xl mx-auto">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
+                  {t('host.eyebrowPlaying', { round: playingRoundsCount })}
+                </p>
+                <TitleHandwritten as="h2" className="mb-3">
+                  <Underline>{t('host.syncing')}</Underline>
+                </TitleHandwritten>
+                <p className="font-editorial italic text-ink-2 mb-4">{t('host.syncingHint')}</p>
+                <Button variant="ghost" size="sm" onClick={() => window.location.reload()}>
+                  🔄 {t('host.contentCrashReload')}
+                </Button>
+              </Card>
+            )}
+
             {effectivePhase === 'roundPlaying' && playingRound && (
               <RoundPlayingScreen
                 sessionId={session.id}
@@ -1377,6 +1515,30 @@ function HostPageInner(): JSX.Element {
               })()}
 
             {effectivePhase === 'ended' && <EndedScreen cumulative={cumulative} />}
+
+            {/* fix/eliminate-blank-pages-state-recovery — défense ultime :
+                si effectivePhase ne matche aucun case ci-dessus (valeur
+                inconnue / état transitoire), on rend un placeholder loading
+                au lieu de laisser le `<HostContentBoundary>` vide.
+                Garantit qu'il y a TOUJOURS un contenu visible. */}
+            {effectivePhase !== 'waiting' &&
+              effectivePhase !== 'roundSelection' &&
+              effectivePhase !== 'roundPlaying' &&
+              effectivePhase !== 'intermission' &&
+              effectivePhase !== 'ended' && (
+                <Card tone="cream" size="lg" className="text-center max-w-2xl mx-auto">
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft mb-2">
+                    {String(effectivePhase)}
+                  </p>
+                  <TitleHandwritten as="h2" className="mb-3">
+                    <Underline>{t('host.syncing')}</Underline>
+                  </TitleHandwritten>
+                  <p className="font-editorial italic text-ink-2 mb-4">{t('host.syncingHint')}</p>
+                  <Button variant="ghost" size="sm" onClick={() => window.location.reload()}>
+                    🔄 {t('host.contentCrashReload')}
+                  </Button>
+                </Card>
+              )}
           </HostContentBoundary>
         </div>
       </main>
