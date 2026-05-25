@@ -554,6 +554,15 @@
     "danceFinder": " +{{points}} pts pour toi ! ",
     "danceNonFinder": " Chante et danse ! ",
     "buzzerHintActive": "Appuie quand tu connais !",
+    "voiceButton": {
+      "idle": "Appuie pour répondre",
+      "listening": "Parle maintenant…",
+      "processing": "Vérification…",
+      "success": "Bonne réponse !",
+      "fail": "Mauvaise réponse",
+      "ariaIdle": "Appuyer pour parler",
+      "ariaListening": "Appuyer pour arrêter"
+    },
     "buzzerHintPhase3": "Manche terminée — bravo aux trouveurs !",
     "buzzerHintSkipped": "Morceau passé.",
     "buzzerHintAnalyzing": "Analyse en cours…",

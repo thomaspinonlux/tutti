@@ -82,6 +82,7 @@ import {
   Underline,
 } from '../components/ui/index.js';
 import { PlayQuizzView } from '../components/play/quizz/PlayQuizzView.js';
+import { VoiceButton } from '../components/play/VoiceButton.js';
 
 type Step =
   | 'pseudo'
@@ -1495,7 +1496,14 @@ function BuzzerArea({
   analyzing?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
-  const hint = isPhase3Skipped
+  // feat/voice-button-redesign — mapping recState vers VoiceButton state.
+  // RecordingView (legacy) garde la responsabilité de l'état 'listening' avec
+  // waveform + boutons cancel/submit (out of scope cette PR). VoiceButton ici
+  // couvre 'idle' + 'processing' visibles dans BuzzerArea. 'success'/'fail'
+  // sont gérés par ValidatedBanner (success externe) et failToast (fail
+  // transient hors VoiceButton dans cette PR).
+  const voiceState: 'idle' | 'processing' = analyzing ? 'processing' : 'idle';
+  const labelOverride = isPhase3Skipped
     ? t('play.buzzerHintSkipped')
     : isPhase3
       ? t('play.buzzerHintPhase3')
@@ -1503,46 +1511,25 @@ function BuzzerArea({
         ? t('play.buzzerHintAnalyzing')
         : t('play.buzzerHintActive');
   return (
-    // BUZZ FIXE 240×240 px (6 mai #2 — spec brief) :
-    //   width:240px, height:240px, border-radius:50%
-    //   Pas de clamp(), pas de dvh, pas de vh, pas de vw, pas de %.
-    //   Source UNIQUE de vérité pour la taille (cherchée + confirmée via grep).
-    // gap-1 entre bouton et hint (pas de marge/padding parasites).
-    <div className="flex flex-col items-center gap-1">
-      <button
-        type="button"
-        onClick={onBuzz}
-        disabled={disabled}
-        style={{
-          width: '240px',
-          height: '240px',
-          borderRadius: '50%',
+    <div className="flex flex-col items-center gap-2">
+      <VoiceButton
+        state={voiceState}
+        onStart={onBuzz}
+        onStop={() => {
+          /* géré par RecordingView une fois en listening */
         }}
-        className={[
-          'relative border-[6px] border-ink',
-          'flex flex-col items-center justify-center font-display',
-          'transition-all',
-          disabled
-            ? 'bg-ink-faded cursor-not-allowed shadow-[0_4px_0_#1a1410]'
-            : 'bg-spritz text-ink shadow-[0_8px_0_#1a1410] active:translate-y-1 active:shadow-[0_4px_0_#1a1410] animate-pulse-buzz',
-        ].join(' ')}
-      >
-        <span className={['text-6xl mb-1', disabled ? 'opacity-50' : ''].join(' ')} aria-hidden>
-          🎤
-        </span>
-        <span className="text-3xl">BUZZ</span>
-        {analyzing && (
-          // Spinner discret superposé pendant l'analyse Whisper. Pas d'écran
-          // intermédiaire — le joueur sait que ça analyse en cours.
-          <span
-            aria-hidden
-            className="absolute inset-0 rounded-full border-[6px] border-spritz-deep border-t-transparent animate-spin"
-          />
-        )}
-      </button>
-      <p className="font-editorial italic text-xs sm:text-sm text-ink/80 text-center max-w-[280px] leading-tight">
-        {hint}
-      </p>
+        labelOverride={labelOverride}
+        disabled={disabled}
+        labels={{
+          idle: t('play.voiceButton.idle'),
+          listening: t('play.voiceButton.listening'),
+          processing: t('play.voiceButton.processing'),
+          success: t('play.voiceButton.success'),
+          fail: t('play.voiceButton.fail'),
+          ariaIdle: t('play.voiceButton.ariaIdle'),
+          ariaListening: t('play.voiceButton.ariaListening'),
+        }}
+      />
       {error && (
         <p role="alert" className="text-sm text-raspberry text-center">
           {error}

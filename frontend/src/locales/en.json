@@ -554,6 +554,15 @@
     "danceFinder": " +{{points}} pts for you! ",
     "danceNonFinder": " Sing and dance! ",
     "buzzerHintActive": "Tap when you know it!",
+    "voiceButton": {
+      "idle": "Tap to answer",
+      "listening": "Speak now…",
+      "processing": "Checking…",
+      "success": "Correct answer!",
+      "fail": "Wrong answer",
+      "ariaIdle": "Tap to speak",
+      "ariaListening": "Tap to stop"
+    },
     "buzzerHintPhase3": "Round done — congrats to finders!",
     "buzzerHintSkipped": "Track skipped.",
     "buzzerHintAnalyzing": "Analyzing…",
