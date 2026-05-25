@@ -384,6 +384,9 @@
     "notFound": "Pas trouvé",
     "nextTrack": "Morceau suivant",
     "viewRanking": "Voir le classement",
+    "reconnecting": "Reconnexion au serveur en cours…",
+    "syncing": "Synchronisation",
+    "syncingHint": "Reconnexion à la session en cours. Si ça persiste, recharge la page.",
     "intermission": {
       "roundPodium": "Podium de la manche",
       "cumulative": "Classement général",

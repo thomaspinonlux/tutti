@@ -384,6 +384,9 @@
     "notFound": "Not found",
     "nextTrack": "Next track",
     "viewRanking": "View ranking",
+    "reconnecting": "Reconnecting to server…",
+    "syncing": "Syncing",
+    "syncingHint": "Reconnecting to the live session. If it persists, reload the page.",
     "intermission": {
       "roundPodium": "Round podium",
       "cumulative": "Overall ranking",
