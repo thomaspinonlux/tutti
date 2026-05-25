@@ -396,7 +396,8 @@
       "firstBuzzCount_other": "premiers buzz sur {{count}} morceaux",
       "noBuzz": "Aucun buzz cette manche.",
       "noPoints": "Personne n'a marqué de point cette manche.",
-      "fetchError": "Erreur lors du chargement des résultats"
+      "fetchError": "Erreur lors du chargement des résultats",
+      "loading": "Calcul des résultats…"
     },
     "buzzFeed": "Derniers buzz",
     "buzzFeedEmpty": "Pas encore de buzz.",

@@ -40,15 +40,28 @@ export function RoundIntermissionScreen({
   const { t } = useTranslation();
   const [results, setResults] = useState<RoundResults | null>(null);
   const [fetchErr, setFetchErr] = useState<string | null>(null);
+  // fix/round-results-race-condition — état explicite de chargement. true
+  // entre le mount et la résolution du fetch GET /results. Pendant cette
+  // fenêtre on rend un loader, PAS le contenu, pour éviter qu'un champ
+  // undefined côté `results` ne crash au 1er render (avant correctifs
+  // d'optional chaining ci-dessous).
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+    setIsLoading(true);
+    setResults(null);
+    setFetchErr(null);
     void getRoundResults(sessionId, round.id)
       .then((data) => {
-        if (!cancelled) setResults(data);
+        if (cancelled) return;
+        setResults(data);
+        setIsLoading(false);
       })
       .catch((err: unknown) => {
-        if (!cancelled) setFetchErr((err as Error).message);
+        if (cancelled) return;
+        setFetchErr((err as Error).message);
+        setIsLoading(false);
         console.warn('[RoundIntermission] /results fetch fail', err);
       });
     return () => {
@@ -60,22 +73,68 @@ export function RoundIntermissionScreen({
   const playlistName = round?.playlist?.name ?? '—';
   const roundPosition = round?.position ?? 0;
 
+  // fix/round-results-race-condition — optional chaining + défauts sur TOUS
+  // les accès à `results`. Chaque champ peut être undefined si le backend
+  // renvoie un payload partiel (ex: déploiement intermédiaire, version API
+  // décalée). Aucun `results.foo.bar` direct → toujours `results?.foo?.bar`
+  // ou wrapping dans des fonctions safe ci-dessous.
+
   // Section 1 : podium de la manche (top 3 du round_ranking)
-  const roundPodium = results?.round_ranking.slice(0, 3) ?? [];
+  const roundPodium = (results?.round_ranking ?? []).slice(0, 3);
 
   // Section 2 : cumul (prend de l'API si dispo, sinon fallback prop)
   const cumulList =
-    results?.cumulative_ranking ??
-    cumulative.map((c, idx) => ({
+    (results?.cumulative_ranking && results.cumulative_ranking.length > 0
+      ? results.cumulative_ranking
+      : null) ??
+    (cumulative ?? []).map((c, idx) => ({
       participant_id: c.id,
       pseudo: c.label,
-      total_points: c.total_points,
+      total_points: c.total_points ?? 0,
       rank: idx + 1,
     }));
-  const cumulTop = cumulList.slice(0, 8);
+  const cumulTop = (cumulList ?? []).slice(0, 8);
 
-  // Section 3 : joueur le plus rapide
+  // Section 3 : joueur le plus rapide — null si pas de buzz cette manche
   const fastest = results?.fastest_player ?? null;
+  const fastestAvgSec =
+    fastest && typeof fastest.avg_buzz_ms === 'number'
+      ? (fastest.avg_buzz_ms / 1000).toFixed(2)
+      : '—';
+  const fastestFirstCount =
+    fastest && typeof fastest.first_buzz_count === 'number' ? fastest.first_buzz_count : 0;
+
+  // fix/round-results-race-condition — branche dédiée loading. On rend le
+  // header + placeholder pour donner immédiatement du contexte visuel sans
+  // toucher aux données encore non chargées. Buttons "Manche suivante" /
+  // "Terminer" restent disponibles pour skip si jamais le fetch traîne.
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <header className="text-center mb-8">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
+            {t('host.roundEnded', { n: roundPosition })}
+          </p>
+          <TitleHandwritten as="h2">
+            <Underline>{playlistName}</Underline>
+          </TitleHandwritten>
+        </header>
+        <Card tone="cream" size="lg" className="text-center mb-6">
+          <p className="font-mono text-sm text-ink-soft animate-fade-in">
+            ⏳ {t('host.intermission.loading')}
+          </p>
+        </Card>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button variant="primary" size="lg" onClick={onNextRound} disabled={loading}>
+            {t('host.nextRound')} →
+          </Button>
+          <Button variant="ghost" size="lg" onClick={() => void onEndSession()} disabled={loading}>
+            {t('host.endBlindTest')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -116,15 +175,15 @@ export function RoundIntermissionScreen({
               const tone = idx === 0 ? 'bg-lemon' : idx === 1 ? 'bg-cream-2' : 'bg-spritz/30';
               return (
                 <li
-                  key={entry.participant_id}
+                  key={entry.participant_id ?? `podium-${idx}`}
                   className={`text-center border-2 border-ink rounded-lg ${tone} ${height}`}
                 >
                   <p className="text-3xl mb-1">{medal}</p>
                   <p className="font-display text-lg leading-tight px-2 break-words">
-                    {entry.pseudo}
+                    {entry.pseudo ?? '?'}
                   </p>
                   <Badge tone="ink" className="mt-2">
-                    +{entry.points} pts
+                    +{entry.points ?? 0} pts
                   </Badge>
                 </li>
               );
@@ -145,14 +204,14 @@ export function RoundIntermissionScreen({
             <ol className="space-y-1.5">
               {cumulTop.map((entry, idx) => (
                 <li
-                  key={entry.participant_id}
+                  key={entry.participant_id ?? `cumul-${idx}`}
                   className={`flex items-center gap-2 px-2 py-1.5 border rounded text-sm ${
                     idx === 0 ? 'border-spritz bg-spritz/10' : 'border-ink/20 bg-white'
                   }`}
                 >
                   <span className="font-mono text-xs w-5 text-ink-soft">{idx + 1}.</span>
-                  <span className="flex-1 truncate font-medium">{entry.pseudo}</span>
-                  <Badge tone={idx === 0 ? 'spritz' : 'ink'}>{entry.total_points}</Badge>
+                  <span className="flex-1 truncate font-medium">{entry.pseudo ?? '?'}</span>
+                  <Badge tone={idx === 0 ? 'spritz' : 'ink'}>{entry.total_points ?? 0}</Badge>
                 </li>
               ))}
             </ol>
@@ -166,16 +225,14 @@ export function RoundIntermissionScreen({
           </p>
           {fastest ? (
             <div className="text-center py-2">
-              <p className="font-display text-2xl mb-1">{fastest.pseudo}</p>
+              <p className="font-display text-2xl mb-1">{fastest.pseudo ?? '?'}</p>
               <p className="font-mono text-xs text-ink-soft">
-                {t('host.intermission.avgBuzz', {
-                  ms: (fastest.avg_buzz_ms / 1000).toFixed(2),
-                })}
+                {t('host.intermission.avgBuzz', { ms: fastestAvgSec })}
               </p>
-              {fastest.first_buzz_count > 0 && (
+              {fastestFirstCount > 0 && (
                 <p className="font-mono text-xs text-ink-soft mt-1">
-                  🥇 {fastest.first_buzz_count}{' '}
-                  {t('host.intermission.firstBuzzCount', { count: fastest.first_buzz_count })}
+                  🥇 {fastestFirstCount}{' '}
+                  {t('host.intermission.firstBuzzCount', { count: fastestFirstCount })}
                 </p>
               )}
             </div>

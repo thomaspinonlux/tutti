@@ -396,7 +396,8 @@
       "firstBuzzCount_other": "first buzz on {{count}} tracks",
       "noBuzz": "No buzz this round.",
       "noPoints": "Nobody scored this round.",
-      "fetchError": "Error loading results"
+      "fetchError": "Error loading results",
+      "loading": "Calculating results…"
     },
     "buzzFeed": "Recent buzzes",
     "buzzFeedEmpty": "No buzz yet.",
