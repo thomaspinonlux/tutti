@@ -1,0 +1,249 @@
+{
+  "id": "official-pl-video-games",
+  "name_fr": "Jeux Vidéo",
+  "name_en": "Video Games",
+  "description_fr": "Les thèmes cultes du jeu vidéo : Mario, Zelda, Tetris, Final Fantasy, Halo, Minecraft, Skyrim, GTA. Bandes-son qui ont marqué les consoles.",
+  "description_en": "Cult video game themes: Mario, Zelda, Tetris, Final Fantasy, Halo, Minecraft, Skyrim, GTA. Console-defining soundtracks.",
+  "locale_primary": "international",
+  "theme": "thematic_video_games",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_game_soundtrack",
+    "avoid": ["remix", "cover", "orchestral_rearrangement"],
+    "year_range_strict": [1985, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Super Mario Bros. Theme",
+      "artist": "Koji Kondo",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "n_2KZntBhRg",
+      "answers_accepted": {
+        "title_variants": [
+          "super mario bros theme",
+          "super mario theme",
+          "mario theme",
+          "mario bros"
+        ],
+        "artist_variants": ["koji kondo", "kojikondo", "nintendo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/n_2KZntBhRg/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "The Legend of Zelda Main Theme",
+      "artist": "Koji Kondo",
+      "year": 1986,
+      "difficulty": "easy",
+      "youtube_id": "xY8U9byTrzI",
+      "answers_accepted": {
+        "title_variants": [
+          "zelda theme",
+          "the legend of zelda main theme",
+          "legend of zelda",
+          "zelda main theme"
+        ],
+        "artist_variants": ["koji kondo", "kojikondo", "nintendo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/xY8U9byTrzI/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Tetris (Theme A / Korobeiniki)",
+      "artist": "Hirokazu Tanaka",
+      "year": 1989,
+      "difficulty": "easy",
+      "youtube_id": "c-7DClxEsZ4",
+      "answers_accepted": {
+        "title_variants": ["tetris theme", "tetris", "korobeiniki", "tetris theme a"],
+        "artist_variants": ["hirokazu tanaka", "tanaka", "nintendo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/c-7DClxEsZ4/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "One-Winged Angel",
+      "artist": "Nobuo Uematsu",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "zkZGFNCS6iQ",
+      "answers_accepted": {
+        "title_variants": [
+          "one-winged angel",
+          "one winged angel",
+          "onewinged angel",
+          "sephiroth theme",
+          "final fantasy 7"
+        ],
+        "artist_variants": ["nobuo uematsu", "uematsu", "final fantasy"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/zkZGFNCS6iQ/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Halo Theme",
+      "artist": "Martin O'Donnell & Michael Salvatori",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "Yrbs4soj7eY",
+      "answers_accepted": {
+        "title_variants": ["halo theme", "halo main theme", "halo"],
+        "artist_variants": [
+          "martin o'donnell",
+          "michael salvatori",
+          "martin odonnell",
+          "halo soundtrack"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Yrbs4soj7eY/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Pokémon Theme (Gotta Catch 'Em All)",
+      "artist": "Jason Paige",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "fCkeLBGSINs",
+      "answers_accepted": {
+        "title_variants": ["pokemon theme", "pokémon theme", "gotta catch em all", "pokemon"],
+        "artist_variants": ["jason paige", "jasonpaige", "pokemon"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/fCkeLBGSINs/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Green Hill Zone",
+      "artist": "Masato Nakamura",
+      "year": 1991,
+      "difficulty": "medium",
+      "youtube_id": "NaAb1s0MCQQ",
+      "answers_accepted": {
+        "title_variants": ["green hill zone", "greenhillzone", "sonic theme", "sonic green hill"],
+        "artist_variants": ["masato nakamura", "nakamura", "sonic", "sega"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NaAb1s0MCQQ/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Ryu's Theme (Street Fighter II)",
+      "artist": "Yoko Shimomura",
+      "year": 1991,
+      "difficulty": "hard",
+      "youtube_id": "HViTy8ZLiP8",
+      "answers_accepted": {
+        "title_variants": ["ryu theme", "ryu's theme", "street fighter ryu", "street fighter 2"],
+        "artist_variants": ["yoko shimomura", "shimomura", "capcom"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/HViTy8ZLiP8/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Mortal Kombat Theme",
+      "artist": "The Immortals",
+      "year": 1993,
+      "difficulty": "medium",
+      "youtube_id": "Sr1bLLvsbh0",
+      "answers_accepted": {
+        "title_variants": ["mortal kombat theme", "mortal kombat", "techno syndrome"],
+        "artist_variants": ["the immortals", "immortals"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Sr1bLLvsbh0/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Dragonborn (Skyrim)",
+      "artist": "Jeremy Soule",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "813-3iL5OsE",
+      "answers_accepted": {
+        "title_variants": ["dragonborn", "skyrim theme", "skyrim", "the elder scrolls v"],
+        "artist_variants": ["jeremy soule", "jeremysoule", "soule"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/813-3iL5OsE/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "The Last of Us Main Theme",
+      "artist": "Gustavo Santaolalla",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "Pt1pOY3_W64",
+      "answers_accepted": {
+        "title_variants": ["the last of us", "last of us theme", "the last of us main theme"],
+        "artist_variants": ["gustavo santaolalla", "santaolalla"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Pt1pOY3_W64/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Sweden (Minecraft)",
+      "artist": "C418",
+      "year": 2011,
+      "difficulty": "hard",
+      "youtube_id": "aBkTkxKDduc",
+      "answers_accepted": {
+        "title_variants": ["sweden", "minecraft theme", "minecraft sweden", "minecraft"],
+        "artist_variants": ["c418", "c 418", "daniel rosenfeld"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/aBkTkxKDduc/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Vampire Killer (Castlevania)",
+      "artist": "Kinuyo Yamashita",
+      "year": 1986,
+      "difficulty": "hard",
+      "youtube_id": "rMcyE5oipUU",
+      "answers_accepted": {
+        "title_variants": ["vampire killer", "castlevania theme", "castlevania"],
+        "artist_variants": ["kinuyo yamashita", "yamashita", "konami"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/rMcyE5oipUU/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Megalovania (Undertale)",
+      "artist": "Toby Fox",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "KK3KXAECte4",
+      "answers_accepted": {
+        "title_variants": ["megalovania", "undertale", "sans theme"],
+        "artist_variants": ["toby fox", "tobyfox", "undertale"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KK3KXAECte4/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Welcome to Los Santos (GTA V)",
+      "artist": "Tangerine Dream",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "ZrRW9bYyK_w",
+      "answers_accepted": {
+        "title_variants": ["welcome to los santos", "gta v theme", "gta 5", "los santos"],
+        "artist_variants": ["tangerine dream", "tangerinedream", "gta v"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ZrRW9bYyK_w/hqdefault.jpg"
+    }
+  ]
+}

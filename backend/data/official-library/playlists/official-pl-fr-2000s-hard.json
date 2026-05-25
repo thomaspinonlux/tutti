@@ -1,0 +1,301 @@
+{
+  "id": "official-pl-fr-2000s-hard",
+  "name_fr": "Variété FR — Années 2000 — Difficile",
+  "name_en": "French Hits — 2000s — Hard",
+  "description_fr": "La face plus pointue des années 2000 francophones. Indie, electro, rap conscient, chanson alternative : pour les vrais aficionados.",
+  "description_en": "The sharper side of the French-language 2000s. Indie, electro, conscious rap, alt chanson: for true aficionados.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2000s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2000, 2009]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Respire",
+      "artist": "Mickey 3D",
+      "year": 2003,
+      "difficulty": "hard",
+      "youtube_id": "Iwb6u1Jo1Mc",
+      "answers_accepted": {
+        "title_variants": ["respire", "respires", "respirez"],
+        "artist_variants": ["mickey 3d", "mickey3d", "miki 3d", "mikey 3d", "mickey three d"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2xcuDxTLlp0ro2GYlS1i9G",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b4603e574e7c97c07d6ab35b"
+    },
+    {
+      "position": 2,
+      "title": "Encore une nuit",
+      "artist": "Renaud",
+      "year": 2002,
+      "difficulty": "hard",
+      "youtube_id": "uv37yxc51bE",
+      "answers_accepted": {
+        "title_variants": ["encore une nuit", "encoreunenuit", "une nuit", "encore une"],
+        "artist_variants": ["renaud", "renaud séchan", "renaud sechan", "renauld"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/uv37yxc51bE/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Stress",
+      "artist": "Justice",
+      "year": 2007,
+      "difficulty": "hard",
+      "youtube_id": "0qXmxVySMzw",
+      "answers_accepted": {
+        "title_variants": ["stress", "stresss", "stresse"],
+        "artist_variants": ["justice", "justis", "djustice"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1YdbiBOWvFUi6Zko3HXyEG",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731c0bcf8b536295438d26c70d"
+    },
+    {
+      "position": 4,
+      "title": "Ta douleur",
+      "artist": "Camille",
+      "year": 2005,
+      "difficulty": "hard",
+      "youtube_id": "YhQclI06QPw",
+      "answers_accepted": {
+        "title_variants": ["ta douleur", "tadouleur", "la douleur", "ta douleur"],
+        "artist_variants": ["camille", "camille dalmais", "camil"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "53CPBUZViJhspNT8nuAO9L",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ac578b272e89ba715cce8be3"
+    },
+    {
+      "position": 5,
+      "title": "Alors on danse",
+      "artist": "Stromae",
+      "year": 2009,
+      "difficulty": "hard",
+      "youtube_id": "VHoT4N43jK8",
+      "answers_accepted": {
+        "title_variants": ["alors on danse", "alorsondanse", "alors danse", "alors on dance"],
+        "artist_variants": ["stromae", "stromaé", "stromai", "stromaye"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4I2ENHg65RuKifEHdD0kMu",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bda2aea5a69697959789ec1a"
+    },
+    {
+      "position": 6,
+      "title": "Le vent nous portera",
+      "artist": "Noir Désir",
+      "year": 2001,
+      "difficulty": "hard",
+      "youtube_id": "NtYLxlOq2S4",
+      "answers_accepted": {
+        "title_variants": [
+          "le vent nous portera",
+          "leventnousportera",
+          "vent nous portera",
+          "le vent porte"
+        ],
+        "artist_variants": ["noir désir", "noir desir", "nuar desir", "noirdesir", "noir-désir"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2ZQVJD9I6GCqXmkmMuEoLa",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d2475feb685a598ed1218f94"
+    },
+    {
+      "position": 7,
+      "title": "Aimer",
+      "artist": "Roméo et Juliette",
+      "year": 2000,
+      "difficulty": "hard",
+      "youtube_id": "V_BFU_2WbeM",
+      "answers_accepted": {
+        "title_variants": ["aimer", "aimer cest plus grand", "aime"],
+        "artist_variants": [
+          "roméo et juliette",
+          "romeo et juliette",
+          "damien sargue",
+          "cécilia cara",
+          "romeo juliette",
+          "comédie musicale roméo et juliette"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/V_BFU_2WbeM/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Yalla",
+      "artist": "Calogero",
+      "year": 2009,
+      "difficulty": "hard",
+      "youtube_id": "apb37tPgF54",
+      "answers_accepted": {
+        "title_variants": ["yalla", "yallah", "yalla yalla"],
+        "artist_variants": ["calogero", "calogéro", "calojero", "kalogero"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4L5WINC4Ufg9GL8dJMH0uF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dc5810a428f839b8b9efcfcd"
+    },
+    {
+      "position": 9,
+      "title": "Du rire aux larmes",
+      "artist": "Sniper",
+      "year": 2001,
+      "difficulty": "hard",
+      "youtube_id": "0q4bXZ5Capw",
+      "answers_accepted": {
+        "title_variants": [
+          "du rire aux larmes",
+          "du rire aux larme",
+          "duriereauxlarmes",
+          "rire aux larmes"
+        ],
+        "artist_variants": ["sniper", "sniperr", "le sniper"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6zZCtw9AERrVu5p33Slx4a",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b0be7a588d2562592029db53"
+    },
+    {
+      "position": 10,
+      "title": "Salomé",
+      "artist": "Mylène Farmer",
+      "year": 2008,
+      "difficulty": "hard",
+      "youtube_id": "8rvoBk5Iw9o",
+      "answers_accepted": {
+        "title_variants": ["salomé", "salome", "salomée", "saloma"],
+        "artist_variants": [
+          "mylène farmer",
+          "mylene farmer",
+          "milene farmer",
+          "mylenne farmer",
+          "milène farmer"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/8rvoBk5Iw9o/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Mauvaise foi nocturne",
+      "artist": "Diam's & Tunisiano",
+      "year": 2003,
+      "difficulty": "hard",
+      "youtube_id": "TwhoaPgBwI8",
+      "answers_accepted": {
+        "title_variants": [
+          "mauvaise foi nocturne",
+          "mauvaisefoinocturne",
+          "mauvaise foi",
+          "foi nocturne"
+        ],
+        "artist_variants": [
+          "diam's",
+          "diams",
+          "tunisiano",
+          "diam's tunisiano",
+          "diam's & tunisiano",
+          "sniper tunisiano"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/TwhoaPgBwI8/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Louxor j'adore",
+      "artist": "Philippe Katerine",
+      "year": 2005,
+      "difficulty": "hard",
+      "youtube_id": "nLN8pvR8hDg",
+      "answers_accepted": {
+        "title_variants": [
+          "louxor j'adore",
+          "louxor jadore",
+          "louxorjadore",
+          "louxor j adore",
+          "louxor"
+        ],
+        "artist_variants": [
+          "philippe katerine",
+          "philippekaterine",
+          "philippe katerin",
+          "katerine"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "60udb73Xe8KJ7IzBhn3ptV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fee9fb02cd7000b7fc82f385"
+    },
+    {
+      "position": 13,
+      "title": "Mademoiselle Juliette",
+      "artist": "Alizée",
+      "year": 2007,
+      "difficulty": "hard",
+      "youtube_id": "EWaKNQL-uaE",
+      "answers_accepted": {
+        "title_variants": [
+          "mademoiselle juliette",
+          "mademoisellejuliette",
+          "demoiselle juliette",
+          "mlle juliette"
+        ],
+        "artist_variants": ["alizée", "alizee", "alize", "alyzee"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/EWaKNQL-uaE/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "À cause des garçons",
+      "artist": "Yelle",
+      "year": 2007,
+      "difficulty": "hard",
+      "youtube_id": "JqYhuwu614Y",
+      "answers_accepted": {
+        "title_variants": [
+          "à cause des garçons",
+          "a cause des garcons",
+          "à cause des garcons",
+          "cause des garçons",
+          "a cause des garcons"
+        ],
+        "artist_variants": ["yelle", "yel", "yellee", "yelles"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4kti5sAkWBOhPyCVItDYf8",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735da1104c8104431eb16f831c"
+    },
+    {
+      "position": 15,
+      "title": "Le café",
+      "artist": "Oldelaf et Monsieur D",
+      "year": 2007,
+      "difficulty": "hard",
+      "youtube_id": "UGtKGX8B9hU",
+      "answers_accepted": {
+        "title_variants": ["le café", "le cafe", "lecafe", "café"],
+        "artist_variants": [
+          "oldelaf et monsieur d",
+          "oldelaf",
+          "oldelaf monsieur d",
+          "oldelaff",
+          "old elaf"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1DdYVh9hQw7VXOkDgxHEQk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ac2fb0e165befdee053fa0b6"
+    }
+  ]
+}

@@ -1,0 +1,243 @@
+{
+  "id": "official-pl-james-bond",
+  "name_fr": "James Bond — Génériques",
+  "name_en": "James Bond Themes",
+  "description_fr": "Les génériques iconiques des films James Bond : de Goldfinger (Shirley Bassey) à No Time to Die (Billie Eilish). 60 ans de musique 007.",
+  "description_en": "Iconic James Bond movie themes: from Goldfinger (Shirley Bassey) to No Time to Die (Billie Eilish). 60 years of 007 music.",
+  "locale_primary": "international",
+  "theme": "thematic_james_bond",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_movie_soundtrack",
+    "avoid": ["live", "cover", "instrumental", "score"],
+    "year_range_strict": [1964, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Goldfinger",
+      "artist": "Shirley Bassey",
+      "year": 1964,
+      "difficulty": "medium",
+      "youtube_id": "Tvl8KH6WBO8",
+      "answers_accepted": {
+        "title_variants": ["goldfinger"],
+        "artist_variants": ["shirley bassey", "bassey"],
+        "scoring": "title_or_artist",
+        "notes": "From Goldfinger (1964)"
+      },
+      "cover_url": "https://img.youtube.com/vi/Tvl8KH6WBO8/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Diamonds Are Forever",
+      "artist": "Shirley Bassey",
+      "year": 1971,
+      "difficulty": "medium",
+      "youtube_id": "Pxs0RV2gnVE",
+      "answers_accepted": {
+        "title_variants": ["diamonds are forever", "diamondsareforever"],
+        "artist_variants": ["shirley bassey", "bassey"],
+        "scoring": "title_or_artist",
+        "notes": "From Diamonds Are Forever (1971)"
+      },
+      "cover_url": "https://img.youtube.com/vi/Pxs0RV2gnVE/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Live and Let Die",
+      "artist": "Paul McCartney & Wings",
+      "year": 1973,
+      "difficulty": "easy",
+      "youtube_id": "1PLAU_PXboc",
+      "answers_accepted": {
+        "title_variants": ["live and let die", "liveandletdie"],
+        "artist_variants": ["paul mccartney", "mccartney", "wings", "paul mccartney wings"],
+        "scoring": "title_or_artist",
+        "notes": "From Live and Let Die (1973)"
+      },
+      "cover_url": "https://img.youtube.com/vi/1PLAU_PXboc/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Nobody Does It Better",
+      "artist": "Carly Simon",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "KKAToS9wguc",
+      "answers_accepted": {
+        "title_variants": ["nobody does it better", "nobodydoesitbetter"],
+        "artist_variants": ["carly simon", "carlysimon"],
+        "scoring": "title_or_artist",
+        "notes": "From The Spy Who Loved Me (1977)"
+      },
+      "cover_url": "https://img.youtube.com/vi/KKAToS9wguc/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "For Your Eyes Only",
+      "artist": "Sheena Easton",
+      "year": 1981,
+      "difficulty": "medium",
+      "youtube_id": "J_2qcb243E8",
+      "answers_accepted": {
+        "title_variants": ["for your eyes only", "foryoureyesonly"],
+        "artist_variants": ["sheena easton", "sheenaeaston"],
+        "scoring": "title_or_artist",
+        "notes": "From For Your Eyes Only (1981)"
+      },
+      "cover_url": "https://img.youtube.com/vi/J_2qcb243E8/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "A View to a Kill",
+      "artist": "Duran Duran",
+      "year": 1985,
+      "difficulty": "medium",
+      "youtube_id": "hJzotJUlQws",
+      "answers_accepted": {
+        "title_variants": ["a view to a kill", "view to a kill", "aviewtoakill"],
+        "artist_variants": ["duran duran", "duranduran"],
+        "scoring": "title_or_artist",
+        "notes": "From A View to a Kill (1985)"
+      },
+      "cover_url": "https://img.youtube.com/vi/hJzotJUlQws/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "The Living Daylights",
+      "artist": "a-ha",
+      "year": 1987,
+      "difficulty": "medium",
+      "youtube_id": "z61NEfYK0fc",
+      "answers_accepted": {
+        "title_variants": ["the living daylights", "living daylights"],
+        "artist_variants": ["a-ha", "a ha", "aha"],
+        "scoring": "title_or_artist",
+        "notes": "From The Living Daylights (1987)"
+      },
+      "cover_url": "https://img.youtube.com/vi/z61NEfYK0fc/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Licence to Kill",
+      "artist": "Gladys Knight",
+      "year": 1989,
+      "difficulty": "hard",
+      "youtube_id": "ZnSbrx5YByY",
+      "answers_accepted": {
+        "title_variants": ["licence to kill", "license to kill", "licencetokill"],
+        "artist_variants": ["gladys knight", "gladysknight"],
+        "scoring": "title_or_artist",
+        "notes": "From Licence to Kill (1989)"
+      },
+      "cover_url": "https://img.youtube.com/vi/ZnSbrx5YByY/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "GoldenEye",
+      "artist": "Tina Turner",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "8K3BTWLXqPI",
+      "answers_accepted": {
+        "title_variants": ["goldeneye", "golden eye"],
+        "artist_variants": ["tina turner", "tinaturner"],
+        "scoring": "title_or_artist",
+        "notes": "From GoldenEye (1995)"
+      },
+      "cover_url": "https://img.youtube.com/vi/8K3BTWLXqPI/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Tomorrow Never Dies",
+      "artist": "Sheryl Crow",
+      "year": 1997,
+      "difficulty": "hard",
+      "youtube_id": "2BxTwJtpGYA",
+      "answers_accepted": {
+        "title_variants": ["tomorrow never dies", "tomorrowneverdies"],
+        "artist_variants": ["sheryl crow", "sherylcrow"],
+        "scoring": "title_or_artist",
+        "notes": "From Tomorrow Never Dies (1997)"
+      },
+      "cover_url": "https://img.youtube.com/vi/2BxTwJtpGYA/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "The World Is Not Enough",
+      "artist": "Garbage",
+      "year": 1999,
+      "difficulty": "hard",
+      "youtube_id": "JBrz-5ai1mo",
+      "answers_accepted": {
+        "title_variants": ["the world is not enough", "world is not enough"],
+        "artist_variants": ["garbage", "shirley manson"],
+        "scoring": "title_or_artist",
+        "notes": "From The World Is Not Enough (1999)"
+      },
+      "cover_url": "https://img.youtube.com/vi/JBrz-5ai1mo/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Die Another Day",
+      "artist": "Madonna",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "oYpnRAT40KU",
+      "answers_accepted": {
+        "title_variants": ["die another day", "dieanotherday"],
+        "artist_variants": ["madonna"],
+        "scoring": "title_or_artist",
+        "notes": "From Die Another Day (2002)"
+      },
+      "cover_url": "https://img.youtube.com/vi/oYpnRAT40KU/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "You Know My Name",
+      "artist": "Chris Cornell",
+      "year": 2006,
+      "difficulty": "medium",
+      "youtube_id": "YnzgdBAKyJo",
+      "answers_accepted": {
+        "title_variants": ["you know my name", "youknowmyname"],
+        "artist_variants": ["chris cornell", "chriscornell"],
+        "scoring": "title_or_artist",
+        "notes": "From Casino Royale (2006)"
+      },
+      "cover_url": "https://img.youtube.com/vi/YnzgdBAKyJo/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Skyfall",
+      "artist": "Adele",
+      "year": 2012,
+      "difficulty": "easy",
+      "youtube_id": "DeumyOzKqgI",
+      "answers_accepted": {
+        "title_variants": ["skyfall"],
+        "artist_variants": ["adele"],
+        "scoring": "title_or_artist",
+        "notes": "From Skyfall (2012)"
+      },
+      "cover_url": "https://img.youtube.com/vi/DeumyOzKqgI/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "No Time to Die",
+      "artist": "Billie Eilish",
+      "year": 2020,
+      "difficulty": "easy",
+      "youtube_id": "GB_S2qFh5lU",
+      "answers_accepted": {
+        "title_variants": ["no time to die", "notimetodie"],
+        "artist_variants": ["billie eilish", "billieeilish", "eilish"],
+        "scoring": "title_or_artist",
+        "notes": "From No Time to Die (2021)"
+      },
+      "cover_url": "https://img.youtube.com/vi/GB_S2qFh5lU/hqdefault.jpg"
+    }
+  ]
+}

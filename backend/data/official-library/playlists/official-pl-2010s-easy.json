@@ -1,0 +1,281 @@
+{
+  "id": "official-pl-2010s-easy",
+  "name_fr": "Années 2010 — Facile",
+  "name_en": "2010s — Easy",
+  "description_fr": "Les megahits des années 2010 que tout le monde reconnaît dès la première seconde. Pop, EDM, hip-hop, indie : la décennie en mode universel.",
+  "description_en": "The 2010s megahits everyone recognizes from the first second. Pop, EDM, hip-hop, indie: the decade in universal mode.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2010s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2010, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Rolling in the Deep",
+      "artist": "Adele",
+      "year": 2010,
+      "difficulty": "easy",
+      "youtube_id": "bDtjO-R0QSo",
+      "answers_accepted": {
+        "title_variants": [
+          "rolling in the deep",
+          "rolling deep",
+          "rollinginthedeep",
+          "rolling in deep"
+        ],
+        "artist_variants": ["adele", "adèle", "adel", "adelle"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4OSBTYWVwsQhGLF9NHvIbR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e63ac9f24aab9acc90f81960"
+    },
+    {
+      "position": 2,
+      "title": "Party Rock Anthem",
+      "artist": "LMFAO",
+      "year": 2011,
+      "difficulty": "easy",
+      "youtube_id": "3JDHlCcn-UY",
+      "answers_accepted": {
+        "title_variants": [
+          "party rock anthem",
+          "party rock",
+          "partyrockanthem",
+          "every day im shuffling"
+        ],
+        "artist_variants": ["lmfao", "l m f a o", "lmfaoo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7mitXLIMCflkhZiD34uEQI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731db908d5f66645cb158837ca"
+    },
+    {
+      "position": 3,
+      "title": "Call Me Maybe",
+      "artist": "Carly Rae Jepsen",
+      "year": 2012,
+      "difficulty": "easy",
+      "youtube_id": "fWNaR-rxAic",
+      "answers_accepted": {
+        "title_variants": ["call me maybe", "callmemaybe", "call me", "call maybe"],
+        "artist_variants": ["carly rae jepsen", "carly rae jepson", "carly jepsen", "carly rae"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "20I6sIOMTCkB6w7ryavxtO",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d3ee4bf67c2ac2154006ad72"
+    },
+    {
+      "position": 4,
+      "title": "Get Lucky",
+      "artist": "Daft Punk",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "5NV6Rdv1a3I",
+      "answers_accepted": {
+        "title_variants": ["get lucky", "getlucky", "lucky"],
+        "artist_variants": [
+          "daft punk",
+          "daftpunk",
+          "daft punk pharrell",
+          "pharrell williams",
+          "daft punk ft pharrell"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "69kOkLUCkxIZYexIgSG8rq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739b9b36b0e22870b9f542d937"
+    },
+    {
+      "position": 5,
+      "title": "Happy",
+      "artist": "Pharrell Williams",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "ZbZSe6N_BXs",
+      "answers_accepted": {
+        "title_variants": ["happy", "happi", "happys", "heureux"],
+        "artist_variants": ["pharrell williams", "pharell williams", "pharrell", "pharel williams"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0eMxgAHmuvoqpLyYQrbKvQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738dc2293204ab999264f4628a"
+    },
+    {
+      "position": 6,
+      "title": "Uptown Funk",
+      "artist": "Mark Ronson",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "OPf0YbXqDm0",
+      "answers_accepted": {
+        "title_variants": ["uptown funk", "uptown funky", "uptownfunk", "up town funk"],
+        "artist_variants": [
+          "mark ronson",
+          "mark ronson bruno mars",
+          "bruno mars",
+          "mark ronson ft bruno mars"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "32OlwWuMpZ6b0aN2RZOeMS",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739860171ddfee17f77a570cf6"
+    },
+    {
+      "position": 7,
+      "title": "Shape of You",
+      "artist": "Ed Sheeran",
+      "year": 2017,
+      "difficulty": "easy",
+      "youtube_id": "liTfD88dbCo",
+      "answers_accepted": {
+        "title_variants": ["shape of you", "shape you", "shapeofyou", "shape of u"],
+        "artist_variants": ["ed sheeran", "edsheeran", "ed sheran", "ed sheeran"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7qiZfU4dY1lWllzX7mPBI3",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96"
+    },
+    {
+      "position": 8,
+      "title": "Despacito",
+      "artist": "Luis Fonsi",
+      "year": 2017,
+      "difficulty": "easy",
+      "youtube_id": "kJQP7kiw5Fk",
+      "answers_accepted": {
+        "title_variants": ["despacito", "despasito", "déspacito", "despacitoo"],
+        "artist_variants": [
+          "luis fonsi",
+          "louis fonsi",
+          "luis fonsi daddy yankee",
+          "daddy yankee",
+          "luis fonsi ft daddy yankee"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "36NOKjPLZVSqVJSC7iOHIm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27323a10878295ddea1a4ef0f3d"
+    },
+    {
+      "position": 9,
+      "title": "Old Town Road",
+      "artist": "Lil Nas X",
+      "year": 2019,
+      "difficulty": "easy",
+      "youtube_id": "r7qovpFAGrQ",
+      "answers_accepted": {
+        "title_variants": ["old town road", "oldtownroad", "old town", "old road"],
+        "artist_variants": ["lil nas x", "lilnasx", "lil nas", "lilnas x"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0F7FA14euOIX8KcbEturGH",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736239187793c9e492e687db01"
+    },
+    {
+      "position": 10,
+      "title": "Bad Guy",
+      "artist": "Billie Eilish",
+      "year": 2019,
+      "difficulty": "easy",
+      "youtube_id": "DyDfgMOUjCI",
+      "answers_accepted": {
+        "title_variants": ["bad guy", "badguy", "bad guys", "duh"],
+        "artist_variants": ["billie eilish", "billy eilish", "billie irish", "billie ailish"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2Fxmhks0bxGSBdJ92vM42m",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27350a3147b4edd7701a876c6ce"
+    },
+    {
+      "position": 11,
+      "title": "Shake It Off",
+      "artist": "Taylor Swift",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "nfWlot6h_JM",
+      "answers_accepted": {
+        "title_variants": ["shake it off", "shakeitoff", "shake off", "shake"],
+        "artist_variants": ["taylor swift", "tailor swift", "taylor swiff", "t swift"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0cqRj7pUJDkTCEsJkx8snD",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27352b2a3824413eefe9e33817a"
+    },
+    {
+      "position": 12,
+      "title": "Someone You Loved",
+      "artist": "Lewis Capaldi",
+      "year": 2018,
+      "difficulty": "easy",
+      "youtube_id": "zABLecsR5UE",
+      "answers_accepted": {
+        "title_variants": [
+          "someone you loved",
+          "someoneyouloved",
+          "someone i loved",
+          "someone loved"
+        ],
+        "artist_variants": ["lewis capaldi", "louis capaldi", "lewis capaldee", "lewis capaldi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2TIlqbIneP0ZY1O0EzYLlc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b280aea74eef855675d7b93b"
+    },
+    {
+      "position": 13,
+      "title": "Sunflower",
+      "artist": "Post Malone",
+      "year": 2018,
+      "difficulty": "easy",
+      "youtube_id": "UYwF-jdcVjY",
+      "answers_accepted": {
+        "title_variants": ["sunflower", "sun flower", "sunflowers", "tournesol"],
+        "artist_variants": [
+          "post malone",
+          "postmalone",
+          "post malone swae lee",
+          "swae lee",
+          "post malone & swae lee"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3KkXRkHbMCARz0aVfEt68P",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e2e352d89826aef6dbd5ff8f"
+    },
+    {
+      "position": 14,
+      "title": "Royals",
+      "artist": "Lorde",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "f2JuxM-snGc",
+      "answers_accepted": {
+        "title_variants": ["royals", "royal", "royaux"],
+        "artist_variants": ["lorde", "lord", "lordde", "lordee"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4SDWMFvYJKtK1QPhIOeZhd",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273244fb8bb9594476ab5cb39b9"
+    },
+    {
+      "position": 15,
+      "title": "Wake Me Up",
+      "artist": "Avicii",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "IcrbM1l_BoI",
+      "answers_accepted": {
+        "title_variants": ["wake me up", "wakemeup", "wake up", "réveille moi"],
+        "artist_variants": ["avicii", "avici", "aviccii", "avichi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0nrRP2bk19rLc0orkWPQk2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e14f11f796cef9f9a82691a7"
+    }
+  ]
+}

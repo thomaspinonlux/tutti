@@ -1,0 +1,233 @@
+{
+  "id": "official-pl-pubs-cultes",
+  "name_fr": "Pubs cultes",
+  "name_en": "Iconic Ad Songs",
+  "description_fr": "Les morceaux devenus cultes grâce à leur passage en pub : Tubthumping, Don't Worry Be Happy, Lust for Life, Walking on Sunshine. La nostalgie des spots TV.",
+  "description_en": "Songs made famous by ads: Tubthumping, Don't Worry Be Happy, Lust for Life, Walking on Sunshine. The nostalgia of TV commercials.",
+  "locale_primary": "international",
+  "theme": "thematic_pubs_cultes",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1961, 2000]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Tubthumping",
+      "artist": "Chumbawamba",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "2H5uWRjFsGc",
+      "answers_accepted": {
+        "title_variants": ["tubthumping", "i get knocked down"],
+        "artist_variants": ["chumbawamba"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/2H5uWRjFsGc/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Walk This Way",
+      "artist": "Run-DMC & Aerosmith",
+      "year": 1986,
+      "difficulty": "medium",
+      "youtube_id": "4B_UYYPb-Gk",
+      "answers_accepted": {
+        "title_variants": ["walk this way", "walkthisway"],
+        "artist_variants": ["run-dmc", "run dmc", "aerosmith", "rundmc"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4B_UYYPb-Gk/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Mambo No. 5",
+      "artist": "Lou Bega",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "EK_LN3XEcnw",
+      "answers_accepted": {
+        "title_variants": ["mambo no. 5", "mambo no 5", "mambo number 5", "mambo 5"],
+        "artist_variants": ["lou bega", "loubega"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/EK_LN3XEcnw/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Holding Out for a Hero",
+      "artist": "Bonnie Tyler",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "CPK2HwYzjkA",
+      "answers_accepted": {
+        "title_variants": ["holding out for a hero", "holdingoutforahero", "i need a hero"],
+        "artist_variants": ["bonnie tyler", "bonnietyler"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CPK2HwYzjkA/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Don't Worry, Be Happy",
+      "artist": "Bobby McFerrin",
+      "year": 1988,
+      "difficulty": "easy",
+      "youtube_id": "d-diB65scQU",
+      "answers_accepted": {
+        "title_variants": ["don't worry be happy", "dont worry be happy", "be happy"],
+        "artist_variants": ["bobby mcferrin", "bobbymcferrin"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/d-diB65scQU/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Hooked on a Feeling",
+      "artist": "Blue Swede",
+      "year": 1973,
+      "difficulty": "medium",
+      "youtube_id": "NrI-UBIB8Jk",
+      "answers_accepted": {
+        "title_variants": ["hooked on a feeling", "hookedonafeeling", "ooga chaka"],
+        "artist_variants": ["blue swede", "blueswede"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NrI-UBIB8Jk/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Lust for Life",
+      "artist": "Iggy Pop",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "HuBU3pzy7is",
+      "answers_accepted": {
+        "title_variants": ["lust for life", "lustforlife"],
+        "artist_variants": ["iggy pop", "iggypop"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/HuBU3pzy7is/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Heart of Glass",
+      "artist": "Blondie",
+      "year": 1979,
+      "difficulty": "easy",
+      "youtube_id": "WGU_4-5RaxU",
+      "answers_accepted": {
+        "title_variants": ["heart of glass", "heartofglass"],
+        "artist_variants": ["blondie", "debbie harry"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/WGU_4-5RaxU/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "The Lion Sleeps Tonight",
+      "artist": "The Tokens",
+      "year": 1961,
+      "difficulty": "easy",
+      "youtube_id": "OQlByoPdG6c",
+      "answers_accepted": {
+        "title_variants": [
+          "the lion sleeps tonight",
+          "lion sleeps tonight",
+          "lionsleepstonight",
+          "wimoweh"
+        ],
+        "artist_variants": ["the tokens", "tokens"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/OQlByoPdG6c/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "I Wanna Be Sedated",
+      "artist": "Ramones",
+      "year": 1978,
+      "difficulty": "medium",
+      "youtube_id": "Y0L0jVe0duc",
+      "answers_accepted": {
+        "title_variants": ["i wanna be sedated", "iwannabesedated", "wanna be sedated"],
+        "artist_variants": ["ramones", "the ramones"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Y0L0jVe0duc/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Push It",
+      "artist": "Salt-N-Pepa",
+      "year": 1987,
+      "difficulty": "medium",
+      "youtube_id": "vCadcBR95oU",
+      "answers_accepted": {
+        "title_variants": ["push it", "pushit"],
+        "artist_variants": ["salt-n-pepa", "salt n pepa", "saltnpepa"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vCadcBR95oU/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Sunglasses at Night",
+      "artist": "Corey Hart",
+      "year": 1984,
+      "difficulty": "hard",
+      "youtube_id": "tfcZYVYBdGc",
+      "answers_accepted": {
+        "title_variants": ["sunglasses at night", "sunglassesatnight"],
+        "artist_variants": ["corey hart", "coreyhart"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/tfcZYVYBdGc/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Just an Illusion",
+      "artist": "Imagination",
+      "year": 1982,
+      "difficulty": "hard",
+      "youtube_id": "uY4cVhXxW64",
+      "answers_accepted": {
+        "title_variants": ["just an illusion", "justanillusion", "illusion"],
+        "artist_variants": ["imagination"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/uY4cVhXxW64/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Fly Me to the Moon",
+      "artist": "Frank Sinatra",
+      "year": 1964,
+      "difficulty": "easy",
+      "youtube_id": "JYuyWrkwpok",
+      "answers_accepted": {
+        "title_variants": ["fly me to the moon", "flymetothemoon"],
+        "artist_variants": ["frank sinatra", "sinatra"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JYuyWrkwpok/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Walking on Sunshine",
+      "artist": "Katrina & The Waves",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "iPUmE-tne5U",
+      "answers_accepted": {
+        "title_variants": ["walking on sunshine", "walkingonsunshine"],
+        "artist_variants": ["katrina & the waves", "katrina and the waves", "katrina the waves"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/iPUmE-tne5U/hqdefault.jpg"
+    }
+  ]
+}

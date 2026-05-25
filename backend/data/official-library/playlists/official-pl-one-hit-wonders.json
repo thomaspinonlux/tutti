@@ -1,0 +1,229 @@
+{
+  "id": "official-pl-one-hit-wonders",
+  "name_fr": "One-Hit Wonders",
+  "name_en": "One-Hit Wonders",
+  "description_fr": "Les artistes d'un seul tube — connus pour une seule chanson devenue culte. Mickey, Funkytown, Whip It, Closing Time.",
+  "description_en": "One-song artists — known for just one cult hit. Mickey, Funkytown, Whip It, Closing Time.",
+  "locale_primary": "international",
+  "theme": "thematic_one_hit_wonders",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1971, 2002]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Mickey",
+      "artist": "Toni Basil",
+      "year": 1981,
+      "difficulty": "medium",
+      "youtube_id": "3E-Zrg9CB_Q",
+      "answers_accepted": {
+        "title_variants": ["mickey", "micky"],
+        "artist_variants": ["toni basil", "tonibasil"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/3E-Zrg9CB_Q/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Who Let the Dogs Out",
+      "artist": "Baha Men",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "ojULkWEUsPs",
+      "answers_accepted": {
+        "title_variants": ["who let the dogs out", "wholetthedogsout", "let the dogs out"],
+        "artist_variants": ["baha men", "bahamen"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ojULkWEUsPs/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Funkytown",
+      "artist": "Lipps Inc.",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "Z6dqIYKIBSU",
+      "answers_accepted": {
+        "title_variants": ["funkytown", "funky town"],
+        "artist_variants": ["lipps inc", "lipps inc.", "lipps incorporated"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Z6dqIYKIBSU/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Walk Like an Egyptian",
+      "artist": "The Bangles",
+      "year": 1986,
+      "difficulty": "medium",
+      "youtube_id": "Cv6tuzHUuuk",
+      "answers_accepted": {
+        "title_variants": ["walk like an egyptian", "walklikeanegyptian"],
+        "artist_variants": ["the bangles", "bangles"],
+        "scoring": "title_or_artist",
+        "notes": "Les Bangles ont eu d'autres hits (Eternal Flame, Manic Monday) mais 'Walk Like an Egyptian' reste leur signature."
+      },
+      "cover_url": "https://img.youtube.com/vi/Cv6tuzHUuuk/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "867-5309/Jenny",
+      "artist": "Tommy Tutone",
+      "year": 1981,
+      "difficulty": "hard",
+      "youtube_id": "0BYL_wHg3Oc",
+      "answers_accepted": {
+        "title_variants": ["867-5309", "jenny", "867 5309", "jenny 867-5309"],
+        "artist_variants": ["tommy tutone", "tommytutone"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/0BYL_wHg3Oc/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Whip It",
+      "artist": "Devo",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "j_QLzthSkfM",
+      "answers_accepted": {
+        "title_variants": ["whip it", "whipit"],
+        "artist_variants": ["devo", "the devo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/j_QLzthSkfM/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Closing Time",
+      "artist": "Semisonic",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "xGytDsqkQY8",
+      "answers_accepted": {
+        "title_variants": ["closing time", "closingtime"],
+        "artist_variants": ["semisonic", "semi sonic"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/xGytDsqkQY8/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Steal My Sunshine",
+      "artist": "Len",
+      "year": 1999,
+      "difficulty": "hard",
+      "youtube_id": "6sfu5QtTQzU",
+      "answers_accepted": {
+        "title_variants": ["steal my sunshine", "stealmysunshine"],
+        "artist_variants": ["len", "len band"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/6sfu5QtTQzU/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Escape (The Piña Colada Song)",
+      "artist": "Rupert Holmes",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "TazHNpt6OTo",
+      "answers_accepted": {
+        "title_variants": ["escape", "the pina colada song", "pina colada song", "piña colada"],
+        "artist_variants": ["rupert holmes", "rupertholmes"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/TazHNpt6OTo/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Cars",
+      "artist": "Gary Numan",
+      "year": 1979,
+      "difficulty": "hard",
+      "youtube_id": "99fRdfVIOr4",
+      "answers_accepted": {
+        "title_variants": ["cars", "car"],
+        "artist_variants": ["gary numan", "garynuman"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/99fRdfVIOr4/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Brand New Key",
+      "artist": "Melanie",
+      "year": 1971,
+      "difficulty": "hard",
+      "youtube_id": "lKcpodt0YCU",
+      "answers_accepted": {
+        "title_variants": ["brand new key", "brandnewkey", "the roller skate song"],
+        "artist_variants": ["melanie", "melanie safka"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/lKcpodt0YCU/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Da Da Da",
+      "artist": "Trio",
+      "year": 1982,
+      "difficulty": "hard",
+      "youtube_id": "xqTBlft8gQA",
+      "answers_accepted": {
+        "title_variants": ["da da da", "dadada", "ich lieb dich nicht"],
+        "artist_variants": ["trio", "trio band", "trio german"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/xqTBlft8gQA/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Pop Muzik",
+      "artist": "M",
+      "year": 1979,
+      "difficulty": "hard",
+      "youtube_id": "gPoiv0sZ4s4",
+      "answers_accepted": {
+        "title_variants": ["pop muzik", "pop music", "popmuzik"],
+        "artist_variants": ["m", "m artist", "robin scott m"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/gPoiv0sZ4s4/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "One of Us",
+      "artist": "Joan Osborne",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "aDdOnl0bHO4",
+      "answers_accepted": {
+        "title_variants": ["one of us", "oneofus"],
+        "artist_variants": ["joan osborne", "joanosborne"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/aDdOnl0bHO4/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "I Touch Myself",
+      "artist": "Divinyls",
+      "year": 1991,
+      "difficulty": "hard",
+      "youtube_id": "wv-34w8kGPM",
+      "answers_accepted": {
+        "title_variants": ["i touch myself", "itouchmyself", "touch myself"],
+        "artist_variants": ["divinyls", "the divinyls"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/wv-34w8kGPM/hqdefault.jpg"
+    }
+  ]
+}

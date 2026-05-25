@@ -1,0 +1,254 @@
+{
+  "id": "official-pl-duos-cultes",
+  "name_fr": "Duos cultes",
+  "name_en": "Iconic Duets",
+  "description_fr": "Les duos légendaires : Sonny & Cher, Elton John & Kiki Dee, Garou & Céline Dion, Queen & Bowie. À chanter à deux.",
+  "description_en": "Legendary duets: Sonny & Cher, Elton John & Kiki Dee, Garou & Céline Dion, Queen & Bowie. Songs to sing together.",
+  "locale_primary": "international",
+  "theme": "thematic_duos_cultes",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1965, 2010]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Don't Go Breaking My Heart",
+      "artist": "Elton John & Kiki Dee",
+      "year": 1976,
+      "difficulty": "easy",
+      "youtube_id": "z0qW9P-uYfM",
+      "answers_accepted": {
+        "title_variants": [
+          "don't go breaking my heart",
+          "dont go breaking my heart",
+          "breaking my heart"
+        ],
+        "artist_variants": ["elton john", "kiki dee", "elton john kiki dee"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7HW5WIw7ZgZORCzUxv5gW5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27342a15a4fe15a8a88ab728d5b"
+    },
+    {
+      "position": 2,
+      "title": "Don't You Want Me",
+      "artist": "The Human League",
+      "year": 1981,
+      "difficulty": "easy",
+      "youtube_id": "uPudE8nDog0",
+      "answers_accepted": {
+        "title_variants": ["don't you want me", "dont you want me", "dontyouwantme"],
+        "artist_variants": ["the human league", "human league", "humanleague"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7zhtLp2V3lNXdllknAqbKk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273018394d83431a1db58f2c8fd"
+    },
+    {
+      "position": 3,
+      "title": "I Got You Babe",
+      "artist": "Sonny & Cher",
+      "year": 1965,
+      "difficulty": "medium",
+      "youtube_id": "HKGjCPBSG38",
+      "answers_accepted": {
+        "title_variants": ["i got you babe", "igotyoubabe", "got you babe"],
+        "artist_variants": ["sonny & cher", "sonny and cher", "sonnycher"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4SGBuq37Ol4HJr7pQqFMKa",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27338c7f6495876ff013e98bdf9"
+    },
+    {
+      "position": 4,
+      "title": "Up Where We Belong",
+      "artist": "Joe Cocker & Jennifer Warnes",
+      "year": 1982,
+      "difficulty": "medium",
+      "youtube_id": "bjrOcrisGyI",
+      "answers_accepted": {
+        "title_variants": ["up where we belong", "upwherewebelong", "where we belong"],
+        "artist_variants": ["joe cocker", "jennifer warnes", "joe cocker jennifer warnes"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5NoUgO4Kr93QymQGQlBC7b",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734f2e4580e0f9a35d9974971d"
+    },
+    {
+      "position": 5,
+      "title": "Islands in the Stream",
+      "artist": "Kenny Rogers & Dolly Parton",
+      "year": 1983,
+      "difficulty": "medium",
+      "youtube_id": "UaNGtgYwSsU",
+      "answers_accepted": {
+        "title_variants": ["islands in the stream", "islandsinthestream"],
+        "artist_variants": ["kenny rogers", "dolly parton", "kenny rogers dolly parton"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6dnco8haegnJYtylV26cBq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f4b9ecd2ef53484ca3206f82"
+    },
+    {
+      "position": 6,
+      "title": "Especially for You",
+      "artist": "Kylie Minogue & Jason Donovan",
+      "year": 1988,
+      "difficulty": "medium",
+      "youtube_id": "HayShZeBWaI",
+      "answers_accepted": {
+        "title_variants": ["especially for you", "especiallyforyou"],
+        "artist_variants": ["kylie minogue", "jason donovan", "kylie jason"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0mVEYOASqm8DX7mCmHgIWt",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731843c8093a07ce532c3fa9b9"
+    },
+    {
+      "position": 7,
+      "title": "(I've Had) The Time of My Life",
+      "artist": "Bill Medley & Jennifer Warnes",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "4BQLE_RrTSU",
+      "answers_accepted": {
+        "title_variants": [
+          "the time of my life",
+          "i've had the time of my life",
+          "ive had the time of my life",
+          "time of my life"
+        ],
+        "artist_variants": ["bill medley", "jennifer warnes", "dirty dancing"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4BQLE_RrTSU/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Fairytale of New York",
+      "artist": "The Pogues & Kirsty MacColl",
+      "year": 1987,
+      "difficulty": "hard",
+      "youtube_id": "j9jbdgZidu8",
+      "answers_accepted": {
+        "title_variants": ["fairytale of new york", "fairytaleofnewyork", "fairy tale of new york"],
+        "artist_variants": ["the pogues", "pogues", "kirsty maccoll", "pogues maccoll"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/j9jbdgZidu8/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Somethin' Stupid",
+      "artist": "Frank & Nancy Sinatra",
+      "year": 1967,
+      "difficulty": "hard",
+      "youtube_id": "fwEN2gOJdbw",
+      "answers_accepted": {
+        "title_variants": ["somethin stupid", "something stupid", "somethinstupid"],
+        "artist_variants": ["frank sinatra", "nancy sinatra", "frank nancy sinatra"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4feXcsElKIVsGwkbnTHAfV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733e2331ff09f59ea3c87fe5d6"
+    },
+    {
+      "position": 10,
+      "title": "Sous le vent",
+      "artist": "Garou & Céline Dion",
+      "year": 2002,
+      "difficulty": "easy",
+      "youtube_id": "a2_ss9y-VjE",
+      "answers_accepted": {
+        "title_variants": ["sous le vent", "souslevent"],
+        "artist_variants": ["garou", "céline dion", "celine dion", "garou celine dion"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6VZB0ttlqGjpGMAcaomXh9",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273faa1c1a7a24c46aebf2b4883"
+    },
+    {
+      "position": 11,
+      "title": "Là-bas",
+      "artist": "Jean-Jacques Goldman & Sirima",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "zFwaRmpzvjo",
+      "answers_accepted": {
+        "title_variants": ["là-bas", "la-bas", "labas", "la bas"],
+        "artist_variants": ["jean-jacques goldman", "jean jacques goldman", "goldman", "sirima"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6pvfDHdFcjiIDXFxvDI879",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733a13ddfee30273b058cc643a"
+    },
+    {
+      "position": 12,
+      "title": "Tu trouveras",
+      "artist": "Natasha St-Pier & Pascal Obispo",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "yB_UBqMRvKk",
+      "answers_accepted": {
+        "title_variants": ["tu trouveras", "tutrouveras"],
+        "artist_variants": ["natasha st-pier", "natasha st pier", "pascal obispo", "obispo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/yB_UBqMRvKk/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Vivo per lei",
+      "artist": "Andrea Bocelli & Hélène Ségara",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "JqgYn4VlUEA",
+      "answers_accepted": {
+        "title_variants": ["vivo per lei", "vivoperlei", "je vis pour elle"],
+        "artist_variants": [
+          "andrea bocelli",
+          "bocelli",
+          "hélène ségara",
+          "helene segara",
+          "segara"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JqgYn4VlUEA/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Under Pressure",
+      "artist": "Queen & David Bowie",
+      "year": 1981,
+      "difficulty": "easy",
+      "youtube_id": "a01QQZyl-_I",
+      "answers_accepted": {
+        "title_variants": ["under pressure", "underpressure"],
+        "artist_variants": ["queen", "david bowie", "bowie", "queen bowie"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5oybkyECAyGaDxYLUCPjFh",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27398dc2963e511c2ff25475d03"
+    },
+    {
+      "position": 15,
+      "title": "Promiscuous",
+      "artist": "Nelly Furtado & Timbaland",
+      "year": 2006,
+      "difficulty": "medium",
+      "youtube_id": "VXPvpK2ct4M",
+      "answers_accepted": {
+        "title_variants": ["promiscuous", "promiscuous girl"],
+        "artist_variants": ["nelly furtado", "timbaland", "nellyfurtado"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2gam98EZKrF9XuOkU13ApN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a6f439c8957170652f9410e2"
+    }
+  ]
+}

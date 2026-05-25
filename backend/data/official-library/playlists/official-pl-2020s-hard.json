@@ -1,0 +1,243 @@
+{
+  "id": "official-pl-2020s-hard",
+  "name_fr": "Années 2020 — Hard",
+  "name_en": "2020s — Hard",
+  "description_fr": "Pour les fans pointus : indie, K-pop, pop alternative, deep cuts.",
+  "description_en": "For sharp fans: indie, K-pop, alt-pop, deep cuts.",
+  "locale_primary": "international",
+  "theme": "decade_2020s",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [2019, 2025]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Glimpse of Us",
+      "artist": "Joji",
+      "year": 2022,
+      "difficulty": "hard",
+      "youtube_id": "FvOpPeKSf_4",
+      "answers_accepted": {
+        "title_variants": ["glimpse of us", "glimpseofus", "glimpse us"],
+        "artist_variants": ["joji", "djoji", "george miller"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3aBGKDiAAvH2H7HLOyQ4US",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f3f7d2ea2ad435b57d6697df"
+    },
+    {
+      "position": 2,
+      "title": "my tears ricochet",
+      "artist": "Taylor Swift",
+      "year": 2020,
+      "difficulty": "hard",
+      "youtube_id": "OWbDJFtHl3w",
+      "answers_accepted": {
+        "title_variants": ["my tears ricochet", "tears ricochet", "mytearsricochet"],
+        "artist_variants": ["taylor swift", "taylorswift"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1MgV7FIyNxIG7WzMRJV5HC",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27395f754318336a07e85ec59bc"
+    },
+    {
+      "position": 3,
+      "title": "Save Your Tears",
+      "artist": "The Weeknd",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "u6lihZAcy4s",
+      "answers_accepted": {
+        "title_variants": ["save your tears", "saveyourtears", "save tears"],
+        "artist_variants": ["the weeknd", "weeknd", "theweeknd"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5QO79kh1waicV47BqGRL3g",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36"
+    },
+    {
+      "position": 4,
+      "title": "How You Like That",
+      "artist": "BLACKPINK",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "mIuNiH2MAO8",
+      "answers_accepted": {
+        "title_variants": ["how you like that", "howyoulikethat", "how like that"],
+        "artist_variants": ["blackpink", "black pink", "black pinks"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4SFknyjLcyTLJFPKD2m96o",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737dd8f95320e8ef08aa121dfe"
+    },
+    {
+      "position": 5,
+      "title": "Mariposa",
+      "artist": "Peach Tree Rascals",
+      "year": 2020,
+      "difficulty": "hard",
+      "youtube_id": "U3RjdVmny6A",
+      "answers_accepted": {
+        "title_variants": ["mariposa", "marie posa"],
+        "artist_variants": ["peach tree rascals", "peachtreerascals", "the peach tree rascals"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "05TjY2cO94yODQEotKoBct",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273229bf3c5422759b46a0cb680"
+    },
+    {
+      "position": 6,
+      "title": "Heather",
+      "artist": "Conan Gray",
+      "year": 2020,
+      "difficulty": "hard",
+      "youtube_id": "GPUg7n8-M6o",
+      "answers_accepted": {
+        "title_variants": ["heather", "heaver", "heathers"],
+        "artist_variants": ["conan gray", "conangray", "conan grey"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4xqrdfXkTW4T0RauPLv3WA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27388e3cda6d29b2552d4d6bc43"
+    },
+    {
+      "position": 7,
+      "title": "Snap",
+      "artist": "Rosa Linn",
+      "year": 2022,
+      "difficulty": "hard",
+      "youtube_id": "Lo4_K4relMg",
+      "answers_accepted": {
+        "title_variants": ["snap", "snaping", "snapping out of it"],
+        "artist_variants": ["rosa linn", "rosalinn", "rosa lynn"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5hx7w26Zi3zafMgvMTUqF6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273927f72f3739f256fb01d1470"
+    },
+    {
+      "position": 8,
+      "title": "First Class",
+      "artist": "Jack Harlow",
+      "year": 2022,
+      "difficulty": "medium",
+      "youtube_id": "HmP_wGYw1_g",
+      "answers_accepted": {
+        "title_variants": ["first class", "firstclass"],
+        "artist_variants": ["jack harlow", "jackharlow", "jack harlo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0wHFktze2PHC5jDt3B17DC",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739ba41d0446dee0141062bbe1"
+    },
+    {
+      "position": 9,
+      "title": "Lost in Yesterday",
+      "artist": "Tame Impala",
+      "year": 2020,
+      "difficulty": "hard",
+      "youtube_id": "C7VlC0QjdHU",
+      "answers_accepted": {
+        "title_variants": ["lost in yesterday", "lostinyesterday", "yesterday"],
+        "artist_variants": ["tame impala", "tameimpala", "kevin parker"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5JWPUEov2wlX7c0jhYZpeB",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27358267bd34420a00d5cf83a49"
+    },
+    {
+      "position": 10,
+      "title": "Greedy",
+      "artist": "Tate McRae",
+      "year": 2023,
+      "difficulty": "medium",
+      "youtube_id": "8AtiHCDGZ8c",
+      "answers_accepted": {
+        "title_variants": ["greedy", "greedi"],
+        "artist_variants": ["tate mcrae", "tatemcrae", "tate mac rae"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3rUGC1vUpkDG9CZFHMur1t",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735f677b5d3b81f08badd0775b"
+    },
+    {
+      "position": 11,
+      "title": "vampire",
+      "artist": "Olivia Rodrigo",
+      "year": 2023,
+      "difficulty": "medium",
+      "youtube_id": "Fqey8LxQxFU",
+      "answers_accepted": {
+        "title_variants": ["vampire", "vampires"],
+        "artist_variants": ["olivia rodrigo", "oliviarodrigo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1kuGVB7EU95pJObxwvfwKS",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e85259a1cae29a8d91f2093d"
+    },
+    {
+      "position": 12,
+      "title": "Snooze",
+      "artist": "SZA",
+      "year": 2022,
+      "difficulty": "hard",
+      "youtube_id": "Sv5yCzPCkv8",
+      "answers_accepted": {
+        "title_variants": ["snooze"],
+        "artist_variants": ["sza", "s z a", "essa"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4iZ4pt7kvcaH6Yo8UoZ4s2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bc18bdade69ec5ef0bb25b17"
+    },
+    {
+      "position": 13,
+      "title": "Pink Venom",
+      "artist": "BLACKPINK",
+      "year": 2022,
+      "difficulty": "hard",
+      "youtube_id": "3or3dp3qNQU",
+      "answers_accepted": {
+        "title_variants": ["pink venom", "pinkvenom"],
+        "artist_variants": ["blackpink", "black pink"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0skYUMpS0AcbpjcGsAbRGj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273797b37e01334a0897825d8b1"
+    },
+    {
+      "position": 14,
+      "title": "Bones",
+      "artist": "Imagine Dragons",
+      "year": 2022,
+      "difficulty": "medium",
+      "youtube_id": "mb-Cnwi9BqA",
+      "answers_accepted": {
+        "title_variants": ["bones", "bone"],
+        "artist_variants": ["imagine dragons", "imaginedragons", "imagin dragons"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0HqZX76SFLDz2aW8aiqi7G",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273813713582dcc508e7d5073c4"
+    },
+    {
+      "position": 15,
+      "title": "Bunny is a Rider",
+      "artist": "Caroline Polachek",
+      "year": 2021,
+      "difficulty": "hard",
+      "youtube_id": "yQ5y2GMVVNQ",
+      "answers_accepted": {
+        "title_variants": ["bunny is a rider", "bunny rider", "bunnyisarider"],
+        "artist_variants": ["caroline polachek", "carolinepolachek", "caroline polacek"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1rYABrDmfqVmJMwaNJBUUb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734ddce3e733d4ba9d9b25ba5c"
+    }
+  ]
+}

@@ -1,0 +1,251 @@
+{
+  "id": "official-pl-enfants-4-8-ans",
+  "name_fr": "Enfants — 4 à 8 ans",
+  "name_en": "Kids — 4 to 8 years",
+  "description_fr": "Pour les petits : Chantal Goya, Henri Dès, Aldebert, Yves Duteil. Les classiques de l'enfance francophone.",
+  "description_en": "For the little ones: Chantal Goya, Henri Dès, Aldebert, Yves Duteil. The classics of French-speaking childhood.",
+  "locale_primary": "fr",
+  "theme": "thematic_enfants_4_8_ans",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "instrumental"],
+    "year_range_strict": [1946, 2015]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Bécassine est ma cousine",
+      "artist": "Chantal Goya",
+      "year": 1979,
+      "difficulty": "easy",
+      "youtube_id": "xbf-F7ynu7g",
+      "answers_accepted": {
+        "title_variants": ["bécassine est ma cousine", "becassine est ma cousine", "bécassine"],
+        "artist_variants": ["chantal goya", "goya"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1TQDewhvqn3wBJJ5j0zjxL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731c9d833233769ee4cff30fb9"
+    },
+    {
+      "position": 2,
+      "title": "Pandi Panda",
+      "artist": "Chantal Goya",
+      "year": 1980,
+      "difficulty": "easy",
+      "youtube_id": "jwWvGGxZyBs",
+      "answers_accepted": {
+        "title_variants": ["pandi panda", "pandipanda"],
+        "artist_variants": ["chantal goya", "goya"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7iwqWCVDrhoWz8xhjOacjY",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731c9d833233769ee4cff30fb9"
+    },
+    {
+      "position": 3,
+      "title": "Le facteur n'est pas passé",
+      "artist": "Henri Dès",
+      "year": 1976,
+      "difficulty": "medium",
+      "youtube_id": "_Uf3P6RD65w",
+      "answers_accepted": {
+        "title_variants": ["le facteur n'est pas passé", "le facteur nest pas passe", "le facteur"],
+        "artist_variants": ["henri dès", "henri des", "des"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3tAtjgQxUOgmxjZ7AeMzg7",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273893a354f7b1a6bdaf57ec863"
+    },
+    {
+      "position": 4,
+      "title": "La poulette",
+      "artist": "Henri Dès",
+      "year": 1981,
+      "difficulty": "medium",
+      "youtube_id": "ZwhIlF25Gro",
+      "answers_accepted": {
+        "title_variants": ["la poulette", "lapoulette", "poulette"],
+        "artist_variants": ["henri dès", "henri des"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7uheKPa435jEJbkSDbUFgK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27365db17be56d7b3d99e29531b"
+    },
+    {
+      "position": 5,
+      "title": "Plus tard quand tu seras grand",
+      "artist": "Aldebert",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "MhLg9Lkhqbc",
+      "answers_accepted": {
+        "title_variants": ["plus tard quand tu seras grand", "quand tu seras grand", "plus tard"],
+        "artist_variants": ["aldebert"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5ZiWk1JiirkFh88mpumGvZ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f6ca1693f74e8340d36a585c"
+    },
+    {
+      "position": 6,
+      "title": "Mon papa chevalier",
+      "artist": "Aldebert",
+      "year": 2010,
+      "difficulty": "medium",
+      "youtube_id": "fscOlnXVDxM",
+      "answers_accepted": {
+        "title_variants": ["mon papa chevalier", "papa chevalier"],
+        "artist_variants": ["aldebert"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/fscOlnXVDxM/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Une chanson douce (Le loup, la biche et le chevalier)",
+      "artist": "Henri Salvador",
+      "year": 1950,
+      "difficulty": "easy",
+      "youtube_id": "ekUQpDDBzY4",
+      "answers_accepted": {
+        "title_variants": [
+          "une chanson douce",
+          "une chanson",
+          "le loup la biche et le chevalier",
+          "le loup la biche",
+          "chanson douce"
+        ],
+        "artist_variants": ["henri salvador", "salvador"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7lpPkpvLDDtT4hx6EPHBAy",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a2cdd6da71185db38bdc903f"
+    },
+    {
+      "position": 8,
+      "title": "La danse des canards",
+      "artist": "JJ Lionel",
+      "year": 1980,
+      "difficulty": "easy",
+      "youtube_id": "17vFHKwq8B8",
+      "answers_accepted": {
+        "title_variants": ["la danse des canards", "danse des canards", "ladansedescanards"],
+        "artist_variants": ["jj lionel", "j.j. lionel", "lionel"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6awP0pk7rbLDiSjpnKKZkW",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f5638aefc6538cc522319d81"
+    },
+    {
+      "position": 9,
+      "title": "Petit Papa Noël",
+      "artist": "Tino Rossi",
+      "year": 1946,
+      "difficulty": "easy",
+      "youtube_id": "K1MnvbRDSYQ",
+      "answers_accepted": {
+        "title_variants": ["petit papa noël", "petit papa noel", "papa noël", "papa noel"],
+        "artist_variants": ["tino rossi", "tinorossi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5FHMtswRpmTObVb9wnZWga",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732da0de7d07072c61bf9b0068"
+    },
+    {
+      "position": 10,
+      "title": "Une souris verte",
+      "artist": "Steve Waring",
+      "year": 1973,
+      "difficulty": "medium",
+      "youtube_id": "3nyTOZnzXoA",
+      "answers_accepted": {
+        "title_variants": ["une souris verte", "souris verte", "unesourisverte"],
+        "artist_variants": ["steve waring", "stevewaring"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4eIwc1VYcGX2cXHDcf7B8U",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27392d48506e44c6664d2beb1d1"
+    },
+    {
+      "position": 11,
+      "title": "Mon âne",
+      "artist": "Anne Sylvestre",
+      "year": 1975,
+      "difficulty": "medium",
+      "youtube_id": "ZrJmZwARXE8",
+      "answers_accepted": {
+        "title_variants": ["mon âne", "mon ane", "monane"],
+        "artist_variants": ["anne sylvestre", "annesylvestre", "sylvestre"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2Nc78G51I2KRecYmAB9ijG",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732a91ace68061bdc323f0e0dc"
+    },
+    {
+      "position": 12,
+      "title": "La maman des poissons",
+      "artist": "Boby Lapointe",
+      "year": 1962,
+      "difficulty": "hard",
+      "youtube_id": "Z97ZukL-kW4",
+      "answers_accepted": {
+        "title_variants": ["la maman des poissons", "maman des poissons"],
+        "artist_variants": ["boby lapointe", "bobylapointe", "lapointe"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0Ig3XzIxvRa3NTRMKaKvsm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d4496a7226c8dfbbfd652935"
+    },
+    {
+      "position": 13,
+      "title": "Prendre un enfant par la main",
+      "artist": "Yves Duteil",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "-n4yGJK9w64",
+      "answers_accepted": {
+        "title_variants": [
+          "prendre un enfant par la main",
+          "prendre un enfant",
+          "un enfant par la main"
+        ],
+        "artist_variants": ["yves duteil", "duteil"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3zl3h38DyPQY6MuZy3ibOh",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736f37837a5c4d275520b56d58"
+    },
+    {
+      "position": 14,
+      "title": "La langue de chez nous",
+      "artist": "Yves Duteil",
+      "year": 1985,
+      "difficulty": "medium",
+      "youtube_id": "9LCZzltHSDk",
+      "answers_accepted": {
+        "title_variants": ["la langue de chez nous", "langue de chez nous"],
+        "artist_variants": ["yves duteil", "duteil"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "30XmHRsuR9Nvc0wvls8okr",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fe63279aa5ca1840e1a77b6d"
+    },
+    {
+      "position": 15,
+      "title": "Vive le vent",
+      "artist": "Carmen Campagne",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "V-PD5iz7qdE",
+      "answers_accepted": {
+        "title_variants": ["vive le vent", "vivelevent", "jingle bells fr"],
+        "artist_variants": ["carmen campagne", "carmencampagne"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/V-PD5iz7qdE/hqdefault.jpg"
+    }
+  ]
+}

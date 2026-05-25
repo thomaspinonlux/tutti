@@ -1,0 +1,252 @@
+{
+  "id": "official-pl-noel",
+  "name_fr": "Noël",
+  "name_en": "Christmas",
+  "description_fr": "Les classiques de Noël : Mariah Carey, Wham, Bublé, Slade, Bobby Helms. Pour décembre et les fêtes.",
+  "description_en": "Christmas classics: Mariah Carey, Wham, Bublé, Slade, Bobby Helms. For December and the holidays.",
+  "locale_primary": "international",
+  "theme": "thematic_noel",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "instrumental"],
+    "year_range_strict": [1957, 2015]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "All I Want for Christmas Is You",
+      "artist": "Mariah Carey",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "bXlk2q_kt3I",
+      "answers_accepted": {
+        "title_variants": [
+          "all i want for christmas is you",
+          "all i want for christmas",
+          "alliwantforchristmas"
+        ],
+        "artist_variants": ["mariah carey", "mariahcarey", "mariah"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/bXlk2q_kt3I/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Last Christmas",
+      "artist": "Wham!",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "ELG1faxK2D0",
+      "answers_accepted": {
+        "title_variants": ["last christmas", "lastchristmas"],
+        "artist_variants": ["wham!", "wham", "george michael"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ELG1faxK2D0/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "It's Beginning to Look a Lot Like Christmas",
+      "artist": "Michael Bublé",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "QJ5DOWPGxwg",
+      "answers_accepted": {
+        "title_variants": [
+          "it's beginning to look a lot like christmas",
+          "beginning to look a lot like christmas",
+          "look a lot like christmas"
+        ],
+        "artist_variants": ["michael bublé", "michael buble", "buble"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/QJ5DOWPGxwg/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Santa Tell Me",
+      "artist": "Ariana Grande",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "jnXxxKZ57Tw",
+      "answers_accepted": {
+        "title_variants": ["santa tell me", "santatellme"],
+        "artist_variants": ["ariana grande", "arianagrande", "ariana"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/jnXxxKZ57Tw/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Merry Christmas Everyone",
+      "artist": "Shakin' Stevens",
+      "year": 1985,
+      "difficulty": "medium",
+      "youtube_id": "X2LcVwRfH-w",
+      "answers_accepted": {
+        "title_variants": ["merry christmas everyone", "merrychristmaseveryone"],
+        "artist_variants": ["shakin stevens", "shakin' stevens", "shakinstevens"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/X2LcVwRfH-w/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "I Wish It Could Be Christmas Everyday",
+      "artist": "Wizzard",
+      "year": 1973,
+      "difficulty": "medium",
+      "youtube_id": "IJPc7esgvsA",
+      "answers_accepted": {
+        "title_variants": [
+          "i wish it could be christmas everyday",
+          "christmas everyday",
+          "i wish it could be christmas every day"
+        ],
+        "artist_variants": ["wizzard", "roy wood"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/IJPc7esgvsA/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Merry Xmas Everybody",
+      "artist": "Slade",
+      "year": 1973,
+      "difficulty": "medium",
+      "youtube_id": "B6uhanKNKis",
+      "answers_accepted": {
+        "title_variants": [
+          "merry xmas everybody",
+          "merry christmas everybody",
+          "merryxmaseverybody"
+        ],
+        "artist_variants": ["slade"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/B6uhanKNKis/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Driving Home for Christmas",
+      "artist": "Chris Rea",
+      "year": 1986,
+      "difficulty": "medium",
+      "youtube_id": "c2quXHinymQ",
+      "answers_accepted": {
+        "title_variants": ["driving home for christmas", "drivinghomeforchristmas"],
+        "artist_variants": ["chris rea", "chrisrea"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/c2quXHinymQ/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Step into Christmas",
+      "artist": "Elton John",
+      "year": 1973,
+      "difficulty": "medium",
+      "youtube_id": "IbRtGMm96F8",
+      "answers_accepted": {
+        "title_variants": ["step into christmas", "stepintochristmas"],
+        "artist_variants": ["elton john", "eltonjohn"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/IbRtGMm96F8/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Wonderful Christmastime",
+      "artist": "Paul McCartney",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "94Ye-3C1FC8",
+      "answers_accepted": {
+        "title_variants": ["wonderful christmastime", "wonderfulchristmastime"],
+        "artist_variants": ["paul mccartney", "paulmccartney", "mccartney"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/94Ye-3C1FC8/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Do They Know It's Christmas?",
+      "artist": "Band Aid",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "RH-xd5bPKTA",
+      "answers_accepted": {
+        "title_variants": [
+          "do they know it's christmas",
+          "do they know its christmas",
+          "feed the world"
+        ],
+        "artist_variants": ["band aid", "bandaid"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/RH-xd5bPKTA/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Sleigh Ride",
+      "artist": "The Ronettes",
+      "year": 1963,
+      "difficulty": "hard",
+      "youtube_id": "XZTzai1H9DM",
+      "answers_accepted": {
+        "title_variants": ["sleigh ride", "sleighride"],
+        "artist_variants": ["the ronettes", "ronettes"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/XZTzai1H9DM/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Rockin' Around the Christmas Tree",
+      "artist": "Brenda Lee",
+      "year": 1958,
+      "difficulty": "easy",
+      "youtube_id": "TFsZy9t-qDc",
+      "answers_accepted": {
+        "title_variants": [
+          "rockin around the christmas tree",
+          "rockin' around the christmas tree",
+          "around the christmas tree"
+        ],
+        "artist_variants": ["brenda lee", "brendalee"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/TFsZy9t-qDc/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Jingle Bell Rock",
+      "artist": "Bobby Helms",
+      "year": 1957,
+      "difficulty": "easy",
+      "youtube_id": "nIhs1T7OcZg",
+      "answers_accepted": {
+        "title_variants": ["jingle bell rock", "jinglebellrock"],
+        "artist_variants": ["bobby helms", "bobbyhelms"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/nIhs1T7OcZg/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Stop the Cavalry",
+      "artist": "Jona Lewie",
+      "year": 1980,
+      "difficulty": "hard",
+      "youtube_id": "rDBfGrfUuug",
+      "answers_accepted": {
+        "title_variants": ["stop the cavalry", "stopthecavalry"],
+        "artist_variants": ["jona lewie", "jonalewie"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/rDBfGrfUuug/hqdefault.jpg"
+    }
+  ]
+}

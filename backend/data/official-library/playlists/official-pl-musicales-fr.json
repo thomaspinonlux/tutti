@@ -1,0 +1,254 @@
+{
+  "id": "official-pl-musicales-fr",
+  "name_fr": "Comédies musicales françaises",
+  "name_en": "French Musicals",
+  "description_fr": "Les hits des comédies musicales françaises : Notre-Dame de Paris, Roméo et Juliette, Mozart l'Opéra Rock, Les 10 Commandements, Le Roi Soleil, Robin des Bois, 1789.",
+  "description_en": "Hits from French musicals: Notre-Dame de Paris, Romeo and Juliet, Mozart Rock Opera, The 10 Commandments, The Sun King, Robin Hood, 1789.",
+  "locale_primary": "fr",
+  "theme": "thematic_musicals_fr",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_cast",
+    "avoid": ["live_concert", "remix"],
+    "year_range_strict": [1998, 2015]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Vivre",
+      "artist": "Hélène Ségara",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "8ByyFvHFU8E",
+      "answers_accepted": {
+        "title_variants": ["vivre", "vivre ndp", "notre dame de paris"],
+        "artist_variants": ["hélène ségara", "helene segara", "ségara"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/8ByyFvHFU8E/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Vérone",
+      "artist": "Roméo et Juliette (cast)",
+      "year": 2001,
+      "difficulty": "medium",
+      "youtube_id": "p9OhvAFbnUY",
+      "answers_accepted": {
+        "title_variants": ["vérone", "verone", "véronne"],
+        "artist_variants": ["roméo et juliette", "romeo et juliette", "cast roméo et juliette"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/p9OhvAFbnUY/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "J'ai peur",
+      "artist": "Roméo et Juliette (cast)",
+      "year": 2001,
+      "difficulty": "hard",
+      "youtube_id": "mV3i6Bbva4E",
+      "answers_accepted": {
+        "title_variants": ["j'ai peur", "jai peur", "peur"],
+        "artist_variants": ["roméo et juliette", "romeo et juliette", "damien sargue"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/mV3i6Bbva4E/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "L'assasymphonie",
+      "artist": "Florent Mothe",
+      "year": 2009,
+      "difficulty": "medium",
+      "youtube_id": "8HE4BZ_FN5U",
+      "answers_accepted": {
+        "title_variants": [
+          "l'assasymphonie",
+          "lassasymphonie",
+          "assasymphonie",
+          "mozart opéra rock"
+        ],
+        "artist_variants": [
+          "florent mothe",
+          "florentmothe",
+          "mozart opéra rock",
+          "mozart opera rock"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/8HE4BZ_FN5U/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Penser l'impossible",
+      "artist": "Mozart Opéra Rock",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "910emiYv1J8",
+      "answers_accepted": {
+        "title_variants": ["penser l'impossible", "penser limpossible", "penser impossible"],
+        "artist_variants": ["mozart opéra rock", "mozart opera rock", "mozart"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/910emiYv1J8/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "L'envie d'aimer",
+      "artist": "Daniel Lévi",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "mCog_OTKjjE",
+      "answers_accepted": {
+        "title_variants": [
+          "l'envie d'aimer",
+          "lenvie daimer",
+          "envie d'aimer",
+          "10 commandements",
+          "les dix commandements"
+        ],
+        "artist_variants": ["daniel lévi", "daniel levi", "danielevi"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/mCog_OTKjjE/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Ça ira mon amour",
+      "artist": "1789, les Amants de la Bastille",
+      "year": 2012,
+      "difficulty": "hard",
+      "youtube_id": "6Om4EIUWrYQ",
+      "answers_accepted": {
+        "title_variants": ["ça ira mon amour", "ca ira mon amour", "ça ira", "ca ira"],
+        "artist_variants": ["1789", "1789 les amants de la bastille", "amants de la bastille"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/6Om4EIUWrYQ/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "À nous",
+      "artist": "Robin des Bois (cast)",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "6HkiCuZoyj0",
+      "answers_accepted": {
+        "title_variants": ["à nous", "a nous", "anous", "robin des bois"],
+        "artist_variants": ["robin des bois", "robindesbois", "m. pokora robin des bois"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/6HkiCuZoyj0/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Bohémienne",
+      "artist": "Hélène Ségara",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "dNCylkiJoZ8",
+      "answers_accepted": {
+        "title_variants": ["bohémienne", "bohemienne", "boheme", "esmeralda"],
+        "artist_variants": ["hélène ségara", "helene segara", "esmeralda ndp"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/dNCylkiJoZ8/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Lune",
+      "artist": "Bruno Pelletier",
+      "year": 1998,
+      "difficulty": "hard",
+      "youtube_id": "KfMt3FNo5Mw",
+      "answers_accepted": {
+        "title_variants": ["lune", "la lune", "lune ndp", "notre dame de paris lune"],
+        "artist_variants": ["bruno pelletier", "brunopelletier", "pelletier"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KfMt3FNo5Mw/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Mon frère",
+      "artist": "Daniel Lévi",
+      "year": 2000,
+      "difficulty": "medium",
+      "youtube_id": "wR0cK_RTnPk",
+      "answers_accepted": {
+        "title_variants": ["mon frère", "mon frere", "monfrere", "10 commandements"],
+        "artist_variants": ["daniel lévi", "daniel levi", "10 commandements"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/wR0cK_RTnPk/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Tant qu'on rêve encore",
+      "artist": "Le Roi Soleil (cast)",
+      "year": 2005,
+      "difficulty": "medium",
+      "youtube_id": "d7TCJk-J9fg",
+      "answers_accepted": {
+        "title_variants": [
+          "tant qu'on rêve encore",
+          "tant quon reve encore",
+          "rêve encore",
+          "le roi soleil"
+        ],
+        "artist_variants": ["le roi soleil", "leroi soleil", "emmanuel moire", "christophe maé"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/d7TCJk-J9fg/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Je fais de toi mon essentiel",
+      "artist": "Emmanuel Moire",
+      "year": 2005,
+      "difficulty": "easy",
+      "youtube_id": "o7bUl9yhhH8",
+      "answers_accepted": {
+        "title_variants": [
+          "je fais de toi mon essentiel",
+          "mon essentiel",
+          "essentiel",
+          "le roi soleil"
+        ],
+        "artist_variants": ["emmanuel moire", "emmanuelmoire", "le roi soleil"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/o7bUl9yhhH8/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Tomber dans ses yeux",
+      "artist": "1789, les Amants de la Bastille",
+      "year": 2012,
+      "difficulty": "hard",
+      "youtube_id": "U9xKbqUbAJQ",
+      "answers_accepted": {
+        "title_variants": ["tomber dans ses yeux", "tomberdans sesyeux", "ses yeux"],
+        "artist_variants": ["1789", "1789 les amants de la bastille", "louis delort"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/U9xKbqUbAJQ/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Vivre à en crever",
+      "artist": "Mozart Opéra Rock",
+      "year": 2009,
+      "difficulty": "medium",
+      "youtube_id": "1yNEohtQSW8",
+      "answers_accepted": {
+        "title_variants": ["vivre à en crever", "vivre a en crever", "à en crever", "vivre crever"],
+        "artist_variants": ["mozart opéra rock", "mozart opera rock", "mikelangelo loconte"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/1yNEohtQSW8/hqdefault.jpg"
+    }
+  ]
+}

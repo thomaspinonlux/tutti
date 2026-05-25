@@ -1,0 +1,228 @@
+{
+  "id": "official-pl-rap-fr",
+  "name_fr": "Rap Français",
+  "name_en": "French Rap",
+  "description_fr": "Le rap français des années 2000-2020 : Booba, PNL, Diam's, Sexion d'Assaut, Orelsan, Niska, Damso, SCH. Hits incontournables.",
+  "description_en": "French rap from the 2000s to 2020s: Booba, PNL, Diam's, Sexion d'Assaut, Orelsan, Niska, Damso, SCH. Essential hits.",
+  "locale_primary": "fr",
+  "theme": "thematic_rap_fr",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "freestyle"],
+    "year_range_strict": [2005, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "DKR",
+      "artist": "Booba",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "KbYpghM6d-g",
+      "answers_accepted": {
+        "title_variants": ["dkr", "d k r"],
+        "artist_variants": ["booba", "boubacar"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KbYpghM6d-g/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Le monde ou rien",
+      "artist": "PNL",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "umF1kfVujhM",
+      "answers_accepted": {
+        "title_variants": ["le monde ou rien", "monde ou rien", "lemondeourien"],
+        "artist_variants": ["pnl", "p n l"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/umF1kfVujhM/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Marina",
+      "artist": "La Fouine",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "26QCYqJkXrk",
+      "answers_accepted": {
+        "title_variants": ["marina"],
+        "artist_variants": ["la fouine", "lafouine", "fouine"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/26QCYqJkXrk/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "La boulette",
+      "artist": "Diam's",
+      "year": 2006,
+      "difficulty": "medium",
+      "youtube_id": "Ed9GVVT1zz0",
+      "answers_accepted": {
+        "title_variants": ["la boulette", "laboulette", "boulette"],
+        "artist_variants": ["diam's", "diams", "mélanie georgiades"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Ed9GVVT1zz0/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Désolé",
+      "artist": "Sexion d'Assaut",
+      "year": 2010,
+      "difficulty": "easy",
+      "youtube_id": "wExpZNxWA_U",
+      "answers_accepted": {
+        "title_variants": ["désolé", "desole"],
+        "artist_variants": ["sexion d'assaut", "sexion dassaut", "sexiondassaut"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/wExpZNxWA_U/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Wati House",
+      "artist": "Sexion d'Assaut",
+      "year": 2009,
+      "difficulty": "medium",
+      "youtube_id": "eIrRPLzDrHU",
+      "answers_accepted": {
+        "title_variants": ["wati house", "watihouse", "wati"],
+        "artist_variants": ["sexion d'assaut", "sexion dassaut"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/eIrRPLzDrHU/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "La terre est ronde",
+      "artist": "Orelsan",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "oGdhZyS2ozo",
+      "answers_accepted": {
+        "title_variants": ["la terre est ronde", "terre est ronde", "laterreestronde"],
+        "artist_variants": ["orelsan", "orel san"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/oGdhZyS2ozo/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Basique",
+      "artist": "Orelsan",
+      "year": 2017,
+      "difficulty": "easy",
+      "youtube_id": "2bjk26RwjyU",
+      "answers_accepted": {
+        "title_variants": ["basique"],
+        "artist_variants": ["orelsan"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/2bjk26RwjyU/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Toulon Marseille",
+      "artist": "Lefa",
+      "year": 2018,
+      "difficulty": "hard",
+      "youtube_id": "W50RvzaezQA",
+      "answers_accepted": {
+        "title_variants": ["toulon marseille", "toulonmarseille"],
+        "artist_variants": ["lefa", "lefa rap"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/W50RvzaezQA/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Réseaux",
+      "artist": "Niska",
+      "year": 2017,
+      "difficulty": "easy",
+      "youtube_id": "r7Oy0BOGxDM",
+      "answers_accepted": {
+        "title_variants": ["réseaux", "reseaux"],
+        "artist_variants": ["niska", "niskaaa"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/r7Oy0BOGxDM/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Macarena",
+      "artist": "Damso",
+      "year": 2018,
+      "difficulty": "medium",
+      "youtube_id": "j5l0qasNAoY",
+      "answers_accepted": {
+        "title_variants": ["macarena"],
+        "artist_variants": ["damso", "damso vie"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/j5l0qasNAoY/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "A.W.A.",
+      "artist": "Lacrim",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "tOwuXkPIl-s",
+      "answers_accepted": {
+        "title_variants": ["awa", "a.w.a.", "a w a"],
+        "artist_variants": ["lacrim", "lakrim"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/tOwuXkPIl-s/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Mannschaft",
+      "artist": "SCH",
+      "year": 2018,
+      "difficulty": "hard",
+      "youtube_id": "cgDZN44WpoE",
+      "answers_accepted": {
+        "title_variants": ["mannschaft"],
+        "artist_variants": ["sch", "s c h", "julien schwarzer"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/cgDZN44WpoE/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Désaccordé",
+      "artist": "Vald",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "kutk2XHEZNU",
+      "answers_accepted": {
+        "title_variants": ["désaccordé", "desaccorde"],
+        "artist_variants": ["vald", "vald rap"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/kutk2XHEZNU/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Hiro",
+      "artist": "Soprano",
+      "year": 2010,
+      "difficulty": "medium",
+      "youtube_id": "VLPRQUbhIT0",
+      "answers_accepted": {
+        "title_variants": ["hiro"],
+        "artist_variants": ["soprano", "sopra"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/VLPRQUbhIT0/hqdefault.jpg"
+    }
+  ]
+}

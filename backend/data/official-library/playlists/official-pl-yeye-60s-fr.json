@@ -1,0 +1,244 @@
+{
+  "id": "official-pl-yeye-60s-fr",
+  "name_fr": "Yéyé — Années 60 françaises",
+  "name_en": "Yéyé — French 60s",
+  "description_fr": "L'âge d'or du yéyé : Françoise Hardy, Sylvie Vartan, France Gall, Johnny Hallyday, Adamo, Christophe. Twist, mini-jupes et 45 tours.",
+  "description_en": "The yéyé golden age: Françoise Hardy, Sylvie Vartan, France Gall, Johnny Hallyday, Adamo, Christophe. Twist, miniskirts and 45 RPMs.",
+  "locale_primary": "fr",
+  "theme": "decade_lang_fr_60s",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "best of"],
+    "year_range_strict": [1962, 1969]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Tous les garçons et les filles",
+      "artist": "Françoise Hardy",
+      "year": 1962,
+      "difficulty": "easy",
+      "youtube_id": "5cSFjJ4CJKc",
+      "answers_accepted": {
+        "title_variants": [
+          "tous les garçons et les filles",
+          "tous les garcons et les filles",
+          "tous les garcons"
+        ],
+        "artist_variants": ["françoise hardy", "francoise hardy", "hardy"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/5cSFjJ4CJKc/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Le temps de l'amour",
+      "artist": "Françoise Hardy",
+      "year": 1962,
+      "difficulty": "medium",
+      "youtube_id": "QCHOvg-cJTQ",
+      "answers_accepted": {
+        "title_variants": ["le temps de l'amour", "le temps de lamour", "temps de l'amour"],
+        "artist_variants": ["françoise hardy", "francoise hardy", "hardy"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/QCHOvg-cJTQ/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "La plus belle pour aller danser",
+      "artist": "Sylvie Vartan",
+      "year": 1964,
+      "difficulty": "easy",
+      "youtube_id": "Twg8lF0lsm4",
+      "answers_accepted": {
+        "title_variants": [
+          "la plus belle pour aller danser",
+          "plus belle pour aller danser",
+          "plus belle"
+        ],
+        "artist_variants": ["sylvie vartan", "vartan"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Twg8lF0lsm4/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Irrésistiblement",
+      "artist": "Sylvie Vartan",
+      "year": 1968,
+      "difficulty": "medium",
+      "youtube_id": "ftB5jxnXY4s",
+      "answers_accepted": {
+        "title_variants": ["irrésistiblement", "irresistiblement"],
+        "artist_variants": ["sylvie vartan", "vartan"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ftB5jxnXY4s/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Poupée de cire, poupée de son",
+      "artist": "France Gall",
+      "year": 1965,
+      "difficulty": "easy",
+      "youtube_id": "rRva0YOVtcI",
+      "answers_accepted": {
+        "title_variants": [
+          "poupée de cire poupée de son",
+          "poupee de cire poupee de son",
+          "poupée de cire"
+        ],
+        "artist_variants": ["france gall", "francegall"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/rRva0YOVtcI/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Les Sucettes",
+      "artist": "France Gall",
+      "year": 1966,
+      "difficulty": "medium",
+      "youtube_id": "q-iysdFu_TQ",
+      "answers_accepted": {
+        "title_variants": ["les sucettes", "lessucettes", "sucettes"],
+        "artist_variants": ["france gall", "francegall"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/q-iysdFu_TQ/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "La Madrague",
+      "artist": "Brigitte Bardot",
+      "year": 1963,
+      "difficulty": "medium",
+      "youtube_id": "aN0kPQ085z0",
+      "answers_accepted": {
+        "title_variants": ["la madrague", "madrague"],
+        "artist_variants": ["brigitte bardot", "bardot", "bb"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/aN0kPQ085z0/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Capri c'est fini",
+      "artist": "Hervé Vilard",
+      "year": 1965,
+      "difficulty": "medium",
+      "youtube_id": "sOZqMC5SGGg",
+      "answers_accepted": {
+        "title_variants": ["capri c'est fini", "capri cest fini", "capri fini"],
+        "artist_variants": ["hervé vilard", "herve vilard", "vilard"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/sOZqMC5SGGg/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Aline",
+      "artist": "Christophe",
+      "year": 1965,
+      "difficulty": "easy",
+      "youtube_id": "-E_Hyn53acA",
+      "answers_accepted": {
+        "title_variants": ["aline"],
+        "artist_variants": ["christophe", "daniel bevilacqua"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/-E_Hyn53acA/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "La poupée qui fait non",
+      "artist": "Michel Polnareff",
+      "year": 1966,
+      "difficulty": "medium",
+      "youtube_id": "SJSRB-C9KCQ",
+      "answers_accepted": {
+        "title_variants": [
+          "la poupée qui fait non",
+          "la poupee qui fait non",
+          "poupée qui fait non"
+        ],
+        "artist_variants": ["michel polnareff", "polnareff"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/SJSRB-C9KCQ/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "L'amour est bleu",
+      "artist": "Vicky Leandros",
+      "year": 1967,
+      "difficulty": "hard",
+      "youtube_id": "u68Z2B36-3c",
+      "answers_accepted": {
+        "title_variants": ["l'amour est bleu", "lamour est bleu", "amour est bleu"],
+        "artist_variants": ["vicky leandros", "vickyleandros"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/u68Z2B36-3c/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Tombe la neige",
+      "artist": "Salvatore Adamo",
+      "year": 1963,
+      "difficulty": "medium",
+      "youtube_id": "oNLmwz8A9_I",
+      "answers_accepted": {
+        "title_variants": ["tombe la neige", "tombelaneige"],
+        "artist_variants": ["salvatore adamo", "adamo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/oNLmwz8A9_I/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Le Pénitencier",
+      "artist": "Johnny Hallyday",
+      "year": 1964,
+      "difficulty": "easy",
+      "youtube_id": "4NM5Gc0pa-M",
+      "answers_accepted": {
+        "title_variants": ["le pénitencier", "le penitencier", "pénitencier", "penitencier"],
+        "artist_variants": ["johnny hallyday", "hallyday", "johnny"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4NM5Gc0pa-M/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Que je t'aime",
+      "artist": "Johnny Hallyday",
+      "year": 1969,
+      "difficulty": "medium",
+      "youtube_id": "cYjal6zXzkM",
+      "answers_accepted": {
+        "title_variants": ["que je t'aime", "que je taime", "quejetaime"],
+        "artist_variants": ["johnny hallyday", "hallyday", "johnny"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/cYjal6zXzkM/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Comme d'habitude",
+      "artist": "Claude François",
+      "year": 1967,
+      "difficulty": "easy",
+      "youtube_id": "kJl2ICLpj00",
+      "answers_accepted": {
+        "title_variants": ["comme d'habitude", "comme dhabitude", "commedhabitude"],
+        "artist_variants": ["claude françois", "claude francois", "cloclo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/kJl2ICLpj00/hqdefault.jpg"
+    }
+  ]
+}

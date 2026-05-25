@@ -1,0 +1,333 @@
+{
+  "id": "official-pl-films-easy",
+  "name_fr": "Musique de Film — Facile",
+  "name_en": "Movie Soundtracks — Easy",
+  "description_fr": "Les thèmes de film que tout le monde reconnaît. Star Wars, Harry Potter, Forrest Gump, Frozen : les bandes originales gravées dans la culture populaire.",
+  "description_en": "The movie themes everyone recognizes. Star Wars, Harry Potter, Forrest Gump, Frozen: the soundtracks etched in pop culture.",
+  "locale_primary": "international",
+  "theme": "thematic_movies",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_motion_picture_soundtrack",
+    "avoid": ["remix", "live", "cover_school_orchestra", "karaoke"],
+    "year_range_strict": [1975, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Main Theme (Star Wars)",
+      "artist": "John Williams",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "e9lapdvLSGw",
+      "answers_accepted": {
+        "title_variants": [
+          "star wars main theme",
+          "main theme star wars",
+          "star wars theme",
+          "star wars",
+          "main theme",
+          "starwars"
+        ],
+        "artist_variants": ["john williams", "john wiliams", "john williamz"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4hAjrprh6Uc1JYHXrtctdn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736e58de3b1a792e0c323007d9"
+    },
+    {
+      "position": 2,
+      "title": "Jurassic Park Theme",
+      "artist": "John Williams",
+      "year": 1993,
+      "difficulty": "easy",
+      "youtube_id": "lDlU08RU7Tk",
+      "answers_accepted": {
+        "title_variants": [
+          "jurassic park theme",
+          "jurassic park",
+          "theme from jurassic park",
+          "jurasic park"
+        ],
+        "artist_variants": ["john williams", "john wiliams", "john williamz"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5F6nH9kNbB48FusY2hFH01",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734fa3f70523d7ee7c016d199a"
+    },
+    {
+      "position": 3,
+      "title": "Skyfall",
+      "artist": "Adele",
+      "year": 2012,
+      "difficulty": "easy",
+      "youtube_id": "DeumyOzKqgI",
+      "answers_accepted": {
+        "title_variants": ["skyfall", "sky fall", "james bond skyfall"],
+        "artist_variants": ["adele", "adèle", "adel", "adelle"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6VObnIkLVruX4UVyxWhlqm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b479bb2aed275bb1b13d83da"
+    },
+    {
+      "position": 4,
+      "title": "He's a Pirate (Pirates of the Caribbean)",
+      "artist": "Klaus Badelt",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "BuYf0taXoNw",
+      "answers_accepted": {
+        "title_variants": [
+          "he's a pirate",
+          "hes a pirate",
+          "pirates of the caribbean",
+          "pirate des caraïbes",
+          "pirates des caraibes",
+          "pirate caraibes",
+          "pirates caraibes"
+        ],
+        "artist_variants": [
+          "klaus badelt",
+          "hans zimmer",
+          "klausbadelt",
+          "klaus badelt hans zimmer"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4AFkbC3xASbT089O6zJVR2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27338786c7492ac252797bb2648"
+    },
+    {
+      "position": 5,
+      "title": "Hedwig's Theme (Harry Potter)",
+      "artist": "John Williams",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "wtHra9tFISY",
+      "answers_accepted": {
+        "title_variants": [
+          "hedwig's theme",
+          "hedwigs theme",
+          "harry potter theme",
+          "harry potter",
+          "hedwig theme",
+          "hogwarts theme"
+        ],
+        "artist_variants": ["john williams", "john wiliams", "john williamz"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1n8NKQRg8LVHy7oUhUgbFF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27313f982aa5c43146c3d2c1964"
+    },
+    {
+      "position": 6,
+      "title": "Concerning Hobbits (The Lord of the Rings)",
+      "artist": "Howard Shore",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "CL_3mlOPnGI",
+      "answers_accepted": {
+        "title_variants": [
+          "concerning hobbits",
+          "lord of the rings",
+          "the shire",
+          "lotr theme",
+          "le seigneur des anneaux"
+        ],
+        "artist_variants": ["howard shore", "howardshore", "howard shor"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "644es5aYPJghtZLjM1rmSP",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273128ca6b63d83d47c909a43ce"
+    },
+    {
+      "position": 7,
+      "title": "Circle of Life (The Lion King)",
+      "artist": "Elton John",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "IwH9YvhPN7c",
+      "answers_accepted": {
+        "title_variants": [
+          "circle of life",
+          "the lion king",
+          "lion king",
+          "le roi lion",
+          "circleoflife"
+        ],
+        "artist_variants": [
+          "elton john",
+          "lebo m",
+          "carmen twillie",
+          "hans zimmer",
+          "elton john lebo m"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0wWzPZWKhyNtMYGBicybnj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273af0b6d3952a7faae3d33bb1d"
+    },
+    {
+      "position": 8,
+      "title": "Take My Breath Away (Top Gun)",
+      "artist": "Berlin",
+      "year": 1986,
+      "difficulty": "easy",
+      "youtube_id": "Bx51eegLTY8",
+      "answers_accepted": {
+        "title_variants": [
+          "take my breath away",
+          "top gun",
+          "takemybreathaway",
+          "take breath away"
+        ],
+        "artist_variants": ["berlin", "berlin band", "berlin group"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "77Oww6V7jooOd7aNEMnFJ3",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27354c5478cbb4de237fecf5e54"
+    },
+    {
+      "position": 9,
+      "title": "Feather Theme (Forrest Gump)",
+      "artist": "Alan Silvestri",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "ps_RXJ69iQA",
+      "answers_accepted": {
+        "title_variants": [
+          "forrest gump",
+          "feather theme",
+          "forrest gump suite",
+          "forrest gump main title",
+          "main title forrest gump",
+          "forest gump"
+        ],
+        "artist_variants": ["alan silvestri", "alansilvestri", "alan sylvestri", "silvestri"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6p8Dybk9rHO8MjJtkDnBU5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b2e836a21c270942c96e90ca"
+    },
+    {
+      "position": 10,
+      "title": "GoldenEye",
+      "artist": "Tina Turner",
+      "year": 1995,
+      "difficulty": "easy",
+      "youtube_id": "8K3BTWLXqPI",
+      "answers_accepted": {
+        "title_variants": ["goldeneye", "golden eye", "james bond goldeneye", "goldeneye 007"],
+        "artist_variants": ["tina turner", "tinaturner", "tina turners"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "528QhCT2v3HgD71RmrSUNW",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cbb892457f8d597ad5eec9a4"
+    },
+    {
+      "position": 11,
+      "title": "Back to the Future Main Theme",
+      "artist": "Alan Silvestri",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "8083S4dXP3k",
+      "answers_accepted": {
+        "title_variants": [
+          "back to the future",
+          "back to the future theme",
+          "back to the future main theme",
+          "retour vers le futur"
+        ],
+        "artist_variants": ["alan silvestri", "alansilvestri", "alan sylvestri", "silvestri"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/8083S4dXP3k/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Ghostbusters",
+      "artist": "Ray Parker Jr.",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "TgNWyBXBC0E",
+      "answers_accepted": {
+        "title_variants": ["ghostbusters", "ghost busters", "sos fantômes", "sos fantomes"],
+        "artist_variants": ["ray parker jr", "ray parker junior", "rayparkerjr", "ray parker"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3m0y8qLoznUYi73SUBP8GI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e13e5a8659a5518c320cd6cb"
+    },
+    {
+      "position": 13,
+      "title": "Let It Go (Frozen)",
+      "artist": "Idina Menzel",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "FnpJBkAMk44",
+      "answers_accepted": {
+        "title_variants": [
+          "let it go",
+          "frozen",
+          "la reine des neiges",
+          "letitgo",
+          "libérée délivrée",
+          "liberee delivree"
+        ],
+        "artist_variants": ["idina menzel", "idinamenzel", "idina menzell", "elsa frozen"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0qcr5FMsEO85NAQjrlDRKo",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a985e1e7c6b095da213eaa7c"
+    },
+    {
+      "position": 14,
+      "title": "Stayin' Alive (Saturday Night Fever)",
+      "artist": "Bee Gees",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "fNFzfwLM72c",
+      "answers_accepted": {
+        "title_variants": [
+          "stayin alive",
+          "stayin' alive",
+          "staying alive",
+          "saturday night fever",
+          "stayinalive"
+        ],
+        "artist_variants": ["bee gees", "beegees", "the bee gees", "bee gee"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/fNFzfwLM72c/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Mission: Impossible Theme",
+      "artist": "Lalo Schifrin",
+      "year": 1996,
+      "difficulty": "easy",
+      "youtube_id": "q2Rc5BPjPq8",
+      "answers_accepted": {
+        "title_variants": [
+          "mission impossible theme",
+          "mission impossible",
+          "mission: impossible",
+          "missionimpossible",
+          "theme from mission impossible"
+        ],
+        "artist_variants": [
+          "lalo schifrin",
+          "adam clayton larry mullen",
+          "adam clayton & larry mullen jr",
+          "lalo shifrin",
+          "u2 mission impossible"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3UVhPoxIuqqDFNQq3n6lr5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733f6fb5bd76d2a86c63feac28"
+    }
+  ]
+}

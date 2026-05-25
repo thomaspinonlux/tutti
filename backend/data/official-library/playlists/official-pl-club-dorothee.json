@@ -1,0 +1,261 @@
+{
+  "id": "official-pl-club-dorothee",
+  "name_fr": "Génériques Club Dorothée — Dessins animés",
+  "name_en": "French Cartoons Themes (80s-90s)",
+  "description_fr": "Les génériques cultes du Club Dorothée et des dessins animés diffusés en France 1980-2000. Bernard Minet, Goldorak, Albator, DBZ, Olive et Tom, Pokémon.",
+  "description_en": "The cult themes from Club Dorothée and cartoons aired in France 1980-2000. A wave of nostalgia for French viewers.",
+  "locale_primary": "fr",
+  "theme": "thematic_cartoons_fr",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_french_tv_opening",
+    "avoid": ["remix", "live", "cover_school"],
+    "year_range_strict": [1978, 2000]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Goldorak Go!",
+      "artist": "Noam",
+      "year": 1978,
+      "difficulty": "easy",
+      "youtube_id": "Ozq3NC0QR18",
+      "answers_accepted": {
+        "title_variants": ["goldorak go", "goldorak", "goldorack", "goldorack go"],
+        "artist_variants": ["noam", "noam kaniel", "noamm"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7Kdpz5jNYiUZOIWcRA7d76",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cc96b19492a95213c1e220dc"
+    },
+    {
+      "position": 2,
+      "title": "Capitaine Albator",
+      "artist": "Eric Charden",
+      "year": 1980,
+      "difficulty": "easy",
+      "youtube_id": "KhJQ4XcYQbM",
+      "answers_accepted": {
+        "title_variants": [
+          "capitaine albator",
+          "albator",
+          "capitaine albatore",
+          "albator le corsaire"
+        ],
+        "artist_variants": ["eric charden", "éric charden", "ericcharden", "erik charden"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KhJQ4XcYQbM/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Bioman",
+      "artist": "Bernard Minet",
+      "year": 1988,
+      "difficulty": "easy",
+      "youtube_id": "8y6dWcRkggA",
+      "answers_accepted": {
+        "title_variants": ["bioman", "bio man", "biomann"],
+        "artist_variants": ["bernard minet", "bernardminet", "bernard mine", "minet"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6XqTYVJ5ycOQcjGaggJByi",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ed3818eae8d0e2f7c4864bb6"
+    },
+    {
+      "position": 4,
+      "title": "Olive et Tom",
+      "artist": "Bernard Minet",
+      "year": 1988,
+      "difficulty": "easy",
+      "youtube_id": "juQl2UbcD7w",
+      "answers_accepted": {
+        "title_variants": ["olive et tom", "captain tsubasa", "olive tom", "oliveettom"],
+        "artist_variants": ["bernard minet", "bernardminet", "bernard mine"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/juQl2UbcD7w/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Dragon Ball Z (générique français)",
+      "artist": "Ariane Carletti",
+      "year": 1990,
+      "difficulty": "medium",
+      "youtube_id": "KUBnnrvTC2o",
+      "answers_accepted": {
+        "title_variants": ["dragon ball z", "dbz", "dragon ball z generique", "dragonballz"],
+        "artist_variants": ["ariane carletti", "ariane", "ariane carlety", "amy persia"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KUBnnrvTC2o/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Les Chevaliers du Zodiaque",
+      "artist": "Bernard Minet",
+      "year": 1988,
+      "difficulty": "easy",
+      "youtube_id": "234a0963oVw",
+      "answers_accepted": {
+        "title_variants": [
+          "les chevaliers du zodiaque",
+          "chevaliers du zodiaque",
+          "saint seiya",
+          "zodiaque"
+        ],
+        "artist_variants": ["bernard minet", "bernardminet", "minet"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7HcRWC2JQhEzjEeXVFbyMZ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27345b2612022eb06de5992935c"
+    },
+    {
+      "position": 7,
+      "title": "Nicky Larson",
+      "artist": "Olivier Constantin",
+      "year": 1988,
+      "difficulty": "medium",
+      "youtube_id": "PQw1ogP-boo",
+      "answers_accepted": {
+        "title_variants": ["nicky larson", "nickylarson", "nicki larson", "city hunter"],
+        "artist_variants": ["olivier constantin", "olivier constantin", "constantin olivier"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/PQw1ogP-boo/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Cat's Eye (Signé Cat's Eyes)",
+      "artist": "Vanesa",
+      "year": 1986,
+      "difficulty": "medium",
+      "youtube_id": "tw3SOjTsUsM",
+      "answers_accepted": {
+        "title_variants": [
+          "cat's eye",
+          "cats eye",
+          "signé cat's eyes",
+          "signe cat eyes",
+          "cat eye"
+        ],
+        "artist_variants": ["vanesa", "vanessa", "vaneza"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/tw3SOjTsUsM/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Jeanne et Serge",
+      "artist": "Claude Lombard",
+      "year": 1989,
+      "difficulty": "medium",
+      "youtube_id": "A99lNsZRtg8",
+      "answers_accepted": {
+        "title_variants": ["jeanne et serge", "jeanne serge", "jeanneet serge"],
+        "artist_variants": ["claude lombard", "claudelombard", "claude lombarde"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/A99lNsZRtg8/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Pokémon (générique français)",
+      "artist": "Hervé Lapalud",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "0InfUFHiNTg",
+      "answers_accepted": {
+        "title_variants": ["pokemon", "pokémon", "pokemon attrapez les tous", "pokemon theme"],
+        "artist_variants": ["hervé lapalud", "herve lapalud", "lapalud", "pokémon générique"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/0InfUFHiNTg/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Sailor Moon (générique français)",
+      "artist": "Florine Orphelin",
+      "year": 1995,
+      "difficulty": "hard",
+      "youtube_id": null,
+      "answers_accepted": {
+        "title_variants": ["sailor moon", "sailormoon", "sailormoon générique"],
+        "artist_variants": [
+          "florine orphelin",
+          "sailor moon générique",
+          "bernard minet sailor moon"
+        ],
+        "scoring": "title_or_artist"
+      }
+    },
+    {
+      "position": 12,
+      "title": "Inspecteur Gadget",
+      "artist": "Saban Records",
+      "year": 1983,
+      "difficulty": "medium",
+      "youtube_id": "0gZouR9txhs",
+      "answers_accepted": {
+        "title_variants": ["inspecteur gadget", "inspector gadget", "gadget", "inspecteurgadget"],
+        "artist_variants": ["saban records", "saban", "shuki levy", "haim saban"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5DW5txotzNHKCYLhin9jAA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27343dc506e51ea724ffe975f93"
+    },
+    {
+      "position": 13,
+      "title": "M.A.S.K.",
+      "artist": "Bernard Minet",
+      "year": 1986,
+      "difficulty": "hard",
+      "youtube_id": "v8wtlAFNhMg",
+      "answers_accepted": {
+        "title_variants": ["m.a.s.k.", "mask", "masque", "m a s k"],
+        "artist_variants": ["bernard minet", "bernardminet", "minet"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/v8wtlAFNhMg/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Les Mystérieuses Cités d'Or",
+      "artist": "Pierre Bachelet",
+      "year": 1983,
+      "difficulty": "medium",
+      "youtube_id": "KZ8teH7dPxI",
+      "answers_accepted": {
+        "title_variants": [
+          "les mystérieuses cités d'or",
+          "les mysterieuses cites d'or",
+          "cités d'or",
+          "cites d'or",
+          "mysterieuses cites or"
+        ],
+        "artist_variants": ["pierre bachelet", "pierrebachelet", "pierre bachalet", "le big bazar"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KZ8teH7dPxI/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Capitaine Flam",
+      "artist": "Richard Simon",
+      "year": 1981,
+      "difficulty": "hard",
+      "youtube_id": "PM8hWnnWaAg",
+      "answers_accepted": {
+        "title_variants": ["capitaine flam", "captain flam", "capitaineflam", "captain future"],
+        "artist_variants": [
+          "richard simon",
+          "jean-claude corbel",
+          "richard simon jean-claude corbel"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/PM8hWnnWaAg/hqdefault.jpg"
+    }
+  ]
+}

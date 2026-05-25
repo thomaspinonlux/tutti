@@ -1,0 +1,301 @@
+{
+  "id": "official-pl-fr-90s-hard",
+  "name_fr": "Variété FR — Années 90 — Difficile",
+  "name_en": "French Hits — 90s — Hard",
+  "description_fr": "La face plus pointue des années 90 francophones. Rock alternatif, rap conscient, chanson, pop francophone : pour les vrais aficionados.",
+  "description_en": "The sharper side of the French-language 90s. Alt-rock, conscious rap, chanson, French pop: for true aficionados.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_1990s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [1990, 1999]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Zobi la mouche",
+      "artist": "Les Négresses Vertes",
+      "year": 1991,
+      "difficulty": "hard",
+      "youtube_id": "b14czToj5bo",
+      "answers_accepted": {
+        "title_variants": [
+          "zobi la mouche",
+          "zobilamouche",
+          "zobi mouche",
+          "zobi",
+          "zobie la mouche"
+        ],
+        "artist_variants": [
+          "les négresses vertes",
+          "les negresses vertes",
+          "negresses vertes",
+          "lesnegressesvertes",
+          "négresses vertes"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/b14czToj5bo/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "À ton étoile",
+      "artist": "Noir Désir",
+      "year": 1997,
+      "difficulty": "hard",
+      "youtube_id": "BFQLqbZpOOQ",
+      "answers_accepted": {
+        "title_variants": [
+          "à ton étoile",
+          "a ton etoile",
+          "à ton etoile",
+          "a ton étoile",
+          "atoetoile"
+        ],
+        "artist_variants": ["noir désir", "noir desir", "noirdesir", "nuar desir"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7eDzQGkrSmhCstPQ3ho446",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c2e74b9a8b0406f6f4e80652"
+    },
+    {
+      "position": 3,
+      "title": "Léa",
+      "artist": "Louise Attaque",
+      "year": 1997,
+      "difficulty": "hard",
+      "youtube_id": "Wt6eHMIhVxI",
+      "answers_accepted": {
+        "title_variants": ["léa", "lea", "leah", "léaa"],
+        "artist_variants": ["louise attaque", "louiseattaque", "louise attaq", "louize attaque"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "709Vk4ahhCM6ENgRVTTYw6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730197f123ed91c8f333920ff1"
+    },
+    {
+      "position": 4,
+      "title": "L'autre Finistère",
+      "artist": "Les Innocents",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "tKlcV9QAn5s",
+      "answers_accepted": {
+        "title_variants": [
+          "l'autre finistère",
+          "lautre finistere",
+          "l autre finistère",
+          "autre finistère",
+          "lautrefinistere"
+        ],
+        "artist_variants": ["les innocents", "lesinnocents", "innocents", "les inocents"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7idH9AnDtl02fve6bb0w4v",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735b275f88fbaa8ee342b35a66"
+    },
+    {
+      "position": 5,
+      "title": "Au fur et à mesure",
+      "artist": "Liane Foly",
+      "year": 1991,
+      "difficulty": "hard",
+      "youtube_id": "YTxK-PJgJuM",
+      "answers_accepted": {
+        "title_variants": [
+          "au fur et à mesure",
+          "au fur et a mesure",
+          "aufuretamesure",
+          "fur et à mesure",
+          "fur a mesure"
+        ],
+        "artist_variants": ["liane foly", "lianefoly", "liane folly", "liane foli"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2znYKtzWBFLIzSiwnbbGvA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ddb8fe8ae330b35d54b70283"
+    },
+    {
+      "position": 6,
+      "title": "Nirvana",
+      "artist": "Doc Gynéco",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "JYcekMwrVaI",
+      "answers_accepted": {
+        "title_variants": ["nirvana", "nirvanna", "nirvane"],
+        "artist_variants": ["doc gynéco", "doc gyneco", "docgyneco", "doc gineco", "doc gynecoo"],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Doc Gynéco 1996, album Première consultation."
+      },
+      "spotify_id": "7aVlhDQNBEDVye653bUDeF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27323bdc54dc2acc8d0c2f99b3f"
+    },
+    {
+      "position": 7,
+      "title": "Demain c'est loin",
+      "artist": "IAM",
+      "year": 1997,
+      "difficulty": "hard",
+      "youtube_id": "_eObAFn9F4E",
+      "answers_accepted": {
+        "title_variants": [
+          "demain c'est loin",
+          "demain cest loin",
+          "demain c est loin",
+          "demainsestloin",
+          "demain c loin"
+        ],
+        "artist_variants": ["iam", "i a m", "i.a.m.", "iaam"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0QtKyWOrV5Vhw2n5Yf7LcF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27365716918209ccc6bac2af278"
+    },
+    {
+      "position": 8,
+      "title": "Nouveau Western",
+      "artist": "MC Solaar",
+      "year": 1994,
+      "difficulty": "hard",
+      "youtube_id": "4s2VaI4sgrY",
+      "answers_accepted": {
+        "title_variants": ["nouveau western", "nouveauwestern", "nouvel western"],
+        "artist_variants": ["mc solaar", "mcsolaar", "mc solar", "solaar"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "229qdMCBoifrNO40j8wmQb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bade745a57b7e86afb10d951"
+    },
+    {
+      "position": 9,
+      "title": "Le chat",
+      "artist": "Pow woW",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "6AN_45QjOLA",
+      "answers_accepted": {
+        "title_variants": ["le chat", "lechat", "the cat", "chat"],
+        "artist_variants": ["pow wow", "powwow", "pow-wow", "pow waw", "pawow"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7BSEnYIlIsZdY0BZbNr0yn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e048382cb76fc1ba7773b4f0"
+    },
+    {
+      "position": 10,
+      "title": "Tu planes sur moi",
+      "artist": "Native",
+      "year": 1993,
+      "difficulty": "hard",
+      "youtube_id": "-PB4IIzEspM",
+      "answers_accepted": {
+        "title_variants": [
+          "tu planes sur moi",
+          "tuplanessurmoi",
+          "tu plane sur moi",
+          "tu plane sur"
+        ],
+        "artist_variants": ["native", "natif", "natives", "the native"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2OsTA210PL3yi1CV1acECf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736d182af3f83a78f171c6b4c5"
+    },
+    {
+      "position": 11,
+      "title": "L'amour de ma vie",
+      "artist": "Marc Lavoine",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "U02LXUNcdTo",
+      "answers_accepted": {
+        "title_variants": [
+          "l'amour de ma vie",
+          "lamour de ma vie",
+          "l amour de ma vie",
+          "amour de ma vie",
+          "lamourdemavie"
+        ],
+        "artist_variants": ["marc lavoine", "marclavoine", "mark lavoine", "marc lavoyne"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/U02LXUNcdTo/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Caruso",
+      "artist": "Florent Pagny",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "53a_yC4oBsc",
+      "answers_accepted": {
+        "title_variants": ["caruso", "carusso", "carouso"],
+        "artist_variants": ["florent pagny", "florant pagny", "florent pagni", "pagny"],
+        "scoring": "title_or_artist",
+        "notes": "Reprise du morceau de Lucio Dalla (1986). Cible : version Florent Pagny 1996."
+      },
+      "spotify_id": "6hzYm5996aRNtqmCdL4Jku",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273828813e8423d48b9ad5cc075"
+    },
+    {
+      "position": 13,
+      "title": "Didi",
+      "artist": "Khaled",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "jNL4mzzs5ZA",
+      "answers_accepted": {
+        "title_variants": ["didi", "didii", "dee dee"],
+        "artist_variants": ["khaled", "cheb khaled", "kaled", "khaled cheb"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6ZOSOeJi0C6FAOUVn1YD6Q",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737e2bd1ddeb38a0e50bdb516b"
+    },
+    {
+      "position": 14,
+      "title": "Tombé pour elle",
+      "artist": "Pascal Obispo",
+      "year": 1995,
+      "difficulty": "hard",
+      "youtube_id": "S_4TmECivi4",
+      "answers_accepted": {
+        "title_variants": [
+          "tombé pour elle",
+          "tombe pour elle",
+          "tombépour elle",
+          "tombépourelle",
+          "tombe pourelle"
+        ],
+        "artist_variants": ["pascal obispo", "pascalobispo", "obispo", "pascal obispoo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2pMXr3i7mTbT0g6D6yHizI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ead4071ffd44f2a90c8534d7"
+    },
+    {
+      "position": 15,
+      "title": "Que justice soit faite",
+      "artist": "Stomy Bugsy",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "3wafM4bzLmY",
+      "answers_accepted": {
+        "title_variants": [
+          "que justice soit faite",
+          "quejusticesoitfaite",
+          "que justice soit",
+          "justice soit faite"
+        ],
+        "artist_variants": ["stomy bugsy", "stomi bugsy", "stomybugsy", "stomy bugsi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1Jws5cB3nD17n3qOe2G61r",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737b28476ee66bf6d3b086ec03"
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "id": "official-pl-latino",
+  "name_fr": "Latino",
+  "name_en": "Latino",
+  "description_fr": "La pop latine et le reggaeton : Ricky Martin, Shakira, Enrique Iglesias, Santana, Marc Anthony, J Balvin, Selena. Sabor obligatoire.",
+  "description_en": "Latin pop and reggaeton: Ricky Martin, Shakira, Enrique Iglesias, Santana, Marc Anthony, J Balvin, Selena. Sabor mandatory.",
+  "locale_primary": "international",
+  "theme": "thematic_latino",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "english_version"],
+    "year_range_strict": [1985, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Bailando",
+      "artist": "Enrique Iglesias",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "IJihBuoEhDk",
+      "answers_accepted": {
+        "title_variants": ["bailando"],
+        "artist_variants": ["enrique iglesias", "enriqueiglesias", "iglesias"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/IJihBuoEhDk/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Bidi Bidi Bom Bom",
+      "artist": "Selena",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "RKGbjJarMeA",
+      "answers_accepted": {
+        "title_variants": ["bidi bidi bom bom", "bidibidibombom", "bidi bom bom"],
+        "artist_variants": ["selena", "selena quintanilla"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/RKGbjJarMeA/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "She Bangs",
+      "artist": "Ricky Martin",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "CsF_lqnALQw",
+      "answers_accepted": {
+        "title_variants": ["she bangs", "shebangs"],
+        "artist_variants": ["ricky martin", "rickymartin"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CsF_lqnALQw/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "María",
+      "artist": "Ricky Martin",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "ctQ4zbiF97Y",
+      "answers_accepted": {
+        "title_variants": ["maría", "maria"],
+        "artist_variants": ["ricky martin", "rickymartin"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ctQ4zbiF97Y/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Whenever, Wherever",
+      "artist": "Shakira",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "5v-WAEvA7C4",
+      "answers_accepted": {
+        "title_variants": ["whenever wherever", "whenever, wherever", "suerte"],
+        "artist_variants": ["shakira", "shakir"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/5v-WAEvA7C4/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Waka Waka (This Time for Africa)",
+      "artist": "Shakira",
+      "year": 2010,
+      "difficulty": "easy",
+      "youtube_id": "czWcyZRAMtk",
+      "answers_accepted": {
+        "title_variants": ["waka waka", "wakawaka", "this time for africa"],
+        "artist_variants": ["shakira", "freshlyground"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/czWcyZRAMtk/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Suavemente",
+      "artist": "Elvis Crespo",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "_T_SIDKGRjs",
+      "answers_accepted": {
+        "title_variants": ["suavemente"],
+        "artist_variants": ["elvis crespo", "elviscrespo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/_T_SIDKGRjs/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Conga",
+      "artist": "Miami Sound Machine",
+      "year": 1985,
+      "difficulty": "medium",
+      "youtube_id": "54ItEmCnP80",
+      "answers_accepted": {
+        "title_variants": ["conga"],
+        "artist_variants": [
+          "miami sound machine",
+          "gloria estefan",
+          "miami sound machine gloria estefan"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/54ItEmCnP80/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Bamboleo",
+      "artist": "Gipsy Kings",
+      "year": 1987,
+      "difficulty": "medium",
+      "youtube_id": "NhGAQ6fjJxo",
+      "answers_accepted": {
+        "title_variants": ["bamboleo"],
+        "artist_variants": ["gipsy kings", "gipsykings"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NhGAQ6fjJxo/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Vivir mi vida",
+      "artist": "Marc Anthony",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "kMNPv_HXffQ",
+      "answers_accepted": {
+        "title_variants": ["vivir mi vida", "vivirmivida"],
+        "artist_variants": ["marc anthony", "marcanthony"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/kMNPv_HXffQ/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Smooth",
+      "artist": "Santana",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "6Whgn_iE5uc",
+      "answers_accepted": {
+        "title_variants": ["smooth"],
+        "artist_variants": ["santana", "carlos santana", "rob thomas"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/6Whgn_iE5uc/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Ginza",
+      "artist": "J Balvin",
+      "year": 2015,
+      "difficulty": "hard",
+      "youtube_id": "jqjMu2NfiUI",
+      "answers_accepted": {
+        "title_variants": ["ginza"],
+        "artist_variants": ["j balvin", "jbalvin", "balvin"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/jqjMu2NfiUI/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Bailamos",
+      "artist": "Enrique Iglesias",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "NmVcrsX8ekU",
+      "answers_accepted": {
+        "title_variants": ["bailamos"],
+        "artist_variants": ["enrique iglesias", "iglesias"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NmVcrsX8ekU/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Reggaetón Lento (Bailemos)",
+      "artist": "CNCO",
+      "year": 2016,
+      "difficulty": "hard",
+      "youtube_id": "ppiV9UnqRn4",
+      "answers_accepted": {
+        "title_variants": ["reggaeton lento", "reggaetonlento", "bailemos"],
+        "artist_variants": ["cnco", "c n c o"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ppiV9UnqRn4/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Lambada",
+      "artist": "Kaoma",
+      "year": 1989,
+      "difficulty": "easy",
+      "youtube_id": "-hosJTEjYQ4",
+      "answers_accepted": {
+        "title_variants": ["lambada", "la lambada"],
+        "artist_variants": ["kaoma", "koama"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/-hosJTEjYQ4/hqdefault.jpg"
+    }
+  ]
+}

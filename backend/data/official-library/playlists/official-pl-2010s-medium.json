@@ -1,0 +1,297 @@
+{
+  "id": "official-pl-2010s-medium",
+  "name_fr": "Années 2010 — Moyen",
+  "name_en": "2010s — Medium",
+  "description_fr": "Les hits 2010s qu'on reconnaît mais qui demandent un peu plus d'oreille. Indie pop, EDM, soul, rock alternatif : la décennie pour amateurs avertis.",
+  "description_en": "The 2010s hits you recognize but that take a bit more ear. Indie pop, EDM, soul, alternative rock: the decade for seasoned ears.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "medium",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2010s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2010, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Pumped Up Kicks",
+      "artist": "Foster the People",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "ls2U_bgH2F8",
+      "answers_accepted": {
+        "title_variants": ["pumped up kicks", "pumpedupkicks", "pump up kicks", "pumped kicks"],
+        "artist_variants": [
+          "foster the people",
+          "fosterthepeople",
+          "foster people",
+          "the foster people"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7w87IxuO7BDcJ3YUqCyMTT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273121d5f92cf90576907dfb1e5"
+    },
+    {
+      "position": 2,
+      "title": "Take Me to Church",
+      "artist": "Hozier",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "MYSVMgRr6pw",
+      "answers_accepted": {
+        "title_variants": [
+          "take me to church",
+          "takemetochurch",
+          "take to church",
+          "take me church"
+        ],
+        "artist_variants": ["hozier", "hosier", "ozier", "hoziar"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3dYD57lRAUcMHufyqn9GcI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737a9bf5f82e32d33d4503fe7b"
+    },
+    {
+      "position": 3,
+      "title": "Stay",
+      "artist": "Rihanna",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "JF8BRvqGCNs",
+      "answers_accepted": {
+        "title_variants": ["stay", "stays", "rihanna stay"],
+        "artist_variants": ["rihanna", "rihanna mikky ekko", "mikky ekko", "rihanna ft mikky ekko"],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Rihanna ft. Mikky Ekko, single 2013."
+      },
+      "spotify_id": "0GNI8K3VATWBABQFAzBAYe",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736dee21d6cd1823e4d6231d37"
+    },
+    {
+      "position": 4,
+      "title": "Counting Stars",
+      "artist": "OneRepublic",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "hT_nvWreIhg",
+      "answers_accepted": {
+        "title_variants": [
+          "counting stars",
+          "countingstars",
+          "counting star",
+          "compter les étoiles"
+        ],
+        "artist_variants": ["onerepublic", "one republic", "one republik", "the onerepublic"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2tpWsVSb9UEmDRxAl1zhX1",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739e2f95ae77cf436017ada9cb"
+    },
+    {
+      "position": 5,
+      "title": "Radioactive",
+      "artist": "Imagine Dragons",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "ktvTqknDobU",
+      "answers_accepted": {
+        "title_variants": ["radioactive", "radio active", "radioactif"],
+        "artist_variants": ["imagine dragons", "imaginedragons", "imagine dragon"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2YlioO9BCb8oFzpFKLjaMX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27326040ef982a3538946e00c0a"
+    },
+    {
+      "position": 6,
+      "title": "Moves Like Jagger",
+      "artist": "Maroon 5",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "wuVciLD3_jQ",
+      "answers_accepted": {
+        "title_variants": [
+          "moves like jagger",
+          "move like jagger",
+          "moveslikejagger",
+          "moves jagger"
+        ],
+        "artist_variants": [
+          "maroon 5",
+          "marron 5",
+          "maroonfive",
+          "maroon five",
+          "maroon 5 christina aguilera"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1r299qCKBLgUS9XJ9m1kEx",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c5e1cecaedcd413599e4e866"
+    },
+    {
+      "position": 7,
+      "title": "Locked Out of Heaven",
+      "artist": "Bruno Mars",
+      "year": 2012,
+      "difficulty": "medium",
+      "youtube_id": "OK_b2-w0u60",
+      "answers_accepted": {
+        "title_variants": [
+          "locked out of heaven",
+          "locked heaven",
+          "lockedoutofheaven",
+          "out of heaven"
+        ],
+        "artist_variants": ["bruno mars", "brunno mars", "bruno marse", "brunomars"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3w3y8KPTfNeOKPiqUTakBh",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273926f43e7cce571e62720fd46"
+    },
+    {
+      "position": 8,
+      "title": "Somebody That I Used to Know",
+      "artist": "Gotye",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "8UVNT4wvIGY",
+      "answers_accepted": {
+        "title_variants": [
+          "somebody that i used to know",
+          "somebody i used to know",
+          "used to know",
+          "somebody used to know"
+        ],
+        "artist_variants": ["gotye", "gauthier", "gotyé", "gotye kimbra", "kimbra"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "62oaDoBveZxvZb94ziiMXi",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27318e89397db70b2f148e31bde"
+    },
+    {
+      "position": 9,
+      "title": "Stay With Me",
+      "artist": "Sam Smith",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "3szpaphXiqE",
+      "answers_accepted": {
+        "title_variants": ["stay with me", "staywithme", "stay me"],
+        "artist_variants": ["sam smith", "samsmith", "samuel smith", "sam smyth"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5Nm9ERjJZ5oyfXZTECKmRt",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b11bdc91cb9ac6b14f5c1dae"
+    },
+    {
+      "position": 10,
+      "title": "Ho Hey",
+      "artist": "The Lumineers",
+      "year": 2012,
+      "difficulty": "medium",
+      "youtube_id": "EJN-rzytlYI",
+      "answers_accepted": {
+        "title_variants": ["ho hey", "hohey", "ho-hey", "oh hey"],
+        "artist_variants": ["the lumineers", "lumineers", "thelumineers", "the lumineer"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0DwClY2t9YAWHBROMIgrXb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f350c13195ce048876b5fea4"
+    },
+    {
+      "position": 11,
+      "title": "Adventure of a Lifetime",
+      "artist": "Coldplay",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "hZPXL9TB68Q",
+      "answers_accepted": {
+        "title_variants": [
+          "adventure of a lifetime",
+          "adventure lifetime",
+          "adventureofalifetime",
+          "lifetime adventure"
+        ],
+        "artist_variants": ["coldplay", "cold play", "colplay"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "69uxyAqqPIsUyTO8txoP2M",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738ff7c3580d429c8212b9a3b6"
+    },
+    {
+      "position": 12,
+      "title": "Don't You Worry Child",
+      "artist": "Swedish House Mafia",
+      "year": 2012,
+      "difficulty": "medium",
+      "youtube_id": "r1MN4pR5wXM",
+      "answers_accepted": {
+        "title_variants": [
+          "don't you worry child",
+          "dont you worry child",
+          "don't worry child",
+          "worry child",
+          "donutyouworrychild"
+        ],
+        "artist_variants": ["swedish house mafia", "swedishhousemafia", "shm", "swedish mafia"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "043bfUkTydw0xJ5JjOT91w",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273781f6dd5abe91929df0314e3"
+    },
+    {
+      "position": 13,
+      "title": "Cheap Thrills",
+      "artist": "Sia",
+      "year": 2016,
+      "difficulty": "medium",
+      "youtube_id": "J1b22l1kFKY",
+      "answers_accepted": {
+        "title_variants": ["cheap thrills", "cheapthrills", "cheap thrill"],
+        "artist_variants": ["sia", "sea", "sia furler", "siaa"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "27SdWb2rFzO6GWiYDBTD9j",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b9bea8700ca3c305eb9569a3"
+    },
+    {
+      "position": 14,
+      "title": "Closer",
+      "artist": "The Chainsmokers",
+      "year": 2016,
+      "difficulty": "medium",
+      "youtube_id": "5XggbNWy3NA",
+      "answers_accepted": {
+        "title_variants": ["closer", "clouser", "klozer"],
+        "artist_variants": [
+          "the chainsmokers",
+          "chainsmokers",
+          "the chainsmoker",
+          "the chainsmokers halsey",
+          "halsey"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7BKLCZ1jbUBVqRi2FVlTVw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273495ce6da9aeb159e94eaa453"
+    },
+    {
+      "position": 15,
+      "title": "Believer",
+      "artist": "Imagine Dragons",
+      "year": 2017,
+      "difficulty": "medium",
+      "youtube_id": "IhP3J0j9JmY",
+      "answers_accepted": {
+        "title_variants": ["believer", "beliver", "believers"],
+        "artist_variants": ["imagine dragons", "imaginedragons", "imagine dragon"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0pqnGHJpmpxLKifKRmU6WP",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735675e83f707f1d7271e5cf8a"
+    }
+  ]
+}

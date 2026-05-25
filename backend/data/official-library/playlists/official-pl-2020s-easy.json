@@ -1,0 +1,268 @@
+{
+  "id": "official-pl-2020s-easy",
+  "name_fr": "Années 2020 — Easy",
+  "name_en": "2020s — Easy",
+  "description_fr": "Les méga-tubes de la décennie en cours. TikTok, charts mondiaux, hits inévitables.",
+  "description_en": "Mega-hits of the current decade. TikTok, global charts, unavoidable hits.",
+  "locale_primary": "international",
+  "theme": "decade_2020s",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [2019, 2025]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Blinding Lights",
+      "artist": "The Weeknd",
+      "year": 2019,
+      "difficulty": "easy",
+      "youtube_id": "fHI8X4OXluQ",
+      "answers_accepted": {
+        "title_variants": ["blinding lights", "blindinglights", "blinding light"],
+        "artist_variants": ["the weeknd", "the weekend", "weeknd", "theweeknd"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0VjIjW4GlUZAMYd2vXMi3b",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36"
+    },
+    {
+      "position": 2,
+      "title": "Levitating",
+      "artist": "Dua Lipa",
+      "year": 2020,
+      "difficulty": "easy",
+      "youtube_id": "WHuBW3qKm9g",
+      "answers_accepted": {
+        "title_variants": ["levitating", "levitate"],
+        "artist_variants": ["dua lipa", "dualipa", "doua lipa"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "39LLxExYz6ewLAcYrzQQyP",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c88bae7846e62a8ba59ee0bd"
+    },
+    {
+      "position": 3,
+      "title": "Watermelon Sugar",
+      "artist": "Harry Styles",
+      "year": 2020,
+      "difficulty": "easy",
+      "youtube_id": "7-x3uD5z1bQ",
+      "answers_accepted": {
+        "title_variants": ["watermelon sugar", "watermelonsugar", "water melon sugar"],
+        "artist_variants": ["harry styles", "harrystyles", "harry style"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6UelLqGlWMcVH1E5c4H7lY",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27325180571abce9472f61bd722"
+    },
+    {
+      "position": 4,
+      "title": "drivers license",
+      "artist": "Olivia Rodrigo",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "2PRvp-mP_q0",
+      "answers_accepted": {
+        "title_variants": [
+          "drivers license",
+          "driver's license",
+          "driverslicense",
+          "driver license"
+        ],
+        "artist_variants": ["olivia rodrigo", "oliviarodrigo", "olivia rodrigues"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5wANPM4fQCJwkGd4rN57mH",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a91c10fe9472d9bd89802e5a"
+    },
+    {
+      "position": 5,
+      "title": "Peaches",
+      "artist": "Justin Bieber",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "ay9y3CTkT40",
+      "answers_accepted": {
+        "title_variants": ["peaches", "peache", "peach"],
+        "artist_variants": ["justin bieber", "justinbieber", "justin biber"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4iJyoBOLtHqaGxP12qzhQI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e6f407c7f3a0ec98845e4431"
+    },
+    {
+      "position": 6,
+      "title": "As It Was",
+      "artist": "Harry Styles",
+      "year": 2022,
+      "difficulty": "easy",
+      "youtube_id": "V1Z586zoeeE",
+      "answers_accepted": {
+        "title_variants": ["as it was", "asitwas"],
+        "artist_variants": ["harry styles", "harrystyles"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4Dvkj6JhhA12EX05fT7y2e",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27382ce362511fb3d9dda6578ee"
+    },
+    {
+      "position": 7,
+      "title": "Stay",
+      "artist": "The Kid LAROI & Justin Bieber",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "Qb8q4ijHk_M",
+      "answers_accepted": {
+        "title_variants": ["stay", "stey"],
+        "artist_variants": [
+          "the kid laroi",
+          "kid laroi",
+          "thekidlaroi",
+          "justin bieber",
+          "the kid laroi & justin bieber",
+          "the kid laroi justin bieber"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "À ne pas confondre avec d'autres morceaux du même titre (Rihanna, Lisa Loeb)."
+      },
+      "spotify_id": "1PtLpqXa6MVt9U4gFbpUvf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d25e5db0649019806b80777b"
+    },
+    {
+      "position": 8,
+      "title": "Bad Habits",
+      "artist": "Ed Sheeran",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "HeOpRzcqKrE",
+      "answers_accepted": {
+        "title_variants": ["bad habits", "badhabits", "bad habit"],
+        "artist_variants": ["ed sheeran", "edsheeran", "ed sheran"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3rmo8F54jFF8OgYsqTxm5d",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dc806722f6802a8ea9953c89"
+    },
+    {
+      "position": 9,
+      "title": "Industry Baby",
+      "artist": "Lil Nas X & Jack Harlow",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "HCq1OcAEAm0",
+      "answers_accepted": {
+        "title_variants": ["industry baby", "industrybaby"],
+        "artist_variants": [
+          "lil nas x",
+          "lilnasx",
+          "jack harlow",
+          "lil nas x & jack harlow",
+          "lil nas x jack harlow"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5YtjgewpB55VaDbGw45uqB",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731e212a6eff9f90acc8a2ff51"
+    },
+    {
+      "position": 10,
+      "title": "Heat Waves",
+      "artist": "Glass Animals",
+      "year": 2020,
+      "difficulty": "easy",
+      "youtube_id": "KT7F15T9VBI",
+      "answers_accepted": {
+        "title_variants": ["heat waves", "heatwaves", "heat wave"],
+        "artist_variants": ["glass animals", "glassanimals", "the glass animals"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3USxtqRwSYz57Ewm6wWRMp",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273712701c5e263efc8726b1464"
+    },
+    {
+      "position": 11,
+      "title": "Flowers",
+      "artist": "Miley Cyrus",
+      "year": 2023,
+      "difficulty": "easy",
+      "youtube_id": "SWpAYbgHmTo",
+      "answers_accepted": {
+        "title_variants": ["flowers", "flower"],
+        "artist_variants": ["miley cyrus", "mileycyrus", "miley cirus"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7DSAEUvxU8FajXtRloy8M0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27366fd0917f38d472c8576754e"
+    },
+    {
+      "position": 12,
+      "title": "Anti-Hero",
+      "artist": "Taylor Swift",
+      "year": 2022,
+      "difficulty": "easy",
+      "youtube_id": "pGHK4UPCtXk",
+      "answers_accepted": {
+        "title_variants": ["anti-hero", "antihero", "anti hero"],
+        "artist_variants": ["taylor swift", "taylorswift", "tailor swift"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0V3wPSX9ygBnCm8psDIegu",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bb54dde68cd23e2a268ae0f5"
+    },
+    {
+      "position": 13,
+      "title": "WAP",
+      "artist": "Cardi B & Megan Thee Stallion",
+      "year": 2020,
+      "difficulty": "easy",
+      "youtube_id": "hsm4poTWjMs",
+      "answers_accepted": {
+        "title_variants": ["wap", "w a p", "wet ass pussy"],
+        "artist_variants": [
+          "cardi b",
+          "cardib",
+          "megan thee stallion",
+          "cardi b megan thee stallion",
+          "cardi b & megan thee stallion"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "59rjMwgdhVpI5QbQZIcDuT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733c2111581fe4792a8811c501"
+    },
+    {
+      "position": 14,
+      "title": "Calm Down",
+      "artist": "Rema",
+      "year": 2022,
+      "difficulty": "easy",
+      "youtube_id": "h1iXtgCOCxo",
+      "answers_accepted": {
+        "title_variants": ["calm down", "calmdown"],
+        "artist_variants": ["rema", "rema selena gomez", "rema & selena gomez"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6hgoYQDUcPyCz7LcTUHKxa",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734104f6b4175d04d69ab73c85"
+    },
+    {
+      "position": 15,
+      "title": "Espresso",
+      "artist": "Sabrina Carpenter",
+      "year": 2024,
+      "difficulty": "easy",
+      "youtube_id": "51zjlMhdSTE",
+      "answers_accepted": {
+        "title_variants": ["espresso", "expresso"],
+        "artist_variants": ["sabrina carpenter", "sabrinacarpenter", "sabrina carpentier"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2qSkIjg1o9h3YT9RAgYN75",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273659cd4673230913b3918e0d5"
+    }
+  ]
+}

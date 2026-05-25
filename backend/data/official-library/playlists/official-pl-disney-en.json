@@ -1,0 +1,301 @@
+{
+  "id": "official-pl-disney-en",
+  "name_fr": "Disney — Versions originales",
+  "name_en": "Disney — Original Versions",
+  "description_fr": "Les chansons Disney en version anglaise originale : Le Roi Lion, La Petite Sirène, Aladdin, La Belle et la Bête, Mulan, Tarzan, Vaiana, Encanto. De Pinocchio à Coco.",
+  "description_en": "Disney songs in original English: The Lion King, The Little Mermaid, Aladdin, Beauty and the Beast, Mulan, Tarzan, Moana, Encanto. From Pinocchio to Coco.",
+  "locale_primary": "international",
+  "theme": "thematic_disney_en",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_movie_soundtrack",
+    "avoid": [
+      "cover",
+      "karaoke",
+      "instrumental",
+      "sing along",
+      "french version",
+      "version française"
+    ],
+    "year_range_strict": [1940, 2025]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Hakuna Matata",
+      "artist": "Nathan Lane, Ernie Sabella, Jason Weaver",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "UM2ihj-88uM",
+      "answers_accepted": {
+        "title_variants": ["hakuna matata", "hakunamatata"],
+        "artist_variants": [
+          "nathan lane",
+          "ernie sabella",
+          "lion king",
+          "the lion king",
+          "le roi lion"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "From The Lion King (1994)"
+      },
+      "spotify_id": "5k3U0OGYBccHdKJJu3HrUN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273660aadbda2da6b1c2dd3d1a5"
+    },
+    {
+      "position": 2,
+      "title": "I Just Can't Wait to Be King",
+      "artist": "Jason Weaver, Rowan Atkinson, Laura Williams",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "INugjPMaOWs",
+      "answers_accepted": {
+        "title_variants": [
+          "i just can't wait to be king",
+          "i just cant wait to be king",
+          "cant wait to be king",
+          "can't wait to be king"
+        ],
+        "artist_variants": ["jason weaver", "lion king", "the lion king", "le roi lion"],
+        "scoring": "title_or_artist",
+        "notes": "From The Lion King (1994)"
+      },
+      "spotify_id": "0qxtQ8rf3W1nId3D2r0xH4",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273660aadbda2da6b1c2dd3d1a5"
+    },
+    {
+      "position": 3,
+      "title": "A Whole New World",
+      "artist": "Brad Kane, Lea Salonga",
+      "year": 1992,
+      "difficulty": "easy",
+      "youtube_id": "AXvR11XpgyA",
+      "answers_accepted": {
+        "title_variants": ["a whole new world", "whole new world"],
+        "artist_variants": ["brad kane", "lea salonga", "aladdin"],
+        "scoring": "title_or_artist",
+        "notes": "From Aladdin (1992)"
+      },
+      "spotify_id": "5VIfacsWytkcgr7aTt8Tql",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d6cfbe6229dc73b8f6773196"
+    },
+    {
+      "position": 4,
+      "title": "Be Our Guest",
+      "artist": "Jerry Orbach, Angela Lansbury",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "6F29JppmaaQ",
+      "answers_accepted": {
+        "title_variants": ["be our guest", "beourguest"],
+        "artist_variants": [
+          "jerry orbach",
+          "angela lansbury",
+          "beauty and the beast",
+          "la belle et la bête"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "From Beauty and the Beast (1991)"
+      },
+      "spotify_id": "6btdYzQ8eZFBrOlUKVHuz0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732bf585fa65e5608b365f4909"
+    },
+    {
+      "position": 5,
+      "title": "Beauty and the Beast",
+      "artist": "Angela Lansbury",
+      "year": 1991,
+      "difficulty": "medium",
+      "youtube_id": "sniX7lOcfZk",
+      "answers_accepted": {
+        "title_variants": ["beauty and the beast", "beautyandthebeast", "tale as old as time"],
+        "artist_variants": ["angela lansbury", "beauty and the beast", "la belle et la bête"],
+        "scoring": "title_or_artist",
+        "notes": "From Beauty and the Beast (1991)"
+      },
+      "spotify_id": "2rJFFUEl1LURkV0b0OARXx",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732bf585fa65e5608b365f4909"
+    },
+    {
+      "position": 6,
+      "title": "Under the Sea",
+      "artist": "Samuel E. Wright",
+      "year": 1989,
+      "difficulty": "easy",
+      "youtube_id": "GC_mV1IpjWA",
+      "answers_accepted": {
+        "title_variants": ["under the sea", "underthesea"],
+        "artist_variants": [
+          "samuel e wright",
+          "samuel wright",
+          "little mermaid",
+          "the little mermaid",
+          "la petite sirène"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "From The Little Mermaid (1989)"
+      },
+      "spotify_id": "4qqfI5oNO53a6W7nWfutKH",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27396cb978bc45a49ad47e1a288"
+    },
+    {
+      "position": 7,
+      "title": "Part of Your World",
+      "artist": "Jodi Benson",
+      "year": 1989,
+      "difficulty": "medium",
+      "youtube_id": "SXKlJuO07eM",
+      "answers_accepted": {
+        "title_variants": ["part of your world", "partofyourworld"],
+        "artist_variants": [
+          "jodi benson",
+          "little mermaid",
+          "the little mermaid",
+          "la petite sirène"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "From The Little Mermaid (1989)"
+      },
+      "spotify_id": "5J4pDyvjRrYfcgHetKjKSj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27396cb978bc45a49ad47e1a288"
+    },
+    {
+      "position": 8,
+      "title": "I'll Make a Man Out of You",
+      "artist": "Donny Osmond",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "elBKil5zE2g",
+      "answers_accepted": {
+        "title_variants": [
+          "i'll make a man out of you",
+          "ill make a man out of you",
+          "make a man out of you"
+        ],
+        "artist_variants": ["donny osmond", "mulan"],
+        "scoring": "title_or_artist",
+        "notes": "From Mulan (1998)"
+      },
+      "spotify_id": "28UMEtwyUUy5u0UWOVHwiI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27388781d268ea3b5a35518eecc"
+    },
+    {
+      "position": 9,
+      "title": "Reflection",
+      "artist": "Lea Salonga",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "JMWJyzicqVo",
+      "answers_accepted": {
+        "title_variants": ["reflection"],
+        "artist_variants": ["lea salonga", "mulan"],
+        "scoring": "title_or_artist",
+        "notes": "From Mulan (1998)"
+      },
+      "spotify_id": "2AILbz83cBnrAMAG06rZts",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27388781d268ea3b5a35518eecc"
+    },
+    {
+      "position": 10,
+      "title": "You'll Be in My Heart",
+      "artist": "Phil Collins",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "8TEo-YycxJc",
+      "answers_accepted": {
+        "title_variants": ["you'll be in my heart", "youll be in my heart", "be in my heart"],
+        "artist_variants": ["phil collins", "philcollins", "tarzan"],
+        "scoring": "title_or_artist",
+        "notes": "From Tarzan (1999)"
+      },
+      "spotify_id": "4Y8vb1uy9IjM2V1hqvrAid",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ba44f1ff74c2c7c2da6e4c3f"
+    },
+    {
+      "position": 11,
+      "title": "Colors of the Wind",
+      "artist": "Judy Kuhn",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "U0VLL6YSFU8",
+      "answers_accepted": {
+        "title_variants": ["colors of the wind", "colorsofthewind", "colours of the wind"],
+        "artist_variants": ["judy kuhn", "pocahontas"],
+        "scoring": "title_or_artist",
+        "notes": "From Pocahontas (1995)"
+      },
+      "spotify_id": "1OYOLWqKmhkFIx2KC9ek1a",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273281dfd7af2ee99a124404623"
+    },
+    {
+      "position": 12,
+      "title": "When You Wish Upon a Star",
+      "artist": "Cliff Edwards",
+      "year": 1940,
+      "difficulty": "hard",
+      "youtube_id": "wEWowjC2dSk",
+      "answers_accepted": {
+        "title_variants": ["when you wish upon a star", "wish upon a star", "whenyouwishuponastar"],
+        "artist_variants": ["cliff edwards", "pinocchio", "jiminy cricket"],
+        "scoring": "title_or_artist",
+        "notes": "From Pinocchio (1940)"
+      },
+      "spotify_id": "0QKKOP5M6kUW8rLd6SBbXn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d007c9bba27ef5c5f65e8d31"
+    },
+    {
+      "position": 13,
+      "title": "How Far I'll Go",
+      "artist": "Auli'i Cravalho",
+      "year": 2016,
+      "difficulty": "easy",
+      "youtube_id": "cPAbx5kgCJo",
+      "answers_accepted": {
+        "title_variants": ["how far i'll go", "how far ill go", "howfarillgo"],
+        "artist_variants": ["auli'i cravalho", "aulii cravalho", "moana", "vaiana"],
+        "scoring": "title_or_artist",
+        "notes": "From Moana / Vaiana (2016)"
+      },
+      "spotify_id": "3KzemxaWSSiYtnzOokd0Rs",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c082accda9be296d5c90419d"
+    },
+    {
+      "position": 14,
+      "title": "We Don't Talk About Bruno",
+      "artist": "Encanto Cast",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "o01l3sotf1Q",
+      "answers_accepted": {
+        "title_variants": [
+          "we don't talk about bruno",
+          "we dont talk about bruno",
+          "talk about bruno",
+          "bruno"
+        ],
+        "artist_variants": ["encanto", "encanto cast", "lin manuel miranda"],
+        "scoring": "title_or_artist",
+        "notes": "From Encanto (2021)"
+      },
+      "spotify_id": "52xJxFP6TqMuO4Yt0eOkMz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e1ac646ed6f25125e2a77229"
+    },
+    {
+      "position": 15,
+      "title": "Remember Me",
+      "artist": "Miguel, Natalia Lafourcade",
+      "year": 2017,
+      "difficulty": "medium",
+      "youtube_id": "3iDxU9eNQ_0",
+      "answers_accepted": {
+        "title_variants": ["remember me", "rememberme", "recuérdame"],
+        "artist_variants": ["miguel", "natalia lafourcade", "coco"],
+        "scoring": "title_or_artist",
+        "notes": "From Coco (2017)"
+      },
+      "spotify_id": "3pCgIUkmRHKydu9HE03QKY",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731f062b7159e8f230120512bf"
+    }
+  ]
+}

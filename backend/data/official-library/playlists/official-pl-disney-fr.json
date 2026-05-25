@@ -1,0 +1,357 @@
+{
+  "id": "official-pl-disney-fr",
+  "name_fr": "Disney en français",
+  "name_en": "Disney in French",
+  "description_fr": "Les chansons des films Disney en version française. De La Petite Sirène à Vaiana, en passant par La Reine des Neiges et Le Roi Lion.",
+  "description_en": "Songs from Disney films in their French versions. From The Little Mermaid to Moana, via Frozen and The Lion King.",
+  "locale_primary": "fr",
+  "theme": "thematic_disney_fr",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "french_dub_original",
+    "avoid": ["english_version", "remix", "live_concert"],
+    "year_range_strict": [1985, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Libérée, délivrée",
+      "artist": "Anaïs Delva",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "vzgInDxzyGU",
+      "answers_accepted": {
+        "title_variants": [
+          "libérée délivrée",
+          "liberee delivree",
+          "let it go",
+          "libérée délivrée frozen",
+          "la reine des neiges"
+        ],
+        "artist_variants": ["anaïs delva", "anais delva", "anais delvas", "elsa frozen"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0uwe65M9kZVBB4OpPlqudX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736787ba683e9891a39f38f3b9"
+    },
+    {
+      "position": 2,
+      "title": "Hakuna Matata",
+      "artist": "Le Roi Lion (cast français)",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "ZOGCZLOsTLc",
+      "answers_accepted": {
+        "title_variants": ["hakuna matata", "hakunamatata", "akouna matata", "le roi lion"],
+        "artist_variants": [
+          "le roi lion",
+          "lion king",
+          "jean reno",
+          "jamel debbouze",
+          "cast français le roi lion",
+          "timon pumbaa simba"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ZOGCZLOsTLc/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Ce rêve bleu",
+      "artist": "Karine Costa & Patrick Fiori",
+      "year": 1992,
+      "difficulty": "easy",
+      "youtube_id": "_WrcVeqcF9U",
+      "answers_accepted": {
+        "title_variants": [
+          "ce rêve bleu",
+          "ce reve bleu",
+          "rêve bleu",
+          "a whole new world",
+          "aladdin",
+          "cerevebleu"
+        ],
+        "artist_variants": [
+          "karine costa",
+          "patrick fiori",
+          "karine costa patrick fiori",
+          "karine costa & patrick fiori",
+          "aladdin"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0QgqXBfyGtn1u2RA1Kel2W",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27321849d5e4f7123f2fe2316c5"
+    },
+    {
+      "position": 4,
+      "title": "Belle (La Belle et la Bête)",
+      "artist": "La Belle et la Bête (cast français)",
+      "year": 1991,
+      "difficulty": "medium",
+      "youtube_id": "vcR3OgZS4J4",
+      "answers_accepted": {
+        "title_variants": [
+          "belle",
+          "la belle et la bête",
+          "labelleetlabete",
+          "beauty and the beast",
+          "belle disney"
+        ],
+        "artist_variants": [
+          "la belle et la bête",
+          "cast français la belle et la bête",
+          "beauty and the beast",
+          "disney la belle et la bête"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vcR3OgZS4J4/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Histoire éternelle",
+      "artist": "Liane Foly",
+      "year": 1991,
+      "difficulty": "medium",
+      "youtube_id": "3xBQSkc2dc8",
+      "answers_accepted": {
+        "title_variants": [
+          "histoire éternelle",
+          "histoire eternelle",
+          "tale as old as time",
+          "la belle et la bête générique",
+          "histoireeternelle"
+        ],
+        "artist_variants": [
+          "liane foly",
+          "lianefoly",
+          "liane folly",
+          "charles aznavour",
+          "celine dion"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/3xBQSkc2dc8/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Comme un homme",
+      "artist": "Mulan (cast français)",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "Gm3nVrFol_Q",
+      "answers_accepted": {
+        "title_variants": [
+          "comme un homme",
+          "commeunhomme",
+          "i'll make a man out of you",
+          "mulan",
+          "make a man"
+        ],
+        "artist_variants": ["mulan", "cast français mulan", "disney mulan", "shang mulan"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Gm3nVrFol_Q/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Je voudrais déjà être roi",
+      "artist": "Le Roi Lion (cast français)",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "esw1O9FJ-ik",
+      "answers_accepted": {
+        "title_variants": [
+          "je voudrais déjà être roi",
+          "je voudrais deja etre roi",
+          "deja etre roi",
+          "i just can't wait to be king",
+          "le roi lion"
+        ],
+        "artist_variants": ["le roi lion", "cast français le roi lion", "simba nala"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/esw1O9FJ-ik/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "C'est la fête",
+      "artist": "La Belle et la Bête (cast français)",
+      "year": 1991,
+      "difficulty": "medium",
+      "youtube_id": "7EvEMurzDyc",
+      "answers_accepted": {
+        "title_variants": [
+          "c'est la fête",
+          "cest la fete",
+          "la fête",
+          "be our guest",
+          "cestlafete"
+        ],
+        "artist_variants": [
+          "la belle et la bête",
+          "cast français la belle et la bête",
+          "lumière belle et la bête"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/7EvEMurzDyc/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Tu n'es jamais bien loin (Tarzan)",
+      "artist": "Phil Collins",
+      "year": 1999,
+      "difficulty": "hard",
+      "youtube_id": "p6b1enfpcAk",
+      "answers_accepted": {
+        "title_variants": [
+          "tu n'es jamais bien loin",
+          "tu nes jamais bien loin",
+          "you'll be in my heart",
+          "tarzan",
+          "jamais bien loin"
+        ],
+        "artist_variants": ["phil collins", "philcollins", "phil colins"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5N48Hz55eJZZ3AtTD3lbtV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fa1a03b3bc404eed9f3f36b9"
+    },
+    {
+      "position": 10,
+      "title": "Réflexion",
+      "artist": "Mulan (cast français)",
+      "year": 1998,
+      "difficulty": "hard",
+      "youtube_id": "RNprQYHenNI",
+      "answers_accepted": {
+        "title_variants": ["réflexion", "reflexion", "reflection", "mulan reflexion"],
+        "artist_variants": ["mulan", "cast français mulan", "disney mulan"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2AILbz83cBnrAMAG06rZts",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27388781d268ea3b5a35518eecc"
+    },
+    {
+      "position": 11,
+      "title": "Sous l'océan",
+      "artist": "La Petite Sirène (cast français)",
+      "year": 1989,
+      "difficulty": "easy",
+      "youtube_id": "LcdmgftOilM",
+      "answers_accepted": {
+        "title_variants": [
+          "sous l'océan",
+          "sous l ocean",
+          "sousl'ocean",
+          "under the sea",
+          "la petite sirène",
+          "sous locéan"
+        ],
+        "artist_variants": [
+          "la petite sirène",
+          "cast français la petite sirène",
+          "sébastien le crabe"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/LcdmgftOilM/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Mon meilleur ami (Toy Story)",
+      "artist": "Toy Story (cast français)",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "FmBQBRZxSnU",
+      "answers_accepted": {
+        "title_variants": [
+          "mon meilleur ami",
+          "monmeilleurami",
+          "you've got a friend in me",
+          "toy story",
+          "meilleur ami"
+        ],
+        "artist_variants": [
+          "toy story",
+          "cast français toy story",
+          "randy newman",
+          "richard galliano"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/FmBQBRZxSnU/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Les cloches de Notre-Dame",
+      "artist": "Le Bossu de Notre-Dame (cast français)",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "iNPkfQLStK8",
+      "answers_accepted": {
+        "title_variants": [
+          "les cloches de notre-dame",
+          "les cloches de notre dame",
+          "cloches notre dame",
+          "the bells of notre dame",
+          "le bossu de notre dame"
+        ],
+        "artist_variants": ["le bossu de notre-dame", "cast français le bossu", "disney bossu"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/iNPkfQLStK8/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Le bleu lumière (Vaiana)",
+      "artist": "Cerise Calixte",
+      "year": 2016,
+      "difficulty": "hard",
+      "youtube_id": "IUrK6u08iTQ",
+      "answers_accepted": {
+        "title_variants": [
+          "le bleu lumière",
+          "le bleu lumiere",
+          "how far i'll go",
+          "vaiana",
+          "moana",
+          "lebleulumiere"
+        ],
+        "artist_variants": ["cerise calixte", "vaiana", "cerise calixte vaiana", "moana cast"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3o4qATwHMwZOAUzg7ITeJl",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273deb63f8f7a4ff7ade36e8aef"
+    },
+    {
+      "position": 15,
+      "title": "Pour la première fois",
+      "artist": "Anaïs Delva & Emmylou Homs",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "5_6w9jdUAU0",
+      "answers_accepted": {
+        "title_variants": [
+          "pour la première fois",
+          "pour la premiere fois",
+          "for the first time in forever",
+          "premiere fois",
+          "la reine des neiges"
+        ],
+        "artist_variants": [
+          "anaïs delva",
+          "emmylou homs",
+          "anais delva emmylou homs",
+          "frozen",
+          "elsa anna"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/5_6w9jdUAU0/hqdefault.jpg"
+    }
+  ]
+}

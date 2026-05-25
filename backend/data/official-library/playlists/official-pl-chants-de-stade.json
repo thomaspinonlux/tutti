@@ -1,0 +1,274 @@
+{
+  "id": "official-pl-chants-de-stade",
+  "name_fr": "Chants de stade",
+  "name_en": "Stadium Anthems",
+  "description_fr": "Les hymnes des supporters : Seven Nation Army, We Will Rock You, I Will Survive, Three Lions. Tout pour faire trembler les tribunes.",
+  "description_en": "Supporters' anthems: Seven Nation Army, We Will Rock You, I Will Survive, Three Lions. Everything to shake the stands.",
+  "locale_primary": "international",
+  "theme": "thematic_chants_de_stade",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1969, 2006]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Seven Nation Army",
+      "artist": "The White Stripes",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "CBEJo18auXE",
+      "answers_accepted": {
+        "title_variants": ["seven nation army", "sevennationarmy", "7 nation army"],
+        "artist_variants": ["the white stripes", "white stripes", "whitestripes"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3dPQuX8Gs42Y7b454ybpMR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737028981d09d2e5833c9c78ad"
+    },
+    {
+      "position": 2,
+      "title": "We Will Rock You",
+      "artist": "Queen",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "-tJYN-eG1zk",
+      "answers_accepted": {
+        "title_variants": ["we will rock you", "wewillrockyou"],
+        "artist_variants": ["queen", "freddie mercury"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "03jhnLcIT8C4DhXnNecOZv",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27300aadbe1dbe4be614a86221c"
+    },
+    {
+      "position": 3,
+      "title": "We Are the Champions",
+      "artist": "Queen",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "aRlk72bQK90",
+      "answers_accepted": {
+        "title_variants": ["we are the champions", "wearethechampions", "the champions"],
+        "artist_variants": ["queen", "freddie mercury"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1lCRw5FEZ1gPDNPzy1K4zW",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731f7077ae1018b5fbab08dfa8"
+    },
+    {
+      "position": 4,
+      "title": "Eye of the Tiger",
+      "artist": "Survivor",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "kI-TBmie1Yc",
+      "answers_accepted": {
+        "title_variants": ["eye of the tiger", "eyeofthetiger"],
+        "artist_variants": ["survivor"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2HHtWyy5CgaQbC7XSoOb0e",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734e2755e7a96ec5e062c76aac"
+    },
+    {
+      "position": 5,
+      "title": "Olé, Olé, Olé (The Name of the Game)",
+      "artist": "The Fans",
+      "year": 1985,
+      "difficulty": "medium",
+      "youtube_id": "kyx6sXMRbfc",
+      "answers_accepted": {
+        "title_variants": [
+          "olé olé olé",
+          "ole ole ole",
+          "the name of the game",
+          "olé olé olé the name of the game"
+        ],
+        "artist_variants": ["the fans", "fans"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3KXPf7qepQosxsM3tbrSGQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27358b83d18476a06fd24f4c23d"
+    },
+    {
+      "position": 6,
+      "title": "I Will Survive",
+      "artist": "Gloria Gaynor",
+      "year": 1978,
+      "difficulty": "easy",
+      "youtube_id": "6dYWe1c3OyU",
+      "answers_accepted": {
+        "title_variants": ["i will survive", "iwillsurvive"],
+        "artist_variants": ["gloria gaynor", "gloriagaynor"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7rIovIsXE6kMn629b7kDig",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732a1049b6d0d2b4c3c0abe7a8"
+    },
+    {
+      "position": 7,
+      "title": "The Final Countdown",
+      "artist": "Europe",
+      "year": 1986,
+      "difficulty": "easy",
+      "youtube_id": "lZzcQ-uQ8R0",
+      "answers_accepted": {
+        "title_variants": ["the final countdown", "final countdown", "finalcountdown"],
+        "artist_variants": ["europe", "europe band"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3MrRksHupTVEQ7YbA0FsZK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f5e30500f0eec7d92b159eae"
+    },
+    {
+      "position": 8,
+      "title": "Freed from Desire",
+      "artist": "Gala",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "4eJckVIJk5c",
+      "answers_accepted": {
+        "title_variants": ["freed from desire", "freedfromdesire"],
+        "artist_variants": ["gala", "gala rizzatto"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3u5N55tHf7hXATSQrjBh2q",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27382d43c836792c8b41dc0ad8c"
+    },
+    {
+      "position": 9,
+      "title": "Aux Champs-Élysées",
+      "artist": "Joe Dassin",
+      "year": 1969,
+      "difficulty": "easy",
+      "youtube_id": "tDWeLlvYyYU",
+      "answers_accepted": {
+        "title_variants": [
+          "aux champs-élysées",
+          "aux champs elysees",
+          "aux champs-elysees",
+          "champs élysées",
+          "champs elysees"
+        ],
+        "artist_variants": ["joe dassin", "joedassin", "dassin"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4VWbPQUPvLes814r6T11Jz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273159a5ce13b0c1657c87b96bc"
+    },
+    {
+      "position": 10,
+      "title": "I Love Rock 'n' Roll",
+      "artist": "Joan Jett & The Blackhearts",
+      "year": 1981,
+      "difficulty": "easy",
+      "youtube_id": "nOMVAFpAPr0",
+      "answers_accepted": {
+        "title_variants": [
+          "i love rock n roll",
+          "i love rock and roll",
+          "i love rock'n'roll",
+          "love rock n roll"
+        ],
+        "artist_variants": ["joan jett", "the blackhearts", "joan jett blackhearts"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4jTqsgDaffdNH0BMBwhjFv",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739d931a490797521a395708e8"
+    },
+    {
+      "position": 11,
+      "title": "Chelsea Dagger",
+      "artist": "The Fratellis",
+      "year": 2006,
+      "difficulty": "hard",
+      "youtube_id": "LBaxde247Mw",
+      "answers_accepted": {
+        "title_variants": ["chelsea dagger", "chelseadagger"],
+        "artist_variants": ["the fratellis", "fratellis"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "52fnLN02thRhTnbzVZzdqq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27324f18d675f719a4afb1afb5d"
+    },
+    {
+      "position": 12,
+      "title": "Zombie",
+      "artist": "The Cranberries",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "6Ejga4kJUts",
+      "answers_accepted": {
+        "title_variants": ["zombie"],
+        "artist_variants": ["the cranberries", "cranberries", "dolores oriordan"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6yeSZ9KWPIAOX8JOEO02jh",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739ddc936d3e254f6556363d68"
+    },
+    {
+      "position": 13,
+      "title": "Livin' on a Prayer",
+      "artist": "Bon Jovi",
+      "year": 1986,
+      "difficulty": "easy",
+      "youtube_id": "CuUefy9bT9U",
+      "answers_accepted": {
+        "title_variants": [
+          "livin on a prayer",
+          "living on a prayer",
+          "livin' on a prayer",
+          "on a prayer"
+        ],
+        "artist_variants": ["bon jovi", "jon bon jovi", "bonjovi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "37ZJ0p5Jm13JPevGcx4SkF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731336b31b6a1799f0de5807ac"
+    },
+    {
+      "position": 14,
+      "title": "The Boys Are Back in Town",
+      "artist": "Thin Lizzy",
+      "year": 1976,
+      "difficulty": "medium",
+      "youtube_id": "wIE5wwvicew",
+      "answers_accepted": {
+        "title_variants": ["the boys are back in town", "boys are back in town", "boys are back"],
+        "artist_variants": ["thin lizzy", "thinlizzy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "43DeSV93pJPT4lCZaWZ6b1",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e8f69ab903901064b1f19249"
+    },
+    {
+      "position": 15,
+      "title": "Three Lions (Football's Coming Home)",
+      "artist": "Baddiel, Skinner & The Lightning Seeds",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "RJqimlFcJsM",
+      "answers_accepted": {
+        "title_variants": [
+          "three lions",
+          "footballs coming home",
+          "football's coming home",
+          "threelions"
+        ],
+        "artist_variants": [
+          "baddiel skinner lightning seeds",
+          "the lightning seeds",
+          "lightning seeds",
+          "baddiel skinner"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4bKt744bDKrhsToZNQFNy0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cf710d778b8c245d77e4147d"
+    }
+  ]
+}

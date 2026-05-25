@@ -1,0 +1,325 @@
+{
+  "id": "official-pl-fr-2000s-easy",
+  "name_fr": "Variété FR — Années 2000 — Facile",
+  "name_en": "French Hits — 2000s — Easy",
+  "description_fr": "Les megahits francophones des années 2000 que tout le monde reconnaît. Variété, rap français, comédie musicale, pop FR : la décennie en mode universel.",
+  "description_en": "The French-language 2000s megahits everyone recognizes. Variety, French rap, musical theater, French pop: the decade in universal mode.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2000s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2000, 2009]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Sous le vent",
+      "artist": "Garou & Céline Dion",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "a2_ss9y-VjE",
+      "answers_accepted": {
+        "title_variants": ["sous le vent", "souslevent", "sous vent", "sous le ven"],
+        "artist_variants": [
+          "garou",
+          "céline dion",
+          "celine dion",
+          "garou et céline dion",
+          "garou céline dion",
+          "garou & céline dion"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6VZB0ttlqGjpGMAcaomXh9",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273faa1c1a7a24c46aebf2b4883"
+    },
+    {
+      "position": 2,
+      "title": "Cassé",
+      "artist": "Nolwenn Leroy",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "5UGaerggjdY",
+      "answers_accepted": {
+        "title_variants": ["cassé", "casse", "cassé"],
+        "artist_variants": [
+          "nolwenn leroy",
+          "nolwen leroy",
+          "nolwenn le roy",
+          "nolwennleroy",
+          "nolwenn"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1YqHug87ndn6HN6D00Smuw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733f77053200b19014417fb43e"
+    },
+    {
+      "position": 3,
+      "title": "Seul",
+      "artist": "Garou",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "R3jDPgpUN9k",
+      "answers_accepted": {
+        "title_variants": ["seul", "seuls", "tout seul"],
+        "artist_variants": ["garou", "garoux", "garou pierre"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7MRyru6giOwdtFYL5KQEVq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273faa1c1a7a24c46aebf2b4883"
+    },
+    {
+      "position": 4,
+      "title": "Manhattan-Kaboul",
+      "artist": "Renaud",
+      "year": 2002,
+      "difficulty": "easy",
+      "youtube_id": "qtLJnn3Up-I",
+      "answers_accepted": {
+        "title_variants": [
+          "manhattan kaboul",
+          "manhattan-kaboul",
+          "manhattankaboul",
+          "manhatten kaboul"
+        ],
+        "artist_variants": [
+          "renaud",
+          "renaud séchan",
+          "renaud sechan",
+          "renauld",
+          "renaud et axelle red",
+          "axelle red"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7eJdx83TiKsVqAzLFBelMO",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27377e986b82d7df66c39e1975d"
+    },
+    {
+      "position": 5,
+      "title": "Confessions nocturnes",
+      "artist": "Diam's & Vitaa",
+      "year": 2006,
+      "difficulty": "easy",
+      "youtube_id": "TwhoaPgBwI8",
+      "answers_accepted": {
+        "title_variants": [
+          "confessions nocturnes",
+          "confessionsnocturnes",
+          "confession nocturne",
+          "confessions nocturne"
+        ],
+        "artist_variants": [
+          "diam's",
+          "diams",
+          "diam s",
+          "diam's et vitaa",
+          "diam's vitaa",
+          "vitaa",
+          "diams vitaa"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0C9qil6cXEEJ8AzrMUEHv6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730c945348847382dde8622c17"
+    },
+    {
+      "position": 6,
+      "title": "Le festin",
+      "artist": "Camille",
+      "year": 2007,
+      "difficulty": "easy",
+      "youtube_id": "p_hdmt4vpBo",
+      "answers_accepted": {
+        "title_variants": ["le festin", "lefestin", "festin", "ratatouille"],
+        "artist_variants": ["camille", "camille dalmais", "camil"],
+        "scoring": "title_or_artist",
+        "notes": "Single du film Ratatouille (Pixar) 2007."
+      },
+      "spotify_id": "02JIdsrod3BYucThfUFDUX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273da96ceef85aba33d1e68b773"
+    },
+    {
+      "position": 7,
+      "title": "Quelqu'un m'a dit",
+      "artist": "Carla Bruni",
+      "year": 2002,
+      "difficulty": "easy",
+      "youtube_id": "EelX_LwPHbA",
+      "answers_accepted": {
+        "title_variants": [
+          "quelqu'un m'a dit",
+          "quelqu un m a dit",
+          "quelqu'un ma dit",
+          "quelqun ma dit",
+          "quelquun mas dit"
+        ],
+        "artist_variants": ["carla bruni", "carlabruni", "karla bruni", "carla bruny"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6w9Pf2VV4kZNcExAjcG2hw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d1e3f0c0555023668291a728"
+    },
+    {
+      "position": 8,
+      "title": "Toi + moi",
+      "artist": "Grégoire",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "1B083_AiXTU",
+      "answers_accepted": {
+        "title_variants": ["toi + moi", "toi et moi", "toi plus moi", "toi+moi", "toi moi"],
+        "artist_variants": ["grégoire", "gregoire", "gregoire boissenot", "grégoir"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1cl6UxttwMTjJXsdyMDUde",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738bd7861f13e40e5df4315a28"
+    },
+    {
+      "position": 9,
+      "title": "J'ai demandé à la lune",
+      "artist": "Indochine",
+      "year": 2002,
+      "difficulty": "easy",
+      "youtube_id": "KAOmC5qT02w",
+      "answers_accepted": {
+        "title_variants": [
+          "j'ai demandé à la lune",
+          "j ai demandé a la lune",
+          "j'ai demande à la lune",
+          "demandé à la lune",
+          "jai demande a la lune"
+        ],
+        "artist_variants": ["indochine", "indochina", "in dochine"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2QSAj76Ba6aMFX9RlXdUdO",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733f9a8a38b674e138f18542d9"
+    },
+    {
+      "position": 10,
+      "title": "Si demain... (Turn Around)",
+      "artist": "Bonnie Tyler & Kareen Antonn",
+      "year": 2004,
+      "difficulty": "easy",
+      "youtube_id": "MXGokfLRUKI",
+      "answers_accepted": {
+        "title_variants": ["si demain", "si demain turn around", "turn around", "sidemain"],
+        "artist_variants": [
+          "bonnie tyler",
+          "kareen antonn",
+          "bonnie tyler kareen antonn",
+          "bonnie tyler & kareen antonn",
+          "kareen anton"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Reprise francophone de Total Eclipse of the Heart en duo avec Kareen Antonn (2004)."
+      },
+      "cover_url": "https://img.youtube.com/vi/MXGokfLRUKI/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Femme like u",
+      "artist": "K.Maro",
+      "year": 2004,
+      "difficulty": "easy",
+      "youtube_id": "P9M-y0nk6_0",
+      "answers_accepted": {
+        "title_variants": [
+          "femme like u",
+          "femme like you",
+          "femmelikeu",
+          "femme like u donne moi ton"
+        ],
+        "artist_variants": ["k maro", "k.maro", "kmaro", "k-maro", "kay maro"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4iVnfuAmwJNAGsiHz8Po6Y",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732eab60771a1f915eea2fdd39"
+    },
+    {
+      "position": 12,
+      "title": "Un monde parfait",
+      "artist": "Ilona Mitrecey",
+      "year": 2005,
+      "difficulty": "easy",
+      "youtube_id": "y8p0BxMykqg",
+      "answers_accepted": {
+        "title_variants": [
+          "un monde parfait",
+          "unmondeparfait",
+          "monde parfait",
+          "un monde parfait je dessine"
+        ],
+        "artist_variants": ["ilona mitrecey", "ilonamitrecey", "ilona", "ilona mitresey"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4Dd8r3d1Tu2mvvjn2Vj4Sg",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737bc8b56f7efb6217258eebd2"
+    },
+    {
+      "position": 13,
+      "title": "Aux arbres citoyens",
+      "artist": "Yannick Noah",
+      "year": 2006,
+      "difficulty": "easy",
+      "youtube_id": "U8DD1c24bwk",
+      "answers_accepted": {
+        "title_variants": [
+          "aux arbres citoyens",
+          "auxarbrescitoyens",
+          "aux arbres",
+          "arbres citoyens"
+        ],
+        "artist_variants": ["yannick noah", "yanick noah", "yannik noah", "yannicknoah"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2poOtKwdjc39DRNmY6wRV2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27356a01623893c2abe25ee4d3d"
+    },
+    {
+      "position": 14,
+      "title": "Si seulement je pouvais lui manquer",
+      "artist": "Calogero",
+      "year": 2002,
+      "difficulty": "easy",
+      "youtube_id": "oN576VDwQP8",
+      "answers_accepted": {
+        "title_variants": [
+          "si seulement je pouvais lui manquer",
+          "si seulement",
+          "si seulement je pouvais",
+          "lui manquer",
+          "siseulementjepouvaisluimanquer"
+        ],
+        "artist_variants": ["calogero", "calogéro", "calojero", "kalogero"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4iHzUEBK1UkPsti0hGRGFF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dc5810a428f839b8b9efcfcd"
+    },
+    {
+      "position": 15,
+      "title": "Mon ange",
+      "artist": "Najoua Belyzel",
+      "year": 2005,
+      "difficulty": "easy",
+      "youtube_id": "XAwqxx-M0mE",
+      "answers_accepted": {
+        "title_variants": ["mon ange", "monange", "mes anges", "mon angel"],
+        "artist_variants": [
+          "najoua belyzel",
+          "najouabelyzel",
+          "najoua belizel",
+          "najoua belyzelle"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/XAwqxx-M0mE/hqdefault.jpg"
+    }
+  ]
+}

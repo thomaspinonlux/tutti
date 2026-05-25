@@ -1,0 +1,251 @@
+{
+  "id": "official-pl-country",
+  "name_fr": "Country",
+  "name_en": "Country",
+  "description_fr": "Le meilleur de la country : Johnny Cash, Dolly Parton, Shania Twain, Garth Brooks, jusqu'à Lil Nas X. Du honky-tonk au country moderne.",
+  "description_en": "The best of country music: Johnny Cash, Dolly Parton, Shania Twain, Garth Brooks, through to Lil Nas X. From honky-tonk to modern country.",
+  "locale_primary": "international",
+  "theme": "thematic_country",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1963, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Ring of Fire",
+      "artist": "Johnny Cash",
+      "year": 1963,
+      "difficulty": "easy",
+      "youtube_id": "5WyLhwYFgmk",
+      "answers_accepted": {
+        "title_variants": ["ring of fire", "ringoffire"],
+        "artist_variants": ["johnny cash", "johnnycash"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6YffUZJ2R06kyxyK6onezL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dfe4bfe695c4192e547e72c7"
+    },
+    {
+      "position": 2,
+      "title": "Boot Scootin' Boogie",
+      "artist": "Brooks & Dunn",
+      "year": 1992,
+      "difficulty": "medium",
+      "youtube_id": "d05tQrhNMkA",
+      "answers_accepted": {
+        "title_variants": [
+          "boot scootin boogie",
+          "boot scootin' boogie",
+          "bootscootinboogie",
+          "boot scooting boogie"
+        ],
+        "artist_variants": ["brooks & dunn", "brooks and dunn", "brooksdunn"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6iKWr2XH1DyT7TQzDZlvzd",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cf1e09d6382993798b554242"
+    },
+    {
+      "position": 3,
+      "title": "Jolene",
+      "artist": "Dolly Parton",
+      "year": 1973,
+      "difficulty": "easy",
+      "youtube_id": "Ixrje2rXLMA",
+      "answers_accepted": {
+        "title_variants": ["jolene"],
+        "artist_variants": ["dolly parton", "dollyparton"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2SpEHTbUuebeLkgs9QB7Ue",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273220f3b1f40e3276662155f16"
+    },
+    {
+      "position": 4,
+      "title": "9 to 5",
+      "artist": "Dolly Parton",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "UbxUSsFXYo4",
+      "answers_accepted": {
+        "title_variants": ["9 to 5", "nine to five", "9to5"],
+        "artist_variants": ["dolly parton", "dollyparton"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4w3tQBXhn5345eUXDGBWZG",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27349cb2d53994caada391cf39e"
+    },
+    {
+      "position": 5,
+      "title": "Achy Breaky Heart",
+      "artist": "Billy Ray Cyrus",
+      "year": 1992,
+      "difficulty": "easy",
+      "youtube_id": "byQIPdHMpjc",
+      "answers_accepted": {
+        "title_variants": ["achy breaky heart", "achybreakyheart", "achy breaky"],
+        "artist_variants": ["billy ray cyrus", "billyraycyrus"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2EoIt9vdgFRNW03u5IvFsQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bf80fa37dadf36f79441104f"
+    },
+    {
+      "position": 6,
+      "title": "Friends in Low Places",
+      "artist": "Garth Brooks",
+      "year": 1990,
+      "difficulty": "medium",
+      "youtube_id": "b7P97b64Q5E",
+      "answers_accepted": {
+        "title_variants": ["friends in low places", "friendsinlowplaces", "low places"],
+        "artist_variants": ["garth brooks", "garthbrooks"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/b7P97b64Q5E/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "The Gambler",
+      "artist": "Kenny Rogers",
+      "year": 1978,
+      "difficulty": "medium",
+      "youtube_id": "7hx4gdlfamo",
+      "answers_accepted": {
+        "title_variants": ["the gambler", "gambler"],
+        "artist_variants": ["kenny rogers", "kennyrogers"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5KqldkCunQ2rWxruMEtGh0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c289ed4316aaab5a5b7376c1"
+    },
+    {
+      "position": 8,
+      "title": "Always on My Mind",
+      "artist": "Willie Nelson",
+      "year": 1982,
+      "difficulty": "medium",
+      "youtube_id": "9ULH8_CF0os",
+      "answers_accepted": {
+        "title_variants": ["always on my mind", "alwaysonmymind"],
+        "artist_variants": ["willie nelson", "willienelson"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2xYQTU2bbg6WVAmpY1eae4",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e786801505efc5bb2e97ed04"
+    },
+    {
+      "position": 9,
+      "title": "Man! I Feel Like a Woman!",
+      "artist": "Shania Twain",
+      "year": 1997,
+      "difficulty": "easy",
+      "youtube_id": "ZJL4UGSbeFg",
+      "answers_accepted": {
+        "title_variants": [
+          "man i feel like a woman",
+          "i feel like a woman",
+          "man i feel like woman"
+        ],
+        "artist_variants": ["shania twain", "shaniatwain"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6sxptembJVty4sNtcPMAVz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273aaf012d56b8c72658da6c45f"
+    },
+    {
+      "position": 10,
+      "title": "You're Still the One",
+      "artist": "Shania Twain",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "g_pPc6j7_yk",
+      "answers_accepted": {
+        "title_variants": ["you're still the one", "youre still the one", "still the one"],
+        "artist_variants": ["shania twain", "shaniatwain"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1wb4P4F0sxAQ2KXrRvsx6n",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273aaf012d56b8c72658da6c45f"
+    },
+    {
+      "position": 11,
+      "title": "Old Town Road",
+      "artist": "Lil Nas X",
+      "year": 2019,
+      "difficulty": "easy",
+      "youtube_id": "7ysFgElQtjI",
+      "answers_accepted": {
+        "title_variants": ["old town road", "oldtownroad"],
+        "artist_variants": ["lil nas x", "lilnasx", "billy ray cyrus"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0F7FA14euOIX8KcbEturGH",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736239187793c9e492e687db01"
+    },
+    {
+      "position": 12,
+      "title": "Wagon Wheel",
+      "artist": "Darius Rucker",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "WGP6ECozKy8",
+      "answers_accepted": {
+        "title_variants": ["wagon wheel", "wagonwheel"],
+        "artist_variants": ["darius rucker", "dariusrucker"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3xdjjKMcMOFgo1eQrfbogM",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733c814f8afa852904e9db8a9f"
+    },
+    {
+      "position": 13,
+      "title": "Cruise",
+      "artist": "Florida Georgia Line",
+      "year": 2012,
+      "difficulty": "medium",
+      "youtube_id": "zAND37zOC9g",
+      "answers_accepted": {
+        "title_variants": ["cruise"],
+        "artist_variants": ["florida georgia line", "fgl"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5BhsEd82G0Mnim0IUH6xkT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736e89de7ebe87938fbb505628"
+    },
+    {
+      "position": 14,
+      "title": "Need You Now",
+      "artist": "Lady Antebellum",
+      "year": 2009,
+      "difficulty": "medium",
+      "youtube_id": "eM213aMKTHg",
+      "answers_accepted": {
+        "title_variants": ["need you now", "needyounow"],
+        "artist_variants": ["lady antebellum", "lady a", "ladyantebellum"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7GAaTpSoTWUTbP2Yxlt4Hd",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735a8b541ca2a563671ff38ddf"
+    },
+    {
+      "position": 15,
+      "title": "Tennessee Whiskey",
+      "artist": "Chris Stapleton",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "4zAThXFOy2c",
+      "answers_accepted": {
+        "title_variants": ["tennessee whiskey", "tennesseewhiskey"],
+        "artist_variants": ["chris stapleton", "chrisstapleton"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3fqwjXwUGN6vbzIwvyFMhx",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273540fc1d083eac5bcff8dad21"
+    }
+  ]
+}

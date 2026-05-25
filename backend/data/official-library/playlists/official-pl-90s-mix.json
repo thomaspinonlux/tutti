@@ -1,0 +1,287 @@
+{
+  "id": "official-pl-90s-mix",
+  "name_fr": "Années 90 — Mix",
+  "name_en": "90s — Mix",
+  "description_fr": "Un mélange équilibré de la décennie : 5 megahits, 5 grands classiques, 5 perles plus pointues. Le sampler parfait des années 90.",
+  "description_en": "A balanced mix of the decade: 5 megahits, 5 great classics, 5 sharper gems. The perfect 90s sampler.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_1990s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [1990, 1999]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "U Can't Touch This",
+      "artist": "MC Hammer",
+      "year": 1990,
+      "difficulty": "easy",
+      "youtube_id": "_NNYI8VbFyY",
+      "answers_accepted": {
+        "title_variants": [
+          "u can't touch this",
+          "you can't touch this",
+          "u cant touch this",
+          "can't touch this",
+          "cant touch this"
+        ],
+        "artist_variants": ["mc hammer", "m.c. hammer", "hammer", "mchammer"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1B75hgRqe7A4fwee3g3Wmu",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f5e5babccf665ef8c912b190"
+    },
+    {
+      "position": 2,
+      "title": "Ice Ice Baby",
+      "artist": "Vanilla Ice",
+      "year": 1990,
+      "difficulty": "easy",
+      "youtube_id": "GOQtzxPnoY0",
+      "answers_accepted": {
+        "title_variants": ["ice ice baby", "iceicebaby", "ice baby", "ice ice"],
+        "artist_variants": ["vanilla ice", "vanila ice", "vanille ice", "vanillaice"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "11d9oUiwHuYt216EFA2tiz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734bb0c02f38a183d19b410662"
+    },
+    {
+      "position": 3,
+      "title": "Cotton Eye Joe",
+      "artist": "Rednex",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "mOYZaiDZ7BM",
+      "answers_accepted": {
+        "title_variants": ["cotton eye joe", "cottoneyejoe", "cotton eyed joe", "cotton joe"],
+        "artist_variants": ["rednex", "rednecks", "the rednex"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "06hsdMbBxWGqBO0TV0Zrkf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738833534681a0a01c668c4115"
+    },
+    {
+      "position": 4,
+      "title": "All Star",
+      "artist": "Smash Mouth",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "SWFA0d2vIUk",
+      "answers_accepted": {
+        "title_variants": ["all star", "allstar", "all stars"],
+        "artist_variants": ["smash mouth", "smashmouth", "smash mouths"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3cfOd4CMv2snFaKAnMdnvK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734f3bbf9631faeb8de9912a23"
+    },
+    {
+      "position": 5,
+      "title": "I'm Too Sexy",
+      "artist": "Right Said Fred",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "P5mtclwloEQ",
+      "answers_accepted": {
+        "title_variants": ["i'm too sexy", "im too sexy", "too sexy", "im too sexy for my shirt"],
+        "artist_variants": [
+          "right said fred",
+          "rightsaidfred",
+          "right said fread",
+          "right said fred band"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5YBnb8pOGOHkkGUEoqreWL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27369f6f83b6490733c92ad7c0a"
+    },
+    {
+      "position": 6,
+      "title": "Linger",
+      "artist": "The Cranberries",
+      "year": 1993,
+      "difficulty": "medium",
+      "youtube_id": "gPFP8bdQKJY",
+      "answers_accepted": {
+        "title_variants": ["linger", "lingering", "lingers"],
+        "artist_variants": ["the cranberries", "cranberries", "the cranberry", "cranberry"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0gEyKnHvgkrkBM6fbeHdwK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f6325f361d7803ad0d908451"
+    },
+    {
+      "position": 7,
+      "title": "Ironic",
+      "artist": "Alanis Morissette",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "Jne9t8sHpUc",
+      "answers_accepted": {
+        "title_variants": ["ironic", "ironique", "ironics"],
+        "artist_variants": [
+          "alanis morissette",
+          "alanis morisette",
+          "alanis morrissette",
+          "allanis morissette"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1d6KS9GH06JAd19uiBy9IE",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273242e643ea07118ecf677a6ef"
+    },
+    {
+      "position": 8,
+      "title": "Creep",
+      "artist": "Radiohead",
+      "year": 1992,
+      "difficulty": "medium",
+      "youtube_id": "fAuT8_dboWo",
+      "answers_accepted": {
+        "title_variants": ["creep", "creeps", "kreep"],
+        "artist_variants": ["radiohead", "radio head", "radiouhead", "radioheads"],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Radiohead, single 1992 sur l'album Pablo Honey 1993."
+      },
+      "spotify_id": "62J6RO53R6vNhOB6QXajFV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27393ffc909e21de5a8d88d04ca"
+    },
+    {
+      "position": 9,
+      "title": "Champagne Supernova",
+      "artist": "Oasis",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "VGfDg7wju6M",
+      "answers_accepted": {
+        "title_variants": [
+          "champagne supernova",
+          "champagnesupernova",
+          "champagne super nova",
+          "champagne nova"
+        ],
+        "artist_variants": ["oasis", "oasys", "oasiss"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6EMynpZ10GVcwVqiLZj6Ye",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732f2eeee9b405f4d00428d84c"
+    },
+    {
+      "position": 10,
+      "title": "Lightning Crashes",
+      "artist": "Live",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "qlbW9mlm7io",
+      "answers_accepted": {
+        "title_variants": [
+          "lightning crashes",
+          "lightningcrashes",
+          "lightnig crashes",
+          "lightning crash"
+        ],
+        "artist_variants": ["live", "live band", "the live", "liv"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "48iWbsOaBUAGzMdoSmqyg1",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27323d8d82a798baa960fdb5070"
+    },
+    {
+      "position": 11,
+      "title": "Glory Box",
+      "artist": "Portishead",
+      "year": 1994,
+      "difficulty": "hard",
+      "youtube_id": "4qQyUi4zfDs",
+      "answers_accepted": {
+        "title_variants": ["glory box", "glorybox", "glori box"],
+        "artist_variants": ["portishead", "porti head", "portis head", "portsihead"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3Ty7OTBNSigGEpeW2PqcsC",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dc20397b139223620af148f6"
+    },
+    {
+      "position": 12,
+      "title": "Stay (I Missed You)",
+      "artist": "Lisa Loeb",
+      "year": 1994,
+      "difficulty": "hard",
+      "youtube_id": "i9HGwRbMiVY",
+      "answers_accepted": {
+        "title_variants": [
+          "stay",
+          "stay i missed you",
+          "i missed you",
+          "stay i missed",
+          "lisa loeb stay"
+        ],
+        "artist_variants": ["lisa loeb", "liza loeb", "lisa loab", "lisa loebe"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "00U1MDChdOTxWwtKoOoBXE",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ae5d490ee490c3ee46f65ec0"
+    },
+    {
+      "position": 13,
+      "title": "Around the World",
+      "artist": "Daft Punk",
+      "year": 1997,
+      "difficulty": "hard",
+      "youtube_id": "dwDns8x3Jb4",
+      "answers_accepted": {
+        "title_variants": ["around the world", "around world", "aroundtheworld", "autour du monde"],
+        "artist_variants": ["daft punk", "daftpunk", "daftpunkk", "daft punks"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1pKYYY0dkg23sQQXi0Q5zN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738ac778cc7d88779f74d33311"
+    },
+    {
+      "position": 14,
+      "title": "Praise You",
+      "artist": "Fatboy Slim",
+      "year": 1998,
+      "difficulty": "hard",
+      "youtube_id": "1BoXlv-TV2c",
+      "answers_accepted": {
+        "title_variants": ["praise you", "praiseyou", "praise"],
+        "artist_variants": ["fatboy slim", "fat boy slim", "fatboyslim", "fatboy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1FS21kclHQ2vVi3U1ZxETc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a67f5b073aa23dd4155b556b"
+    },
+    {
+      "position": 15,
+      "title": "Block Rockin' Beats",
+      "artist": "The Chemical Brothers",
+      "year": 1997,
+      "difficulty": "hard",
+      "youtube_id": "iTxOKsyZ0Lw",
+      "answers_accepted": {
+        "title_variants": [
+          "block rockin' beats",
+          "block rocking beats",
+          "block rockin beats",
+          "blockrockinbeats",
+          "block rocking"
+        ],
+        "artist_variants": [
+          "the chemical brothers",
+          "chemical brothers",
+          "chemicalbrothers",
+          "the chemical brother"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1FNvrp5K02oThumS6gllzp",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273df9f87a1ff07a1bb500ad75f"
+    }
+  ]
+}

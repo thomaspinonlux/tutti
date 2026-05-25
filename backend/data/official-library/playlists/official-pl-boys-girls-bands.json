@@ -1,0 +1,248 @@
+{
+  "id": "official-pl-boys-girls-bands",
+  "name_fr": "Boys Bands & Girl Bands",
+  "name_en": "Boy Bands & Girl Groups",
+  "description_fr": "Les groupes vocaux des années 90 et 2000 : Backstreet Boys, *NSYNC, Spice Girls, Destiny's Child, Westlife, S Club 7. Pop synchronisée et chorégraphies.",
+  "description_en": "Vocal groups of the 90s and 2000s: Backstreet Boys, *NSYNC, Spice Girls, Destiny's Child, Westlife, S Club 7. Synchronized pop and choreographies.",
+  "locale_primary": "international",
+  "theme": "thematic_boys_girls_bands",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1995, 2010]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Quit Playing Games (with My Heart)",
+      "artist": "Backstreet Boys",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "18UD-R0yly0",
+      "answers_accepted": {
+        "title_variants": [
+          "quit playing games",
+          "quitplayinggames",
+          "quit playing games with my heart"
+        ],
+        "artist_variants": ["backstreet boys", "bsb"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0Uqs7ilt5kGX9NzFDWTBrP",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733d16809ca253f0f476195941"
+    },
+    {
+      "position": 2,
+      "title": "Larger Than Life",
+      "artist": "Backstreet Boys",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "lreFBmP-VyE",
+      "answers_accepted": {
+        "title_variants": ["larger than life", "largerthanlife"],
+        "artist_variants": ["backstreet boys", "bsb"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6sbXGUn9V9ZaLwLdOfpKRE",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732160c02bc56f192df0f4986b"
+    },
+    {
+      "position": 3,
+      "title": "Tearin' Up My Heart",
+      "artist": "*NSYNC",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "N_Lbhv0xUY4",
+      "answers_accepted": {
+        "title_variants": ["tearin up my heart", "tearinupmyheart", "tearing up my heart"],
+        "artist_variants": ["nsync", "*nsync", "n sync", "in sync"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "73q3FpQVXWk5eSUnyo83E4",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273186b235052f031900c5cb282"
+    },
+    {
+      "position": 4,
+      "title": "It's Gonna Be Me",
+      "artist": "*NSYNC",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "uWuNCQRcy7M",
+      "answers_accepted": {
+        "title_variants": ["it's gonna be me", "its gonna be me", "gonna be me", "may"],
+        "artist_variants": ["nsync", "*nsync"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2AW37v0bDyuOzGP3XnmFuA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a6cb8fab778e1efc406a5909"
+    },
+    {
+      "position": 5,
+      "title": "When the Lights Go Out",
+      "artist": "Five",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "-u23PSdszYo",
+      "answers_accepted": {
+        "title_variants": ["when the lights go out", "lights go out", "whenthelights"],
+        "artist_variants": ["five", "5ive", "fivelive"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "37giHQffMdB94OqVy4ZBd8",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273736fbe099416e69603df518d"
+    },
+    {
+      "position": 6,
+      "title": "Swear It Again",
+      "artist": "Westlife",
+      "year": 1999,
+      "difficulty": "hard",
+      "youtube_id": "v0I4yktKwA0",
+      "answers_accepted": {
+        "title_variants": ["swear it again", "swearitagain"],
+        "artist_variants": ["westlife", "west life"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4ekWUsmWMaT5EI3VL0epBk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27344ead2b3b8073d06a23c8580"
+    },
+    {
+      "position": 7,
+      "title": "Uptown Girl",
+      "artist": "Westlife",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "hMtQzFZzzZQ",
+      "answers_accepted": {
+        "title_variants": ["uptown girl", "uptowngirl"],
+        "artist_variants": ["westlife", "west life", "billy joel"],
+        "scoring": "title_or_artist",
+        "notes": "Reprise de Billy Joel (1983)."
+      },
+      "spotify_id": "6Y0sfBxSrBuayAnqWQNS3i",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ae15612912c8f278057d4b4a"
+    },
+    {
+      "position": 8,
+      "title": "2 Become 1",
+      "artist": "Spice Girls",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "FA5jsa1lR9c",
+      "answers_accepted": {
+        "title_variants": ["2 become 1", "two become one", "2become1"],
+        "artist_variants": ["spice girls", "the spice girls"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "36AWdhZIGLUTkWpJDhe7va",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27363facc42e4a35eb3aa182b59"
+    },
+    {
+      "position": 9,
+      "title": "Bills, Bills, Bills",
+      "artist": "Destiny's Child",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "NiF6-0UTqtc",
+      "answers_accepted": {
+        "title_variants": ["bills bills bills", "billsbillsbills", "bills"],
+        "artist_variants": ["destiny's child", "destinys child", "destinyschild"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1Oi2zpmL81Q0yScF1zxaC0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733718df75b57340c1947747e8"
+    },
+    {
+      "position": 10,
+      "title": "Say My Name",
+      "artist": "Destiny's Child",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "JHed3iCPesM",
+      "answers_accepted": {
+        "title_variants": ["say my name", "saymyname"],
+        "artist_variants": ["destiny's child", "destinys child"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7H6ev70Weq6DdpZyyTmUXk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733718df75b57340c1947747e8"
+    },
+    {
+      "position": 11,
+      "title": "Don't Stop Movin'",
+      "artist": "S Club 7",
+      "year": 2001,
+      "difficulty": "medium",
+      "youtube_id": "vm262cXxRrU",
+      "answers_accepted": {
+        "title_variants": ["don't stop movin", "dont stop moving", "dontstopmovin"],
+        "artist_variants": ["s club 7", "sclub7", "s club seven"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4dzreTCcGVgeF1vCcd22AC",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d9eefcb3a1addaf3aac54133"
+    },
+    {
+      "position": 12,
+      "title": "Whole Again",
+      "artist": "Atomic Kitten",
+      "year": 2001,
+      "difficulty": "hard",
+      "youtube_id": "1V0xQkk9kbc",
+      "answers_accepted": {
+        "title_variants": ["whole again", "wholeagain"],
+        "artist_variants": ["atomic kitten", "atomickitten"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "16MJqq0vEuW6GRX6faetTm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f06a0fdc631991467c6c9b35"
+    },
+    {
+      "position": 13,
+      "title": "C'est la Vie",
+      "artist": "B*Witched",
+      "year": 1998,
+      "difficulty": "hard",
+      "youtube_id": "iim1HTKNSB4",
+      "answers_accepted": {
+        "title_variants": ["c'est la vie", "cest la vie", "cestlavie"],
+        "artist_variants": ["b*witched", "bwitched", "b witched"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0SHmApKzT0EWhbFKBjsOex",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738af0e9a506fd26b90c945bb4"
+    },
+    {
+      "position": 14,
+      "title": "5,6,7,8",
+      "artist": "Steps",
+      "year": 1997,
+      "difficulty": "hard",
+      "youtube_id": "4NO-h9PFum4",
+      "answers_accepted": {
+        "title_variants": ["5,6,7,8", "5 6 7 8", "five six seven eight"],
+        "artist_variants": ["steps", "steps band"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3oWZwdnnwsCwMukQbPsEiy",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273560191017f3d1ac3db1a0037"
+    },
+    {
+      "position": 15,
+      "title": "Push the Button",
+      "artist": "Sugababes",
+      "year": 2005,
+      "difficulty": "medium",
+      "youtube_id": "ShaqG4iQlMA",
+      "answers_accepted": {
+        "title_variants": ["push the button", "pushthebutton"],
+        "artist_variants": ["sugababes", "sugar babes", "the sugababes"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3EDS89HeAhHiZKlljciK0a",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732f01c00e6bfc45b33d6ab3dd"
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "id": "official-pl-reggae",
+  "name_fr": "Reggae & Bob Marley",
+  "name_en": "Reggae & Bob Marley",
+  "description_fr": "Le reggae jamaïcain dominé par Bob Marley, plus Damian Marley, Shaggy, Sister Nancy, Chaka Demus & Pliers. Vibes soleil et conscience.",
+  "description_en": "Jamaican reggae led by Bob Marley, plus Damian Marley, Shaggy, Sister Nancy, Chaka Demus & Pliers. Sunshine vibes with conscience.",
+  "locale_primary": "international",
+  "theme": "thematic_reggae",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1973, 2010]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "No Woman, No Cry",
+      "artist": "Bob Marley & The Wailers",
+      "year": 1974,
+      "difficulty": "easy",
+      "youtube_id": "IT8XvzIfi4U",
+      "answers_accepted": {
+        "title_variants": ["no woman no cry", "nowomannocry", "no woman"],
+        "artist_variants": ["bob marley", "bob marley & the wailers", "the wailers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/IT8XvzIfi4U/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Three Little Birds",
+      "artist": "Bob Marley & The Wailers",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "NOyRsPDPfMM",
+      "answers_accepted": {
+        "title_variants": [
+          "three little birds",
+          "threelittlebirds",
+          "little birds",
+          "don't worry about a thing"
+        ],
+        "artist_variants": ["bob marley", "bob marley & the wailers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NOyRsPDPfMM/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "One Love",
+      "artist": "Bob Marley & The Wailers",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "zCgu_GSex0k",
+      "answers_accepted": {
+        "title_variants": ["one love", "onelove", "people get ready"],
+        "artist_variants": ["bob marley", "bob marley & the wailers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/zCgu_GSex0k/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Buffalo Soldier",
+      "artist": "Bob Marley & The Wailers",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "QiESgCu9Ehw",
+      "answers_accepted": {
+        "title_variants": ["buffalo soldier", "buffalosoldier"],
+        "artist_variants": ["bob marley", "bob marley & the wailers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/QiESgCu9Ehw/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Could You Be Loved",
+      "artist": "Bob Marley & The Wailers",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "uf9DjrIEEwc",
+      "answers_accepted": {
+        "title_variants": ["could you be loved", "couldyoubeloved"],
+        "artist_variants": ["bob marley", "bob marley & the wailers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/uf9DjrIEEwc/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Get Up, Stand Up",
+      "artist": "Bob Marley & The Wailers",
+      "year": 1973,
+      "difficulty": "medium",
+      "youtube_id": "CwIdvOTzvqc",
+      "answers_accepted": {
+        "title_variants": ["get up stand up", "getupstandup", "stand up"],
+        "artist_variants": ["bob marley", "bob marley & the wailers", "peter tosh"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CwIdvOTzvqc/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Redemption Song",
+      "artist": "Bob Marley & The Wailers",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "yv5xonFSC4c",
+      "answers_accepted": {
+        "title_variants": ["redemption song", "redemptionsong"],
+        "artist_variants": ["bob marley", "bob marley & the wailers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/yv5xonFSC4c/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Welcome to Jamrock",
+      "artist": "Damian Marley",
+      "year": 2005,
+      "difficulty": "medium",
+      "youtube_id": "qYeZo50yFLw",
+      "answers_accepted": {
+        "title_variants": ["welcome to jamrock", "welcometojamrock", "jamrock"],
+        "artist_variants": ["damian marley", "damianmarley", "damian junior gong marley"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/qYeZo50yFLw/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Pass the Dutchie",
+      "artist": "Musical Youth",
+      "year": 1982,
+      "difficulty": "medium",
+      "youtube_id": "EsyUa63NM1E",
+      "answers_accepted": {
+        "title_variants": ["pass the dutchie", "passthedutchie"],
+        "artist_variants": ["musical youth", "musicalyouth"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/EsyUa63NM1E/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Boombastic",
+      "artist": "Shaggy",
+      "year": 1995,
+      "difficulty": "easy",
+      "youtube_id": "6W5pq4bIzIw",
+      "answers_accepted": {
+        "title_variants": ["boombastic", "mr boombastic", "mister boombastic"],
+        "artist_variants": ["shaggy", "shagy"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/6W5pq4bIzIw/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Murder She Wrote",
+      "artist": "Chaka Demus & Pliers",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "2uiL5ewGP1w",
+      "answers_accepted": {
+        "title_variants": ["murder she wrote", "murdershewrote"],
+        "artist_variants": ["chaka demus & pliers", "chaka demus and pliers", "chaka demus pliers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/2uiL5ewGP1w/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Bam Bam",
+      "artist": "Sister Nancy",
+      "year": 1982,
+      "difficulty": "hard",
+      "youtube_id": "a9OopCd1gpE",
+      "answers_accepted": {
+        "title_variants": ["bam bam", "bambam"],
+        "artist_variants": ["sister nancy", "sisternancy"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/a9OopCd1gpE/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Tomorrow People",
+      "artist": "Ziggy Marley",
+      "year": 1988,
+      "difficulty": "hard",
+      "youtube_id": "AM8M-HHSbp0",
+      "answers_accepted": {
+        "title_variants": ["tomorrow people", "tomorrowpeople"],
+        "artist_variants": ["ziggy marley", "ziggymarley", "ziggy marley & the melody makers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/AM8M-HHSbp0/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Hot Hot Hot",
+      "artist": "Arrow",
+      "year": 1983,
+      "difficulty": "medium",
+      "youtube_id": "5HDgGzI0Pb8",
+      "answers_accepted": {
+        "title_variants": ["hot hot hot", "hothothot"],
+        "artist_variants": ["arrow", "arrow soca", "alphonsus cassell"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/5HDgGzI0Pb8/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "One Step Beyond",
+      "artist": "Madness",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "dv_kJCMN4EU",
+      "answers_accepted": {
+        "title_variants": ["one step beyond", "onestepbeyond"],
+        "artist_variants": ["madness", "madness ska"],
+        "scoring": "title_or_artist",
+        "notes": "Ska britannique, frontière reggae."
+      },
+      "cover_url": "https://img.youtube.com/vi/dv_kJCMN4EU/hqdefault.jpg"
+    }
+  ]
+}

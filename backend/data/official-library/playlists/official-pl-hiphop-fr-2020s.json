@@ -1,0 +1,228 @@
+{
+  "id": "official-pl-hiphop-fr-2020s",
+  "name_fr": "Hip-Hop FR — Années 2020",
+  "name_en": "French Hip-Hop — 2020s",
+  "description_fr": "Le rap français de la nouvelle décennie : Tiakola, Werenoi, Ninho, Damso, Gazo, Niska, Aya Nakamura. La nouvelle vague.",
+  "description_en": "French rap of the new decade: Tiakola, Werenoi, Ninho, Damso, Gazo, Niska, Aya Nakamura. The new wave.",
+  "locale_primary": "fr",
+  "theme": "thematic_hiphop_fr_2020s",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "freestyle"],
+    "year_range_strict": [2020, 2025]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Hasta Luego",
+      "artist": "Tiakola",
+      "year": 2022,
+      "difficulty": "easy",
+      "youtube_id": "Mme9REVuidw",
+      "answers_accepted": {
+        "title_variants": ["hasta luego", "hastaluego"],
+        "artist_variants": ["tiakola", "tiako"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Mme9REVuidw/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Million Dollar Baby",
+      "artist": "Werenoi",
+      "year": 2024,
+      "difficulty": "easy",
+      "youtube_id": "Q3MyR3irhIw",
+      "answers_accepted": {
+        "title_variants": ["million dollar baby", "milliondollarbaby", "mdb"],
+        "artist_variants": ["werenoi", "werenoy"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Q3MyR3irhIw/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Bolide allemand",
+      "artist": "Werenoi",
+      "year": 2024,
+      "difficulty": "medium",
+      "youtube_id": "WcX37NouKxw",
+      "answers_accepted": {
+        "title_variants": ["bolide allemand", "bolideallemand"],
+        "artist_variants": ["werenoi"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/WcX37NouKxw/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Dolce Vita",
+      "artist": "Booba",
+      "year": 2022,
+      "difficulty": "medium",
+      "youtube_id": "491Nk9e_bnA",
+      "answers_accepted": {
+        "title_variants": ["dolce vita", "dolcevita"],
+        "artist_variants": ["booba", "boubacar"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/491Nk9e_bnA/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Life Life",
+      "artist": "Damso",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "LKV9N4Rlwqc",
+      "answers_accepted": {
+        "title_variants": ["life life", "lifelife"],
+        "artist_variants": ["damso"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/LKV9N4Rlwqc/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Mamacita",
+      "artist": "Ninho",
+      "year": 2020,
+      "difficulty": "easy",
+      "youtube_id": "2rCVeNtZ--s",
+      "answers_accepted": {
+        "title_variants": ["mamacita"],
+        "artist_variants": ["ninho"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/2rCVeNtZ--s/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Cœur noir",
+      "artist": "Niska",
+      "year": 2024,
+      "difficulty": "medium",
+      "youtube_id": "DiQWHjOP8-w",
+      "answers_accepted": {
+        "title_variants": ["cœur noir", "coeur noir", "coeurnoir"],
+        "artist_variants": ["niska"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/DiQWHjOP8-w/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Bande organisée",
+      "artist": "13 Organisé",
+      "year": 2020,
+      "difficulty": "easy",
+      "youtube_id": "f40jGltk2fo",
+      "answers_accepted": {
+        "title_variants": ["bande organisée", "bande organisee", "bandeorganisee"],
+        "artist_variants": ["13 organisé", "13 organise", "treize organisé", "jul", "sch"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/f40jGltk2fo/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Suavemente",
+      "artist": "Soolking",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "sLfqapBIqME",
+      "answers_accepted": {
+        "title_variants": ["suavemente"],
+        "artist_variants": ["soolking"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/sLfqapBIqME/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Eurotruck",
+      "artist": "Vald",
+      "year": 2022,
+      "difficulty": "hard",
+      "youtube_id": "AjQbtKvi_Jw",
+      "answers_accepted": {
+        "title_variants": ["eurotruck", "euro truck"],
+        "artist_variants": ["vald"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/AjQbtKvi_Jw/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "HS",
+      "artist": "Hamza",
+      "year": 2021,
+      "difficulty": "hard",
+      "youtube_id": "RL_79lkpDVo",
+      "answers_accepted": {
+        "title_variants": ["hs", "h s"],
+        "artist_variants": ["hamza", "hamza rappeur"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/RL_79lkpDVo/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Pas le choix",
+      "artist": "PLK",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "PLNxtWSXBIM",
+      "answers_accepted": {
+        "title_variants": ["pas le choix", "paslechoix"],
+        "artist_variants": ["plk", "p l k"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/PLNxtWSXBIM/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Drill FR 4",
+      "artist": "Gazo",
+      "year": 2021,
+      "difficulty": "hard",
+      "youtube_id": "lbeUyW6axeA",
+      "answers_accepted": {
+        "title_variants": ["drill fr 4", "drillfr4", "drill 4"],
+        "artist_variants": ["gazo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/lbeUyW6axeA/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Doudou",
+      "artist": "Aya Nakamura",
+      "year": 2022,
+      "difficulty": "easy",
+      "youtube_id": "NAA31YId_sQ",
+      "answers_accepted": {
+        "title_variants": ["doudou"],
+        "artist_variants": ["aya nakamura", "ayanakamura"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NAA31YId_sQ/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Familia",
+      "artist": "Naps",
+      "year": 2021,
+      "difficulty": "medium",
+      "youtube_id": "szDdAFzB58o",
+      "answers_accepted": {
+        "title_variants": ["familia"],
+        "artist_variants": ["naps", "naps rappeur"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/szDdAFzB58o/hqdefault.jpg"
+    }
+  ]
+}

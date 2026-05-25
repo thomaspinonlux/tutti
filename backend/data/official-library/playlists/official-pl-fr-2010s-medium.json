@@ -1,0 +1,261 @@
+{
+  "id": "official-pl-fr-2010s-medium",
+  "name_fr": "Variété FR 2010s — Medium",
+  "name_en": "French Pop 2010s — Medium",
+  "description_fr": "Tubes francophones 2010s reconnus par les amateurs : variété, pop, ballades.",
+  "description_en": "French-language 2010s hits known to enthusiasts: pop, ballads.",
+  "locale_primary": "fr",
+  "theme": "decade_2010s_fr",
+  "difficulty": "medium",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [2010, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Carmen",
+      "artist": "Stromae",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "wdpXyI3_Qpk",
+      "answers_accepted": {
+        "title_variants": ["carmen", "carmène"],
+        "artist_variants": ["stromae", "stromaé"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1pRvlcrVxqdDAyYT1Ym3Wq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ab580fab750cc9baf0d52b5c"
+    },
+    {
+      "position": 2,
+      "title": "Pas là",
+      "artist": "Vianney",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "nBI0bDH8W28",
+      "answers_accepted": {
+        "title_variants": ["pas là", "pas la", "pasla", "tu n'es pas là"],
+        "artist_variants": ["vianney", "vianey", "viany"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "55txN6pmN5RAOjGPnINMlg",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27352dcc4d2379c1427a62ac424"
+    },
+    {
+      "position": 3,
+      "title": "Christine",
+      "artist": "Christine and the Queens",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "C3QBPjyipqM",
+      "answers_accepted": {
+        "title_variants": ["christine", "cristine", "kristine"],
+        "artist_variants": [
+          "christine and the queens",
+          "christineandthequeens",
+          "héloïse letissier",
+          "christine queens",
+          "redcar"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6tNDVXXaYWsBd3Mqhfelvl",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f163fa3e84f8f189fe5b2156"
+    },
+    {
+      "position": 4,
+      "title": "Saint Claude",
+      "artist": "Christine and the Queens",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "_C7lXrdjrjQ",
+      "answers_accepted": {
+        "title_variants": ["saint claude", "st claude", "saintclaude"],
+        "artist_variants": [
+          "christine and the queens",
+          "christineandthequeens",
+          "héloïse letissier"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7zp7JGAykY6Z19qP633p5M",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731dbe5ca36ce059e0c7769a98"
+    },
+    {
+      "position": 5,
+      "title": "Maman",
+      "artist": "Louane",
+      "year": 2017,
+      "difficulty": "medium",
+      "youtube_id": "rxuuG3WmXVE",
+      "answers_accepted": {
+        "title_variants": ["maman", "mamã"],
+        "artist_variants": ["louane", "louane emera", "louanne"],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Louane 2017."
+      },
+      "cover_url": "https://img.youtube.com/vi/rxuuG3WmXVE/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Je vole",
+      "artist": "Louane",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "rd92pp1GhHQ",
+      "answers_accepted": {
+        "title_variants": ["je vole", "jevole"],
+        "artist_variants": ["louane", "louane emera", "michel sardou"],
+        "scoring": "title_or_artist",
+        "notes": "Reprise du morceau de Michel Sardou (1978). Cible : Louane 2015 (BO La Famille Bélier)."
+      },
+      "spotify_id": "5CLkunLzzmoI5vzwlR5QeV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27303a2736d9196a5ee0987e589"
+    },
+    {
+      "position": 7,
+      "title": "Hello",
+      "artist": "Soprano",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "0BR1vCaPhCo",
+      "answers_accepted": {
+        "title_variants": ["hello", "halo", "alo"],
+        "artist_variants": ["soprano", "saïd m'roumbaba", "psy 4 de la rime"],
+        "scoring": "title_or_artist",
+        "notes": "À ne pas confondre avec Lionel Richie 1984, Adele 2015 ou Martin Solveig 2010."
+      },
+      "spotify_id": "1noq2AhSIXxjO9LiJHvUko",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27320224ac0714054cd2ca38388"
+    },
+    {
+      "position": 8,
+      "title": "À nos souvenirs",
+      "artist": "3 Cafés Gourmands",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "voQhp1K2TSk",
+      "answers_accepted": {
+        "title_variants": ["à nos souvenirs", "a nos souvenirs", "anossouvenirs", "nos souvenirs"],
+        "artist_variants": [
+          "3 cafés gourmands",
+          "trois cafés gourmands",
+          "3 cafes gourmands",
+          "trois cafes gourmands"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3LgrzjwX7RVTtAX9Ai12Qm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a81635e7605ccde8e49b13af"
+    },
+    {
+      "position": 9,
+      "title": "Pourtant",
+      "artist": "Tal",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "Xdk-XVpnjeY",
+      "answers_accepted": {
+        "title_variants": ["pourtant", "pour tant"],
+        "artist_variants": ["tal", "tall", "tal benyerzi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7irIp2isHGKFv9veI4VCpc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731fb5be400ad7dfbbe9faf10e"
+    },
+    {
+      "position": 10,
+      "title": "La promesse",
+      "artist": "2 Frères",
+      "year": 2019,
+      "difficulty": "hard",
+      "youtube_id": "rArne7YvmGc",
+      "answers_accepted": {
+        "title_variants": ["la promesse", "lapromesse", "promesse"],
+        "artist_variants": ["2 frères", "2 freres", "deux freres", "deuxfreres"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/rArne7YvmGc/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Catastrophe",
+      "artist": "Imany",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "AnRhb474F8E",
+      "answers_accepted": {
+        "title_variants": ["catastrophe", "you will never know"],
+        "artist_variants": ["imany", "imanie", "nadia mladjao"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "790FJWgbfpZQ19iSsklZTZ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bf3077177a309422e4e7c7dd"
+    },
+    {
+      "position": 12,
+      "title": "Petite Émilie",
+      "artist": "Keen'V",
+      "year": 2010,
+      "difficulty": "medium",
+      "youtube_id": "9JaVW9u-zrE",
+      "answers_accepted": {
+        "title_variants": ["petite émilie", "petite emilie", "petiteemilie"],
+        "artist_variants": ["keen'v", "keen v", "keenv", "kenv"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/9JaVW9u-zrE/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Tatoue-moi",
+      "artist": "Mozart Opéra Rock",
+      "year": 2010,
+      "difficulty": "medium",
+      "youtube_id": "GRUKZTWQf9o",
+      "answers_accepted": {
+        "title_variants": ["tatoue-moi", "tatoue moi", "tatouemoi"],
+        "artist_variants": [
+          "mozart opéra rock",
+          "mozart opera rock",
+          "mozartoperarock",
+          "mikelangelo loconte"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/GRUKZTWQf9o/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Allez allez allez",
+      "artist": "Bigflo & Oli",
+      "year": 2017,
+      "difficulty": "medium",
+      "youtube_id": "kSiPwM31Y08",
+      "answers_accepted": {
+        "title_variants": ["allez allez allez", "allezallezallez", "allez x3"],
+        "artist_variants": ["bigflo & oli", "bigflo et oli", "bigflo oli"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/kSiPwM31Y08/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "J'ai cherché",
+      "artist": "Amir",
+      "year": 2016,
+      "difficulty": "easy",
+      "youtube_id": "kQysGibXphE",
+      "answers_accepted": {
+        "title_variants": ["j'ai cherché", "jai cherche", "jaicherche"],
+        "artist_variants": ["amir", "amir haddad", "amir eurovision"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1lzRxwbdl86iJlYMz48KoD",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733b66edbe316a379490dcd82b"
+    }
+  ]
+}

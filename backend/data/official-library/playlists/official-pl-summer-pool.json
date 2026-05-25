@@ -1,0 +1,260 @@
+{
+  "id": "official-pl-summer-pool",
+  "name_fr": "Été — Piscine & Apéro",
+  "name_en": "Summer — Pool & Aperitivo",
+  "description_fr": "Les tubes ensoleillés qui mettent l'ambiance autour de la piscine, à l'apéro ou en terrasse. Latin, dance, summer hits multi-décennies.",
+  "description_en": "Sunny hits to set the vibe by the pool, at aperitivo or on the terrace. Latin, dance, multi-decade summer anthems.",
+  "locale_primary": "international",
+  "theme": "thematic_summer",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [1980, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Summertime",
+      "artist": "DJ Jazzy Jeff & The Fresh Prince",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "Kr0tTbTbmVA",
+      "answers_accepted": {
+        "title_variants": ["summertime", "summer time", "summa time"],
+        "artist_variants": [
+          "dj jazzy jeff & the fresh prince",
+          "dj jazzy jeff fresh prince",
+          "fresh prince",
+          "will smith jazzy jeff"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Kr0tTbTbmVA/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Walking on Sunshine",
+      "artist": "Katrina and the Waves",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "iPUmE-tne5U",
+      "answers_accepted": {
+        "title_variants": ["walking on sunshine", "walkin on sunshine", "walking sunshine"],
+        "artist_variants": [
+          "katrina and the waves",
+          "katrina the waves",
+          "katrina waves",
+          "katrina & the waves"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/iPUmE-tne5U/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "The Cup of Life",
+      "artist": "Ricky Martin",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "JEF4fCo0bRI",
+      "answers_accepted": {
+        "title_variants": ["the cup of life", "cup of life", "la copa de la vida", "cupoflife"],
+        "artist_variants": ["ricky martin", "ricki martin", "ricky martine"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JEF4fCo0bRI/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Sun Is Shining",
+      "artist": "Bob Marley vs Funkstar De Luxe",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "9kPQV64eNrk",
+      "answers_accepted": {
+        "title_variants": ["sun is shining", "sunisshining", "sun shining"],
+        "artist_variants": [
+          "bob marley",
+          "funkstar de luxe",
+          "bob marley vs funkstar",
+          "bob marley funkstar deluxe"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/9kPQV64eNrk/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Loca People",
+      "artist": "Sak Noel",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "vZLd81IHGQw",
+      "answers_accepted": {
+        "title_variants": ["loca people", "locapeople", "what the fuck", "loca peopl"],
+        "artist_variants": ["sak noel", "sak noël", "saknoel"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vZLd81IHGQw/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Mr. Saxobeat",
+      "artist": "Alexandra Stan",
+      "year": 2010,
+      "difficulty": "medium",
+      "youtube_id": "nwsewSMWIas",
+      "answers_accepted": {
+        "title_variants": ["mr saxobeat", "mr. saxobeat", "saxobeat", "mister saxobeat"],
+        "artist_variants": ["alexandra stan", "alexandrastan", "alexandra stane"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/nwsewSMWIas/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "We Found Love",
+      "artist": "Rihanna",
+      "year": 2011,
+      "difficulty": "easy",
+      "youtube_id": "GchEVSx9XEA",
+      "answers_accepted": {
+        "title_variants": ["we found love", "wefoundlove", "found love"],
+        "artist_variants": [
+          "rihanna",
+          "calvin harris",
+          "rihanna ft calvin harris",
+          "rihanna calvin harris"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/GchEVSx9XEA/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Cheerleader",
+      "artist": "OMI",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "aMk-SZoU_f4",
+      "answers_accepted": {
+        "title_variants": ["cheerleader", "cheer leader", "cheerleeder"],
+        "artist_variants": ["omi", "o m i", "felix jaehn", "omi cheerleader"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/aMk-SZoU_f4/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Lemon Tree",
+      "artist": "Fool's Garden",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "wCQfkEkePx8",
+      "answers_accepted": {
+        "title_variants": ["lemon tree", "lemontree", "lemon trees"],
+        "artist_variants": ["fool's garden", "fools garden", "foolsgarden"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/wCQfkEkePx8/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Saturday Night",
+      "artist": "Whigfield",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "8DNQRtmIMxk",
+      "answers_accepted": {
+        "title_variants": ["saturday night", "saturdaynight", "samedi soir"],
+        "artist_variants": ["whigfield", "whig field", "wigfield"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/8DNQRtmIMxk/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Aserejé (The Ketchup Song)",
+      "artist": "Las Ketchup",
+      "year": 2002,
+      "difficulty": "easy",
+      "youtube_id": "5llcBScGuAE",
+      "answers_accepted": {
+        "title_variants": [
+          "aserejé",
+          "asereje",
+          "the ketchup song",
+          "ketchup song",
+          "asereje ja deje",
+          "ketchup"
+        ],
+        "artist_variants": ["las ketchup", "lasketchup", "the ketchup", "las ketshup"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/5llcBScGuAE/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Magalenha",
+      "artist": "Sergio Mendes",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "ijnujobdJ4c",
+      "answers_accepted": {
+        "title_variants": ["magalenha", "magalena", "magalenia"],
+        "artist_variants": ["sergio mendes", "sergiomendes", "sérgio mendes"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ijnujobdJ4c/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Firestone",
+      "artist": "Kygo",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "f8kJa6JYK9Q",
+      "answers_accepted": {
+        "title_variants": ["firestone", "fire stone", "firestones"],
+        "artist_variants": ["kygo", "kigo", "kaigo", "kygo conrad sewell"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/f8kJa6JYK9Q/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "La Camisa Negra",
+      "artist": "Juanes",
+      "year": 2004,
+      "difficulty": "medium",
+      "youtube_id": "kRt2sRyup6A",
+      "answers_accepted": {
+        "title_variants": ["la camisa negra", "camisa negra", "lacamisanegra"],
+        "artist_variants": ["juanes", "djuanes", "juanez"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/kRt2sRyup6A/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Gimme Hope Jo'anna",
+      "artist": "Eddy Grant",
+      "year": 1988,
+      "difficulty": "hard",
+      "youtube_id": "MpMgzWBpu2o",
+      "answers_accepted": {
+        "title_variants": [
+          "gimme hope joanna",
+          "gimme hope jo'anna",
+          "give me hope joanna",
+          "hope joanna"
+        ],
+        "artist_variants": ["eddy grant", "eddygrant", "edy grant", "edie grant"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/MpMgzWBpu2o/hqdefault.jpg"
+    }
+  ]
+}

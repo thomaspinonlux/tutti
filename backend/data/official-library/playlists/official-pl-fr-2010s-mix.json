@@ -1,0 +1,260 @@
+{
+  "id": "official-pl-fr-2010s-mix",
+  "name_fr": "Variété FR 2010s — Mix",
+  "name_en": "French Pop 2010s — Mix",
+  "description_fr": "Mélange des trois niveaux : la variété francophone des années 2010 du grand public aux pépites.",
+  "description_en": "All three levels: 2010s French-language pop from mainstream to gems.",
+  "locale_primary": "fr",
+  "theme": "decade_2010s_fr",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [2010, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Cassandre",
+      "artist": "Chimène Badi",
+      "year": 2018,
+      "difficulty": "easy",
+      "youtube_id": "UH5g-Bq3ds0",
+      "answers_accepted": {
+        "title_variants": ["cassandre", "cassandra"],
+        "artist_variants": ["chimène badi", "chimene badi", "chimènebadi"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/UH5g-Bq3ds0/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "On brûlera",
+      "artist": "Pomme",
+      "year": 2017,
+      "difficulty": "easy",
+      "youtube_id": "jabih9mV6RQ",
+      "answers_accepted": {
+        "title_variants": ["on brûlera", "on brulera", "onbrulera", "brulera"],
+        "artist_variants": ["pomme", "pomme music", "claire pommet"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "52APn0QJbjtcHRK0fiXpL6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736ada6a0f014e5ca796561339"
+    },
+    {
+      "position": 3,
+      "title": "Je suis chez moi",
+      "artist": "Black M",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "hsOqEhMumaw",
+      "answers_accepted": {
+        "title_variants": ["je suis chez moi", "jesuischezmoi", "chez moi"],
+        "artist_variants": ["black m", "blackm", "black mesrimes"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3jyQ5s7TlKm5tqmpICahUY",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273998fea8cb66d5e20b4488565"
+    },
+    {
+      "position": 4,
+      "title": "Il est où le bonheur",
+      "artist": "Christophe Maé",
+      "year": 2016,
+      "difficulty": "easy",
+      "youtube_id": "m5qXr9lLdwA",
+      "answers_accepted": {
+        "title_variants": [
+          "il est où le bonheur",
+          "il est ou le bonheur",
+          "ilestoulebonheur",
+          "où le bonheur"
+        ],
+        "artist_variants": ["christophe maé", "christophe mae", "christophemae"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1TM73fujNDKSpigPLfxCZm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273940ea7a7ea2bb24fb6c3ea57"
+    },
+    {
+      "position": 5,
+      "title": "Tombé sous le charme",
+      "artist": "M. Pokora",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "yRGiYUEFFww",
+      "answers_accepted": {
+        "title_variants": [
+          "tombé sous le charme",
+          "tombe sous le charme",
+          "tombesouslecharme",
+          "sous le charme"
+        ],
+        "artist_variants": ["m. pokora", "m pokora", "matt pokora", "mpokora"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/yRGiYUEFFww/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Le présent d'abord",
+      "artist": "Florent Pagny",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "pGWrX6nC-pk",
+      "answers_accepted": {
+        "title_variants": [
+          "le présent d'abord",
+          "le present d'abord",
+          "lepresentdabord",
+          "présent d'abord"
+        ],
+        "artist_variants": ["florent pagny", "florentpagny", "pagny"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2dT9t0cYUTyVLcrpdJO6rc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fc4c08613f73114f0f2f6b4a"
+    },
+    {
+      "position": 7,
+      "title": "Tomber dans ses bras",
+      "artist": "Bénabar",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "jwcmsz3xibg",
+      "answers_accepted": {
+        "title_variants": ["tomber dans ses bras", "tomberdanssesbras", "dans ses bras"],
+        "artist_variants": ["bénabar", "benabar"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/jwcmsz3xibg/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Pages blanches",
+      "artist": "Ed Sheeran ft. Vianney",
+      "year": 2017,
+      "difficulty": "medium",
+      "youtube_id": "3ArJlad2q74",
+      "answers_accepted": {
+        "title_variants": ["pages blanches", "pagesblanches", "page blanche"],
+        "artist_variants": [
+          "ed sheeran",
+          "vianney",
+          "ed sheeran ft vianney",
+          "ed sheeran vianney",
+          "edsheeran",
+          "ed sheeran feat vianney"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/3ArJlad2q74/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Le sens de la vie",
+      "artist": "Tal",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "8H0-eEWSE00",
+      "answers_accepted": {
+        "title_variants": ["le sens de la vie", "lesensdelavie", "sens de la vie"],
+        "artist_variants": ["tal", "tal benyerzi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6GTKCSwYLWRxfaTv6hS6Xe",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734c899f168c431d23d10fc711"
+    },
+    {
+      "position": 10,
+      "title": "Angela",
+      "artist": "Yannick Noah",
+      "year": 2010,
+      "difficulty": "medium",
+      "youtube_id": "7hHHAm9_a_M",
+      "answers_accepted": {
+        "title_variants": ["angela", "angéla"],
+        "artist_variants": ["yannick noah", "yannicknoah", "yannick noha"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3Ps96aO0laQ4o8Xe4iuEJe",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c5776e361da10d5a700c570a"
+    },
+    {
+      "position": 11,
+      "title": "Cyborg",
+      "artist": "Indochine",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "QrJgb2Fmdv0",
+      "answers_accepted": {
+        "title_variants": ["cyborg", "cyborgs"],
+        "artist_variants": ["indochine", "indochina", "indochinne", "nicola sirkis"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/QrJgb2Fmdv0/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Tourner dans le vide",
+      "artist": "Indila",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "F3wpq-i150c",
+      "answers_accepted": {
+        "title_variants": ["tourner dans le vide", "tournerdanslevide", "tourner vide"],
+        "artist_variants": ["indila", "indilla"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1MqzIgGsHP4cNjPboevsfq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734ae8ff731c49965bf2083405"
+    },
+    {
+      "position": 13,
+      "title": "J'accuse",
+      "artist": "Damien Saez",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "yVlAJOmoVQs",
+      "answers_accepted": {
+        "title_variants": ["j'accuse", "jaccuse"],
+        "artist_variants": ["damien saez", "damiensaez", "saez"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1cnATC0mQNipvfoAbLScfb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27320d4a0404de52e94c73a3c6d"
+    },
+    {
+      "position": 14,
+      "title": "Quand c'est?",
+      "artist": "Stromae",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "2ux5zHXzbmw",
+      "answers_accepted": {
+        "title_variants": ["quand c'est", "quand cest", "quand c'est?", "quandcest", "le cancer"],
+        "artist_variants": ["stromae", "stromaé"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6sAtOPSyH7lmdazTYqOxjC",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ab580fab750cc9baf0d52b5c"
+    },
+    {
+      "position": 15,
+      "title": "Bruxelles",
+      "artist": "Boulevard des airs",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "t_YqQIc6U_w",
+      "answers_accepted": {
+        "title_variants": ["bruxelles", "brussels", "bruxelle"],
+        "artist_variants": ["boulevard des airs", "boulevarddesairs", "bld des airs"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3o9FyxQbCzMsyPLwcr0RIK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273013c4a4de0647eb128daefd8"
+    }
+  ]
+}

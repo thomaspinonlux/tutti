@@ -1,0 +1,247 @@
+{
+  "id": "official-pl-fr-2010s-easy",
+  "name_fr": "Variété FR 2010s — Easy",
+  "name_en": "French Pop 2010s — Easy",
+  "description_fr": "Les méga-tubes francophones des années 2010. Stromae, Maître Gims, Indila, Aya Nakamura.",
+  "description_en": "Megahits of French-language 2010s. Stromae, Maître Gims, Indila, Aya Nakamura.",
+  "locale_primary": "fr",
+  "theme": "decade_2010s_fr",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [2010, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Papaoutai",
+      "artist": "Stromae",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "WNa60w5HOB4",
+      "answers_accepted": {
+        "title_variants": ["papaoutai", "papa où t'es", "papa ou tes", "papaoutay"],
+        "artist_variants": ["stromae", "stromaé", "stromai"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "34dx8DACTJsc3rsJdaEIQw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ab580fab750cc9baf0d52b5c"
+    },
+    {
+      "position": 2,
+      "title": "Tous les mêmes",
+      "artist": "Stromae",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "lH7wGCV7x2c",
+      "answers_accepted": {
+        "title_variants": ["tous les mêmes", "tous les memes", "touslesmemes"],
+        "artist_variants": ["stromae", "stromaé"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6M4nkEPZMj58acftDRTuKL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ab580fab750cc9baf0d52b5c"
+    },
+    {
+      "position": 3,
+      "title": "Andalouse",
+      "artist": "Kendji Girac",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "TitJFtjAAWk",
+      "answers_accepted": {
+        "title_variants": ["andalouse", "andaloose", "andalouze"],
+        "artist_variants": ["kendji girac", "kendjigirac", "kendji", "kenji girac"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0fqlz0L5w16uQrELsFxTp0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ddf8f39ee77b8bf4bab68e20"
+    },
+    {
+      "position": 4,
+      "title": "Sapés comme jamais",
+      "artist": "Maître Gims",
+      "year": 2015,
+      "difficulty": "easy",
+      "youtube_id": "c5eJinslaeI",
+      "answers_accepted": {
+        "title_variants": [
+          "sapés comme jamais",
+          "sapes comme jamais",
+          "sapescommejamais",
+          "sapé comme jamais"
+        ],
+        "artist_variants": ["maître gims", "maitre gims", "maitregims", "gims"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/c5eJinslaeI/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Bella",
+      "artist": "Maître Gims",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "flDppn2F6wY",
+      "answers_accepted": {
+        "title_variants": ["bella", "bellaa"],
+        "artist_variants": ["maître gims", "maitre gims", "gims"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1vELwZM3uBYWd8HrtddD4l",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273596368082712ceff7ae95649"
+    },
+    {
+      "position": 6,
+      "title": "Dommage",
+      "artist": "Bigflo & Oli",
+      "year": 2017,
+      "difficulty": "easy",
+      "youtube_id": "8AF-Sm8d8yk",
+      "answers_accepted": {
+        "title_variants": ["dommage", "domage"],
+        "artist_variants": ["bigflo & oli", "bigflo et oli", "bigflo oli", "bigfloetoli"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4BEWiTPV0v87mBryf7gdxK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736ed9b368c548fb1721adb06e"
+    },
+    {
+      "position": 7,
+      "title": "Je veux",
+      "artist": "ZAZ",
+      "year": 2010,
+      "difficulty": "easy",
+      "youtube_id": "0TFNGRYMz1U",
+      "answers_accepted": {
+        "title_variants": ["je veux", "jeveux", "donnez moi"],
+        "artist_variants": ["zaz", "zazz", "zazou"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "734dz1YaFITwawPpM25fSt",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733b5969aba116e8248a3e6369"
+    },
+    {
+      "position": 8,
+      "title": "Dernière danse",
+      "artist": "Indila",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "K5KAc5CoCuk",
+      "answers_accepted": {
+        "title_variants": ["dernière danse", "derniere danse", "dernieredanse"],
+        "artist_variants": ["indila", "indilla", "indila adila"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "65uoaqX5qcjXZRheAj1qQT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734ae8ff731c49965bf2083405"
+    },
+    {
+      "position": 9,
+      "title": "Djadja",
+      "artist": "Aya Nakamura",
+      "year": 2018,
+      "difficulty": "easy",
+      "youtube_id": "_WTIreLNKLc",
+      "answers_accepted": {
+        "title_variants": ["djadja", "diadia", "jadja"],
+        "artist_variants": ["aya nakamura", "ayanakamura", "aya nakamoura"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7sKDftgGirHWTVFMtJoDoh",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27356feea19a0436ec52a9217c9"
+    },
+    {
+      "position": 10,
+      "title": "Roi",
+      "artist": "Bilal Hassani",
+      "year": 2019,
+      "difficulty": "easy",
+      "youtube_id": "BEPWr-IE_2o",
+      "answers_accepted": {
+        "title_variants": ["roi", "roy", "king"],
+        "artist_variants": ["bilal hassani", "bilalhassani", "bilal asani"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7pLQelyQgfxEqc26woIhBA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273396857712bf343ec6e189ba3"
+    },
+    {
+      "position": 11,
+      "title": "Mafiosa",
+      "artist": "Lartiste",
+      "year": 2016,
+      "difficulty": "medium",
+      "youtube_id": "Y9UXMgNk4Do",
+      "answers_accepted": {
+        "title_variants": ["mafiosa", "mafioza"],
+        "artist_variants": ["lartiste", "l'artiste", "lartist", "caroliina"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0WxiQqTcK3ZErx2mMWgtm6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27384828b32b1041d272c6a31b3"
+    },
+    {
+      "position": 12,
+      "title": "Sur ma route",
+      "artist": "Black M",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "bB28ah9AOUQ",
+      "answers_accepted": {
+        "title_variants": ["sur ma route", "surmaroute"],
+        "artist_variants": ["black m", "blackm", "black mesrimes", "black mesrime"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3Uyt0WO3wOopnUBCe9BaXl",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273310ee6bdf4c9a1fc4cebcb47"
+    },
+    {
+      "position": 13,
+      "title": "Au DD",
+      "artist": "PNL",
+      "year": 2019,
+      "difficulty": "medium",
+      "youtube_id": "BtyHYIpykN0",
+      "answers_accepted": {
+        "title_variants": ["au dd", "audd", "au d d"],
+        "artist_variants": ["pnl", "p n l", "pe en el"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5lCxlSBFyP5g4EhVypAoOu",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736c3966c4dd0eb2273696fe16"
+    },
+    {
+      "position": 14,
+      "title": "La Grenade",
+      "artist": "Clara Luciani",
+      "year": 2018,
+      "difficulty": "medium",
+      "youtube_id": "85m-Qgo9_nE",
+      "answers_accepted": {
+        "title_variants": ["la grenade", "lagrenade", "grenade"],
+        "artist_variants": ["clara luciani", "claraluciani", "clara lucianni"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7ixCRBD0FZMRBeOBhTu2KD",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736de908475396d444b724165b"
+    },
+    {
+      "position": 15,
+      "title": "Cinquième saison",
+      "artist": "Calogero",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "sTSR1UD2W7k",
+      "answers_accepted": {
+        "title_variants": ["cinquième saison", "cinquieme saison", "5e saison", "cinquiemesaison"],
+        "artist_variants": ["calogero", "calogéro", "calogero maurici"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7ncNqIzXGRrKdP6C9fQUbm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273aa4b4d941e62973166af40a5"
+    }
+  ]
+}

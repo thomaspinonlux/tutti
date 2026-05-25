@@ -1,0 +1,255 @@
+{
+  "id": "official-pl-wedding",
+  "name_fr": "Mariage — First Dance & Cérémonie",
+  "name_en": "Wedding — First Dance & Ceremony",
+  "description_fr": "Les chansons romantiques pour cérémonie, première danse et moment des mariés. Ballades, slows, déclarations.",
+  "description_en": "Romantic songs for ceremony, first dance and bride-and-groom moments. Ballads, slows, declarations.",
+  "locale_primary": "international",
+  "theme": "thematic_wedding",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [1980, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Marry You",
+      "artist": "Bruno Mars",
+      "year": 2010,
+      "difficulty": "easy",
+      "youtube_id": "dElRVQFqj-k",
+      "answers_accepted": {
+        "title_variants": ["marry you", "marryyou", "merry you"],
+        "artist_variants": ["bruno mars", "brunomars", "bruno marse"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/dElRVQFqj-k/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Perfect",
+      "artist": "Ed Sheeran",
+      "year": 2017,
+      "difficulty": "easy",
+      "youtube_id": "iKzRIweSBLA",
+      "answers_accepted": {
+        "title_variants": ["perfect", "perfekt", "parfait"],
+        "artist_variants": ["ed sheeran", "edsheeran", "ed sheran"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/iKzRIweSBLA/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Thinking Out Loud",
+      "artist": "Ed Sheeran",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "WpyfrixXBqU",
+      "answers_accepted": {
+        "title_variants": ["thinking out loud", "thinkingoutloud", "thinking loud"],
+        "artist_variants": ["ed sheeran", "edsheeran", "ed sheran"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/WpyfrixXBqU/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Marry Me",
+      "artist": "Train",
+      "year": 2010,
+      "difficulty": "medium",
+      "youtube_id": "KNd80A-q6qE",
+      "answers_accepted": {
+        "title_variants": ["marry me", "marryme", "merry me"],
+        "artist_variants": ["train", "the train", "trains"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KNd80A-q6qE/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Make You Feel My Love",
+      "artist": "Adele",
+      "year": 2008,
+      "difficulty": "medium",
+      "youtube_id": "9_LKDk5AF6g",
+      "answers_accepted": {
+        "title_variants": ["make you feel my love", "feel my love", "makeyoufeelmylove"],
+        "artist_variants": ["adele", "adèle", "adelle", "bob dylan"],
+        "scoring": "title_or_artist",
+        "notes": "Reprise du morceau de Bob Dylan (1997). Cible : version Adele 2008."
+      },
+      "cover_url": "https://img.youtube.com/vi/9_LKDk5AF6g/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "I Won't Give Up",
+      "artist": "Jason Mraz",
+      "year": 2012,
+      "difficulty": "medium",
+      "youtube_id": "TdN5GyTl8K0",
+      "answers_accepted": {
+        "title_variants": ["i won't give up", "i wont give up", "wont give up", "give up"],
+        "artist_variants": ["jason mraz", "jasonmraz", "mraz"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/TdN5GyTl8K0/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Lucky",
+      "artist": "Jason Mraz & Colbie Caillat",
+      "year": 2008,
+      "difficulty": "medium",
+      "youtube_id": "acvIVA9-FMQ",
+      "answers_accepted": {
+        "title_variants": ["lucky", "luckie", "chanceux"],
+        "artist_variants": [
+          "jason mraz",
+          "colbie caillat",
+          "jason mraz colbie caillat",
+          "jason mraz & colbie caillat"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/acvIVA9-FMQ/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Crazy Love",
+      "artist": "Michael Bublé",
+      "year": 2009,
+      "difficulty": "medium",
+      "youtube_id": "KKZBDeamZPU",
+      "answers_accepted": {
+        "title_variants": ["crazy love", "crazylove", "krazy love"],
+        "artist_variants": ["michael bublé", "michael buble", "michaelbuble", "mickael buble"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KKZBDeamZPU/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "First Day of My Life",
+      "artist": "Bright Eyes",
+      "year": 2005,
+      "difficulty": "hard",
+      "youtube_id": "ZZVwnj5NqyY",
+      "answers_accepted": {
+        "title_variants": ["first day of my life", "firstdayofmylife", "first day my life"],
+        "artist_variants": ["bright eyes", "brighteyes", "conor oberst"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ZZVwnj5NqyY/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Best Day of My Life",
+      "artist": "American Authors",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "wutzv7JjX7k",
+      "answers_accepted": {
+        "title_variants": ["best day of my life", "bestdayofmylife", "best day my life"],
+        "artist_variants": ["american authors", "americanauthors", "the american authors"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/wutzv7JjX7k/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "A Sky Full of Stars",
+      "artist": "Coldplay",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "zp7NtW_hKJI",
+      "answers_accepted": {
+        "title_variants": [
+          "a sky full of stars",
+          "sky full of stars",
+          "skyfullofstars",
+          "sky stars"
+        ],
+        "artist_variants": ["coldplay", "cold play", "colplay"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/zp7NtW_hKJI/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Speechless",
+      "artist": "Dan + Shay",
+      "year": 2018,
+      "difficulty": "hard",
+      "youtube_id": "o_bIMTtl8X8",
+      "answers_accepted": {
+        "title_variants": ["speechless", "speech less", "speechless dan shay"],
+        "artist_variants": ["dan + shay", "dan and shay", "dan shay", "dansshay"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/o_bIMTtl8X8/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "From This Moment On",
+      "artist": "Shania Twain",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "a-Lp2uC_1lg",
+      "answers_accepted": {
+        "title_variants": [
+          "from this moment on",
+          "from this moment",
+          "fromthismomenton",
+          "this moment on"
+        ],
+        "artist_variants": ["shania twain", "shania twin", "shaniatwain", "twain"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/a-Lp2uC_1lg/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "I'll Stand by You",
+      "artist": "The Pretenders",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "UBbHmiKv18w",
+      "answers_accepted": {
+        "title_variants": [
+          "i'll stand by you",
+          "ill stand by you",
+          "stand by you",
+          "illstandbyyou"
+        ],
+        "artist_variants": ["the pretenders", "pretenders", "thepretenders", "chrissie hynde"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/UBbHmiKv18w/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Have I Told You Lately",
+      "artist": "Rod Stewart",
+      "year": 1993,
+      "difficulty": "hard",
+      "youtube_id": "doCIvWFEgN4",
+      "answers_accepted": {
+        "title_variants": [
+          "have i told you lately",
+          "have told you lately",
+          "told you lately",
+          "haveitoldyoulately"
+        ],
+        "artist_variants": ["rod stewart", "rodstewart", "rod stuart", "van morrison"],
+        "scoring": "title_or_artist",
+        "notes": "Reprise du morceau de Van Morrison (1989). Cible : version Rod Stewart 1993."
+      },
+      "cover_url": "https://img.youtube.com/vi/doCIvWFEgN4/hqdefault.jpg"
+    }
+  ]
+}

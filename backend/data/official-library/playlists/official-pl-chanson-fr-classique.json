@@ -1,0 +1,248 @@
+{
+  "id": "official-pl-chanson-fr-classique",
+  "name_fr": "Chanson Française Classique",
+  "name_en": "Classic French Chanson",
+  "description_fr": "L'âge d'or de la chanson française : Piaf, Brel, Brassens, Aznavour, Ferré, Barbara, Trenet, Bécaud. Le patrimoine.",
+  "description_en": "The golden age of French chanson: Piaf, Brel, Brassens, Aznavour, Ferré, Barbara, Trenet, Bécaud. The heritage.",
+  "locale_primary": "fr",
+  "theme": "thematic_chanson_fr_classique",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "cover", "live"],
+    "year_range_strict": [1946, 1975]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "La Vie en rose",
+      "artist": "Édith Piaf",
+      "year": 1947,
+      "difficulty": "easy",
+      "youtube_id": "-0KvBnIvTFs",
+      "answers_accepted": {
+        "title_variants": ["la vie en rose", "lavienrose"],
+        "artist_variants": ["édith piaf", "edith piaf", "piaf"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2gxX1zIdajagYZ0RIW3KNR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c6dce96cf3cd6d623ec6a722"
+    },
+    {
+      "position": 2,
+      "title": "Non, je ne regrette rien",
+      "artist": "Édith Piaf",
+      "year": 1960,
+      "difficulty": "easy",
+      "youtube_id": "4r454dad7tc",
+      "answers_accepted": {
+        "title_variants": [
+          "non je ne regrette rien",
+          "je ne regrette rien",
+          "non je regrette rien"
+        ],
+        "artist_variants": ["édith piaf", "edith piaf", "piaf"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4r454dad7tc/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Ne me quitte pas",
+      "artist": "Jacques Brel",
+      "year": 1959,
+      "difficulty": "easy",
+      "youtube_id": "e0esAGxzP6Y",
+      "answers_accepted": {
+        "title_variants": ["ne me quitte pas", "nemequittepas"],
+        "artist_variants": ["jacques brel", "brel"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/e0esAGxzP6Y/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Amsterdam",
+      "artist": "Jacques Brel",
+      "year": 1964,
+      "difficulty": "medium",
+      "youtube_id": "vsra2Rj06hw",
+      "answers_accepted": {
+        "title_variants": ["amsterdam"],
+        "artist_variants": ["jacques brel", "brel"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vsra2Rj06hw/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Les copains d'abord",
+      "artist": "Georges Brassens",
+      "year": 1964,
+      "difficulty": "easy",
+      "youtube_id": "L9oEcWFjF3M",
+      "answers_accepted": {
+        "title_variants": ["les copains d'abord", "les copains dabord", "copains d'abord"],
+        "artist_variants": ["georges brassens", "brassens"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2tsW3Lr6LatRZz7Bbe3CBK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273484d11375876dfe05d6c896c"
+    },
+    {
+      "position": 6,
+      "title": "Les amoureux des bancs publics",
+      "artist": "Georges Brassens",
+      "year": 1953,
+      "difficulty": "medium",
+      "youtube_id": "3WxRHo1EtY8",
+      "answers_accepted": {
+        "title_variants": [
+          "les amoureux des bancs publics",
+          "amoureux des bancs publics",
+          "bancs publics"
+        ],
+        "artist_variants": ["georges brassens", "brassens"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7y2O28y2I9rnmol5RjSG8D",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27302558960bf38f8224808ce28"
+    },
+    {
+      "position": 7,
+      "title": "Avec le temps",
+      "artist": "Léo Ferré",
+      "year": 1969,
+      "difficulty": "medium",
+      "youtube_id": "Bj3aTZePVQw",
+      "answers_accepted": {
+        "title_variants": ["avec le temps", "avec letemps"],
+        "artist_variants": ["léo ferré", "leo ferre", "ferré"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "40vzD8a9bRImTVhOjD6Sxo",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273765c07aab68f66129aa86bec"
+    },
+    {
+      "position": 8,
+      "title": "Hier encore",
+      "artist": "Charles Aznavour",
+      "year": 1964,
+      "difficulty": "easy",
+      "youtube_id": "dbxyKR1P8vA",
+      "answers_accepted": {
+        "title_variants": ["hier encore", "hierencore"],
+        "artist_variants": ["charles aznavour", "aznavour"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "66TDFKCZpMRfLcgJpa15xq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734c4557910606021d3ff391be"
+    },
+    {
+      "position": 9,
+      "title": "La bohème",
+      "artist": "Charles Aznavour",
+      "year": 1965,
+      "difficulty": "easy",
+      "youtube_id": "fVfnEyLOkrM",
+      "answers_accepted": {
+        "title_variants": ["la bohème", "la boheme", "bohème"],
+        "artist_variants": ["charles aznavour", "aznavour"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1WvvmEowf7hiz5EnyAwtTj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d2ad600632db1bf5947cd890"
+    },
+    {
+      "position": 10,
+      "title": "Et maintenant",
+      "artist": "Gilbert Bécaud",
+      "year": 1961,
+      "difficulty": "medium",
+      "youtube_id": "7F6ej4pHweE",
+      "answers_accepted": {
+        "title_variants": ["et maintenant", "etmaintenant"],
+        "artist_variants": ["gilbert bécaud", "gilbert becaud", "bécaud", "becaud"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7ljux6L94K33WbEM8mKGrf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27311d79597d84e5bc40571a044"
+    },
+    {
+      "position": 11,
+      "title": "Nathalie",
+      "artist": "Gilbert Bécaud",
+      "year": 1964,
+      "difficulty": "hard",
+      "youtube_id": "zuISJycFBo8",
+      "answers_accepted": {
+        "title_variants": ["nathalie"],
+        "artist_variants": ["gilbert bécaud", "becaud", "bécaud"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4s6KpAmps8hyZTdxlymQwn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27315699d74a624f4e94b7372e2"
+    },
+    {
+      "position": 12,
+      "title": "La Mer",
+      "artist": "Charles Trenet",
+      "year": 1946,
+      "difficulty": "easy",
+      "youtube_id": "8MLzijpQkJI",
+      "answers_accepted": {
+        "title_variants": ["la mer", "lamer"],
+        "artist_variants": ["charles trenet", "trenet"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5nJuVS6q2Kw8ZyJAmk1YLb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734d7228cd82191d141b355ea3"
+    },
+    {
+      "position": 13,
+      "title": "L'aigle noir",
+      "artist": "Barbara",
+      "year": 1970,
+      "difficulty": "medium",
+      "youtube_id": "4heMfS5jTxY",
+      "answers_accepted": {
+        "title_variants": ["l'aigle noir", "aigle noir", "laiglenoir"],
+        "artist_variants": ["barbara", "monique serf"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1GAMoIHawNWhdq0a22vT4E",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731cd1b63d5f9759303401c6dc"
+    },
+    {
+      "position": 14,
+      "title": "Ma Liberté",
+      "artist": "Georges Moustaki",
+      "year": 1969,
+      "difficulty": "hard",
+      "youtube_id": "9Hv6R2fEdfA",
+      "answers_accepted": {
+        "title_variants": ["ma liberté", "ma liberte", "liberté"],
+        "artist_variants": ["georges moustaki", "moustaki"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2s87dcsw2KjuhDnVqJ98Cu",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736fa8d2c3e12e2032956dd856"
+    },
+    {
+      "position": 15,
+      "title": "Le déserteur",
+      "artist": "Boris Vian",
+      "year": 1954,
+      "difficulty": "hard",
+      "youtube_id": "gjndTXyk3mw",
+      "answers_accepted": {
+        "title_variants": ["le déserteur", "le deserteur", "déserteur"],
+        "artist_variants": ["boris vian", "borisvian"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0K36tvLRNwtmMef5mujGVv",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273408918f1b860231783fe9366"
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "id": "official-pl-disco-funk",
+  "name_fr": "Disco & Funk",
+  "name_en": "Disco & Funk",
+  "description_fr": "L'âge d'or du disco et du funk fin 70s/début 80s : Chic, Earth Wind & Fire, Donna Summer, Bee Gees, Sister Sledge. Boule à facettes obligatoire.",
+  "description_en": "The golden age of disco and funk late 70s/early 80s: Chic, Earth Wind & Fire, Donna Summer, Bee Gees, Sister Sledge. Disco ball mandatory.",
+  "locale_primary": "international",
+  "theme": "thematic_disco_funk",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1975, 1985]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Le Freak",
+      "artist": "Chic",
+      "year": 1978,
+      "difficulty": "easy",
+      "youtube_id": "aXgSHL7efKg",
+      "answers_accepted": {
+        "title_variants": ["le freak", "lefreak", "freak out"],
+        "artist_variants": ["chic", "chic band"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7Kszjzps0xbQXyo1pO4KfE",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e37d5190acaf635f06cfcc4b"
+    },
+    {
+      "position": 2,
+      "title": "Good Times",
+      "artist": "Chic",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "Er9xGRolrT4",
+      "answers_accepted": {
+        "title_variants": ["good times", "goodtimes"],
+        "artist_variants": ["chic", "chic band"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0G3fbPbE1vGeABDEZF0jeG",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d237a27633d01d25fdaa1c33"
+    },
+    {
+      "position": 3,
+      "title": "We Are Family",
+      "artist": "Sister Sledge",
+      "year": 1979,
+      "difficulty": "easy",
+      "youtube_id": "eBpYgpF1bqQ",
+      "answers_accepted": {
+        "title_variants": ["we are family", "wearefamily"],
+        "artist_variants": ["sister sledge", "sistersledge"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5IKLwqBQG6KU6MP2zP80Nu",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f66d92378b233aa8253e71d2"
+    },
+    {
+      "position": 4,
+      "title": "Boogie Wonderland",
+      "artist": "Earth, Wind & Fire",
+      "year": 1979,
+      "difficulty": "easy",
+      "youtube_id": "_93PWvC2_vU",
+      "answers_accepted": {
+        "title_variants": ["boogie wonderland", "boogiewonderland"],
+        "artist_variants": ["earth wind & fire", "earth wind and fire", "ewf", "the emotions"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4FBI3ELSqJQnhTclrIOnrC",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b50b6d311633881875c88654"
+    },
+    {
+      "position": 5,
+      "title": "September",
+      "artist": "Earth, Wind & Fire",
+      "year": 1978,
+      "difficulty": "easy",
+      "youtube_id": "Gs069dndIYk",
+      "answers_accepted": {
+        "title_variants": ["september", "21st september"],
+        "artist_variants": ["earth wind & fire", "earth wind and fire", "ewf"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2grjqo0Frpf2okIBiifQKs",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732e7558daae7a80e1f5819aa1"
+    },
+    {
+      "position": 6,
+      "title": "Don't Stop 'Til You Get Enough",
+      "artist": "Michael Jackson",
+      "year": 1979,
+      "difficulty": "easy",
+      "youtube_id": "yURRmWtbTbo",
+      "answers_accepted": {
+        "title_variants": [
+          "don't stop til you get enough",
+          "dont stop til you get enough",
+          "dont stop till you get enough"
+        ],
+        "artist_variants": ["michael jackson", "michaeljackson", "mj"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "46eu3SBuFCXWsPT39Yg3tJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732b74bf21c7e4f56758610949"
+    },
+    {
+      "position": 7,
+      "title": "Night Fever",
+      "artist": "Bee Gees",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "c8xnjaerP78",
+      "answers_accepted": {
+        "title_variants": ["night fever", "nightfever"],
+        "artist_variants": ["bee gees", "the bee gees", "beegees"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7CD7yloFjtrD75PRbZwgUN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c129b7e46bb0d8b054dae51f"
+    },
+    {
+      "position": 8,
+      "title": "Car Wash",
+      "artist": "Rose Royce",
+      "year": 1976,
+      "difficulty": "medium",
+      "youtube_id": "PkxaunLybuM",
+      "answers_accepted": {
+        "title_variants": ["car wash", "carwash"],
+        "artist_variants": ["rose royce", "roseroyce"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2pbWkjtGtjkzBdZ95GFINm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737e40943c3f4ce9c25ec7b098"
+    },
+    {
+      "position": 9,
+      "title": "I Feel Love",
+      "artist": "Donna Summer",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "yEbaeLv-aOo",
+      "answers_accepted": {
+        "title_variants": ["i feel love", "ifeellove"],
+        "artist_variants": ["donna summer", "donnasummer"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1vCBk33l9HaWp5FOnhSGxk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dfda0715a34f49501dfc97a0"
+    },
+    {
+      "position": 10,
+      "title": "Got to Be Real",
+      "artist": "Cheryl Lynn",
+      "year": 1978,
+      "difficulty": "hard",
+      "youtube_id": "fI569nw0YUQ",
+      "answers_accepted": {
+        "title_variants": ["got to be real", "gottabe real", "got2bereal"],
+        "artist_variants": ["cheryl lynn", "cheryllynn"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "58r4JuwHhXLAkttkaUZfLw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c0e98d7c48b548f1a3833368"
+    },
+    {
+      "position": 11,
+      "title": "Don't Leave Me This Way",
+      "artist": "Thelma Houston",
+      "year": 1976,
+      "difficulty": "hard",
+      "youtube_id": "svcbu-fv-GA",
+      "answers_accepted": {
+        "title_variants": ["don't leave me this way", "dont leave me this way"],
+        "artist_variants": ["thelma houston", "thelmahouston"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "51qi5dgc9CsotM87GmRkAX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732a6c14f88a39def98c642dec"
+    },
+    {
+      "position": 12,
+      "title": "December, 1963 (Oh, What a Night)",
+      "artist": "Frankie Valli & The Four Seasons",
+      "year": 1975,
+      "difficulty": "medium",
+      "youtube_id": "fhc13WNMNpg",
+      "answers_accepted": {
+        "title_variants": [
+          "december 1963",
+          "oh what a night",
+          "december 1963 oh what a night",
+          "what a night"
+        ],
+        "artist_variants": [
+          "frankie valli",
+          "the four seasons",
+          "frankie valli & the four seasons",
+          "four seasons"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1hQFF33xi8ruavZNyovtUN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273206e2e76c3a706e4734d18ab"
+    },
+    {
+      "position": 13,
+      "title": "Macho Man",
+      "artist": "Village People",
+      "year": 1978,
+      "difficulty": "medium",
+      "youtube_id": "Zg3q6qW2aKo",
+      "answers_accepted": {
+        "title_variants": ["macho man", "machoman"],
+        "artist_variants": ["village people", "villagepeople", "the village people"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3wOJk31hFeYyc7Ex4J9VlQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730728f9da9b32a955b5cca476"
+    },
+    {
+      "position": 14,
+      "title": "Boogie Oogie Oogie",
+      "artist": "A Taste of Honey",
+      "year": 1978,
+      "difficulty": "hard",
+      "youtube_id": "PhD58dP9kq8",
+      "answers_accepted": {
+        "title_variants": ["boogie oogie oogie", "boogieoogieoogie", "boogie oogie"],
+        "artist_variants": ["a taste of honey", "ataste of honey", "taste of honey"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1Rl9GHgsflyIVqBRyO45Zo",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731da1b4064fc8eb0d2a65dc97"
+    },
+    {
+      "position": 15,
+      "title": "Born to Be Alive",
+      "artist": "Patrick Hernandez",
+      "year": 1978,
+      "difficulty": "easy",
+      "youtube_id": "9UaJAnnipkY",
+      "answers_accepted": {
+        "title_variants": ["born to be alive", "borntobealive"],
+        "artist_variants": ["patrick hernandez", "patrickhernandez", "hernandez"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/9UaJAnnipkY/hqdefault.jpg"
+    }
+  ]
+}

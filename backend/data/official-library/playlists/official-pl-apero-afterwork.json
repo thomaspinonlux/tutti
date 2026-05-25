@@ -1,0 +1,243 @@
+{
+  "id": "official-pl-apero-afterwork",
+  "name_fr": "Apéro & Afterwork",
+  "name_en": "Apéro & Afterwork",
+  "description_fr": "Mid-tempo chic pour un apéro entre amis ou un afterwork relax. Hozier, Sade, Norah Jones, Daft Punk, Santana.",
+  "description_en": "Chic mid-tempo for drinks with friends or a relaxed afterwork. Hozier, Sade, Norah Jones, Daft Punk, Santana.",
+  "locale_primary": "international",
+  "theme": "thematic_apero_afterwork",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live"],
+    "year_range_strict": [1965, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Stolen Dance",
+      "artist": "Milky Chance",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "dAuAyA9dBBU",
+      "answers_accepted": {
+        "title_variants": ["stolen dance", "stolendance"],
+        "artist_variants": ["milky chance", "milkychance"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "34xGLuxM0rkxhCVyMSqwJO",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732001bc1b4dd82d06631fcb9e"
+    },
+    {
+      "position": 2,
+      "title": "Riptide",
+      "artist": "Vance Joy",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "Y6TFSTHUxi0",
+      "answers_accepted": {
+        "title_variants": ["riptide"],
+        "artist_variants": ["vance joy", "vancejoy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1KqlVt63Q4bl1VdSlymr5C",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736df56a03f7f09b64eb9a5a9e"
+    },
+    {
+      "position": 3,
+      "title": "Ho Hey",
+      "artist": "The Lumineers",
+      "year": 2012,
+      "difficulty": "medium",
+      "youtube_id": "zvCBSSwgtg4",
+      "answers_accepted": {
+        "title_variants": ["ho hey", "hohey"],
+        "artist_variants": ["the lumineers", "lumineers"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0DwClY2t9YAWHBROMIgrXb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f350c13195ce048876b5fea4"
+    },
+    {
+      "position": 4,
+      "title": "Cheap Thrills",
+      "artist": "Sia",
+      "year": 2016,
+      "difficulty": "easy",
+      "youtube_id": "J1b22l1kFKY",
+      "answers_accepted": {
+        "title_variants": ["cheap thrills", "cheapthrills"],
+        "artist_variants": ["sia", "sean paul"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "27SdWb2rFzO6GWiYDBTD9j",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b9bea8700ca3c305eb9569a3"
+    },
+    {
+      "position": 5,
+      "title": "Take Me to Church",
+      "artist": "Hozier",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "1kYgXOrA3Jc",
+      "answers_accepted": {
+        "title_variants": ["take me to church", "takemetochurch"],
+        "artist_variants": ["hozier"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3dYD57lRAUcMHufyqn9GcI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737a9bf5f82e32d33d4503fe7b"
+    },
+    {
+      "position": 6,
+      "title": "Rather Be",
+      "artist": "Clean Bandit",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "LnxVONZ55nQ",
+      "answers_accepted": {
+        "title_variants": ["rather be", "ratherbe"],
+        "artist_variants": ["clean bandit", "cleanbandit", "jess glynne"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3s4U7OHV7gnj42VV72eSZ6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737e519297d9876b6afff2ab7b"
+    },
+    {
+      "position": 7,
+      "title": "Smooth Operator",
+      "artist": "Sade",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "4TYv2PhG89A",
+      "answers_accepted": {
+        "title_variants": ["smooth operator", "smoothoperator"],
+        "artist_variants": ["sade", "sade adu"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7pLuEMFougkSHXrPBtNxTR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ad27e16c5f844ea1ad6797cd"
+    },
+    {
+      "position": 8,
+      "title": "Don't Know Why",
+      "artist": "Norah Jones",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "1LH4vnrM-Vs",
+      "answers_accepted": {
+        "title_variants": ["don't know why", "dont know why", "dontknowwhy"],
+        "artist_variants": ["norah jones", "norahjones"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1zNXF2svmdlNxfS5XeNUgr",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c648a42b5dad72c8aafceeec"
+    },
+    {
+      "position": 9,
+      "title": "Just a Friend of Mine",
+      "artist": "Vaya Con Dios",
+      "year": 1988,
+      "difficulty": "hard",
+      "youtube_id": "H38Qk0V2tl4",
+      "answers_accepted": {
+        "title_variants": ["just a friend of mine", "justafriendofmine", "friend of mine"],
+        "artist_variants": ["vaya con dios", "vayacondios"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4MYWsMkKhvJK3oKEFQCuzX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732879473f2f7fe7eb5bac313b"
+    },
+    {
+      "position": 10,
+      "title": "Get Lucky",
+      "artist": "Daft Punk",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "5NV6Rdv1a3I",
+      "answers_accepted": {
+        "title_variants": ["get lucky", "getlucky"],
+        "artist_variants": ["daft punk", "daftpunk", "pharrell williams"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "69kOkLUCkxIZYexIgSG8rq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739b9b36b0e22870b9f542d937"
+    },
+    {
+      "position": 11,
+      "title": "Sunday Morning",
+      "artist": "Maroon 5",
+      "year": 2004,
+      "difficulty": "medium",
+      "youtube_id": "LD2I5iNDegM",
+      "answers_accepted": {
+        "title_variants": ["sunday morning", "sundaymorning"],
+        "artist_variants": ["maroon 5", "maroon five", "adam levine"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5qII2n90lVdPDcgXEEVHNy",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27392f2d790c6a97b195f66d51e"
+    },
+    {
+      "position": 12,
+      "title": "California Dreamin'",
+      "artist": "The Mamas & The Papas",
+      "year": 1965,
+      "difficulty": "medium",
+      "youtube_id": "lo9ui5FezV4",
+      "answers_accepted": {
+        "title_variants": ["california dreamin", "california dreaming", "californiadreamin"],
+        "artist_variants": ["the mamas & the papas", "mamas and papas", "mamas papas"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "53V40CQPdQM9GWQzzBVwlk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b3d08704f2d1c01da0e7886c"
+    },
+    {
+      "position": 13,
+      "title": "Walking on a Dream",
+      "artist": "Empire of the Sun",
+      "year": 2008,
+      "difficulty": "medium",
+      "youtube_id": "eimgRedLkkU",
+      "answers_accepted": {
+        "title_variants": ["walking on a dream", "walkingonadream"],
+        "artist_variants": ["empire of the sun", "empireofthesun"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5r5cp9IpziiIsR6b93vcnQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f3aa0e6ca22a382007f61e4d"
+    },
+    {
+      "position": 14,
+      "title": "Oye Cómo Va",
+      "artist": "Santana",
+      "year": 1970,
+      "difficulty": "medium",
+      "youtube_id": "J7ATTjg7tpE",
+      "answers_accepted": {
+        "title_variants": ["oye cómo va", "oye como va", "oyecomova"],
+        "artist_variants": ["santana", "carlos santana"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5u6y4u5EgDv0peILf60H5t",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273283cccda1ee115b8f44f1c8b"
+    },
+    {
+      "position": 15,
+      "title": "Mas Que Nada",
+      "artist": "Sergio Mendes",
+      "year": 2006,
+      "difficulty": "hard",
+      "youtube_id": "2GZwbKnjRyE",
+      "answers_accepted": {
+        "title_variants": ["mas que nada", "masquenada"],
+        "artist_variants": ["sergio mendes", "sergiomendes", "black eyed peas"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6U7GUjtamt2P0LcFod1dBT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273add74c8bfe883a9e31b242fa"
+    }
+  ]
+}
