@@ -173,6 +173,22 @@ export async function advanceToNextOrEndRound(
 > {
   const nextIndex = round.current_track_index + 1;
   if (nextIndex < round.playlist.playlist_tracks.length) {
+    // fix/next-track-resume-buzz-unlock — si la session était en pause au
+    // moment du "Morceau suivant", auto-resume avant de broadcast track:start.
+    // Sinon les clients reçoivent le nouveau morceau mais restent paused →
+    // buzz bloqué côté joueurs + audio en pause. Même pattern que
+    // restartCurrentTrackAndBroadcast (Bug 1.3).
+    const current = await prisma.session.findUnique({
+      where: { id: sessionId },
+      select: { is_paused: true },
+    });
+    if (current?.is_paused) {
+      await prisma.session.update({
+        where: { id: sessionId },
+        data: { is_paused: false },
+      });
+      broadcastToSession(sessionId, 'session:resumed', { session_id: sessionId });
+    }
     const state = await buildAndBroadcastTrack(sessionId, round, nextIndex);
     if (!state) {
       // ne devrait pas arriver, on a déjà vérifié l'index
