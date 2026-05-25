@@ -1,0 +1,265 @@
+{
+  "id": "official-pl-2010s-hard",
+  "name_fr": "Années 2010 — Difficile",
+  "name_en": "2010s — Hard",
+  "description_fr": "La face plus pointue des années 2010. Indie, alt-rock, electronica, art pop, rap conscient : pour les vrais aficionados de la décennie.",
+  "description_en": "The sharper side of the 2010s. Indie, alt-rock, electronica, art pop, conscious rap: for true aficionados of the decade.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2010s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2010, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Pompeii",
+      "artist": "Bastille",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "ilLEuwH4hws",
+      "answers_accepted": {
+        "title_variants": ["pompeii", "pompei", "pompeï", "pompée"],
+        "artist_variants": ["bastille", "bastile", "bastilles", "the bastille"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6fNhZRFEkBfgW39W3wKARJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b89cf022db28fa31376e0ed8"
+    },
+    {
+      "position": 2,
+      "title": "Riptide",
+      "artist": "Vance Joy",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "TL_oroU9eN8",
+      "answers_accepted": {
+        "title_variants": ["riptide", "rip tide", "riptyde"],
+        "artist_variants": ["vance joy", "vans joy", "vancejoy", "vance joi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1KqlVt63Q4bl1VdSlymr5C",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736df56a03f7f09b64eb9a5a9e"
+    },
+    {
+      "position": 3,
+      "title": "Do I Wanna Know?",
+      "artist": "Arctic Monkeys",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "bpOSxM0rNPM",
+      "answers_accepted": {
+        "title_variants": ["do i wanna know", "doiwannaknow", "do i want to know", "wanna know"],
+        "artist_variants": [
+          "arctic monkeys",
+          "arcticmonkeys",
+          "arctik monkeys",
+          "the arctic monkeys"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5FVd6KXrgO9B3JPmC8OPst",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734ae1c4c5c45aabe565499163"
+    },
+    {
+      "position": 4,
+      "title": "Tongue Tied",
+      "artist": "Grouplove",
+      "year": 2011,
+      "difficulty": "hard",
+      "youtube_id": "Fot9VQGVxAk",
+      "answers_accepted": {
+        "title_variants": ["tongue tied", "tonguetied", "tongue-tied"],
+        "artist_variants": ["grouplove", "group love", "grouplov", "the grouplove"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0GO8y8jQk1PkHzS31d699N",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d84a9bbcba91cb6a4a212b1b"
+    },
+    {
+      "position": 5,
+      "title": "Genesis",
+      "artist": "Grimes",
+      "year": 2012,
+      "difficulty": "hard",
+      "youtube_id": "1FH-q0I1fJY",
+      "answers_accepted": {
+        "title_variants": ["genesis", "génésis", "genesys", "génesis"],
+        "artist_variants": ["grimes", "grime", "grimees", "claire boucher"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0yljUudXzjVcGEoYmLB17X",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273918fee4073aa392349123e63"
+    },
+    {
+      "position": 6,
+      "title": "Lights",
+      "artist": "Ellie Goulding",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "0NKUpo_xKyQ",
+      "answers_accepted": {
+        "title_variants": ["lights", "light", "lumières"],
+        "artist_variants": ["ellie goulding", "elie goulding", "ellie golding", "ellygoulding"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "11ozIUBoXAgRTVWelDn4pL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27391538eb04634de568637b8be"
+    },
+    {
+      "position": 7,
+      "title": "New Slaves",
+      "artist": "Kanye West",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "vQ0u09mFodw",
+      "answers_accepted": {
+        "title_variants": ["new slaves", "newslaves", "new slave"],
+        "artist_variants": ["kanye west", "kanye", "kanyewest", "ye"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4cAgkb0ifwn0FSHGXnr4F6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731dacfbc31cc873d132958af9"
+    },
+    {
+      "position": 8,
+      "title": "Tessellate",
+      "artist": "alt-J",
+      "year": 2012,
+      "difficulty": "hard",
+      "youtube_id": "ge5nUfUB6N8",
+      "answers_accepted": {
+        "title_variants": ["tessellate", "tesselate", "tesselates"],
+        "artist_variants": ["alt-j", "alt j", "altj", "the alt j", "alt-j ∆"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2RXVCRdSkFbNcQfTjgiDwL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731e1ca90cd8fdbb0ac890a926"
+    },
+    {
+      "position": 9,
+      "title": "Reflektor",
+      "artist": "Arcade Fire",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "PUsvYJcHq90",
+      "answers_accepted": {
+        "title_variants": ["reflektor", "reflector", "reflecteur", "reflecteur"],
+        "artist_variants": ["arcade fire", "arcadefire", "the arcade fire", "arcade fires"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7uMZy0bALAdneerERyr7Ks",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732b0c88ad3d7be225c955e08c"
+    },
+    {
+      "position": 10,
+      "title": "Latch",
+      "artist": "Disclosure",
+      "year": 2012,
+      "difficulty": "hard",
+      "youtube_id": "93ASUImTedo",
+      "answers_accepted": {
+        "title_variants": ["latch", "latches", "lash"],
+        "artist_variants": [
+          "disclosure",
+          "disclosure sam smith",
+          "sam smith",
+          "disclosure ft sam smith"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3pgC6hv9bbZSAzEOl6K5nG",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d92707050bdc53e4fef9b111"
+    },
+    {
+      "position": 11,
+      "title": "The Less I Know the Better",
+      "artist": "Tame Impala",
+      "year": 2015,
+      "difficulty": "hard",
+      "youtube_id": "2SUwOgmvzK4",
+      "answers_accepted": {
+        "title_variants": [
+          "the less i know the better",
+          "less i know the better",
+          "the less i know",
+          "less i know"
+        ],
+        "artist_variants": ["tame impala", "tameimpala", "tame impalla", "the tame impala"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6K4t31amVTZDgR3sKmwUJJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739e1cfc756886ac782e363d79"
+    },
+    {
+      "position": 12,
+      "title": "King",
+      "artist": "Years & Years",
+      "year": 2015,
+      "difficulty": "hard",
+      "youtube_id": "g_uoH6hJilc",
+      "answers_accepted": {
+        "title_variants": ["king", "kings", "le roi"],
+        "artist_variants": [
+          "years and years",
+          "years & years",
+          "yearsandyears",
+          "years yearss",
+          "olly alexander"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Years & Years 2015."
+      },
+      "spotify_id": "3AeicLnm55RqcXGBKYQolM",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b84e077bb3f2e36adbdeb6d4"
+    },
+    {
+      "position": 13,
+      "title": "Hot Knife",
+      "artist": "Fiona Apple",
+      "year": 2012,
+      "difficulty": "hard",
+      "youtube_id": "S5hO8UF9FJ4",
+      "answers_accepted": {
+        "title_variants": ["hot knife", "hotknife", "hot knives"],
+        "artist_variants": ["fiona apple", "fionaapple", "fiona apel", "fionah apple"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4eZPjR0dLEYvH5Ku26rnLi",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731443bd487a471868735f050b"
+    },
+    {
+      "position": 14,
+      "title": "Ribs",
+      "artist": "Lorde",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "b7pE8AG1jjE",
+      "answers_accepted": {
+        "title_variants": ["ribs", "rib", "côtes"],
+        "artist_variants": ["lorde", "lord", "lordde", "lordee"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2MvvoeRt8NcOXWESkxWn3g",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273187331e276c898d39764cc98"
+    },
+    {
+      "position": 15,
+      "title": "Hideaway",
+      "artist": "Kiesza",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "Vnoz5uBEWOA",
+      "answers_accepted": {
+        "title_variants": ["hideaway", "hide away", "hideways"],
+        "artist_variants": ["kiesza", "keisza", "kiesa", "kiezsa"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "51tUT1gHE30GQPhn1agudM",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739f495d4df29cd5cbd83423a0"
+    }
+  ]
+}

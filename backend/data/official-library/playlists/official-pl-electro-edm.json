@@ -1,0 +1,247 @@
+{
+  "id": "official-pl-electro-edm",
+  "name_fr": "Electro & EDM",
+  "name_en": "Electro & EDM",
+  "description_fr": "L'âge d'or de l'EDM des années 2010 : Avicii, Calvin Harris, David Guetta, Swedish House Mafia, Skrillex, Martin Garrix.",
+  "description_en": "The golden age of EDM in the 2010s: Avicii, Calvin Harris, David Guetta, Swedish House Mafia, Skrillex, Martin Garrix.",
+  "locale_primary": "international",
+  "theme": "thematic_electro_edm",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["live", "acoustic"],
+    "year_range_strict": [2010, 2018]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Wake Me Up",
+      "artist": "Avicii",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "5y_KJAg8bHI",
+      "answers_accepted": {
+        "title_variants": ["wake me up", "wakemeup"],
+        "artist_variants": ["avicii", "tim bergling"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0nrRP2bk19rLc0orkWPQk2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e14f11f796cef9f9a82691a7"
+    },
+    {
+      "position": 2,
+      "title": "Levels",
+      "artist": "Avicii",
+      "year": 2011,
+      "difficulty": "easy",
+      "youtube_id": "_ovdm2yX4MA",
+      "answers_accepted": {
+        "title_variants": ["levels"],
+        "artist_variants": ["avicii"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0f0bq7eLyA8FxpVKJi32zR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a314ae5d63ee75dbea821f41"
+    },
+    {
+      "position": 3,
+      "title": "Summer",
+      "artist": "Calvin Harris",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "McEoTIqoRKk",
+      "answers_accepted": {
+        "title_variants": ["summer"],
+        "artist_variants": ["calvin harris", "calvinharris"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6YUTL4dYpB9xZO5qExPf05",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738fba5806a323efd272677c4d"
+    },
+    {
+      "position": 4,
+      "title": "Feel So Close",
+      "artist": "Calvin Harris",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "KtqQYPUJk8E",
+      "answers_accepted": {
+        "title_variants": ["feel so close", "feelsoclose"],
+        "artist_variants": ["calvin harris", "calvinharris"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2Q9xfsMeYEPqiLcVwgEeTE",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ba01e0cf2eb5cf4c07f304b4"
+    },
+    {
+      "position": 5,
+      "title": "Titanium",
+      "artist": "David Guetta",
+      "year": 2011,
+      "difficulty": "easy",
+      "youtube_id": "P-gWGlf_VrY",
+      "answers_accepted": {
+        "title_variants": ["titanium"],
+        "artist_variants": ["david guetta", "sia", "guetta sia"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2GusQcB3m4nkLJRWAfcDNB",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e36423c91e3c6f248a03aee4"
+    },
+    {
+      "position": 6,
+      "title": "Hey Mama",
+      "artist": "David Guetta",
+      "year": 2015,
+      "difficulty": "easy",
+      "youtube_id": "6Z6VimTcfmA",
+      "answers_accepted": {
+        "title_variants": ["hey mama", "heymama"],
+        "artist_variants": ["david guetta", "nicki minaj", "guetta"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "68jqcYs5XSkAxTfoa5JYXQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273995dab6422a3dc6a70f79bbe"
+    },
+    {
+      "position": 7,
+      "title": "Save the World",
+      "artist": "Swedish House Mafia",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "8xPJ6dwofUw",
+      "answers_accepted": {
+        "title_variants": ["save the world", "savetheworld"],
+        "artist_variants": ["swedish house mafia", "shm"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "65hRZOQkVjmBdusz1N7aOv",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27395696945285b5f317c6f8445"
+    },
+    {
+      "position": 8,
+      "title": "Animals",
+      "artist": "Martin Garrix",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "LvJdIYhC3Ck",
+      "answers_accepted": {
+        "title_variants": ["animals"],
+        "artist_variants": ["martin garrix", "martingarrix"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0A9mHc7oYUoCECqByV8cQR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736abad6915a2216dc18e7e3a7"
+    },
+    {
+      "position": 9,
+      "title": "Tsunami",
+      "artist": "DVBBS & Borgeous",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "0EWbonj7f18",
+      "answers_accepted": {
+        "title_variants": ["tsunami"],
+        "artist_variants": ["dvbbs", "borgeous", "dvbbs borgeous"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0vZCG0H9KhtU7K8MEUVAoV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739635b44daa189e25f11f6c4e"
+    },
+    {
+      "position": 10,
+      "title": "Bangarang",
+      "artist": "Skrillex",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "cR2XilcGYOo",
+      "answers_accepted": {
+        "title_variants": ["bangarang"],
+        "artist_variants": ["skrillex", "skrilex"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6VRhkROS2SZHGlp0pxndbJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736081278cb62df2757d55633b"
+    },
+    {
+      "position": 11,
+      "title": "Strobe",
+      "artist": "deadmau5",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "tKi9Z-f6qX4",
+      "answers_accepted": {
+        "title_variants": ["strobe"],
+        "artist_variants": ["deadmau5", "deadmaus", "dead mau 5", "dead mouse"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4kJWtxDDNb9oAk3h7sX3N4",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ac4c76801e5286f371b5f4b1"
+    },
+    {
+      "position": 12,
+      "title": "Tremor",
+      "artist": "Dimitri Vegas, Like Mike & Martin Garrix",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "9vMh9f41pqE",
+      "answers_accepted": {
+        "title_variants": ["tremor"],
+        "artist_variants": [
+          "dimitri vegas",
+          "like mike",
+          "martin garrix",
+          "dimitri vegas like mike"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/9vMh9f41pqE/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Get Low",
+      "artist": "Dillon Francis & DJ Snake",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "l8RPFYq7mCo",
+      "answers_accepted": {
+        "title_variants": ["get low", "getlow"],
+        "artist_variants": ["dillon francis", "dj snake", "dillon francis dj snake"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4jyKXQsaWSRO46NKkoxcoe",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c5e8c1935119f21d0d21cdf1"
+    },
+    {
+      "position": 14,
+      "title": "Faded",
+      "artist": "Alan Walker",
+      "year": 2015,
+      "difficulty": "easy",
+      "youtube_id": "psn_rs_a5O0",
+      "answers_accepted": {
+        "title_variants": ["faded"],
+        "artist_variants": ["alan walker", "alanwalker"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7gHs73wELdeycvS48JfIos",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c4d00cac55ae1b4598c9bc90"
+    },
+    {
+      "position": 15,
+      "title": "Clarity",
+      "artist": "Zedd",
+      "year": 2012,
+      "difficulty": "medium",
+      "youtube_id": "l9Q7GISatW0",
+      "answers_accepted": {
+        "title_variants": ["clarity"],
+        "artist_variants": ["zedd", "foxes", "zedd foxes"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "60wwxj6Dd9NJlirf84wr2c",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273941dd3b3343d9cb9329d37bf"
+    }
+  ]
+}

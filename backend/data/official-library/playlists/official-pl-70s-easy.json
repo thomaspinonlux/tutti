@@ -1,0 +1,253 @@
+{
+  "id": "official-pl-70s-easy",
+  "name_fr": "Années 70 — Easy",
+  "name_en": "70s — Easy",
+  "description_fr": "Les méga-tubes des années 1970 reconnaissables dès les premières secondes.",
+  "description_en": "70s mega-hits, recognisable from the first seconds.",
+  "locale_primary": "international",
+  "theme": "decade_70s",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [1970, 1979]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Dancing Queen",
+      "artist": "ABBA",
+      "year": 1976,
+      "difficulty": "easy",
+      "youtube_id": "-sVB91NTa4A",
+      "answers_accepted": {
+        "title_variants": ["dancing queen", "dancingqueen"],
+        "artist_variants": ["abba", "aba", "abbaa"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0GjEhVFGZW8afUYGChu3Rr",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27370f7a1b35d5165c85b95a0e0"
+    },
+    {
+      "position": 2,
+      "title": "Hotel California",
+      "artist": "Eagles",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "dLl4PZtxia8",
+      "answers_accepted": {
+        "title_variants": ["hotel california", "hotel californie", "hotelcalifornia"],
+        "artist_variants": ["eagles", "the eagles", "eagle"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "40riOy7x9W7GXjyGp4pjAv",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734637341b9f507521afa9a778"
+    },
+    {
+      "position": 3,
+      "title": "Bohemian Rhapsody",
+      "artist": "Queen",
+      "year": 1975,
+      "difficulty": "easy",
+      "youtube_id": "fJ9rUzIMcZQ",
+      "answers_accepted": {
+        "title_variants": [
+          "bohemian rhapsody",
+          "bohemianrhapsody",
+          "bohemian rapsody",
+          "bohemian rapsodie"
+        ],
+        "artist_variants": ["queen", "kueen", "the queen"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4u7EnebtmKWzUH433cf5Qv",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e319baafd16e84f0408af2a0"
+    },
+    {
+      "position": 4,
+      "title": "Imagine",
+      "artist": "John Lennon",
+      "year": 1971,
+      "difficulty": "easy",
+      "youtube_id": "VOgFZfRVaww",
+      "answers_accepted": {
+        "title_variants": ["imagine", "imagin", "imagines"],
+        "artist_variants": ["john lennon", "johnlennon", "john lenon"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0i12hQBYFIn3Nbm9iFaX6v",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f5f9fd62ebd2e3a0e8b1b3b1"
+    },
+    {
+      "position": 5,
+      "title": "Let It Be",
+      "artist": "The Beatles",
+      "year": 1970,
+      "difficulty": "easy",
+      "youtube_id": "CGj85pVzRJs",
+      "answers_accepted": {
+        "title_variants": ["let it be", "letitbe", "let be"],
+        "artist_variants": ["the beatles", "beatles", "thebeatles"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7iN1s7xHE4ifF5povM6A48",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27384243a01af3c77b56fe01ab1"
+    },
+    {
+      "position": 6,
+      "title": "Mamma Mia",
+      "artist": "ABBA",
+      "year": 1975,
+      "difficulty": "easy",
+      "youtube_id": "U4Sm7v6PDY8",
+      "answers_accepted": {
+        "title_variants": ["mamma mia", "mama mia", "mammamia"],
+        "artist_variants": ["abba", "aba"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2TxCwUlqaOH3TIyJqGgR91",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27392d0747a634fcc351c6ac3c2"
+    },
+    {
+      "position": 7,
+      "title": "We Are the Champions",
+      "artist": "Queen",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "aRlk72bQK90",
+      "answers_accepted": {
+        "title_variants": [
+          "we are the champions",
+          "wearethechampions",
+          "champions",
+          "we are champions"
+        ],
+        "artist_variants": ["queen", "the queen"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1lCRw5FEZ1gPDNPzy1K4zW",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731f7077ae1018b5fbab08dfa8"
+    },
+    {
+      "position": 8,
+      "title": "I Will Survive",
+      "artist": "Gloria Gaynor",
+      "year": 1978,
+      "difficulty": "easy",
+      "youtube_id": "6dYWe1c3OyU",
+      "answers_accepted": {
+        "title_variants": ["i will survive", "iwillsurvive", "will survive"],
+        "artist_variants": ["gloria gaynor", "gloriagaynor", "gloria gainor"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7rIovIsXE6kMn629b7kDig",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732a1049b6d0d2b4c3c0abe7a8"
+    },
+    {
+      "position": 9,
+      "title": "Y.M.C.A.",
+      "artist": "Village People",
+      "year": 1978,
+      "difficulty": "easy",
+      "youtube_id": "Q7c9gopd69k",
+      "answers_accepted": {
+        "title_variants": ["ymca", "y.m.c.a.", "y m c a"],
+        "artist_variants": ["village people", "villagepeople", "the village people"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "729qIUpVjZn3odl6NSZs6S",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bba7e93930354e38a352249b"
+    },
+    {
+      "position": 10,
+      "title": "Disco Inferno",
+      "artist": "The Trammps",
+      "year": 1976,
+      "difficulty": "medium",
+      "youtube_id": "zcua9XzKVas",
+      "answers_accepted": {
+        "title_variants": ["disco inferno", "discoinferno", "burn baby burn"],
+        "artist_variants": ["the trammps", "trammps", "the tramps", "tramps"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5jUA1njy3h6ynHLvPdEVHt",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27318afda762b8f42e5016e1155"
+    },
+    {
+      "position": 11,
+      "title": "American Pie",
+      "artist": "Don McLean",
+      "year": 1971,
+      "difficulty": "medium",
+      "youtube_id": "PRpiBpDy7MQ",
+      "answers_accepted": {
+        "title_variants": ["american pie", "americanpie", "americain pie"],
+        "artist_variants": ["don mclean", "donmclean", "don mac lean"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1fDsrQ23eTAVFElUMaf38X",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730085dd4362653ef4c54ebbeb"
+    },
+    {
+      "position": 12,
+      "title": "Go Your Own Way",
+      "artist": "Fleetwood Mac",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "oiosqtFLBBA",
+      "answers_accepted": {
+        "title_variants": ["go your own way", "goyourownway", "your own way"],
+        "artist_variants": ["fleetwood mac", "fleetwoodmac", "fleetwood mack"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6BGRxoR5ry5hXaBq5hny0Q",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e52a59a28efa4773dd2bfe1b"
+    },
+    {
+      "position": 13,
+      "title": "Hot Stuff",
+      "artist": "Donna Summer",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "PrMw6vzMUuU",
+      "answers_accepted": {
+        "title_variants": ["hot stuff", "hotstuff"],
+        "artist_variants": ["donna summer", "donnasummer", "donna summers"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2zMJN9JvDlvGP4jB03l1Bz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730c3a44d76807bef665eacfa3"
+    },
+    {
+      "position": 14,
+      "title": "My Sharona",
+      "artist": "The Knack",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "uRLuIm2Bjgk",
+      "answers_accepted": {
+        "title_variants": ["my sharona", "mysharona", "sharona"],
+        "artist_variants": ["the knack", "knack", "theknack"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1HOMkjp0nHMaTnfAkslCQj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273af6b486fa0a2959f79c8acd8"
+    },
+    {
+      "position": 15,
+      "title": "Born to Run",
+      "artist": "Bruce Springsteen",
+      "year": 1975,
+      "difficulty": "medium",
+      "youtube_id": "IxuThNgl3YA",
+      "answers_accepted": {
+        "title_variants": ["born to run", "borntorun"],
+        "artist_variants": ["bruce springsteen", "brucespringsteen", "the boss", "springsteen"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6hTcuIQa0sxrrByu9wTD7s",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738c5b6f7dcdc5817dc5050b2a"
+    }
+  ]
+}

@@ -20,14 +20,13 @@
       "artist": "Righeira",
       "year": 1983,
       "difficulty": "easy",
-      "spotify_id": "3dVS0btHyIciq1iNn8fXMV",
-      "youtube_id": "81rsae4ZKo0",
+      "youtube_id": "fxTFDfe_WNc",
       "answers_accepted": {
         "title_variants": ["vamos a la playa", "vamos la playa", "vamos playa", "a la playa"],
         "artist_variants": ["righeira", "rigueira", "righera"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737cbca125e1444d573329c198"
+      "cover_url": "https://img.youtube.com/vi/fxTFDfe_WNc/hqdefault.jpg"
     },
     {
       "position": 2,
@@ -35,14 +34,13 @@
       "artist": "Baltimora",
       "year": 1985,
       "difficulty": "easy",
-      "spotify_id": "273uCXd7NPrInaiNqtkOrA",
-      "youtube_id": "--6CdAypJsQ",
+      "youtube_id": "_r0n9Dv6XnY",
       "answers_accepted": {
         "title_variants": ["tarzan boy", "tarzan", "tarzanboy", "tarzan boys"],
         "artist_variants": ["baltimora", "baltimore", "baltimoura"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b273de82204a5baa683ce85d57cb"
+      "cover_url": "https://img.youtube.com/vi/_r0n9Dv6XnY/hqdefault.jpg"
     },
     {
       "position": 3,
@@ -50,14 +48,13 @@
       "artist": "Sabrina",
       "year": 1987,
       "difficulty": "easy",
-      "spotify_id": "1iwQoAswnkS5eVlVIXN998",
-      "youtube_id": "_OIPDU8kCNo",
+      "youtube_id": "hBE7luv9fuo",
       "answers_accepted": {
         "title_variants": ["boys", "boys summertime love", "summertime love", "boys boys boys"],
         "artist_variants": ["sabrina", "sabrina salerno", "sabrina salerne"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735d8f95b19e565cd616f9d9aa"
+      "cover_url": "https://img.youtube.com/vi/hBE7luv9fuo/hqdefault.jpg"
     },
     {
       "position": 4,
@@ -65,7 +62,6 @@
       "artist": "Gazebo",
       "year": 1983,
       "difficulty": "easy",
-      "spotify_id": "2FHnN5ELL83TGbtXMDzoiJ",
       "youtube_id": "Dtrgwqei7ww",
       "answers_accepted": {
         "title_variants": [
@@ -78,7 +74,7 @@
         "artist_variants": ["gazebo", "gazébo", "gazzebo", "gazeboo"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b27318489610a4971e31173ef6a9"
+      "cover_url": "https://img.youtube.com/vi/Dtrgwqei7ww/hqdefault.jpg"
     },
     {
       "position": 5,
@@ -86,15 +82,14 @@
       "artist": "Raf",
       "year": 1984,
       "difficulty": "easy",
-      "spotify_id": "42FUNUTTu4dhDhca834rd6",
-      "youtube_id": "o1YH-1ySnjg",
+      "youtube_id": "7w1Qo1awwI4",
       "answers_accepted": {
         "title_variants": ["self control", "self-control", "selfcontrol", "self contrôle"],
         "artist_variants": ["raf", "raf italian", "raph", "laura branigan", "branigan"],
         "scoring": "title_or_artist",
         "notes": "Version originale italo disco par Raf (1984). Laura Branigan a sorti une reprise simultanée la même année qui a cartonné à l'international. Les deux artistes sont acceptés."
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736df80d979f5a27d14cc88ca3"
+      "cover_url": "https://img.youtube.com/vi/7w1Qo1awwI4/hqdefault.jpg"
     },
     {
       "position": 6,
@@ -102,14 +97,13 @@
       "artist": "Ryan Paris",
       "year": 1983,
       "difficulty": "medium",
-      "spotify_id": "2fv6Qeb7Z3uaqBeYINvJ0f",
-      "youtube_id": "0yoBAZXSN98",
+      "youtube_id": "EXmABxvHTG4",
       "answers_accepted": {
         "title_variants": ["dolce vita", "la dolce vita", "dolcevita", "dolce vie"],
         "artist_variants": ["ryan paris", "rian paris", "ryan parisse", "rayan paris"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d3d5e5ab5786e450e8a46128"
+      "cover_url": "https://img.youtube.com/vi/EXmABxvHTG4/hqdefault.jpg"
     },
     {
       "position": 7,
@@ -117,14 +111,13 @@
       "artist": "Spagna",
       "year": 1986,
       "difficulty": "medium",
-      "spotify_id": "2ZMYFhiMAh41d01lB0KB6z",
-      "youtube_id": "aoKWE97_W0g",
+      "youtube_id": "ofaaz9uGPu4",
       "answers_accepted": {
         "title_variants": ["easy lady", "easylady", "izi lady"],
         "artist_variants": ["spagna", "ivana spagna", "espagna", "spania"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738ee8fe4ad745ed4f70d75c55"
+      "cover_url": "https://img.youtube.com/vi/ofaaz9uGPu4/hqdefault.jpg"
     },
     {
       "position": 8,
@@ -132,14 +125,13 @@
       "artist": "Den Harrow",
       "year": 1985,
       "difficulty": "medium",
-      "spotify_id": "6kQSM35spjUFSG78wWf4a6",
       "youtube_id": "lDrLsNFzBtQ",
       "answers_accepted": {
         "title_variants": ["future brain", "futurebrain", "future", "futur brain"],
         "artist_variants": ["den harrow", "dan harrow", "denharrow", "den arrow", "den haro"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739acc70040b3425d4912bab4c"
+      "cover_url": "https://img.youtube.com/vi/lDrLsNFzBtQ/hqdefault.jpg"
     },
     {
       "position": 9,
@@ -147,8 +139,7 @@
       "artist": "Sandy Marton",
       "year": 1984,
       "difficulty": "medium",
-      "spotify_id": "4ELY8U1WogpbLrHxJqeceE",
-      "youtube_id": "01R1jTypsXM",
+      "youtube_id": "AqJl6zhd_90",
       "answers_accepted": {
         "title_variants": [
           "people from ibiza",
@@ -160,7 +151,7 @@
         "artist_variants": ["sandy marton", "sandi marton", "sandy martone", "sandy mardon"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b273399da87537d267c18a8493bd"
+      "cover_url": "https://img.youtube.com/vi/AqJl6zhd_90/hqdefault.jpg"
     },
     {
       "position": 10,
@@ -168,8 +159,7 @@
       "artist": "Savage",
       "year": 1983,
       "difficulty": "medium",
-      "spotify_id": "7bZw9ExkWLxnf33nrcS3CB",
-      "youtube_id": "FzSfLLKBu9E",
+      "youtube_id": "BBliuvYMmsk",
       "answers_accepted": {
         "title_variants": [
           "don't cry tonight",
@@ -181,7 +171,7 @@
         "artist_variants": ["savage", "savadge", "sauvage"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733407fb45c1218424bbe276dd"
+      "cover_url": "https://img.youtube.com/vi/BBliuvYMmsk/hqdefault.jpg"
     },
     {
       "position": 11,
@@ -189,14 +179,13 @@
       "artist": "Fancy",
       "year": 1984,
       "difficulty": "hard",
-      "spotify_id": "7lNRTy0bnpbF82aFKSFCiL",
       "youtube_id": "Nlnoa67MUJU",
       "answers_accepted": {
         "title_variants": ["slice me nice", "slicemenice", "slais mi nais"],
         "artist_variants": ["fancy", "fanci", "fancie"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738b069ace524a206329dc25bf"
+      "cover_url": "https://img.youtube.com/vi/Nlnoa67MUJU/hqdefault.jpg"
     },
     {
       "position": 12,
@@ -204,14 +193,13 @@
       "artist": "P. Lion",
       "year": 1983,
       "difficulty": "hard",
-      "spotify_id": "77PiDCf67xNwRrA5OtIqmr",
       "youtube_id": "r9ESl7xdGL0",
       "answers_accepted": {
         "title_variants": ["happy children", "happychildren", "happy childrens"],
         "artist_variants": ["p lion", "p. lion", "plion", "pierro lion", "pietro lion", "pee lion"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732dceedf285ebc24b67b15cff"
+      "cover_url": "https://img.youtube.com/vi/r9ESl7xdGL0/hqdefault.jpg"
     },
     {
       "position": 13,
@@ -219,8 +207,7 @@
       "artist": "My Mine",
       "year": 1983,
       "difficulty": "hard",
-      "spotify_id": "7FgWlF6VAk4ZpZLaKRWZ7B",
-      "youtube_id": "nx4OSOUMC8s",
+      "youtube_id": "X6EbVwOumlE",
       "answers_accepted": {
         "title_variants": [
           "hypnotic tango",
@@ -232,7 +219,7 @@
         "artist_variants": ["my mine", "mymine", "mi main", "may mine"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732e7eed660e1fcf62c3f8f969"
+      "cover_url": "https://img.youtube.com/vi/X6EbVwOumlE/hqdefault.jpg"
     },
     {
       "position": 14,
@@ -240,8 +227,7 @@
       "artist": "Silver Pozzoli",
       "year": 1985,
       "difficulty": "hard",
-      "spotify_id": "1chVOzEn68D80ofKEUEHZ2",
-      "youtube_id": "pUIJbiXY6Ss",
+      "youtube_id": "Z5tqN2RkYo8",
       "answers_accepted": {
         "title_variants": [
           "around my dream",
@@ -259,7 +245,7 @@
         ],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736894c139050cc84c325960e3"
+      "cover_url": "https://img.youtube.com/vi/Z5tqN2RkYo8/hqdefault.jpg"
     },
     {
       "position": 15,
@@ -267,14 +253,13 @@
       "artist": "Ken Laszlo",
       "year": 1985,
       "difficulty": "hard",
-      "spotify_id": "6I50fbD8ZiH5bnyrIYj0Xg",
-      "youtube_id": "W9ozJ1V_hn4",
+      "youtube_id": "R3WE922kZtQ",
       "answers_accepted": {
         "title_variants": ["tonight", "ce soir", "tunaite"],
         "artist_variants": ["ken laszlo", "ken lazlo", "ken lasso", "ken lazslo", "kent laszlo"],
         "scoring": "title_or_artist"
       },
-      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ec6e1c20ed3d3f6a1d73fd41"
+      "cover_url": "https://img.youtube.com/vi/R3WE922kZtQ/hqdefault.jpg"
     }
   ]
 }

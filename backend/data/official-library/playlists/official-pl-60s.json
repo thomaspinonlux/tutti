@@ -1,0 +1,255 @@
+{
+  "id": "official-pl-60s",
+  "name_fr": "Années 60 — Internationales",
+  "name_en": "60s — International",
+  "description_fr": "Les années 60 internationales : Beatles, Rolling Stones, Elvis, Beach Boys, Bob Dylan, The Doors. La révolution pop-rock.",
+  "description_en": "International 60s: Beatles, Rolling Stones, Elvis, Beach Boys, Bob Dylan, The Doors. The pop-rock revolution.",
+  "locale_primary": "international",
+  "theme": "decade_60s",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1960, 1969]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Hey Jude",
+      "artist": "The Beatles",
+      "year": 1968,
+      "difficulty": "easy",
+      "youtube_id": "A_MjCqQoLLA",
+      "answers_accepted": {
+        "title_variants": ["hey jude", "heyjude"],
+        "artist_variants": ["the beatles", "beatles"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3t0ysy92NBtAme8JftCdJi",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739a85d2b46cbfce87f4e57410"
+    },
+    {
+      "position": 2,
+      "title": "I Want to Hold Your Hand",
+      "artist": "The Beatles",
+      "year": 1963,
+      "difficulty": "easy",
+      "youtube_id": "IEfx6w3OWQw",
+      "answers_accepted": {
+        "title_variants": ["i want to hold your hand", "iwanttoholdyourhand", "hold your hand"],
+        "artist_variants": ["the beatles", "beatles"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6SsQdWow53jJaFdAN0HZUF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27355ebe3bee44fe4923e286cf7"
+    },
+    {
+      "position": 3,
+      "title": "(I Can't Get No) Satisfaction",
+      "artist": "The Rolling Stones",
+      "year": 1965,
+      "difficulty": "easy",
+      "youtube_id": "nrIPxlFzDi0",
+      "answers_accepted": {
+        "title_variants": [
+          "satisfaction",
+          "i cant get no satisfaction",
+          "can't get no satisfaction"
+        ],
+        "artist_variants": ["the rolling stones", "rolling stones", "stones"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2PzU4IB8Dr6mxV3lHuaG34",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27305c5be85b64eaff732f7cb0b"
+    },
+    {
+      "position": 4,
+      "title": "Paint It Black",
+      "artist": "The Rolling Stones",
+      "year": 1966,
+      "difficulty": "medium",
+      "youtube_id": "O4irXQhgMqg",
+      "answers_accepted": {
+        "title_variants": ["paint it black", "paintitblack", "paint it, black"],
+        "artist_variants": ["the rolling stones", "rolling stones", "stones"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "63T7DJ1AFDD6Bn8VzG6JE8",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bad7062c3fd2f2d037989694"
+    },
+    {
+      "position": 5,
+      "title": "Suspicious Minds",
+      "artist": "Elvis Presley",
+      "year": 1969,
+      "difficulty": "medium",
+      "youtube_id": "RxOBOhRECoo",
+      "answers_accepted": {
+        "title_variants": ["suspicious minds", "suspiciousminds"],
+        "artist_variants": ["elvis presley", "elvis", "the king"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1H5IfYyIIAlgDX8zguUzns",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b26c34d79e4cdaa73672a0b1"
+    },
+    {
+      "position": 6,
+      "title": "Can't Help Falling in Love",
+      "artist": "Elvis Presley",
+      "year": 1961,
+      "difficulty": "easy",
+      "youtube_id": "vGJTaP6anOU",
+      "answers_accepted": {
+        "title_variants": [
+          "can't help falling in love",
+          "cant help falling in love",
+          "falling in love"
+        ],
+        "artist_variants": ["elvis presley", "elvis"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "44AyOl4qVkzS48vBsbNXaC",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b184226408f981e3dd17c606"
+    },
+    {
+      "position": 7,
+      "title": "Good Vibrations",
+      "artist": "The Beach Boys",
+      "year": 1966,
+      "difficulty": "medium",
+      "youtube_id": "Eab_beh07HU",
+      "answers_accepted": {
+        "title_variants": ["good vibrations", "goodvibrations"],
+        "artist_variants": ["the beach boys", "beach boys", "beachboys"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5Qt4Cc66g24QWwGP3YYV9y",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739c4ab43fd03ed82bc2314eb0"
+    },
+    {
+      "position": 8,
+      "title": "Surfin' USA",
+      "artist": "The Beach Boys",
+      "year": 1963,
+      "difficulty": "medium",
+      "youtube_id": "fIO7h1ICrJ4",
+      "answers_accepted": {
+        "title_variants": ["surfin usa", "surfin' usa", "surfinusa", "surfing usa"],
+        "artist_variants": ["the beach boys", "beach boys"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1vNGYaGLfgXD1h2RBC28Kf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736aaf15855e28ea0e7c391be5"
+    },
+    {
+      "position": 9,
+      "title": "Like a Rolling Stone",
+      "artist": "Bob Dylan",
+      "year": 1965,
+      "difficulty": "medium",
+      "youtube_id": "IwOfCgkyEj0",
+      "answers_accepted": {
+        "title_variants": ["like a rolling stone", "rolling stone"],
+        "artist_variants": ["bob dylan", "dylan"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3AhXZa8sUQht0UEdBJgpGc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730cb0884829c5503b2e242541"
+    },
+    {
+      "position": 10,
+      "title": "Sunny",
+      "artist": "Bobby Hebb",
+      "year": 1966,
+      "difficulty": "hard",
+      "youtube_id": "mVhy7JPqM7A",
+      "answers_accepted": {
+        "title_variants": ["sunny"],
+        "artist_variants": ["bobby hebb", "bobbyhebb"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4vju55Ag7apDL2CfotuE7Q",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273104dd939c10a2ef4fde1f1df"
+    },
+    {
+      "position": 11,
+      "title": "My Girl",
+      "artist": "The Temptations",
+      "year": 1964,
+      "difficulty": "easy",
+      "youtube_id": "y3KJ7d2qBoA",
+      "answers_accepted": {
+        "title_variants": ["my girl", "mygirl"],
+        "artist_variants": ["the temptations", "temptations"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "745H5CctFr12Mo7cqa1BMH",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731a5b6271ae1c8497df20916e"
+    },
+    {
+      "position": 12,
+      "title": "I Heard It Through the Grapevine",
+      "artist": "Marvin Gaye",
+      "year": 1968,
+      "difficulty": "medium",
+      "youtube_id": "cXWHpbpNdHE",
+      "answers_accepted": {
+        "title_variants": [
+          "i heard it through the grapevine",
+          "heard it through the grapevine",
+          "grapevine"
+        ],
+        "artist_variants": ["marvin gaye", "marvingaye"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1tqT6DhmsrtQgyCKUwotiw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273aff6573c5110e0732fbab3d8"
+    },
+    {
+      "position": 13,
+      "title": "Oh, Pretty Woman",
+      "artist": "Roy Orbison",
+      "year": 1964,
+      "difficulty": "medium",
+      "youtube_id": "Ikweq0THs88",
+      "answers_accepted": {
+        "title_variants": ["oh pretty woman", "pretty woman", "prettywoman"],
+        "artist_variants": ["roy orbison", "orbison"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "48i055G1OT5KxGGftwFxWy",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27377958c617ea2cb4462db1193"
+    },
+    {
+      "position": 14,
+      "title": "House of the Rising Sun",
+      "artist": "The Animals",
+      "year": 1964,
+      "difficulty": "easy",
+      "youtube_id": "PqW4GCmQSt4",
+      "answers_accepted": {
+        "title_variants": ["house of the rising sun", "rising sun", "houseoftherisingsun"],
+        "artist_variants": ["the animals", "animals"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4mn2kNTqiGLwaUR8JdhJ1l",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273015c484a7aca592df1a77828"
+    },
+    {
+      "position": 15,
+      "title": "Light My Fire",
+      "artist": "The Doors",
+      "year": 1967,
+      "difficulty": "easy",
+      "youtube_id": "xXgCIjYjXWY",
+      "answers_accepted": {
+        "title_variants": ["light my fire", "lightmyfire"],
+        "artist_variants": ["the doors", "doors", "jim morrison"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5uvosCdMlFdTXhoazkTI5R",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735b96a8c5d61be8878452f8f1"
+    }
+  ]
+}

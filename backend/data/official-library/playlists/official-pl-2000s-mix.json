@@ -1,0 +1,260 @@
+{
+  "id": "official-pl-2000s-mix",
+  "name_fr": "Années 2000 — Mix",
+  "name_en": "2000s — Mix",
+  "description_fr": "Un mélange équilibré de la décennie : 5 megahits, 5 grands classiques, 5 perles plus pointues. Le sampler parfait des années 2000.",
+  "description_en": "A balanced mix of the decade: 5 megahits, 5 great classics, 5 sharper gems. The perfect 2000s sampler.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2000s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2000, 2009]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Stronger",
+      "artist": "Kanye West",
+      "year": 2007,
+      "difficulty": "easy",
+      "youtube_id": "PsO6ZnUZI0g",
+      "answers_accepted": {
+        "title_variants": ["stronger", "stronguer", "stronguer", "harder better stronger"],
+        "artist_variants": ["kanye west", "kanye", "kanyewest", "ye"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0j2T0R9dR9qdJYsB7ciXhf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27326f7f19c7f0381e56156c94a"
+    },
+    {
+      "position": 2,
+      "title": "Apologize",
+      "artist": "Timbaland",
+      "year": 2007,
+      "difficulty": "easy",
+      "youtube_id": "ZSM3w1v-A_Y",
+      "answers_accepted": {
+        "title_variants": ["apologize", "appologize", "apologise", "i apologize"],
+        "artist_variants": [
+          "timbaland",
+          "timbaland onerepublic",
+          "onerepublic",
+          "one republic",
+          "timbaland & onerepublic"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6q3zC9dDD4lUNk8nfUztXy",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734ed674ab91bdc566534f9285"
+    },
+    {
+      "position": 3,
+      "title": "Cry Me a River",
+      "artist": "Justin Timberlake",
+      "year": 2002,
+      "difficulty": "easy",
+      "youtube_id": "DksSPZTZES0",
+      "answers_accepted": {
+        "title_variants": ["cry me a river", "cry river", "crymeariver", "cry me river"],
+        "artist_variants": ["justin timberlake", "justine timberlake", "justin timberlak", "jt"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7Lf7oSEVdzZqTA0kEDSlS5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273346a5742374ab4cf9ed32dee"
+    },
+    {
+      "position": 4,
+      "title": "Hips Don't Lie",
+      "artist": "Shakira",
+      "year": 2006,
+      "difficulty": "easy",
+      "youtube_id": "DUT5rEU6pqM",
+      "answers_accepted": {
+        "title_variants": ["hips don't lie", "hips dont lie", "hipsdontlie", "hips no lie"],
+        "artist_variants": ["shakira", "chakira", "shakirah", "shakira and wyclef"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2VYEKf8TgWHdm5BCBlI0bA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733f9e1f3dd17d71957b975945"
+    },
+    {
+      "position": 5,
+      "title": "Yeah!",
+      "artist": "Usher",
+      "year": 2004,
+      "difficulty": "easy",
+      "youtube_id": "o314ZqHp1-0",
+      "answers_accepted": {
+        "title_variants": ["yeah", "yeah!", "yeahh", "yeah usher"],
+        "artist_variants": ["usher", "asher", "usherr", "usher ft lil jon"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5rb9QrpfcKFHM1EUbSIurX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273365b3fb800c19f7ff72602da"
+    },
+    {
+      "position": 6,
+      "title": "The Pretender",
+      "artist": "Foo Fighters",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "SBjQ9tuuTJQ",
+      "answers_accepted": {
+        "title_variants": ["the pretender", "pretender", "thepretender"],
+        "artist_variants": ["foo fighters", "foofighters", "the foo fighters", "fu fighters"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7x8dCjCr0x6x2lXKujYD34",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739d957247c6c610cb7c4da1c5"
+    },
+    {
+      "position": 7,
+      "title": "Stacy's Mom",
+      "artist": "Fountains of Wayne",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "dZLfasMPOU4",
+      "answers_accepted": {
+        "title_variants": ["stacy's mom", "stacys mom", "stacy mom", "stacymom"],
+        "artist_variants": ["fountains of wayne", "fountain of wayne", "fountainsofwayne"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "27L8sESb3KR79asDUBu8nW",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273079e826265dffc3a8a26bac5"
+    },
+    {
+      "position": 8,
+      "title": "Fix You",
+      "artist": "Coldplay",
+      "year": 2005,
+      "difficulty": "medium",
+      "youtube_id": "k4V3Mo61fJM",
+      "answers_accepted": {
+        "title_variants": ["fix you", "fixyou", "fix me", "réparer"],
+        "artist_variants": ["coldplay", "cold play", "colplay"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7LVHVU3tWfcxj5aiPFEW4Q",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734e0362c225863f6ae2432651"
+    },
+    {
+      "position": 9,
+      "title": "Lose Yourself",
+      "artist": "Eminem",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "xFYQQPAOz7Y",
+      "answers_accepted": {
+        "title_variants": ["lose yourself", "loseyourself", "lose your self", "8 mile"],
+        "artist_variants": ["eminem", "eminemm", "marshall mathers"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6GkTKjv1XbFVdI2D8vvDPu",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27352ab2c1657a3e548ff021411"
+    },
+    {
+      "position": 10,
+      "title": "Move Your Feet",
+      "artist": "Junior Senior",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "c-0tvTqLw2s",
+      "answers_accepted": {
+        "title_variants": ["move your feet", "moveyourfeet", "move feet", "move ya feet"],
+        "artist_variants": [
+          "junior senior",
+          "junior & senior",
+          "junior and senior",
+          "juniorsenior"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4DX82Vc8qAH4jJPvKxvwg6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273480beb08639f79e39c757892"
+    },
+    {
+      "position": 11,
+      "title": "Heads Will Roll",
+      "artist": "Yeah Yeah Yeahs",
+      "year": 2009,
+      "difficulty": "hard",
+      "youtube_id": "vw3k_jWa-gI",
+      "answers_accepted": {
+        "title_variants": ["heads will roll", "heads roll", "headswillroll"],
+        "artist_variants": ["yeah yeah yeahs", "yeahyeahyeahs", "yeah yeah yeah", "yyy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2WRFD9WczJ975X2K1Y9YVs",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e922211eede5ae8017ff802f"
+    },
+    {
+      "position": 12,
+      "title": "Mardy Bum",
+      "artist": "Arctic Monkeys",
+      "year": 2006,
+      "difficulty": "hard",
+      "youtube_id": "0jX6aSTt9ek",
+      "answers_accepted": {
+        "title_variants": ["mardy bum", "mardybum", "mardi bum"],
+        "artist_variants": ["arctic monkeys", "arcticmonkeys", "arctik monkeys"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2fyIS6GXMgUcSv4oejx63f",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736b3fa88bdd4af566fbbf2bbf"
+    },
+    {
+      "position": 13,
+      "title": "Wake Up",
+      "artist": "Arcade Fire",
+      "year": 2004,
+      "difficulty": "hard",
+      "youtube_id": "aTyKDWv4q38",
+      "answers_accepted": {
+        "title_variants": ["wake up", "wakeup", "wake-up", "réveille toi"],
+        "artist_variants": ["arcade fire", "arcadefire", "arcade fires", "the arcade fire"],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Arcade Fire 2004 sur l'album Funeral."
+      },
+      "spotify_id": "6Hmj7SrLRbreLVfVS7mV1S",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737870762a58313ad6f981d664"
+    },
+    {
+      "position": 14,
+      "title": "Knights of Cydonia",
+      "artist": "Muse",
+      "year": 2006,
+      "difficulty": "hard",
+      "youtube_id": "GjXWtEqs8I4",
+      "answers_accepted": {
+        "title_variants": [
+          "knights of cydonia",
+          "nights of cydonia",
+          "knightsofcydonia",
+          "cydonia"
+        ],
+        "artist_variants": ["muse", "muze", "the muse", "mews"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7ouMYWpwJ422jRcDASZB7P",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27328933b808bfb4cbbd0385400"
+    },
+    {
+      "position": 15,
+      "title": "Toxicity",
+      "artist": "System of a Down",
+      "year": 2001,
+      "difficulty": "hard",
+      "youtube_id": "iywaBOMvYLI",
+      "answers_accepted": {
+        "title_variants": ["toxicity", "toxicities", "toxisity"],
+        "artist_variants": ["system of a down", "systemofadown", "soad", "system of down"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0snQkGI5qnAmohLE7jTsTn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27307bc7d2a745636c356b4d0aa"
+    }
+  ]
+}

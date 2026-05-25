@@ -1,0 +1,270 @@
+{
+  "id": "official-pl-cinema-fr-bo",
+  "name_fr": "Cinéma français — Bandes originales",
+  "name_en": "French Cinema — Soundtracks",
+  "description_fr": "Les bandes originales du cinéma français : Amélie, Intouchables, La Boum, Les Bronzés, Les Choristes, Bienvenue chez les Ch'tis.",
+  "description_en": "French cinema soundtracks: Amélie, Intouchables, La Boum, Les Bronzés, Les Choristes, Bienvenue chez les Ch'tis.",
+  "locale_primary": "fr",
+  "theme": "thematic_cinema_fr_bo",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_movie_soundtrack",
+    "avoid": ["live", "cover", "remix"],
+    "year_range_strict": [1951, 2011]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "La valse d'Amélie",
+      "artist": "Yann Tiersen",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "uzurqBnALkw",
+      "answers_accepted": {
+        "title_variants": [
+          "la valse d'amélie",
+          "la valse damelie",
+          "valse d'amélie",
+          "valse damelie"
+        ],
+        "artist_variants": ["yann tiersen", "yanntiersen", "tiersen"],
+        "scoring": "title_or_artist",
+        "notes": "From Le Fabuleux Destin d'Amélie Poulain (2001)"
+      },
+      "spotify_id": "7MIN37CiVP1lVjqKNmLMWk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731b7844a8c73c4d48f0bca1de"
+    },
+    {
+      "position": 2,
+      "title": "Comptine d'un autre été : L'après-midi",
+      "artist": "Yann Tiersen",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "I0cZukTFXNw",
+      "answers_accepted": {
+        "title_variants": [
+          "comptine d'un autre été",
+          "comptine dun autre ete",
+          "comptine d'un autre été l'après-midi",
+          "lapres midi",
+          "comptine"
+        ],
+        "artist_variants": ["yann tiersen", "yanntiersen", "tiersen"],
+        "scoring": "title_or_artist",
+        "notes": "From Amélie (2001)"
+      },
+      "spotify_id": "14rZjW3RioG7WesZhYESso",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731b7844a8c73c4d48f0bca1de"
+    },
+    {
+      "position": 3,
+      "title": "Les Corons",
+      "artist": "Pierre Bachelet",
+      "year": 1982,
+      "difficulty": "medium",
+      "youtube_id": "rygifBeBKUU",
+      "answers_accepted": {
+        "title_variants": ["les corons", "lescorons", "corons"],
+        "artist_variants": ["pierre bachelet", "pierrebachelet", "bachelet"],
+        "scoring": "title_or_artist",
+        "notes": "Used in Bienvenue chez les Ch'tis (2008)"
+      },
+      "spotify_id": "1bIupoWqwPhmPbXekHD5QR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273351dc2c903cf344533f75593"
+    },
+    {
+      "position": 4,
+      "title": "Sea, Sex and Sun",
+      "artist": "Serge Gainsbourg",
+      "year": 1978,
+      "difficulty": "medium",
+      "youtube_id": "DFa7dG25wp0",
+      "answers_accepted": {
+        "title_variants": ["sea sex and sun", "sea sex sun", "seasexandsun"],
+        "artist_variants": ["serge gainsbourg", "gainsbourg"],
+        "scoring": "title_or_artist",
+        "notes": "From Les Bronzés (1978)"
+      },
+      "spotify_id": "2RJBXZ8bWc6DDOuIlPdF7R",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cdc3d8b0c8562a114ff0df13"
+    },
+    {
+      "position": 5,
+      "title": "Quand te reverrai-je, pays merveilleux",
+      "artist": "Les Bronzés",
+      "year": 1978,
+      "difficulty": "medium",
+      "youtube_id": "yBNscWhrz9Q",
+      "answers_accepted": {
+        "title_variants": ["quand te reverrai-je", "quand te reverrai je", "pays merveilleux"],
+        "artist_variants": ["les bronzés", "les bronzes", "bronzés"],
+        "scoring": "title_or_artist",
+        "notes": "From Les Bronzés (1978)"
+      },
+      "cover_url": "https://img.youtube.com/vi/yBNscWhrz9Q/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Una Mattina",
+      "artist": "Ludovico Einaudi",
+      "year": 2004,
+      "difficulty": "medium",
+      "youtube_id": "IukERq7ROO4",
+      "answers_accepted": {
+        "title_variants": ["una mattina", "unamattina"],
+        "artist_variants": ["ludovico einaudi", "einaudi"],
+        "scoring": "title_or_artist",
+        "notes": "Used in Intouchables (2011)"
+      },
+      "spotify_id": "0Dkibk70FDp6t7eOZNemNQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734ea8c5801bfdf5ac90719400"
+    },
+    {
+      "position": 7,
+      "title": "Boogie Wonderland",
+      "artist": "Earth, Wind & Fire",
+      "year": 1979,
+      "difficulty": "easy",
+      "youtube_id": "_93PWvC2_vU",
+      "answers_accepted": {
+        "title_variants": ["boogie wonderland", "boogiewonderland"],
+        "artist_variants": ["earth wind & fire", "earth wind and fire", "earth wind fire", "ewf"],
+        "scoring": "title_or_artist",
+        "notes": "Used in Intouchables (2011)"
+      },
+      "spotify_id": "6ztstiyZL6FXzh4aG46ZPD",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738b2238ebc2b233ba73b8c4ca"
+    },
+    {
+      "position": 8,
+      "title": "Reality",
+      "artist": "Richard Sanderson",
+      "year": 1980,
+      "difficulty": "easy",
+      "youtube_id": "ipc1O2sIk8c",
+      "answers_accepted": {
+        "title_variants": ["reality"],
+        "artist_variants": ["richard sanderson", "richardsanderson", "sanderson"],
+        "scoring": "title_or_artist",
+        "notes": "From La Boum (1980)"
+      },
+      "cover_url": "https://img.youtube.com/vi/ipc1O2sIk8c/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Your Eyes",
+      "artist": "Cook Da Books",
+      "year": 1982,
+      "difficulty": "hard",
+      "youtube_id": "5hYXy6yQPo0",
+      "answers_accepted": {
+        "title_variants": ["your eyes", "youreyes"],
+        "artist_variants": ["cook da books", "cookdabooks"],
+        "scoring": "title_or_artist",
+        "notes": "From La Boum 2 (1982)"
+      },
+      "spotify_id": "7AaUxBAMKkUUf9bUSLw1NZ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cb4d8906b4f00806546a9bfc"
+    },
+    {
+      "position": 10,
+      "title": "Vois sur ton chemin",
+      "artist": "Les Choristes",
+      "year": 2004,
+      "difficulty": "easy",
+      "youtube_id": "aSO5fQTmHNY",
+      "answers_accepted": {
+        "title_variants": ["vois sur ton chemin", "voissurtonchemin"],
+        "artist_variants": ["les choristes", "choristes", "bruno coulais"],
+        "scoring": "title_or_artist",
+        "notes": "From Les Choristes (2004)"
+      },
+      "spotify_id": "0HfK6NPVb69533dKqTPokh",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d5d29ec394b1110d04b9fc0a"
+    },
+    {
+      "position": 11,
+      "title": "Caresse sur l'océan",
+      "artist": "Les Choristes",
+      "year": 2004,
+      "difficulty": "medium",
+      "youtube_id": "R8dKomfe_0s",
+      "answers_accepted": {
+        "title_variants": [
+          "caresse sur l'océan",
+          "caresse sur locean",
+          "caresse sur lOcean",
+          "caresse sur l ocean"
+        ],
+        "artist_variants": ["les choristes", "choristes", "bruno coulais"],
+        "scoring": "title_or_artist",
+        "notes": "From Les Choristes (2004)"
+      },
+      "spotify_id": "2pLFt1rg1vvdc2bxbpm152",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d5d29ec394b1110d04b9fc0a"
+    },
+    {
+      "position": 12,
+      "title": "La Bamba",
+      "artist": "Ritchie Valens",
+      "year": 1958,
+      "difficulty": "easy",
+      "youtube_id": "Coy8Hoa1DNw",
+      "answers_accepted": {
+        "title_variants": ["la bamba", "labamba"],
+        "artist_variants": ["ritchie valens", "richie valens", "ritchievalens"],
+        "scoring": "title_or_artist",
+        "notes": "Used in La Boum (1980)"
+      },
+      "spotify_id": "5fBW0GEj10MnigsKIWXqcb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735955b95ad20e9779e9a15a49"
+    },
+    {
+      "position": 13,
+      "title": "Born to Be Alive",
+      "artist": "Patrick Hernandez",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "9UaJAnnipkY",
+      "answers_accepted": {
+        "title_variants": ["born to be alive", "borntobealive"],
+        "artist_variants": ["patrick hernandez", "patrickhernandez", "hernandez"],
+        "scoring": "title_or_artist",
+        "notes": "Used in Brice de Nice (2005)"
+      },
+      "cover_url": "https://img.youtube.com/vi/9UaJAnnipkY/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Mexico",
+      "artist": "Luis Mariano",
+      "year": 1951,
+      "difficulty": "hard",
+      "youtube_id": "cKeQcmlvKEE",
+      "answers_accepted": {
+        "title_variants": ["mexico"],
+        "artist_variants": ["luis mariano", "luismariano", "mariano"],
+        "scoring": "title_or_artist",
+        "notes": "From La Vache et le prisonnier (1959), opérette Mexico (1951)"
+      },
+      "spotify_id": "1FlM93FFdy4zmAXrpvVZS5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273343f8ba13f837105e3e9c3fd"
+    },
+    {
+      "position": 15,
+      "title": "Foule sentimentale",
+      "artist": "Alain Souchon",
+      "year": 1993,
+      "difficulty": "easy",
+      "youtube_id": "5IRPgzPZQl8",
+      "answers_accepted": {
+        "title_variants": ["foule sentimentale", "foulesentimentale"],
+        "artist_variants": ["alain souchon", "alainsouchon", "souchon"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2W4ZxAHZAXOf6r65pCskGR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a037c1b32a26b4bcaa88b937"
+    }
+  ]
+}

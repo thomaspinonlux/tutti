@@ -1,0 +1,254 @@
+{
+  "id": "official-pl-70s-hard",
+  "name_fr": "Années 70 — Hard",
+  "name_en": "70s — Hard",
+  "description_fr": "Pour mélomanes des seventies : prog rock, glam, deep cuts.",
+  "description_en": "For 70s connoisseurs: prog rock, glam, deep cuts.",
+  "locale_primary": "international",
+  "theme": "decade_70s",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [1970, 1979]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Heroes",
+      "artist": "David Bowie",
+      "year": 1977,
+      "difficulty": "hard",
+      "youtube_id": "O1PDiYYjWo8",
+      "answers_accepted": {
+        "title_variants": ["heroes", "we can be heroes", "héros"],
+        "artist_variants": ["david bowie", "davidbowie", "bowie", "david bowy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7Jh1bpe76CNTCgdgAdBw4Z",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273204f41d52743c6a9efd62985"
+    },
+    {
+      "position": 2,
+      "title": "Life on Mars?",
+      "artist": "David Bowie",
+      "year": 1971,
+      "difficulty": "hard",
+      "youtube_id": "AZKcl4-tcuo",
+      "answers_accepted": {
+        "title_variants": ["life on mars", "life on mars?", "lifeonmars"],
+        "artist_variants": ["david bowie", "davidbowie", "bowie"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "19WYZB2ljFAIx6v1lVwwPI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27349711aea153884efbd81b120"
+    },
+    {
+      "position": 3,
+      "title": "Iron Man",
+      "artist": "Black Sabbath",
+      "year": 1970,
+      "difficulty": "hard",
+      "youtube_id": "qRcYjJQ0JHg",
+      "answers_accepted": {
+        "title_variants": ["iron man", "ironman"],
+        "artist_variants": ["black sabbath", "blacksabbath", "sabbath"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0vJYFKg9z1IvZiQUyX19cD",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739f0a9474c47a841c6f03e990"
+    },
+    {
+      "position": 4,
+      "title": "London Calling",
+      "artist": "The Clash",
+      "year": 1979,
+      "difficulty": "hard",
+      "youtube_id": "EfK-WX2pa8c",
+      "answers_accepted": {
+        "title_variants": ["london calling", "londoncalling"],
+        "artist_variants": ["the clash", "clash", "theclash"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "124Y9LPRCAz3q2OP0iCvcJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736e49cf8fd2505d4dc5368403"
+    },
+    {
+      "position": 5,
+      "title": "Roundabout",
+      "artist": "Yes",
+      "year": 1971,
+      "difficulty": "hard",
+      "youtube_id": "QOrrNM4md8c",
+      "answers_accepted": {
+        "title_variants": ["roundabout", "round about"],
+        "artist_variants": ["yes", "yes band", "the yes"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "466C6kwoJHLUJ8VHG98hCY",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735b6ff520a41ff9b0f29f701e"
+    },
+    {
+      "position": 6,
+      "title": "China Grove",
+      "artist": "The Doobie Brothers",
+      "year": 1973,
+      "difficulty": "hard",
+      "youtube_id": "Rx0wfIdrD8w",
+      "answers_accepted": {
+        "title_variants": ["china grove", "chinagrove"],
+        "artist_variants": ["the doobie brothers", "doobie brothers", "doobie", "doobiebrothers"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7cy1bEJV6FCtDaYpsk8aG6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737d419ac975423c069995c7bb"
+    },
+    {
+      "position": 7,
+      "title": "Have You Ever Seen the Rain",
+      "artist": "Creedence Clearwater Revival",
+      "year": 1971,
+      "difficulty": "hard",
+      "youtube_id": "bO28lB1uwp4",
+      "answers_accepted": {
+        "title_variants": [
+          "have you ever seen the rain",
+          "ever seen the rain",
+          "haveyoueverseentherain"
+        ],
+        "artist_variants": [
+          "creedence clearwater revival",
+          "creedence",
+          "ccr",
+          "clearwater revival"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2LawezPeJhN4AWuSB0GtAU",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27351f311c2fb06ad2789e3ff91"
+    },
+    {
+      "position": 8,
+      "title": "School's Out",
+      "artist": "Alice Cooper",
+      "year": 1972,
+      "difficulty": "hard",
+      "youtube_id": "CXFsWAkLoXQ",
+      "answers_accepted": {
+        "title_variants": ["school's out", "schools out", "schoolsout", "school out"],
+        "artist_variants": ["alice cooper", "alicecooper", "alis cooper"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5Z8EDau8uNcP1E8JvmfkZe",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738bd7862946837e32f4a992db"
+    },
+    {
+      "position": 9,
+      "title": "Aqualung",
+      "artist": "Jethro Tull",
+      "year": 1971,
+      "difficulty": "hard",
+      "youtube_id": "kv89KR8eE_E",
+      "answers_accepted": {
+        "title_variants": ["aqualung", "aqua lung"],
+        "artist_variants": ["jethro tull", "jethrotull", "jetro tull"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5UuikgHTxSRFRnC0zXx10i",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273be6e758fe8300a72eceddb8f"
+    },
+    {
+      "position": 10,
+      "title": "Money",
+      "artist": "Pink Floyd",
+      "year": 1973,
+      "difficulty": "hard",
+      "youtube_id": "2aW7HweAf3o",
+      "answers_accepted": {
+        "title_variants": ["money", "monney"],
+        "artist_variants": ["pink floyd", "pinkfloyd", "pink floid"],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Pink Floyd 1973 (Dark Side of the Moon)."
+      },
+      "spotify_id": "0vFOzaXqZHahrZp6enQwQb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273db216ca805faf5fe35df4ee6"
+    },
+    {
+      "position": 11,
+      "title": "Wish You Were Here",
+      "artist": "Pink Floyd",
+      "year": 1975,
+      "difficulty": "hard",
+      "youtube_id": "jxTXV4J4eUY",
+      "answers_accepted": {
+        "title_variants": ["wish you were here", "wishyouwerehere"],
+        "artist_variants": ["pink floyd", "pinkfloyd"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6mFkJmJqdDVQ1REhVfGgd1",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273828e52cfb7bf22869349799e"
+    },
+    {
+      "position": 12,
+      "title": "Comfortably Numb",
+      "artist": "Pink Floyd",
+      "year": 1979,
+      "difficulty": "hard",
+      "youtube_id": "_FrOQC-zEog",
+      "answers_accepted": {
+        "title_variants": ["comfortably numb", "comfortablynumb", "comfortable numb"],
+        "artist_variants": ["pink floyd", "pinkfloyd"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5HNCy40Ni5BZJFw1TKzRsC",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b694e89ba937dd2631ff584c"
+    },
+    {
+      "position": 13,
+      "title": "Won't Get Fooled Again",
+      "artist": "The Who",
+      "year": 1971,
+      "difficulty": "hard",
+      "youtube_id": "UDfAdHBtK_Q",
+      "answers_accepted": {
+        "title_variants": ["won't get fooled again", "wont get fooled again", "fooled again"],
+        "artist_variants": ["the who", "who", "thewho"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0M5VXinuVGeuyMT0AyooZK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d993d0cd47c0b948d36553c8"
+    },
+    {
+      "position": 14,
+      "title": "American Woman",
+      "artist": "The Guess Who",
+      "year": 1970,
+      "difficulty": "hard",
+      "youtube_id": "9uf6EY2BZBw",
+      "answers_accepted": {
+        "title_variants": ["american woman", "americanwoman"],
+        "artist_variants": ["the guess who", "guess who", "guesswho", "lenny kravitz"],
+        "scoring": "title_or_artist",
+        "notes": "Reprise célèbre par Lenny Kravitz (1999). Cible : The Guess Who 1970."
+      },
+      "spotify_id": "2FT4gakd3matx4vI6YCTD8",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d75b73c14d050fbce3d85790"
+    },
+    {
+      "position": 15,
+      "title": "Riders on the Storm",
+      "artist": "The Doors",
+      "year": 1971,
+      "difficulty": "hard",
+      "youtube_id": "7G2-FPlvY58",
+      "answers_accepted": {
+        "title_variants": ["riders on the storm", "ridersonthestorm", "riders storm"],
+        "artist_variants": ["the doors", "doors", "thedoors"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "14XWXWv5FoCbFzLksawpEe",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733992c7ab57975935b29fa22b"
+    }
+  ]
+}

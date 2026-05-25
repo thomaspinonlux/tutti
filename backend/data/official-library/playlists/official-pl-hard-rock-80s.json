@@ -1,0 +1,241 @@
+{
+  "id": "official-pl-hard-rock-80s",
+  "name_fr": "Hard Rock 80s",
+  "name_en": "Hard Rock 80s",
+  "description_fr": "L'apogée du hard rock des années 80 : Bon Jovi, Guns N' Roses, Def Leppard, Van Halen, Scorpions, Aerosmith. Cuir, cheveux longs et solos.",
+  "description_en": "The peak of 80s hard rock: Bon Jovi, Guns N' Roses, Def Leppard, Van Halen, Scorpions, Aerosmith. Leather, long hair and solos.",
+  "locale_primary": "international",
+  "theme": "thematic_hard_rock_80s",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "acoustic"],
+    "year_range_strict": [1980, 1990]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "You Give Love a Bad Name",
+      "artist": "Bon Jovi",
+      "year": 1986,
+      "difficulty": "easy",
+      "youtube_id": "d2GynqGsokU",
+      "answers_accepted": {
+        "title_variants": ["you give love a bad name", "love a bad name", "givelovebadname"],
+        "artist_variants": ["bon jovi", "jon bon jovi", "bonjovi"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/d2GynqGsokU/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Pour Some Sugar on Me",
+      "artist": "Def Leppard",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "0UIB9Y4OFPs",
+      "answers_accepted": {
+        "title_variants": ["pour some sugar on me", "pour sugar on me", "sugar on me"],
+        "artist_variants": ["def leppard", "defleppard"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/0UIB9Y4OFPs/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Photograph",
+      "artist": "Def Leppard",
+      "year": 1983,
+      "difficulty": "medium",
+      "youtube_id": "D4dHr8evt6k",
+      "answers_accepted": {
+        "title_variants": ["photograph"],
+        "artist_variants": ["def leppard", "defleppard"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/D4dHr8evt6k/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Sweet Child o' Mine",
+      "artist": "Guns N' Roses",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "D2gWc5Sw75w",
+      "answers_accepted": {
+        "title_variants": ["sweet child o mine", "sweet child of mine", "sweetchildomine"],
+        "artist_variants": ["guns n' roses", "guns n roses", "guns and roses", "gnr"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/D2gWc5Sw75w/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Welcome to the Jungle",
+      "artist": "Guns N' Roses",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "9erLsEHAZRI",
+      "answers_accepted": {
+        "title_variants": ["welcome to the jungle", "welcometothejungle"],
+        "artist_variants": ["guns n' roses", "guns n roses", "gnr"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/9erLsEHAZRI/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Janie's Got a Gun",
+      "artist": "Aerosmith",
+      "year": 1989,
+      "difficulty": "medium",
+      "youtube_id": "RqQn2ADZE1A",
+      "answers_accepted": {
+        "title_variants": ["janie's got a gun", "janies got a gun", "janie got a gun"],
+        "artist_variants": ["aerosmith", "steven tyler"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/RqQn2ADZE1A/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Don't Stop Believin'",
+      "artist": "Journey",
+      "year": 1981,
+      "difficulty": "easy",
+      "youtube_id": "1k8craCGpgs",
+      "answers_accepted": {
+        "title_variants": [
+          "don't stop believin",
+          "don't stop believing",
+          "dont stop believing",
+          "stop believing"
+        ],
+        "artist_variants": ["journey"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/1k8craCGpgs/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Jump",
+      "artist": "Van Halen",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "SwYN7mTi6HM",
+      "answers_accepted": {
+        "title_variants": ["jump"],
+        "artist_variants": ["van halen", "vanhalen", "eddie van halen"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/SwYN7mTi6HM/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Rock You Like a Hurricane",
+      "artist": "Scorpions",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "kdqkA3CE6nA",
+      "answers_accepted": {
+        "title_variants": [
+          "rock you like a hurricane",
+          "rockyoulikeahurricane",
+          "like a hurricane"
+        ],
+        "artist_variants": ["scorpions"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/kdqkA3CE6nA/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Still Loving You",
+      "artist": "Scorpions",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "FI3JWrBq35U",
+      "answers_accepted": {
+        "title_variants": ["still loving you", "stilllovingyou"],
+        "artist_variants": ["scorpions"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/FI3JWrBq35U/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Carrie",
+      "artist": "Europe",
+      "year": 1986,
+      "difficulty": "hard",
+      "youtube_id": "fH0djhIPA2E",
+      "answers_accepted": {
+        "title_variants": ["carrie"],
+        "artist_variants": ["europe"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/fH0djhIPA2E/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "I Wanna Rock",
+      "artist": "Twisted Sister",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "SRwrg0db_zY",
+      "answers_accepted": {
+        "title_variants": ["i wanna rock", "wannarock"],
+        "artist_variants": ["twisted sister", "twistedsister", "dee snider"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/SRwrg0db_zY/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "We're Not Gonna Take It",
+      "artist": "Twisted Sister",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "V9AbeALNVkk",
+      "answers_accepted": {
+        "title_variants": [
+          "we're not gonna take it",
+          "were not gonna take it",
+          "not gonna take it"
+        ],
+        "artist_variants": ["twisted sister", "twistedsister"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/V9AbeALNVkk/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Crazy Train",
+      "artist": "Ozzy Osbourne",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "Djrl6fu8myo",
+      "answers_accepted": {
+        "title_variants": ["crazy train", "crazytrain"],
+        "artist_variants": ["ozzy osbourne", "ozzyosbourne", "ozzy"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Djrl6fu8myo/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Back in Black",
+      "artist": "AC/DC",
+      "year": 1980,
+      "difficulty": "easy",
+      "youtube_id": "zjx0D1Ivy-Q",
+      "answers_accepted": {
+        "title_variants": ["back in black", "backinblack"],
+        "artist_variants": ["ac/dc", "acdc", "ac dc"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/zjx0D1Ivy-Q/hqdefault.jpg"
+    }
+  ]
+}

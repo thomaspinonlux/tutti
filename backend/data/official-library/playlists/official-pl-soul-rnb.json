@@ -1,0 +1,232 @@
+{
+  "id": "official-pl-soul-rnb",
+  "name_fr": "Soul & R&B",
+  "name_en": "Soul & R&B",
+  "description_fr": "Les piliers de la soul et du R&B : Aretha Franklin, Stevie Wonder, Marvin Gaye, Otis Redding, jusqu'à Beyoncé et TLC. Voix iconiques et grooves intemporels.",
+  "description_en": "The pillars of soul and R&B: Aretha Franklin, Stevie Wonder, Marvin Gaye, Otis Redding, through to Beyoncé and TLC. Iconic voices and timeless grooves.",
+  "locale_primary": "international",
+  "theme": "thematic_soul_rnb",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1961, 2010]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Respect",
+      "artist": "Aretha Franklin",
+      "year": 1967,
+      "difficulty": "easy",
+      "youtube_id": "A134hShx_gw",
+      "answers_accepted": {
+        "title_variants": ["respect"],
+        "artist_variants": ["aretha franklin", "aretha"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/A134hShx_gw/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Try a Little Tenderness",
+      "artist": "Otis Redding",
+      "year": 1966,
+      "difficulty": "medium",
+      "youtube_id": "CjO7qdADCyQ",
+      "answers_accepted": {
+        "title_variants": ["try a little tenderness", "try little tenderness"],
+        "artist_variants": ["otis redding", "otis"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CjO7qdADCyQ/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Stand By Me",
+      "artist": "Ben E. King",
+      "year": 1961,
+      "difficulty": "easy",
+      "youtube_id": "hwZNL7QVJjE",
+      "answers_accepted": {
+        "title_variants": ["stand by me", "standbyme"],
+        "artist_variants": ["ben e king", "ben e. king", "ben king"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/hwZNL7QVJjE/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Superstition",
+      "artist": "Stevie Wonder",
+      "year": 1972,
+      "difficulty": "easy",
+      "youtube_id": "0CFuCYNx-1g",
+      "answers_accepted": {
+        "title_variants": ["superstition"],
+        "artist_variants": ["stevie wonder", "steviewonder"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/0CFuCYNx-1g/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "I Just Called to Say I Love You",
+      "artist": "Stevie Wonder",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "1bGOgY1CmiU",
+      "answers_accepted": {
+        "title_variants": [
+          "i just called to say i love you",
+          "ijustcalledtosayiloveyou",
+          "just called to say i love you"
+        ],
+        "artist_variants": ["stevie wonder", "steviewonder"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/1bGOgY1CmiU/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "What's Going On",
+      "artist": "Marvin Gaye",
+      "year": 1971,
+      "difficulty": "medium",
+      "youtube_id": "H-kA3UtBj4M",
+      "answers_accepted": {
+        "title_variants": ["what's going on", "whats going on"],
+        "artist_variants": ["marvin gaye", "marvingaye"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/H-kA3UtBj4M/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Sexual Healing",
+      "artist": "Marvin Gaye",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "rjlSiASsUIs",
+      "answers_accepted": {
+        "title_variants": ["sexual healing", "sexualhealing"],
+        "artist_variants": ["marvin gaye", "marvingaye"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/rjlSiASsUIs/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Let's Stay Together",
+      "artist": "Al Green",
+      "year": 1971,
+      "difficulty": "medium",
+      "youtube_id": "XXx6RDzR6eM",
+      "answers_accepted": {
+        "title_variants": ["let's stay together", "lets stay together", "stay together"],
+        "artist_variants": ["al green", "algreen"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/XXx6RDzR6eM/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Soul Man",
+      "artist": "Sam & Dave",
+      "year": 1967,
+      "difficulty": "hard",
+      "youtube_id": "S_OX2HwWy-o",
+      "answers_accepted": {
+        "title_variants": ["soul man", "soulman"],
+        "artist_variants": ["sam & dave", "sam and dave", "samdave"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/S_OX2HwWy-o/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Lean on Me",
+      "artist": "Bill Withers",
+      "year": 1972,
+      "difficulty": "easy",
+      "youtube_id": "gOZgo8gMIoM",
+      "answers_accepted": {
+        "title_variants": ["lean on me", "leanonme"],
+        "artist_variants": ["bill withers", "billwithers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/gOZgo8gMIoM/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Lovely Day",
+      "artist": "Bill Withers",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "bEeaS6fuUoA",
+      "answers_accepted": {
+        "title_variants": ["lovely day", "lovelyday"],
+        "artist_variants": ["bill withers", "billwithers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/bEeaS6fuUoA/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "I Want You Back",
+      "artist": "The Jackson 5",
+      "year": 1969,
+      "difficulty": "medium",
+      "youtube_id": "x0q1H9xWOA8",
+      "answers_accepted": {
+        "title_variants": ["i want you back", "iwantyouback", "want you back"],
+        "artist_variants": ["jackson 5", "the jackson 5", "jackson five", "j5"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/x0q1H9xWOA8/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Single Ladies (Put a Ring on It)",
+      "artist": "Beyoncé",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "CQpTT64uFcA",
+      "answers_accepted": {
+        "title_variants": ["single ladies", "put a ring on it", "singleladies"],
+        "artist_variants": ["beyoncé", "beyonce"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CQpTT64uFcA/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Waterfalls",
+      "artist": "TLC",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "aIl23kwFUqM",
+      "answers_accepted": {
+        "title_variants": ["waterfalls"],
+        "artist_variants": ["tlc", "t l c"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/aIl23kwFUqM/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "End of the Road",
+      "artist": "Boyz II Men",
+      "year": 1992,
+      "difficulty": "medium",
+      "youtube_id": "zDKO6XYXioc",
+      "answers_accepted": {
+        "title_variants": ["end of the road", "endoftheroad"],
+        "artist_variants": ["boyz ii men", "boyz 2 men", "boyziimen"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/zDKO6XYXioc/hqdefault.jpg"
+    }
+  ]
+}

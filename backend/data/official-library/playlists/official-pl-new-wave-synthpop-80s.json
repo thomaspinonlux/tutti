@@ -1,0 +1,247 @@
+{
+  "id": "official-pl-new-wave-synthpop-80s",
+  "name_fr": "New Wave & Synthpop 80s",
+  "name_en": "New Wave & Synthpop 80s",
+  "description_fr": "Le son synthétique des années 80 : Depeche Mode, Tears for Fears, Eurythmics, A-ha, Duran Duran, Culture Club. L'âge d'or des claviers.",
+  "description_en": "The synthetic sound of the 80s: Depeche Mode, Tears for Fears, Eurythmics, A-ha, Duran Duran, Culture Club. The golden age of synths.",
+  "locale_primary": "international",
+  "theme": "thematic_new_wave_synthpop_80s",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "extended"],
+    "year_range_strict": [1981, 1990]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Take On Me",
+      "artist": "a-ha",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "MIgK3zOk0zg",
+      "answers_accepted": {
+        "title_variants": ["take on me", "takeonme"],
+        "artist_variants": ["a-ha", "a ha", "aha"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/MIgK3zOk0zg/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Don't You (Forget About Me)",
+      "artist": "Simple Minds",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "CdqoNKCCt7A",
+      "answers_accepted": {
+        "title_variants": [
+          "don't you forget about me",
+          "dont you forget about me",
+          "don't you",
+          "forget about me"
+        ],
+        "artist_variants": ["simple minds", "simpleminds"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CdqoNKCCt7A/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Just Can't Get Enough",
+      "artist": "Depeche Mode",
+      "year": 1981,
+      "difficulty": "medium",
+      "youtube_id": "_6FBfAQ-NDE",
+      "answers_accepted": {
+        "title_variants": [
+          "just can't get enough",
+          "just cant get enough",
+          "cant get enough",
+          "can't get enough"
+        ],
+        "artist_variants": ["depeche mode", "depechemode"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/_6FBfAQ-NDE/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "People Are People",
+      "artist": "Depeche Mode",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "MzGnX-MbYE4",
+      "answers_accepted": {
+        "title_variants": ["people are people", "peoplearepeople"],
+        "artist_variants": ["depeche mode", "depechemode"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/MzGnX-MbYE4/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Sweet Dreams (Are Made of This)",
+      "artist": "Eurythmics",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "qeMFqkcPYcg",
+      "answers_accepted": {
+        "title_variants": ["sweet dreams", "sweet dreams are made of this", "sweetdreams"],
+        "artist_variants": ["eurythmics", "annie lennox"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/qeMFqkcPYcg/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Here Comes the Rain Again",
+      "artist": "Eurythmics",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "TzFnYcIqj6I",
+      "answers_accepted": {
+        "title_variants": ["here comes the rain again", "rain again", "herecomestherainagain"],
+        "artist_variants": ["eurythmics", "annie lennox"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/TzFnYcIqj6I/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Everybody Wants to Rule the World",
+      "artist": "Tears for Fears",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "SFU1GeGFpzY",
+      "answers_accepted": {
+        "title_variants": [
+          "everybody wants to rule the world",
+          "rule the world",
+          "everybodywantstoruletheworld"
+        ],
+        "artist_variants": ["tears for fears", "tearsforfears"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/SFU1GeGFpzY/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Shout",
+      "artist": "Tears for Fears",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "clZt5wpg_lM",
+      "answers_accepted": {
+        "title_variants": ["shout"],
+        "artist_variants": ["tears for fears", "tearsforfears"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/clZt5wpg_lM/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Hungry Like the Wolf",
+      "artist": "Duran Duran",
+      "year": 1982,
+      "difficulty": "medium",
+      "youtube_id": "oJL-lCzEXgI",
+      "answers_accepted": {
+        "title_variants": ["hungry like the wolf", "hungrylikethewolf"],
+        "artist_variants": ["duran duran", "duranduran"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/oJL-lCzEXgI/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Africa",
+      "artist": "Toto",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "Kb7lAMjFuA0",
+      "answers_accepted": {
+        "title_variants": ["africa"],
+        "artist_variants": ["toto"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Kb7lAMjFuA0/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Total Eclipse of the Heart",
+      "artist": "Bonnie Tyler",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "LSYGIljR6sQ",
+      "answers_accepted": {
+        "title_variants": ["total eclipse of the heart", "total eclipse", "totaleclipse"],
+        "artist_variants": ["bonnie tyler", "bonnietyler"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/LSYGIljR6sQ/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "99 Luftballons",
+      "artist": "Nena",
+      "year": 1983,
+      "difficulty": "medium",
+      "youtube_id": "Fpu5a0Bl8eY",
+      "answers_accepted": {
+        "title_variants": [
+          "99 luftballons",
+          "99 red balloons",
+          "99luftballons",
+          "neunundneunzig luftballons"
+        ],
+        "artist_variants": ["nena"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Fpu5a0Bl8eY/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Tarzan Boy",
+      "artist": "Baltimora",
+      "year": 1985,
+      "difficulty": "hard",
+      "youtube_id": "_r0n9Dv6XnY",
+      "answers_accepted": {
+        "title_variants": ["tarzan boy", "tarzanboy"],
+        "artist_variants": ["baltimora"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/_r0n9Dv6XnY/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Karma Chameleon",
+      "artist": "Culture Club",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "JmcA9LIIXWw",
+      "answers_accepted": {
+        "title_variants": ["karma chameleon", "karmachameleon"],
+        "artist_variants": ["culture club", "cultureclub", "boy george"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JmcA9LIIXWw/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Self Control",
+      "artist": "Laura Branigan",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "RP0_8J7uxhs",
+      "answers_accepted": {
+        "title_variants": ["self control", "selfcontrol"],
+        "artist_variants": ["laura branigan", "laurabranigan", "branigan"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/RP0_8J7uxhs/hqdefault.jpg"
+    }
+  ]
+}

@@ -1,0 +1,243 @@
+{
+  "id": "official-pl-eurovision",
+  "name_fr": "Eurovision — Vainqueurs cultes",
+  "name_en": "Eurovision — Iconic Winners",
+  "description_fr": "Les vainqueurs cultes de l'Eurovision : ABBA, Marie Myriam, Loreen, Måneskin. 50 ans d'histoire du concours.",
+  "description_en": "Iconic Eurovision winners: ABBA, Marie Myriam, Loreen, Måneskin. 50 years of contest history.",
+  "locale_primary": "international",
+  "theme": "thematic_eurovision",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_eurovision",
+    "avoid": ["remix", "live_concert"],
+    "year_range_strict": [1974, 2023]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Waterloo",
+      "artist": "ABBA",
+      "year": 1974,
+      "difficulty": "easy",
+      "youtube_id": "mcssw3utx7o",
+      "answers_accepted": {
+        "title_variants": ["waterloo"],
+        "artist_variants": ["abba"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3Dy4REq8O09IlgiwuHQ3sk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27311c24dc7f5ef909381c0a7d6"
+    },
+    {
+      "position": 2,
+      "title": "L'oiseau et l'enfant",
+      "artist": "Marie Myriam",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "uwJUhRWpk4E",
+      "answers_accepted": {
+        "title_variants": ["l'oiseau et l'enfant", "loiseau et lenfant", "oiseau enfant"],
+        "artist_variants": ["marie myriam", "mariemyriam"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "599jKuI8NJrKEbIQCpibO0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27330af36f8191394209401fc4d"
+    },
+    {
+      "position": 3,
+      "title": "Diva",
+      "artist": "Dana International",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "NsPksS8QWWY",
+      "answers_accepted": {
+        "title_variants": ["diva"],
+        "artist_variants": ["dana international", "danainternational"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4xTKSi7m6jUb1qaOmXn3R6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b47a15c810da4e4c3b722f8f"
+    },
+    {
+      "position": 4,
+      "title": "Wild Dances",
+      "artist": "Ruslana",
+      "year": 2004,
+      "difficulty": "hard",
+      "youtube_id": "q5TeDlawdz0",
+      "answers_accepted": {
+        "title_variants": ["wild dances", "wilddances", "wild dance"],
+        "artist_variants": ["ruslana", "rouslana"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1Lav2Z3RKu71MJLIjQz4dQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f3310238d06afe3898fa0fdb"
+    },
+    {
+      "position": 5,
+      "title": "My Number One",
+      "artist": "Helena Paparizou",
+      "year": 2005,
+      "difficulty": "hard",
+      "youtube_id": "r0CmpaSV0tc",
+      "answers_accepted": {
+        "title_variants": ["my number one", "mynumberone", "number one"],
+        "artist_variants": ["helena paparizou", "paparizou"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6LkCvCc9oFoLDv4DLhzTox",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733ba4a50c1de839be7727f9de"
+    },
+    {
+      "position": 6,
+      "title": "Hard Rock Hallelujah",
+      "artist": "Lordi",
+      "year": 2006,
+      "difficulty": "medium",
+      "youtube_id": "-6Xl9tBWt54",
+      "answers_accepted": {
+        "title_variants": ["hard rock hallelujah", "hardrockhallelujah"],
+        "artist_variants": ["lordi", "lordy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7sZTvm0Sx8umbyQViTE2Qc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27381823d9a13025f8852fb8e56"
+    },
+    {
+      "position": 7,
+      "title": "Fairytale",
+      "artist": "Alexander Rybak",
+      "year": 2009,
+      "difficulty": "medium",
+      "youtube_id": "1rVY08gRGmA",
+      "answers_accepted": {
+        "title_variants": ["fairytale", "fairy tale"],
+        "artist_variants": ["alexander rybak", "rybak"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3MnAsEBBsEj86d03RgO4EM",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27349a39e0e4102b862ccee0fb0"
+    },
+    {
+      "position": 8,
+      "title": "Satellite",
+      "artist": "Lena",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "8QSgNM9yNjo",
+      "answers_accepted": {
+        "title_variants": ["satellite"],
+        "artist_variants": ["lena", "lena meyer-landrut"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2UjNsh4ipNrmog6wdS2JVv",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734bbfd947699df39f7a28ab82"
+    },
+    {
+      "position": 9,
+      "title": "Euphoria",
+      "artist": "Loreen",
+      "year": 2012,
+      "difficulty": "easy",
+      "youtube_id": "t5qURKt4maw",
+      "answers_accepted": {
+        "title_variants": ["euphoria"],
+        "artist_variants": ["loreen", "loreen sweden"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2knr7ikPt4l7bk92qS4ZXW",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27396663c059e615c7db2ed9bb6"
+    },
+    {
+      "position": 10,
+      "title": "Heroes",
+      "artist": "Måns Zelmerlöw",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "PHZ-7pZ_5Sc",
+      "answers_accepted": {
+        "title_variants": ["heroes", "hero"],
+        "artist_variants": ["måns zelmerlöw", "mans zelmerlow", "zelmerlow"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4ciaNqHWA2IzHphZaVRzHI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27303e5cd20130bc76fad43f7b3"
+    },
+    {
+      "position": 11,
+      "title": "1944",
+      "artist": "Jamala",
+      "year": 2016,
+      "difficulty": "hard",
+      "youtube_id": "0C7E19yz23g",
+      "answers_accepted": {
+        "title_variants": ["1944", "nineteen forty four"],
+        "artist_variants": ["jamala", "jamela"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1AZQTUs1FPy7YHH8aad3dA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738aa2230d7a05290a3eb26e54"
+    },
+    {
+      "position": 12,
+      "title": "Amar pelos dois",
+      "artist": "Salvador Sobral",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "ymFVfzu-2mw",
+      "answers_accepted": {
+        "title_variants": ["amar pelos dois", "amarpelosdois", "amar dos"],
+        "artist_variants": ["salvador sobral", "sobral"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1bLjhPvRT5uNnVby1ytmXi",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ea8ba4e4fdd79a1dc2c2c2f5"
+    },
+    {
+      "position": 13,
+      "title": "Toy",
+      "artist": "Netta",
+      "year": 2018,
+      "difficulty": "medium",
+      "youtube_id": "CziHrYYSyPc",
+      "answers_accepted": {
+        "title_variants": ["toy", "toyy"],
+        "artist_variants": ["netta", "netta barzilai"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6VO6JrvcuGMfPOQgT6kSGE",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27362956f6b920e927fcf1201ae"
+    },
+    {
+      "position": 14,
+      "title": "Zitti e buoni",
+      "artist": "Måneskin",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "QN1odfjtMoo",
+      "answers_accepted": {
+        "title_variants": ["zitti e buoni", "zittiebuoni", "zitti buoni"],
+        "artist_variants": ["måneskin", "maneskin"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "776AftMmFFAWUIEAb3lHhw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735aa05015cfa7bd2943c29b21"
+    },
+    {
+      "position": 15,
+      "title": "Stefania",
+      "artist": "Kalush Orchestra",
+      "year": 2022,
+      "difficulty": "hard",
+      "youtube_id": "Zm6G9iwVzlA",
+      "answers_accepted": {
+        "title_variants": ["stefania", "stephania"],
+        "artist_variants": ["kalush orchestra", "kalush", "kaloush"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2vHzOWRKYPLu8umRPIFuOq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27352f63e535ea761eb6768eeb2"
+    }
+  ]
+}

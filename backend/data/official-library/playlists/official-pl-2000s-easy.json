@@ -1,0 +1,295 @@
+{
+  "id": "official-pl-2000s-easy",
+  "name_fr": "Années 2000 — Facile",
+  "name_en": "2000s — Easy",
+  "description_fr": "Les megahits des années 2000 que tout le monde reconnaît dès la première seconde. Pop, R&B, rock, dance : la décennie en mode universel.",
+  "description_en": "The 2000s megahits everyone recognizes from the first second. Pop, R&B, rock, dance: the decade in universal mode.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2000s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2000, 2009]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "In the End",
+      "artist": "Linkin Park",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "ZieDWVxm7tE",
+      "answers_accepted": {
+        "title_variants": ["in the end", "intheend", "in end"],
+        "artist_variants": ["linkin park", "lincoln park", "linking park", "linkinpark"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "60a0Rd6pjrkxjPbaKzXjfq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e2f039481babe23658fc719a"
+    },
+    {
+      "position": 2,
+      "title": "Crazy in Love",
+      "artist": "Beyoncé",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "ViwtNLUqkMY",
+      "answers_accepted": {
+        "title_variants": ["crazy in love", "crazyinlove", "crazy love"],
+        "artist_variants": ["beyoncé", "beyonce", "beyoncee", "beyonse"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5IVuqXILoxVWvWEPm82Jxr",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27345680a4a57c97894490a01c1"
+    },
+    {
+      "position": 3,
+      "title": "Hey Ya!",
+      "artist": "OutKast",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "PWgvGjAhvIw",
+      "answers_accepted": {
+        "title_variants": ["hey ya", "heyya", "hey ya!", "hey yaaa"],
+        "artist_variants": ["outkast", "out kast", "outcast", "the outkast"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2PpruBYCo4H7WOBJ7Q2EwM",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736e88eb6508fd94cd1b745ce2"
+    },
+    {
+      "position": 4,
+      "title": "Toxic",
+      "artist": "Britney Spears",
+      "year": 2004,
+      "difficulty": "easy",
+      "youtube_id": "LOZuxwVk7TU",
+      "answers_accepted": {
+        "title_variants": ["toxic", "toxics", "toxique"],
+        "artist_variants": [
+          "britney spears",
+          "britany spears",
+          "brittney spears",
+          "britnay spears"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "26nr9XnFCYWxBTIP7HyWXg",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27338a33970ad21a2a1d1315875"
+    },
+    {
+      "position": 5,
+      "title": "Mr. Brightside",
+      "artist": "The Killers",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "l7MaKmKJqoc",
+      "answers_accepted": {
+        "title_variants": [
+          "mr brightside",
+          "mr. brightside",
+          "mister brightside",
+          "mr brightsight"
+        ],
+        "artist_variants": ["the killers", "killers", "the killer", "the kilers"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "003vvx7Niy0yvhvHt4a68B",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ccdddd46119a4ff53eaf1f5d"
+    },
+    {
+      "position": 6,
+      "title": "Seven Nation Army",
+      "artist": "The White Stripes",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "3ObXzrR1zhA",
+      "answers_accepted": {
+        "title_variants": [
+          "seven nation army",
+          "7 nation army",
+          "seven nations army",
+          "sevennationarmy"
+        ],
+        "artist_variants": [
+          "the white stripes",
+          "white stripes",
+          "whitestripes",
+          "the white stripe"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3dPQuX8Gs42Y7b454ybpMR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737028981d09d2e5833c9c78ad"
+    },
+    {
+      "position": 7,
+      "title": "Umbrella",
+      "artist": "Rihanna",
+      "year": 2007,
+      "difficulty": "easy",
+      "youtube_id": "CvBfHwUxHIk",
+      "answers_accepted": {
+        "title_variants": ["umbrella", "umbrela", "umberella", "ella ella"],
+        "artist_variants": ["rihanna", "riana", "rhianna", "rianna", "riahna"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1ytAFSCXhl4WDjJfmyXpgQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738b378a2ef2da6f340661338d"
+    },
+    {
+      "position": 8,
+      "title": "Bad Romance",
+      "artist": "Lady Gaga",
+      "year": 2009,
+      "difficulty": "easy",
+      "youtube_id": "qrO4YZeyl0I",
+      "answers_accepted": {
+        "title_variants": ["bad romance", "badromance", "bad romences"],
+        "artist_variants": ["lady gaga", "ladygaga", "lady gagaa", "ledy gaga"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0SiywuOBRcynK0uKGWdCnn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735c9890c0456a3719eeecd8aa"
+    },
+    {
+      "position": 9,
+      "title": "Don't Stop the Music",
+      "artist": "Rihanna",
+      "year": 2007,
+      "difficulty": "easy",
+      "youtube_id": "yd8jh9QYfEs",
+      "answers_accepted": {
+        "title_variants": [
+          "don't stop the music",
+          "dont stop the music",
+          "don't stop music",
+          "stop the music"
+        ],
+        "artist_variants": ["rihanna", "riana", "rhianna", "rianna"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0paaQpOzPElcIzjjPkbCkS",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273045089271e09094b42e0515d"
+    },
+    {
+      "position": 10,
+      "title": "I Gotta Feeling",
+      "artist": "The Black Eyed Peas",
+      "year": 2009,
+      "difficulty": "easy",
+      "youtube_id": "uSD4vsh1zDA",
+      "answers_accepted": {
+        "title_variants": [
+          "i gotta feeling",
+          "gotta feeling",
+          "i got a feeling",
+          "i've gotta feeling"
+        ],
+        "artist_variants": [
+          "the black eyed peas",
+          "black eyed peas",
+          "blackeyedpeas",
+          "the black eye peas"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4kLLWz7srcuLKA7Et40PQR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730bd44f5ff9ecc99f7770acc5"
+    },
+    {
+      "position": 11,
+      "title": "Hot N Cold",
+      "artist": "Katy Perry",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "kTHNpusq654",
+      "answers_accepted": {
+        "title_variants": ["hot n cold", "hot and cold", "hot 'n cold", "hotncold"],
+        "artist_variants": ["katy perry", "katie perry", "kati perry", "katyperry"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0iGckQFyv6svOfAbAY9aWJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733f97d4244eff5852477d9ee0"
+    },
+    {
+      "position": 12,
+      "title": "Single Ladies (Put a Ring on It)",
+      "artist": "Beyoncé",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "4m1EFMoRFvY",
+      "answers_accepted": {
+        "title_variants": [
+          "single ladies",
+          "single ladies put a ring on it",
+          "put a ring on it",
+          "single lady"
+        ],
+        "artist_variants": ["beyoncé", "beyonce", "beyoncee", "beyonse"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "557un1HgwYMuqfWGSTmnxw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b4c5982e1b92f97a126fc18c"
+    },
+    {
+      "position": 13,
+      "title": "Sex on Fire",
+      "artist": "Kings of Leon",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "RF0HhrwIwp0",
+      "answers_accepted": {
+        "title_variants": ["sex on fire", "sexonfire", "sexe on fire", "sex fire"],
+        "artist_variants": ["kings of leon", "kingsofleon", "king of leon", "the kings of leon"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0ntQJM78wzOLVeCUAW7Y45",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732519d01c0cca06f134eeadd8"
+    },
+    {
+      "position": 14,
+      "title": "Empire State of Mind",
+      "artist": "Jay-Z",
+      "year": 2009,
+      "difficulty": "easy",
+      "youtube_id": "183mZ-wj7eA",
+      "answers_accepted": {
+        "title_variants": [
+          "empire state of mind",
+          "empirestateofmind",
+          "empire state",
+          "new york state of mind"
+        ],
+        "artist_variants": [
+          "jay-z",
+          "jay z",
+          "jayz",
+          "jay z and alicia keys",
+          "alicia keys",
+          "jay-z ft alicia keys"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2igwFfvr1OAGX9SKDCPBwO",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fec1b815bb3c50a64a90fd10"
+    },
+    {
+      "position": 15,
+      "title": "Beautiful Day",
+      "artist": "U2",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "co6WMzDOh1o",
+      "answers_accepted": {
+        "title_variants": ["beautiful day", "beautifulday", "beautiful days"],
+        "artist_variants": ["u2", "you two", "you 2", "u 2"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0gzqZ9d1jIKo9psEIthwXe",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27338fa0dfe55b1ff2e8c962bae"
+    }
+  ]
+}

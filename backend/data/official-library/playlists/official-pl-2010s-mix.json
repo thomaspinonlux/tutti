@@ -1,0 +1,292 @@
+{
+  "id": "official-pl-2010s-mix",
+  "name_fr": "Années 2010 — Mix",
+  "name_en": "2010s — Mix",
+  "description_fr": "Un mélange équilibré de la décennie : 5 megahits, 5 grands classiques, 5 perles plus pointues. Le sampler parfait des années 2010.",
+  "description_en": "A balanced mix of the decade: 5 megahits, 5 great classics, 5 sharper gems. The perfect 2010s sampler.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2010s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2010, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Sorry",
+      "artist": "Justin Bieber",
+      "year": 2015,
+      "difficulty": "easy",
+      "youtube_id": "8ELbX5CMomE",
+      "answers_accepted": {
+        "title_variants": ["sorry", "sory", "désolé", "sorries"],
+        "artist_variants": ["justin bieber", "justine bieber", "justin biber", "jb"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "09CtPGIpYB4BrO8qb1RGsF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f46b9d202509a8f7384b90de"
+    },
+    {
+      "position": 2,
+      "title": "Memories",
+      "artist": "Maroon 5",
+      "year": 2019,
+      "difficulty": "easy",
+      "youtube_id": "qZjYggYSzc8",
+      "answers_accepted": {
+        "title_variants": ["memories", "memory", "souvenirs", "memmories"],
+        "artist_variants": ["maroon 5", "marron 5", "maroonfive", "maroon five"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/qZjYggYSzc8/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Shallow",
+      "artist": "Lady Gaga",
+      "year": 2018,
+      "difficulty": "easy",
+      "youtube_id": "SlWBJ7MTV8M",
+      "answers_accepted": {
+        "title_variants": ["shallow", "shalow", "shallows", "a star is born"],
+        "artist_variants": [
+          "lady gaga",
+          "lady gaga bradley cooper",
+          "bradley cooper",
+          "lady gaga & bradley cooper"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2VxeLyX666F8uXCJ0dZF8B",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e2d156fdc691f57900134342"
+    },
+    {
+      "position": 4,
+      "title": "Locked Away",
+      "artist": "R. City",
+      "year": 2015,
+      "difficulty": "easy",
+      "youtube_id": "YQY9BZBrZds",
+      "answers_accepted": {
+        "title_variants": ["locked away", "lockedaway", "if i got locked away", "lock away"],
+        "artist_variants": [
+          "r city",
+          "r. city",
+          "r city adam levine",
+          "adam levine",
+          "rock city",
+          "r city ft adam levine"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7x5xYW5W42OGPAdHUyyguy",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27374b157379e7686df3d0850a4"
+    },
+    {
+      "position": 5,
+      "title": "7 Years",
+      "artist": "Lukas Graham",
+      "year": 2015,
+      "difficulty": "easy",
+      "youtube_id": "nwkgrqFnzvE",
+      "answers_accepted": {
+        "title_variants": ["7 years", "seven years", "7years", "sept ans"],
+        "artist_variants": ["lukas graham", "lucas graham", "lukasgraham", "luka graham"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5kqIPrATaCc2LqxVWzQGbk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732d94d0f04e9a58d1654b760b"
+    },
+    {
+      "position": 6,
+      "title": "The Nights",
+      "artist": "Avicii",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "XmIgg9De9hY",
+      "answers_accepted": {
+        "title_variants": ["the nights", "thenights", "nights", "the night"],
+        "artist_variants": ["avicii", "avici", "aviccii", "avichi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0ct6r3EGTcMLPtrXHDvVjc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730ae4f4d42e4a09f3a29f64ad"
+    },
+    {
+      "position": 7,
+      "title": "Dance Monkey",
+      "artist": "Tones and I",
+      "year": 2019,
+      "difficulty": "medium",
+      "youtube_id": "q0hyYWKXF0Q",
+      "answers_accepted": {
+        "title_variants": ["dance monkey", "dancemonkey", "dance monkeys", "dance monki"],
+        "artist_variants": ["tones and i", "tones & i", "tonesandi", "tones i"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2XU0oxnq2qxCpomAAuJY8K",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734825aaa2ef0d72461644f113"
+    },
+    {
+      "position": 8,
+      "title": "Lean On",
+      "artist": "Major Lazer",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "rn9AQoI7mYU",
+      "answers_accepted": {
+        "title_variants": ["lean on", "leanon", "lean me on", "lean"],
+        "artist_variants": [
+          "major lazer",
+          "majorlazer",
+          "major laser",
+          "major lazer mø",
+          "mø",
+          "dj snake"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4UKJUbcuStnnxLeJmVJsSc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732236ac983588045e42fef5ed"
+    },
+    {
+      "position": 9,
+      "title": "Style",
+      "artist": "Taylor Swift",
+      "year": 2014,
+      "difficulty": "medium",
+      "youtube_id": "66TQBtlRKc4",
+      "answers_accepted": {
+        "title_variants": ["style", "styles", "stylish"],
+        "artist_variants": ["taylor swift", "tailor swift", "taylor swiff"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0ug5NqcwcFR2xrfTkc7k8e",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27352b2a3824413eefe9e33817a"
+    },
+    {
+      "position": 10,
+      "title": "Stressed Out",
+      "artist": "Twenty One Pilots",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "Gc4sY98Jn9I",
+      "answers_accepted": {
+        "title_variants": ["stressed out", "stressedout", "stress out"],
+        "artist_variants": [
+          "twenty one pilots",
+          "21 pilots",
+          "twentyonepilots",
+          "twenty 1 pilots",
+          "top"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3CRDbSIZ4r5MsZ0YwxuEkn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732df0d98a423025032d0db1f7"
+    },
+    {
+      "position": 11,
+      "title": "What You Know",
+      "artist": "Two Door Cinema Club",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "_Ys8gLkfW6M",
+      "answers_accepted": {
+        "title_variants": ["what you know", "whatyouknow", "what u know"],
+        "artist_variants": [
+          "two door cinema club",
+          "2 door cinema club",
+          "twodoorcinemaclub",
+          "two door cinema"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4JHg4nNYUJQ5HULcCmI18R",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fc6eef9b111d87e57b4b10cc"
+    },
+    {
+      "position": 12,
+      "title": "From the Dining Table",
+      "artist": "Harry Styles",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "1ZxF_nA1SxQ",
+      "answers_accepted": {
+        "title_variants": [
+          "from the dining table",
+          "from dining table",
+          "dining table",
+          "fromthediningtable"
+        ],
+        "artist_variants": ["harry styles", "harrystyles", "harry style", "harry styless"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1IF5UcqRO42D12vYwceOY6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733f8b8a9c71b2bd2f3019940b"
+    },
+    {
+      "position": 13,
+      "title": "Two Weeks",
+      "artist": "FKA twigs",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "3yDP9MKVhZc",
+      "answers_accepted": {
+        "title_variants": ["two weeks", "twoweeks", "2 weeks", "deux semaines"],
+        "artist_variants": ["fka twigs", "fkatwigs", "f.k.a. twigs", "fka twig"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6V0LX0hP1S0qH513CChAKt",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27377a39a4e1d5d0f24dac1130a"
+    },
+    {
+      "position": 14,
+      "title": "Apocalypse",
+      "artist": "Cigarettes After Sex",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "sElE_BfQ67s",
+      "answers_accepted": {
+        "title_variants": ["apocalypse", "apocalipse", "apocalypses"],
+        "artist_variants": [
+          "cigarettes after sex",
+          "cigarettes after se x",
+          "cigarettes ftr sex",
+          "cigarettes aftr sex"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1oAwsWBovWRIp7qLMGPIet",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dfed999f959177dfc4f33cdc"
+    },
+    {
+      "position": 15,
+      "title": "Mountain Sound",
+      "artist": "Of Monsters and Men",
+      "year": 2012,
+      "difficulty": "hard",
+      "youtube_id": "qt7ox1M_XG4",
+      "answers_accepted": {
+        "title_variants": [
+          "mountain sound",
+          "mountainsound",
+          "mountain sounds",
+          "son de la montagne"
+        ],
+        "artist_variants": [
+          "of monsters and men",
+          "of monster and men",
+          "ofmonstersandmen",
+          "monsters and men"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3SPVZJzf1Hs30rB6yXVf2y",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cb3f67e8026e2e493a1e8262"
+    }
+  ]
+}

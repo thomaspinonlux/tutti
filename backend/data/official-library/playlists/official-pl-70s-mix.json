@@ -1,0 +1,263 @@
+{
+  "id": "official-pl-70s-mix",
+  "name_fr": "Années 70 — Mix",
+  "name_en": "70s — Mix",
+  "description_fr": "Mélange des trois niveaux : les seventies de la pop facile au rock pour initiés.",
+  "description_en": "All three levels: 70s from easy pop to insider rock.",
+  "locale_primary": "international",
+  "theme": "decade_70s",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [1970, 1979]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "ABC",
+      "artist": "The Jackson 5",
+      "year": 1970,
+      "difficulty": "easy",
+      "youtube_id": "abIosNhuEBw",
+      "answers_accepted": {
+        "title_variants": ["abc", "a b c"],
+        "artist_variants": [
+          "the jackson 5",
+          "jackson 5",
+          "jackson five",
+          "jacksonfive",
+          "michael jackson"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6D8kc7RO0rqBLSo2YPflJ5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739df68560791d0b3dab491867"
+    },
+    {
+      "position": 2,
+      "title": "Layla",
+      "artist": "Derek and the Dominos",
+      "year": 1970,
+      "difficulty": "easy",
+      "youtube_id": "YS5JxrJLIEA",
+      "answers_accepted": {
+        "title_variants": ["layla", "leila", "leyla"],
+        "artist_variants": [
+          "derek and the dominos",
+          "derek and the dominoes",
+          "eric clapton",
+          "ericclapton"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2kkvB3RNRzwjFdGhaUA0tz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fbcaf7402f38faac27610efc"
+    },
+    {
+      "position": 3,
+      "title": "Maggie May",
+      "artist": "Rod Stewart",
+      "year": 1971,
+      "difficulty": "easy",
+      "youtube_id": "KlFPDi1B-jM",
+      "answers_accepted": {
+        "title_variants": ["maggie may", "maggiemay", "maggi may"],
+        "artist_variants": ["rod stewart", "rodstewart", "rod stuart"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6rovOdp3HgK1DeAMYDzoA7",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f20825485137abccd82b9665"
+    },
+    {
+      "position": 4,
+      "title": "How Deep Is Your Love",
+      "artist": "Bee Gees",
+      "year": 1977,
+      "difficulty": "easy",
+      "youtube_id": "XpqqjU7u5Yc",
+      "answers_accepted": {
+        "title_variants": ["how deep is your love", "howdeepisyourlove", "deep is your love"],
+        "artist_variants": ["bee gees", "the bee gees", "beegees", "bee jees"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "33bD5jxbWerSiP9dUNSPTL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273605128d275ca60ccc9cd3b6d"
+    },
+    {
+      "position": 5,
+      "title": "Get Down Tonight",
+      "artist": "KC and the Sunshine Band",
+      "year": 1975,
+      "difficulty": "easy",
+      "youtube_id": "LHEsE9yN2CY",
+      "answers_accepted": {
+        "title_variants": ["get down tonight", "getdowntonight", "get down"],
+        "artist_variants": [
+          "kc and the sunshine band",
+          "kc & the sunshine band",
+          "kc sunshine band",
+          "k.c. and the sunshine band"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6zbFTYeqNvZdms60HouEFT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27390298163e25342e58d153899"
+    },
+    {
+      "position": 6,
+      "title": "Lola",
+      "artist": "The Kinks",
+      "year": 1970,
+      "difficulty": "medium",
+      "youtube_id": "LemG0cvc4oU",
+      "answers_accepted": {
+        "title_variants": ["lola"],
+        "artist_variants": ["the kinks", "kinks", "thekinks"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4Tjs8b6jL1s18sjURJtswp",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273da0e0c87f57499b479e7da59"
+    },
+    {
+      "position": 7,
+      "title": "Take It Easy",
+      "artist": "Eagles",
+      "year": 1972,
+      "difficulty": "medium",
+      "youtube_id": "5igDtWadYms",
+      "answers_accepted": {
+        "title_variants": ["take it easy", "takeiteasy"],
+        "artist_variants": ["eagles", "the eagles"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4yugZvBYaoREkJKtbG08Qr",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c13acd642ba9f6f5f127aa1b"
+    },
+    {
+      "position": 8,
+      "title": "Year of the Cat",
+      "artist": "Al Stewart",
+      "year": 1976,
+      "difficulty": "medium",
+      "youtube_id": "Ak_MTXQALa0",
+      "answers_accepted": {
+        "title_variants": ["year of the cat", "yearofthecat", "year cat"],
+        "artist_variants": ["al stewart", "alstewart", "al stuart"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5jYYumalS1qELrcChOCZrK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734d1556d406a19cf829e6e0b8"
+    },
+    {
+      "position": 9,
+      "title": "Tumbling Dice",
+      "artist": "The Rolling Stones",
+      "year": 1972,
+      "difficulty": "medium",
+      "youtube_id": "EMoi_m2G6XU",
+      "answers_accepted": {
+        "title_variants": ["tumbling dice", "tumblingdice"],
+        "artist_variants": ["the rolling stones", "rolling stones", "stones"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4hq0S6wznq7SHDyMOFXL9i",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ba42bfcfeed19018b1f8cab8"
+    },
+    {
+      "position": 10,
+      "title": "Don't Bring Me Down",
+      "artist": "Electric Light Orchestra",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "-rD-0tlGGPo",
+      "answers_accepted": {
+        "title_variants": ["don't bring me down", "dont bring me down", "bring me down"],
+        "artist_variants": ["electric light orchestra", "elo", "e l o"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4PntxCjeBFpPOJTnHzhF90",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734f922b5b6fec3e19441bb411"
+    },
+    {
+      "position": 11,
+      "title": "Crazy on You",
+      "artist": "Heart",
+      "year": 1976,
+      "difficulty": "hard",
+      "youtube_id": "OZuW6BH_Vak",
+      "answers_accepted": {
+        "title_variants": ["crazy on you", "crazyonyou"],
+        "artist_variants": ["heart", "the heart", "heart band"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5zH710lFSLtkHbMkslLDjR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738e8c08ca2feb999bb84f05e6"
+    },
+    {
+      "position": 12,
+      "title": "Hot Blooded",
+      "artist": "Foreigner",
+      "year": 1978,
+      "difficulty": "hard",
+      "youtube_id": "8yDmeYxTeC0",
+      "answers_accepted": {
+        "title_variants": ["hot blooded", "hotblooded"],
+        "artist_variants": ["foreigner", "the foreigner", "foreigners"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6xMHglHoafdDFGXS6qfwSH",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735627aa0842d6287bbb223cbf"
+    },
+    {
+      "position": 13,
+      "title": "Baba O'Riley",
+      "artist": "The Who",
+      "year": 1971,
+      "difficulty": "hard",
+      "youtube_id": "QRTNm6GLJYI",
+      "answers_accepted": {
+        "title_variants": ["baba o'riley", "baba oriley", "babaoriley", "teenage wasteland"],
+        "artist_variants": ["the who", "who"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3qiyyUfYe7CRYLucrPmulD",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fe24dcd263c08c6dd84b6e8c"
+    },
+    {
+      "position": 14,
+      "title": "Ramblin' Man",
+      "artist": "The Allman Brothers Band",
+      "year": 1973,
+      "difficulty": "hard",
+      "youtube_id": "Wa4DCp6cl2U",
+      "answers_accepted": {
+        "title_variants": ["ramblin man", "ramblin' man", "rambling man"],
+        "artist_variants": [
+          "the allman brothers band",
+          "allman brothers",
+          "allman brothers band",
+          "allmanbrothers"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Wa4DCp6cl2U/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Bennie and the Jets",
+      "artist": "Elton John",
+      "year": 1973,
+      "difficulty": "hard",
+      "youtube_id": "p5rQHoaQpTw",
+      "answers_accepted": {
+        "title_variants": ["bennie and the jets", "benny and the jets", "bennieandthejets"],
+        "artist_variants": ["elton john", "eltonjohn"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5Wj1rJnCLpMHdLaxsFtJLs",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f72f1e38e9bd48f18a17ed9b"
+    }
+  ]
+}

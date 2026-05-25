@@ -1,0 +1,327 @@
+{
+  "id": "official-pl-80s-easy",
+  "name_fr": "Années 80 — Facile",
+  "name_en": "80s — Easy",
+  "description_fr": "Les megahits des années 80 que tout le monde reconnaît dès la première seconde. Pop, rock, new wave, synthé : le best-of universel de la décennie.",
+  "description_en": "The 80s megahits everyone recognizes from the first second. Pop, rock, new wave, synth: the universal best-of of the decade.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_1980s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [1980, 1989]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Billie Jean",
+      "artist": "Michael Jackson",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "OZGtRvYF-A4",
+      "answers_accepted": {
+        "title_variants": ["billie jean", "billy jean", "billi jean", "biliejean", "billie jeans"],
+        "artist_variants": [
+          "michael jackson",
+          "mickael jackson",
+          "mickaël jackson",
+          "mike jackson",
+          "mj"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7J1uxwnxfQLu4APicE5Rnj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27332a7d87248d1b75463483df5"
+    },
+    {
+      "position": 2,
+      "title": "Take On Me",
+      "artist": "A-ha",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "MIgK3zOk0zg",
+      "answers_accepted": {
+        "title_variants": ["take on me", "takeonme", "take me on", "take on"],
+        "artist_variants": ["a-ha", "a ha", "aha", "ah-ah", "ahaa"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2WfaOiMkCvy7F5fcp2zZ8L",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e8dd4db47e7177c63b0b7d53"
+    },
+    {
+      "position": 3,
+      "title": "Eye of the Tiger",
+      "artist": "Survivor",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "btPJPFnesV4",
+      "answers_accepted": {
+        "title_variants": [
+          "eye of the tiger",
+          "eye tiger",
+          "eyes of the tiger",
+          "the tiger",
+          "ay of the tiger"
+        ],
+        "artist_variants": ["survivor", "survivors", "survivor band", "sourvivor"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2HHtWyy5CgaQbC7XSoOb0e",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734e2755e7a96ec5e062c76aac"
+    },
+    {
+      "position": 4,
+      "title": "Sweet Dreams (Are Made of This)",
+      "artist": "Eurythmics",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "qeMFqkcPYcg",
+      "answers_accepted": {
+        "title_variants": [
+          "sweet dreams",
+          "sweet dreams are made of this",
+          "sweetdreams",
+          "sweet dream"
+        ],
+        "artist_variants": ["eurythmics", "eurithmics", "eurythmix", "eurithmix", "urythmics"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7Bp898e0U9IReLs2oKC7G4",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730d3ddf8a300b5e135b6b32aa"
+    },
+    {
+      "position": 5,
+      "title": "Girls Just Want to Have Fun",
+      "artist": "Cyndi Lauper",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "PIb6AZdTr-A",
+      "answers_accepted": {
+        "title_variants": [
+          "girls just want to have fun",
+          "girls just wanna have fun",
+          "girls have fun",
+          "girls just want fun",
+          "girls wanna have fun"
+        ],
+        "artist_variants": [
+          "cyndi lauper",
+          "cindy lauper",
+          "sindy lauper",
+          "sindi lauper",
+          "cindi loper"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4y1LsJpmMti1PfRQV9AWWe",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ce023ce7dfdd5199bcdfd5a1"
+    },
+    {
+      "position": 6,
+      "title": "Don't Stop Believin'",
+      "artist": "Journey",
+      "year": 1981,
+      "difficulty": "easy",
+      "youtube_id": "1k8craCGpgs",
+      "answers_accepted": {
+        "title_variants": [
+          "don't stop believin'",
+          "dont stop believin",
+          "don't stop believing",
+          "dont stop believing",
+          "don stop believing",
+          "don't stop"
+        ],
+        "artist_variants": ["journey", "journeys", "djourney"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3oAV5Aa8zx9buAu15zHNlq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735cf430d56b75201a80d30e7f"
+    },
+    {
+      "position": 7,
+      "title": "The Final Countdown",
+      "artist": "Europe",
+      "year": 1986,
+      "difficulty": "easy",
+      "youtube_id": "lZzcQ-uQ8R0",
+      "answers_accepted": {
+        "title_variants": [
+          "the final countdown",
+          "final countdown",
+          "finalcountdown",
+          "le compte à rebours final"
+        ],
+        "artist_variants": ["europe", "europ", "europe band", "iurop"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3MrRksHupTVEQ7YbA0FsZK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f5e30500f0eec7d92b159eae"
+    },
+    {
+      "position": 8,
+      "title": "Livin' on a Prayer",
+      "artist": "Bon Jovi",
+      "year": 1986,
+      "difficulty": "easy",
+      "youtube_id": "CuUefy9bT9U",
+      "answers_accepted": {
+        "title_variants": [
+          "livin' on a prayer",
+          "livin on a prayer",
+          "living on a prayer",
+          "living prayer",
+          "live on a prayer",
+          "on a prayer"
+        ],
+        "artist_variants": ["bon jovi", "bon jovie", "bonjovi", "jon bon jovi", "bonn jovi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "37ZJ0p5Jm13JPevGcx4SkF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731336b31b6a1799f0de5807ac"
+    },
+    {
+      "position": 9,
+      "title": "Africa",
+      "artist": "Toto",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "Kb7lAMjFuA0",
+      "answers_accepted": {
+        "title_variants": ["africa", "afrique", "afrika", "africaa"],
+        "artist_variants": ["toto", "toto band", "totoo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2374M0fQpWi3dLnB54qaLX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ebd6d20c0082524244ef83df"
+    },
+    {
+      "position": 10,
+      "title": "Karma Chameleon",
+      "artist": "Culture Club",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "JmcA9LIIXWw",
+      "answers_accepted": {
+        "title_variants": [
+          "karma chameleon",
+          "karma cameleon",
+          "karma chamelion",
+          "karma kameleon",
+          "karma chameleo"
+        ],
+        "artist_variants": ["culture club", "cultur club", "culture clubs", "kulture klub"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3XDeeP9wBZzGhIPZmLfEEx",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273784f3d22b1b28313311acd2a"
+    },
+    {
+      "position": 11,
+      "title": "Tainted Love",
+      "artist": "Soft Cell",
+      "year": 1981,
+      "difficulty": "easy",
+      "youtube_id": "oGXpDhNAO1Y",
+      "answers_accepted": {
+        "title_variants": [
+          "tainted love",
+          "tinted love",
+          "taintedlove",
+          "tented love",
+          "tained love"
+        ],
+        "artist_variants": ["soft cell", "softcell", "soft sell", "soft cel"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0cGG2EouYCEEC3xfa0tDFV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27349c982dae436bac27c336f45"
+    },
+    {
+      "position": 12,
+      "title": "Every Breath You Take",
+      "artist": "The Police",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "iOT_zuDHvVk",
+      "answers_accepted": {
+        "title_variants": [
+          "every breath you take",
+          "every breath",
+          "every breath i take",
+          "every step you take"
+        ],
+        "artist_variants": ["the police", "police", "the polices", "polis"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1JSTJqkT5qHq8MDJnJbRE1",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c8e97cafeb2acb85b21a777e"
+    },
+    {
+      "position": 13,
+      "title": "Like a Virgin",
+      "artist": "Madonna",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "50nag9B6Pps",
+      "answers_accepted": {
+        "title_variants": ["like a virgin", "likeavirgin", "like virgin", "like the virgin"],
+        "artist_variants": ["madonna", "madona", "madona ciccone", "madonne"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1ZPlNanZsJSPK5h9YZZFbZ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27399d424b0873a9a714279a9f3"
+    },
+    {
+      "position": 14,
+      "title": "Wake Me Up Before You Go-Go",
+      "artist": "Wham!",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "pIgZ7gMze7A",
+      "answers_accepted": {
+        "title_variants": [
+          "wake me up before you go-go",
+          "wake me up before you go go",
+          "wake me up",
+          "go go",
+          "wake me up before",
+          "wake me up before you gogo"
+        ],
+        "artist_variants": ["wham", "wham!", "wam", "wam!", "ouam", "the wham"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0ikz6tENMONtK6qGkOrU3c",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a2fc41b0dd6ce4f0d16a4c46"
+    },
+    {
+      "position": 15,
+      "title": "I Wanna Dance with Somebody",
+      "artist": "Whitney Houston",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "eH3giaIzONA",
+      "answers_accepted": {
+        "title_variants": [
+          "i wanna dance with somebody",
+          "i want to dance with somebody",
+          "wanna dance",
+          "dance with somebody",
+          "i wanna dance"
+        ],
+        "artist_variants": [
+          "whitney houston",
+          "withney houston",
+          "whitney huston",
+          "wittney houston",
+          "whitney hooston"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2tUBqZG2AbRi7Q0BIrVrEj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a520a167a62d5548cdb53101"
+    }
+  ]
+}

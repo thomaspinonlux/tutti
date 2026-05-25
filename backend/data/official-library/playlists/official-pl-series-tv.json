@@ -1,0 +1,242 @@
+{
+  "id": "official-pl-series-tv",
+  "name_fr": "Génériques de Séries TV",
+  "name_en": "TV Series Themes",
+  "description_fr": "Les génériques cultes de séries TV : Game of Thrones, Stranger Things, Breaking Bad, Twin Peaks, X-Files. Reconnaissance instantanée.",
+  "description_en": "The cult themes of TV series: Game of Thrones, Stranger Things, Breaking Bad, Twin Peaks, X-Files. Instant recognition.",
+  "locale_primary": "international",
+  "theme": "thematic_tv_series",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "main_title_theme",
+    "avoid": ["remix", "cover"],
+    "year_range_strict": [1985, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Game of Thrones (Main Title)",
+      "artist": "Ramin Djawadi",
+      "year": 2011,
+      "difficulty": "easy",
+      "youtube_id": "eCemS3f-LDU",
+      "answers_accepted": {
+        "title_variants": [
+          "game of thrones",
+          "got main title",
+          "game of thrones theme",
+          "game of thrones main title"
+        ],
+        "artist_variants": ["ramin djawadi", "djawadi"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/eCemS3f-LDU/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "The Walking Dead Theme",
+      "artist": "Bear McCreary",
+      "year": 2010,
+      "difficulty": "medium",
+      "youtube_id": "taNeTh7ihkI",
+      "answers_accepted": {
+        "title_variants": ["the walking dead", "walking dead theme", "walkingdead"],
+        "artist_variants": ["bear mccreary", "mccreary"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/taNeTh7ihkI/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Lost Main Title",
+      "artist": "Michael Giacchino",
+      "year": 2004,
+      "difficulty": "medium",
+      "youtube_id": "QS3ZwsfeiYQ",
+      "answers_accepted": {
+        "title_variants": ["lost main title", "lost theme", "lost"],
+        "artist_variants": ["michael giacchino", "giacchino"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/QS3ZwsfeiYQ/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Far From Any Road (True Detective)",
+      "artist": "The Handsome Family",
+      "year": 2003,
+      "difficulty": "hard",
+      "youtube_id": "Pl6MCWMU8aE",
+      "answers_accepted": {
+        "title_variants": ["far from any road", "true detective", "true detective theme"],
+        "artist_variants": ["the handsome family", "handsome family"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Pl6MCWMU8aE/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Stranger Things Theme",
+      "artist": "Kyle Dixon & Michael Stein",
+      "year": 2016,
+      "difficulty": "easy",
+      "youtube_id": "_EEPAvqjLH4",
+      "answers_accepted": {
+        "title_variants": ["stranger things theme", "stranger things", "strangerthings"],
+        "artist_variants": [
+          "kyle dixon",
+          "michael stein",
+          "kyle dixon & michael stein",
+          "kyle dixon michael stein"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/_EEPAvqjLH4/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "House of Cards Main Title",
+      "artist": "Jeff Beal",
+      "year": 2013,
+      "difficulty": "medium",
+      "youtube_id": "BcfMTSHHfu4",
+      "answers_accepted": {
+        "title_variants": ["house of cards", "house of cards theme", "house of cards main title"],
+        "artist_variants": ["jeff beal", "jeffbeal"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/BcfMTSHHfu4/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Breaking Bad Main Title",
+      "artist": "Dave Porter",
+      "year": 2008,
+      "difficulty": "medium",
+      "youtube_id": "ilfYnhXD-bE",
+      "answers_accepted": {
+        "title_variants": ["breaking bad", "breaking bad theme", "breaking bad main title"],
+        "artist_variants": ["dave porter", "daveporter"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ilfYnhXD-bE/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "This Life (Sons of Anarchy)",
+      "artist": "Curtis Stigers & The Forest Rangers",
+      "year": 2008,
+      "difficulty": "hard",
+      "youtube_id": "gmSWkFQsuPM",
+      "answers_accepted": {
+        "title_variants": ["this life", "sons of anarchy", "sons of anarchy theme"],
+        "artist_variants": [
+          "curtis stigers",
+          "the forest rangers",
+          "curtis stigers forest rangers"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/gmSWkFQsuPM/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Twin Peaks Theme",
+      "artist": "Angelo Badalamenti",
+      "year": 1990,
+      "difficulty": "hard",
+      "youtube_id": "pXrjMaVoTy0",
+      "answers_accepted": {
+        "title_variants": ["twin peaks theme", "twin peaks"],
+        "artist_variants": ["angelo badalamenti", "badalamenti"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/pXrjMaVoTy0/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "The X-Files Main Title",
+      "artist": "Mark Snow",
+      "year": 1993,
+      "difficulty": "medium",
+      "youtube_id": "Qz2wnSVeITg",
+      "answers_accepted": {
+        "title_variants": ["x-files", "the x-files", "xfiles", "x files theme"],
+        "artist_variants": ["mark snow", "marksnow"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Qz2wnSVeITg/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Buffy the Vampire Slayer Theme",
+      "artist": "Nerf Herder",
+      "year": 1997,
+      "difficulty": "hard",
+      "youtube_id": "OO-m2CZ02Xw",
+      "answers_accepted": {
+        "title_variants": ["buffy the vampire slayer", "buffy theme", "buffy"],
+        "artist_variants": ["nerf herder", "nerfherder"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/OO-m2CZ02Xw/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "The Simpsons Main Title",
+      "artist": "Danny Elfman",
+      "year": 1989,
+      "difficulty": "easy",
+      "youtube_id": "Woxi97lOtys",
+      "answers_accepted": {
+        "title_variants": ["the simpsons", "simpsons theme", "the simpsons main title"],
+        "artist_variants": ["danny elfman", "elfman"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Woxi97lOtys/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "A Beautiful Mine (Mad Men)",
+      "artist": "RJD2",
+      "year": 2007,
+      "difficulty": "hard",
+      "youtube_id": "vD12mZiFPtM",
+      "answers_accepted": {
+        "title_variants": ["a beautiful mine", "mad men theme", "mad men", "beautiful mine"],
+        "artist_variants": ["rjd2", "r j d 2"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vD12mZiFPtM/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Sex and the City Theme",
+      "artist": "Douglas J. Cuomo",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "VAIFcUbuqEo",
+      "answers_accepted": {
+        "title_variants": ["sex and the city", "sex and the city theme", "satc"],
+        "artist_variants": ["douglas j. cuomo", "douglas cuomo", "cuomo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/VAIFcUbuqEo/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Greenback Boogie (Suits)",
+      "artist": "Ima Robot",
+      "year": 2009,
+      "difficulty": "hard",
+      "youtube_id": "PhJnpbicLnk",
+      "answers_accepted": {
+        "title_variants": ["greenback boogie", "suits theme", "suits"],
+        "artist_variants": ["ima robot", "imarobot"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/PhJnpbicLnk/hqdefault.jpg"
+    }
+  ]
+}

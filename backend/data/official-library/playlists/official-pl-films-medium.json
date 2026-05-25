@@ -1,0 +1,360 @@
+{
+  "id": "official-pl-films-medium",
+  "name_fr": "Musique de Film — Moyen",
+  "name_en": "Movie Soundtracks — Medium",
+  "description_fr": "Les thèmes de film qu'on reconnaît mais qui demandent un peu plus d'oreille. Schindler's List, Out of Africa, Amélie, Inception : pour amateurs avertis.",
+  "description_en": "The movie themes you recognize but that take a bit more ear. Schindler's List, Out of Africa, Amélie, Inception: for seasoned ears.",
+  "locale_primary": "international",
+  "theme": "thematic_movies",
+  "difficulty": "medium",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_motion_picture_soundtrack",
+    "avoid": ["remix", "live", "cover_school_orchestra", "karaoke"],
+    "year_range_strict": [1975, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "The Imperial March (Star Wars)",
+      "artist": "John Williams",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "u7HF4JG1pOg",
+      "answers_accepted": {
+        "title_variants": [
+          "the imperial march",
+          "imperial march",
+          "darth vader theme",
+          "star wars empire",
+          "marche impériale"
+        ],
+        "artist_variants": ["john williams", "john wiliams", "john williamz"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2bw4WgXyXP90hIex7ur58y",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731e869a1d333210eaa2bfe670"
+    },
+    {
+      "position": 2,
+      "title": "Theme from Jaws",
+      "artist": "John Williams",
+      "year": 1975,
+      "difficulty": "medium",
+      "youtube_id": "E-sX2Y0W8l0",
+      "answers_accepted": {
+        "title_variants": [
+          "theme from jaws",
+          "jaws",
+          "les dents de la mer",
+          "jaws theme",
+          "shark theme"
+        ],
+        "artist_variants": ["john williams", "john wiliams", "john williamz"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6avTDXTAOplulfOIE4fj46",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ab20bec5a0973a0776f8f525"
+    },
+    {
+      "position": 3,
+      "title": "Out of Africa (Main Theme)",
+      "artist": "John Barry",
+      "year": 1985,
+      "difficulty": "medium",
+      "youtube_id": "SMa7ymgHkpE",
+      "answers_accepted": {
+        "title_variants": [
+          "out of africa",
+          "out of africa main theme",
+          "souvenirs d'afrique",
+          "outofafrica"
+        ],
+        "artist_variants": ["john barry", "johnbarry", "john bari"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/SMa7ymgHkpE/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Promentory (Last of the Mohicans)",
+      "artist": "Trevor Jones",
+      "year": 1992,
+      "difficulty": "medium",
+      "youtube_id": "UUCF8BzuxBI",
+      "answers_accepted": {
+        "title_variants": [
+          "promentory",
+          "last of the mohicans",
+          "the last of the mohicans",
+          "le dernier des mohicans",
+          "promontory"
+        ],
+        "artist_variants": [
+          "trevor jones",
+          "trevorjones",
+          "trevor johns",
+          "randy edelman",
+          "trevor jones randy edelman"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0NA8uE9ctlsQYeiyGKN5LO",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cca476b01136077b6d966aa6"
+    },
+    {
+      "position": 5,
+      "title": "Theme from Schindler's List",
+      "artist": "John Williams",
+      "year": 1993,
+      "difficulty": "medium",
+      "youtube_id": "cLgJQ8Zj3AA",
+      "answers_accepted": {
+        "title_variants": [
+          "schindler's list",
+          "schindlers list",
+          "theme from schindler's list",
+          "la liste de schindler",
+          "schindler theme"
+        ],
+        "artist_variants": ["john williams", "john wiliams", "itzhak perlman", "john williamz"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "42gZM6AQ9BDMaTyTmMDVlN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273112179621605b07a1f3ff957"
+    },
+    {
+      "position": 6,
+      "title": "Gabriel's Oboe (The Mission)",
+      "artist": "Ennio Morricone",
+      "year": 1986,
+      "difficulty": "medium",
+      "youtube_id": "s7w-IeNR9ko",
+      "answers_accepted": {
+        "title_variants": [
+          "gabriel's oboe",
+          "gabriels oboe",
+          "the mission",
+          "mission",
+          "the mission theme",
+          "hautbois de gabriel"
+        ],
+        "artist_variants": ["ennio morricone", "enniomorricone", "ennio moricone", "morricone"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6opPrJUpq4Pl5c84eCwLmo",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f126b5a1693a25b14396ad94"
+    },
+    {
+      "position": 7,
+      "title": "Cinema Paradiso (Main Theme)",
+      "artist": "Ennio Morricone",
+      "year": 1988,
+      "difficulty": "medium",
+      "youtube_id": "ndp74trZSSU",
+      "answers_accepted": {
+        "title_variants": [
+          "cinema paradiso",
+          "cinemaparadiso",
+          "cinema paradiso main theme",
+          "cinéma paradiso"
+        ],
+        "artist_variants": [
+          "ennio morricone",
+          "andrea morricone",
+          "enniomorricone",
+          "ennio moricone",
+          "morricone"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0FFOaRW0WTJgd12cKEKuaC",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273392202ae82aad36f7142c248"
+    },
+    {
+      "position": 8,
+      "title": "Time (Inception)",
+      "artist": "Hans Zimmer",
+      "year": 2010,
+      "difficulty": "medium",
+      "youtube_id": "RxabLA7UQ9k",
+      "answers_accepted": {
+        "title_variants": [
+          "time inception",
+          "inception time",
+          "time",
+          "inception",
+          "inception theme"
+        ],
+        "artist_variants": ["hans zimmer", "hanszimmer", "hans zimer", "ans zimmer"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3wiNAUR47bQG777Q7OGF3J",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736017c599e29fbe7a4c3f3d42"
+    },
+    {
+      "position": 9,
+      "title": "Married Life (Up)",
+      "artist": "Michael Giacchino",
+      "year": 2009,
+      "difficulty": "medium",
+      "youtube_id": "vynvegQ9Ecw",
+      "answers_accepted": {
+        "title_variants": [
+          "married life",
+          "up",
+          "up theme",
+          "married life up",
+          "marriedlife",
+          "là-haut"
+        ],
+        "artist_variants": [
+          "michael giacchino",
+          "michel giacchino",
+          "michael giachino",
+          "giacchino"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "402diT3eJMfTvITPdyCxuM",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ff4429c24746b64a7c7913b0"
+    },
+    {
+      "position": 10,
+      "title": "La Valse d'Amélie",
+      "artist": "Yann Tiersen",
+      "year": 2001,
+      "difficulty": "medium",
+      "youtube_id": "uzurqBnALkw",
+      "answers_accepted": {
+        "title_variants": [
+          "la valse d'amélie",
+          "la valse damelie",
+          "valse d'amélie",
+          "amélie",
+          "amelie poulain",
+          "le fabuleux destin d'amélie poulain",
+          "amelie",
+          "la valse d amelie"
+        ],
+        "artist_variants": ["yann tiersen", "yanntiersen", "yann tiersene", "yan tiersen"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7MIN37CiVP1lVjqKNmLMWk",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731b7844a8c73c4d48f0bca1de"
+    },
+    {
+      "position": 11,
+      "title": "Axel F (Beverly Hills Cop)",
+      "artist": "Harold Faltermeyer",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "Qx2gvHjNhQ0",
+      "answers_accepted": {
+        "title_variants": [
+          "axel f",
+          "beverly hills cop",
+          "axelf",
+          "le flic de beverly hills",
+          "axel foley"
+        ],
+        "artist_variants": [
+          "harold faltermeyer",
+          "haroldfaltermeyer",
+          "harold faltermeyer",
+          "faltermeyer"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0aCyxQp4AnKZweaveYakbZ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736c801de6d6b9b77e3a24a241"
+    },
+    {
+      "position": 12,
+      "title": "Any Other Name (American Beauty)",
+      "artist": "Thomas Newman",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "EfVRQKKvlXc",
+      "answers_accepted": {
+        "title_variants": [
+          "any other name",
+          "american beauty",
+          "anyothername",
+          "american beauty theme"
+        ],
+        "artist_variants": ["thomas newman", "thomasnewman", "tomas newman", "newman thomas"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "61vnjAymXu9rsT5KqIERRb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730d0f1ae3b5bf1bc109a03321"
+    },
+    {
+      "position": 13,
+      "title": "Adagio in D Minor (Sunshine)",
+      "artist": "John Murphy",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "FWmCKhBmFVY",
+      "answers_accepted": {
+        "title_variants": [
+          "adagio in d minor",
+          "sunshine",
+          "adagio in d minor sunshine",
+          "adagio re mineur",
+          "sunshine adagio"
+        ],
+        "artist_variants": ["john murphy", "johnmurphy", "john murfy", "murphy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4l3vtfAGhLfDf46O4PQTew",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731e4490fd37ad3cce8fc5f6e2"
+    },
+    {
+      "position": 14,
+      "title": "Bella's Lullaby (Twilight)",
+      "artist": "Carter Burwell",
+      "year": 2008,
+      "difficulty": "medium",
+      "youtube_id": "Z7-3_h0vxXA",
+      "answers_accepted": {
+        "title_variants": [
+          "bella's lullaby",
+          "bellas lullaby",
+          "twilight",
+          "bella lullaby",
+          "fascination twilight"
+        ],
+        "artist_variants": ["carter burwell", "carterburwell", "carter burwel", "burwell"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Z7-3_h0vxXA/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Now We Are Free (Gladiator)",
+      "artist": "Hans Zimmer",
+      "year": 2000,
+      "difficulty": "medium",
+      "youtube_id": "mQQKZ5cgybU",
+      "answers_accepted": {
+        "title_variants": [
+          "now we are free",
+          "gladiator",
+          "now we are free gladiator",
+          "gladiator theme",
+          "elysium"
+        ],
+        "artist_variants": [
+          "hans zimmer",
+          "lisa gerrard",
+          "hans zimmer lisa gerrard",
+          "hanszimmer"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2rBUT42i2t1wsfCmkn1TYA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735e26ee959941f78ce85ac080"
+    }
+  ]
+}

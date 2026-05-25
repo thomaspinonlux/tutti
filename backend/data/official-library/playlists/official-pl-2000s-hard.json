@@ -1,0 +1,278 @@
+{
+  "id": "official-pl-2000s-hard",
+  "name_fr": "Années 2000 — Difficile",
+  "name_en": "2000s — Hard",
+  "description_fr": "La face plus pointue des années 2000. Indie rock, post-punk revival, electronica, alt-rock : pour les vrais aficionados de la décennie.",
+  "description_en": "The sharper side of the 2000s. Indie rock, post-punk revival, electronica, alt-rock: for true aficionados of the decade.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2000s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2000, 2009]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "House of Jealous Lovers",
+      "artist": "The Rapture",
+      "year": 2002,
+      "difficulty": "hard",
+      "youtube_id": "xgkIDKyEP0I",
+      "answers_accepted": {
+        "title_variants": [
+          "house of jealous lovers",
+          "jealous lovers",
+          "house jealous lovers",
+          "houseofjealouslovers"
+        ],
+        "artist_variants": ["the rapture", "rapture", "the raptur"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "59BmcR0HY4K6t6h9xMYhTU",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739145d1cfafd7b8c946531471"
+    },
+    {
+      "position": 2,
+      "title": "Maps",
+      "artist": "Yeah Yeah Yeahs",
+      "year": 2003,
+      "difficulty": "hard",
+      "youtube_id": "0DvPjYTvI14",
+      "answers_accepted": {
+        "title_variants": ["maps", "map", "mapss"],
+        "artist_variants": ["yeah yeah yeahs", "yeahyeahyeahs", "yeah yeah yeah", "yyy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0hDQV9X1Da5JrwhK8gu86p",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731b1cb4ef0f096f9d66fc3dc6"
+    },
+    {
+      "position": 3,
+      "title": "Take Me Out",
+      "artist": "Franz Ferdinand",
+      "year": 2004,
+      "difficulty": "hard",
+      "youtube_id": "Ijk4j-r7qPA",
+      "answers_accepted": {
+        "title_variants": ["take me out", "takemeout", "take out", "take me away"],
+        "artist_variants": [
+          "franz ferdinand",
+          "frantz ferdinand",
+          "franzferdinand",
+          "franz ferdinant"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "20I8RduZC2PWMWTDCZuuAN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a5d1c06a8172d4861367953c"
+    },
+    {
+      "position": 4,
+      "title": "Float On",
+      "artist": "Modest Mouse",
+      "year": 2004,
+      "difficulty": "hard",
+      "youtube_id": "CTAud5O7Qqk",
+      "answers_accepted": {
+        "title_variants": ["float on", "floaton", "floating on"],
+        "artist_variants": ["modest mouse", "modestmouse", "modest mouses", "the modest mouse"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2lwwrWVKdf3LR9lbbhnr6R",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cc68329bfbf34037df965dc1"
+    },
+    {
+      "position": 5,
+      "title": "Such Great Heights",
+      "artist": "The Postal Service",
+      "year": 2003,
+      "difficulty": "hard",
+      "youtube_id": "9klEsdUxNvY",
+      "answers_accepted": {
+        "title_variants": [
+          "such great heights",
+          "such great heigts",
+          "great heights",
+          "suchgreatheights"
+        ],
+        "artist_variants": [
+          "the postal service",
+          "postal service",
+          "postalservice",
+          "the postal services"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "75z2YLg5Lkqf6qL9XOY8tV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273df6e579914fc309b0e0bd745"
+    },
+    {
+      "position": 6,
+      "title": "Kids",
+      "artist": "MGMT",
+      "year": 2008,
+      "difficulty": "hard",
+      "youtube_id": "fe4EK4HSPkI",
+      "answers_accepted": {
+        "title_variants": ["kids", "kid", "the kids"],
+        "artist_variants": ["mgmt", "m.g.m.t.", "the management", "m g m t"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6rdhSODUXbK76QQEGCToU7",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e7b8a0e73810920352014018"
+    },
+    {
+      "position": 7,
+      "title": "Crystalised",
+      "artist": "The xx",
+      "year": 2009,
+      "difficulty": "hard",
+      "youtube_id": "-Jp2wNF1rkM",
+      "answers_accepted": {
+        "title_variants": ["crystalised", "crystalized", "cristalised", "crystalised"],
+        "artist_variants": ["the xx", "xx", "thexx", "the x"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5UBBJnFxsfjFxfrtvErQoH",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a46d603701aa0342e8cca64e"
+    },
+    {
+      "position": 8,
+      "title": "Last Nite",
+      "artist": "The Strokes",
+      "year": 2001,
+      "difficulty": "hard",
+      "youtube_id": "TOypSnKFHrE",
+      "answers_accepted": {
+        "title_variants": ["last nite", "last night", "lastnite", "last nights"],
+        "artist_variants": ["the strokes", "strokes", "the stroke", "thestrokes"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7kzKAuUzOITUauHAhoMoxA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a388a3f20d1bf2123249cc79"
+    },
+    {
+      "position": 9,
+      "title": "The Hand That Feeds",
+      "artist": "Nine Inch Nails",
+      "year": 2005,
+      "difficulty": "hard",
+      "youtube_id": "xwhBRJStz7w",
+      "answers_accepted": {
+        "title_variants": [
+          "the hand that feeds",
+          "hand that feeds",
+          "thehandthatfeeds",
+          "hand feeds"
+        ],
+        "artist_variants": ["nine inch nails", "nine inches nails", "nin", "9 inch nails"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4L5r9XNiWJ7cbqcIiNvVes",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c6fb913ce65ee5844f3ece58"
+    },
+    {
+      "position": 10,
+      "title": "Hate to Say I Told You So",
+      "artist": "The Hives",
+      "year": 2000,
+      "difficulty": "hard",
+      "youtube_id": "FahA3C8Xpqo",
+      "answers_accepted": {
+        "title_variants": [
+          "hate to say i told you so",
+          "hate to say",
+          "i told you so",
+          "told you so"
+        ],
+        "artist_variants": ["the hives", "hives", "the hive", "thehives"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "20j7B6mL9gnNvG3ic6Vwh5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27385c160f9951c570a8e81f998"
+    },
+    {
+      "position": 11,
+      "title": "Banquet",
+      "artist": "Bloc Party",
+      "year": 2005,
+      "difficulty": "hard",
+      "youtube_id": "ausP0hQrR-Q",
+      "answers_accepted": {
+        "title_variants": ["banquet", "banquette", "banquettes"],
+        "artist_variants": ["bloc party", "block party", "blocparty", "bloc partys"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4juzduULFJiZVIcrC1tkxE",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dd5fbd879c9189622463b3bf"
+    },
+    {
+      "position": 12,
+      "title": "Helena",
+      "artist": "My Chemical Romance",
+      "year": 2004,
+      "difficulty": "hard",
+      "youtube_id": "UK6m9_qUVhQ",
+      "answers_accepted": {
+        "title_variants": ["helena", "héléna", "elena", "helenah"],
+        "artist_variants": [
+          "my chemical romance",
+          "mychemicalromance",
+          "mcr",
+          "my chemical romances"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5dTHtzHFPyi8TlTtzoz1J9",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cab7ae4868e9f9ce6bdfdf43"
+    },
+    {
+      "position": 13,
+      "title": "I Predict a Riot",
+      "artist": "Kaiser Chiefs",
+      "year": 2004,
+      "difficulty": "hard",
+      "youtube_id": "hamKl-su8PE",
+      "answers_accepted": {
+        "title_variants": ["i predict a riot", "predict a riot", "predict riot", "i predict riot"],
+        "artist_variants": ["kaiser chiefs", "kaiserchiefs", "kaizer chiefs", "the kaiser chiefs"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "75D3n6wnFQmu1HVmLAlWM4",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ff04d490d9d10ea687f38f36"
+    },
+    {
+      "position": 14,
+      "title": "Naïve",
+      "artist": "The Kooks",
+      "year": 2006,
+      "difficulty": "hard",
+      "youtube_id": "jkaMiaRLgvY",
+      "answers_accepted": {
+        "title_variants": ["naive", "naïve", "naïve naïve", "naïves"],
+        "artist_variants": ["the kooks", "kooks", "the kook", "thekooks"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7BHPGtpuuWWsvE7cCaMuEU",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27363a28c5ecb7b13e9b329fe47"
+    },
+    {
+      "position": 15,
+      "title": "Reckoner",
+      "artist": "Radiohead",
+      "year": 2007,
+      "difficulty": "hard",
+      "youtube_id": "rOoCixFA8OI",
+      "answers_accepted": {
+        "title_variants": ["reckoner", "reckoners", "reckonner"],
+        "artist_variants": ["radiohead", "radio head", "radiouhead", "radioheads"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "02ppMPbg1OtEdHgoPqoqju",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273de3c04b5fc750b68899b20a9"
+    }
+  ]
+}

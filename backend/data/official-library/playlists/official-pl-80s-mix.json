@@ -1,0 +1,323 @@
+{
+  "id": "official-pl-80s-mix",
+  "name_fr": "Années 80 — Mix",
+  "name_en": "80s — Mix",
+  "description_fr": "Un mélange équilibré de la décennie : 5 megahits, 5 grands classiques, 5 perles plus pointues. Le sampler parfait des années 80.",
+  "description_en": "A balanced mix of the decade: 5 megahits, 5 great classics, 5 sharper gems. The perfect 80s sampler.",
+  "locale_primary": "international",
+  "theme": "decade",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_1980s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [1980, 1989]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Time After Time",
+      "artist": "Cyndi Lauper",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "F1mqrCTFoz4",
+      "answers_accepted": {
+        "title_variants": ["time after time", "timeaftertime", "time after"],
+        "artist_variants": ["cyndi lauper", "cindy lauper", "sindy lauper", "cindi loper"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7o9uu2GDtVDr9nsR7ZRN73",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ce023ce7dfdd5199bcdfd5a1"
+    },
+    {
+      "position": 2,
+      "title": "Faith",
+      "artist": "George Michael",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "6Cs3Pvmmv0E",
+      "answers_accepted": {
+        "title_variants": ["faith", "fayth", "faiht"],
+        "artist_variants": [
+          "george michael",
+          "georges michael",
+          "george michaels",
+          "geoge michael"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0HEmnAUT8PHznIAAmVXqFJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b7a9a6a2bf311630d3fc6956"
+    },
+    {
+      "position": 3,
+      "title": "Beat It",
+      "artist": "Michael Jackson",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "ftCalx6_pYA",
+      "answers_accepted": {
+        "title_variants": ["beat it", "beatit", "bit it", "beet it"],
+        "artist_variants": [
+          "michael jackson",
+          "mickael jackson",
+          "mickaël jackson",
+          "mike jackson",
+          "mj"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3BovdzfaX4jb5KFQwoPfAw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27332a7d87248d1b75463483df5"
+    },
+    {
+      "position": 4,
+      "title": "Footloose",
+      "artist": "Kenny Loggins",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "ltrMfT4Qz5Y",
+      "answers_accepted": {
+        "title_variants": ["footloose", "foot loose", "fut louse", "footlose"],
+        "artist_variants": ["kenny loggins", "kenny logins", "ken loggins", "keny loggins"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2vz1CsL5WBsbpBcwgboTAw",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733b7492bb678d5d51683444ae"
+    },
+    {
+      "position": 5,
+      "title": "La Bamba",
+      "artist": "Los Lobos",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "nLAWPrCUQQ0",
+      "answers_accepted": {
+        "title_variants": ["la bamba", "labamba", "la bambaaa"],
+        "artist_variants": ["los lobos", "loslobos", "los lobo", "lo lobos"],
+        "scoring": "title_or_artist",
+        "notes": "Reprise de Ritchie Valens (1958). Cible : version Los Lobos pour le film La Bamba (1987)."
+      },
+      "spotify_id": "0uMMLry3hzWGn3q3loqMkm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c208d60c83e8611195875e13"
+    },
+    {
+      "position": 6,
+      "title": "Careless Whisper",
+      "artist": "George Michael",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "izGwDsrQ1eQ",
+      "answers_accepted": {
+        "title_variants": [
+          "careless whisper",
+          "carless whisper",
+          "careless wisper",
+          "careless whispers"
+        ],
+        "artist_variants": [
+          "george michael",
+          "wham",
+          "wham!",
+          "wham featuring george michael",
+          "georges michael"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Single crédité George Michael sur certains marchés, Wham! featuring George Michael sur d'autres. Les deux artistes sont acceptés."
+      },
+      "spotify_id": "6KsgCYcZKPcBRDNGhiZWRR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a2fc41b0dd6ce4f0d16a4c46"
+    },
+    {
+      "position": 7,
+      "title": "Heaven",
+      "artist": "Bryan Adams",
+      "year": 1985,
+      "difficulty": "medium",
+      "youtube_id": "vf3zFvcKQkw",
+      "answers_accepted": {
+        "title_variants": ["heaven", "heavens", "heven", "haven"],
+        "artist_variants": ["bryan adams", "brian adams", "bryan addams", "brayan adams"],
+        "scoring": "title_or_artist",
+        "notes": "Single 1985 (de l'album Reckless 1984). Plusieurs chansons portent ce titre — cible : Bryan Adams uniquement."
+      },
+      "spotify_id": "7Ewz6bJ97vUqk5HdkvguFQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cf1fee2a55e98e22bf358512"
+    },
+    {
+      "position": 8,
+      "title": "Summer of '69",
+      "artist": "Bryan Adams",
+      "year": 1985,
+      "difficulty": "medium",
+      "youtube_id": "1i0i5lG6Ojc",
+      "answers_accepted": {
+        "title_variants": [
+          "summer of 69",
+          "summer of '69",
+          "summer of sixty nine",
+          "summer 69",
+          "été 69"
+        ],
+        "artist_variants": ["bryan adams", "brian adams", "bryan addams", "brayan adams"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0GONea6G2XdnHWjNZd6zt3",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cf1fee2a55e98e22bf358512"
+    },
+    {
+      "position": 9,
+      "title": "Jessie's Girl",
+      "artist": "Rick Springfield",
+      "year": 1981,
+      "difficulty": "medium",
+      "youtube_id": "qYkbTyHXwbs",
+      "answers_accepted": {
+        "title_variants": [
+          "jessie's girl",
+          "jessies girl",
+          "jessie girl",
+          "jessy's girl",
+          "jessys girl"
+        ],
+        "artist_variants": [
+          "rick springfield",
+          "rick springfeld",
+          "ric springfield",
+          "rick springfields"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5RsUlxLto4NZbhJpqJbHfN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734a57b8b911a372d77dfc1ba7"
+    },
+    {
+      "position": 10,
+      "title": "Holding Out for a Hero",
+      "artist": "Bonnie Tyler",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "CPK2HwYzjkA",
+      "answers_accepted": {
+        "title_variants": [
+          "holding out for a hero",
+          "holding out hero",
+          "i need a hero",
+          "holding for a hero",
+          "hero"
+        ],
+        "artist_variants": ["bonnie tyler", "bony tyler", "bonnie tyller", "boni tyler"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5Vl26QDfgRQct0GZlZAnYx",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e12075d9109147a241e04884"
+    },
+    {
+      "position": 11,
+      "title": "The Boys of Summer",
+      "artist": "Don Henley",
+      "year": 1984,
+      "difficulty": "hard",
+      "youtube_id": "6RUIeX6UCT8",
+      "answers_accepted": {
+        "title_variants": [
+          "the boys of summer",
+          "boys of summer",
+          "boys summer",
+          "the boy of summer"
+        ],
+        "artist_variants": [
+          "don henley",
+          "don henly",
+          "don hendley",
+          "donhenley",
+          "the eagles don henley"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/6RUIeX6UCT8/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Owner of a Lonely Heart",
+      "artist": "Yes",
+      "year": 1983,
+      "difficulty": "hard",
+      "youtube_id": "7LLzPPFc21o",
+      "answers_accepted": {
+        "title_variants": [
+          "owner of a lonely heart",
+          "owner lonely heart",
+          "lonely heart",
+          "owner of lonely heart"
+        ],
+        "artist_variants": ["yes", "yes band", "the yes", "yess"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0GTK6TesV108Jj5D3MHsYb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732527c93491d39fe7e95b95ac"
+    },
+    {
+      "position": 13,
+      "title": "Centerfold",
+      "artist": "The J. Geils Band",
+      "year": 1981,
+      "difficulty": "hard",
+      "youtube_id": "BqDjMZKf-wg",
+      "answers_accepted": {
+        "title_variants": ["centerfold", "center fold", "centrefold", "centre fold", "senterfold"],
+        "artist_variants": [
+          "the j. geils band",
+          "j geils band",
+          "j. geils",
+          "j geils",
+          "the j geils band",
+          "jay giles band"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1ynmMEK1fkyiZ6Z6F3ThEt",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27338b2429ef948e6ca8d3ab599"
+    },
+    {
+      "position": 14,
+      "title": "Walk This Way",
+      "artist": "Run-DMC",
+      "year": 1986,
+      "difficulty": "hard",
+      "youtube_id": "e1ereiiBaiQ",
+      "answers_accepted": {
+        "title_variants": ["walk this way", "walkthisway", "walk this", "walks this way"],
+        "artist_variants": [
+          "run-dmc",
+          "run dmc",
+          "run d.m.c.",
+          "rundmc",
+          "run dmc and aerosmith",
+          "aerosmith",
+          "run-dmc & aerosmith"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Reprise du morceau d'Aerosmith (1975), single 1986 crédité Run-DMC featuring Aerosmith. Les deux artistes sont acceptés."
+      },
+      "spotify_id": "0dKv4dTP7sKn8WIxlqKiLq",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d212e6a978121774d4f08367"
+    },
+    {
+      "position": 15,
+      "title": "Drive",
+      "artist": "The Cars",
+      "year": 1984,
+      "difficulty": "hard",
+      "youtube_id": "D2_oJJUhseA",
+      "answers_accepted": {
+        "title_variants": ["drive", "drives", "drived"],
+        "artist_variants": ["the cars", "cars", "the car", "thecars"],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs chansons portent ce titre. Cible : The Cars, single 1984 sur l'album Heartbeat City."
+      },
+      "spotify_id": "3wfujdbamR3Z46F4xav7LM",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273473881855ae3ceadb949a625"
+    }
+  ]
+}

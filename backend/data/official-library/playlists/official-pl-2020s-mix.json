@@ -1,0 +1,264 @@
+{
+  "id": "official-pl-2020s-mix",
+  "name_fr": "Années 2020 — Mix",
+  "name_en": "2020s — Mix",
+  "description_fr": "Mélange des trois niveaux : la décennie en cours du pop facile aux pépites moins évidentes.",
+  "description_en": "All three levels: current decade from easy pop to lesser-known gems.",
+  "locale_primary": "international",
+  "theme": "decade_2020s",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [2019, 2025]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "abcdefu",
+      "artist": "GAYLE",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "NaFd8ucHLuo",
+      "answers_accepted": {
+        "title_variants": ["abcdefu", "abc def u", "a b c d e f u"],
+        "artist_variants": ["gayle", "gail"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4fouWK6XVHhzl78KzQ1UjL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27357bfb98039e11d9fcb2f4760"
+    },
+    {
+      "position": 2,
+      "title": "Kiss Me More",
+      "artist": "Doja Cat & SZA",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "fF09K4SYdg8",
+      "answers_accepted": {
+        "title_variants": ["kiss me more", "kissmemore"],
+        "artist_variants": ["doja cat", "sza", "doja cat & sza", "doja cat sza", "dojacat"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3DarAbFujv6eYNliUTyqtz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27314b7b2a920a41166d53ddd49"
+    },
+    {
+      "position": 3,
+      "title": "I'm Good (Blue)",
+      "artist": "David Guetta & Bebe Rexha",
+      "year": 2022,
+      "difficulty": "easy",
+      "youtube_id": "NN1f066QTMU",
+      "answers_accepted": {
+        "title_variants": ["i'm good", "im good", "i'm good blue", "blue", "im good blue"],
+        "artist_variants": [
+          "david guetta",
+          "bebe rexha",
+          "david guetta & bebe rexha",
+          "david guetta bebe rexha"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4uUG5RXrOk84mYEfFvj3cK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f24c7321eabddffc3829676b"
+    },
+    {
+      "position": 4,
+      "title": "Cupid",
+      "artist": "FIFTY FIFTY",
+      "year": 2023,
+      "difficulty": "easy",
+      "youtube_id": "5Q1a9oQhkyU",
+      "answers_accepted": {
+        "title_variants": ["cupid", "qupid"],
+        "artist_variants": ["fifty fifty", "fiftyfifty", "50 50", "50fifty"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3VqSRkq3jRpsSEBngUcY6a",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c8bc75fe0a95481d4c905ee8"
+    },
+    {
+      "position": 5,
+      "title": "Beggin'",
+      "artist": "Måneskin",
+      "year": 2021,
+      "difficulty": "easy",
+      "youtube_id": "cIuYFCAJ2a8",
+      "answers_accepted": {
+        "title_variants": ["beggin", "beggin'", "begin", "begging"],
+        "artist_variants": ["måneskin", "maneskin", "måneskine"],
+        "scoring": "title_or_artist",
+        "notes": "Reprise du tube de Frankie Valli & The Four Seasons (1967), virale en 2021. Cible : Måneskin."
+      },
+      "spotify_id": "02djmMmSsVu5UArSCXDOAR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27325d1f72611ce3b962e4f9100"
+    },
+    {
+      "position": 6,
+      "title": "Daylight",
+      "artist": "David Kushner",
+      "year": 2023,
+      "difficulty": "medium",
+      "youtube_id": "PZtwxD5Myk0",
+      "answers_accepted": {
+        "title_variants": ["daylight", "day light"],
+        "artist_variants": ["david kushner", "davidkushner", "david kushne"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4Gg1tYCl7rWR4laKbdtPA4",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e40c514edddb844439af6201"
+    },
+    {
+      "position": 7,
+      "title": "Roses",
+      "artist": "SAINt JHN",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "ele2DMU49Jk",
+      "answers_accepted": {
+        "title_variants": ["roses", "rose"],
+        "artist_variants": ["saint jhn", "saintjhn", "saint john", "saint jn"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "40cFdmLD8PO7wOvYHG4qYe",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f062321ad9046a2a99c6bac8"
+    },
+    {
+      "position": 8,
+      "title": "Rumors",
+      "artist": "Lizzo & Cardi B",
+      "year": 2021,
+      "difficulty": "medium",
+      "youtube_id": "jiRpFF_SnW4",
+      "answers_accepted": {
+        "title_variants": ["rumors", "rumours", "rumor"],
+        "artist_variants": ["lizzo", "cardi b", "lizzo & cardi b", "lizzo cardi b"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/jiRpFF_SnW4/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Beautiful Things",
+      "artist": "Benson Boone",
+      "year": 2024,
+      "difficulty": "medium",
+      "youtube_id": "HU08BcK5SUY",
+      "answers_accepted": {
+        "title_variants": ["beautiful things", "beautifulthings", "beautiful thing"],
+        "artist_variants": ["benson boone", "bensonboone", "benson bone"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3xkHsmpQCBMytMJNiDf3Ii",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273831949037a1db10b87b005fa"
+    },
+    {
+      "position": 10,
+      "title": "I Like the Way You Kiss Me",
+      "artist": "Artemas",
+      "year": 2024,
+      "difficulty": "medium",
+      "youtube_id": "bUU4eDJAs-Q",
+      "answers_accepted": {
+        "title_variants": [
+          "i like the way you kiss me",
+          "like the way you kiss me",
+          "kiss me",
+          "i like the way"
+        ],
+        "artist_variants": ["artemas", "artémas", "arthemas"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2GxrNKugF82CnoRFbQfzPf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27318f3449e90684e2a89636898"
+    },
+    {
+      "position": 11,
+      "title": "Spit of You",
+      "artist": "Sam Fender",
+      "year": 2021,
+      "difficulty": "hard",
+      "youtube_id": "CAjbpS_dbAc",
+      "answers_accepted": {
+        "title_variants": ["spit of you", "spitofyou"],
+        "artist_variants": ["sam fender", "samfender", "sam fenders"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6YrNd7sFarQAUflTPcTH0h",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735918af42c697829fd84de59f"
+    },
+    {
+      "position": 12,
+      "title": "Hot in It",
+      "artist": "Tiësto & Charli XCX",
+      "year": 2022,
+      "difficulty": "hard",
+      "youtube_id": "I3P1IDtTB-Q",
+      "answers_accepted": {
+        "title_variants": ["hot in it", "hot in here", "hotinit", "hot it"],
+        "artist_variants": [
+          "tiësto",
+          "tiesto",
+          "charli xcx",
+          "tiesto & charli xcx",
+          "tiesto charli xcx"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "26FF9zU97GsJ1pd9ZCJX1A",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737ddf9da7b773390837f86ad0"
+    },
+    {
+      "position": 13,
+      "title": "Glue Song",
+      "artist": "beabadoobee",
+      "year": 2023,
+      "difficulty": "hard",
+      "youtube_id": "y1cBhJLNNXU",
+      "answers_accepted": {
+        "title_variants": ["glue song", "gluesong", "glue"],
+        "artist_variants": ["beabadoobee", "bea badoobee", "beabadooby"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3iBgrkexCzVuPy4O9vx7Mf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e3862aeefcb2f0860ef017e4"
+    },
+    {
+      "position": 14,
+      "title": "Stargazing",
+      "artist": "Myles Smith",
+      "year": 2024,
+      "difficulty": "hard",
+      "youtube_id": "tKml80alH3Y",
+      "answers_accepted": {
+        "title_variants": ["stargazing", "star gazing"],
+        "artist_variants": ["myles smith", "milessmith", "miles smith"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3Vr3zh0r7ALn8VLqCiRR10",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733d37877506b23a60160df9ff"
+    },
+    {
+      "position": 15,
+      "title": "Casual",
+      "artist": "Chappell Roan",
+      "year": 2023,
+      "difficulty": "hard",
+      "youtube_id": "_4BBA8y3DPc",
+      "answers_accepted": {
+        "title_variants": ["casual", "casuel"],
+        "artist_variants": [
+          "chappell roan",
+          "chappellroan",
+          "chappel roan",
+          "kayleigh rose amstutz"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3WSOUb3U7tqURbBSgZTrZX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27396fa88fb1789be437d5cb4b6"
+    }
+  ]
+}

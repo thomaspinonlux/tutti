@@ -1,0 +1,316 @@
+{
+  "id": "official-pl-fr-90s-easy",
+  "name_fr": "Variété FR — Années 90 — Facile",
+  "name_en": "French Hits — 90s — Easy",
+  "description_fr": "Les megahits francophones des années 90 que tout le monde reconnaît. Variété, chanson, rap français, comédie musicale.",
+  "description_en": "The French-language 90s megahits everyone recognizes. Variety, chanson, French rap, musical theater.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_1990s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [1990, 1999]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Désenchantée",
+      "artist": "Mylène Farmer",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "Np8BO-TfXzc",
+      "answers_accepted": {
+        "title_variants": ["désenchantée", "desenchantee", "des enchantee", "désenchantee"],
+        "artist_variants": [
+          "mylène farmer",
+          "mylene farmer",
+          "milene farmer",
+          "mylenne farmer",
+          "milène farmer"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "15XYdD283tK9iyJzL738bn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c01f5670830f5ea89856e36c"
+    },
+    {
+      "position": 2,
+      "title": "Foule sentimentale",
+      "artist": "Alain Souchon",
+      "year": 1993,
+      "difficulty": "easy",
+      "youtube_id": "5IRPgzPZQl8",
+      "answers_accepted": {
+        "title_variants": [
+          "foule sentimentale",
+          "foulesentimentale",
+          "foule sentimental",
+          "la foule sentimentale"
+        ],
+        "artist_variants": ["alain souchon", "alain souchons", "alin souchon", "souchon"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2W4ZxAHZAXOf6r65pCskGR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a037c1b32a26b4bcaa88b937"
+    },
+    {
+      "position": 3,
+      "title": "Pour que tu m'aimes encore",
+      "artist": "Céline Dion",
+      "year": 1995,
+      "difficulty": "easy",
+      "youtube_id": "ha7A5KNhZgo",
+      "answers_accepted": {
+        "title_variants": [
+          "pour que tu m'aimes encore",
+          "pour que tu maimes encore",
+          "pour que tu m aime encore",
+          "pour que tu mémes encore",
+          "tu m'aimes encore"
+        ],
+        "artist_variants": [
+          "céline dion",
+          "celine dion",
+          "selin dion",
+          "celine dione",
+          "céline dione"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2hwHPUMNlR8WfCGOwBYco0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27394aed748a59358927f3fb269"
+    },
+    {
+      "position": 4,
+      "title": "Allumer le feu",
+      "artist": "Johnny Hallyday",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "aR7j7bDRSO4",
+      "answers_accepted": {
+        "title_variants": ["allumer le feu", "allume le feu", "alumer le feu", "allumerlefeu"],
+        "artist_variants": [
+          "johnny hallyday",
+          "johnny halliday",
+          "johny hallyday",
+          "jonny hallyday",
+          "johnny"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "60VNmTr9ox1PaCIOCprfIa",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bbfbf752e786c283ec85c845"
+    },
+    {
+      "position": 5,
+      "title": "Belle",
+      "artist": "Garou, Daniel Lavoie, Patrick Fiori",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "KUXGVfmrEN4",
+      "answers_accepted": {
+        "title_variants": ["belle", "bel", "notre dame de paris belle", "belle notre dame"],
+        "artist_variants": [
+          "garou daniel lavoie patrick fiori",
+          "garou",
+          "daniel lavoie",
+          "patrick fiori",
+          "notre dame de paris",
+          "ensemble notre dame de paris"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Issu de la comédie musicale Notre-Dame de Paris (1998). Plusieurs interprètes — accepter chacun individuellement ou le groupe."
+      },
+      "spotify_id": "7fLWUJpyNbEfrLFKLo8ymN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273eeef382d40b5d0fd98cac30c"
+    },
+    {
+      "position": 6,
+      "title": "Tomber la chemise",
+      "artist": "Zebda",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "4y4D-evzDTo",
+      "answers_accepted": {
+        "title_variants": [
+          "tomber la chemise",
+          "tombe la chemise",
+          "tomberlachemise",
+          "tomber chemise"
+        ],
+        "artist_variants": ["zebda", "zebdah", "zebdas", "zebbda"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7JGmpugbdiVWskY1S3EmTY",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735f67b481908daec0ebb0b356"
+    },
+    {
+      "position": 7,
+      "title": "Aïcha",
+      "artist": "Khaled",
+      "year": 1996,
+      "difficulty": "easy",
+      "youtube_id": "24uKjgESYWo",
+      "answers_accepted": {
+        "title_variants": ["aïcha", "aicha", "aïsha", "aiisha"],
+        "artist_variants": ["khaled", "cheb khaled", "kaled", "khaled cheb"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6PZkVSlivtN5VJRqfSo4S2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2738738f66d1fa722e848bd709b"
+    },
+    {
+      "position": 8,
+      "title": "La tribu de Dana",
+      "artist": "Manau",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "80hMEKlLVgQ",
+      "answers_accepted": {
+        "title_variants": [
+          "la tribu de dana",
+          "la tribu dana",
+          "tribu de dana",
+          "tribu dana",
+          "latribudedana"
+        ],
+        "artist_variants": ["manau", "manaou", "mannau"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "64gCM9yZv2jpNflclKUnXu",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273548e29326422f7ab62fc4fe5"
+    },
+    {
+      "position": 9,
+      "title": "Savoir aimer",
+      "artist": "Florent Pagny",
+      "year": 1997,
+      "difficulty": "easy",
+      "youtube_id": "g-gh2hIRhkc",
+      "answers_accepted": {
+        "title_variants": ["savoir aimer", "savoiraimer", "savoir d'aimer"],
+        "artist_variants": ["florent pagny", "florant pagny", "florent pagni", "florent panny"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0x8GIrcAO8msuslNoTKIXM",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27363f58f54f8c6598dad01ddc9"
+    },
+    {
+      "position": 10,
+      "title": "Je m'appelle Hélène",
+      "artist": "Hélène Rollès",
+      "year": 1993,
+      "difficulty": "easy",
+      "youtube_id": "OrBjkXziXnw",
+      "answers_accepted": {
+        "title_variants": [
+          "je m'appelle hélène",
+          "je m appelle hélène",
+          "je m'appelle helene",
+          "je mappelle helene",
+          "je mappelle élène"
+        ],
+        "artist_variants": [
+          "hélène rollès",
+          "helene rolles",
+          "elène rolles",
+          "hélène rolles",
+          "helene"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "50tmSBLbNVXMf7XDlViN00",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734e263ffb0b460a19a67e1edf"
+    },
+    {
+      "position": 11,
+      "title": "Caroline",
+      "artist": "MC Solaar",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "dO5bGhA-W-Q",
+      "answers_accepted": {
+        "title_variants": ["caroline", "carolineee", "carolyn"],
+        "artist_variants": ["mc solaar", "mcsolaar", "mc solar", "solaar"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7esR7jO5Fyl78B6CwwhZJy",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27361c035a6272f99308dadbe87"
+    },
+    {
+      "position": 12,
+      "title": "J't'emmène au vent",
+      "artist": "Louise Attaque",
+      "year": 1997,
+      "difficulty": "easy",
+      "youtube_id": "BRTDC9Z5UdE",
+      "answers_accepted": {
+        "title_variants": [
+          "j'temmène au vent",
+          "j t emmène au vent",
+          "je t'emmène au vent",
+          "j temmene au vent",
+          "jtemmene au vent",
+          "emmene au vent"
+        ],
+        "artist_variants": ["louise attaque", "louiseattaque", "louise attaq", "louize attaque"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0Wr98MVkENZXddiLB3bPb0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730197f123ed91c8f333920ff1"
+    },
+    {
+      "position": 13,
+      "title": "Lucie",
+      "artist": "Pascal Obispo",
+      "year": 1996,
+      "difficulty": "easy",
+      "youtube_id": "xpZc0-iazjw",
+      "answers_accepted": {
+        "title_variants": ["lucie", "lussie", "lucy"],
+        "artist_variants": ["pascal obispo", "pascal obispoo", "pascal obispoa", "obispo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0Tx0IpdSKfuYxAiCne2w4o",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735abcf53ad80f6e9daa164ee6"
+    },
+    {
+      "position": 14,
+      "title": "La cabane du pêcheur",
+      "artist": "Francis Cabrel",
+      "year": 1996,
+      "difficulty": "easy",
+      "youtube_id": "1k8Samg76Uk",
+      "answers_accepted": {
+        "title_variants": [
+          "la cabane du pêcheur",
+          "la cabane du pecheur",
+          "cabane du pecheur",
+          "cabane pêcheur",
+          "lacabanedupêcheur"
+        ],
+        "artist_variants": ["francis cabrel", "francis cabrelle", "francis cabrél", "cabrel"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6yyBPctdUt6eXdRz6DCCRl",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736825e63f665c6739047b3674"
+    },
+    {
+      "position": 15,
+      "title": "Aller plus haut",
+      "artist": "Tina Arena",
+      "year": 1996,
+      "difficulty": "easy",
+      "youtube_id": "l4n6x24RRM4",
+      "answers_accepted": {
+        "title_variants": ["aller plus haut", "allerplushaut", "aller haut", "plus haut"],
+        "artist_variants": ["tina arena", "tina arenas", "tinarena", "tina aréna"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5qcSLeAHIEQTtzGOSjYI9u",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273eadc70ce4a3df1321ca4964a"
+    }
+  ]
+}

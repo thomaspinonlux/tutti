@@ -1,0 +1,344 @@
+{
+  "id": "official-pl-films-hard",
+  "name_fr": "Musique de Film — Difficile",
+  "name_en": "Movie Soundtracks — Hard",
+  "description_fr": "La face plus pointue des bandes son. Drive, There Will Be Blood, La La Land, Whiplash : pour les vrais aficionados du cinéma.",
+  "description_en": "The sharper side of soundtracks. Drive, There Will Be Blood, La La Land, Whiplash: for true cinema aficionados.",
+  "locale_primary": "international",
+  "theme": "thematic_movies",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_motion_picture_soundtrack",
+    "avoid": ["remix", "live", "cover_school_orchestra", "karaoke"],
+    "year_range_strict": [1975, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Future Markets (There Will Be Blood)",
+      "artist": "Jonny Greenwood",
+      "year": 2007,
+      "difficulty": "hard",
+      "youtube_id": "9V5xXjLD8KQ",
+      "answers_accepted": {
+        "title_variants": ["future markets", "there will be blood", "futures markets"],
+        "artist_variants": [
+          "jonny greenwood",
+          "jonnygreenwood",
+          "johnny greenwood",
+          "radiohead jonny greenwood"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5ZiPMtJQTNjIdEAyUes1B5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273747aa1b997c63edfe036b959"
+    },
+    {
+      "position": 2,
+      "title": "The Hours (Theme)",
+      "artist": "Philip Glass",
+      "year": 2002,
+      "difficulty": "hard",
+      "youtube_id": "BkMrkQuk2ZY",
+      "answers_accepted": {
+        "title_variants": ["the hours", "the hours theme", "thehours", "les heures"],
+        "artist_variants": ["philip glass", "philipglass", "phillip glass", "philip glas"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2vHxeotyQDiCsKaYsaDG5P",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736e166ad679f379840614adf5"
+    },
+    {
+      "position": 3,
+      "title": "The Theory of Everything",
+      "artist": "Jóhann Jóhannsson",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "s5Z0JD-qLTI",
+      "answers_accepted": {
+        "title_variants": [
+          "the theory of everything",
+          "theory of everything",
+          "une merveilleuse histoire du temps",
+          "stephen hawking film"
+        ],
+        "artist_variants": [
+          "jóhann jóhannsson",
+          "johann johannsson",
+          "johann johansson",
+          "jóhannsson"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5fJD7wh9yoSTpl9d5rgl7l",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27335f29c49f7e47f24df12eeb9"
+    },
+    {
+      "position": 4,
+      "title": "Nightcall (Drive)",
+      "artist": "Kavinsky",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "MV_3Dpw-BRY",
+      "answers_accepted": {
+        "title_variants": [
+          "nightcall",
+          "night call",
+          "drive",
+          "drive ryan gosling",
+          "nightcall drive"
+        ],
+        "artist_variants": ["kavinsky", "kavinski", "kavinsky lovefoxxx", "kavinski"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/MV_3Dpw-BRY/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Hand Covers Bruise (The Social Network)",
+      "artist": "Trent Reznor & Atticus Ross",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "wuDNXxa2SC0",
+      "answers_accepted": {
+        "title_variants": [
+          "hand covers bruise",
+          "handcoversbruise",
+          "the social network",
+          "social network",
+          "réseau social"
+        ],
+        "artist_variants": [
+          "trent reznor",
+          "atticus ross",
+          "trent reznor atticus ross",
+          "trent reznor & atticus ross",
+          "nine inch nails reznor"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/wuDNXxa2SC0/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Wise Up (Magnolia)",
+      "artist": "Aimee Mann",
+      "year": 1999,
+      "difficulty": "hard",
+      "youtube_id": "Ec8SJqGd6o0",
+      "answers_accepted": {
+        "title_variants": ["wise up", "magnolia", "wiseup", "wise up magnolia"],
+        "artist_variants": ["aimee mann", "aimeemann", "aimi mann", "amy mann"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0SpdCj83hKPcwTqNzUkWXr",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f28d385cedeb276d657188f9"
+    },
+    {
+      "position": 7,
+      "title": "A Way of Life (The Last Samurai)",
+      "artist": "Hans Zimmer",
+      "year": 2003,
+      "difficulty": "hard",
+      "youtube_id": "EUYpKwgqi1M",
+      "answers_accepted": {
+        "title_variants": [
+          "a way of life",
+          "way of life",
+          "the last samurai",
+          "last samurai",
+          "le dernier samouraï"
+        ],
+        "artist_variants": ["hans zimmer", "hanszimmer", "hans zimer"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6DHYWelHYuynVVPv2m58wl",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273235e53217a0c29051484b3a4"
+    },
+    {
+      "position": 8,
+      "title": "End of Line (Tron: Legacy)",
+      "artist": "Daft Punk",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "x3gdLqoM6Ec",
+      "answers_accepted": {
+        "title_variants": ["end of line", "tron legacy", "tron", "endofline", "tron: legacy"],
+        "artist_variants": ["daft punk", "daftpunk", "daft punks"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "72MoCPAnz0UljAVmwHHw3Y",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27366919acb93950333962467f8"
+    },
+    {
+      "position": 9,
+      "title": "Lux Aeterna (Requiem for a Dream)",
+      "artist": "Clint Mansell",
+      "year": 2000,
+      "difficulty": "hard",
+      "youtube_id": "aOHmfq2AUaU",
+      "answers_accepted": {
+        "title_variants": [
+          "lux aeterna",
+          "luxaeterna",
+          "requiem for a dream",
+          "requiem dream",
+          "lux eterna"
+        ],
+        "artist_variants": [
+          "clint mansell",
+          "clintmansell",
+          "clint mansel",
+          "clint manshell",
+          "kronos quartet"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5pGqn66AMu4ur13JldG6yT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736fc0cbc6581110c9fa6b2deb"
+    },
+    {
+      "position": 10,
+      "title": "Briony (Atonement)",
+      "artist": "Dario Marianelli",
+      "year": 2007,
+      "difficulty": "hard",
+      "youtube_id": "BTbP5goexCc",
+      "answers_accepted": {
+        "title_variants": ["briony", "atonement", "reviens-moi", "expiation", "briony's theme"],
+        "artist_variants": ["dario marianelli", "dariomarianelli", "dario marianeli", "marianelli"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1RQWPaEoYDgsBCALXY5tgL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735d3d27da234181b983917c3f"
+    },
+    {
+      "position": 11,
+      "title": "The Wings (Brokeback Mountain)",
+      "artist": "Gustavo Santaolalla",
+      "year": 2005,
+      "difficulty": "hard",
+      "youtube_id": "Ewez8M9-iFg",
+      "answers_accepted": {
+        "title_variants": [
+          "the wings",
+          "brokeback mountain",
+          "le secret de brokeback mountain",
+          "thewings",
+          "wings brokeback"
+        ],
+        "artist_variants": [
+          "gustavo santaolalla",
+          "gustavosantaolalla",
+          "santaolalla",
+          "gustavo santaola"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7e8CfO60yPIHwcM30Ab25I",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ed37215c4beb94ce9049af43"
+    },
+    {
+      "position": 12,
+      "title": "Mr. Moustafa (The Grand Budapest Hotel)",
+      "artist": "Alexandre Desplat",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "7r8-3n3mMrE",
+      "answers_accepted": {
+        "title_variants": [
+          "mr moustafa",
+          "mr. moustafa",
+          "the grand budapest hotel",
+          "grand budapest hotel",
+          "budapest hotel",
+          "mr mustafa"
+        ],
+        "artist_variants": ["alexandre desplat", "alexandredesplat", "alexandre déplat", "desplat"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1uNhvxpkPrNHUNfeclo6xD",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273afda2a51e7bb55197fdeb4c0"
+    },
+    {
+      "position": 13,
+      "title": "Caravan (Whiplash)",
+      "artist": "Whiplash Original Soundtrack",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "38CRu1rCaKg",
+      "answers_accepted": {
+        "title_variants": ["caravan", "whiplash", "caravan whiplash", "whiplash caravan"],
+        "artist_variants": [
+          "whiplash original soundtrack",
+          "whiplash ost",
+          "whiplash cast",
+          "justin hurwitz",
+          "tim simonec",
+          "duke ellington caravan"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Standard de jazz (Tizol/Ellington 1936) interprété pour le film 2014. Cible : version OST Whiplash 2014."
+      },
+      "cover_url": "https://img.youtube.com/vi/38CRu1rCaKg/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "City of Stars (La La Land)",
+      "artist": "Justin Hurwitz",
+      "year": 2016,
+      "difficulty": "hard",
+      "youtube_id": "6DmflxfmIB8",
+      "answers_accepted": {
+        "title_variants": [
+          "city of stars",
+          "la la land",
+          "lalaland",
+          "cityofstars",
+          "ville d'étoiles"
+        ],
+        "artist_variants": [
+          "justin hurwitz",
+          "ryan gosling",
+          "emma stone",
+          "justinhurwitz",
+          "ryan gosling emma stone",
+          "ryan gosling & emma stone"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3gbwtdRrtD05lz08DTxfFt",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730bdf4dd39843ad48c5b66bc4"
+    },
+    {
+      "position": 15,
+      "title": "Merry-Go-Round of Life (Howl's Moving Castle)",
+      "artist": "Joe Hisaishi",
+      "year": 2004,
+      "difficulty": "hard",
+      "youtube_id": "f7SS57LFPco",
+      "answers_accepted": {
+        "title_variants": [
+          "merry go round of life",
+          "merry-go-round of life",
+          "howl's moving castle",
+          "howls moving castle",
+          "le château ambulant",
+          "merrygoroundoflife",
+          "studio ghibli howl"
+        ],
+        "artist_variants": [
+          "joe hisaishi",
+          "joehisaishi",
+          "jo hisaishi",
+          "joe hisashi",
+          "hisaishi"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "39uLYYZytVUwcjgeYLI409",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27333ea9fb3fd69bca55a015229"
+    }
+  ]
+}

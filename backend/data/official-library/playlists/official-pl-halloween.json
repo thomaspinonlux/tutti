@@ -1,0 +1,266 @@
+{
+  "id": "official-pl-halloween",
+  "name_fr": "Halloween — Nuit Frissons",
+  "name_en": "Halloween — Spooky Night",
+  "description_fr": "Les morceaux qui font frissonner. Thriller, rock gothique, métal, bande son d'horreur : pour soirées costumées et 31 octobre.",
+  "description_en": "Spine-chilling tracks. Thriller, goth rock, metal, horror soundtracks: for costume parties and October 31st.",
+  "locale_primary": "international",
+  "theme": "thematic_halloween",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [1975, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Thriller",
+      "artist": "Michael Jackson",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "StgAsIxCP6A",
+      "answers_accepted": {
+        "title_variants": ["thriller", "thrillers", "triller"],
+        "artist_variants": ["michael jackson", "mickael jackson", "mj"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/StgAsIxCP6A/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "This Is Halloween",
+      "artist": "Danny Elfman",
+      "year": 1993,
+      "difficulty": "easy",
+      "youtube_id": "OBeVDXx1bIQ",
+      "answers_accepted": {
+        "title_variants": [
+          "this is halloween",
+          "thisishalloween",
+          "halloween nightmare",
+          "nightmare before christmas"
+        ],
+        "artist_variants": [
+          "danny elfman",
+          "dannyelfman",
+          "danny elfmann",
+          "the citizens of halloween"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/OBeVDXx1bIQ/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Time Warp",
+      "artist": "Richard O'Brien",
+      "year": 1975,
+      "difficulty": "medium",
+      "youtube_id": "BWWM1e-yfh0",
+      "answers_accepted": {
+        "title_variants": ["time warp", "timewarp", "the time warp", "rocky horror time warp"],
+        "artist_variants": [
+          "richard o'brien",
+          "richard obrien",
+          "rocky horror picture show",
+          "rocky horror cast",
+          "rocky horror"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/BWWM1e-yfh0/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Disturbia",
+      "artist": "Rihanna",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "3k95KCjTrYo",
+      "answers_accepted": {
+        "title_variants": ["disturbia", "disturbya", "disturbiaa"],
+        "artist_variants": ["rihanna", "riana", "rhianna"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/3k95KCjTrYo/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Highway to Hell",
+      "artist": "AC/DC",
+      "year": 1979,
+      "difficulty": "easy",
+      "youtube_id": "l482T0yNkeo",
+      "answers_accepted": {
+        "title_variants": ["highway to hell", "highwaytohell", "highway hell"],
+        "artist_variants": ["ac/dc", "ac dc", "acdc", "acdc band"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/l482T0yNkeo/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Werewolves of London",
+      "artist": "Warren Zevon",
+      "year": 1978,
+      "difficulty": "hard",
+      "youtube_id": "c6M89iDabwM",
+      "answers_accepted": {
+        "title_variants": [
+          "werewolves of london",
+          "werewolves london",
+          "loup garous",
+          "werewolfs of london"
+        ],
+        "artist_variants": ["warren zevon", "warrenzevon", "warren zevone"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/c6M89iDabwM/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "(Don't Fear) The Reaper",
+      "artist": "Blue Öyster Cult",
+      "year": 1976,
+      "difficulty": "hard",
+      "youtube_id": "Dy4HA3vUv2c",
+      "answers_accepted": {
+        "title_variants": [
+          "don't fear the reaper",
+          "dont fear the reaper",
+          "the reaper",
+          "fear the reaper",
+          "dont fear reaper"
+        ],
+        "artist_variants": ["blue öyster cult", "blue oyster cult", "blueoystercult"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Dy4HA3vUv2c/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Devil Inside",
+      "artist": "INXS",
+      "year": 1987,
+      "difficulty": "medium",
+      "youtube_id": "Nc5QCJB3fOc",
+      "answers_accepted": {
+        "title_variants": ["devil inside", "devilinside", "devil in side"],
+        "artist_variants": ["inxs", "in excess", "i n x s"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Nc5QCJB3fOc/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Hells Bells",
+      "artist": "AC/DC",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "etAIpkdhU9Q",
+      "answers_accepted": {
+        "title_variants": ["hells bells", "hell's bells", "hellsbells", "hell bells"],
+        "artist_variants": ["ac/dc", "ac dc", "acdc"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/etAIpkdhU9Q/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Black No. 1",
+      "artist": "Type O Negative",
+      "year": 1993,
+      "difficulty": "hard",
+      "youtube_id": "vFwYJYl5GUQ",
+      "answers_accepted": {
+        "title_variants": [
+          "black no 1",
+          "black no. 1",
+          "black number 1",
+          "blackno1",
+          "little miss scare all"
+        ],
+        "artist_variants": ["type o negative", "typeo negative", "type-o-negative", "peter steele"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vFwYJYl5GUQ/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Pet Sematary",
+      "artist": "Ramones",
+      "year": 1989,
+      "difficulty": "hard",
+      "youtube_id": "OCiAZnn_dYE",
+      "answers_accepted": {
+        "title_variants": ["pet sematary", "pet cemetery", "petsematary", "simetierre"],
+        "artist_variants": ["ramones", "the ramones", "ramoness"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/OCiAZnn_dYE/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Heaven and Hell",
+      "artist": "Black Sabbath",
+      "year": 1980,
+      "difficulty": "hard",
+      "youtube_id": "7WTnA_XvlGo",
+      "answers_accepted": {
+        "title_variants": ["heaven and hell", "heaven & hell", "heavenandhell"],
+        "artist_variants": ["black sabbath", "blacksabbath", "sabbath", "ronnie james dio"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/7WTnA_XvlGo/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Halloween",
+      "artist": "Misfits",
+      "year": 1981,
+      "difficulty": "hard",
+      "youtube_id": "8B4dRyHk91o",
+      "answers_accepted": {
+        "title_variants": ["halloween", "halowin", "haloween"],
+        "artist_variants": ["misfits", "the misfits", "missfits"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/8B4dRyHk91o/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Welcome to My Nightmare",
+      "artist": "Alice Cooper",
+      "year": 1975,
+      "difficulty": "medium",
+      "youtube_id": "VDTwL15ZHZs",
+      "answers_accepted": {
+        "title_variants": ["welcome to my nightmare", "welcome nightmare", "welcometomynightmare"],
+        "artist_variants": ["alice cooper", "alicecooper", "alis cooper"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/VDTwL15ZHZs/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Somebody's Watching Me",
+      "artist": "Rockwell",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "7YvAYIJSSZY",
+      "answers_accepted": {
+        "title_variants": [
+          "somebody's watching me",
+          "somebodys watching me",
+          "somebody watching me",
+          "somebodyswatchingme"
+        ],
+        "artist_variants": ["rockwell", "rockwell mj", "rock well"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/7YvAYIJSSZY/hqdefault.jpg"
+    }
+  ]
+}

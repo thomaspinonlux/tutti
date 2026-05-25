@@ -1,0 +1,247 @@
+{
+  "id": "official-pl-britpop-90s",
+  "name_fr": "Britpop 90s",
+  "name_en": "Britpop 90s",
+  "description_fr": "L'ère Britpop : Oasis, Blur, Pulp, The Verve, Radiohead, Suede. La rivalité Oasis vs Blur et l'âge d'or du rock anglais.",
+  "description_en": "The Britpop era: Oasis, Blur, Pulp, The Verve, Radiohead, Suede. The Oasis vs Blur rivalry and the golden age of British rock.",
+  "locale_primary": "international",
+  "theme": "thematic_britpop_90s",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "acoustic"],
+    "year_range_strict": [1990, 2000]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Wonderwall",
+      "artist": "Oasis",
+      "year": 1995,
+      "difficulty": "easy",
+      "youtube_id": "PoJh4JNedns",
+      "answers_accepted": {
+        "title_variants": ["wonderwall"],
+        "artist_variants": ["oasis", "gallagher"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1qPbGZqppFwLwcBC1JQ6Vr",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732f2eeee9b405f4d00428d84c"
+    },
+    {
+      "position": 2,
+      "title": "Don't Look Back in Anger",
+      "artist": "Oasis",
+      "year": 1995,
+      "difficulty": "easy",
+      "youtube_id": "639wzt3LYEw",
+      "answers_accepted": {
+        "title_variants": [
+          "don't look back in anger",
+          "dont look back in anger",
+          "look back in anger"
+        ],
+        "artist_variants": ["oasis", "gallagher"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7ppPZa3TRUSGKaks9wH7VT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732f2eeee9b405f4d00428d84c"
+    },
+    {
+      "position": 3,
+      "title": "Champagne Supernova",
+      "artist": "Oasis",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "VGfDg7wju6M",
+      "answers_accepted": {
+        "title_variants": ["champagne supernova", "champagnesupernova"],
+        "artist_variants": ["oasis", "gallagher"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6EMynpZ10GVcwVqiLZj6Ye",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732f2eeee9b405f4d00428d84c"
+    },
+    {
+      "position": 4,
+      "title": "Song 2",
+      "artist": "Blur",
+      "year": 1997,
+      "difficulty": "easy",
+      "youtube_id": "SSbBvKaM6sk",
+      "answers_accepted": {
+        "title_variants": ["song 2", "song two", "song2", "woohoo"],
+        "artist_variants": ["blur", "damon albarn"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3GfOAdcoc3X5GPiiXmpBjK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27334cbf7013afccc7df67fa43f"
+    },
+    {
+      "position": 5,
+      "title": "Parklife",
+      "artist": "Blur",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "YSuHrTfcikU",
+      "answers_accepted": {
+        "title_variants": ["parklife"],
+        "artist_variants": ["blur", "damon albarn"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3mqRLlD9j92BBv1ueFhJ1l",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27334cbf7013afccc7df67fa43f"
+    },
+    {
+      "position": 6,
+      "title": "Common People",
+      "artist": "Pulp",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "yuTMWgOduFM",
+      "answers_accepted": {
+        "title_variants": ["common people", "commonpeople"],
+        "artist_variants": ["pulp", "jarvis cocker"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0PDAXT1i2FUZOkad6kHStQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e7d85ed6df234521c1525d3e"
+    },
+    {
+      "position": 7,
+      "title": "Disco 2000",
+      "artist": "Pulp",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "qJS3xnD7Mus",
+      "answers_accepted": {
+        "title_variants": ["disco 2000", "disco2000"],
+        "artist_variants": ["pulp", "jarvis cocker"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "48nfjq644cod3jFR0gpSuU",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27332b1955183a7fbe0058735fc"
+    },
+    {
+      "position": 8,
+      "title": "The Drugs Don't Work",
+      "artist": "The Verve",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "gffm0lPFmvM",
+      "answers_accepted": {
+        "title_variants": ["the drugs don't work", "drugs dont work", "drugsdontwork"],
+        "artist_variants": ["the verve", "verve", "richard ashcroft"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "15kLz0zNFdtsaJdXKSGmTU",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c038b03e66fb6de76a5b3904"
+    },
+    {
+      "position": 9,
+      "title": "Bitter Sweet Symphony",
+      "artist": "The Verve",
+      "year": 1997,
+      "difficulty": "easy",
+      "youtube_id": "1lyu1KKwC74",
+      "answers_accepted": {
+        "title_variants": ["bitter sweet symphony", "bittersweet symphony", "bittersweetsymphony"],
+        "artist_variants": ["the verve", "verve", "richard ashcroft"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2i4AouhQeGFBb4g3cx8yqg",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27349f918bb68fde4b707d7b537"
+    },
+    {
+      "position": 10,
+      "title": "Creep",
+      "artist": "Radiohead",
+      "year": 1993,
+      "difficulty": "easy",
+      "youtube_id": "fAuT8_dboWo",
+      "answers_accepted": {
+        "title_variants": ["creep"],
+        "artist_variants": ["radiohead", "thom yorke"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "70LcF31zb1H0PyJoS1Sx1r",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ec548c00d3ac2f10be73366d"
+    },
+    {
+      "position": 11,
+      "title": "Karma Police",
+      "artist": "Radiohead",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "1uYWYWPc9HU",
+      "answers_accepted": {
+        "title_variants": ["karma police", "karmapolice"],
+        "artist_variants": ["radiohead", "thom yorke"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "63OQupATfueTdZMWTxW03A",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c8b444df094279e70d0ed856"
+    },
+    {
+      "position": 12,
+      "title": "There She Goes",
+      "artist": "The La's",
+      "year": 1990,
+      "difficulty": "medium",
+      "youtube_id": "CZXLLMbJdZ4",
+      "answers_accepted": {
+        "title_variants": ["there she goes", "thereshegoes"],
+        "artist_variants": ["the la's", "the las", "lee mavers"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4c6vZqYHFur11FbWATIJ9P",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730e42d457a15ef2f133976f6b"
+    },
+    {
+      "position": 13,
+      "title": "Animal Nitrate",
+      "artist": "Suede",
+      "year": 1993,
+      "difficulty": "hard",
+      "youtube_id": "AGgSE2ZtCzk",
+      "answers_accepted": {
+        "title_variants": ["animal nitrate", "animalnitrate"],
+        "artist_variants": ["suede", "brett anderson"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3Cf6hpnrWfhGA59IK4E8F8",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ece7df13dbc6f1ba88c5a1ad"
+    },
+    {
+      "position": 14,
+      "title": "Why Does It Always Rain on Me?",
+      "artist": "Travis",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "PXatLOWjr-k",
+      "answers_accepted": {
+        "title_variants": ["why does it always rain on me", "always rain on me", "rain on me"],
+        "artist_variants": ["travis", "fran healy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5MmWgG5KgiqSxkOZdVXRQA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732951c50b6cfcf7e0e26279aa"
+    },
+    {
+      "position": 15,
+      "title": "Caught by the Fuzz",
+      "artist": "Supergrass",
+      "year": 1994,
+      "difficulty": "hard",
+      "youtube_id": "BYpxU2s4EF4",
+      "answers_accepted": {
+        "title_variants": ["caught by the fuzz", "caughtbythefuzz"],
+        "artist_variants": ["supergrass"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0ZKUdmYrrXQmp7NWag0F2s",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730014cc5c92e8fca9ee566e2a"
+    }
+  ]
+}

@@ -1,0 +1,247 @@
+{
+  "id": "official-pl-reprises-celebres",
+  "name_fr": "Reprises célèbres",
+  "name_en": "Iconic Covers",
+  "description_fr": "Les reprises devenues plus célèbres que les originaux : Hurt par Cash, Hallelujah par Buckley, Killing Me Softly par les Fugees. Mode hard.",
+  "description_en": "Covers that became more famous than the originals: Hurt by Cash, Hallelujah by Buckley, Killing Me Softly by the Fugees. Hard mode.",
+  "locale_primary": "international",
+  "theme": "thematic_reprises_celebres",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "famous_cover_version",
+    "avoid": ["live", "remix", "instrumental"],
+    "year_range_strict": [1968, 2015]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "All Along the Watchtower",
+      "artist": "Jimi Hendrix",
+      "year": 1968,
+      "difficulty": "medium",
+      "youtube_id": "TLV4_xaYynY",
+      "answers_accepted": {
+        "title_variants": ["all along the watchtower", "watchtower", "allalongthewatchtower"],
+        "artist_variants": ["jimi hendrix", "hendrix"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Bob Dylan (1967)"
+      },
+      "cover_url": "https://img.youtube.com/vi/TLV4_xaYynY/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Tainted Love",
+      "artist": "Soft Cell",
+      "year": 1981,
+      "difficulty": "medium",
+      "youtube_id": "PE0Wu1ivS7Q",
+      "answers_accepted": {
+        "title_variants": ["tainted love", "taintedlove"],
+        "artist_variants": ["soft cell", "softcell"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Gloria Jones (1964)"
+      },
+      "cover_url": "https://img.youtube.com/vi/PE0Wu1ivS7Q/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Without You",
+      "artist": "Mariah Carey",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "4iusJui-BxM",
+      "answers_accepted": {
+        "title_variants": ["without you", "withoutyou"],
+        "artist_variants": ["mariah carey", "mariahcarey", "mariah"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Badfinger (1970), also Harry Nilsson (1971)"
+      },
+      "cover_url": "https://img.youtube.com/vi/4iusJui-BxM/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Killing Me Softly with His Song",
+      "artist": "Fugees",
+      "year": 1996,
+      "difficulty": "easy",
+      "youtube_id": "oKOtzIo-uYw",
+      "answers_accepted": {
+        "title_variants": [
+          "killing me softly",
+          "killing me softly with his song",
+          "killingmesoftly"
+        ],
+        "artist_variants": ["fugees", "the fugees", "lauryn hill"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Roberta Flack (1973)"
+      },
+      "cover_url": "https://img.youtube.com/vi/oKOtzIo-uYw/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Mad World",
+      "artist": "Gary Jules",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "7pXRSPAUCTU",
+      "answers_accepted": {
+        "title_variants": ["mad world", "madworld"],
+        "artist_variants": ["gary jules", "garyjules"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Tears for Fears (1982)"
+      },
+      "cover_url": "https://img.youtube.com/vi/7pXRSPAUCTU/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Hallelujah",
+      "artist": "Jeff Buckley",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "WIF4_Sm-rgQ",
+      "answers_accepted": {
+        "title_variants": ["hallelujah"],
+        "artist_variants": ["jeff buckley", "buckley"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Leonard Cohen (1984)"
+      },
+      "cover_url": "https://img.youtube.com/vi/WIF4_Sm-rgQ/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Nothing Compares 2 U",
+      "artist": "Sinéad O'Connor",
+      "year": 1990,
+      "difficulty": "medium",
+      "youtube_id": "09FLUZWzshY",
+      "answers_accepted": {
+        "title_variants": ["nothing compares 2 u", "nothing compares to you", "nothing compares"],
+        "artist_variants": ["sinéad o'connor", "sinead oconnor", "sinead o'connor", "oconnor"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Prince/The Family (1985)"
+      },
+      "cover_url": "https://img.youtube.com/vi/09FLUZWzshY/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "My Way",
+      "artist": "Frank Sinatra",
+      "year": 1969,
+      "difficulty": "easy",
+      "youtube_id": "6pcwq2usV7Y",
+      "answers_accepted": {
+        "title_variants": ["my way", "myway"],
+        "artist_variants": ["frank sinatra", "sinatra"],
+        "scoring": "title_or_artist",
+        "notes": "Original 'Comme d'habitude' by Claude François (1967)"
+      },
+      "cover_url": "https://img.youtube.com/vi/6pcwq2usV7Y/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Smooth Criminal",
+      "artist": "Alien Ant Farm",
+      "year": 2001,
+      "difficulty": "hard",
+      "youtube_id": "NPgU30c6x4Y",
+      "answers_accepted": {
+        "title_variants": ["smooth criminal", "smoothcriminal"],
+        "artist_variants": ["alien ant farm", "alienantfarm"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Michael Jackson (1987)"
+      },
+      "cover_url": "https://img.youtube.com/vi/NPgU30c6x4Y/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Hurt",
+      "artist": "Johnny Cash",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "8AHCfZTRGiI",
+      "answers_accepted": {
+        "title_variants": ["hurt"],
+        "artist_variants": ["johnny cash", "johnnycash"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Nine Inch Nails (1995)"
+      },
+      "cover_url": "https://img.youtube.com/vi/8AHCfZTRGiI/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "The Sound of Silence",
+      "artist": "Disturbed",
+      "year": 2015,
+      "difficulty": "medium",
+      "youtube_id": "aOE0WEPd2XA",
+      "answers_accepted": {
+        "title_variants": ["the sound of silence", "sound of silence", "soundofsilence"],
+        "artist_variants": ["disturbed", "david draiman"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Simon & Garfunkel (1964)"
+      },
+      "cover_url": "https://img.youtube.com/vi/aOE0WEPd2XA/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Sweet Dreams (Are Made of This)",
+      "artist": "Marilyn Manson",
+      "year": 1995,
+      "difficulty": "hard",
+      "youtube_id": "YxAiZolzGbM",
+      "answers_accepted": {
+        "title_variants": ["sweet dreams", "sweet dreams are made of this", "sweetdreams"],
+        "artist_variants": ["marilyn manson", "manson"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Eurythmics (1983)"
+      },
+      "cover_url": "https://img.youtube.com/vi/YxAiZolzGbM/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Black Magic Woman",
+      "artist": "Santana",
+      "year": 1970,
+      "difficulty": "hard",
+      "youtube_id": "9wT1s96JIb0",
+      "answers_accepted": {
+        "title_variants": ["black magic woman", "blackmagicwoman"],
+        "artist_variants": ["santana", "carlos santana"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Fleetwood Mac (1968)"
+      },
+      "cover_url": "https://img.youtube.com/vi/9wT1s96JIb0/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Hush",
+      "artist": "Deep Purple",
+      "year": 1968,
+      "difficulty": "hard",
+      "youtube_id": "W1PNvopXjbg",
+      "answers_accepted": {
+        "title_variants": ["hush"],
+        "artist_variants": ["deep purple", "deeppurple"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Joe South / Billy Joe Royal (1967)"
+      },
+      "cover_url": "https://img.youtube.com/vi/W1PNvopXjbg/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Cum on Feel the Noize",
+      "artist": "Quiet Riot",
+      "year": 1983,
+      "difficulty": "hard",
+      "youtube_id": "ZxgMGk9JPVA",
+      "answers_accepted": {
+        "title_variants": ["cum on feel the noize", "come on feel the noize", "feel the noize"],
+        "artist_variants": ["quiet riot", "quietriot"],
+        "scoring": "title_or_artist",
+        "notes": "Original by Slade (1973)"
+      },
+      "cover_url": "https://img.youtube.com/vi/ZxgMGk9JPVA/hqdefault.jpg"
+    }
+  ]
+}

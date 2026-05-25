@@ -1,0 +1,243 @@
+{
+  "id": "official-pl-italie-classique",
+  "name_fr": "Italie classique",
+  "name_en": "Classic Italy",
+  "description_fr": "Le meilleur de la chanson italienne : Eros Ramazzotti, Laura Pausini, Andrea Bocelli, Toto Cutugno, Adriano Celentano. Bella italia.",
+  "description_en": "The best of Italian song: Eros Ramazzotti, Laura Pausini, Andrea Bocelli, Toto Cutugno, Adriano Celentano. Bella italia.",
+  "locale_primary": "international",
+  "theme": "thematic_italie_classique",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "spanish version"],
+    "year_range_strict": [1958, 2000]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Con te partirò",
+      "artist": "Andrea Bocelli",
+      "year": 1995,
+      "difficulty": "easy",
+      "youtube_id": "nVUHHW1tJYA",
+      "answers_accepted": {
+        "title_variants": [
+          "con te partirò",
+          "con te partiro",
+          "contepartiro",
+          "time to say goodbye"
+        ],
+        "artist_variants": ["andrea bocelli", "bocelli"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/nVUHHW1tJYA/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Caruso",
+      "artist": "Lucio Dalla",
+      "year": 1986,
+      "difficulty": "medium",
+      "youtube_id": "1qa_TMy3m7c",
+      "answers_accepted": {
+        "title_variants": ["caruso"],
+        "artist_variants": ["lucio dalla", "luciodalla", "dalla"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/1qa_TMy3m7c/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "La solitudine",
+      "artist": "Laura Pausini",
+      "year": 1993,
+      "difficulty": "easy",
+      "youtube_id": "hynkbcyGsCM",
+      "answers_accepted": {
+        "title_variants": ["la solitudine", "solitudine"],
+        "artist_variants": ["laura pausini", "laurapausini", "pausini"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/hynkbcyGsCM/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Strani amori",
+      "artist": "Laura Pausini",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "2-WN_msvOj0",
+      "answers_accepted": {
+        "title_variants": ["strani amori", "straniamori"],
+        "artist_variants": ["laura pausini", "laurapausini", "pausini"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/2-WN_msvOj0/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Cose della vita",
+      "artist": "Eros Ramazzotti",
+      "year": 1993,
+      "difficulty": "medium",
+      "youtube_id": "8w_E3fyzPnw",
+      "answers_accepted": {
+        "title_variants": ["cose della vita", "cosedellavita"],
+        "artist_variants": ["eros ramazzotti", "ramazzotti", "eros"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/8w_E3fyzPnw/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Più bella cosa",
+      "artist": "Eros Ramazzotti",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "KR7kU5vzRbc",
+      "answers_accepted": {
+        "title_variants": ["più bella cosa", "piu bella cosa", "piubellacosa", "bella cosa"],
+        "artist_variants": ["eros ramazzotti", "ramazzotti", "eros"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KR7kU5vzRbc/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "L'italiano",
+      "artist": "Toto Cutugno",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "Jx_VYLoJjlA",
+      "answers_accepted": {
+        "title_variants": ["l'italiano", "litaliano", "l italiano", "italiano vero"],
+        "artist_variants": ["toto cutugno", "totocutugno", "cutugno"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Jx_VYLoJjlA/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Gloria",
+      "artist": "Umberto Tozzi",
+      "year": 1979,
+      "difficulty": "medium",
+      "youtube_id": "8Zs7VWqNGHg",
+      "answers_accepted": {
+        "title_variants": ["gloria"],
+        "artist_variants": ["umberto tozzi", "tozzi"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/8Zs7VWqNGHg/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Volare (Nel blu dipinto di blu)",
+      "artist": "Domenico Modugno",
+      "year": 1958,
+      "difficulty": "easy",
+      "youtube_id": "7wWiC0e3b2I",
+      "answers_accepted": {
+        "title_variants": ["volare", "nel blu dipinto di blu", "nelbludipintodiblu"],
+        "artist_variants": ["domenico modugno", "modugno"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/7wWiC0e3b2I/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Felicità",
+      "artist": "Al Bano & Romina Power",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "bchtaG5NE5E",
+      "answers_accepted": {
+        "title_variants": ["felicità", "felicita"],
+        "artist_variants": ["al bano", "albano", "romina power", "al bano romina power"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/bchtaG5NE5E/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Sarà perché ti amo",
+      "artist": "Ricchi e Poveri",
+      "year": 1981,
+      "difficulty": "medium",
+      "youtube_id": "m3xfP4M50wo",
+      "answers_accepted": {
+        "title_variants": [
+          "sarà perché ti amo",
+          "sara perche ti amo",
+          "saraperchetiamo",
+          "perché ti amo"
+        ],
+        "artist_variants": ["ricchi e poveri", "ricchipoveri"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/m3xfP4M50wo/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Mamma Maria",
+      "artist": "Ricchi e Poveri",
+      "year": 1982,
+      "difficulty": "medium",
+      "youtube_id": "DN1Re5gM8Gc",
+      "answers_accepted": {
+        "title_variants": ["mamma maria", "mammamaria"],
+        "artist_variants": ["ricchi e poveri", "ricchipoveri"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/DN1Re5gM8Gc/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "La donna cannone",
+      "artist": "Francesco De Gregori",
+      "year": 1983,
+      "difficulty": "hard",
+      "youtube_id": "MVcaHiCnR-w",
+      "answers_accepted": {
+        "title_variants": ["la donna cannone", "donna cannone", "ladonnacannone"],
+        "artist_variants": ["francesco de gregori", "de gregori", "degregori"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/MVcaHiCnR-w/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Azzurro",
+      "artist": "Adriano Celentano",
+      "year": 1968,
+      "difficulty": "medium",
+      "youtube_id": "HCyzGuipTd4",
+      "answers_accepted": {
+        "title_variants": ["azzurro"],
+        "artist_variants": ["adriano celentano", "celentano"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/HCyzGuipTd4/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "L'estate sta finendo",
+      "artist": "Righeira",
+      "year": 1985,
+      "difficulty": "hard",
+      "youtube_id": "Q0yrbbCYIns",
+      "answers_accepted": {
+        "title_variants": [
+          "l'estate sta finendo",
+          "lestate sta finendo",
+          "estate sta finendo",
+          "lestatestafinendo"
+        ],
+        "artist_variants": ["righeira"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Q0yrbbCYIns/hqdefault.jpg"
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "id": "official-pl-rap-us",
+  "name_fr": "Rap US",
+  "name_en": "US Rap",
+  "description_fr": "Le rap américain des années 90 et 2000 : 2Pac, Notorious B.I.G., Snoop Dogg, Dr. Dre, Wu-Tang Clan, OutKast, Jay-Z, Kanye West.",
+  "description_en": "American rap from the 90s and 2000s: 2Pac, Notorious B.I.G., Snoop Dogg, Dr. Dre, Wu-Tang Clan, OutKast, Jay-Z, Kanye West.",
+  "locale_primary": "international",
+  "theme": "thematic_rap_us",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "freestyle"],
+    "year_range_strict": [1985, 2010]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "California Love",
+      "artist": "2Pac",
+      "year": 1995,
+      "difficulty": "easy",
+      "youtube_id": "RVuLwqdOPlo",
+      "answers_accepted": {
+        "title_variants": ["california love", "californialove"],
+        "artist_variants": ["2pac", "tupac", "tupac shakur", "dr dre"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/RVuLwqdOPlo/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Juicy",
+      "artist": "The Notorious B.I.G.",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "_JZom_gVfuw",
+      "answers_accepted": {
+        "title_variants": ["juicy", "juice"],
+        "artist_variants": [
+          "the notorious big",
+          "notorious big",
+          "notorious b.i.g.",
+          "biggie smalls",
+          "biggie"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/_JZom_gVfuw/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Mo Money Mo Problems",
+      "artist": "The Notorious B.I.G.",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "ss142Aix2Bo",
+      "answers_accepted": {
+        "title_variants": ["mo money mo problems", "more money more problems", "mo money"],
+        "artist_variants": ["the notorious big", "notorious big", "biggie", "puff daddy", "diddy"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ss142Aix2Bo/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Gin and Juice",
+      "artist": "Snoop Dogg",
+      "year": 1993,
+      "difficulty": "medium",
+      "youtube_id": "zowYObdYejQ",
+      "answers_accepted": {
+        "title_variants": ["gin and juice", "gin n juice", "ginandjuice"],
+        "artist_variants": ["snoop dogg", "snoop doggy dogg", "snoop"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/zowYObdYejQ/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Still D.R.E.",
+      "artist": "Dr. Dre",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "KDK5j-pd8tQ",
+      "answers_accepted": {
+        "title_variants": ["still dre", "still d.r.e.", "still d r e"],
+        "artist_variants": ["dr. dre", "dr dre", "doctor dre", "snoop dogg"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KDK5j-pd8tQ/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "C.R.E.A.M.",
+      "artist": "Wu-Tang Clan",
+      "year": 1994,
+      "difficulty": "hard",
+      "youtube_id": "PBwAxmrE194",
+      "answers_accepted": {
+        "title_variants": ["cream", "c.r.e.a.m.", "c r e a m", "cash rules everything around me"],
+        "artist_variants": ["wu-tang clan", "wu tang clan", "wu tang", "wutang"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/PBwAxmrE194/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Push It",
+      "artist": "Salt-N-Pepa",
+      "year": 1987,
+      "difficulty": "medium",
+      "youtube_id": "vCadcBR95oU",
+      "answers_accepted": {
+        "title_variants": ["push it", "pushit"],
+        "artist_variants": ["salt n pepa", "salt-n-pepa", "salt and pepa", "saltnpepa"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vCadcBR95oU/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Ms. Jackson",
+      "artist": "OutKast",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "DIwfpiN0FE8",
+      "answers_accepted": {
+        "title_variants": ["ms jackson", "ms. jackson", "miss jackson", "msjackson"],
+        "artist_variants": ["outkast", "out kast", "outcast"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/DIwfpiN0FE8/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "The Way I Are",
+      "artist": "Timbaland",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "U5rLz5AZBIA",
+      "answers_accepted": {
+        "title_variants": ["the way i are", "the way i am", "way i are"],
+        "artist_variants": ["timbaland", "timbo", "keri hilson"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/U5rLz5AZBIA/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Get Low",
+      "artist": "Lil Jon & The East Side Boyz",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "ZN43UoyAbwg",
+      "answers_accepted": {
+        "title_variants": ["get low", "getlow"],
+        "artist_variants": ["lil jon", "liljon", "lil jon & the east side boyz", "east side boyz"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ZN43UoyAbwg/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "My Boo",
+      "artist": "Usher & Alicia Keys",
+      "year": 2004,
+      "difficulty": "easy",
+      "youtube_id": "RoC21-Z8h-Y",
+      "answers_accepted": {
+        "title_variants": ["my boo", "myboo"],
+        "artist_variants": ["usher", "alicia keys", "usher alicia keys", "usher & alicia keys"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/RoC21-Z8h-Y/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Heartless",
+      "artist": "Kanye West",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "Co0tTeuUVhU",
+      "answers_accepted": {
+        "title_variants": ["heartless", "heart less"],
+        "artist_variants": ["kanye west", "kanye", "ye"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Co0tTeuUVhU/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "99 Problems",
+      "artist": "Jay-Z",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "CwQibd1C76I",
+      "answers_accepted": {
+        "title_variants": ["99 problems", "99problems", "ninety nine problems"],
+        "artist_variants": ["jay-z", "jay z", "jayz", "shawn carter"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CwQibd1C76I/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "X Gon' Give It to Ya",
+      "artist": "DMX",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "vkOJ9uNj9EY",
+      "answers_accepted": {
+        "title_variants": ["x gon give it to ya", "x gon give it to you", "x gonna give it to ya"],
+        "artist_variants": ["dmx", "earl simmons"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vkOJ9uNj9EY/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "It Was a Good Day",
+      "artist": "Ice Cube",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "h4UqMyldS7Q",
+      "answers_accepted": {
+        "title_variants": ["it was a good day", "good day", "itwasagoodday"],
+        "artist_variants": ["ice cube", "icecube"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/h4UqMyldS7Q/hqdefault.jpg"
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "id": "official-pl-summer-hits-yearly",
+  "name_fr": "Tubes de l'été — 2005 à 2019",
+  "name_en": "Summer Hits — 2005 to 2019",
+  "description_fr": "Le tube ultime de chaque été de 2005 à 2019. Madonna, Rihanna, Drake, Psy, J Balvin : un voyage estival d'une décennie et demie.",
+  "description_en": "The ultimate summer hit of each year from 2005 to 2019. Madonna, Rihanna, Drake, Psy, J Balvin: a 15-year summer journey.",
+  "locale_primary": "international",
+  "theme": "thematic_summer_yearly",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [2005, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Hung Up",
+      "artist": "Madonna",
+      "year": 2005,
+      "difficulty": "easy",
+      "youtube_id": "e99M6-7KW0k",
+      "answers_accepted": {
+        "title_variants": ["hung up", "hungup"],
+        "artist_variants": ["madonna"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/e99M6-7KW0k/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "SOS",
+      "artist": "Rihanna",
+      "year": 2006,
+      "difficulty": "easy",
+      "youtube_id": "lpm5pcCC_-Q",
+      "answers_accepted": {
+        "title_variants": ["sos", "s.o.s."],
+        "artist_variants": ["rihanna", "riana"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/lpm5pcCC_-Q/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Beautiful Liar",
+      "artist": "Beyoncé & Shakira",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "QrOe2h9RtWI",
+      "answers_accepted": {
+        "title_variants": ["beautiful liar", "beautifulliar"],
+        "artist_variants": ["beyoncé", "beyonce", "shakira", "beyonce shakira"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/QrOe2h9RtWI/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Burnin' Up",
+      "artist": "Jonas Brothers",
+      "year": 2008,
+      "difficulty": "medium",
+      "youtube_id": "dWnrSIQNPfA",
+      "answers_accepted": {
+        "title_variants": ["burnin up", "burning up", "burnin'up"],
+        "artist_variants": ["jonas brothers", "thejonas brothers", "jonas"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/dWnrSIQNPfA/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Boom Boom Pow",
+      "artist": "The Black Eyed Peas",
+      "year": 2009,
+      "difficulty": "easy",
+      "youtube_id": "4m48GqaOz90",
+      "answers_accepted": {
+        "title_variants": ["boom boom pow", "boomboompow", "boom pow"],
+        "artist_variants": ["the black eyed peas", "black eyed peas", "bep"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4m48GqaOz90/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "California Gurls",
+      "artist": "Katy Perry",
+      "year": 2010,
+      "difficulty": "easy",
+      "youtube_id": "CTVJTt-Gfx8",
+      "answers_accepted": {
+        "title_variants": ["california gurls", "california girls", "californiagurls"],
+        "artist_variants": ["katy perry", "katie perry"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CTVJTt-Gfx8/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "On the Floor",
+      "artist": "Jennifer Lopez",
+      "year": 2011,
+      "difficulty": "easy",
+      "youtube_id": "AmaekFwpjOY",
+      "answers_accepted": {
+        "title_variants": ["on the floor", "onthefloor"],
+        "artist_variants": ["jennifer lopez", "jlo", "j lo", "pitbull"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/AmaekFwpjOY/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Gangnam Style",
+      "artist": "PSY",
+      "year": 2012,
+      "difficulty": "easy",
+      "youtube_id": "4pJx72N-x6k",
+      "answers_accepted": {
+        "title_variants": ["gangnam style", "gangnamstyle", "gangnam"],
+        "artist_variants": ["psy", "psi"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4pJx72N-x6k/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Blurred Lines",
+      "artist": "Robin Thicke",
+      "year": 2013,
+      "difficulty": "easy",
+      "youtube_id": "yyDUC1LUXSU",
+      "answers_accepted": {
+        "title_variants": ["blurred lines", "blurredlines"],
+        "artist_variants": ["robin thicke", "robinthicke"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/yyDUC1LUXSU/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "All About That Bass",
+      "artist": "Meghan Trainor",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "QgmzAu7_wyc",
+      "answers_accepted": {
+        "title_variants": ["all about that bass", "allaboutthatbass"],
+        "artist_variants": ["meghan trainor", "megan trainor"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/QgmzAu7_wyc/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "See You Again",
+      "artist": "Wiz Khalifa",
+      "year": 2015,
+      "difficulty": "easy",
+      "youtube_id": "Jh-uBm_4yuA",
+      "answers_accepted": {
+        "title_variants": ["see you again", "seeyouagain"],
+        "artist_variants": ["wiz khalifa", "wizkhalifa", "charlie puth"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Jh-uBm_4yuA/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "One Dance",
+      "artist": "Drake",
+      "year": 2016,
+      "difficulty": "medium",
+      "youtube_id": "FOqKN-ouAUE",
+      "answers_accepted": {
+        "title_variants": ["one dance", "onedance"],
+        "artist_variants": ["drake", "drake wizkid"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/FOqKN-ouAUE/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Mi Gente",
+      "artist": "J Balvin",
+      "year": 2017,
+      "difficulty": "medium",
+      "youtube_id": "zg99uHoY3nY",
+      "answers_accepted": {
+        "title_variants": ["mi gente", "migente"],
+        "artist_variants": ["j balvin", "jbalvin", "balvin"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/zg99uHoY3nY/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "In My Mind",
+      "artist": "Dynoro & Gigi D'Agostino",
+      "year": 2018,
+      "difficulty": "hard",
+      "youtube_id": "q0pdLCQy8l8",
+      "answers_accepted": {
+        "title_variants": ["in my mind", "inmymind"],
+        "artist_variants": ["dynoro", "gigi dagostino", "dynoro gigi", "dynoro & gigi d'agostino"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/q0pdLCQy8l8/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Señorita",
+      "artist": "Shawn Mendes & Camila Cabello",
+      "year": 2019,
+      "difficulty": "easy",
+      "youtube_id": "Pkh8UtuejGw",
+      "answers_accepted": {
+        "title_variants": ["señorita", "senorita"],
+        "artist_variants": ["shawn mendes", "camila cabello", "shawn mendes camila cabello"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Pkh8UtuejGw/hqdefault.jpg"
+    }
+  ]
+}

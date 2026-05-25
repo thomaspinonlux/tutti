@@ -1,0 +1,237 @@
+{
+  "id": "official-pl-roadtrip",
+  "name_fr": "Roadtrip",
+  "name_en": "Roadtrip",
+  "description_fr": "Vitres baissées, autoradio à fond. Born to Be Wild, Highway to Hell, Country Roads, Sweet Caroline. Les classiques de la route.",
+  "description_en": "Windows down, radio loud. Born to Be Wild, Highway to Hell, Country Roads, Sweet Caroline. The classics of the open road.",
+  "locale_primary": "international",
+  "theme": "thematic_roadtrip",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1968, 2000]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Born to Be Wild",
+      "artist": "Steppenwolf",
+      "year": 1968,
+      "difficulty": "easy",
+      "youtube_id": "zb1hkGLrFG8",
+      "answers_accepted": {
+        "title_variants": ["born to be wild", "borntobewild"],
+        "artist_variants": ["steppenwolf"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/zb1hkGLrFG8/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Highway to Hell",
+      "artist": "AC/DC",
+      "year": 1979,
+      "difficulty": "easy",
+      "youtube_id": "l482T0yNkeo",
+      "answers_accepted": {
+        "title_variants": ["highway to hell", "highwaytohell"],
+        "artist_variants": ["ac/dc", "acdc", "ac dc"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/l482T0yNkeo/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Life Is a Highway",
+      "artist": "Tom Cochrane",
+      "year": 1991,
+      "difficulty": "medium",
+      "youtube_id": "BUzlBP01Nzg",
+      "answers_accepted": {
+        "title_variants": ["life is a highway", "lifeisahighway"],
+        "artist_variants": ["tom cochrane", "tomcochrane"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/BUzlBP01Nzg/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "On the Road Again",
+      "artist": "Willie Nelson",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "dBN86y30Ufc",
+      "answers_accepted": {
+        "title_variants": ["on the road again", "ontheroadagain"],
+        "artist_variants": ["willie nelson", "willienelson"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/dBN86y30Ufc/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "America",
+      "artist": "Simon & Garfunkel",
+      "year": 1968,
+      "difficulty": "hard",
+      "youtube_id": "Eo2ZsAOlvEM",
+      "answers_accepted": {
+        "title_variants": ["america"],
+        "artist_variants": ["simon & garfunkel", "simon and garfunkel", "simongarfunkel"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Eo2ZsAOlvEM/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Take It Easy",
+      "artist": "Eagles",
+      "year": 1972,
+      "difficulty": "medium",
+      "youtube_id": "5igDtWadYms",
+      "answers_accepted": {
+        "title_variants": ["take it easy", "takeiteasy"],
+        "artist_variants": ["eagles", "the eagles"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/5igDtWadYms/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Mr. Blue Sky",
+      "artist": "Electric Light Orchestra",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "aQUlA8Hcv4s",
+      "answers_accepted": {
+        "title_variants": ["mr. blue sky", "mr blue sky", "mrbluesky"],
+        "artist_variants": ["electric light orchestra", "elo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/aQUlA8Hcv4s/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Fast Car",
+      "artist": "Tracy Chapman",
+      "year": 1988,
+      "difficulty": "easy",
+      "youtube_id": "DwrHwZyFN7M",
+      "answers_accepted": {
+        "title_variants": ["fast car", "fastcar"],
+        "artist_variants": ["tracy chapman", "tracychapman"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/DwrHwZyFN7M/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Take Me Home, Country Roads",
+      "artist": "John Denver",
+      "year": 1971,
+      "difficulty": "easy",
+      "youtube_id": "1vrEljMfXYo",
+      "answers_accepted": {
+        "title_variants": [
+          "country roads",
+          "take me home country roads",
+          "take me home",
+          "countryroads"
+        ],
+        "artist_variants": ["john denver", "johndenver"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/1vrEljMfXYo/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "I'm Gonna Be (500 Miles)",
+      "artist": "The Proclaimers",
+      "year": 1988,
+      "difficulty": "easy",
+      "youtube_id": "tbNlMtqrYS0",
+      "answers_accepted": {
+        "title_variants": ["i'm gonna be", "im gonna be", "500 miles", "500miles"],
+        "artist_variants": ["the proclaimers", "proclaimers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/tbNlMtqrYS0/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Sweet Caroline",
+      "artist": "Neil Diamond",
+      "year": 1969,
+      "difficulty": "easy",
+      "youtube_id": "4F_RCWVoL4s",
+      "answers_accepted": {
+        "title_variants": ["sweet caroline", "sweetcaroline"],
+        "artist_variants": ["neil diamond", "neildiamond"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4F_RCWVoL4s/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Should I Stay or Should I Go",
+      "artist": "The Clash",
+      "year": 1981,
+      "difficulty": "easy",
+      "youtube_id": "BN1WwnEDWAM",
+      "answers_accepted": {
+        "title_variants": [
+          "should i stay or should i go",
+          "should i stay",
+          "shouldistayorshouldigo"
+        ],
+        "artist_variants": ["the clash", "clash"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/BN1WwnEDWAM/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Free Fallin'",
+      "artist": "Tom Petty",
+      "year": 1989,
+      "difficulty": "medium",
+      "youtube_id": "SccggMlZQtw",
+      "answers_accepted": {
+        "title_variants": ["free fallin", "free falling", "freefallin"],
+        "artist_variants": ["tom petty", "tompetty"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/SccggMlZQtw/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Drive",
+      "artist": "Incubus",
+      "year": 2000,
+      "difficulty": "medium",
+      "youtube_id": "fgT9zGkiLig",
+      "answers_accepted": {
+        "title_variants": ["drive"],
+        "artist_variants": ["incubus"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/fgT9zGkiLig/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Born to Run",
+      "artist": "Bruce Springsteen",
+      "year": 1975,
+      "difficulty": "medium",
+      "youtube_id": "IxuThNgl3YA",
+      "answers_accepted": {
+        "title_variants": ["born to run", "borntorun"],
+        "artist_variants": ["bruce springsteen", "springsteen", "the boss"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/IxuThNgl3YA/hqdefault.jpg"
+    }
+  ]
+}

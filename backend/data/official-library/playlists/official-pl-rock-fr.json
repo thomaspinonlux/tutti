@@ -1,0 +1,237 @@
+{
+  "id": "official-pl-rock-fr",
+  "name_fr": "Rock Français",
+  "name_en": "French Rock",
+  "description_fr": "Le rock français des années 80 à 2010 : Téléphone, Mano Negra, Noir Désir, Bashung, Indochine, Mickey 3D. Énergie et poésie.",
+  "description_en": "French rock from the 80s to 2010s: Téléphone, Mano Negra, Noir Désir, Bashung, Indochine, Mickey 3D. Energy and poetry.",
+  "locale_primary": "fr",
+  "theme": "thematic_rock_fr",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1980, 2015]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Un autre monde",
+      "artist": "Téléphone",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "NrQnuMnL2ac",
+      "answers_accepted": {
+        "title_variants": ["un autre monde", "autremonde", "un autre monde téléphone"],
+        "artist_variants": ["téléphone", "telephone"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NrQnuMnL2ac/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Ça (c'est vraiment toi)",
+      "artist": "Téléphone",
+      "year": 1982,
+      "difficulty": "medium",
+      "youtube_id": "4P-vtgHb_oE",
+      "answers_accepted": {
+        "title_variants": [
+          "ça c'est vraiment toi",
+          "ca cest vraiment toi",
+          "c'est vraiment toi",
+          "ca cest toi"
+        ],
+        "artist_variants": ["téléphone", "telephone"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4P-vtgHb_oE/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Mala Vida",
+      "artist": "Mano Negra",
+      "year": 1988,
+      "difficulty": "medium",
+      "youtube_id": "gwcO1lIa_S8",
+      "answers_accepted": {
+        "title_variants": ["mala vida", "malavida"],
+        "artist_variants": ["mano negra", "manonegra", "manu chao mano negra"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/gwcO1lIa_S8/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "King Kong Five",
+      "artist": "Mano Negra",
+      "year": 1989,
+      "difficulty": "hard",
+      "youtube_id": "x7cBZTiBfAA",
+      "answers_accepted": {
+        "title_variants": ["king kong five", "kingkongfive", "kk five"],
+        "artist_variants": ["mano negra", "manonegra"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/x7cBZTiBfAA/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Le petit train",
+      "artist": "Les Rita Mitsouko",
+      "year": 1988,
+      "difficulty": "hard",
+      "youtube_id": "Pn5X4_JCJgg",
+      "answers_accepted": {
+        "title_variants": ["le petit train", "petit train", "lepetittrain"],
+        "artist_variants": ["les rita mitsouko", "rita mitsouko", "ritamitsouko"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Pn5X4_JCJgg/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Marlène",
+      "artist": "Noir Désir",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "ZachhBX3Z3Q",
+      "answers_accepted": {
+        "title_variants": ["marlène", "marlene"],
+        "artist_variants": ["noir désir", "noir desir", "noirdesir"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ZachhBX3Z3Q/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Tostaky",
+      "artist": "Noir Désir",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "4XgGJP7Du-8",
+      "answers_accepted": {
+        "title_variants": ["tostaky", "tostakí"],
+        "artist_variants": ["noir désir", "noir desir"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4XgGJP7Du-8/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "La nuit je mens",
+      "artist": "Alain Bashung",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "0MYN8mAEKUo",
+      "answers_accepted": {
+        "title_variants": ["la nuit je mens", "nuit je mens", "lanuitjemens"],
+        "artist_variants": ["alain bashung", "bashung"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/0MYN8mAEKUo/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Tu lui diras",
+      "artist": "Mickey 3D",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "wBJ8eYrIpI8",
+      "answers_accepted": {
+        "title_variants": ["tu lui diras", "tuluidiras", "lui diras"],
+        "artist_variants": ["mickey 3d", "mickey3d", "mickey 3 d"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/wBJ8eYrIpI8/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "My Name Is Stain",
+      "artist": "Shaka Ponk",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "EF2PGnZmXCI",
+      "answers_accepted": {
+        "title_variants": ["my name is stain", "mynameisstain", "stain"],
+        "artist_variants": ["shaka ponk", "shakaponk"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/EF2PGnZmXCI/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Ghost",
+      "artist": "Skip the Use",
+      "year": 2012,
+      "difficulty": "medium",
+      "youtube_id": "KJ_uPu5iDVE",
+      "answers_accepted": {
+        "title_variants": ["ghost"],
+        "artist_variants": ["skip the use", "skiptheuse"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KJ_uPu5iDVE/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "L'hymne de nos campagnes",
+      "artist": "Tryo",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "srb0lAK5wbA",
+      "answers_accepted": {
+        "title_variants": [
+          "l'hymne de nos campagnes",
+          "hymne de nos campagnes",
+          "lhymnedenoscampagnes"
+        ],
+        "artist_variants": ["tryo", "trio tryo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/srb0lAK5wbA/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Tout le bonheur du monde",
+      "artist": "Sinsemilia",
+      "year": 2004,
+      "difficulty": "easy",
+      "youtube_id": "dGBQUcQZmYQ",
+      "answers_accepted": {
+        "title_variants": ["tout le bonheur du monde", "bonheur du monde", "toutlebonheur"],
+        "artist_variants": ["sinsemilia", "sinsemilla"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/dGBQUcQZmYQ/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Clandestino",
+      "artist": "Manu Chao",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "TyA-oz7lSrc",
+      "answers_accepted": {
+        "title_variants": ["clandestino"],
+        "artist_variants": ["manu chao", "manuchao"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/TyA-oz7lSrc/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Canary Bay",
+      "artist": "Indochine",
+      "year": 1985,
+      "difficulty": "hard",
+      "youtube_id": "z3K-pBlZFWc",
+      "answers_accepted": {
+        "title_variants": ["canary bay", "canarybay"],
+        "artist_variants": ["indochine", "indo chine"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/z3K-pBlZFWc/hqdefault.jpg"
+    }
+  ]
+}

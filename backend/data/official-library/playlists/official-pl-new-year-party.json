@@ -1,0 +1,258 @@
+{
+  "id": "official-pl-new-year-party",
+  "name_fr": "Nouvel An — Party & Compte à rebours",
+  "name_en": "New Year — Party & Countdown",
+  "description_fr": "Les bombes dancefloor pour 31 décembre, soirées privées et compte à rebours. Eurodance, electro, hits festifs.",
+  "description_en": "Dancefloor bangers for December 31st, private parties and countdowns. Eurodance, electro, festive hits.",
+  "locale_primary": "international",
+  "theme": "thematic_party",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [1980, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Celebration",
+      "artist": "Kool & The Gang",
+      "year": 1980,
+      "difficulty": "easy",
+      "youtube_id": "wUlf7rEKb-A",
+      "answers_accepted": {
+        "title_variants": ["celebration", "celebrate", "celebracion"],
+        "artist_variants": [
+          "kool & the gang",
+          "kool and the gang",
+          "kool the gang",
+          "koolandthegang"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/wUlf7rEKb-A/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "1999",
+      "artist": "Prince",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "4BQx0p1nVzg",
+      "answers_accepted": {
+        "title_variants": ["1999", "nineteen ninety nine", "mille neuf cent quatre vingt dix neuf"],
+        "artist_variants": ["prince", "prince rogers nelson", "the artist"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4BQx0p1nVzg/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Reach",
+      "artist": "S Club 7",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "47pzFNkTMcI",
+      "answers_accepted": {
+        "title_variants": ["reach", "reach for the stars", "reaching"],
+        "artist_variants": ["s club 7", "s club seven", "sclub7", "sclubseven"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/47pzFNkTMcI/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Here Comes the Hotstepper",
+      "artist": "Ini Kamoze",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "15UffN8eilI",
+      "answers_accepted": {
+        "title_variants": [
+          "here comes the hotstepper",
+          "hot stepper",
+          "hotstepper",
+          "here come hotstepper"
+        ],
+        "artist_variants": ["ini kamoze", "inikamoze", "ini kamose"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/15UffN8eilI/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Be Faithful",
+      "artist": "Fatman Scoop",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "SmnEhmjgZ9s",
+      "answers_accepted": {
+        "title_variants": ["be faithful", "befaithful", "faithful"],
+        "artist_variants": ["fatman scoop", "fatmanscoop", "fat man scoop"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/SmnEhmjgZ9s/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Sandstorm",
+      "artist": "Darude",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "UdWRghH6EzY",
+      "answers_accepted": {
+        "title_variants": ["sandstorm", "sand storm", "sandstorms"],
+        "artist_variants": ["darude", "darud", "daroude"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/UdWRghH6EzY/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Let's Have a Kiki",
+      "artist": "Scissor Sisters",
+      "year": 2012,
+      "difficulty": "hard",
+      "youtube_id": "eGCD4xb-Tr8",
+      "answers_accepted": {
+        "title_variants": ["let's have a kiki", "lets have a kiki", "have a kiki", "kiki"],
+        "artist_variants": ["scissor sisters", "scissorsisters", "the scissor sisters"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/eGCD4xb-Tr8/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Hot Right Now",
+      "artist": "DJ Fresh",
+      "year": 2012,
+      "difficulty": "medium",
+      "youtube_id": "N7OPZOBJZyI",
+      "answers_accepted": {
+        "title_variants": ["hot right now", "hotrightnow", "hot now"],
+        "artist_variants": ["dj fresh", "djfresh", "rita ora", "dj fresh rita ora"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/N7OPZOBJZyI/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Better Off Alone",
+      "artist": "Alice Deejay",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "Lgs9QUtWc3M",
+      "answers_accepted": {
+        "title_variants": [
+          "better off alone",
+          "betteroffalone",
+          "better alone",
+          "do you think you're better off alone"
+        ],
+        "artist_variants": ["alice deejay", "alicedeejay", "alice dj", "alice deeyay"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Lgs9QUtWc3M/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "The Time (Dirty Bit)",
+      "artist": "The Black Eyed Peas",
+      "year": 2010,
+      "difficulty": "easy",
+      "youtube_id": "JwQZQygg3Lk",
+      "answers_accepted": {
+        "title_variants": [
+          "the time",
+          "dirty bit",
+          "the time dirty bit",
+          "i had the time of my life"
+        ],
+        "artist_variants": ["the black eyed peas", "black eyed peas", "blackeyedpeas"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JwQZQygg3Lk/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Don't Worry, Be Happy",
+      "artist": "Bobby McFerrin",
+      "year": 1988,
+      "difficulty": "easy",
+      "youtube_id": "d-diB65scQU",
+      "answers_accepted": {
+        "title_variants": [
+          "don't worry be happy",
+          "dont worry be happy",
+          "don worry be happy",
+          "don't worry happy"
+        ],
+        "artist_variants": ["bobby mcferrin", "bobbymcferrin", "bobby mcfferin"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/d-diB65scQU/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "I Like to Move It",
+      "artist": "Reel 2 Real",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "vuo8kD5zF5I",
+      "answers_accepted": {
+        "title_variants": [
+          "i like to move it",
+          "like to move it",
+          "move it move it",
+          "iliketomoveit"
+        ],
+        "artist_variants": ["reel 2 real", "reel to real", "reel2real", "the mad stuntman"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vuo8kD5zF5I/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "We Like to Party!",
+      "artist": "Vengaboys",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "VaGOFlw-E4M",
+      "answers_accepted": {
+        "title_variants": ["we like to party", "weliketoparty", "the vengabus", "vengabus"],
+        "artist_variants": ["vengaboys", "venga boys", "vengaboyz"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/VaGOFlw-E4M/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Mr. Vain",
+      "artist": "Culture Beat",
+      "year": 1993,
+      "difficulty": "hard",
+      "youtube_id": "ZMtf_ouMTHw",
+      "answers_accepted": {
+        "title_variants": ["mr vain", "mr. vain", "mister vain", "mrvain"],
+        "artist_variants": ["culture beat", "culturebeat", "the culture beat"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ZMtf_ouMTHw/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Pump Up the Jam",
+      "artist": "Technotronic",
+      "year": 1989,
+      "difficulty": "medium",
+      "youtube_id": "7ZQQZ5B72gQ",
+      "answers_accepted": {
+        "title_variants": ["pump up the jam", "pumpup the jam", "pump the jam", "pumpupthejam"],
+        "artist_variants": ["technotronic", "techno tronic", "technotronik"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/7ZQQZ5B72gQ/hqdefault.jpg"
+    }
+  ]
+}

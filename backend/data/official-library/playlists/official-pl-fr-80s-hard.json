@@ -1,0 +1,291 @@
+{
+  "id": "official-pl-fr-80s-hard",
+  "name_fr": "Variété FR — Années 80 — Difficile",
+  "name_en": "French Hits — 80s — Hard",
+  "description_fr": "La face plus pointue des années 80 francophones. Rock alternatif, new wave, chanson, pop FR : pour les vrais aficionados.",
+  "description_en": "The sharper side of the French-language 80s. Alt-rock, new wave, chanson, French pop: for true aficionados.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_1980s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [1980, 1989]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Vertige de l'amour",
+      "artist": "Alain Bashung",
+      "year": 1981,
+      "difficulty": "hard",
+      "youtube_id": "D136hOqYF28",
+      "answers_accepted": {
+        "title_variants": [
+          "vertige de l'amour",
+          "vertige de lamour",
+          "vertigedelamour",
+          "vertige amour",
+          "vertige de l amour"
+        ],
+        "artist_variants": ["alain bashung", "bashung", "alainbashung", "bashoung"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3TTpl1MZwuKEHwKYJC9jd2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735bd412f8f923778974a4d591"
+    },
+    {
+      "position": 2,
+      "title": "Comme un boomerang",
+      "artist": "Étienne Daho",
+      "year": 1989,
+      "difficulty": "hard",
+      "youtube_id": "7wGEAt_jFrI",
+      "answers_accepted": {
+        "title_variants": [
+          "comme un boomerang",
+          "commeunboomerang",
+          "boomerang",
+          "comme un bumerang"
+        ],
+        "artist_variants": ["étienne daho", "etienne daho", "etiennedaho", "étienne dahoo", "daho"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2f7IFANgbXsqoxEfSRpNE5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27320e0bec3cf709f626485dc16"
+    },
+    {
+      "position": 3,
+      "title": "3e sexe",
+      "artist": "Indochine",
+      "year": 1985,
+      "difficulty": "hard",
+      "youtube_id": "SWtiCRntA-E",
+      "answers_accepted": {
+        "title_variants": [
+          "3e sexe",
+          "3eme sexe",
+          "troisième sexe",
+          "troisieme sexe",
+          "3e sex",
+          "third sex"
+        ],
+        "artist_variants": ["indochine", "indochina", "in dochine"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6MShyf3EUHqQ04kJzovIni",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737e0eff6f9a10fe75705c2174"
+    },
+    {
+      "position": 4,
+      "title": "Andy",
+      "artist": "Les Rita Mitsouko",
+      "year": 1986,
+      "difficulty": "hard",
+      "youtube_id": "KfWWJovEuQs",
+      "answers_accepted": {
+        "title_variants": ["andy", "andi", "andie"],
+        "artist_variants": [
+          "les rita mitsouko",
+          "rita mitsouko",
+          "les ritta mitsouko",
+          "lesritamitsouko"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1QZ7Co5mBLhAQf9OFk4ovN",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27312a5afee4ffdefdc65cbc441"
+    },
+    {
+      "position": 5,
+      "title": "En rouge et noir",
+      "artist": "Jeanne Mas",
+      "year": 1985,
+      "difficulty": "hard",
+      "youtube_id": "YwOHEOdQlt0",
+      "answers_accepted": {
+        "title_variants": ["en rouge et noir", "enrougeetnoir", "rouge et noir", "rouge noir"],
+        "artist_variants": ["jeanne mas", "jeannemas", "jane mas", "jean mas"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "23YtNuZf92xMntIAUgQBV3",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fd6711de7d08932d0b136908"
+    },
+    {
+      "position": 6,
+      "title": "Ils s'aiment",
+      "artist": "Daniel Lavoie",
+      "year": 1984,
+      "difficulty": "hard",
+      "youtube_id": "qJPxlP3m4DM",
+      "answers_accepted": {
+        "title_variants": ["ils s'aiment", "ils saiment", "ilssaiment", "ils s aiment"],
+        "artist_variants": ["daniel lavoie", "daniellavoie", "danielle lavoie", "daniel lavoye"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3lskGoeM4faKMKh9KsAcnI",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27369221fd1c0f17c500f7b208b"
+    },
+    {
+      "position": 7,
+      "title": "Nuit de folie",
+      "artist": "Début de soirée",
+      "year": 1988,
+      "difficulty": "hard",
+      "youtube_id": "uPNPGWBe4sM",
+      "answers_accepted": {
+        "title_variants": ["nuit de folie", "nuitdefolie", "nuit folie", "la nuit de folie"],
+        "artist_variants": [
+          "début de soirée",
+          "debut de soiree",
+          "debut soiree",
+          "début soirée",
+          "debutdesoiree"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1vBXixLz7cVLLTdR4Xe8aL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ebd8cd8cec924a4a4eb2dfea"
+    },
+    {
+      "position": 8,
+      "title": "Capitaine abandonné",
+      "artist": "Gold",
+      "year": 1985,
+      "difficulty": "hard",
+      "youtube_id": "4sZ7eR451Vc",
+      "answers_accepted": {
+        "title_variants": [
+          "capitaine abandonné",
+          "capitaine abandonne",
+          "capitaineabandonne",
+          "capitaine abandone"
+        ],
+        "artist_variants": ["gold", "the gold", "gold band"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0wIfwYpn7TexYsPq7GnNQn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734e0f9b46291a8eee1edba5a8"
+    },
+    {
+      "position": 9,
+      "title": "Pas toi",
+      "artist": "Jean-Jacques Goldman",
+      "year": 1985,
+      "difficulty": "hard",
+      "youtube_id": "6XMyHym9vGs",
+      "answers_accepted": {
+        "title_variants": ["pas toi", "pastoi", "passe toi", "pas toit"],
+        "artist_variants": [
+          "jean-jacques goldman",
+          "jean jacques goldman",
+          "jjgoldman",
+          "jj goldman",
+          "goldman"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0UcPuBlICvhGbCjnGOHyHj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273faabb26835b3326341ded4a7"
+    },
+    {
+      "position": 10,
+      "title": "Bain de minuit",
+      "artist": "Niagara",
+      "year": 1985,
+      "difficulty": "hard",
+      "youtube_id": "BJwovrr6XzI",
+      "answers_accepted": {
+        "title_variants": ["bain de minuit", "baindeminuit", "bain minuit", "bains de minuit"],
+        "artist_variants": ["niagara", "niagra", "the niagara"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/BJwovrr6XzI/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Les démons de minuit",
+      "artist": "Images",
+      "year": 1986,
+      "difficulty": "hard",
+      "youtube_id": "kjVeown7umM",
+      "answers_accepted": {
+        "title_variants": [
+          "les démons de minuit",
+          "les demons de minuit",
+          "demons de minuit",
+          "demonsdeminuit"
+        ],
+        "artist_variants": ["images", "image", "the images", "imag"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2ne2QYNb5DjByvKPOtzQaM",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ed377a637c615832e4c29c8b"
+    },
+    {
+      "position": 12,
+      "title": "Confidences pour confidences",
+      "artist": "Jean Schultheis",
+      "year": 1981,
+      "difficulty": "hard",
+      "youtube_id": "juvraA6VD3w",
+      "answers_accepted": {
+        "title_variants": [
+          "confidences pour confidences",
+          "confidence pour confidence",
+          "confidencespourconfidences"
+        ],
+        "artist_variants": ["jean schultheis", "jeanschultheis", "jean shultais", "schultheis"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6qfjUmIxPluNISxBgJfvM3",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27396af7918a4952aef500f934c"
+    },
+    {
+      "position": 13,
+      "title": "Yéké yéké",
+      "artist": "Mory Kanté",
+      "year": 1987,
+      "difficulty": "hard",
+      "youtube_id": "bJNiMNUSrw8",
+      "answers_accepted": {
+        "title_variants": ["yéké yéké", "yeke yeke", "yekeyeke", "yéké", "yekey"],
+        "artist_variants": ["mory kanté", "mory kante", "morykante", "mori kanté", "mory kan-té"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7yuF2FK7adgzGiIfEpR7Km",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d041183e638a291fb2b29b3f"
+    },
+    {
+      "position": 14,
+      "title": "Antisocial",
+      "artist": "Trust",
+      "year": 1980,
+      "difficulty": "hard",
+      "youtube_id": "Q2tusw6gKXs",
+      "answers_accepted": {
+        "title_variants": ["antisocial", "anti social", "anti-social", "antisocials"],
+        "artist_variants": ["trust", "the trust", "trustt"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5UWKKImzJ3kW8BGZXvAwOL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27353042264aa12cd99a38e8aa1"
+    },
+    {
+      "position": 15,
+      "title": "Une autre histoire",
+      "artist": "Gérard Blanc",
+      "year": 1987,
+      "difficulty": "hard",
+      "youtube_id": "QZ1c-er_vec",
+      "answers_accepted": {
+        "title_variants": ["une autre histoire", "uneautrehistoire", "autre histoire"],
+        "artist_variants": ["gérard blanc", "gerard blanc", "gerardblanc", "gerard blanck"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1WTEkCaVzRIW1IXF1sgSuH",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a08d04577c721d9553658205"
+    }
+  ]
+}

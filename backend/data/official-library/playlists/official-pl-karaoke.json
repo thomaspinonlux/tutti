@@ -1,0 +1,271 @@
+{
+  "id": "official-pl-karaoke",
+  "name_fr": "Karaoké — Soirée Classiques",
+  "name_en": "Karaoke — Party Anthems",
+  "description_fr": "Les classiques que tout le monde reprend en chœur. Pop, boys bands, girl power, hymnes à hurler à la salle.",
+  "description_en": "The classics everyone sings along to. Pop, boy bands, girl power, room-shouting anthems.",
+  "locale_primary": "international",
+  "theme": "thematic_karaoke",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke_backing"],
+    "year_range_strict": [1980, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Islands in the Stream",
+      "artist": "Kenny Rogers & Dolly Parton",
+      "year": 1983,
+      "difficulty": "medium",
+      "youtube_id": "UaNGtgYwSsU",
+      "answers_accepted": {
+        "title_variants": ["islands in the stream", "islandsinthestream", "island in the stream"],
+        "artist_variants": [
+          "kenny rogers",
+          "dolly parton",
+          "kenny rogers & dolly parton",
+          "kenny rogers dolly parton"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/UaNGtgYwSsU/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "(I've Had) The Time of My Life",
+      "artist": "Bill Medley & Jennifer Warnes",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "4BQLE_RrTSU",
+      "answers_accepted": {
+        "title_variants": [
+          "the time of my life",
+          "i've had the time of my life",
+          "time of my life",
+          "dirty dancing",
+          "ive had the time of my life"
+        ],
+        "artist_variants": [
+          "bill medley",
+          "jennifer warnes",
+          "bill medley & jennifer warnes",
+          "bill medley jennifer warnes",
+          "dirty dancing"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/4BQLE_RrTSU/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "I Want It That Way",
+      "artist": "Backstreet Boys",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "z6Wq59qrdB0",
+      "answers_accepted": {
+        "title_variants": ["i want it that way", "want it that way", "iwantitthatway"],
+        "artist_variants": ["backstreet boys", "backstreetboys", "the backstreet boys", "bsb"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/z6Wq59qrdB0/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Bye Bye Bye",
+      "artist": "*NSYNC",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "C27NShgTQE4",
+      "answers_accepted": {
+        "title_variants": ["bye bye bye", "byebyebye", "bye bye"],
+        "artist_variants": ["nsync", "*nsync", "n sync", "in sync", "justin timberlake nsync"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/C27NShgTQE4/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "MMMBop",
+      "artist": "Hanson",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "NHozn0YXAeE",
+      "answers_accepted": {
+        "title_variants": ["mmmbop", "mmm bop", "m m m bop"],
+        "artist_variants": ["hanson", "the hanson", "hansons", "hanson brothers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NHozn0YXAeE/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Forever Young",
+      "artist": "Alphaville",
+      "year": 1984,
+      "difficulty": "medium",
+      "youtube_id": "YHRvDo8rUoQ",
+      "answers_accepted": {
+        "title_variants": ["forever young", "foreveryoung", "forever youngs"],
+        "artist_variants": ["alphaville", "alpha ville", "alphavile"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/YHRvDo8rUoQ/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "It Wasn't Me",
+      "artist": "Shaggy",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "2g5Hz17C4is",
+      "answers_accepted": {
+        "title_variants": ["it wasn't me", "it wasnt me", "wasn't me", "itwasntme"],
+        "artist_variants": ["shaggy", "shaggi", "shagy", "shaggy rikrok"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/2g5Hz17C4is/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Lady Marmalade",
+      "artist": "Christina Aguilera, Lil' Kim, Mýa, Pink",
+      "year": 2001,
+      "difficulty": "easy",
+      "youtube_id": "RQa7SvVCdZk",
+      "answers_accepted": {
+        "title_variants": ["lady marmalade", "ladymarmalade", "voulez-vous coucher", "marmalade"],
+        "artist_variants": [
+          "christina aguilera",
+          "lil kim",
+          "mya",
+          "pink",
+          "christina aguilera lil kim mya pink",
+          "moulin rouge"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Reprise du tube de Patti LaBelle (1974) pour Moulin Rouge! 2001."
+      },
+      "cover_url": "https://img.youtube.com/vi/RQa7SvVCdZk/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Spice Up Your Life",
+      "artist": "Spice Girls",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "NG2i4d8xOMo",
+      "answers_accepted": {
+        "title_variants": ["spice up your life", "spice up life", "spiceup", "spiceupyourlife"],
+        "artist_variants": ["spice girls", "the spice girls", "spicegirls", "spices girls"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NG2i4d8xOMo/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Survivor",
+      "artist": "Destiny's Child",
+      "year": 2001,
+      "difficulty": "medium",
+      "youtube_id": "-m9K_Gi55zw",
+      "answers_accepted": {
+        "title_variants": ["survivor", "survivors", "i'm a survivor"],
+        "artist_variants": [
+          "destiny's child",
+          "destinys child",
+          "destiny child",
+          "destinyschild",
+          "beyoncé destiny's child"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/-m9K_Gi55zw/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Oops!... I Did It Again",
+      "artist": "Britney Spears",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "Ene9uJmOBV0",
+      "answers_accepted": {
+        "title_variants": [
+          "oops i did it again",
+          "oops!... i did it again",
+          "oops did it again",
+          "did it again"
+        ],
+        "artist_variants": ["britney spears", "britany spears", "brittney spears"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Ene9uJmOBV0/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "I Kissed a Girl",
+      "artist": "Katy Perry",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "LbtpaR_1mAQ",
+      "answers_accepted": {
+        "title_variants": ["i kissed a girl", "kissed a girl", "ikissedagirl", "i kiss a girl"],
+        "artist_variants": ["katy perry", "katie perry", "katyperry"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/LbtpaR_1mAQ/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "We Are Young",
+      "artist": "fun.",
+      "year": 2011,
+      "difficulty": "medium",
+      "youtube_id": "SlCXgj2bS_A",
+      "answers_accepted": {
+        "title_variants": ["we are young", "weareyoung", "are young", "we young"],
+        "artist_variants": ["fun.", "fun band", "fun", "fun ft janelle monae", "janelle monae"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/SlCXgj2bS_A/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Some Nights",
+      "artist": "fun.",
+      "year": 2012,
+      "difficulty": "hard",
+      "youtube_id": "JKbKDEBPEcs",
+      "answers_accepted": {
+        "title_variants": ["some nights", "somenights", "some night"],
+        "artist_variants": ["fun.", "fun band", "fun"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JKbKDEBPEcs/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "I'll Be There for You",
+      "artist": "The Rembrandts",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "RIjTq_OdFvo",
+      "answers_accepted": {
+        "title_variants": [
+          "i'll be there for you",
+          "ill be there for you",
+          "be there for you",
+          "friends theme",
+          "illbethereforyou"
+        ],
+        "artist_variants": ["the rembrandts", "rembrandts", "therembrandts"],
+        "scoring": "title_or_artist",
+        "notes": "Générique de la série Friends."
+      },
+      "cover_url": "https://img.youtube.com/vi/RIjTq_OdFvo/hqdefault.jpg"
+    }
+  ]
+}

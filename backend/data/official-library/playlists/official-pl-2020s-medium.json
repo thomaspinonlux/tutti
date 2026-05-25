@@ -1,0 +1,255 @@
+{
+  "id": "official-pl-2020s-medium",
+  "name_fr": "Années 2020 — Medium",
+  "name_en": "2020s — Medium",
+  "description_fr": "Tubes 2020s reconnus par les amateurs : pop, country, K-pop, hip-hop.",
+  "description_en": "2020s hits known to enthusiasts: pop, country, K-pop, hip-hop.",
+  "locale_primary": "international",
+  "theme": "decade_2020s",
+  "difficulty": "medium",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [2019, 2025]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Don't Start Now",
+      "artist": "Dua Lipa",
+      "year": 2019,
+      "difficulty": "medium",
+      "youtube_id": "xjiYBGs0TUA",
+      "answers_accepted": {
+        "title_variants": ["don't start now", "dont start now", "start now"],
+        "artist_variants": ["dua lipa", "dualipa"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6WrI0LAC5M1Rw2MnX2ZvEg",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273252ba339f802d9cf88122757"
+    },
+    {
+      "position": 2,
+      "title": "positions",
+      "artist": "Ariana Grande",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "Xsb9flAEymA",
+      "answers_accepted": {
+        "title_variants": ["positions", "position"],
+        "artist_variants": ["ariana grande", "arianagrande", "ariana grand"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "35mvY5S1H3J2QZyna3TFe0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27355b8f4c3458e256eca14f18f"
+    },
+    {
+      "position": 3,
+      "title": "Therefore I Am",
+      "artist": "Billie Eilish",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "fSr85N64BA0",
+      "answers_accepted": {
+        "title_variants": ["therefore i am", "therefore", "thereforeiam"],
+        "artist_variants": ["billie eilish", "billieeilish", "billy eilish", "billie elish"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "54bFM56PmE4YLRnqpW6Tha",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737a152619a7b55bc621d07901"
+    },
+    {
+      "position": 4,
+      "title": "Mood",
+      "artist": "24kGoldn & Iann Dior",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "2fvw0TkENHM",
+      "answers_accepted": {
+        "title_variants": ["mood", "moods"],
+        "artist_variants": [
+          "24kgoldn",
+          "iann dior",
+          "24kgoldn & iann dior",
+          "24k goldn",
+          "24kgoldn iann dior"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/2fvw0TkENHM/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Rain on Me",
+      "artist": "Lady Gaga & Ariana Grande",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "ugQhauUEcJM",
+      "answers_accepted": {
+        "title_variants": ["rain on me", "rainonme"],
+        "artist_variants": [
+          "lady gaga",
+          "ariana grande",
+          "lady gaga & ariana grande",
+          "lady gaga ariana grande",
+          "ladygaga"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1iwpSsOOuOQZQUY3Xkxv8F",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f2c61f9e77447bf6969e96bb"
+    },
+    {
+      "position": 6,
+      "title": "Montero (Call Me By Your Name)",
+      "artist": "Lil Nas X",
+      "year": 2021,
+      "difficulty": "medium",
+      "youtube_id": "NIlz3g3DgCU",
+      "answers_accepted": {
+        "title_variants": ["montero", "call me by your name", "montero call me by your name"],
+        "artist_variants": ["lil nas x", "lilnasx", "lil nas"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "67BtfxlNbhBmCDR2L2l8qd",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737b98283e5e86ddf0dae96a82"
+    },
+    {
+      "position": 7,
+      "title": "good 4 u",
+      "artist": "Olivia Rodrigo",
+      "year": 2021,
+      "difficulty": "medium",
+      "youtube_id": "tmIO0eSAXrw",
+      "answers_accepted": {
+        "title_variants": ["good 4 u", "good for you", "good4u", "good four you"],
+        "artist_variants": ["olivia rodrigo", "oliviarodrigo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4ZtFanR9U6ndgddUvNcjcG",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a91c10fe9472d9bd89802e5a"
+    },
+    {
+      "position": 8,
+      "title": "Easy on Me",
+      "artist": "Adele",
+      "year": 2021,
+      "difficulty": "medium",
+      "youtube_id": "lQMHoAs6PdY",
+      "answers_accepted": {
+        "title_variants": ["easy on me", "easyonme"],
+        "artist_variants": ["adele", "adèle", "adelle"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0gplL1WMoJ6iYaPgMCL0gX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a7c79b8f85ff6e56b39a549c"
+    },
+    {
+      "position": 9,
+      "title": "Butter",
+      "artist": "BTS",
+      "year": 2021,
+      "difficulty": "medium",
+      "youtube_id": "o9mLyHtSLjk",
+      "answers_accepted": {
+        "title_variants": ["butter", "butters"],
+        "artist_variants": ["bts", "b t s", "bangtan boys", "bangtan"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1mWdTewIgB3gtBM3TOSFhB",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273240447f2da1433d8f4303596"
+    },
+    {
+      "position": 10,
+      "title": "cardigan",
+      "artist": "Taylor Swift",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "zLSUp53y-HQ",
+      "answers_accepted": {
+        "title_variants": ["cardigan"],
+        "artist_variants": ["taylor swift", "taylorswift"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4R2kfaDFhslZEMJqAFNpdd",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27395f754318336a07e85ec59bc"
+    },
+    {
+      "position": 11,
+      "title": "About Damn Time",
+      "artist": "Lizzo",
+      "year": 2022,
+      "difficulty": "medium",
+      "youtube_id": "JsOVJ1PAC6s",
+      "answers_accepted": {
+        "title_variants": ["about damn time", "aboutdamntime", "damn time"],
+        "artist_variants": ["lizzo", "liso", "lizo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6HMtHNpW6YPi1hrw9tgF8P",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273719683dadb742c14a81be63d"
+    },
+    {
+      "position": 12,
+      "title": "Last Night",
+      "artist": "Morgan Wallen",
+      "year": 2023,
+      "difficulty": "hard",
+      "youtube_id": "TBkpoTbJAsI",
+      "answers_accepted": {
+        "title_variants": ["last night", "lastnight"],
+        "artist_variants": ["morgan wallen", "morganwallen", "morgan whalen"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "583dMdiUquLMenarTp7PQm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c37a94d92b0a874ba2419ed7"
+    },
+    {
+      "position": 13,
+      "title": "Texas Hold 'Em",
+      "artist": "Beyoncé",
+      "year": 2024,
+      "difficulty": "easy",
+      "youtube_id": "jCOX8dT9q8M",
+      "answers_accepted": {
+        "title_variants": ["texas hold em", "texas hold'em", "texas holdem", "texasholdem"],
+        "artist_variants": ["beyoncé", "beyonce", "beyonse"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0Z7nGFVCLfixWctgePsRk9",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273585092635309cc99caf097fa"
+    },
+    {
+      "position": 14,
+      "title": "Houdini",
+      "artist": "Eminem",
+      "year": 2024,
+      "difficulty": "medium",
+      "youtube_id": "22tVWwmTie8",
+      "answers_accepted": {
+        "title_variants": ["houdini", "hudini"],
+        "artist_variants": ["eminem", "em", "marshall mathers", "slim shady"],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Eminem 2024 (pas Dua Lipa 2023)."
+      },
+      "spotify_id": "2HYFX63wP3otVIvopRS99Z",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273810603c94c9246379604cf1a"
+    },
+    {
+      "position": 15,
+      "title": "Padam Padam",
+      "artist": "Kylie Minogue",
+      "year": 2023,
+      "difficulty": "hard",
+      "youtube_id": "oDhOws90Nlg",
+      "answers_accepted": {
+        "title_variants": ["padam padam", "padampadam", "padam"],
+        "artist_variants": ["kylie minogue", "kylieminogue", "kylie minog"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "44MuEHdlociG8KjhPhOVw5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27397382c8f649a621b96bbb819"
+    }
+  ]
+}

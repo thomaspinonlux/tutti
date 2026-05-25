@@ -1,0 +1,305 @@
+{
+  "id": "official-pl-fr-2000s-medium",
+  "name_fr": "Variété FR — Années 2000 — Moyen",
+  "name_en": "French Hits — 2000s — Medium",
+  "description_fr": "Les hits francophones 2000s qu'on reconnaît mais qui demandent un peu plus d'oreille. Variété, rap, chanson, comédie musicale.",
+  "description_en": "The French-language 2000s hits you recognize but that take a bit more ear. Variety, rap, chanson, musical theater.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "medium",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2000s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2000, 2009]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Au café des délices",
+      "artist": "Patrick Bruel",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "4OAADdZSmFQ",
+      "answers_accepted": {
+        "title_variants": [
+          "au café des délices",
+          "au cafe des delices",
+          "café des délices",
+          "cafe des delices",
+          "aucafedesdelices"
+        ],
+        "artist_variants": ["patrick bruel", "patrickbruel", "patrick bruelle", "bruel"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4jD632ua0sa3IiSJ8h7DQf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273961b8e299054a09a02f0d0bf"
+    },
+    {
+      "position": 2,
+      "title": "Ma philosophie",
+      "artist": "Amel Bent",
+      "year": 2004,
+      "difficulty": "medium",
+      "youtube_id": "xHFNrfwZvw8",
+      "answers_accepted": {
+        "title_variants": ["ma philosophie", "maphilosophie", "ma philosofie", "philosophie"],
+        "artist_variants": ["amel bent", "amelbent", "amele bent", "amel ben"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1HOtCYTuOCISpTn9cW6fcz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737643eadf895d043315a5a3e9"
+    },
+    {
+      "position": 3,
+      "title": "Pas le temps de vivre",
+      "artist": "Cali",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "8lZQwlFi4rM",
+      "answers_accepted": {
+        "title_variants": [
+          "pas le temps de vivre",
+          "paslellipstemps de vivre",
+          "pas le temps",
+          "le temps de vivre",
+          "pas letempsdevivre"
+        ],
+        "artist_variants": ["cali", "kali", "calie", "cali bruno caliciuri"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/8lZQwlFi4rM/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Je viens du sud",
+      "artist": "Chimène Badi",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "pYv_oP5F7GI",
+      "answers_accepted": {
+        "title_variants": ["je viens du sud", "jeviensdusud", "viens du sud", "je vien du sud"],
+        "artist_variants": [
+          "chimène badi",
+          "chimene badi",
+          "chimenebadi",
+          "shimene badi",
+          "chimène badih"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3mUCcWgGsK1VtZ3Zebe6u1",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27385affe780ff940d2e0aa8a13"
+    },
+    {
+      "position": 5,
+      "title": "Jardin d'hiver",
+      "artist": "Henri Salvador",
+      "year": 2000,
+      "difficulty": "medium",
+      "youtube_id": "gFkUVik35U8",
+      "answers_accepted": {
+        "title_variants": [
+          "jardin d'hiver",
+          "jardin dhiver",
+          "jardindhiver",
+          "jardin d hiver",
+          "jardin de hiver"
+        ],
+        "artist_variants": [
+          "henri salvador",
+          "henrisalvador",
+          "henri salvadore",
+          "henri sauvadore"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7gHRVNiuL66Z6fE6DwZaFT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e1b0674ad2fe4ef3025df965"
+    },
+    {
+      "position": 6,
+      "title": "Salaud",
+      "artist": "Bénabar",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "6JcLTHuCZMs",
+      "answers_accepted": {
+        "title_variants": ["salaud", "salaut", "salauds"],
+        "artist_variants": ["bénabar", "benabar", "bénabarre", "benabard"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/6JcLTHuCZMs/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Les rois du monde",
+      "artist": "Roméo et Juliette",
+      "year": 2000,
+      "difficulty": "medium",
+      "youtube_id": "uOYhFo5N3S4",
+      "answers_accepted": {
+        "title_variants": ["les rois du monde", "lesroisdumonde", "rois du monde", "les rois"],
+        "artist_variants": [
+          "roméo et juliette",
+          "romeo et juliette",
+          "romeo juliette",
+          "damien sargue",
+          "philippe d'avilla",
+          "tonton david"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Trio Roméo et Juliette (Damien Sargue), Mercutio (Philippe d'Avilla), Benvolio (Grégori Baquet) de la comédie musicale 2000."
+      },
+      "cover_url": "https://img.youtube.com/vi/uOYhFo5N3S4/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Marie",
+      "artist": "Johnny Hallyday",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "yHk9NoleSyU",
+      "answers_accepted": {
+        "title_variants": ["marie", "mary", "maryie"],
+        "artist_variants": [
+          "johnny hallyday",
+          "johnny halliday",
+          "johny hallyday",
+          "jonny hallyday",
+          "johnny"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Johnny Hallyday, single 2002."
+      },
+      "spotify_id": "0ITqkmf62Q0Izdyo3PkNeU",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273312262fe4607aa35d149aaff"
+    },
+    {
+      "position": 9,
+      "title": "Belsunce Breakdown",
+      "artist": "Bouga",
+      "year": 2001,
+      "difficulty": "medium",
+      "youtube_id": "mVytTl0iOwQ",
+      "answers_accepted": {
+        "title_variants": [
+          "belsunce breakdown",
+          "belsuncebreakdown",
+          "belsunce",
+          "belsunce break down"
+        ],
+        "artist_variants": ["bouga", "bougaa", "boug a"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1HMH8ctdYfDrRac24jkQv0",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273653fe1d38f39c21dbbb856c7"
+    },
+    {
+      "position": 10,
+      "title": "La Sentinelle",
+      "artist": "Akhenaton",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "fZKhI84TT_0",
+      "answers_accepted": {
+        "title_variants": ["la sentinelle", "lasentinelle", "sentinelle"],
+        "artist_variants": ["akhenaton", "akenaton", "akhénaton", "akhenat", "iam akhenaton"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/fZKhI84TT_0/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Tu trouveras",
+      "artist": "Natasha St-Pier",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "yB_UBqMRvKk",
+      "answers_accepted": {
+        "title_variants": ["tu trouveras", "tutrouveras", "trouveras", "tu trouvera"],
+        "artist_variants": [
+          "natasha st-pier",
+          "natacha st pier",
+          "natasha st pier",
+          "natacha saint pierre",
+          "natasha saint-pierre",
+          "pascal obispo natasha st-pier"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6kaD0ve95sXjnq6EITyVkv",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273894b600c6e4d9f7464213a10"
+    },
+    {
+      "position": 12,
+      "title": "On s'attache",
+      "artist": "Christophe Maé",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "NeRLnsPNSg0",
+      "answers_accepted": {
+        "title_variants": ["on s'attache", "on sattache", "onsattache", "on s attache"],
+        "artist_variants": ["christophe maé", "christophe mae", "christophemae", "christophe mahé"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4E8hgGDOwG5CpiEke6qZMT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733c8b0f2f18f0094ff4db5d0f"
+    },
+    {
+      "position": 13,
+      "title": "Je suis un homme",
+      "artist": "Zazie",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "oSIoP7h4B_M",
+      "answers_accepted": {
+        "title_variants": ["je suis un homme", "jesuisunhomme", "je suis homme", "je suis un home"],
+        "artist_variants": ["zazie", "zazi", "zazy", "isabelle de truchis"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2YNWgxevUxpjZDgW4i5Aky",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e4d60902dc45119d023d3f36"
+    },
+    {
+      "position": 14,
+      "title": "Mon cœur, mon amour",
+      "artist": "Anaïs",
+      "year": 2005,
+      "difficulty": "medium",
+      "youtube_id": "8i8cK1iqih4",
+      "answers_accepted": {
+        "title_variants": [
+          "mon coeur mon amour",
+          "mon cœur mon amour",
+          "moncoeurmonamour",
+          "moncoeur mon amour"
+        ],
+        "artist_variants": ["anaïs", "anais", "anais croze", "anaïs croze"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0oWAz88alrwkNvnfaRokhn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737e6cd37db11734779c9c3a23"
+    },
+    {
+      "position": 15,
+      "title": "Tu es mon autre",
+      "artist": "Lara Fabian & Maurane",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "i5WDIQDRKfM",
+      "answers_accepted": {
+        "title_variants": ["tu es mon autre", "tuesmonautre", "tu es mon autres", "tues mon autre"],
+        "artist_variants": [
+          "lara fabian",
+          "maurane",
+          "lara fabian et maurane",
+          "lara fabian & maurane",
+          "fabian maurane"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/i5WDIQDRKfM/hqdefault.jpg"
+    }
+  ]
+}

@@ -1,0 +1,301 @@
+{
+  "id": "official-pl-fr-90s-medium",
+  "name_fr": "Variété FR — Années 90 — Moyen",
+  "name_en": "French Hits — 90s — Medium",
+  "description_fr": "Les hits francophones 90s qu'on reconnaît mais qui demandent un peu plus d'oreille. Variété, rock, rap, comédie musicale.",
+  "description_en": "The French-language 90s hits you recognize but that take a bit more ear. Variety, rock, rap, musical theater.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "medium",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_1990s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [1990, 1999]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "L'homme pressé",
+      "artist": "Noir Désir",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "by1RRP9wa_Y",
+      "answers_accepted": {
+        "title_variants": [
+          "l'homme pressé",
+          "l homme pressé",
+          "homme pressé",
+          "lhomme presse",
+          "homme presse"
+        ],
+        "artist_variants": ["noir désir", "noir desir", "nuar desir", "noirdesir", "noir-désir"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "637T4loKlXPwfUdQVZjPTV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c2e74b9a8b0406f6f4e80652"
+    },
+    {
+      "position": 2,
+      "title": "Bongo Bong",
+      "artist": "Manu Chao",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "a_UqAMQT_LE",
+      "answers_accepted": {
+        "title_variants": ["bongo bong", "bongobong", "bongo bongo", "bongoboong"],
+        "artist_variants": ["manu chao", "manou chao", "manu chau", "manuchao"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "00SmB7n85SKROGjybsyq5i",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27372c5875a8e4b49075978cd04"
+    },
+    {
+      "position": 3,
+      "title": "Petit frère",
+      "artist": "IAM",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "NonWfgHegDU",
+      "answers_accepted": {
+        "title_variants": ["petit frère", "petit frere", "petitfrere", "ptit frère"],
+        "artist_variants": ["iam", "i a m", "i.a.m.", "iaam"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "10nXrHsUIMM9giERWtPHK1",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730075ef937525cb606a50b81b"
+    },
+    {
+      "position": 4,
+      "title": "Laisse pas trainer ton fils",
+      "artist": "Suprême NTM",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "biYdUZXfz9I",
+      "answers_accepted": {
+        "title_variants": [
+          "laisse pas trainer ton fils",
+          "laisse pas traîner ton fils",
+          "laisse pas trainer",
+          "laisse pas trainerton fils",
+          "laisse pa trainer ton fils"
+        ],
+        "artist_variants": ["ntm", "suprême ntm", "supreme ntm", "n.t.m.", "n t m"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "19wTIVLYwubMX8XZppB6lH",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b0af6c9d26487cf55ba0efd6"
+    },
+    {
+      "position": 5,
+      "title": "Bouge de là",
+      "artist": "MC Solaar",
+      "year": 1991,
+      "difficulty": "medium",
+      "youtube_id": "eaPfUf051sc",
+      "answers_accepted": {
+        "title_variants": ["bouge de là", "bouge de la", "bougedela", "bouge la", "bouge"],
+        "artist_variants": ["mc solaar", "mcsolaar", "mc solar", "solaar"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2QNmVLYcnnAUFwDD10oAqt",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e1581372935d71defa0fb164"
+    },
+    {
+      "position": 6,
+      "title": "Le temps des cathédrales",
+      "artist": "Bruno Pelletier",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "EocLKUzsaoc",
+      "answers_accepted": {
+        "title_variants": [
+          "le temps des cathédrales",
+          "le temps des cathedrales",
+          "temps des cathédrales",
+          "temps des cathedrales",
+          "letempsdescathedrales"
+        ],
+        "artist_variants": [
+          "bruno pelletier",
+          "brunopelletier",
+          "bruno peletier",
+          "notre dame de paris",
+          "pelletier"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3YGu8R8qOorKrfhpdeluyW",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273eeef382d40b5d0fd98cac30c"
+    },
+    {
+      "position": 7,
+      "title": "Je sais pas",
+      "artist": "Céline Dion",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "fTBnztH6Sxs",
+      "answers_accepted": {
+        "title_variants": ["je sais pas", "j'sais pas", "jsais pas", "je saispas", "ne sais pas"],
+        "artist_variants": ["céline dion", "celine dion", "selin dion", "céline dione"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7ESvTDSRlElT4dHsEQIjVE",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27394aed748a59358927f3fb269"
+    },
+    {
+      "position": 8,
+      "title": "Il me dit que je suis belle",
+      "artist": "Patricia Kaas",
+      "year": 1993,
+      "difficulty": "medium",
+      "youtube_id": "yOEXcfsDl6E",
+      "answers_accepted": {
+        "title_variants": [
+          "il me dit que je suis belle",
+          "il me dit que je suisbelle",
+          "il me dit",
+          "que je suis belle"
+        ],
+        "artist_variants": ["patricia kaas", "patricia kass", "patriciakaas", "patricia kaaz"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3xsHdb3l0fGXcrEUfDlKJx",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f48ecd057150a9597a79b1bd"
+    },
+    {
+      "position": 9,
+      "title": "Tandem",
+      "artist": "Vanessa Paradis",
+      "year": 1990,
+      "difficulty": "medium",
+      "youtube_id": "yu1-ZeQ-leI",
+      "answers_accepted": {
+        "title_variants": ["tandem", "tandeem", "tandém"],
+        "artist_variants": [
+          "vanessa paradis",
+          "vanesa paradis",
+          "vanessa paradiss",
+          "vanessaparadis"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6mFaHdKJlNkdbSs275lBZ2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dbadbbbb615b2316c95e5093"
+    },
+    {
+      "position": 10,
+      "title": "Je suis bien",
+      "artist": "Les Innocents",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "MCXd_9wsT5w",
+      "answers_accepted": {
+        "title_variants": ["je suis bien", "j'suis bien", "jsuis bien", "jesuisbien"],
+        "artist_variants": ["les innocents", "lesinnocents", "innocents", "les inocents"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0YtkBsAVQM8En4dRTrPjVp",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733e6c6f664cb24f602f565a16"
+    },
+    {
+      "position": 11,
+      "title": "Veiller tard",
+      "artist": "Jean-Jacques Goldman",
+      "year": 1991,
+      "difficulty": "medium",
+      "youtube_id": "CB-dsRx9xlE",
+      "answers_accepted": {
+        "title_variants": ["veiller tard", "veillertard", "veiller tar"],
+        "artist_variants": [
+          "jean-jacques goldman",
+          "jean jacques goldman",
+          "jjgoldman",
+          "jj goldman",
+          "goldman"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CB-dsRx9xlE/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Je t'aime",
+      "artist": "Lara Fabian",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "I9Brisw-kus",
+      "answers_accepted": {
+        "title_variants": ["je t'aime", "je taime", "jet'aime", "je t aime", "jetaime"],
+        "artist_variants": ["lara fabian", "lara fabiann", "lara fabia", "larafabian"],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Lara Fabian, single 1996."
+      },
+      "spotify_id": "28mwuJqKOjRpqo14GuKSkj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273be54e00a656acaff4723a002"
+    },
+    {
+      "position": 13,
+      "title": "Vivo per lei",
+      "artist": "Hélène Ségara",
+      "year": 1997,
+      "difficulty": "medium",
+      "youtube_id": "JqgYn4VlUEA",
+      "answers_accepted": {
+        "title_variants": ["vivo per lei", "vivoperlei", "vivo perlei", "vivo pour elle"],
+        "artist_variants": [
+          "hélène ségara",
+          "helene segara",
+          "helene segarra",
+          "hélène segarra",
+          "andrea bocelli",
+          "hélène ségara andrea bocelli",
+          "hélène ségara & andrea bocelli"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JqgYn4VlUEA/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Toujours là pour toi",
+      "artist": "2 Be 3",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "dAXZF-KmnJ8",
+      "answers_accepted": {
+        "title_variants": [
+          "toujours là pour toi",
+          "toujours la pour toi",
+          "toujourslapourtoi",
+          "toujours pour toi"
+        ],
+        "artist_variants": ["2 be 3", "2be3", "to be three", "two be three", "deux be trois"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "45SeHRJDYGGhj7YhiqC6cQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cfaffc8a98d47e7102b08c34"
+    },
+    {
+      "position": 15,
+      "title": "Désolé pour hier soir",
+      "artist": "Tryo",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "dYkeH5UVw8U",
+      "answers_accepted": {
+        "title_variants": [
+          "désolé pour hier soir",
+          "desole pour hier soir",
+          "désolé pour hier",
+          "desole pour hier",
+          "désolé hier soir"
+        ],
+        "artist_variants": ["tryo", "trio", "tryoo", "the tryo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4pI3b2w9WACkH3Wx5gM7ag",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d00a1c12837dcede74f612f5"
+    }
+  ]
+}

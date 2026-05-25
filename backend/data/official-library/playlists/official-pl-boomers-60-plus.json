@@ -1,0 +1,259 @@
+{
+  "id": "official-pl-boomers-60-plus",
+  "name_fr": "Boomers — 60 ans et plus",
+  "name_en": "Boomers — 60+",
+  "description_fr": "Pour les boomers : Sardou, Goldman, Renaud, Joe Dassin, Bourvil, Bashung. Le patrimoine populaire des baby-boomers.",
+  "description_en": "For boomers: Sardou, Goldman, Renaud, Joe Dassin, Bourvil, Bashung. The popular heritage of the baby boomer generation.",
+  "locale_primary": "fr",
+  "theme": "thematic_boomers_60_plus",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1962, 2002]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Le métèque",
+      "artist": "Georges Moustaki",
+      "year": 1969,
+      "difficulty": "easy",
+      "youtube_id": "WI5mld3uDz8",
+      "answers_accepted": {
+        "title_variants": ["le métèque", "le meteque", "métèque", "meteque"],
+        "artist_variants": ["georges moustaki", "moustaki"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2s87dcsw2KjuhDnVqJ98Cu",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736fa8d2c3e12e2032956dd856"
+    },
+    {
+      "position": 2,
+      "title": "Mistral gagnant",
+      "artist": "Renaud",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "Tuoh3o0CM3Y",
+      "answers_accepted": {
+        "title_variants": ["mistral gagnant", "mistralgagnant"],
+        "artist_variants": ["renaud", "renaud séchan", "renaud sechan"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1MOSRjdAbUhvLNnHCdUEL5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dd3a17393ca3f47e4c523c26"
+    },
+    {
+      "position": 3,
+      "title": "Manhattan-Kaboul",
+      "artist": "Renaud",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "qtLJnn3Up-I",
+      "answers_accepted": {
+        "title_variants": ["manhattan-kaboul", "manhattan kaboul", "manhattankaboul"],
+        "artist_variants": ["renaud", "axelle red", "renaud axelle red"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7eJdx83TiKsVqAzLFBelMO",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27377e986b82d7df66c39e1975d"
+    },
+    {
+      "position": 4,
+      "title": "Né en 17 à Leidenstadt",
+      "artist": "Jean-Jacques Goldman",
+      "year": 1990,
+      "difficulty": "medium",
+      "youtube_id": "UnSz5YYEc1Y",
+      "answers_accepted": {
+        "title_variants": [
+          "né en 17 à leidenstadt",
+          "ne en 17 a leidenstadt",
+          "leidenstadt",
+          "né en 17"
+        ],
+        "artist_variants": [
+          "jean-jacques goldman",
+          "jean jacques goldman",
+          "goldman",
+          "fredericks goldman jones"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3ZSYec83Q9b9xELhFtbzZy",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b0cf729afd8a2c2fe84e9137"
+    },
+    {
+      "position": 5,
+      "title": "Gaby oh Gaby",
+      "artist": "Alain Bashung",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "gPKqSkC4-Rw",
+      "answers_accepted": {
+        "title_variants": ["gaby oh gaby", "gabyohgaby", "gaby"],
+        "artist_variants": ["alain bashung", "bashung"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/gPKqSkC4-Rw/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Voyage en Italie",
+      "artist": "Lilicub",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "bse02AUNP_o",
+      "answers_accepted": {
+        "title_variants": ["voyage en italie", "voyageenitalie"],
+        "artist_variants": ["lilicub"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5FmknnkNLdiGeDndWfuxON",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b39be434c2949efa1ff0c57d"
+    },
+    {
+      "position": 7,
+      "title": "Le Sud",
+      "artist": "Nino Ferrer",
+      "year": 1975,
+      "difficulty": "medium",
+      "youtube_id": "He5dcAOXSY4",
+      "answers_accepted": {
+        "title_variants": ["le sud", "lesud"],
+        "artist_variants": ["nino ferrer", "ninoferrer"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6nfZUEYD5hcUnMUR55gAXD",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27319812f022e6247b0807cc706"
+    },
+    {
+      "position": 8,
+      "title": "Je vais t'aimer",
+      "artist": "Michel Sardou",
+      "year": 1976,
+      "difficulty": "easy",
+      "youtube_id": "EbfL4kjiGOc",
+      "answers_accepted": {
+        "title_variants": ["je vais t'aimer", "je vais taimer", "jevaistaimer"],
+        "artist_variants": ["michel sardou", "sardou"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3TqoXM2sHgEFXgd1ywgyZf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27362b59d2678d2abbb3261ad2e"
+    },
+    {
+      "position": 9,
+      "title": "Les lacs du Connemara",
+      "artist": "Michel Sardou",
+      "year": 1981,
+      "difficulty": "easy",
+      "youtube_id": "bpEmjxobvbY",
+      "answers_accepted": {
+        "title_variants": ["les lacs du connemara", "lacs du connemara", "connemara"],
+        "artist_variants": ["michel sardou", "sardou"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/bpEmjxobvbY/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Et si tu n'existais pas",
+      "artist": "Joe Dassin",
+      "year": 1975,
+      "difficulty": "easy",
+      "youtube_id": "fVCAFvIq_F8",
+      "answers_accepted": {
+        "title_variants": [
+          "et si tu n'existais pas",
+          "et si tu nexistais pas",
+          "si tu n'existais pas"
+        ],
+        "artist_variants": ["joe dassin", "joedassin", "dassin"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1GeszH3DWCOKwK0d8D5gEZ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739520be730c64292246fc1d78"
+    },
+    {
+      "position": 11,
+      "title": "Belles, belles, belles",
+      "artist": "Claude François",
+      "year": 1962,
+      "difficulty": "medium",
+      "youtube_id": "F6anG1hPs44",
+      "answers_accepted": {
+        "title_variants": ["belles belles belles", "bellesbellesbelles"],
+        "artist_variants": ["claude françois", "claude francois", "cloclo"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "21ACIsIjXqdpsozxJXjZyi",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739b759c68d9217d8450586ba2"
+    },
+    {
+      "position": 12,
+      "title": "Comme un avion sans aile",
+      "artist": "Charlélie Couture",
+      "year": 1981,
+      "difficulty": "hard",
+      "youtube_id": "nGeA_hwTBSk",
+      "answers_accepted": {
+        "title_variants": ["comme un avion sans aile", "avion sans aile", "comme un avion"],
+        "artist_variants": ["charlélie couture", "charlelie couture", "couture"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0YFLNz59b1JPU6o8gSdOqF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a711eaab8cea60b94e92813a"
+    },
+    {
+      "position": 13,
+      "title": "La tendresse",
+      "artist": "Bourvil",
+      "year": 1963,
+      "difficulty": "medium",
+      "youtube_id": "wEhw9AMYOoA",
+      "answers_accepted": {
+        "title_variants": ["la tendresse", "latendresse", "tendresse"],
+        "artist_variants": ["bourvil", "andré raimbourg"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7jKGXLcFqmRytiKFJC3d2C",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735e25da1eadd26bb14f5312ee"
+    },
+    {
+      "position": 14,
+      "title": "Adieu monsieur le professeur",
+      "artist": "Hugues Aufray",
+      "year": 1968,
+      "difficulty": "medium",
+      "youtube_id": "nXW-5lWbXIg",
+      "answers_accepted": {
+        "title_variants": [
+          "adieu monsieur le professeur",
+          "monsieur le professeur",
+          "adieu monsieur"
+        ],
+        "artist_variants": ["hugues aufray", "huguesaufray", "aufray"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "09fc4Tyg7MhP9TovMe6zFX",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731a33af0f0829ce05885c7bc7"
+    },
+    {
+      "position": 15,
+      "title": "Une belle histoire",
+      "artist": "Michel Fugain",
+      "year": 1972,
+      "difficulty": "easy",
+      "youtube_id": "AErazxVXkHw",
+      "answers_accepted": {
+        "title_variants": ["une belle histoire", "belle histoire", "unebellehistoire"],
+        "artist_variants": ["michel fugain", "fugain"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5oxKrYimzs8AZp8lkoar6V",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b2b4b12565a8c7c8118cb8ab"
+    }
+  ]
+}

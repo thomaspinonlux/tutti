@@ -1,0 +1,308 @@
+{
+  "id": "official-pl-fr-80s-easy",
+  "name_fr": "Variété FR — Années 80 — Facile",
+  "name_en": "French Hits — 80s — Easy",
+  "description_fr": "Les megahits francophones des années 80 que tout le monde reconnaît. Variété, rock, new wave, chanson : la décennie en mode universel.",
+  "description_en": "The French-language 80s megahits everyone recognizes. Variety, rock, new wave, chanson: the decade in universal mode.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "easy",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_1980s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [1980, 1989]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Voyage voyage",
+      "artist": "Desireless",
+      "year": 1986,
+      "difficulty": "easy",
+      "youtube_id": "2KFtLUS_lb4",
+      "answers_accepted": {
+        "title_variants": ["voyage voyage", "voyageage", "voyage voyages", "voyage"],
+        "artist_variants": ["desireless", "desire less", "désireless", "désir less"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6B7wYqT8cSGpfjSbbGSCDr",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732e78dd9b51daec236b3522ee"
+    },
+    {
+      "position": 2,
+      "title": "Joe le taxi",
+      "artist": "Vanessa Paradis",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "KZUOTqVj4k8",
+      "answers_accepted": {
+        "title_variants": ["joe le taxi", "joeletaxi", "jo le taxi", "joe taxi", "djoe le taxi"],
+        "artist_variants": [
+          "vanessa paradis",
+          "vanesa paradis",
+          "vanessa paradiss",
+          "vanessaparadis"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7nZCg1jgmXIjSBRifWkmaJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273248848a7d703ca2e3acb6068"
+    },
+    {
+      "position": 3,
+      "title": "L'aventurier",
+      "artist": "Indochine",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "VDe-i6l4-NU",
+      "answers_accepted": {
+        "title_variants": ["l'aventurier", "l aventurier", "laventurier", "aventurier"],
+        "artist_variants": ["indochine", "indochina", "indochines", "in dochine"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2UC5XnHA1Wn9FjQmbjNca9",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f80fe67d0f4293be5b8f5251"
+    },
+    {
+      "position": 4,
+      "title": "Plus près des étoiles",
+      "artist": "Gold",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "dty7JyWKoKg",
+      "answers_accepted": {
+        "title_variants": [
+          "plus près des étoiles",
+          "plus pres des etoiles",
+          "plus pres des étoiles",
+          "près des étoiles",
+          "pluspresdesetoiles"
+        ],
+        "artist_variants": ["gold", "the gold", "gold band"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "05OmZz1tixVBtXMx3cb4oc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27331073d39e3fe5274e4bfb97f"
+    },
+    {
+      "position": 5,
+      "title": "Pourvu qu'elles soient douces",
+      "artist": "Mylène Farmer",
+      "year": 1988,
+      "difficulty": "easy",
+      "youtube_id": "HJ_JBS4AjG8",
+      "answers_accepted": {
+        "title_variants": [
+          "pourvu qu'elles soient douces",
+          "pourvu quelles soient douces",
+          "pourvu qu elles soient douces",
+          "pourvuquellessoientdouces",
+          "qu elles soient douces"
+        ],
+        "artist_variants": ["mylène farmer", "mylene farmer", "milene farmer", "mylenne farmer"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4uz13X7lt8wiCfxf49TOyz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bb8e0fba848d20f8dd545ace"
+    },
+    {
+      "position": 6,
+      "title": "Mistral gagnant",
+      "artist": "Renaud",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "Tuoh3o0CM3Y",
+      "answers_accepted": {
+        "title_variants": [
+          "mistral gagnant",
+          "mistralgagnant",
+          "mistral gagnants",
+          "le mistral gagnant"
+        ],
+        "artist_variants": ["renaud", "renaud séchan", "renaud sechan", "renauld"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1MOSRjdAbUhvLNnHCdUEL5",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273dd3a17393ca3f47e4c523c26"
+    },
+    {
+      "position": 7,
+      "title": "Femme libérée",
+      "artist": "Cookie Dingler",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "qnohSv2mRsk",
+      "answers_accepted": {
+        "title_variants": ["femme libérée", "femme liberee", "femmeliberee", "femmes liberees"],
+        "artist_variants": ["cookie dingler", "cookiedingler", "cooky dingler", "cookie dingleur"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6yKvNUcS8XOx2rXip07kHQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a2d2565e4da2640dc7d169e2"
+    },
+    {
+      "position": 8,
+      "title": "Marcia Baïla",
+      "artist": "Les Rita Mitsouko",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "neHsQMaGzaY",
+      "answers_accepted": {
+        "title_variants": ["marcia baïla", "marcia baila", "marciabaila", "marcia bayla"],
+        "artist_variants": [
+          "les rita mitsouko",
+          "rita mitsouko",
+          "les ritta mitsouko",
+          "lesritamitsouko"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "43THPstJP6RXLMd7ryXyNf",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273cac6eb41ca7a0ceac153e68d"
+    },
+    {
+      "position": 9,
+      "title": "Casser la voix",
+      "artist": "Patrick Bruel",
+      "year": 1989,
+      "difficulty": "easy",
+      "youtube_id": "r-951A8fuoU",
+      "answers_accepted": {
+        "title_variants": ["casser la voix", "casserlavoix", "casser voix", "casse la voix"],
+        "artist_variants": ["patrick bruel", "patrickbruel", "patrick bruelle", "bruel"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6GKfnB8wQhmCqsHmgDAkN4",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737b8420ca49fa8270c3cdd7c9"
+    },
+    {
+      "position": 10,
+      "title": "La groupie du pianiste",
+      "artist": "Michel Berger",
+      "year": 1980,
+      "difficulty": "easy",
+      "youtube_id": "zO_q3kLdNCs",
+      "answers_accepted": {
+        "title_variants": [
+          "la groupie du pianiste",
+          "lagroupiedupianiste",
+          "groupie du pianiste",
+          "groupie pianiste"
+        ],
+        "artist_variants": ["michel berger", "michelberger", "mickel berger", "michele berger"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "496eQC5FPo3dmfNRXPcmps",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27388a725ebf74ad89579d49952"
+    },
+    {
+      "position": 11,
+      "title": "Cargo de nuit",
+      "artist": "Axel Bauer",
+      "year": 1983,
+      "difficulty": "easy",
+      "youtube_id": "e9c1ya90N2M",
+      "answers_accepted": {
+        "title_variants": ["cargo de nuit", "cargodenuit", "cargo nuit", "cargo"],
+        "artist_variants": ["axel bauer", "axelbauer", "axel bauerr", "axel bauwer"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5RmwDzLJ9p9bNpNhN0QVKb",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2739cd620234c85a315024ca33a"
+    },
+    {
+      "position": 12,
+      "title": "Quand la musique est bonne",
+      "artist": "Jean-Jacques Goldman",
+      "year": 1982,
+      "difficulty": "easy",
+      "youtube_id": "-boDeijWuOY",
+      "answers_accepted": {
+        "title_variants": [
+          "quand la musique est bonne",
+          "quandlamusiqueestbonne",
+          "quand la musique",
+          "la musique est bonne"
+        ],
+        "artist_variants": [
+          "jean-jacques goldman",
+          "jean jacques goldman",
+          "jjgoldman",
+          "jj goldman",
+          "goldman"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0Wh6e5EkmQseBGVeJqzC9X",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736b2847cc0ee2671d82426eac"
+    },
+    {
+      "position": 13,
+      "title": "Né quelque part",
+      "artist": "Maxime Le Forestier",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "DagKAzSk9Z8",
+      "answers_accepted": {
+        "title_variants": [
+          "né quelque part",
+          "ne quelque part",
+          "néquelquepart",
+          "ne quelquepart",
+          "ne quelque par"
+        ],
+        "artist_variants": [
+          "maxime le forestier",
+          "maxime leforestier",
+          "maxime le forrestier",
+          "le forestier"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5nYEKD0xyAGhs5xGYeD89j",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27387b9742e8881876e8bb33040"
+    },
+    {
+      "position": 14,
+      "title": "Comme un avion sans aile",
+      "artist": "Charlélie Couture",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "nGeA_hwTBSk",
+      "answers_accepted": {
+        "title_variants": [
+          "comme un avion sans aile",
+          "comme un avion sansaile",
+          "avion sans aile",
+          "comme un avion"
+        ],
+        "artist_variants": [
+          "charlélie couture",
+          "charlelie couture",
+          "charles elie couture",
+          "charlélie",
+          "charlie couture"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0YFLNz59b1JPU6o8gSdOqF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a711eaab8cea60b94e92813a"
+    },
+    {
+      "position": 15,
+      "title": "Toi mon toit",
+      "artist": "Elli Medeiros",
+      "year": 1985,
+      "difficulty": "easy",
+      "youtube_id": "LW_ydJ5hyBM",
+      "answers_accepted": {
+        "title_variants": ["toi mon toit", "toimontoit", "toi mon toi", "toi montoi"],
+        "artist_variants": ["elli medeiros", "elimedeiros", "ellie medeiros", "elli médeiros"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4duQCrc96WFvMLUM17IMLT",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d999428829a09b84a8cf6eaf"
+    }
+  ]
+}

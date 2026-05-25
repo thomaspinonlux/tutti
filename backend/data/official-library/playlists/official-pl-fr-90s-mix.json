@@ -1,0 +1,336 @@
+{
+  "id": "official-pl-fr-90s-mix",
+  "name_fr": "Variété FR — Années 90 — Mix",
+  "name_en": "French Hits — 90s — Mix",
+  "description_fr": "Un mélange équilibré de la décennie francophone : 5 megahits, 5 grands classiques, 5 perles plus pointues. Le sampler parfait des 90s FR.",
+  "description_en": "A balanced mix of the French-language decade: 5 megahits, 5 great classics, 5 sharper gems. The perfect French 90s sampler.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_1990s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [1990, 1999]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Dur dur d'être bébé",
+      "artist": "Jordy",
+      "year": 1992,
+      "difficulty": "easy",
+      "youtube_id": "7IiLZ0dvDWU",
+      "answers_accepted": {
+        "title_variants": [
+          "dur dur d'être bébé",
+          "dur dur detre bebe",
+          "dur dur d etre bébé",
+          "durdurdetrebebe",
+          "dur dur dêtre bébé"
+        ],
+        "artist_variants": ["jordy", "jordi", "jordy lemoine", "djordy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "72kapv3rME4uCcRkIe9AQ6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2731a9ffb486b782fa6f7015619"
+    },
+    {
+      "position": 2,
+      "title": "Saga Africa",
+      "artist": "Yannick Noah",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "b9hS4_nhYCs",
+      "answers_accepted": {
+        "title_variants": ["saga africa", "saga afrika", "sagaafrica", "saga africaa"],
+        "artist_variants": ["yannick noah", "yanick noah", "yannik noah", "yannicknoah"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6ouQVLPPEplvVA62uXh2ar",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f31f7cb284360e6922722d5e"
+    },
+    {
+      "position": 3,
+      "title": "Je t'aimais, je t'aime, je t'aimerai",
+      "artist": "Francis Cabrel",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "EVeZzR677DU",
+      "answers_accepted": {
+        "title_variants": [
+          "je t'aimais je t'aime je t'aimerai",
+          "je taimais je taime je taimerai",
+          "je t'aimerai",
+          "je t aimais je t aime je t aimerai",
+          "jetaimais jetaime jetaimerai"
+        ],
+        "artist_variants": ["francis cabrel", "francis cabrelle", "francis cabrél", "cabrel"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1sTWIzAlg8HapeWz2fXvfJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2736825e63f665c6739047b3674"
+    },
+    {
+      "position": 4,
+      "title": "Né en 17 à Leidenstadt",
+      "artist": "Fredericks Goldman Jones",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "B1T2taOC1WA",
+      "answers_accepted": {
+        "title_variants": [
+          "né en 17 à leidenstadt",
+          "ne en 17 a leidenstadt",
+          "né en dix sept",
+          "ne en 17",
+          "leidenstadt",
+          "né en 17 a leidenstadt"
+        ],
+        "artist_variants": [
+          "fredericks goldman jones",
+          "goldman jones fredericks",
+          "jean-jacques goldman",
+          "carole fredericks",
+          "michael jones",
+          "fredericks goldman et jones",
+          "goldman"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3ZSYec83Q9b9xELhFtbzZy",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b0cf729afd8a2c2fe84e9137"
+    },
+    {
+      "position": 5,
+      "title": "Voyage en Italie",
+      "artist": "Lilicub",
+      "year": 1995,
+      "difficulty": "easy",
+      "youtube_id": "bse02AUNP_o",
+      "answers_accepted": {
+        "title_variants": ["voyage en italie", "voyageenitalie", "voyage italie", "voyage itali"],
+        "artist_variants": ["lilicub", "lillicub", "lilikub", "lilicube"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5FmknnkNLdiGeDndWfuxON",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b39be434c2949efa1ff0c57d"
+    },
+    {
+      "position": 6,
+      "title": "À nos actes manqués",
+      "artist": "Fredericks Goldman Jones",
+      "year": 1990,
+      "difficulty": "medium",
+      "youtube_id": "xxddJMlnICI",
+      "answers_accepted": {
+        "title_variants": [
+          "à nos actes manqués",
+          "a nos actes manques",
+          "anos actes manques",
+          "actes manqués",
+          "à nos actes manques"
+        ],
+        "artist_variants": [
+          "fredericks goldman jones",
+          "goldman jones fredericks",
+          "jean-jacques goldman",
+          "michael jones",
+          "carole fredericks",
+          "goldman",
+          "fredericks goldman et jones"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "49l4Fv41jWi2TGCsPmseKY",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b0cf729afd8a2c2fe84e9137"
+    },
+    {
+      "position": 7,
+      "title": "Vivre pour le meilleur",
+      "artist": "Florent Pagny",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "Xs-_NZ0LhrA",
+      "answers_accepted": {
+        "title_variants": [
+          "vivre pour le meilleur",
+          "vivrepourle meilleur",
+          "vivre pour meilleur",
+          "vivre meilleur"
+        ],
+        "artist_variants": ["florent pagny", "florant pagny", "florent pagni", "pagny"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2hwxHtaQRwgDigEkHbR3Zg",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732dd84923a64b5bfbedeafd32"
+    },
+    {
+      "position": 8,
+      "title": "Je t'aime mélancolie",
+      "artist": "Mylène Farmer",
+      "year": 1991,
+      "difficulty": "medium",
+      "youtube_id": "KrT9F7J8FlU",
+      "answers_accepted": {
+        "title_variants": [
+          "je t'aime mélancolie",
+          "je taime melancolie",
+          "je t aime melancolie",
+          "jetaimemelancolie",
+          "je t'aime melancolie"
+        ],
+        "artist_variants": [
+          "mylène farmer",
+          "mylene farmer",
+          "milene farmer",
+          "mylenne farmer",
+          "milène farmer"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0GDn4d8FMgDemIWOCJINAp",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734acac700bf68d329b066413c"
+    },
+    {
+      "position": 9,
+      "title": "Sa raison d'être",
+      "artist": "Ensemble Solidarité Sida",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "2KRvvRN8hMc",
+      "answers_accepted": {
+        "title_variants": [
+          "sa raison d'être",
+          "sa raison detre",
+          "sa raison d etre",
+          "saraisondetre",
+          "raison detre"
+        ],
+        "artist_variants": [
+          "ensemble solidarité sida",
+          "ensemble solidarite sida",
+          "solidarité sida",
+          "ensemble",
+          "pascal obispo et al",
+          "obispo zazie ensemble"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/2KRvvRN8hMc/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Lambé an dro",
+      "artist": "Matmatah",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "do9KqKFBy90",
+      "answers_accepted": {
+        "title_variants": [
+          "lambé an dro",
+          "lambe an dro",
+          "lambeandro",
+          "lambé andro",
+          "lambé en dro"
+        ],
+        "artist_variants": ["matmatah", "matmata", "matmatha", "mat matah"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4TQxGBi80EZbm6COxwIcGR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b0eb3f7cdf1562ff03601015"
+    },
+    {
+      "position": 11,
+      "title": "Mascara",
+      "artist": "Dolly",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "duzOksadaNs",
+      "answers_accepted": {
+        "title_variants": ["mascara", "mascaras", "mascarra"],
+        "artist_variants": ["dolly", "doli", "dolli", "dollie"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/duzOksadaNs/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Déjeuner en paix",
+      "artist": "Stephan Eicher",
+      "year": 1991,
+      "difficulty": "hard",
+      "youtube_id": "SD27eir2GNw",
+      "answers_accepted": {
+        "title_variants": [
+          "déjeuner en paix",
+          "dejeuner en paix",
+          "déjeuner enpaix",
+          "dejeuner enpaix",
+          "le dejeuner en paix"
+        ],
+        "artist_variants": [
+          "stephan eicher",
+          "stephan aicher",
+          "stéphane eicher",
+          "stephane eicher",
+          "stephaneicher"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6DFzpa0eHyEkvQ2oeewmA2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f24c702b9584183dd80813e2"
+    },
+    {
+      "position": 13,
+      "title": "Bad Boys de Marseille",
+      "artist": "Akhenaton",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "_AKNGgSmhoY",
+      "answers_accepted": {
+        "title_variants": [
+          "bad boys de marseille",
+          "badboys de marseille",
+          "bad boys marseille",
+          "badboysdemarseille"
+        ],
+        "artist_variants": ["akhenaton", "akenaton", "akhénaton", "akhenat", "iam akhenaton"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "7LsyDOwa0rY2mWYanvxw63",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27353c8de0c78ce0190baabad92"
+    },
+    {
+      "position": 14,
+      "title": "Je te donne",
+      "artist": "Worlds Apart",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "WYjXfymLvSc",
+      "answers_accepted": {
+        "title_variants": ["je te donne", "je tedonne", "jetedonne", "je te done"],
+        "artist_variants": ["worlds apart", "worldsapart", "world apart", "worlds appart"],
+        "scoring": "title_or_artist",
+        "notes": "Reprise du tube de Jean-Jacques Goldman / Michael Jones (1985). Cible : version Worlds Apart 1996, en duo français/anglais."
+      },
+      "spotify_id": "5bQhPNavO5eOiBNvRYESzY",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a6047b69c02d24d1e8ed45b1"
+    },
+    {
+      "position": 15,
+      "title": "Saudade",
+      "artist": "Étienne Daho",
+      "year": 1996,
+      "difficulty": "hard",
+      "youtube_id": "EbjNZtEAFxg",
+      "answers_accepted": {
+        "title_variants": ["saudade", "saudades", "soudade"],
+        "artist_variants": ["étienne daho", "etienne daho", "etiennedaho", "étienne dahoo", "daho"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "341rKsoGLfj42FSjrDM9fQ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273815df9f085064b7ee586ecea"
+    }
+  ]
+}

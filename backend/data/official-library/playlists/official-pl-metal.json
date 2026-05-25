@@ -1,0 +1,228 @@
+{
+  "id": "official-pl-metal",
+  "name_fr": "Metal & Hard Rock",
+  "name_en": "Metal & Hard Rock",
+  "description_fr": "Les piliers du metal et hard rock : Metallica, Iron Maiden, Black Sabbath, AC/DC, Ozzy, Pantera, Megadeth, Guns N' Roses. Riffs lourds garantis.",
+  "description_en": "The pillars of metal and hard rock: Metallica, Iron Maiden, Black Sabbath, AC/DC, Ozzy, Pantera, Megadeth, Guns N' Roses. Heavy riffs guaranteed.",
+  "locale_primary": "international",
+  "theme": "thematic_metal",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "acoustic"],
+    "year_range_strict": [1970, 1995]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Enter Sandman",
+      "artist": "Metallica",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "CD-E-LDc384",
+      "answers_accepted": {
+        "title_variants": ["enter sandman", "entersandman"],
+        "artist_variants": ["metallica", "metalica"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/CD-E-LDc384/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Master of Puppets",
+      "artist": "Metallica",
+      "year": 1986,
+      "difficulty": "medium",
+      "youtube_id": "6xjJ2XIbGRk",
+      "answers_accepted": {
+        "title_variants": ["master of puppets", "masterofpuppets"],
+        "artist_variants": ["metallica"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/6xjJ2XIbGRk/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Nothing Else Matters",
+      "artist": "Metallica",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "waBb-UM5m4g",
+      "answers_accepted": {
+        "title_variants": ["nothing else matters", "nothingelse matters"],
+        "artist_variants": ["metallica"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/waBb-UM5m4g/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "The Trooper",
+      "artist": "Iron Maiden",
+      "year": 1983,
+      "difficulty": "medium",
+      "youtube_id": "t24ij5kI2cg",
+      "answers_accepted": {
+        "title_variants": ["the trooper", "trooper"],
+        "artist_variants": ["iron maiden", "ironmaiden"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/t24ij5kI2cg/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Run to the Hills",
+      "artist": "Iron Maiden",
+      "year": 1982,
+      "difficulty": "medium",
+      "youtube_id": "Q3sJlr0kw8I",
+      "answers_accepted": {
+        "title_variants": ["run to the hills", "runtothehills"],
+        "artist_variants": ["iron maiden", "ironmaiden"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Q3sJlr0kw8I/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "The Number of the Beast",
+      "artist": "Iron Maiden",
+      "year": 1982,
+      "difficulty": "medium",
+      "youtube_id": "QcU_BeNXQp8",
+      "answers_accepted": {
+        "title_variants": ["the number of the beast", "number of the beast", "666"],
+        "artist_variants": ["iron maiden", "ironmaiden"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/QcU_BeNXQp8/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Paranoid",
+      "artist": "Black Sabbath",
+      "year": 1970,
+      "difficulty": "easy",
+      "youtube_id": "BOTIIw76qiE",
+      "answers_accepted": {
+        "title_variants": ["paranoid"],
+        "artist_variants": ["black sabbath", "blacksabbath", "ozzy osbourne"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/BOTIIw76qiE/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "War Pigs",
+      "artist": "Black Sabbath",
+      "year": 1970,
+      "difficulty": "medium",
+      "youtube_id": "PrZFscfJxXc",
+      "answers_accepted": {
+        "title_variants": ["war pigs", "warpigs"],
+        "artist_variants": ["black sabbath", "blacksabbath"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/PrZFscfJxXc/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Back in Black",
+      "artist": "AC/DC",
+      "year": 1980,
+      "difficulty": "easy",
+      "youtube_id": "zjx0D1Ivy-Q",
+      "answers_accepted": {
+        "title_variants": ["back in black", "backinblack"],
+        "artist_variants": ["ac/dc", "acdc", "ac dc"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/zjx0D1Ivy-Q/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Thunderstruck",
+      "artist": "AC/DC",
+      "year": 1990,
+      "difficulty": "easy",
+      "youtube_id": "v2AC41dglnM",
+      "answers_accepted": {
+        "title_variants": ["thunderstruck", "thunder struck"],
+        "artist_variants": ["ac/dc", "acdc", "ac dc"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/v2AC41dglnM/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Crazy Train",
+      "artist": "Ozzy Osbourne",
+      "year": 1980,
+      "difficulty": "medium",
+      "youtube_id": "Djrl6fu8myo",
+      "answers_accepted": {
+        "title_variants": ["crazy train", "crazytrain"],
+        "artist_variants": ["ozzy osbourne", "ozzyosbourne", "ozzy"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Djrl6fu8myo/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Holy Diver",
+      "artist": "Dio",
+      "year": 1983,
+      "difficulty": "hard",
+      "youtube_id": "EhGEGIBGLu8",
+      "answers_accepted": {
+        "title_variants": ["holy diver", "holydiver"],
+        "artist_variants": ["dio", "ronnie james dio"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/EhGEGIBGLu8/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Walk",
+      "artist": "Pantera",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "AkFqg5wAuFk",
+      "answers_accepted": {
+        "title_variants": ["walk"],
+        "artist_variants": ["pantera", "panthera"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/AkFqg5wAuFk/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Symphony of Destruction",
+      "artist": "Megadeth",
+      "year": 1992,
+      "difficulty": "hard",
+      "youtube_id": "vfpgpf6QVnI",
+      "answers_accepted": {
+        "title_variants": ["symphony of destruction", "symphonyofdestruction"],
+        "artist_variants": ["megadeth", "mega death", "megadeath"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/vfpgpf6QVnI/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Welcome to the Jungle",
+      "artist": "Guns N' Roses",
+      "year": 1987,
+      "difficulty": "easy",
+      "youtube_id": "9erLsEHAZRI",
+      "answers_accepted": {
+        "title_variants": ["welcome to the jungle", "welcometothejungle"],
+        "artist_variants": ["guns n' roses", "guns n roses", "gnr", "gunsandroses"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/9erLsEHAZRI/hqdefault.jpg"
+    }
+  ]
+}

@@ -1,0 +1,247 @@
+{
+  "id": "official-pl-musicals-us",
+  "name_fr": "Comédies musicales US",
+  "name_en": "American Musicals",
+  "description_fr": "Les grandes comédies musicales américaines : Grease, Chicago, La La Land, Greatest Showman, Hairspray, Wicked. De Broadway à Hollywood.",
+  "description_en": "Great American musicals: Grease, Chicago, La La Land, Greatest Showman, Hairspray, Wicked. From Broadway to Hollywood.",
+  "locale_primary": "international",
+  "theme": "thematic_musicals_us",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_movie_soundtrack",
+    "avoid": ["live", "cover", "instrumental", "karaoke"],
+    "year_range_strict": [1978, 2017]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Summer Nights",
+      "artist": "John Travolta & Olivia Newton-John",
+      "year": 1978,
+      "difficulty": "easy",
+      "youtube_id": "4j5mg6N39c4",
+      "answers_accepted": {
+        "title_variants": ["summer nights", "summernights"],
+        "artist_variants": ["john travolta", "olivia newton-john", "olivia newton john", "grease"],
+        "scoring": "title_or_artist",
+        "notes": "From Grease (1978)"
+      },
+      "cover_url": "https://img.youtube.com/vi/4j5mg6N39c4/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "You're the One That I Want",
+      "artist": "John Travolta & Olivia Newton-John",
+      "year": 1978,
+      "difficulty": "easy",
+      "youtube_id": "LwfnXM5wzxo",
+      "answers_accepted": {
+        "title_variants": [
+          "you're the one that i want",
+          "youre the one that i want",
+          "the one that i want"
+        ],
+        "artist_variants": ["john travolta", "olivia newton-john", "olivia newton john", "grease"],
+        "scoring": "title_or_artist",
+        "notes": "From Grease (1978)"
+      },
+      "cover_url": "https://img.youtube.com/vi/LwfnXM5wzxo/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Footloose",
+      "artist": "Kenny Loggins",
+      "year": 1984,
+      "difficulty": "easy",
+      "youtube_id": "ltrMfT4Qz5Y",
+      "answers_accepted": {
+        "title_variants": ["footloose"],
+        "artist_variants": ["kenny loggins", "kennyloggins"],
+        "scoring": "title_or_artist",
+        "notes": "From Footloose (1984)"
+      },
+      "cover_url": "https://img.youtube.com/vi/ltrMfT4Qz5Y/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Good Morning Baltimore",
+      "artist": "Nikki Blonsky",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "HcaPr2FdaQc",
+      "answers_accepted": {
+        "title_variants": ["good morning baltimore", "goodmorningbaltimore"],
+        "artist_variants": ["nikki blonsky", "hairspray"],
+        "scoring": "title_or_artist",
+        "notes": "From Hairspray (2007)"
+      },
+      "cover_url": "https://img.youtube.com/vi/HcaPr2FdaQc/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "You Can't Stop the Beat",
+      "artist": "Hairspray Cast",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "UgDv3MAM6v0",
+      "answers_accepted": {
+        "title_variants": ["you can't stop the beat", "you cant stop the beat", "stop the beat"],
+        "artist_variants": ["hairspray", "hairspray cast"],
+        "scoring": "title_or_artist",
+        "notes": "From Hairspray (2007)"
+      },
+      "cover_url": "https://img.youtube.com/vi/UgDv3MAM6v0/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "All That Jazz",
+      "artist": "Catherine Zeta-Jones",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "sFa4JVU4sO8",
+      "answers_accepted": {
+        "title_variants": ["all that jazz", "allthatjazz"],
+        "artist_variants": ["catherine zeta-jones", "catherine zeta jones", "chicago"],
+        "scoring": "title_or_artist",
+        "notes": "From Chicago (2002)"
+      },
+      "cover_url": "https://img.youtube.com/vi/sFa4JVU4sO8/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Cell Block Tango",
+      "artist": "Chicago Cast",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "0c2bKZMxEQg",
+      "answers_accepted": {
+        "title_variants": ["cell block tango", "cellblocktango"],
+        "artist_variants": ["chicago", "chicago cast"],
+        "scoring": "title_or_artist",
+        "notes": "From Chicago (2002)"
+      },
+      "cover_url": "https://img.youtube.com/vi/0c2bKZMxEQg/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "City of Stars",
+      "artist": "Ryan Gosling & Emma Stone",
+      "year": 2016,
+      "difficulty": "easy",
+      "youtube_id": "GTWqwSNQCcg",
+      "answers_accepted": {
+        "title_variants": ["city of stars", "cityofstars"],
+        "artist_variants": ["ryan gosling", "emma stone", "la la land"],
+        "scoring": "title_or_artist",
+        "notes": "From La La Land (2016)"
+      },
+      "cover_url": "https://img.youtube.com/vi/GTWqwSNQCcg/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Another Day of Sun",
+      "artist": "La La Land Cast",
+      "year": 2016,
+      "difficulty": "medium",
+      "youtube_id": "lV5XmoWC8Mo",
+      "answers_accepted": {
+        "title_variants": ["another day of sun", "anotherdayofsun"],
+        "artist_variants": ["la la land", "la la land cast"],
+        "scoring": "title_or_artist",
+        "notes": "From La La Land (2016)"
+      },
+      "cover_url": "https://img.youtube.com/vi/lV5XmoWC8Mo/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "The Greatest Show",
+      "artist": "Hugh Jackman",
+      "year": 2017,
+      "difficulty": "easy",
+      "youtube_id": "3E2m5RRZNS0",
+      "answers_accepted": {
+        "title_variants": ["the greatest show", "greatest show"],
+        "artist_variants": ["hugh jackman", "hughjackman", "the greatest showman"],
+        "scoring": "title_or_artist",
+        "notes": "From The Greatest Showman (2017)"
+      },
+      "cover_url": "https://img.youtube.com/vi/3E2m5RRZNS0/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "This Is Me",
+      "artist": "Keala Settle",
+      "year": 2017,
+      "difficulty": "easy",
+      "youtube_id": "uOtlcuqREBE",
+      "answers_accepted": {
+        "title_variants": ["this is me", "thisisme"],
+        "artist_variants": ["keala settle", "kealasettle", "the greatest showman"],
+        "scoring": "title_or_artist",
+        "notes": "From The Greatest Showman (2017)"
+      },
+      "cover_url": "https://img.youtube.com/vi/uOtlcuqREBE/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Don't Cry for Me Argentina",
+      "artist": "Madonna",
+      "year": 1996,
+      "difficulty": "medium",
+      "youtube_id": "KD_1Z8iUDho",
+      "answers_accepted": {
+        "title_variants": ["don't cry for me argentina", "dont cry for me argentina", "argentina"],
+        "artist_variants": ["madonna", "evita"],
+        "scoring": "title_or_artist",
+        "notes": "From Evita (1996)"
+      },
+      "cover_url": "https://img.youtube.com/vi/KD_1Z8iUDho/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Defying Gravity",
+      "artist": "Idina Menzel",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "MslDnwerQRA",
+      "answers_accepted": {
+        "title_variants": ["defying gravity", "defyinggravity"],
+        "artist_variants": ["idina menzel", "idinamenzel", "wicked"],
+        "scoring": "title_or_artist",
+        "notes": "From Wicked (2003 Broadway)"
+      },
+      "cover_url": "https://img.youtube.com/vi/MslDnwerQRA/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Popular",
+      "artist": "Kristin Chenoweth",
+      "year": 2003,
+      "difficulty": "hard",
+      "youtube_id": "OdQ1CG11wTQ",
+      "answers_accepted": {
+        "title_variants": ["popular"],
+        "artist_variants": ["kristin chenoweth", "chenoweth", "wicked"],
+        "scoring": "title_or_artist",
+        "notes": "From Wicked (2003 Broadway)"
+      },
+      "cover_url": "https://img.youtube.com/vi/OdQ1CG11wTQ/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Memory",
+      "artist": "Elaine Paige",
+      "year": 1981,
+      "difficulty": "medium",
+      "youtube_id": "qIt5G26Z25E",
+      "answers_accepted": {
+        "title_variants": ["memory"],
+        "artist_variants": ["elaine paige", "elainepaige", "cats"],
+        "scoring": "title_or_artist",
+        "notes": "From Cats (1981)"
+      },
+      "cover_url": "https://img.youtube.com/vi/qIt5G26Z25E/hqdefault.jpg"
+    }
+  ]
+}

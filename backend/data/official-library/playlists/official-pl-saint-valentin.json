@@ -1,0 +1,233 @@
+{
+  "id": "official-pl-saint-valentin",
+  "name_fr": "Saint-Valentin",
+  "name_en": "Valentine's Day",
+  "description_fr": "Slows romantiques et ballades intimistes pour la Saint-Valentin. De Piaf à Adele, des classiques pour danser à deux.",
+  "description_en": "Romantic slow songs and intimate ballads for Valentine's Day. From Piaf to Adele, classics to dance to as a couple.",
+  "locale_primary": "international",
+  "theme": "thematic_saint_valentin",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover"],
+    "year_range_strict": [1960, 2020]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Wonderful Tonight",
+      "artist": "Eric Clapton",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "fxAiUq8yn34",
+      "answers_accepted": {
+        "title_variants": ["wonderful tonight", "wonderfultonight"],
+        "artist_variants": ["eric clapton", "clapton"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/fxAiUq8yn34/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "At Last",
+      "artist": "Etta James",
+      "year": 1960,
+      "difficulty": "medium",
+      "youtube_id": "S-cbOl96RFM",
+      "answers_accepted": {
+        "title_variants": ["at last", "atlast"],
+        "artist_variants": ["etta james", "ettajames"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/S-cbOl96RFM/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "Unchained Melody",
+      "artist": "The Righteous Brothers",
+      "year": 1965,
+      "difficulty": "easy",
+      "youtube_id": "qiiyq2xrSI0",
+      "answers_accepted": {
+        "title_variants": ["unchained melody", "unchainedmelody"],
+        "artist_variants": ["the righteous brothers", "righteous brothers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/qiiyq2xrSI0/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "Just the Way You Are",
+      "artist": "Bruno Mars",
+      "year": 2010,
+      "difficulty": "easy",
+      "youtube_id": "E-UJTGXof6Q",
+      "answers_accepted": {
+        "title_variants": ["just the way you are", "justthewayyouare", "the way you are"],
+        "artist_variants": ["bruno mars", "brunomars"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/E-UJTGXof6Q/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Thinking Out Loud",
+      "artist": "Ed Sheeran",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "WpyfrixXBqU",
+      "answers_accepted": {
+        "title_variants": ["thinking out loud", "thinkingoutloud"],
+        "artist_variants": ["ed sheeran", "edsheeran"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/WpyfrixXBqU/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Make You Feel My Love",
+      "artist": "Adele",
+      "year": 2008,
+      "difficulty": "medium",
+      "youtube_id": "9_LKDk5AF6g",
+      "answers_accepted": {
+        "title_variants": ["make you feel my love", "makeyoufeelmylove"],
+        "artist_variants": ["adele", "bob dylan"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/9_LKDk5AF6g/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Stay With Me",
+      "artist": "Sam Smith",
+      "year": 2014,
+      "difficulty": "easy",
+      "youtube_id": "bXDSR4GggUU",
+      "answers_accepted": {
+        "title_variants": ["stay with me", "staywithme"],
+        "artist_variants": ["sam smith", "samsmith"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/bXDSR4GggUU/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Toi + Moi",
+      "artist": "Grégoire",
+      "year": 2008,
+      "difficulty": "easy",
+      "youtube_id": "1B083_AiXTU",
+      "answers_accepted": {
+        "title_variants": ["toi + moi", "toi et moi", "toi plus moi", "toimoi"],
+        "artist_variants": ["grégoire", "gregoire"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/1B083_AiXTU/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Je l'aime à mourir",
+      "artist": "Francis Cabrel",
+      "year": 1979,
+      "difficulty": "easy",
+      "youtube_id": "MzvlalfN0Es",
+      "answers_accepted": {
+        "title_variants": [
+          "je l'aime à mourir",
+          "je laime a mourir",
+          "je laime à mourir",
+          "l'aime à mourir"
+        ],
+        "artist_variants": ["francis cabrel", "cabrel"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/MzvlalfN0Es/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Je t'aime moi non plus",
+      "artist": "Serge Gainsbourg & Jane Birkin",
+      "year": 1969,
+      "difficulty": "medium",
+      "youtube_id": "JIQiGN-vO-g",
+      "answers_accepted": {
+        "title_variants": ["je t'aime moi non plus", "je taime moi non plus", "je t'aime non plus"],
+        "artist_variants": ["serge gainsbourg", "gainsbourg", "jane birkin", "birkin"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JIQiGN-vO-g/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Endless Love",
+      "artist": "Lionel Richie & Diana Ross",
+      "year": 1981,
+      "difficulty": "medium",
+      "youtube_id": "UsqDoz2Co4o",
+      "answers_accepted": {
+        "title_variants": ["endless love", "endlesslove"],
+        "artist_variants": ["lionel richie", "diana ross", "lionelrichie"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/UsqDoz2Co4o/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "(Everything I Do) I Do It for You",
+      "artist": "Bryan Adams",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "Y0pdQU87dc8",
+      "answers_accepted": {
+        "title_variants": ["everything i do i do it for you", "i do it for you", "everything i do"],
+        "artist_variants": ["bryan adams", "bryanadams"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Y0pdQU87dc8/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Lovesong",
+      "artist": "The Cure",
+      "year": 1989,
+      "difficulty": "medium",
+      "youtube_id": "ks_qOI0lzho",
+      "answers_accepted": {
+        "title_variants": ["lovesong", "love song"],
+        "artist_variants": ["the cure", "cure"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ks_qOI0lzho/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Ti amo",
+      "artist": "Umberto Tozzi",
+      "year": 1977,
+      "difficulty": "medium",
+      "youtube_id": "TxtjTag4-Mw",
+      "answers_accepted": {
+        "title_variants": ["ti amo", "tiamo"],
+        "artist_variants": ["umberto tozzi", "tozzi"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/TxtjTag4-Mw/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Come Away With Me",
+      "artist": "Norah Jones",
+      "year": 2002,
+      "difficulty": "medium",
+      "youtube_id": "9IZ_d6zadGw",
+      "answers_accepted": {
+        "title_variants": ["come away with me", "comeawaywithme"],
+        "artist_variants": ["norah jones", "norahjones"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/9IZ_d6zadGw/hqdefault.jpg"
+    }
+  ]
+}

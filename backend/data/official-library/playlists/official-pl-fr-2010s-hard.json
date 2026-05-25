@@ -1,0 +1,238 @@
+{
+  "id": "official-pl-fr-2010s-hard",
+  "name_fr": "Variété FR Années 2010 — Hard",
+  "name_en": "French 2010s — Hard",
+  "description_fr": "Les morceaux pointus de la décennie 2010 en français : artistes confirmés mais moins matraqués.",
+  "description_en": "The deeper cuts of French 2010s: established artists but less radio-played.",
+  "locale_primary": "fr",
+  "theme": "decade_lang_fr_2010s",
+  "difficulty": "hard",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [2010, 2019]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Tu vas me manquer",
+      "artist": "Maître Gims",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "92g2tRnHWOw",
+      "answers_accepted": {
+        "title_variants": ["tu vas me manquer", "tuvasmemanquer"],
+        "artist_variants": ["maître gims", "maitre gims", "gims"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/92g2tRnHWOw/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "Roméo kiffe Juliette",
+      "artist": "Grand Corps Malade",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "RcxRMikZrbY",
+      "answers_accepted": {
+        "title_variants": ["roméo kiffe juliette", "romeo kiffe juliette"],
+        "artist_variants": ["grand corps malade", "gcm"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6PKSD1CJ07ZSM908hNPv1Q",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27303af9cbe1b3c728e7cf8559e"
+    },
+    {
+      "position": 3,
+      "title": "Tcheu la chance",
+      "artist": "Vianney",
+      "year": 2018,
+      "difficulty": "hard",
+      "youtube_id": null,
+      "answers_accepted": {
+        "title_variants": ["tcheu la chance", "tcheulachance"],
+        "artist_variants": ["vianney", "vianey"],
+        "scoring": "title_or_artist"
+      }
+    },
+    {
+      "position": 4,
+      "title": "Volver",
+      "artist": "Benjamin Biolay",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "m1GYzlm7uPc",
+      "answers_accepted": {
+        "title_variants": ["volver", "voler"],
+        "artist_variants": ["benjamin biolay", "biolay"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0Ph5fB8lvN3ofliixBV78a",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27368a9120c7fb7b47e685b09ac"
+    },
+    {
+      "position": 5,
+      "title": "La marche du président",
+      "artist": "Calogero",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "7l7eXx_8DHY",
+      "answers_accepted": {
+        "title_variants": ["la marche du président", "marche du président", "marche président"],
+        "artist_variants": ["calogero", "kalogero"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3IQnD3qnyLpTpCWtwxDrGz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2732f5c9df901fc3f3797358fb1"
+    },
+    {
+      "position": 6,
+      "title": "Trying to Be Cool",
+      "artist": "Phoenix",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "OePvsCfKHJg",
+      "answers_accepted": {
+        "title_variants": ["trying to be cool", "tryingtobecool"],
+        "artist_variants": ["phoenix", "phoenix french band"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3adprsGoZuParw5pyhhLCc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ce012bca8ab9182d2dd7d0b5"
+    },
+    {
+      "position": 7,
+      "title": "Mon précieux",
+      "artist": "Soprano",
+      "year": 2016,
+      "difficulty": "hard",
+      "youtube_id": "OVmfGb8XKSg",
+      "answers_accepted": {
+        "title_variants": ["mon précieux", "mon precieux"],
+        "artist_variants": ["soprano", "sopra"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5iVW4ipZpHbkqbsW91EH0e",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27339505eb7ec495325624dabee"
+    },
+    {
+      "position": 8,
+      "title": "Le Soldat",
+      "artist": "Florent Pagny",
+      "year": 2013,
+      "difficulty": "hard",
+      "youtube_id": "EXKSd9WpdeU",
+      "answers_accepted": {
+        "title_variants": ["le soldat", "soldat"],
+        "artist_variants": ["florent pagny", "pagny"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6AyFrKktqL7ikwIUUGLZut",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733a0e052fa9da19c9eab6acf0"
+    },
+    {
+      "position": 9,
+      "title": "Lou",
+      "artist": "Slimane",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "7MuJGOKIv7I",
+      "answers_accepted": {
+        "title_variants": ["lou", "loulou"],
+        "artist_variants": ["slimane", "slimane nebchi"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1bd9nD6PZuwyBii3vgvhgj",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273bfd81febd4a153408b7e2954"
+    },
+    {
+      "position": 10,
+      "title": "Effets secondaires",
+      "artist": "Bénabar",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "Ncia7LYEcQc",
+      "answers_accepted": {
+        "title_variants": ["effets secondaires", "effet secondaire"],
+        "artist_variants": ["bénabar", "benabar"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Ncia7LYEcQc/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "La folie",
+      "artist": "Brigitte",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "0PEbXUJGPxo",
+      "answers_accepted": {
+        "title_variants": ["la folie", "folie"],
+        "artist_variants": ["brigitte", "brigitte duo"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/0PEbXUJGPxo/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Pour la peine",
+      "artist": "Bénabar",
+      "year": 2016,
+      "difficulty": "hard",
+      "youtube_id": "Y95LNv2xz3A",
+      "answers_accepted": {
+        "title_variants": ["pour la peine", "la peine"],
+        "artist_variants": ["bénabar", "benabar"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3r6d8j6SnpGhRenLW6qehc",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fbedd5fbe445c32cd1b0e2b6"
+    },
+    {
+      "position": 13,
+      "title": "La fée",
+      "artist": "ZAZ",
+      "year": 2010,
+      "difficulty": "hard",
+      "youtube_id": "9Wrlv7L_Bj8",
+      "answers_accepted": {
+        "title_variants": ["la fée", "la fee", "fée"],
+        "artist_variants": ["zaz", "isabelle geffroy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "06pqXPHiUMiTagMqmDKttd",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733b5969aba116e8248a3e6369"
+    },
+    {
+      "position": 14,
+      "title": "Les yeux de la mama",
+      "artist": "Kendji Girac",
+      "year": 2014,
+      "difficulty": "hard",
+      "youtube_id": "YgP2whwA2Wg",
+      "answers_accepted": {
+        "title_variants": ["les yeux de la mama", "yeux de la mama"],
+        "artist_variants": ["kendji girac", "kendji"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6poGBHDUUWlQmqGg300m2j",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733bbe9fa7b1fbbebfd90c9612"
+    },
+    {
+      "position": 15,
+      "title": "Comme moi",
+      "artist": "Bigflo & Oli",
+      "year": 2017,
+      "difficulty": "hard",
+      "youtube_id": "lNR_LkDju6g",
+      "answers_accepted": {
+        "title_variants": ["comme moi", "commemoi"],
+        "artist_variants": ["bigflo & oli", "bigflo et oli", "bigflo oli"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6BDMEFAXWg3yOjVaZW0KrL",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730da60b4e061163475c623248"
+    }
+  ]
+}

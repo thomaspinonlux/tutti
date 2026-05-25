@@ -1,0 +1,280 @@
+{
+  "id": "official-pl-fr-2000s-mix",
+  "name_fr": "Variété FR — Années 2000 — Mix",
+  "name_en": "French Hits — 2000s — Mix",
+  "description_fr": "Un mélange équilibré de la décennie francophone : 5 megahits, 5 grands classiques, 5 perles plus pointues. Le sampler parfait des 2000s FR.",
+  "description_en": "A balanced mix of the French-language decade: 5 megahits, 5 great classics, 5 sharper gems. The perfect French 2000s sampler.",
+  "locale_primary": "fr",
+  "theme": "decade_lang",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio_2000s",
+    "avoid": ["remix", "remaster_truncated", "live", "cover", "karaoke", "acoustic"],
+    "year_range_strict": [2000, 2009]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Moi... Lolita",
+      "artist": "Alizée",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "uGFU0kizUE0",
+      "answers_accepted": {
+        "title_variants": ["moi lolita", "moilolita", "moi... lolita", "lolita", "moilo lita"],
+        "artist_variants": ["alizée", "alizee", "alize", "alyzee"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6e0LjNPkRqxIAlmmdjWSV8",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734325b1cea7f26a4edaa17de3"
+    },
+    {
+      "position": 2,
+      "title": "Fous ta cagoule",
+      "artist": "Fatal Bazooka",
+      "year": 2007,
+      "difficulty": "easy",
+      "youtube_id": "YciiwoXQmag",
+      "answers_accepted": {
+        "title_variants": ["fous ta cagoule", "foustacagoule", "fous ta cagoul", "ta cagoule"],
+        "artist_variants": [
+          "fatal bazooka",
+          "fatalbazooka",
+          "fatal bazouka",
+          "fatal bazooka michael youn"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1YjCFn4DXR2Dl3NWUuWtT2",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a10f04a890380c59ca20e195"
+    },
+    {
+      "position": 3,
+      "title": "Le papa pingouin",
+      "artist": "Pigloo",
+      "year": 2006,
+      "difficulty": "easy",
+      "youtube_id": "IDEXLK-n1J4",
+      "answers_accepted": {
+        "title_variants": ["le papa pingouin", "papa pingouin", "papapingouin", "papa pinguouin"],
+        "artist_variants": ["pigloo", "piglou", "pigloux"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "18sK4fcZvpKWM3Ytn1EOwV",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fb99249a3edf8f1e72dcdd8a"
+    },
+    {
+      "position": 4,
+      "title": "Les bobos",
+      "artist": "Renaud",
+      "year": 2006,
+      "difficulty": "easy",
+      "youtube_id": "xZJSmV6t-8Q",
+      "answers_accepted": {
+        "title_variants": ["les bobos", "lesbobos", "bobos", "les bobo"],
+        "artist_variants": ["renaud", "renaud séchan", "renaud sechan", "renauld"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "26QSpye3i7J9OXnmN5JnPg",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f745e0ecff38ff17139325a0"
+    },
+    {
+      "position": 5,
+      "title": "La banane",
+      "artist": "Philippe Katerine",
+      "year": 2005,
+      "difficulty": "easy",
+      "youtube_id": "h3ilLEN1Qew",
+      "answers_accepted": {
+        "title_variants": ["la banane", "labanane", "banane", "la bananee"],
+        "artist_variants": [
+          "philippe katerine",
+          "philippekaterine",
+          "philippe katerin",
+          "katerine"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1tkUiDUKwPrzBmThNI5Cid",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273e00f02a767457543c709ae0d"
+    },
+    {
+      "position": 6,
+      "title": "À la faveur de l'automne",
+      "artist": "Tété",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "1mvz7I7Dp5c",
+      "answers_accepted": {
+        "title_variants": [
+          "à la faveur de l'automne",
+          "a la faveur de lautomne",
+          "alafaveurde l'automne",
+          "faveur de l'automne",
+          "à la faveur"
+        ],
+        "artist_variants": ["tété", "tete", "tete band", "tt"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5XCeCprrLZHLHHmKxYOXq1",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733623b57d5fd3c6476ea35795"
+    },
+    {
+      "position": 7,
+      "title": "Donne-moi le temps",
+      "artist": "Jenifer",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "VYErbv_vNCI",
+      "answers_accepted": {
+        "title_variants": [
+          "donne-moi le temps",
+          "donne moi le temps",
+          "donnemoi le temps",
+          "donne moi temps",
+          "donne moi le temp"
+        ],
+        "artist_variants": ["jenifer", "jeniffer", "jenifer bartoli", "jenifere"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "40xyvJDp2caK50dhre26JU",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273a6c12adb15c4c621f9deae94"
+    },
+    {
+      "position": 8,
+      "title": "Comme avant",
+      "artist": "Doc Gynéco & Vitaa",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "KnFCNQUTgaU",
+      "answers_accepted": {
+        "title_variants": ["comme avant", "commeavant", "comme avanlt", "tout comme avant"],
+        "artist_variants": [
+          "doc gynéco",
+          "doc gyneco",
+          "vitaa",
+          "doc gyneco vitaa",
+          "doc gynéco et vitaa"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/KnFCNQUTgaU/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Désolé pour hier soir",
+      "artist": "Tryo",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "dYkeH5UVw8U",
+      "answers_accepted": {
+        "title_variants": ["désolé pour hier soir", "desole pour hier soir", "désolé hier soir"],
+        "artist_variants": ["tryo", "trio", "tryoo"],
+        "scoring": "title_or_artist",
+        "notes": "Sortie 1998 mais reste un classique de l'écoute 2000s."
+      },
+      "spotify_id": "4pI3b2w9WACkH3Wx5gM7ag",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d00a1c12837dcede74f612f5"
+    },
+    {
+      "position": 10,
+      "title": "Ces idées-là",
+      "artist": "Louis Bertignac",
+      "year": 2005,
+      "difficulty": "medium",
+      "youtube_id": "ksYOJ1mJGuA",
+      "answers_accepted": {
+        "title_variants": ["ces idées-là", "ces idees la", "cesideeslà", "ces idee la", "idees la"],
+        "artist_variants": ["louis bertignac", "louisbertignac", "louis bertignaque", "bertignac"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ksYOJ1mJGuA/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "La rage",
+      "artist": "Keny Arkana",
+      "year": 2006,
+      "difficulty": "hard",
+      "youtube_id": "Bylh9TEPymw",
+      "answers_accepted": {
+        "title_variants": ["la rage", "larage", "rage"],
+        "artist_variants": ["keny arkana", "kenyarkana", "kenny arkana", "keni arkana"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0cCi1Gf9lHNf6s17GwreLa",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27301481d03c32d8ef0f44eac7e"
+    },
+    {
+      "position": 12,
+      "title": "Madame rêve",
+      "artist": "Bashung",
+      "year": 2008,
+      "difficulty": "hard",
+      "youtube_id": "4Fkqf34loWk",
+      "answers_accepted": {
+        "title_variants": ["madame rêve", "madame reve", "madamereve", "mme rêve"],
+        "artist_variants": ["alain bashung", "bashung", "alainbashung", "bashoung"],
+        "scoring": "title_or_artist",
+        "notes": "Single original 1991 — version studio rééditée 2008 sur l'album Bleu Pétrole."
+      },
+      "spotify_id": "6XYJRFS9dDvtQ7ejpqumtF",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2735bd412f8f923778974a4d591"
+    },
+    {
+      "position": 13,
+      "title": "Tomber pour la France",
+      "artist": "Sliimy",
+      "year": 2009,
+      "difficulty": "hard",
+      "youtube_id": "SC06NyI6KKU",
+      "answers_accepted": {
+        "title_variants": [
+          "tomber pour la france",
+          "tomberpourlafrance",
+          "tomber france",
+          "tomber pour france"
+        ],
+        "artist_variants": ["sliimy", "slimy", "slimi", "sliimi"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/SC06NyI6KKU/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Le frunkp",
+      "artist": "Vitalic",
+      "year": 2005,
+      "difficulty": "hard",
+      "youtube_id": "hvzFPqM7THk",
+      "answers_accepted": {
+        "title_variants": ["le frunkp", "frunkp", "lefrunkp", "le franc"],
+        "artist_variants": ["vitalic", "vitalick", "vitalique", "vitalc"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3aZV93qX6WiIb7StFzKUOR",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27399ef2aa79460e3a3267634ac"
+    },
+    {
+      "position": 15,
+      "title": "Soleils Cou Coupés",
+      "artist": "Boy",
+      "year": 2009,
+      "difficulty": "hard",
+      "youtube_id": "Ukg95p1W_aQ",
+      "answers_accepted": {
+        "title_variants": [
+          "soleils cou coupés",
+          "soleilcoucoupes",
+          "soleil cou coupé",
+          "soleils cou coupes"
+        ],
+        "artist_variants": ["boy", "boy band", "boi"],
+        "scoring": "title_or_artist",
+        "notes": "Si difficile à matcher, accepter alternative pour le mix : remplacer par 'Caress' de Justice (2007)."
+      },
+      "cover_url": "https://img.youtube.com/vi/Ukg95p1W_aQ/hqdefault.jpg"
+    }
+  ]
+}

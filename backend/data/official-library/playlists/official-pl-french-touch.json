@@ -1,0 +1,264 @@
+{
+  "id": "official-pl-french-touch",
+  "name_fr": "French Touch & Electro",
+  "name_en": "French Touch & Electro",
+  "description_fr": "L'electro made in France de 1995 à 2010. Daft Punk, Air, Justice, Cassius, Modjo, Stardust, Bob Sinclar.",
+  "description_en": "French-made electronica from 1995 to 2010. Daft Punk, Air, Justice, Cassius, Modjo, Stardust, Bob Sinclar.",
+  "locale_primary": "international",
+  "theme": "thematic_french_touch",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "karaoke"],
+    "year_range_strict": [1995, 2015]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Da Funk",
+      "artist": "Daft Punk",
+      "year": 1995,
+      "difficulty": "medium",
+      "youtube_id": "PwILkY9gRrc",
+      "answers_accepted": {
+        "title_variants": ["da funk", "dafunk", "the funk"],
+        "artist_variants": ["daft punk", "daftpunk", "daft punks"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1r0dZYmg4dIJsKdUx2xFma",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27319ccb730a0b9ed87d57b8889"
+    },
+    {
+      "position": 2,
+      "title": "One More Time",
+      "artist": "Daft Punk",
+      "year": 2000,
+      "difficulty": "easy",
+      "youtube_id": "A2VpR8HahKc",
+      "answers_accepted": {
+        "title_variants": ["one more time", "onemoretime", "one time"],
+        "artist_variants": ["daft punk", "daftpunk", "daft punks"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5F0fiSkDxZL5V3SlnTNhKh",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b27338e5c88261ac859cee792916"
+    },
+    {
+      "position": 3,
+      "title": "Music Sounds Better with You",
+      "artist": "Stardust",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "EvHzRASaCxs",
+      "answers_accepted": {
+        "title_variants": [
+          "music sounds better with you",
+          "music sounds better",
+          "musicsoundsbetterwithyou",
+          "sounds better with you"
+        ],
+        "artist_variants": ["stardust", "star dust", "stardusts"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "303ccTay2FiDTZ9fZ2AdBt",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b98afa12c212cbbda4f1799b"
+    },
+    {
+      "position": 4,
+      "title": "Sexy Boy",
+      "artist": "Air",
+      "year": 1998,
+      "difficulty": "medium",
+      "youtube_id": "R6Yfk-RL_9A",
+      "answers_accepted": {
+        "title_variants": ["sexy boy", "sexyboy", "sexy boyz"],
+        "artist_variants": ["air", "air french band", "air group"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/R6Yfk-RL_9A/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "La Femme d'argent",
+      "artist": "Air",
+      "year": 1998,
+      "difficulty": "hard",
+      "youtube_id": "YUX8fUrKRNU",
+      "answers_accepted": {
+        "title_variants": [
+          "la femme d'argent",
+          "la femme dargent",
+          "femme d'argent",
+          "femme dargent",
+          "lafemmedargent"
+        ],
+        "artist_variants": ["air", "air french band"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/YUX8fUrKRNU/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "D.A.N.C.E.",
+      "artist": "Justice",
+      "year": 2007,
+      "difficulty": "easy",
+      "youtube_id": "tCnBrrnOefs",
+      "answers_accepted": {
+        "title_variants": ["dance", "d.a.n.c.e.", "d a n c e", "justice dance"],
+        "artist_variants": ["justice", "justis"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/tCnBrrnOefs/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "La Ritournelle",
+      "artist": "Sébastien Tellier",
+      "year": 2004,
+      "difficulty": "hard",
+      "youtube_id": "crblDrrcunQ",
+      "answers_accepted": {
+        "title_variants": ["la ritournelle", "ritournelle", "laritournelle", "la ritournele"],
+        "artist_variants": [
+          "sébastien tellier",
+          "sebastien tellier",
+          "sebastientellier",
+          "tellier"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/crblDrrcunQ/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "Cassius 1999",
+      "artist": "Cassius",
+      "year": 1999,
+      "difficulty": "hard",
+      "youtube_id": "NDesnOyWzL0",
+      "answers_accepted": {
+        "title_variants": ["cassius 1999", "cassius1999", "1999 cassius"],
+        "artist_variants": ["cassius", "kassius", "cassius french touch"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NDesnOyWzL0/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Hello",
+      "artist": "Martin Solveig & Dragonette",
+      "year": 2010,
+      "difficulty": "easy",
+      "youtube_id": "WmH4iWoJfTo",
+      "answers_accepted": {
+        "title_variants": ["hello", "helo", "alo"],
+        "artist_variants": [
+          "martin solveig",
+          "martinsolveig",
+          "dragonette",
+          "martin solveig dragonette",
+          "martin solveig & dragonette"
+        ],
+        "scoring": "title_or_artist",
+        "notes": "Plusieurs morceaux portent ce titre. Cible : Martin Solveig & Dragonette 2010."
+      },
+      "cover_url": "https://img.youtube.com/vi/WmH4iWoJfTo/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Lady (Hear Me Tonight)",
+      "artist": "Modjo",
+      "year": 2000,
+      "difficulty": "medium",
+      "youtube_id": "mMfxI3r_LyA",
+      "answers_accepted": {
+        "title_variants": ["lady hear me tonight", "lady", "hear me tonight", "lady modjo"],
+        "artist_variants": ["modjo", "modjjo", "modjo lady"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/mMfxI3r_LyA/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Together",
+      "artist": "Bob Sinclar",
+      "year": 2004,
+      "difficulty": "medium",
+      "youtube_id": "ucVbmCL0u-g",
+      "answers_accepted": {
+        "title_variants": ["together", "togethers", "togheter"],
+        "artist_variants": ["bob sinclar", "bobsinclar", "bob sinclair", "sinclar"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ucVbmCL0u-g/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Poney Part 1",
+      "artist": "Vitalic",
+      "year": 2005,
+      "difficulty": "hard",
+      "youtube_id": "JukJgxLiFLE",
+      "answers_accepted": {
+        "title_variants": ["poney part 1", "poney", "poney part one", "poneypart1"],
+        "artist_variants": ["vitalic", "vitalick", "vitalique"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JukJgxLiFLE/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "New Soul",
+      "artist": "Yael Naïm",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "hhE7QMXRE1g",
+      "answers_accepted": {
+        "title_variants": ["new soul", "newsoul", "nu soul"],
+        "artist_variants": ["yael naïm", "yael naim", "yaelnaim", "yaël naïm"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/hhE7QMXRE1g/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "Discopolis",
+      "artist": "Lifelike & Kris Menace",
+      "year": 2007,
+      "difficulty": "hard",
+      "youtube_id": "5Ft8yL7VLR4",
+      "answers_accepted": {
+        "title_variants": ["discopolis", "disco polis", "discopolice"],
+        "artist_variants": [
+          "lifelike",
+          "kris menace",
+          "lifelike & kris menace",
+          "lifelike kris menace"
+        ],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/5Ft8yL7VLR4/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "We Are Your Friends",
+      "artist": "Justice vs Simian",
+      "year": 2003,
+      "difficulty": "medium",
+      "youtube_id": "L0TvnWRSyr4",
+      "answers_accepted": {
+        "title_variants": [
+          "we are your friends",
+          "we are friends",
+          "weareyourfriends",
+          "your friends"
+        ],
+        "artist_variants": ["justice", "simian", "justice vs simian", "justice & simian"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/L0TvnWRSyr4/hqdefault.jpg"
+    }
+  ]
+}

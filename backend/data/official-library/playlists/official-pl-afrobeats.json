@@ -1,0 +1,243 @@
+{
+  "id": "official-pl-afrobeats",
+  "name_fr": "Afrobeats",
+  "name_en": "Afrobeats",
+  "description_fr": "La nouvelle vague africaine : Burna Boy, Wizkid, Davido, Rema, Tems, CKay, Asake. Le son du Nigeria conquiert le monde.",
+  "description_en": "The new African wave: Burna Boy, Wizkid, Davido, Rema, Tems, CKay, Asake. The sound of Nigeria conquers the world.",
+  "locale_primary": "international",
+  "theme": "thematic_afrobeats",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "instrumental"],
+    "year_range_strict": [2019, 2025]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Last Last",
+      "artist": "Burna Boy",
+      "year": 2022,
+      "difficulty": "easy",
+      "youtube_id": "421w1j87fEM",
+      "answers_accepted": {
+        "title_variants": ["last last", "lastlast"],
+        "artist_variants": ["burna boy", "burnaboy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5YbPxJwPfrj7uswNwoF1pJ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273d98e997eaad5f503b9e1f2f2"
+    },
+    {
+      "position": 2,
+      "title": "City Boys",
+      "artist": "Burna Boy",
+      "year": 2023,
+      "difficulty": "medium",
+      "youtube_id": "cdsUfPdEvY4",
+      "answers_accepted": {
+        "title_variants": ["city boys", "cityboys"],
+        "artist_variants": ["burna boy", "burnaboy"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4RoKNqyZ9622tcAeNPNv5k",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273c361f3720bafc0da36f14d96"
+    },
+    {
+      "position": 3,
+      "title": "Essence",
+      "artist": "Wizkid",
+      "year": 2020,
+      "difficulty": "easy",
+      "youtube_id": "m77FDcKg96Q",
+      "answers_accepted": {
+        "title_variants": ["essence"],
+        "artist_variants": ["wizkid", "tems", "wizkid tems"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5FG7Tl93LdH117jEKYl3Cm",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b5b1023769a6bf19b14d66ab"
+    },
+    {
+      "position": 4,
+      "title": "Bad to Me",
+      "artist": "Wizkid",
+      "year": 2023,
+      "difficulty": "medium",
+      "youtube_id": "zw3e6mRWLHY",
+      "answers_accepted": {
+        "title_variants": ["bad to me", "badtome"],
+        "artist_variants": ["wizkid"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2HYcI74UpbMMxLZ1m7Xnfn",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273b54c408956d804436c2cead2"
+    },
+    {
+      "position": 5,
+      "title": "Calm Down",
+      "artist": "Rema",
+      "year": 2022,
+      "difficulty": "easy",
+      "youtube_id": "h1iXtgCOCxo",
+      "answers_accepted": {
+        "title_variants": ["calm down", "calmdown"],
+        "artist_variants": ["rema", "selena gomez", "rema selena"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "6hgoYQDUcPyCz7LcTUHKxa",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734104f6b4175d04d69ab73c85"
+    },
+    {
+      "position": 6,
+      "title": "Charm",
+      "artist": "Rema",
+      "year": 2023,
+      "difficulty": "medium",
+      "youtube_id": "MOt3KLHyDhU",
+      "answers_accepted": {
+        "title_variants": ["charm"],
+        "artist_variants": ["rema"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1iBWjQ9af9NnUd5xnQDB3k",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273963265801aa5c9740ad159b7"
+    },
+    {
+      "position": 7,
+      "title": "Stand Strong",
+      "artist": "Davido",
+      "year": 2022,
+      "difficulty": "medium",
+      "youtube_id": "OqTpz0ZIgu4",
+      "answers_accepted": {
+        "title_variants": ["stand strong", "standstrong"],
+        "artist_variants": ["davido"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "1XUf5lpeTQbrohZWdx6Sbz",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2734291e236fb21e762f1b953e8"
+    },
+    {
+      "position": 8,
+      "title": "Unavailable",
+      "artist": "Davido",
+      "year": 2023,
+      "difficulty": "medium",
+      "youtube_id": "ZBnn_4v2PYM",
+      "answers_accepted": {
+        "title_variants": ["unavailable"],
+        "artist_variants": ["davido", "musa keys"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2kaH2Z8ezDUKf6fNw250rZ",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273adfc1ac5836f96adac580271"
+    },
+    {
+      "position": 9,
+      "title": "Free Mind",
+      "artist": "Tems",
+      "year": 2020,
+      "difficulty": "medium",
+      "youtube_id": "mlaTJrQdmiY",
+      "answers_accepted": {
+        "title_variants": ["free mind", "freemind"],
+        "artist_variants": ["tems"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2mzM4Y0Rnx2BDZqRnhQ5Q6",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2730ab4d3e1c0b5c5e453287a4c"
+    },
+    {
+      "position": 10,
+      "title": "Try Me",
+      "artist": "Tems",
+      "year": 2020,
+      "difficulty": "hard",
+      "youtube_id": "hVEp-P2-rqY",
+      "answers_accepted": {
+        "title_variants": ["try me", "tryme"],
+        "artist_variants": ["tems"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4Ieod2ueT9GEEz9ILN84qP",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273f28093176a965643b2ddf76c"
+    },
+    {
+      "position": 11,
+      "title": "Love Nwantiti (Ah Ah Ah)",
+      "artist": "CKay",
+      "year": 2019,
+      "difficulty": "easy",
+      "youtube_id": "7l22qaD31iE",
+      "answers_accepted": {
+        "title_variants": ["love nwantiti", "love nwantiti ah ah ah", "ah ah ah", "nwantiti"],
+        "artist_variants": ["ckay", "c kay", "c-kay"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "2Xr1dTzJee307rmrkt8c0g",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273405fdad252857e01dbced96a"
+    },
+    {
+      "position": 12,
+      "title": "Sungba",
+      "artist": "Asake",
+      "year": 2022,
+      "difficulty": "hard",
+      "youtube_id": "vI6-ya4Cjjo",
+      "answers_accepted": {
+        "title_variants": ["sungba"],
+        "artist_variants": ["asake"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "3KO1322zrWwGa8TWQDBFvg",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273ce654746bbe1a62c785b8290"
+    },
+    {
+      "position": 13,
+      "title": "Lonely at the Top",
+      "artist": "Asake",
+      "year": 2023,
+      "difficulty": "hard",
+      "youtube_id": "3JQA7W_dLUg",
+      "answers_accepted": {
+        "title_variants": ["lonely at the top", "lonelyatthetop"],
+        "artist_variants": ["asake"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "5ZtK8XAVnoaGdBXZWCEVCY",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2737e2b5827ffc185e44c3e6ef0"
+    },
+    {
+      "position": 14,
+      "title": "Buga (Lo Lo)",
+      "artist": "Kizz Daniel",
+      "year": 2022,
+      "difficulty": "medium",
+      "youtube_id": "g8L1ke-yJx4",
+      "answers_accepted": {
+        "title_variants": ["buga", "buga lo lo", "lolo"],
+        "artist_variants": ["kizz daniel", "kizzdaniel", "tekno"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "4eZZofkV1OQ9GDqAgHqNpA",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b2733b820e00addd0c78e6542dc3"
+    },
+    {
+      "position": 15,
+      "title": "Cough (Odoyewu)",
+      "artist": "Kizz Daniel",
+      "year": 2022,
+      "difficulty": "hard",
+      "youtube_id": "4j7Fa2PCMow",
+      "answers_accepted": {
+        "title_variants": ["cough", "odoyewu", "cough odoyewu"],
+        "artist_variants": ["kizz daniel", "kizzdaniel"],
+        "scoring": "title_or_artist"
+      },
+      "spotify_id": "0u2A4QNAMUyfQbgfVR3HvK",
+      "cover_url": "https://i.scdn.co/image/ab67616d0000b273fec2bbc7268a4590934b3251"
+    }
+  ]
+}

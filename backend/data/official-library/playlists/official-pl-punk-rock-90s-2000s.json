@@ -1,0 +1,228 @@
+{
+  "id": "official-pl-punk-rock-90s-2000s",
+  "name_fr": "Punk Rock — 90s & 2000s",
+  "name_en": "Punk Rock — 90s & 2000s",
+  "description_fr": "L'ère du punk-pop moderne : Green Day, Blink-182, The Offspring, Sum 41, Avril Lavigne. L'esprit ado rebelle des années 90-2000.",
+  "description_en": "The modern pop-punk era: Green Day, Blink-182, The Offspring, Sum 41, Avril Lavigne. The rebellious teen spirit of the 90s-2000s.",
+  "locale_primary": "international",
+  "theme": "thematic_punk_rock_90s_2000s",
+  "difficulty": "mix",
+  "track_count": 15,
+  "import_hints": {
+    "preferred_version": "original_studio",
+    "avoid": ["remix", "live", "cover", "acoustic"],
+    "year_range_strict": [1991, 2010]
+  },
+  "tracks": [
+    {
+      "position": 1,
+      "title": "Basket Case",
+      "artist": "Green Day",
+      "year": 1994,
+      "difficulty": "easy",
+      "youtube_id": "NUTGr5t3MoY",
+      "answers_accepted": {
+        "title_variants": ["basket case", "basketcase"],
+        "artist_variants": ["green day", "greenday"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/NUTGr5t3MoY/hqdefault.jpg"
+    },
+    {
+      "position": 2,
+      "title": "American Idiot",
+      "artist": "Green Day",
+      "year": 2004,
+      "difficulty": "easy",
+      "youtube_id": "kqkGY9jsBOw",
+      "answers_accepted": {
+        "title_variants": ["american idiot", "americanidiot"],
+        "artist_variants": ["green day", "greenday"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/kqkGY9jsBOw/hqdefault.jpg"
+    },
+    {
+      "position": 3,
+      "title": "All the Small Things",
+      "artist": "Blink-182",
+      "year": 1999,
+      "difficulty": "easy",
+      "youtube_id": "ok5BJlAd5-4",
+      "answers_accepted": {
+        "title_variants": ["all the small things", "allthesmallthings", "small things"],
+        "artist_variants": ["blink-182", "blink 182", "blink182"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ok5BJlAd5-4/hqdefault.jpg"
+    },
+    {
+      "position": 4,
+      "title": "What's My Age Again?",
+      "artist": "Blink-182",
+      "year": 1999,
+      "difficulty": "medium",
+      "youtube_id": "93rCJwmnghM",
+      "answers_accepted": {
+        "title_variants": ["what's my age again", "whats my age again", "my age again"],
+        "artist_variants": ["blink-182", "blink 182", "blink182"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/93rCJwmnghM/hqdefault.jpg"
+    },
+    {
+      "position": 5,
+      "title": "Self Esteem",
+      "artist": "The Offspring",
+      "year": 1994,
+      "difficulty": "medium",
+      "youtube_id": "Abrn8aVQ76Q",
+      "answers_accepted": {
+        "title_variants": ["self esteem", "selfesteem"],
+        "artist_variants": ["the offspring", "offspring"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/Abrn8aVQ76Q/hqdefault.jpg"
+    },
+    {
+      "position": 6,
+      "title": "Pretty Fly (For a White Guy)",
+      "artist": "The Offspring",
+      "year": 1998,
+      "difficulty": "easy",
+      "youtube_id": "QtTR-_Klcq8",
+      "answers_accepted": {
+        "title_variants": ["pretty fly", "pretty fly for a white guy", "for a white guy"],
+        "artist_variants": ["the offspring", "offspring"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/QtTR-_Klcq8/hqdefault.jpg"
+    },
+    {
+      "position": 7,
+      "title": "Fat Lip",
+      "artist": "Sum 41",
+      "year": 2001,
+      "difficulty": "medium",
+      "youtube_id": "mY011yVrsPA",
+      "answers_accepted": {
+        "title_variants": ["fat lip", "fatlip"],
+        "artist_variants": ["sum 41", "sum41"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/mY011yVrsPA/hqdefault.jpg"
+    },
+    {
+      "position": 8,
+      "title": "In Too Deep",
+      "artist": "Sum 41",
+      "year": 2001,
+      "difficulty": "medium",
+      "youtube_id": "hq3FROVbchk",
+      "answers_accepted": {
+        "title_variants": ["in too deep", "intoodeep"],
+        "artist_variants": ["sum 41", "sum41"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/hq3FROVbchk/hqdefault.jpg"
+    },
+    {
+      "position": 9,
+      "title": "Sk8er Boi",
+      "artist": "Avril Lavigne",
+      "year": 2002,
+      "difficulty": "easy",
+      "youtube_id": "YHymfdlGaVU",
+      "answers_accepted": {
+        "title_variants": ["sk8er boi", "skater boy", "sk8erboi", "sk8r boi"],
+        "artist_variants": ["avril lavigne", "avril"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/YHymfdlGaVU/hqdefault.jpg"
+    },
+    {
+      "position": 10,
+      "title": "Complicated",
+      "artist": "Avril Lavigne",
+      "year": 2002,
+      "difficulty": "easy",
+      "youtube_id": "pjrBPHjCiuI",
+      "answers_accepted": {
+        "title_variants": ["complicated"],
+        "artist_variants": ["avril lavigne", "avril"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/pjrBPHjCiuI/hqdefault.jpg"
+    },
+    {
+      "position": 11,
+      "title": "Last Resort",
+      "artist": "Papa Roach",
+      "year": 2000,
+      "difficulty": "medium",
+      "youtube_id": "ArnRXGHm3KE",
+      "answers_accepted": {
+        "title_variants": ["last resort", "lastresort"],
+        "artist_variants": ["papa roach", "paparoach"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/ArnRXGHm3KE/hqdefault.jpg"
+    },
+    {
+      "position": 12,
+      "title": "Bring Me to Life",
+      "artist": "Evanescence",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "JixFMKqQU5w",
+      "answers_accepted": {
+        "title_variants": ["bring me to life", "bringmetolife"],
+        "artist_variants": ["evanescence", "amy lee"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/JixFMKqQU5w/hqdefault.jpg"
+    },
+    {
+      "position": 13,
+      "title": "Smells Like Teen Spirit",
+      "artist": "Nirvana",
+      "year": 1991,
+      "difficulty": "easy",
+      "youtube_id": "hTWKbfoikeg",
+      "answers_accepted": {
+        "title_variants": ["smells like teen spirit", "teen spirit", "smellsliketeenspirit"],
+        "artist_variants": ["nirvana", "kurt cobain"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/hTWKbfoikeg/hqdefault.jpg"
+    },
+    {
+      "position": 14,
+      "title": "The Pretender",
+      "artist": "Foo Fighters",
+      "year": 2007,
+      "difficulty": "medium",
+      "youtube_id": "m4OnAwaDVTE",
+      "answers_accepted": {
+        "title_variants": ["the pretender", "pretender"],
+        "artist_variants": ["foo fighters", "foofighters", "dave grohl"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/m4OnAwaDVTE/hqdefault.jpg"
+    },
+    {
+      "position": 15,
+      "title": "Mr. Brightside",
+      "artist": "The Killers",
+      "year": 2003,
+      "difficulty": "easy",
+      "youtube_id": "pvIJyRkS9y0",
+      "answers_accepted": {
+        "title_variants": ["mr. brightside", "mr brightside", "brightside", "mrbrightside"],
+        "artist_variants": ["the killers", "killers"],
+        "scoring": "title_or_artist"
+      },
+      "cover_url": "https://img.youtube.com/vi/pvIJyRkS9y0/hqdefault.jpg"
+    }
+  ]
+}
