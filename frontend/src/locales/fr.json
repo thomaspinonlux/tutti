@@ -868,5 +868,13 @@
     "tooSmallBody": "Reviens depuis un écran d'au moins {{width}} de large.",
     "tooSmallHint": "Pour jouer à une session en cours, ouvre /play sur ton téléphone — tout est optimisé.",
     "tooSmallCta": "Retour à l'accueil"
+  },
+  "pwa": {
+    "installCta": "Installer Tutti",
+    "iosHint": "Sur iPhone : appuie sur le bouton Partager ↗, puis « Sur l'écran d'accueil ».",
+    "updateAvailable": "Nouvelle version disponible",
+    "updateHint": "Recharge pour profiter des dernières améliorations.",
+    "updateNow": "Recharger",
+    "updateLater": "Plus tard"
   }
 }

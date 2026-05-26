@@ -868,5 +868,13 @@
     "tooSmallBody": "Come back on a screen at least {{width}} wide.",
     "tooSmallHint": "To play a live session, open /play on your phone — everything is optimized.",
     "tooSmallCta": "Back to home"
+  },
+  "pwa": {
+    "installCta": "Install Tutti",
+    "iosHint": "On iPhone: tap the Share button ↗, then \"Add to Home Screen\".",
+    "updateAvailable": "New version available",
+    "updateHint": "Reload to enjoy the latest improvements.",
+    "updateNow": "Reload",
+    "updateLater": "Later"
   }
 }
