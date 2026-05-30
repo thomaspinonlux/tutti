@@ -29,7 +29,9 @@ import {
 } from '../lib/gameState.js';
 import { computeAnswerScore } from '../lib/gameScoring.js';
 import { transcribeAudio, WhisperError } from '../lib/whisper.js';
+import { transcribeWithDeepgram, DeepgramError } from '../lib/deepgram.js';
 import { matchTranscript } from '../lib/voiceMatch.js';
+import { matchAnswer } from '../lib/voiceMatching.js';
 import { getCumulativeScores } from '../lib/scores.js';
 import type { GameMode, Team } from '@tutti/shared';
 
@@ -43,6 +45,15 @@ const upload = multer({
 
 // Stockage des timers phase 2 → phase 3 par round_id.
 const phase2Timers = new Map<string, NodeJS.Timeout>();
+
+// feat/voice-cascade-l1-l2 — seuils cascade côté backend. Frontend les utilise
+// pour décider escalade L1→L2, backend les utilise pour décider commit.
+// Override via env Railway (VOICE_MATCH_THRESHOLD=80, VOICE_MATCH_GIVEUP_THRESHOLD=30).
+const VOICE_MATCH_THRESHOLD = Number.parseInt(process.env.VOICE_MATCH_THRESHOLD ?? '80', 10);
+const VOICE_MATCH_GIVEUP_THRESHOLD = Number.parseInt(
+  process.env.VOICE_MATCH_GIVEUP_THRESHOLD ?? '30',
+  10,
+);
 
 // ── Helper auth ──────────────────────────────────────────────────────────
 
@@ -655,5 +666,477 @@ function schedulePhase3Transition(sessionId: string, roundId: string): void {
   }, 15_000);
   phase2Timers.set(roundId, timer);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// feat/voice-cascade-l1-l2 — Cascade voice routes
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Architecture cascade côté backend :
+//   - POST /voice-match-text  : niveau 1 (Web Speech transcript) — no audio,
+//     instantané. Frontend décide escalade selon le score retourné (≥80 ok,
+//     <30 abandon, 30-79 escalade L2).
+//   - POST /voice-transcribe-deepgram : niveau 2 — multipart audio. Backend
+//     transcrit via Deepgram Nova-3 + Keyterm Prompting (titre + artiste),
+//     match fuzzy, fallback ultime sur Whisper si Deepgram timeout/erreur.
+//
+// Les 2 routes partagent `runMatchAndCommit()` qui calcule un score 0-100
+// (matchAnswer), commit (score + broadcast) si ≥ VOICE_MATCH_THRESHOLD, sinon
+// retourne le score brut pour permettre la décision côté frontend.
+//
+// Compat : /voice-answer (Whisper, /text-answer (texte saisi) restent en place
+// pour ne pas casser les clients existants. Les nouvelles routes sont
+// purement additives.
+
+interface CascadeMatchCommitArgs {
+  sessionId: string;
+  roundId: string;
+  participantId: string;
+  participantPseudo: string;
+  participantTeamId: string | null;
+  transcript: string;
+  /** Provenance ("web-speech", "deepgram", "whisper-fallback") — log only. */
+  source: string;
+  /** Trace technique (Deepgram OK / fallback Whisper) — log only. */
+  level: 'L1' | 'L2' | 'L3-fallback';
+  /** Si présent, persist dans voice_transcripts (sinon skip log). */
+  persistTranscript?: boolean;
+}
+
+interface CascadeMatchCommitResult {
+  matched: boolean;
+  scored: boolean;
+  /** Score combiné 0-100 (lib/voiceMatching). */
+  score: number;
+  /** Cible matchée (title vs artist_title). */
+  target: 'title' | 'artist_title' | null;
+  /** Transcript normalisé pour la réponse / debug. */
+  transcript_normalized: string;
+  position?: number;
+  total_score?: number;
+  breakdown?: ReturnType<typeof computeAnswerScore>;
+  reason?: string;
+}
+
+/**
+ * Cœur de la cascade : reçoit un transcript déjà obtenu (Web Speech, Deepgram
+ * ou Whisper), calcule le score, et commit (broadcast + persist ScoreEvent) si
+ * ≥ VOICE_MATCH_THRESHOLD. Mutualisé entre /voice-match-text et /voice-transcribe-deepgram.
+ *
+ * Gère aussi les aliases (title.aliases, artist.aliases) en testant chaque
+ * combinaison title/artist possible et gardant le meilleur score.
+ */
+async function runMatchAndCommit(
+  args: CascadeMatchCommitArgs,
+): Promise<CascadeMatchCommitResult | { error: string; status: number }> {
+  const active = getActiveTrack(args.roundId);
+  if (!active) return { error: 'NO_TRACK', status: 409 };
+
+  if (hasCorrectAnswer(args.roundId, args.participantId)) {
+    return {
+      matched: false,
+      scored: false,
+      score: 0,
+      target: null,
+      transcript_normalized: args.transcript,
+      reason: 'ALREADY_ANSWERED',
+    };
+  }
+
+  const track = await prisma.track.findUnique({
+    where: { id: active.track_id },
+    include: { artist: true },
+  });
+  if (!track) return { error: 'TRACK_LOST', status: 500 };
+
+  // Combinaisons title + artist (canonical + aliases) — best score gagne.
+  const titleCandidates = [track.canonical_title, ...(track.aliases ?? [])].filter(
+    (s) => typeof s === 'string' && s.length > 0,
+  );
+  const artistCandidates = [track.artist.canonical_name, ...(track.artist.aliases ?? [])].filter(
+    (s) => typeof s === 'string' && s.length > 0,
+  );
+
+  let best = { score: 0, target: 'title' as 'title' | 'artist_title' };
+  for (const title of titleCandidates) {
+    for (const artist of artistCandidates) {
+      const r = matchAnswer(args.transcript, { title, artist });
+      if (r.score > best.score) best = { score: r.score, target: r.target };
+    }
+  }
+
+  // Log voice_transcript (optionnel — frontend peut en spammer plusieurs L1 par
+  // tap, on persiste uniquement les "commits" intéressants).
+  if (args.persistTranscript) {
+    await prisma.voiceTranscript
+      .create({
+        data: {
+          session_id: args.sessionId,
+          participant_id: args.participantId,
+          track_id: track.id,
+          transcript: `[${args.source}] ${args.transcript.slice(0, 980)}`,
+          matched_artist: best.score >= VOICE_MATCH_THRESHOLD,
+          matched_title: best.score >= VOICE_MATCH_THRESHOLD && best.target === 'artist_title',
+          confidence: best.score / 100,
+        },
+      })
+      .catch((err) => console.warn('[voice-cascade] log error:', err));
+  }
+
+  console.info(
+    `[Voice] ${args.level} ${args.source}: "${args.transcript.slice(0, 80)}" score=${best.score}% target=${best.target} threshold=${VOICE_MATCH_THRESHOLD}`,
+  );
+
+  if (best.score < VOICE_MATCH_THRESHOLD) {
+    // Pas de commit — frontend décide quoi faire (escalade ou abandon).
+    return {
+      matched: false,
+      scored: false,
+      score: best.score,
+      target: best.target,
+      transcript_normalized: args.transcript,
+    };
+  }
+
+  // Score ≥ threshold → commit (broadcast + ScoreEvent).
+  const matchedTitle = best.target === 'artist_title';
+  const tentativePosition = (active.correct_answers.length ?? 0) + 1;
+  const tentativeScore = computeAnswerScore({
+    matched_artist: true,
+    matched_title: matchedTitle,
+    position: tentativePosition,
+    answered_at_ms: Date.now() - active.started_at_ms,
+  });
+
+  const registered = registerCorrectAnswer(args.roundId, {
+    participant_id: args.participantId,
+    pseudo: args.participantPseudo,
+    team_id: args.participantTeamId,
+    matched_artist: true,
+    matched_title: matchedTitle,
+    score: tentativeScore.total,
+    score_position: tentativeScore.artist_base,
+    score_title_bonus: tentativeScore.title_bonus,
+    score_speed_bonus: tentativeScore.speed_bonus,
+  });
+  if (!registered) {
+    return {
+      matched: true,
+      scored: false,
+      score: best.score,
+      target: best.target,
+      transcript_normalized: args.transcript,
+      reason: 'PHASE_2_EXPIRED',
+    };
+  }
+
+  await persistScoreEvents({
+    sessionId: args.sessionId,
+    sessionRoundId: args.roundId,
+    participantId: args.participantId,
+    teamId: args.participantTeamId,
+    trackIndex: active.track_index,
+    breakdown: tentativeScore,
+    matchedTitle,
+    buzzTimeMs: registered.entry.answered_at_ms,
+    transcriptPreview: `[${args.source}] ${args.transcript.slice(0, 200)}`,
+  });
+
+  // Compute cumulative pour broadcast (cf. /voice-answer existant).
+  const sessionForCumul = await prisma.session.findUnique({
+    where: { id: args.sessionId },
+    select: {
+      mode: true,
+      teams_config: true,
+      participants: {
+        where: { is_kicked: false },
+        select: { id: true, pseudo: true, team_id: true },
+      },
+    },
+  });
+  const cumulative = sessionForCumul
+    ? await getCumulativeScores({
+        sessionId: args.sessionId,
+        mode: sessionForCumul.mode as GameMode,
+        teams: (sessionForCumul.teams_config as Team[] | null) ?? null,
+        participants: sessionForCumul.participants,
+      })
+    : [];
+
+  broadcastToSession(args.sessionId, 'track:correct_answer', {
+    round_id: args.roundId,
+    track_index: active.track_index,
+    participant_id: args.participantId,
+    pseudo: args.participantPseudo,
+    team_id: args.participantTeamId,
+    position: registered.entry.position,
+    answered_at_ms: registered.entry.answered_at_ms,
+    matched_artist: true,
+    matched_title: matchedTitle,
+    score: registered.entry.score,
+    score_position: registered.entry.score_position,
+    score_title_bonus: registered.entry.score_title_bonus,
+    score_speed_bonus: registered.entry.score_speed_bonus,
+    cumulative,
+  });
+
+  if (registered.isFirst) {
+    broadcastToSession(args.sessionId, 'track:phase_changed', {
+      round_id: args.roundId,
+      phase: 'phase2',
+      phase2_started_at: new Date().toISOString(),
+      artist: track.artist.canonical_name,
+      title: track.canonical_title,
+    });
+    schedulePhase3Transition(args.sessionId, args.roundId);
+  }
+
+  return {
+    matched: true,
+    scored: true,
+    score: best.score,
+    target: best.target,
+    transcript_normalized: args.transcript,
+    position: registered.entry.position,
+    total_score: registered.entry.score,
+    breakdown: tentativeScore,
+  };
+}
+
+// ── POST /voice-match-text — niveau 1 cascade (Web Speech transcript) ────
+//
+// Body JSON :
+//   - token (string, requis)
+//   - transcript (string, requis, max 500 chars)
+//   - source (string, optionnel) — par défaut "web-speech"
+//
+// Réponse :
+//   - matched (bool) : true si commit (≥ VOICE_MATCH_THRESHOLD)
+//   - scored (bool) : true si points enregistrés
+//   - score (number 0-100)
+//   - transcript_normalized (string)
+//   - level ('L1') + threshold + give_up_threshold pour debug frontend
+
+const matchTextSchema = z.object({
+  token: z.string().min(1),
+  transcript: z.string().trim().min(1).max(500),
+  source: z.string().optional(),
+});
+
+router.post(
+  '/voice-match-text',
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const parsed = matchTextSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({ error: { code: 'VALIDATION_ERROR', message: 'token + transcript requis' } });
+      return;
+    }
+    const { token, transcript, source } = parsed.data;
+
+    const auth = verifyParticipantOrFail(req, res, token);
+    if (!auth) return;
+
+    const participant = await prisma.participant.findUnique({
+      where: { id: auth.participantId },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+    });
+    if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
+      res
+        .status(403)
+        .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+
+    const result = await runMatchAndCommit({
+      sessionId: req.params.id,
+      roundId: req.params.roundId,
+      participantId: participant.id,
+      participantPseudo: participant.pseudo,
+      participantTeamId: participant.team_id,
+      transcript,
+      source: source ?? 'web-speech',
+      level: 'L1',
+      // L1 ne persiste un transcript que si matched (sinon spam DB).
+      persistTranscript: false,
+    });
+
+    if ('error' in result) {
+      res.status(result.status).json({ error: { code: result.error, message: result.error } });
+      return;
+    }
+
+    // Close buzz only if scored (sinon le joueur peut encore escalader L2 et
+    // tenter de récupérer son buzz).
+    if (result.scored) {
+      closeBuzz(req.params.roundId, auth.participantId);
+    }
+
+    res.json({
+      level: 'L1' as const,
+      matched: result.matched,
+      scored: result.scored,
+      score: result.score,
+      target: result.target,
+      transcript: result.transcript_normalized,
+      threshold: VOICE_MATCH_THRESHOLD,
+      give_up_threshold: VOICE_MATCH_GIVEUP_THRESHOLD,
+      position: result.position,
+      total_score: result.total_score,
+      breakdown: result.breakdown,
+      reason: result.reason,
+    });
+  },
+);
+
+// ── POST /voice-transcribe-deepgram — niveau 2 cascade (audio) ───────────
+//
+// Body multipart :
+//   - audio (file, requis) : Blob Opus/webm capturé côté tel
+//   - token (texte, requis) : JWT participant
+//   - language (texte, optionnel) : "fr" | "en" | "multi" (défaut "multi")
+//
+// Backend :
+//   1. Récupère track + artiste (pour Keyterm Prompting Deepgram)
+//   2. Tente Deepgram Nova-3 avec keyterms=[title, artist]
+//   3. Si Deepgram échoue (timeout/erreur réseau) → fallback Whisper (lent
+//      mais robuste). On signale le fallback via level='L3-fallback' pour les
+//      logs.
+//   4. Score + commit via runMatchAndCommit
+//
+// Réponse identique à /voice-match-text + level='L2' ou 'L3-fallback'.
+
+router.post(
+  '/voice-transcribe-deepgram',
+  upload.single('audio'),
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const token = typeof req.body?.token === 'string' ? req.body.token : '';
+    if (!token) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'token requis' } });
+      return;
+    }
+    const audioFile = (req as Request & { file?: Express.Multer.File }).file;
+    if (!audioFile) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'audio requis' } });
+      return;
+    }
+
+    const auth = verifyParticipantOrFail(req, res, token);
+    if (!auth) return;
+
+    const participant = await prisma.participant.findUnique({
+      where: { id: auth.participantId },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+    });
+    if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
+      res
+        .status(403)
+        .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+
+    // Toujours close le buzz (joueur a uploadé son audio, on n'attend plus).
+    closeBuzz(req.params.roundId, auth.participantId);
+
+    // Récup track pour Keyterm Prompting.
+    const active = getActiveTrack(req.params.roundId);
+    if (!active) {
+      res.status(409).json({ error: { code: 'NO_TRACK', message: 'Pas de track en cours' } });
+      return;
+    }
+    const track = await prisma.track.findUnique({
+      where: { id: active.track_id },
+      include: { artist: true },
+    });
+    if (!track) {
+      res.status(500).json({ error: { code: 'TRACK_LOST', message: 'Track introuvable' } });
+      return;
+    }
+
+    const session = await prisma.session.findUnique({
+      where: { id: req.params.id },
+      select: { language: true },
+    });
+    const sessionLang = session?.language ?? 'fr';
+    // Deepgram "multi" Nova-3 couvre FR+EN. Fallback FR si env force.
+    const dgLang = process.env.DEEPGRAM_LANGUAGE ?? 'multi';
+
+    const keyterms = [track.canonical_title, track.artist.canonical_name].filter(
+      (s): s is string => typeof s === 'string' && s.length > 0,
+    );
+
+    let transcript = '';
+    let level: 'L2' | 'L3-fallback' = 'L2';
+    let source = 'deepgram';
+
+    // Tente Deepgram (Nova-3).
+    try {
+      const dgRes = await transcribeWithDeepgram({
+        audio: audioFile.buffer,
+        contentType: audioFile.mimetype || 'audio/webm',
+        language: dgLang,
+        keyterms,
+      });
+      transcript = dgRes.text;
+    } catch (err: unknown) {
+      if (err instanceof DeepgramError) {
+        console.warn('[voice-cascade] Deepgram error → Whisper fallback:', err.code, err.message);
+      } else {
+        console.error('[voice-cascade] Deepgram unexpected → Whisper fallback:', err);
+      }
+      // Fallback Whisper (lent mais fiable).
+      level = 'L3-fallback';
+      source = 'whisper-fallback';
+      try {
+        const w = await transcribeAudio({
+          audio: audioFile.buffer,
+          filename: audioFile.originalname || 'buzz.webm',
+          language: sessionLang,
+        });
+        transcript = w.text;
+      } catch (err2: unknown) {
+        if (err2 instanceof WhisperError) {
+          console.warn('[voice-cascade] Whisper fallback error:', err2.code, err2.message);
+        } else {
+          console.error('[voice-cascade] Whisper unexpected error:', err2);
+        }
+        // Pire cas : aucun transcript → on continue avec '' (score = 0).
+      }
+    }
+
+    const result = await runMatchAndCommit({
+      sessionId: req.params.id,
+      roundId: req.params.roundId,
+      participantId: participant.id,
+      participantPseudo: participant.pseudo,
+      participantTeamId: participant.team_id,
+      transcript,
+      source,
+      level,
+      // L2 toujours persiste (un upload audio = événement significatif).
+      persistTranscript: true,
+    });
+
+    if ('error' in result) {
+      res.status(result.status).json({ error: { code: result.error, message: result.error } });
+      return;
+    }
+
+    res.json({
+      level,
+      matched: result.matched,
+      scored: result.scored,
+      score: result.score,
+      target: result.target,
+      transcript: result.transcript_normalized,
+      threshold: VOICE_MATCH_THRESHOLD,
+      give_up_threshold: VOICE_MATCH_GIVEUP_THRESHOLD,
+      position: result.position,
+      total_score: result.total_score,
+      breakdown: result.breakdown,
+      reason: result.reason,
+    });
+  },
+);
 
 export default router;

@@ -49,6 +49,12 @@ import {
   type VoiceAnswerResult,
   type VoiceCapture,
 } from '../lib/voiceCapture.js';
+import { useWebSpeech } from '../lib/useWebSpeech.js';
+import {
+  postVoiceMatchText,
+  postVoiceTranscribeDeepgram,
+  type CascadeMatchResponse,
+} from '../lib/voiceCascade.js';
 import {
   clearParticipantContext,
   connectAsParticipant,
@@ -880,7 +886,7 @@ interface PlayingViewExtraProps {
 }
 
 function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     currentTrack,
     identity,
@@ -903,6 +909,13 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
   const [error, setError] = useState<string | null>(null);
   // Refonte #2 — toast top "Pas reconnu" quand voice fail, retour buzzer direct
   const [failToast, setFailToast] = useState<string | null>(null);
+
+  // feat/voice-cascade-l1-l2 — niveau 1 cascade : Web Speech API. Démarré en
+  // parallèle du MediaRecorder dans handleBuzz, stoppé dans uploadAndShowResult
+  // pour exploiter son transcript (instantané) avant éventuelle escalade L2.
+  // Le code langue suit i18n.language : 'fr' → 'fr-FR', sinon 'en-US'.
+  const webSpeechLang = i18n.language?.toLowerCase().startsWith('fr') ? 'fr-FR' : 'en-US';
+  const webSpeech = useWebSpeech({ lang: webSpeechLang });
 
   // Auto-clear fail toast 1.5s
   useEffect(() => {
@@ -953,7 +966,17 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       const buzzRes = await postBuzz(identity.sessionId, currentTrack.round_id, identity.token);
       const maxDurationMs = (buzzRes as { buzz_window_ms?: number }).buzz_window_ms ?? 10_000;
 
-      console.info('[Voice] Recording started');
+      console.info(
+        `[Voice] Recording started | webSpeech.supported=${webSpeech.supported} lang=${webSpeechLang}`,
+      );
+
+      // feat/voice-cascade-l1-l2 — démarre Web Speech EN PARALLÈLE du
+      // MediaRecorder. Coût quasi-nul si supporté, ignoré sinon (Firefox).
+      // Le transcript sera lu dans uploadAndShowResult après stop().
+      if (webSpeech.supported) {
+        webSpeech.start();
+      }
+
       const capture = await startVoiceCapture({
         maxDurationMs,
         // Optim Whisper — VAD agressif (500ms silence après speech) cut early
@@ -998,41 +1021,189 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     });
   };
 
+  /**
+   * feat/voice-cascade-l1-l2 — pipeline cascade :
+   *   L1 — Web Speech transcript (0ms réseau) → POST /voice-match-text
+   *        score ≥ 80 → ✅ matched (broadcast déjà fait backend)
+   *        score < 30 → ❌ abandon (pas d'upload audio)
+   *        sinon       → escalade L2
+   *   L2 — Upload audio → POST /voice-transcribe-deepgram
+   *        backend appelle Deepgram (Nova-3 + keyterms) puis Whisper en
+   *        fallback si Deepgram timeout/erreur (transparent côté client).
+   *   L3 — Si L2 throw (erreur réseau totale), legacy /voice-answer (Whisper)
+   *        comme dernier filet de sécurité.
+   *
+   * Logs structurés [Voice] L1/L2/FINAL pour debug latence.
+   */
   const uploadAndShowResult = async (capture: VoiceCapture): Promise<void> => {
     if (!currentTrack) return;
-    // Optim Whisper — logs de timing pour identifier les bottlenecks.
     const t0 = Date.now();
-    console.info('[Voice] Recording stopped — finalizing');
+    console.info('[Voice] Recording stopped — cascade start');
+
+    let blob: Blob;
+    let webSpeechTranscript = '';
+    let webSpeechSupported = false;
     try {
-      const blob = await capture.stop();
-      const t1 = Date.now();
+      // Finalise audio + récup transcript Web Speech en parallèle.
+      const wsStopPromise = webSpeech.supported
+        ? webSpeech.stop()
+        : Promise.resolve({
+            transcript: '',
+            supported: false,
+            elapsedMs: 0,
+            error: undefined,
+          });
+      const [blobResult, wsResult] = await Promise.all([capture.stop(), wsStopPromise]);
+      blob = blobResult;
+      webSpeechTranscript = wsResult.transcript;
+      webSpeechSupported = wsResult.supported;
       const sizeKb = Math.round(blob.size / 1024);
-      console.info(`[Voice] Audio finalized (size: ${sizeKb}KB, +${t1 - t0}ms)`);
-      const result = await uploadVoiceAnswer({
-        apiUrl: API_BASE,
-        sessionId: identity.sessionId,
-        roundId: currentTrack.round_id,
-        token: identity.token,
-        audio: blob,
-        filename: capture.mimeType.includes('mp4') ? 'buzz.mp4' : 'buzz.webm',
-      });
-      const t2 = Date.now();
       console.info(
-        `[Voice] Whisper response received (latency: ${t2 - t1}ms) | matched=${result.matched} | total=${t2 - t0}ms`,
+        `[Voice] Audio size=${sizeKb}KB | webSpeech.supported=${wsResult.supported} transcript="${wsResult.transcript.slice(0, 80)}" elapsedMs=${wsResult.elapsedMs} err=${wsResult.error ?? '-'}`,
       );
-      // Refonte #2 — si pas matché : retour direct buzzer + toast 1.5s.
-      // Pas d'écran intermédiaire, pas de transcript Whisper affiché.
-      if (!result.matched) {
-        setRecState({ kind: 'idle' });
-        setFailToast(t('play.notMatchedShort'));
-        return;
-      }
-      setRecState({ kind: 'result', result });
     } catch (err: unknown) {
-      console.error('[Voice] Upload failed:', err);
-      setError(err instanceof Error ? err.message : 'Upload échoué');
+      console.error('[Voice] Capture stop failed:', err);
+      setError(err instanceof Error ? err.message : 'Capture échouée');
       setRecState({ kind: 'idle' });
+      webSpeech.cancel();
+      return;
     }
+
+    const filename = capture.mimeType.includes('mp4') ? 'buzz.mp4' : 'buzz.webm';
+    let finalResult: CascadeMatchResponse | null = null;
+    let finalLevel: 'L1' | 'L2' | 'L3-fallback' | 'L3-legacy-whisper' | null = null;
+
+    // ── L1 — Web Speech ──────────────────────────────────────────────────
+    if (webSpeechSupported && webSpeechTranscript.trim().length > 0) {
+      const tL1Start = Date.now();
+      try {
+        const l1 = await postVoiceMatchText({
+          apiUrl: API_BASE,
+          sessionId: identity.sessionId,
+          roundId: currentTrack.round_id,
+          token: identity.token,
+          transcript: webSpeechTranscript,
+          source: 'web-speech',
+        });
+        const tL1 = Date.now() - tL1Start;
+        const decision = l1.matched
+          ? 'matched'
+          : l1.score < l1.give_up_threshold
+            ? 'reject'
+            : 'escalate';
+        console.info(
+          `[Voice] L1 Web Speech: "${webSpeechTranscript.slice(0, 60)}" score=${l1.score}% → ${decision} (latency=${tL1}ms)`,
+        );
+
+        if (l1.matched) {
+          finalResult = l1;
+          finalLevel = 'L1';
+        } else if (l1.score < l1.give_up_threshold) {
+          // Abandon — économise un upload audio inutile.
+          console.info(
+            `[Voice] FINAL: matched=false level=L1 latency=${Date.now() - t0}ms (give up)`,
+          );
+          setRecState({ kind: 'idle' });
+          setFailToast(t('play.notMatchedShort'));
+          return;
+        }
+        // 30 ≤ score < 80 → escalade L2 (continue ci-dessous).
+      } catch (err: unknown) {
+        console.warn('[Voice] L1 request failed → escalade L2', err);
+      }
+    } else {
+      console.info(
+        `[Voice] L1 skip — supported=${webSpeechSupported} transcript=${JSON.stringify(webSpeechTranscript)}`,
+      );
+    }
+
+    // ── L2 — Deepgram (backend, Whisper fallback intégré) ────────────────
+    if (!finalResult) {
+      const tL2Start = Date.now();
+      try {
+        const l2 = await postVoiceTranscribeDeepgram({
+          apiUrl: API_BASE,
+          sessionId: identity.sessionId,
+          roundId: currentTrack.round_id,
+          token: identity.token,
+          audio: blob,
+          filename,
+        });
+        const tL2 = Date.now() - tL2Start;
+        console.info(
+          `[Voice] L2 ${l2.level}: "${l2.transcript.slice(0, 60)}" score=${l2.score}% → ${l2.matched ? 'matched' : 'reject'} (latency=${tL2}ms)`,
+        );
+        finalResult = l2;
+        finalLevel = l2.level; // 'L2' ou 'L3-fallback' (Whisper interne)
+      } catch (err: unknown) {
+        // L3 — Filet de sécurité : legacy /voice-answer (Whisper, route en
+        // place depuis Phase C). Ne devrait jamais être atteint en pratique
+        // car L2 fallback déjà Whisper côté backend, mais ceinture+bretelles.
+        console.warn(
+          '[Voice] L2 endpoint unreachable → legacy Whisper fallback /voice-answer',
+          err,
+        );
+        try {
+          const w = await uploadVoiceAnswer({
+            apiUrl: API_BASE,
+            sessionId: identity.sessionId,
+            roundId: currentTrack.round_id,
+            token: identity.token,
+            audio: blob,
+            filename,
+          });
+          console.info(
+            `[Voice] L3 legacy Whisper: matched=${w.matched} score=${w.score ?? '-'} latency=${Date.now() - t0}ms`,
+          );
+          if (!w.matched) {
+            setRecState({ kind: 'idle' });
+            setFailToast(t('play.notMatchedShort'));
+            return;
+          }
+          setRecState({ kind: 'result', result: w });
+          console.info(
+            `[Voice] FINAL: matched=true level=L3-legacy-whisper latency=${Date.now() - t0}ms`,
+          );
+          return;
+        } catch (err2: unknown) {
+          console.error('[Voice] Legacy fallback failed:', err2);
+          setError(err2 instanceof Error ? err2.message : 'Upload échoué');
+          setRecState({ kind: 'idle' });
+          return;
+        }
+      }
+    }
+
+    // ── Final dispatch ───────────────────────────────────────────────────
+    if (!finalResult) {
+      // Sécurité (ne devrait pas arriver).
+      setRecState({ kind: 'idle' });
+      setFailToast(t('play.notMatchedShort'));
+      return;
+    }
+    console.info(
+      `[Voice] FINAL: matched=${finalResult.matched} level=${finalLevel} score=${finalResult.score}% latency=${Date.now() - t0}ms`,
+    );
+
+    if (!finalResult.matched) {
+      setRecState({ kind: 'idle' });
+      setFailToast(t('play.notMatchedShort'));
+      return;
+    }
+
+    // Convert CascadeMatchResponse → VoiceAnswerResult (shape attendu par
+    // le RecState 'result' et l'UI 'ValidatedBanner' qui consomme score +
+    // breakdown).
+    const legacyShape: VoiceAnswerResult = {
+      matched: finalResult.matched,
+      scored: finalResult.scored,
+      transcript: finalResult.transcript,
+      position: finalResult.position,
+      score: finalResult.total_score,
+      breakdown: finalResult.breakdown,
+      reason: finalResult.reason,
+    };
+    setRecState({ kind: 'result', result: legacyShape });
   };
 
   const handleCancelRec = (): void => {
@@ -1042,6 +1213,9 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       }
       return { kind: 'idle' };
     });
+    // feat/voice-cascade-l1-l2 — annule aussi Web Speech (pas de transcript
+    // ni de stop() à attendre, on jette).
+    webSpeech.cancel();
   };
 
   // Refonte #3 — saisie texte alternative au buzz vocal.
