@@ -51,6 +51,7 @@ import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
 import { useSpotifyAudioSync } from '../lib/useSpotifyAudioSync.js';
 import { useYouTubePlayer } from '../lib/useYouTubePlayer.js';
 import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
+import { unlockAudioSync } from '../lib/audioUnlock.js';
 // MinScreen retiré — console animateur utilisable depuis tout écran (iPhone inclus).
 import {
   Badge,
@@ -611,6 +612,11 @@ function HostPageInner(): JSX.Element {
 
   const handleStartSession = async (): Promise<void> => {
     if (!session) return;
+    // fix/pwa-safari-audio-unlock — débloque l'audio SYNC depuis le gesture
+    // du clic "Lancer la partie". Crucial en PWA standalone Safari où le
+    // moindre await avant l'unlock invalide le user gesture. À placer en
+    // PREMIÈRE instruction, avant tout async.
+    unlockAudioSync('start-session-button');
     setBusy(true);
     try {
       // Active le pipeline audio Spotify (anti-blocage Chrome autoplay).
@@ -794,6 +800,9 @@ function HostPageInner(): JSX.Element {
   // est le user gesture qui débloque l'autoplay des deux SDK.
   const handleStartFirstPlay = async (): Promise<void> => {
     if (!session || !pendingFirstPlay) return;
+    // fix/pwa-safari-audio-unlock — voir handleStartSession. Doit être SYNC
+    // avant tout await pour préserver le user gesture en PWA standalone.
+    unlockAudioSync('start-first-play-button');
     setBusy(true);
     try {
       // Activate les deux pipelines audio (idempotent). Important : depuis
@@ -1142,7 +1151,11 @@ function HostPageInner(): JSX.Element {
         {spotify.audioBlocked && (
           <button
             type="button"
-            onClick={() => void spotify.unblockAudio()}
+            onClick={() => {
+              // fix/pwa-safari-audio-unlock — SYNC unlock avant l'async Spotify.
+              unlockAudioSync('spotify-audio-blocked-banner-modeB');
+              void spotify.unblockAudio();
+            }}
             className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-ink flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
           >
             <span className="text-2xl" aria-hidden>
@@ -1264,7 +1277,11 @@ function HostPageInner(): JSX.Element {
       {spotify.audioBlocked && (
         <button
           type="button"
-          onClick={() => void spotify.unblockAudio()}
+          onClick={() => {
+            // fix/pwa-safari-audio-unlock — SYNC unlock avant l'async Spotify.
+            unlockAudioSync('spotify-audio-blocked-banner-modeA');
+            void spotify.unblockAudio();
+          }}
           className="w-full bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-ink flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
         >
           <span className="text-2xl" aria-hidden>
@@ -1288,7 +1305,12 @@ function HostPageInner(): JSX.Element {
         >
           <button
             type="button"
-            onClick={() => youtube.tapToStart()}
+            onClick={() => {
+              // fix/pwa-safari-audio-unlock — débloque l'audio SYNC dans le
+              // gesture du tap, puis appelle tapToStart() (lui-même sync).
+              unlockAudioSync('tap-to-start-overlay');
+              youtube.tapToStart();
+            }}
             className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-ink shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <span className="text-5xl" aria-hidden>
@@ -1475,7 +1497,13 @@ function HostPageInner(): JSX.Element {
                 spotifyError={spotify.error}
                 spotifyErrorCode={spotify.errorCode}
                 onForceAudio={() => {
-                  // Bug 4 — route le clic vers le provider du morceau courant
+                  // fix/pwa-safari-audio-unlock — débloque l'audio en mode
+                  // FULLY SYNC dans le gesture (resume AudioContext + silent
+                  // buffer). Doit être la 1ʳᵉ instruction avant tout async.
+                  unlockAudioSync('force-audio-button');
+                  // Bug 4 — route le clic vers le provider du morceau courant.
+                  // youtube.unblockAudio est sync. spotify.transferToTutti est
+                  // async mais le gesture est déjà capturé par unlockAudioSync.
                   if (currentTrack?.provider === 'youtube') {
                     youtube.unblockAudio();
                   } else {
