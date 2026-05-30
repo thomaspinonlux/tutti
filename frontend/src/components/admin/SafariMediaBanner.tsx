@@ -9,6 +9,14 @@
  *     / "Edg" / "Firefox" / "FxiOS" (Chrome iOS = "CriOS").
  *   - heuristique : Safari pur sur Mac OS ou iOS.
  *
+ * fix/pwa-safari-audio-unlock :
+ *   - Si l'app tourne en PWA standalone (Dock macOS / Home Screen iOS),
+ *     l'utilisateur n'a PAS d'icône "AA" dans la barre Safari (pas de barre
+ *     du tout). Le message d'origine devient absurde et frustrant.
+ *   - On masque alors la bandeau côté standalone. Le bouton "🔊 Forcer
+ *     audio sur cet appareil" qui apparaît dans HostPage est l'autre filet
+ *     de sécurité (clic = unlockAudioSync sync depuis gesture).
+ *
  * Dismissible : bouton X. Persistance via localStorage
  * (`tutti.safari_banner_dismissed`). Une fois fermée, la bannière ne
  * réapparaît plus pour ce browser.
@@ -16,6 +24,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isStandalone } from '../../lib/audioUnlock.js';
 
 const DISMISS_KEY = 'tutti.safari_banner_dismissed';
 
@@ -36,6 +45,13 @@ export function SafariMediaBanner(): JSX.Element | null {
 
   useEffect(() => {
     if (!isSafari()) return;
+    // fix/pwa-safari-audio-unlock — en PWA standalone, pas de barre Safari →
+    // pas d'icône AA → le hint "Réglages du site (icône AA)" est inutile.
+    // Le bouton "Forcer audio" dans HostPage prend le relais.
+    if (isStandalone()) {
+      console.info('[Audio] SafariMediaBanner skip — PWA standalone detected');
+      return;
+    }
     try {
       if (localStorage.getItem(DISMISS_KEY) === '1') return;
     } catch {
