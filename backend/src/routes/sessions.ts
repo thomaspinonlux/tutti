@@ -1128,4 +1128,45 @@ router.patch(
   },
 );
 
+// ── POST /:id/reset-played-tracks — admin only ───────────────────────────
+//
+// feat/session-no-duplicate-tracks — réinitialise l'historique des tracks
+// déjà joués pour cette session. Utile si l'animateur veut "tout rejouer"
+// après plusieurs manches sans relancer une nouvelle session.
+//
+// Auth : workspace owner / member uniquement (gating via requireWorkspace).
+// Effet : DELETE FROM session_played_tracks WHERE session_id = :id.
+// Réponse : { deleted: number }.
+
+router.post(
+  '/:id/reset-played-tracks',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const session = await prisma.session.findFirst({
+      where: { id: req.params.id, establishment: { workspace_id: workspaceId } },
+      select: { id: true },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    try {
+      const result = await prisma.sessionPlayedTrack.deleteMany({
+        where: { session_id: session.id },
+      });
+      console.info(
+        `[POST /sessions/:id/reset-played-tracks] session=${session.id} deleted=${result.count}`,
+      );
+      res.json({ ok: true, deleted: result.count });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/reset-played-tracks] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur réinitialisation historique' } });
+    }
+  },
+);
+
 export default router;

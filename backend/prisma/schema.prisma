@@ -341,6 +341,7 @@ model Track {
   artist          Artist          @relation(fields: [artist_id], references: [id], onDelete: Restrict)
   playlist_tracks PlaylistTrack[]
   voice_logs      VoiceTranscript[]
+  session_played  SessionPlayedTrack[]
 
   @@index([artist_id])
   @@index([provider, provider_track_id])
@@ -492,10 +493,42 @@ model Session {
   rounds            SessionRound[] // succession de manches
   score_events      ScoreEvent[]
   voice_transcripts VoiceTranscript[]
+  played_tracks     SessionPlayedTrack[]
 
   @@index([short_code])
   @@index([establishment_id])
   @@map("sessions")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SESSION_PLAYED_TRACKS — anti-doublon cross-playlist
+//  (feat/session-no-duplicate-tracks)
+//
+//  À chaque morceau joué (buildAndBroadcastTrack), on enregistre une ligne
+//  (session_id, track_id). Si l'host lance une nouvelle manche sur une autre
+//  playlist au cours de la même session, le sélecteur (PR B random pick)
+//  exclut les tracks déjà présents dans cette table.
+//
+//  Unique (session_id, track_id) : un même morceau ne peut être joué qu'une
+//  fois par session (idempotent côté insert avec onConflict skip).
+//
+//  Cleanup : à la fin de la session le data reste (utile analytics). Le
+//  ON DELETE CASCADE via Session garantit le nettoyage si la session est
+//  supprimée. L'admin peut aussi reset via POST /sessions/:id/reset-played-tracks.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SessionPlayedTrack {
+  id         String   @id @default(uuid()) @db.Uuid
+  session_id String   @db.Uuid
+  track_id   String   @db.Uuid
+  played_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  session Session @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  track   Track   @relation(fields: [track_id], references: [id], onDelete: Cascade)
+
+  @@unique([session_id, track_id])
+  @@index([session_id])
+  @@map("session_played_tracks")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

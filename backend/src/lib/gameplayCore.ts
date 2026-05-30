@@ -122,8 +122,33 @@ export async function buildAndBroadcastTrack(
     data: { current_track_index: trackIndex },
   });
 
+  // feat/session-no-duplicate-tracks — enregistre le track joué pour cette
+  // session. Idempotent : si on relance/restart le même track, on ne crée pas
+  // de doublon grâce à @@unique([session_id, track_id]). PR B utilisera ces
+  // données pour filtrer les playlists subsequentes.
+  await prisma.sessionPlayedTrack
+    .upsert({
+      where: { session_id_track_id: { session_id: sessionId, track_id: track.id } },
+      update: {}, // déjà inséré → no-op (timestamp d'origine préservé)
+      create: { session_id: sessionId, track_id: track.id },
+    })
+    .catch((err) => console.warn('[gameplayCore] SessionPlayedTrack upsert error:', err));
+
   broadcastToSession(sessionId, 'track:start', { state });
   return state;
+}
+
+/**
+ * feat/session-no-duplicate-tracks — helper réutilisable. Retourne la liste
+ * des track_id déjà joués dans une session (utilisé par PR B pour exclure les
+ * doublons lors du random pick d'une nouvelle playlist).
+ */
+export async function getSessionPlayedTrackIds(sessionId: string): Promise<Set<string>> {
+  const rows = await prisma.sessionPlayedTrack.findMany({
+    where: { session_id: sessionId },
+    select: { track_id: true },
+  });
+  return new Set(rows.map((r) => r.track_id));
 }
 
 /**
