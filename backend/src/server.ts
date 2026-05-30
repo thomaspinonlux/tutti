@@ -199,6 +199,16 @@ httpServer.listen(PORT, () => {
       '[tutti-backend] YT refresh cron skip — YOUTUBE_API_KEY absent (compliance 30j NOT enforced)',
     );
   }
+
+  // fix/restrict-banners-to-host-pages — démarre le cron d'auto-close des
+  // sessions inactives (> 2h sans activité → status=ENDED). Évite les
+  // sessions zombies qui polluent le dashboard host + bloquent la TV.
+  // Pas conditionné à NODE_ENV : utile aussi en staging/dev.
+  if (NODE_ENV !== 'test') {
+    void import('./lib/sessionAutoClose.js').then(({ startSessionAutoCloseCron }) => {
+      startSessionAutoCloseCron();
+    });
+  }
 });
 
 // Gestion propre des arrêts

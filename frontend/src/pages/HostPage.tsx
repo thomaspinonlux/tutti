@@ -89,6 +89,12 @@ import {
 import { RoundIntermissionScreen } from '../components/host/RoundIntermissionScreen.js';
 import { ExpressPlaylistModal } from '../components/host/ExpressPlaylistModal.js';
 import { RoundProgramPanel } from '../components/host/RoundProgramPanel.js';
+// fix/restrict-banners-to-host-pages — bandeau Safari déplacé d'AdminLayout
+// vers HostPage. Justification : Safari bloque la lecture audio en HostPage
+// (Spotify SDK / YouTube IFrame), mais pas en admin dashboard où aucun
+// média ne joue. Ne pas effrayer les visiteurs en /admin/* avec un message
+// technique qui ne les concerne pas.
+import { SafariMediaBanner } from '../components/admin/SafariMediaBanner.js';
 import { PlayersPanel } from '../components/host/PlayersPanel.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
@@ -1242,6 +1248,11 @@ function HostPageInner(): JSX.Element {
   return (
     <div className="min-h-screen flex flex-col">
       <MultiColorBar height="md" />
+
+      {/* fix/restrict-banners-to-host-pages — Safari content-blocker hint.
+          Affiché UNIQUEMENT sur /host (où le SDK Spotify et YouTube IFrame
+          peuvent être bloqués). Auto-dismissed via localStorage. */}
+      <SafariMediaBanner />
 
       {/* fix/eliminate-blank-pages-state-recovery — bandeau discret quand
           le socket est déconnecté. socket.io retente automatiquement
