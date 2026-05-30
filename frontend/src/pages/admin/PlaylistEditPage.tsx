@@ -256,6 +256,16 @@ export function PlaylistEditPage(): JSX.Element {
             </div>
           </dl>
 
+          {/* feat/playlist-pool-random-selection — pool indicator + editable
+              session size. Au lancement de la manche, on tire N tracks random
+              dans le pool, anti-doublons cross-playlist (PR C). */}
+          <PoolSessionSizeField
+            playlistId={playlist.id}
+            poolSize={sortedTracks.length}
+            sessionSize={playlist.default_session_size ?? 15}
+            onUpdated={(size) => setPlaylist((p) => (p ? { ...p, default_session_size: size } : p))}
+          />
+
           <div className="mt-4 space-y-2">
             <Button
               variant={playlist.is_published ? 'secondary' : 'primary'}
@@ -382,4 +392,73 @@ function SaveIndicator({ state }: { state: SaveState }): JSX.Element | null {
     );
   }
   return <span className="font-mono text-xs text-raspberry">{t('common.error')}</span>;
+}
+
+/**
+ * feat/playlist-pool-random-selection — Field "Pool de X morceaux — N/session"
+ * + input éditable pour ajuster default_session_size côté playlist.
+ *
+ * Auto-save au blur (consistant avec le name field au-dessus).
+ */
+function PoolSessionSizeField(props: {
+  playlistId: string;
+  poolSize: number;
+  sessionSize: number;
+  onUpdated: (size: number) => void;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const [value, setValue] = useState(String(props.sessionSize));
+  const [saving, setSaving] = useState(false);
+
+  const commit = async (): Promise<void> => {
+    const n = Number.parseInt(value, 10);
+    if (!Number.isFinite(n) || n < 3 || n > 50) {
+      setValue(String(props.sessionSize)); // reset visuel
+      return;
+    }
+    if (n === props.sessionSize) return;
+    setSaving(true);
+    try {
+      const updated = await updatePlaylist(props.playlistId, {
+        default_session_size: n,
+      } as Parameters<typeof updatePlaylist>[1]);
+      const newSize = (updated as { default_session_size?: number }).default_session_size ?? n;
+      props.onUpdated(newSize);
+    } catch (err) {
+      console.warn('[PoolSessionSizeField] update failed', err);
+      setValue(String(props.sessionSize));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const effective = Math.min(props.poolSize, props.sessionSize);
+
+  return (
+    <div className="mt-4 pt-3 border-t border-ink/15 space-y-2">
+      <p className="text-xs font-mono uppercase tracking-wider text-ink-soft">
+        🎲 {t('playlists.poolSessionTitle')}
+      </p>
+      <p className="font-mono text-[11px] text-ink-soft leading-snug">
+        {t('playlists.poolSessionHint', { pool: props.poolSize, n: effective })}
+      </p>
+      <label className="flex items-center gap-2 text-xs">
+        <span className="font-mono text-ink-soft shrink-0">{t('playlists.poolSizeLabel')}</span>
+        <input
+          type="number"
+          min={3}
+          max={50}
+          step={1}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={() => void commit()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+          }}
+          disabled={saving}
+          className="w-16 px-2 py-1 border-2 border-ink rounded bg-cream/30 text-sm font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz"
+        />
+      </label>
+    </div>
+  );
 }

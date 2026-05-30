@@ -188,7 +188,19 @@ router.get(
       return;
     }
     const currentIdx = round.current_track_index;
-    const tracks: RoundProgramItem[] = round.playlist.playlist_tracks.map((pt, idx) => ({
+    // feat/playlist-pool-random-selection — projection sur le subset
+    // selected_track_ids si défini, sinon fallback playlist complète.
+    const selected = round.selected_track_ids ?? [];
+    let orderedTracks: typeof round.playlist.playlist_tracks;
+    if (selected.length > 0) {
+      const lookup = new Map(round.playlist.playlist_tracks.map((pt) => [pt.track.id, pt]));
+      orderedTracks = selected
+        .map((tid) => lookup.get(tid))
+        .filter((pt): pt is NonNullable<typeof pt> => pt !== undefined);
+    } else {
+      orderedTracks = round.playlist.playlist_tracks;
+    }
+    const tracks: RoundProgramItem[] = orderedTracks.map((pt, idx) => ({
       position: idx,
       track_id: pt.track.id,
       artist: pt.track.artist.canonical_name,

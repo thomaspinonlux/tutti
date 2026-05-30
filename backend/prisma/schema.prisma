@@ -269,6 +269,12 @@ model Playlist {
   /// jouables détectées. Affiché côté UI (badge / bouton coloré).
   last_checked_at   DateTime? @db.Timestamptz(6)
   unplayable_count  Int       @default(0)
+  /// feat/playlist-pool-random-selection — nombre de tracks pickés
+  /// aléatoirement dans le pool à chaque lancement d'une manche. Une
+  /// playlist devient un POOL de N tracks (~60-80) dans lequel on tire
+  /// `default_session_size` morceaux (anti-doublons via PR C).
+  /// Default 15. Editable depuis /admin/library/playlists/:id.
+  default_session_size Int    @default(15)
   created_at        DateTime @default(now()) @db.Timestamptz(6)
   updated_at        DateTime @updatedAt @db.Timestamptz(6)
 
@@ -542,6 +548,12 @@ model SessionRound {
   position            Int // 1, 2, 3...
   status              RoundStatus @default(PENDING)
   current_track_index Int         @default(0) // pour reprendre la manche après pause
+  /// feat/playlist-pool-random-selection — sous-ensemble ordonné de tracks
+  /// pickés au lancement de la manche depuis le pool de la playlist (default
+  /// 15 / Playlist.default_session_size). Tracks anti-doublonnés via
+  /// SessionPlayedTrack (PR C). Array vide → fallback rétro-compat sur la
+  /// totalité de playlist.playlist_tracks.
+  selected_track_ids  String[]    @default([]) @db.Uuid
   started_at          DateTime?   @db.Timestamptz(6)
   ended_at            DateTime?   @db.Timestamptz(6)
   created_at          DateTime    @default(now()) @db.Timestamptz(6)
