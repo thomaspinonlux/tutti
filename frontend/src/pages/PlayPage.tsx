@@ -53,6 +53,8 @@ import { useWebSpeech } from '../lib/useWebSpeech.js';
 import {
   postVoiceMatchText,
   postVoiceTranscribeDeepgram,
+  postVoiceTranscribeAssemblyAI,
+  AssemblyAIDisabledError,
   type CascadeMatchResponse,
 } from '../lib/voiceCascade.js';
 import {
@@ -1071,7 +1073,13 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
 
     const filename = capture.mimeType.includes('mp4') ? 'buzz.mp4' : 'buzz.webm';
     let finalResult: CascadeMatchResponse | null = null;
-    let finalLevel: 'L1' | 'L2' | 'L3-fallback' | 'L3-legacy-whisper' | null = null;
+    let finalLevel: 'L1' | 'L2' | 'L3' | 'L3-fallback' | 'L3-legacy-whisper' | null = null;
+    // feat/voice-cascade-l3-assemblyai — seuil d'escalade L2 → L3. Si Deepgram
+    // a retourné un score sous ce seuil, on tente AssemblyAI Universal-2 qui
+    // est meilleur sur accents prononcés / audio bruité. Au-dessus, on
+    // considère que c'est probablement une mauvaise réponse, pas un problème
+    // de transcription — AssemblyAI ne sauvera pas le coup.
+    const L3_ESCALATE_THRESHOLD = 50;
 
     // ── L1 — Web Speech ──────────────────────────────────────────────────
     if (webSpeechSupported && webSpeechTranscript.trim().length > 0) {
@@ -1130,11 +1138,49 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
           filename,
         });
         const tL2 = Date.now() - tL2Start;
+        const l2Decision = l2.matched
+          ? 'matched'
+          : l2.score < L3_ESCALATE_THRESHOLD
+            ? 'escalate-l3'
+            : 'reject';
         console.info(
-          `[Voice] L2 ${l2.level}: "${l2.transcript.slice(0, 60)}" score=${l2.score}% → ${l2.matched ? 'matched' : 'reject'} (latency=${tL2}ms)`,
+          `[Voice] L2 ${l2.level}: "${l2.transcript.slice(0, 60)}" score=${l2.score}% → ${l2Decision} (latency=${tL2}ms)`,
         );
         finalResult = l2;
         finalLevel = l2.level; // 'L2' ou 'L3-fallback' (Whisper interne)
+
+        // ── L3 — AssemblyAI Universal-2 + word_boost ───────────────────
+        // Escalade UNIQUEMENT si L2 a renvoyé un score franchement bas (sous
+        // L3_ESCALATE_THRESHOLD). Au-dessus on suppose mauvaise réponse, pas
+        // mauvaise transcription — AssemblyAI ne corrigera rien.
+        if (!l2.matched && l2.score < L3_ESCALATE_THRESHOLD) {
+          const tL3Start = Date.now();
+          try {
+            const l3 = await postVoiceTranscribeAssemblyAI({
+              apiUrl: API_BASE,
+              sessionId: identity.sessionId,
+              roundId: currentTrack.round_id,
+              token: identity.token,
+              audio: blob,
+              filename,
+            });
+            const tL3 = Date.now() - tL3Start;
+            console.info(
+              `[Voice] L3 ${l3.level}: "${l3.transcript.slice(0, 60)}" score=${l3.score}% → ${l3.matched ? 'matched' : 'reject'} (latency=${tL3}ms backend=${l3.latency_ms ?? '-'}ms)`,
+            );
+            finalResult = l3;
+            finalLevel = l3.level;
+          } catch (err: unknown) {
+            if (err instanceof AssemblyAIDisabledError) {
+              // Feature flag off côté Railway — pas d'escalade L3, on garde
+              // le résultat L2 (reject) et on conclut "rejeté".
+              console.info('[Voice] L3 skip — AssemblyAI disabled by env flag');
+            } else {
+              console.warn('[Voice] L3 AssemblyAI failed → keep L2 reject result', err);
+            }
+            // Pas de fallback supplémentaire — L2 reject reste la conclusion.
+          }
+        }
       } catch (err: unknown) {
         // L3 — Filet de sécurité : legacy /voice-answer (Whisper, route en
         // place depuis Phase C). Ne devrait jamais être atteint en pratique

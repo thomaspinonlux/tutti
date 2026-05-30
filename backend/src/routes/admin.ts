@@ -335,4 +335,99 @@ router.post('/refresh-youtube-data', async (req: Request, res: Response): Promis
   }
 });
 
+// ───── Voice Cascade Analytics (feat/voice-cascade-l3-assemblyai) ────────
+//
+// GET /api/admin/voice-analytics?days=7
+//
+// Agrège les voice_transcripts persistés par la cascade (champ `level`) sur
+// la fenêtre demandée. Sert le dashboard /admin/voice-analytics (super admin).
+//
+// Output :
+//   - distribution : count par niveau (web-speech / deepgram / whisper-fallback
+//     / assemblyai / null pour les anciennes lignes)
+//   - avg_latency_ms par niveau
+//   - escalation_rate (% des transcripts L2 → L3)
+//   - estimated_cost_eur : approximation basée sur les pricing publics
+//     * Deepgram Nova-3 : ~$0.0043/min (count × ~10s mean ÷ 60)
+//     * AssemblyAI Universal-2 : ~$0.37/h = ~$0.0062/min
+//     * Whisper : ~$0.006/min
+//     * web-speech : gratuit
+//   On convertit USD→EUR à 0.92 (ordre de grandeur — chiffre d'aide
+//   décisionnelle, pas comptable).
+
+router.get('/voice-analytics', async (req: Request, res: Response): Promise<void> => {
+  const days = Math.min(Math.max(Number.parseInt(String(req.query.days ?? '7'), 10) || 7, 1), 90);
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+  try {
+    // Group by level, agrégeant count + sum(latency_ms) + sum(matched_artist).
+    const rows = await prisma.voiceTranscript.groupBy({
+      by: ['level'],
+      where: { created_at: { gte: since } },
+      _count: { _all: true },
+      _avg: { latency_ms: true, confidence: true },
+      _sum: { latency_ms: true },
+    });
+
+    const distribution = rows.map((r) => ({
+      level: r.level ?? 'unknown',
+      count: r._count._all,
+      avg_latency_ms: r._avg.latency_ms ? Math.round(r._avg.latency_ms) : null,
+      avg_confidence: r._avg.confidence ? Number(r._avg.confidence.toFixed(3)) : null,
+    }));
+
+    const total = distribution.reduce((s, r) => s + r.count, 0);
+    const byLevel = (lvl: string): { count: number; avg_latency_ms: number | null } => {
+      const row = distribution.find((r) => r.level === lvl);
+      return { count: row?.count ?? 0, avg_latency_ms: row?.avg_latency_ms ?? null };
+    };
+
+    const l1 = byLevel('web-speech');
+    const l2 = byLevel('deepgram');
+    const l2fb = byLevel('whisper-fallback');
+    const l3 = byLevel('assemblyai');
+
+    // Estimations coût (ordre de grandeur).
+    const usdToEur = 0.92;
+    // Mean buzz audio ≈ 6s (capture VAD-cut). On approxime minute-équivalent.
+    const meanSec = 6;
+    const minPer = (count: number): number => (count * meanSec) / 60;
+    const cost = {
+      deepgram: minPer(l2.count) * 0.0043 * usdToEur,
+      whisper_fallback: minPer(l2fb.count) * 0.006 * usdToEur,
+      assemblyai: minPer(l3.count) * 0.0062 * usdToEur,
+      total: 0,
+    };
+    cost.total = cost.deepgram + cost.whisper_fallback + cost.assemblyai;
+
+    const escalation_rate_l2_l3 = l2.count > 0 ? l3.count / l2.count : 0;
+
+    res.json({
+      window_days: days,
+      since: since.toISOString(),
+      total,
+      distribution,
+      summary: {
+        l1_count: l1.count,
+        l2_count: l2.count,
+        l2_fallback_count: l2fb.count,
+        l3_count: l3.count,
+        l1_avg_latency_ms: l1.avg_latency_ms,
+        l2_avg_latency_ms: l2.avg_latency_ms,
+        l3_avg_latency_ms: l3.avg_latency_ms,
+        escalation_rate_l2_l3: Number(escalation_rate_l2_l3.toFixed(3)),
+      },
+      cost_estimate_eur: {
+        deepgram: Number(cost.deepgram.toFixed(4)),
+        whisper_fallback: Number(cost.whisper_fallback.toFixed(4)),
+        assemblyai: Number(cost.assemblyai.toFixed(4)),
+        total: Number(cost.total.toFixed(4)),
+      },
+    });
+  } catch (err) {
+    console.error('[GET /admin/voice-analytics] error:', err);
+    res.status(500).json({ error: { code: 'ANALYTICS_FAILED', message: (err as Error).message } });
+  }
+});
+
 export default router;

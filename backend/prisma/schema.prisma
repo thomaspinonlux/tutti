@@ -631,6 +631,14 @@ model VoiceTranscript {
   matched_artist Boolean  @default(false)
   matched_title  Boolean  @default(false)
   confidence     Float?
+  /// feat/voice-cascade-l3-assemblyai — niveau cascade qui a produit ce
+  /// transcript. Valeurs : 'web-speech', 'deepgram', 'whisper-fallback',
+  /// 'assemblyai', 'manual-text'. Nullable pour rétro-compat (anciennes lignes
+  /// pré-cascade restent NULL).
+  level          String?  @db.VarChar(32)
+  /// Latence totale côté backend pour produire le transcript (ms). Nullable
+  /// car non disponible pour les anciennes lignes.
+  latency_ms     Int?
   created_at     DateTime @default(now()) @db.Timestamptz(6)
 
   session     Session     @relation(fields: [session_id], references: [id], onDelete: Cascade)
@@ -639,6 +647,7 @@ model VoiceTranscript {
 
   @@index([session_id])
   @@index([track_id])
+  @@index([level])
   @@map("voice_transcripts")
 }
 
