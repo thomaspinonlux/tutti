@@ -30,6 +30,11 @@ import {
 import { computeAnswerScore } from '../lib/gameScoring.js';
 import { transcribeAudio, WhisperError } from '../lib/whisper.js';
 import { transcribeWithDeepgram, DeepgramError } from '../lib/deepgram.js';
+import {
+  transcribeWithAssemblyAI,
+  AssemblyAIError,
+  isAssemblyAIEnabled,
+} from '../lib/assemblyai.js';
 import { matchTranscript } from '../lib/voiceMatch.js';
 import { matchAnswer } from '../lib/voiceMatching.js';
 import { getCumulativeScores } from '../lib/scores.js';
@@ -694,12 +699,14 @@ interface CascadeMatchCommitArgs {
   participantPseudo: string;
   participantTeamId: string | null;
   transcript: string;
-  /** Provenance ("web-speech", "deepgram", "whisper-fallback") — log only. */
+  /** Provenance ("web-speech", "deepgram", "whisper-fallback", "assemblyai") — log + DB. */
   source: string;
   /** Trace technique (Deepgram OK / fallback Whisper) — log only. */
-  level: 'L1' | 'L2' | 'L3-fallback';
+  level: 'L1' | 'L2' | 'L3' | 'L3-fallback';
   /** Si présent, persist dans voice_transcripts (sinon skip log). */
   persistTranscript?: boolean;
+  /** feat/voice-cascade-l3-assemblyai — latence côté backend pour analytics. */
+  latencyMs?: number;
 }
 
 interface CascadeMatchCommitResult {
@@ -777,6 +784,8 @@ async function runMatchAndCommit(
           matched_artist: best.score >= VOICE_MATCH_THRESHOLD,
           matched_title: best.score >= VOICE_MATCH_THRESHOLD && best.target === 'artist_title',
           confidence: best.score / 100,
+          level: args.source,
+          latency_ms: args.latencyMs,
         },
       })
       .catch((err) => console.warn('[voice-cascade] log error:', err));
@@ -1135,6 +1144,152 @@ router.post(
       total_score: result.total_score,
       breakdown: result.breakdown,
       reason: result.reason,
+    });
+  },
+);
+
+// ── POST /voice-transcribe-assemblyai — niveau 3 cascade (AssemblyAI) ────
+//
+// 3ᵉ filet de sécurité : utilisé QUAND L1 (Web Speech) ET L2 (Deepgram) ont
+// retourné un score insuffisant. AssemblyAI Universal-2 + word_boost a une
+// précision supérieure sur les accents très prononcés / l'audio bruité au
+// prix d'une latence plus haute (600-1500ms).
+//
+// Feature flag : `ENABLE_ASSEMBLYAI_FALLBACK=true` + `ASSEMBLYAI_API_KEY` set.
+// Sans flag → 503 propre, le frontend skip L3 et conclut "rejeté".
+//
+// Body multipart :
+//   - audio (file, requis) : Blob Opus/webm capturé par MediaRecorder
+//   - token (texte, requis) : JWT participant
+//
+// Réponse JSON :
+//   - level: 'L3'
+//   - matched, scored, score (0-100), transcript, threshold, give_up_threshold
+//   - latency_ms (côté AssemblyAI upload+transcript+poll)
+
+router.post(
+  '/voice-transcribe-assemblyai',
+  upload.single('audio'),
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    // ── Feature gate : si désactivé, 503 propre ──────────────────────
+    if (!isAssemblyAIEnabled()) {
+      res
+        .status(503)
+        .json({ error: { code: 'ASSEMBLYAI_DISABLED', message: 'AssemblyAI fallback désactivé' } });
+      return;
+    }
+
+    const token = typeof req.body?.token === 'string' ? req.body.token : '';
+    if (!token) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'token requis' } });
+      return;
+    }
+    const audioFile = (req as Request & { file?: Express.Multer.File }).file;
+    if (!audioFile) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'audio requis' } });
+      return;
+    }
+
+    const auth = verifyParticipantOrFail(req, res, token);
+    if (!auth) return;
+
+    const participant = await prisma.participant.findUnique({
+      where: { id: auth.participantId },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+    });
+    if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
+      res
+        .status(403)
+        .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+
+    closeBuzz(req.params.roundId, auth.participantId);
+
+    const active = getActiveTrack(req.params.roundId);
+    if (!active) {
+      res.status(409).json({ error: { code: 'NO_TRACK', message: 'Pas de track en cours' } });
+      return;
+    }
+    const track = await prisma.track.findUnique({
+      where: { id: active.track_id },
+      include: { artist: true },
+    });
+    if (!track) {
+      res.status(500).json({ error: { code: 'TRACK_LOST', message: 'Track introuvable' } });
+      return;
+    }
+
+    const session = await prisma.session.findUnique({
+      where: { id: req.params.id },
+      select: { language: true },
+    });
+    const sessionLang = session?.language ?? 'fr';
+    // AssemblyAI accepte 'fr'/'en' standard. On évite 'multi' (pas supporté côté Universal-2).
+    const aaLang = sessionLang === 'fr' ? 'fr' : 'en';
+
+    const keywords = [track.canonical_title, track.artist.canonical_name].filter(
+      (s): s is string => typeof s === 'string' && s.length > 0,
+    );
+
+    // ── Transcription ────────────────────────────────────────────────
+    let transcript = '';
+    let latency_ms = 0;
+    try {
+      const aaRes = await transcribeWithAssemblyAI({
+        audio: audioFile.buffer,
+        contentType: audioFile.mimetype || 'audio/webm',
+        language: aaLang,
+        keywords,
+      });
+      transcript = aaRes.text;
+      latency_ms = aaRes.latency_ms;
+    } catch (err: unknown) {
+      if (err instanceof AssemblyAIError) {
+        console.warn('[voice-cascade] AssemblyAI error:', err.code, err.message);
+      } else {
+        console.error('[voice-cascade] AssemblyAI unexpected error:', err);
+      }
+      // Pas de fallback ici — c'est déjà le dernier niveau. Frontend sera
+      // notifié via 503 et conclura "rejeté".
+      res
+        .status(503)
+        .json({ error: { code: 'ASSEMBLYAI_FAILED', message: 'AssemblyAI échec — niveau final' } });
+      return;
+    }
+
+    const result = await runMatchAndCommit({
+      sessionId: req.params.id,
+      roundId: req.params.roundId,
+      participantId: participant.id,
+      participantPseudo: participant.pseudo,
+      participantTeamId: participant.team_id,
+      transcript,
+      source: 'assemblyai',
+      level: 'L3',
+      persistTranscript: true,
+      latencyMs: latency_ms,
+    });
+
+    if ('error' in result) {
+      res.status(result.status).json({ error: { code: result.error, message: result.error } });
+      return;
+    }
+
+    res.json({
+      level: 'L3' as const,
+      matched: result.matched,
+      scored: result.scored,
+      score: result.score,
+      target: result.target,
+      transcript: result.transcript_normalized,
+      threshold: VOICE_MATCH_THRESHOLD,
+      give_up_threshold: VOICE_MATCH_GIVEUP_THRESHOLD,
+      position: result.position,
+      total_score: result.total_score,
+      breakdown: result.breakdown,
+      reason: result.reason,
+      latency_ms,
     });
   },
 );

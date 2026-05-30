@@ -97,20 +97,37 @@ export function Sidebar(): JSX.Element {
           </NavLink>
         ))}
         {isSuperAdmin && (
-          <NavLink
-            to="/admin/super-admin"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-ink text-cream border-ink shadow-pop-sm'
-                  : 'border-transparent text-raspberry hover:bg-cream hover:border-ink'
-              }`
-            }
-            title="Modération signup (approbations, whitelist, codes invitation)"
-          >
-            <span className="w-5 h-5 shrink-0 flex items-center justify-center">★</span>
-            <span>{t('admin.moderationNav')}</span>
-          </NavLink>
+          <>
+            <NavLink
+              to="/admin/super-admin"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-ink text-cream border-ink shadow-pop-sm'
+                    : 'border-transparent text-raspberry hover:bg-cream hover:border-ink'
+                }`
+              }
+              title="Modération signup (approbations, whitelist, codes invitation)"
+            >
+              <span className="w-5 h-5 shrink-0 flex items-center justify-center">★</span>
+              <span>{t('admin.moderationNav')}</span>
+            </NavLink>
+            {/* feat/voice-cascade-l3-assemblyai — dashboard analytics cascade voix. */}
+            <NavLink
+              to="/admin/voice-analytics"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-ink text-cream border-ink shadow-pop-sm'
+                    : 'border-transparent text-raspberry hover:bg-cream hover:border-ink'
+                }`
+              }
+              title="Cascade voix : distribution L1/L2/L3, latence, coût estimé"
+            >
+              <span className="w-5 h-5 shrink-0 flex items-center justify-center">🎙️</span>
+              <span>Voice analytics</span>
+            </NavLink>
+          </>
         )}
       </nav>
 
