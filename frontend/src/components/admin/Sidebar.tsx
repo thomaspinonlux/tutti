@@ -13,6 +13,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/auth.js';
 import { LanguageSwitch } from '../LanguageSwitch.js';
+import { PwaInstallButton } from '../PwaInstallButton.js';
 import { Button, MultiColorBar, TitleHandwritten } from '../ui/index.js';
 import { getMe } from '../../lib/me.js';
 
@@ -115,6 +116,10 @@ export function Sidebar(): JSX.Element {
 
       <div className="px-4 pb-5 pt-4 border-t-2 border-ink space-y-3">
         <LanguageSwitch className="w-full justify-center" />
+        {/* feat/pwa-installable — bouton "Installer Tutti" (Chrome/Edge prompt
+            natif, iOS instructions Partager → Sur l'écran d'accueil). Auto-
+            masqué si déjà standalone ou navigateur non supporté. */}
+        <PwaInstallButton />
         {user?.email && (
           <p className="font-mono text-[10px] text-ink-soft truncate" title={user.email}>
             {user.email}

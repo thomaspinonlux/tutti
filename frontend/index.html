@@ -55,8 +55,24 @@
     <link rel="icon" type="image/svg+xml" href="/logo-monogram-dark.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png" />
     <link rel="shortcut icon" href="/favicon.ico" />
+
+    <!-- ==================== PWA (feat/pwa-installable) ==================== -->
+    <!-- Web App Manifest : injecté automatiquement par vite-plugin-pwa.
+         Le link explicite ci-dessous est inoffensif (override sur même path)
+         mais sert de fallback si le plugin change de nom de fichier. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- iOS PWA meta tags : permettent l'install plein écran via "Sur l'écran
+         d'accueil" depuis Safari (Partager). apple-mobile-web-app-capable +
+         status-bar-style contrôlent le rendu standalone (sans barre Safari).
+         black-translucent = barre transparente, contenu scrolle en-dessous
+         (look edge-to-edge). Si on veut une barre cream opaque plus tard :
+         remplacer par "default". -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Tutti" />
 
     <!-- ==================== FONTS ==================== -->
     <!-- Fraunces 900 italic auto-hébergé (preload critique pour le H1 hero <em>) -->

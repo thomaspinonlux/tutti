@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CurrentTrackState } from '@tutti/shared';
 import { Badge, Button, Card } from '../ui/index.js';
+import { PwaInstallButton } from '../PwaInstallButton.js';
 
 export interface MasterMenuProps {
   isPaused: boolean;
@@ -225,6 +226,10 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           ⏸ {t('play.masterPausedBadge')}
         </Badge>
       )}
+
+      {/* feat/pwa-installable — bouton "Installer Tutti" discret. Auto-hidden
+          si déjà standalone ou navigateur non supporté (cf. usePwa). */}
+      <PwaInstallButton className="mt-3" />
     </Card>
   );
 }
