@@ -7,7 +7,7 @@
  *   - Au mount : fetch GET /api/sessions/current
  *   - Si une session est trouvée → affiche le banner
  *   - User peut "Reprendre" (navigate /host?session=CODE) ou "Ignorer"
- *     (sessionStorage dismiss flag)
+ *     (localStorage dismiss flag)
  *   - Re-fetch à chaque navigation (pour invalider après end)
  *
  * Pas affiché sur /host /play /screen (déjà dans la session).
@@ -23,6 +23,14 @@ import { Button } from '../ui/index.js';
 // global qui cachait la bannière de TOUTES les sessions futures jusqu'à
 // fermeture onglet. Avec la clé per-session, dismisser la bannière d'une
 // session A n'empêche pas l'apparition pour la session B suivante.
+//
+// fix/restrict-banners-to-host-pages — passage de localStorage à
+// localStorage pour que le dismiss soit PERMANENT (ne réapparaît pas à la
+// prochaine ouverture d'onglet). Quand le user clique X sur "Partie en
+// cours KOMP-XXXX", il dit "non je ne reprends pas". Le bandeau doit
+// rester silencieux jusqu'à la fin de cette session (cf. cron auto-close
+// qui clôt les sessions inactives > 2h, donc cette clé devient elle-même
+// auto-purgée à terme).
 const DISMISS_KEY_PREFIX = 'tutti.resume_banner_dismissed:';
 
 export function ResumeSessionBanner(): JSX.Element | null {
@@ -40,7 +48,7 @@ export function ResumeSessionBanner(): JSX.Element | null {
         setSession(s);
         // Re-lit le flag dismiss pour la session courante (per-session).
         if (s) {
-          const dismissed = sessionStorage.getItem(DISMISS_KEY_PREFIX + s.id) === '1';
+          const dismissed = localStorage.getItem(DISMISS_KEY_PREFIX + s.id) === '1';
           setDismissedSessionId(dismissed ? s.id : null);
         }
       })
@@ -58,7 +66,7 @@ export function ResumeSessionBanner(): JSX.Element | null {
   };
 
   const handleDismiss = (): void => {
-    sessionStorage.setItem(DISMISS_KEY_PREFIX + session.id, '1');
+    localStorage.setItem(DISMISS_KEY_PREFIX + session.id, '1');
     setDismissedSessionId(session.id);
   };
 

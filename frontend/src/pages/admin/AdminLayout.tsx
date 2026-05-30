@@ -15,7 +15,9 @@ import { MobileNav } from '../../components/admin/MobileNav.js';
 import { api, ApiError } from '../../lib/api.js';
 import { MultiColorBar } from '../../components/ui/index.js';
 import { ResumeSessionBanner } from '../../components/admin/ResumeSessionBanner.js';
-import { SafariMediaBanner } from '../../components/admin/SafariMediaBanner.js';
+// fix/restrict-banners-to-host-pages — SafariMediaBanner retiré d'AdminLayout.
+// Il est désormais monté UNIQUEMENT dans HostPage (seule page où l'audio joue
+// vraiment). Voir docs/PR fix/restrict-banners-to-host-pages.
 import { LegalFooter } from '../../components/legal/LegalFooter.js';
 import { getMe, type MeResponse } from '../../lib/me.js';
 import { PendingApprovalScreen } from '../../components/auth/PendingApprovalScreen.js';
@@ -130,7 +132,6 @@ export function AdminLayout(): JSX.Element {
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 pb-[60px] md:pb-0">
         <MultiColorBar height="sm" />
-        <SafariMediaBanner />
         <ResumeSessionBanner />
         <main className="flex-1 px-4 sm:px-6 md:px-10 py-4 sm:py-8">
           <Outlet context={ctx} />
