@@ -500,6 +500,7 @@ model Session {
   score_events      ScoreEvent[]
   voice_transcripts VoiceTranscript[]
   played_tracks     SessionPlayedTrack[]
+  playlist_proposals PlaylistProposal[]
 
   @@index([short_code])
   @@index([establishment_id])
@@ -507,20 +508,39 @@ model Session {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  SESSION_PLAYED_TRACKS — anti-doublon cross-playlist
-//  (feat/session-no-duplicate-tracks)
+//  PLAYLIST_PROPOSALS — feat/tv-playlist-carousel
 //
-//  À chaque morceau joué (buildAndBroadcastTrack), on enregistre une ligne
-//  (session_id, track_id). Si l'host lance une nouvelle manche sur une autre
-//  playlist au cours de la même session, le sélecteur (PR B random pick)
-//  exclut les tracks déjà présents dans cette table.
+//  Pendant la phase lobby (Session.status = WAITING), un joueur peut proposer
+//  une playlist officielle à l'animateur depuis son smartphone. L'host voit
+//  les propositions et peut décider de lancer celle qui a le plus de votes.
 //
-//  Unique (session_id, track_id) : un même morceau ne peut être joué qu'une
-//  fois par session (idempotent côté insert avec onConflict skip).
-//
-//  Cleanup : à la fin de la session le data reste (utile analytics). Le
-//  ON DELETE CASCADE via Session garantit le nettoyage si la session est
-//  supprimée. L'admin peut aussi reset via POST /sessions/:id/reset-played-tracks.
+//  Unique (session, participant, playlist) → un même joueur ne peut proposer
+//  qu'une fois la même playlist (anti-spam). Peut en proposer plusieurs.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PlaylistProposal {
+  id                    String   @id @default(uuid()) @db.Uuid
+  session_id            String   @db.Uuid
+  participant_id        String   @db.Uuid
+  /// Référence à la playlist OFFICIELLE Tutti (catalogue partagé). Le host
+  /// peut ensuite lancer la playlist via le flow POST /api/library/playlists/
+  /// :id/launch existant. On stocke aussi le name snapshot pour fallback UI.
+  official_playlist_id  String   @db.Uuid
+  playlist_name         String   @db.VarChar(200)
+  created_at            DateTime @default(now()) @db.Timestamptz(6)
+
+  session     Session     @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+
+  @@unique([session_id, participant_id, official_playlist_id])
+  @@index([session_id])
+  @@index([official_playlist_id])
+  @@map("playlist_proposals")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SESSION_PLAYED_TRACKS — anti-doublon cross-playlist (PR C #53, restauré
+//  après conflit rebase PR A sur main qui contenait déjà PR B + PR C).
 // ─────────────────────────────────────────────────────────────────────────────
 
 model SessionPlayedTrack {
@@ -614,6 +634,7 @@ model Participant {
   session           Session           @relation(fields: [session_id], references: [id], onDelete: Cascade)
   score_events      ScoreEvent[]
   voice_transcripts VoiceTranscript[]
+  playlist_proposals PlaylistProposal[]
 
   @@index([session_id])
   @@map("participants")

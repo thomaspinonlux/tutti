@@ -360,6 +360,11 @@ function ScreenLobbyView({
           )}
         </div>
       </main>
+      {/* feat/tv-playlist-carousel — carrousel des playlists disponibles
+          en lobby. Auto-rotation 6s, fait découvrir le catalogue aux
+          joueurs avant le lancement. Charge via session.short_code (public,
+          pas d'auth requise). */}
+      <LobbyPlaylistCarousel shortCode={joinCode} />
       <MultiColorBar height="md" />
     </div>
   );
@@ -557,5 +562,92 @@ function FloatingNote({
     >
       {children}
     </span>
+  );
+}
+
+/**
+ * feat/tv-playlist-carousel — carrousel auto-rotation des playlists
+ * officielles dispos. Charge le catalogue public scoped par session, affiche
+ * 1 playlist en grand toutes les 6s avec dots indicateurs.
+ *
+ * Pas de navigation manuelle V1 — c'est purement décoratif/informatif sur la TV.
+ * Les joueurs choisissent via leur smartphone (PlayPage ProposePlaylistButton).
+ */
+function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null {
+  const { i18n } = useTranslation();
+  const [playlists, setPlaylists] = useState<
+    Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      theme: string | null;
+      track_count: number;
+    }>
+  >([]);
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    void import('../lib/playlistProposals.js')
+      .then(({ getLibraryCatalogForSession }) => getLibraryCatalogForSession(props.shortCode))
+      .then((rows) => {
+        if (cancelled) return;
+        const isFr = i18n.language?.toLowerCase().startsWith('fr');
+        setPlaylists(
+          rows.slice(0, 15).map((p) => ({
+            id: p.id,
+            name: isFr ? p.name_fr : p.name_en,
+            description: isFr ? p.description_fr : p.description_en,
+            theme: p.theme,
+            track_count: p.track_count,
+          })),
+        );
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [props.shortCode, i18n.language]);
+
+  useEffect(() => {
+    if (playlists.length < 2) return;
+    const id = window.setInterval(() => setIdx((i) => (i + 1) % playlists.length), 6000);
+    return () => window.clearInterval(id);
+  }, [playlists.length]);
+
+  if (playlists.length === 0) return null;
+  const current = playlists[idx]!;
+
+  return (
+    <section className="border-t-2 border-ink bg-cream-2 py-6 px-8">
+      <p className="font-mono text-xs uppercase tracking-[0.3em] text-spritz-deep text-center mb-4">
+        🎶 Playlists disponibles
+      </p>
+      <div className="max-w-4xl mx-auto flex items-center gap-6 animate-fade-in" key={current.id}>
+        <div className="flex-1 min-w-0">
+          <p className="font-display text-3xl mb-2">{current.name}</p>
+          {current.description && (
+            <p className="font-editorial italic text-ink-2 text-base line-clamp-2">
+              {current.description}
+            </p>
+          )}
+          <p className="font-mono text-xs text-ink-soft mt-2">
+            {current.theme && <span>{current.theme} · </span>}
+            {current.track_count} morceaux
+          </p>
+        </div>
+      </div>
+      {/* Dots indicateurs */}
+      <div className="flex justify-center gap-1.5 mt-4">
+        {playlists.map((_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 rounded transition-all ${
+              i === idx ? 'w-6 bg-spritz' : 'w-1.5 bg-ink/20'
+            }`}
+          />
+        ))}
+      </div>
+    </section>
   );
 }
