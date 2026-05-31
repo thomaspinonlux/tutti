@@ -441,6 +441,206 @@ router.get(
   },
 );
 
+// ── feat/tv-playlist-carousel ─────────────────────────────────────────────
+//
+// 3 endpoints lobby-phase :
+//   GET  /by-code/:short_code/library-playlists  : catalogue OfficialPlaylist
+//                                                  public, sert TV + Player
+//   POST /by-code/:short_code/proposals          : participant token →
+//                                                  insère PlaylistProposal +
+//                                                  broadcast socket
+//   GET  /:id/proposals                          : host (workspace) →
+//                                                  liste agrégée counts
+
+// ── GET /by-code/:short_code/library-playlists (public) ──────────────────
+router.get(
+  '/by-code/:short_code/library-playlists',
+  async (req: Request<{ short_code: string }>, res: Response): Promise<void> => {
+    try {
+      // Garde de session : 404 si pas trouvée. Évite d'exposer le catalogue
+      // sans contexte (même si déjà public, on veut associer à une session).
+      const session = await prisma.session.findUnique({
+        where: { short_code: req.params.short_code.toUpperCase() },
+        select: { id: true },
+      });
+      if (!session) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+        return;
+      }
+      // Catalogue public : visibility public, ordered by updated_at.
+      // Limit à 30 pour le carrousel TV (UI plus light, plus visuel).
+      const playlists = await prisma.officialPlaylist.findMany({
+        where: { visibility: 'public' },
+        orderBy: { updated_at: 'desc' },
+        take: 30,
+        include: { _count: { select: { tracks: true } } },
+      });
+      res.json({
+        playlists: playlists.map((p) => ({
+          id: p.id,
+          slug: p.slug,
+          name_fr: p.name_fr,
+          name_en: p.name_en,
+          description_fr: p.description_fr,
+          description_en: p.description_en,
+          locale_primary: p.locale_primary,
+          theme: p.theme,
+          difficulty: p.difficulty,
+          track_count: p._count.tracks,
+        })),
+      });
+    } catch (err) {
+      console.error('[GET /sessions/by-code/library-playlists] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur catalogue' } });
+    }
+  },
+);
+
+// ── POST /by-code/:short_code/proposals (participant) ────────────────────
+const proposeSchema = z.object({
+  token: z.string().min(1),
+  official_playlist_id: z.string().uuid(),
+});
+
+router.post(
+  '/by-code/:short_code/proposals',
+  async (req: Request<{ short_code: string }>, res: Response): Promise<void> => {
+    const parsed = proposeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({
+          error: { code: 'VALIDATION_ERROR', message: 'token + official_playlist_id requis' },
+        });
+      return;
+    }
+    const { verifyParticipantToken } = await import('../lib/participantToken.js');
+    let payload: { participant_id: string; session_id: string };
+    try {
+      payload = verifyParticipantToken(parsed.data.token);
+    } catch {
+      res.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Token invalide' } });
+      return;
+    }
+
+    const session = await prisma.session.findUnique({
+      where: { short_code: req.params.short_code.toUpperCase() },
+      select: { id: true, status: true },
+    });
+    if (!session || session.id !== payload.session_id) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    // Propositions uniquement en lobby (WAITING) — en PLAYING/ENDED ça
+    // n'aurait pas de sens.
+    if (session.status !== 'WAITING') {
+      res
+        .status(409)
+        .json({
+          error: { code: 'NOT_IN_LOBBY', message: 'Propositions ouvertes uniquement en lobby' },
+        });
+      return;
+    }
+
+    const participant = await prisma.participant.findUnique({
+      where: { id: payload.participant_id },
+      select: { id: true, pseudo: true, is_kicked: true, session_id: true },
+    });
+    if (!participant || participant.is_kicked || participant.session_id !== session.id) {
+      res
+        .status(403)
+        .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+
+    const playlist = await prisma.officialPlaylist.findUnique({
+      where: { id: parsed.data.official_playlist_id },
+      select: { id: true, name_fr: true, name_en: true, visibility: true },
+    });
+    if (!playlist || playlist.visibility !== 'public') {
+      res
+        .status(404)
+        .json({ error: { code: 'PLAYLIST_NOT_FOUND', message: 'Playlist introuvable' } });
+      return;
+    }
+
+    try {
+      const created = await prisma.playlistProposal.upsert({
+        where: {
+          session_id_participant_id_official_playlist_id: {
+            session_id: session.id,
+            participant_id: participant.id,
+            official_playlist_id: playlist.id,
+          },
+        },
+        update: {}, // déjà proposée par ce joueur → no-op idempotent
+        create: {
+          session_id: session.id,
+          participant_id: participant.id,
+          official_playlist_id: playlist.id,
+          playlist_name: playlist.name_fr ?? playlist.name_en ?? 'Playlist',
+        },
+      });
+      // Broadcast socket pour notifier le host (badge counter live).
+      broadcastToSession(session.id, 'proposal:received', {
+        proposal_id: created.id,
+        official_playlist_id: playlist.id,
+        playlist_name: created.playlist_name,
+        participant_id: participant.id,
+        participant_pseudo: participant.pseudo,
+        created_at: created.created_at.toISOString(),
+      });
+      res.status(201).json({ proposal: created });
+    } catch (err) {
+      console.error('[POST /sessions/proposals] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur création proposition' } });
+    }
+  },
+);
+
+// ── GET /:id/proposals (host) ────────────────────────────────────────────
+router.get(
+  '/:id/proposals',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const session = await prisma.session.findFirst({
+      where: { id: req.params.id, establishment: { workspace_id: workspaceId } },
+      select: { id: true },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    // Agrégation : par official_playlist_id, count + participants pseudos.
+    const proposals = await prisma.playlistProposal.findMany({
+      where: { session_id: session.id },
+      orderBy: { created_at: 'desc' },
+      include: { participant: { select: { pseudo: true } } },
+    });
+    const byPlaylist = new Map<
+      string,
+      { official_playlist_id: string; playlist_name: string; count: number; participants: string[] }
+    >();
+    for (const p of proposals) {
+      const entry = byPlaylist.get(p.official_playlist_id) ?? {
+        official_playlist_id: p.official_playlist_id,
+        playlist_name: p.playlist_name,
+        count: 0,
+        participants: [],
+      };
+      entry.count += 1;
+      entry.participants.push(p.participant.pseudo);
+      byPlaylist.set(p.official_playlist_id, entry);
+    }
+    const summary = Array.from(byPlaylist.values()).sort((a, b) => b.count - a.count);
+    res.json({ total: proposals.length, summary });
+  },
+);
+
 // ── PATCH /:id (host) ─────────────────────────────────────────────────────
 
 const patchSchema = z.object({

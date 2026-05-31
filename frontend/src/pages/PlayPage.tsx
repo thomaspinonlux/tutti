@@ -686,6 +686,10 @@ export function PlayPage(): JSX.Element {
               <div className="mt-6 h-1 bg-cream-3 rounded overflow-hidden relative" aria-hidden>
                 <div className="absolute inset-y-0 w-1/3 bg-spritz animate-pulse" />
               </div>
+              {/* feat/tv-playlist-carousel — proposer une playlist depuis le
+                  lobby. Modal qui charge le catalogue OfficialPlaylist + POST
+                  /api/sessions/by-code/:short_code/proposals. */}
+              <ProposePlaylistButton shortCode={shortCode} token={identity.token} />
             </Card>
           )}
 
@@ -1858,6 +1862,170 @@ function RecordingView({
 //
 // La validation après match correct passe directement par <ValidatedBanner />
 // (déclenché via myCorrect une fois le broadcast track:correct_answer reçu).
+
+/**
+ * feat/tv-playlist-carousel — bouton + modal pour proposer une playlist
+ * officielle Tutti depuis le lobby. Charge le catalogue à la 1ère ouverture,
+ * persiste les playlists déjà proposées par cet user pour éviter les
+ * doublons UI (le backend est idempotent côté DB grâce au unique constraint).
+ */
+function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX.Element | null {
+  const { t, i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [catalog, setCatalog] = useState<
+    Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      theme: string | null;
+      track_count: number;
+    }>
+  >([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [proposed, setProposed] = useState<Set<string>>(new Set());
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    if (!open || catalog.length > 0 || loading) return;
+    setLoading(true);
+    setError(null);
+    void import('../lib/playlistProposals.js')
+      .then(({ getLibraryCatalogForSession }) => getLibraryCatalogForSession(props.shortCode))
+      .then((rows) => {
+        const isFr = i18n.language?.toLowerCase().startsWith('fr');
+        setCatalog(
+          rows.map((p) => ({
+            id: p.id,
+            name: isFr ? p.name_fr : p.name_en,
+            description: isFr ? p.description_fr : p.description_en,
+            theme: p.theme,
+            track_count: p.track_count,
+          })),
+        );
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        setError((err as Error).message);
+        setLoading(false);
+      });
+  }, [open, catalog.length, loading, props.shortCode, i18n.language]);
+
+  const handlePropose = async (id: string): Promise<void> => {
+    setBusy(id);
+    try {
+      const { proposeLibraryPlaylist } = await import('../lib/playlistProposals.js');
+      await proposeLibraryPlaylist({
+        shortCode: props.shortCode,
+        token: props.token,
+        officialPlaylistId: id,
+      });
+      setProposed((s) => new Set(s).add(id));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const filtered = catalog.filter((p) =>
+    filter ? p.name.toLowerCase().includes(filter.toLowerCase()) : true,
+  );
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-6 inline-flex items-center gap-2 px-4 py-2 border-2 border-ink rounded-lg bg-cream text-ink font-mono text-xs hover:bg-spritz/30 transition shadow-pop-sm"
+      >
+        <span aria-hidden>💡</span>
+        <span>{t('play.proposePlaylistCta')}</span>
+      </button>
+      {open && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-ink/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 animate-fade-in"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="bg-cream border-2 border-ink rounded-lg shadow-pop-lg w-full max-w-md max-h-[85vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b-2 border-ink flex items-center justify-between gap-2">
+              <p className="font-display text-lg">💡 {t('play.proposePlaylistTitle')}</p>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label={t('common.close')}
+                className="text-ink-soft hover:text-ink text-xl"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-3 border-b border-ink/15">
+              <input
+                type="search"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder={t('play.proposePlaylistSearch')}
+                className="w-full px-3 py-2 border-2 border-ink rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-spritz"
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {loading && (
+                <p className="font-mono text-sm text-ink-soft">⏳ {t('common.loading')}</p>
+              )}
+              {error && (
+                <p role="alert" className="font-mono text-sm text-raspberry">
+                  {error}
+                </p>
+              )}
+              {!loading && !error && filtered.length === 0 && (
+                <p className="font-editorial italic text-ink-soft text-center py-6">
+                  {t('play.proposePlaylistEmpty')}
+                </p>
+              )}
+              {filtered.map((p) => {
+                const isProposed = proposed.has(p.id);
+                const isBusy = busy === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => void handlePropose(p.id)}
+                    disabled={isProposed || isBusy}
+                    className={`w-full text-left p-3 border-2 rounded-lg transition ${
+                      isProposed
+                        ? 'border-basil bg-basil/10 cursor-default'
+                        : 'border-ink hover:bg-spritz/20 active:translate-y-px'
+                    } ${isBusy ? 'opacity-60' : ''}`}
+                  >
+                    <p className="font-display font-semibold text-sm flex items-center gap-2">
+                      {p.name}
+                      {isProposed && <span className="text-basil text-xs">✓ proposée</span>}
+                    </p>
+                    {p.description && (
+                      <p className="font-mono text-[11px] text-ink-soft mt-1 line-clamp-2">
+                        {p.description}
+                      </p>
+                    )}
+                    <p className="font-mono text-[10px] text-ink-soft mt-1">
+                      {p.theme && <span>{p.theme} · </span>}
+                      {p.track_count} morceaux
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 // Phase2Countdown : remplacé par LateBanner (maquette 07). Conservé pour
 // référence si besoin de revenir à un affichage compact.
