@@ -257,7 +257,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
           events: {
             onReady: () => {
               if (cancelled) return;
-              console.info('[Player] Ready');
+              console.info('[Player] YouTube IFrame ready: true');
               setStatus('ready');
               // fix/robust-autoplay-no-refresh — queue drain via useEffect
               // séparé qui watch `status` (cf. ci-dessous). On ne touche pas
@@ -393,6 +393,27 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
         retryTimerRef.current = null;
       }
       console.info(`[Player] CueVideo ${videoId} (startSec=${startSec}, endSec=${endSec})`);
+      console.info(`[Player] playVideo() called`);
+      // feat/debug-audio-overlay — état player 500ms après playVideo pour
+      // diagnostic (PWA Safari : autoplay policy peut bloquer silencieusement).
+      window.setTimeout(() => {
+        try {
+          const s = p.getPlayerState?.();
+          const stateName: Record<number, string> = {
+            [-1]: 'UNSTARTED',
+            [0]: 'ENDED',
+            [1]: 'PLAYING',
+            [2]: 'PAUSED',
+            [3]: 'BUFFERING',
+            [5]: 'CUED',
+          };
+          console.info(
+            `[Player] State after 500ms: ${typeof s === 'number' ? (stateName[s] ?? s) : 'unknown'}`,
+          );
+        } catch {
+          /* noop */
+        }
+      }, 500);
       try {
         // Problème B (fix/playback-and-zombies-v4) — flow explicite en 2
         // étapes : cueVideoById met le player en CUED (vidéo prête mais
