@@ -17,6 +17,8 @@ export interface LibraryCatalogPlaylist {
   theme: string | null;
   difficulty: 'EASY' | 'MEDIUM' | 'EXPERT';
   track_count: number;
+  /** feat/tv-carousel-polish — URL mosaïque (absolu OU chemin relatif backend). */
+  cover_url?: string | null;
 }
 
 export interface ProposalSummaryRow {

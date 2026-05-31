@@ -487,6 +487,10 @@ router.get(
           theme: p.theme,
           difficulty: p.difficulty,
           track_count: p._count.tracks,
+          // feat/tv-carousel-polish — override DB si cover fixée manuellement,
+          // sinon URL dynamique mosaïque (génération on-demand par
+          // GET /api/library-cover/:slug.jpg, cache 6h in-memory + 24h HTTP).
+          cover_url: p.cover_url ?? `/api/library-cover/${p.slug}.jpg`,
         })),
       });
     } catch (err) {
@@ -507,11 +511,9 @@ router.post(
   async (req: Request<{ short_code: string }>, res: Response): Promise<void> => {
     const parsed = proposeSchema.safeParse(req.body);
     if (!parsed.success) {
-      res
-        .status(400)
-        .json({
-          error: { code: 'VALIDATION_ERROR', message: 'token + official_playlist_id requis' },
-        });
+      res.status(400).json({
+        error: { code: 'VALIDATION_ERROR', message: 'token + official_playlist_id requis' },
+      });
       return;
     }
     const { verifyParticipantToken } = await import('../lib/participantToken.js');
@@ -534,11 +536,9 @@ router.post(
     // Propositions uniquement en lobby (WAITING) — en PLAYING/ENDED ça
     // n'aurait pas de sens.
     if (session.status !== 'WAITING') {
-      res
-        .status(409)
-        .json({
-          error: { code: 'NOT_IN_LOBBY', message: 'Propositions ouvertes uniquement en lobby' },
-        });
+      res.status(409).json({
+        error: { code: 'NOT_IN_LOBBY', message: 'Propositions ouvertes uniquement en lobby' },
+      });
       return;
     }
 

@@ -216,6 +216,15 @@ function HostPageInner(): JSX.Element {
   // Sert au compteur "X joueurs ont buzzé" en phase 1 (maquette 06).
   const [activeBuzzers, setActiveBuzzers] = useState<Set<string>>(new Set());
 
+  // feat/tv-carousel-polish — propositions playlists reçues en lobby.
+  // Alimenté par socket event 'proposal:received'. Chip + modale d'agrégation.
+  interface ProposalEvent {
+    official_playlist_id: string;
+    playlist_name: string;
+    participant_pseudo: string;
+  }
+  const [proposals, setProposals] = useState<ProposalEvent[]>([]);
+
   // fix/eliminate-blank-pages-state-recovery — état socket pour bandeau
   // "Reconnexion..." discret en cas de coupure réseau. Connecté par défaut
   // (optimiste) pour éviter le flash au boot avant que socket.io ait acked.
@@ -453,6 +462,34 @@ function HostPageInner(): JSX.Element {
           console.info('[Socket] session:paused received');
           setSession((prev) => (prev ? { ...prev, is_paused: true } : prev));
         });
+        // feat/tv-carousel-polish — proposition playlist reçue d'un joueur
+        // pendant le lobby. Append + dedup (même playlist, même pseudo).
+        socket.on(
+          'proposal:received',
+          (evt: {
+            official_playlist_id: string;
+            playlist_name: string;
+            participant_pseudo: string;
+          }) => {
+            console.info('[Socket] proposal:received', evt);
+            setProposals((prev) => {
+              const dup = prev.some(
+                (p) =>
+                  p.official_playlist_id === evt.official_playlist_id &&
+                  p.participant_pseudo === evt.participant_pseudo,
+              );
+              if (dup) return prev;
+              return [
+                ...prev,
+                {
+                  official_playlist_id: evt.official_playlist_id,
+                  playlist_name: evt.playlist_name,
+                  participant_pseudo: evt.participant_pseudo,
+                },
+              ];
+            });
+          },
+        );
         socket.on('session:resumed', () => {
           console.info('[Socket] session:resumed received');
           setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
@@ -750,6 +787,29 @@ function HostPageInner(): JSX.Element {
     // 2. Charge détail playlist + calcule playability
     try {
       const detail = await getLibraryPlaylist(summary.id);
+      const report = computePlayability(detail.tracks, providers);
+      setPreviewPlaylist(detail);
+      setPreviewReport(report);
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
+  /**
+   * feat/tv-carousel-polish — accepter directement la proposition d'un joueur.
+   * Court-circuite l'étape "Picker bibliothèque" : fetch détail + open preview
+   * directement, host valide ensuite (PreviewModal existant gère le launch).
+   */
+  const handleProposalLaunch = async (officialPlaylistId: string): Promise<void> => {
+    if (!session) return;
+    const providers = await fetchHostProviders();
+    const hasAny = providers.spotify.connected || providers.youtube.connected;
+    if (!hasAny) {
+      setNoProviderOpen(true);
+      return;
+    }
+    try {
+      const detail = await getLibraryPlaylist(officialPlaylistId);
       const report = computePlayability(detail.tracks, providers);
       setPreviewPlaylist(detail);
       setPreviewReport(report);
@@ -1434,27 +1494,34 @@ function HostPageInner(): JSX.Element {
             }
           >
             {effectivePhase === 'waiting' && (
-              <WaitingPhase
-                shortCode={session.short_code}
-                playUrl={playUrl}
-                participants={session.participants}
-                teams={teams}
-                mode={session.mode}
-                busy={busy}
-                hasPendingRound={!!pendingRound}
-                hasAnimator={session.has_animator}
-                currentMasterId={currentMaster?.id ?? null}
-                onStart={handleStartSession}
-                onMove={async (pid, tid) => {
-                  await moveParticipantTeam(session.id, pid, tid);
-                }}
-                onKick={async (pid) => {
-                  if (window.confirm(t('host.kickConfirm'))) {
-                    await kickParticipant(session.id, pid);
-                  }
-                }}
-                onToggleMaster={handleToggleMaster}
-              />
+              <>
+                {/* feat/tv-carousel-polish — chip propositions live + click-launch. */}
+                <ProposalsChip
+                  proposals={proposals}
+                  onPick={(id) => void handleProposalLaunch(id)}
+                />
+                <WaitingPhase
+                  shortCode={session.short_code}
+                  playUrl={playUrl}
+                  participants={session.participants}
+                  teams={teams}
+                  mode={session.mode}
+                  busy={busy}
+                  hasPendingRound={!!pendingRound}
+                  hasAnimator={session.has_animator}
+                  currentMasterId={currentMaster?.id ?? null}
+                  onStart={handleStartSession}
+                  onMove={async (pid, tid) => {
+                    await moveParticipantTeam(session.id, pid, tid);
+                  }}
+                  onKick={async (pid) => {
+                    if (window.confirm(t('host.kickConfirm'))) {
+                      await kickParticipant(session.id, pid);
+                    }
+                  }}
+                  onToggleMaster={handleToggleMaster}
+                />
+              </>
             )}
 
             {effectivePhase === 'roundSelection' && (
@@ -2473,4 +2540,96 @@ function pushToast(
   window.setTimeout(() => {
     set((prev) => prev.filter((tt) => tt.id !== id));
   }, 4000);
+}
+
+/**
+ * feat/tv-carousel-polish — Chip live qui agrège les propositions de
+ * playlists des joueurs (socket event `proposal:received`). Affichée en
+ * lobby host. Click sur une proposition → ouvre la preview / launch.
+ */
+interface ProposalsChipProps {
+  proposals: Array<{
+    official_playlist_id: string;
+    playlist_name: string;
+    participant_pseudo: string;
+  }>;
+  onPick: (officialPlaylistId: string) => void;
+}
+
+function ProposalsChip({ proposals, onPick }: ProposalsChipProps): JSX.Element | null {
+  const [expanded, setExpanded] = useState(false);
+  if (proposals.length === 0) return null;
+
+  // Agrégation par playlist : count + liste participants
+  const byPlaylist = new Map<
+    string,
+    { official_playlist_id: string; playlist_name: string; participants: string[] }
+  >();
+  for (const p of proposals) {
+    const entry = byPlaylist.get(p.official_playlist_id) ?? {
+      official_playlist_id: p.official_playlist_id,
+      playlist_name: p.playlist_name,
+      participants: [],
+    };
+    if (!entry.participants.includes(p.participant_pseudo)) {
+      entry.participants.push(p.participant_pseudo);
+    }
+    byPlaylist.set(p.official_playlist_id, entry);
+  }
+  const aggregated = Array.from(byPlaylist.values()).sort(
+    (a, b) => b.participants.length - a.participants.length,
+  );
+  const total = proposals.length;
+  const top3 = aggregated
+    .slice(0, 3)
+    .map((a) => a.playlist_name)
+    .join(', ');
+
+  return (
+    <div className="max-w-3xl mx-auto mb-4">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center gap-3 px-4 py-3 border-2 border-ink rounded-lg bg-lemon text-ink shadow-pop-sm hover:translate-y-px transition text-left"
+        aria-expanded={expanded}
+      >
+        <span aria-hidden className="text-xl">
+          💡
+        </span>
+        <span className="flex-1 min-w-0">
+          <p className="font-display text-sm">
+            {total} proposition{total > 1 ? 's' : ''} de playlist
+            {aggregated.length > 1 ? `s (${aggregated.length} différentes)` : ''}
+          </p>
+          <p className="font-mono text-[11px] text-ink-soft truncate">{top3}</p>
+        </span>
+        <span aria-hidden className="font-mono text-xs">
+          {expanded ? '▲' : '▼'}
+        </span>
+      </button>
+      {expanded && (
+        <ul className="mt-2 border-2 border-ink rounded-lg bg-cream overflow-hidden divide-y divide-ink/15">
+          {aggregated.map((row) => (
+            <li key={row.official_playlist_id}>
+              <button
+                type="button"
+                onClick={() => onPick(row.official_playlist_id)}
+                className="w-full text-left px-4 py-3 hover:bg-spritz/20 active:translate-y-px transition flex items-center gap-3"
+              >
+                <span className="font-display font-semibold flex-1 truncate">
+                  {row.playlist_name}
+                </span>
+                <span className="font-mono text-xs bg-spritz text-ink border border-ink px-2 py-0.5 rounded">
+                  {row.participants.length} 🎯
+                </span>
+              </button>
+              <p className="px-4 pb-2 font-mono text-[10px] text-ink-soft">
+                {row.participants.join(', ')}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }

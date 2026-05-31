@@ -741,6 +741,11 @@ model OfficialPlaylist {
   difficulty       Level    @default(MEDIUM)
   visibility       OfficialVisibility @default(public)
   track_count      Int      @default(0)
+  /// feat/tv-carousel-polish — URL d'une cover mosaïque 2×2 générée à partir
+  /// des 4 premières cover_url des tracks du pool. Servie par
+  /// GET /api/library-cover/:slug.jpg (génération dynamique on-demand, cache
+  /// in-memory). Nullable — fallback texte côté UI si non-set.
+  cover_url        String?
   /// User_id Supabase de l'admin qui a créé/maintient la playlist (audit).
   /// Optionnel — un script qui tourne en CI peut être null.
   created_by_admin String?  @db.Uuid

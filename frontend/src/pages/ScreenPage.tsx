@@ -582,9 +582,20 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
       description: string | null;
       theme: string | null;
       track_count: number;
+      cover_url: string | null;
     }>
   >([]);
   const [idx, setIdx] = useState(0);
+  // feat/tv-carousel-polish — résout URL absolue à partir du chemin retourné
+  // par le backend (cover_url peut être relatif /api/library-cover/... ou
+  // déjà absolu si fixé manuellement).
+  const apiBase = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
+  const resolveCover = (url: string | null | undefined): string | null => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (url.startsWith('/')) return apiBase.replace(/\/+$/, '') + url;
+    return url;
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -600,6 +611,7 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
             description: isFr ? p.description_fr : p.description_en,
             theme: p.theme,
             track_count: p.track_count,
+            cover_url: resolveCover(p.cover_url),
           })),
         );
       })
@@ -607,6 +619,7 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.shortCode, i18n.language]);
 
   useEffect(() => {
@@ -624,6 +637,23 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
         🎶 Playlists disponibles
       </p>
       <div className="max-w-4xl mx-auto flex items-center gap-6 animate-fade-in" key={current.id}>
+        {/* feat/tv-carousel-polish — cover mosaïque 2×2 si dispo, sinon
+            fallback texte uniquement (cf. plus bas). */}
+        {current.cover_url && (
+          <div className="w-32 h-32 lg:w-40 lg:h-40 shrink-0 border-2 border-ink rounded-lg overflow-hidden shadow-pop-sm">
+            <img
+              src={current.cover_url}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // 404 NO_COVERS → masque l'image, garde le layout texte
+                (e.currentTarget as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <p className="font-display text-3xl mb-2">{current.name}</p>
           {current.description && (
