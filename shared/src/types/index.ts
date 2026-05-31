@@ -92,6 +92,8 @@ export interface Playlist {
   is_express: boolean;
   is_official_tutti: boolean;
   external_links: { spotify?: string; deezer?: string; apple_music?: string } | null;
+  /** feat/playlist-pool-random-selection — nb tracks tirés du pool par session. */
+  default_session_size?: number;
   created_at: string;
   updated_at: string;
   /** Comptage léger renvoyé par l'API liste (sans inclure les tracks). */

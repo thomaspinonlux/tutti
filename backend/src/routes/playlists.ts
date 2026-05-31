@@ -320,6 +320,10 @@ const patchSchema = z.object({
   cover_url: z.string().url().nullable().optional(),
   is_published: z.boolean().optional(),
   level: z.enum(['EASY', 'MEDIUM', 'EXPERT']).optional(),
+  /// feat/playlist-pool-random-selection — nombre de tracks tirés du pool par
+  /// session. Borne 3..50 — 3 minimum sinon partie trop courte, 50 max pour
+  /// éviter d'épuiser des pools modestes en une seule manche.
+  default_session_size: z.number().int().min(3).max(50).optional(),
 });
 
 router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promise<void> => {

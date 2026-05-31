@@ -81,13 +81,26 @@ export async function findRoundForWorkspace(
  * 'track:start' à toute la session.
  *
  * Retourne null si l'index est out-of-range (pas de track à cette position).
+ *
+ * feat/playlist-pool-random-selection — si `round.selected_track_ids` est
+ * non-vide, on utilise ce sous-ensemble (ordre = tirage random fait à la
+ * création du round). Sinon (legacy rounds créés avant la PR), fallback sur
+ * `round.playlist.playlist_tracks[index]` pour rétro-compat.
  */
 export async function buildAndBroadcastTrack(
   sessionId: string,
   round: RoundWithTracks,
   trackIndex: number,
 ): Promise<CurrentTrackState | null> {
-  const playlistTrack = round.playlist.playlist_tracks[trackIndex];
+  const selected = round.selected_track_ids ?? [];
+  let playlistTrack: RoundWithTracks['playlist']['playlist_tracks'][number] | undefined;
+  if (selected.length > 0) {
+    const targetTrackId = selected[trackIndex];
+    if (!targetTrackId) return null;
+    playlistTrack = round.playlist.playlist_tracks.find((pt) => pt.track.id === targetTrackId);
+  } else {
+    playlistTrack = round.playlist.playlist_tracks[trackIndex];
+  }
   if (!playlistTrack) return null;
   const track = playlistTrack.track;
 
@@ -197,7 +210,13 @@ export async function advanceToNextOrEndRound(
   { ended: true; round: EnrichedEndedRound | null } | { ended: false; state: CurrentTrackState }
 > {
   const nextIndex = round.current_track_index + 1;
-  if (nextIndex < round.playlist.playlist_tracks.length) {
+  // feat/playlist-pool-random-selection — longueur effective = selected si set,
+  // sinon full playlist (rétro-compat).
+  const effectiveLength =
+    (round.selected_track_ids?.length ?? 0) > 0
+      ? round.selected_track_ids.length
+      : round.playlist.playlist_tracks.length;
+  if (nextIndex < effectiveLength) {
     // fix/next-track-resume-buzz-unlock — si la session était en pause au
     // moment du "Morceau suivant", auto-resume avant de broadcast track:start.
     // Sinon les clients reçoivent le nouveau morceau mais restent paused →

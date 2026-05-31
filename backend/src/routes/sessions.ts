@@ -699,6 +699,59 @@ router.post(
       return;
     }
     try {
+      // feat/playlist-pool-random-selection — récupère TOUS les tracks du pool
+      // de la playlist, filtre ceux déjà joués dans la session (anti-doublon
+      // cross-playlist PR C), shuffle, take N = default_session_size.
+      //
+      // Si après filtrage le pool restant < N → on prend tout ce qui reste
+      // (et le frontend affichera "Pool partiellement utilisé"). Si reste 0
+      // → 409 EXHAUSTED_POOL pour signaler au host de choisir une autre.
+      const poolTracks = await prisma.playlistTrack.findMany({
+        where: { playlist_id: parsed.data.playlist_id },
+        select: { track_id: true },
+        orderBy: { position: 'asc' },
+      });
+      const playedTrackIds = await prisma.sessionPlayedTrack
+        .findMany({
+          where: { session_id: req.params.id },
+          select: { track_id: true },
+        })
+        .then((rows) => new Set(rows.map((r) => r.track_id)))
+        .catch((err) => {
+          // Si la table n'existe pas encore (PR C pas déployée), on degrade
+          // proprement : pas de filtre, on tire dans le pool complet.
+          console.warn('[POST /rounds] SessionPlayedTrack lookup failed, degrading:', err);
+          return new Set<string>();
+        });
+
+      const candidates = poolTracks
+        .map((pt) => pt.track_id)
+        .filter((tid) => !playedTrackIds.has(tid));
+
+      if (candidates.length === 0) {
+        res.status(409).json({
+          error: {
+            code: 'EXHAUSTED_POOL',
+            message:
+              'Plus aucun morceau disponible dans cette playlist pour cette session (déjà tous joués)',
+          },
+        });
+        return;
+      }
+
+      // Fisher-Yates shuffle (in-place) puis take N.
+      const sessionSize = playlist.default_session_size ?? 15;
+      const targetN = Math.min(sessionSize, candidates.length);
+      for (let i = candidates.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [candidates[i]!, candidates[j]!] = [candidates[j]!, candidates[i]!];
+      }
+      const selected = candidates.slice(0, targetN);
+
+      console.info(
+        `[POST /rounds] session=${req.params.id} playlist=${parsed.data.playlist_id} | pool=${poolTracks.length} played=${playedTrackIds.size} eligible=${candidates.length} → selected=${selected.length}`,
+      );
+
       const lastRound = await prisma.sessionRound.findFirst({
         where: { session_id: req.params.id },
         orderBy: { position: 'desc' },
@@ -710,6 +763,7 @@ router.post(
           playlist_id: parsed.data.playlist_id,
           position: (lastRound?.position ?? 0) + 1,
           status: 'PENDING',
+          selected_track_ids: selected,
         },
         include: {
           playlist: {
@@ -729,6 +783,8 @@ router.post(
           name: round.playlist.name,
           level: round.playlist.level,
           tracks_count: round.playlist._count.playlist_tracks,
+          // Côté UI on affiche aussi la taille effective du round (selected).
+          selected_tracks_count: selected.length,
         },
       };
       broadcastToSession(req.params.id, 'round:created', { round: enriched });

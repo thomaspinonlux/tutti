@@ -61,7 +61,12 @@ export async function createPlaylist(input: {
 
 export async function updatePlaylist(
   id: string,
-  patch: Partial<Pick<Playlist, 'name' | 'language' | 'cover_url' | 'is_published' | 'level'>>,
+  patch: Partial<
+    Pick<
+      Playlist,
+      'name' | 'language' | 'cover_url' | 'is_published' | 'level' | 'default_session_size'
+    >
+  >,
 ): Promise<Playlist> {
   const data = await api<{ playlist: Playlist }>(`/api/playlists/${encodeURIComponent(id)}`, {
     method: 'PATCH',
