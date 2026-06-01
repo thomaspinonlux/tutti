@@ -35,6 +35,13 @@ export interface LibraryPlaylistSummary {
    * playlists.
    */
   locked: boolean;
+  /** feat/playlist-categories-schema — slug de catégorie (nullable legacy). */
+  category: string | null;
+  /** Ordre dans la catégorie (NULL → trié en fin). */
+  position_in_category: number | null;
+  /** Sous-titre court FR (affiché sous le titre dans les cards). */
+  subtitle_fr: string | null;
+  subtitle_en: string | null;
 }
 
 export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
@@ -120,6 +127,10 @@ export async function listVisiblePlaylists(
       spotify_count,
       youtube_count,
       locked: p.visibility === 'premium_only' && !premium,
+      category: p.category,
+      position_in_category: p.position_in_category,
+      subtitle_fr: p.subtitle_fr,
+      subtitle_en: p.subtitle_en,
     };
   });
 }
@@ -175,6 +186,10 @@ export async function getVisiblePlaylistDetail(
     spotify_count,
     youtube_count,
     locked: false,
+    category: playlist.category,
+    position_in_category: playlist.position_in_category,
+    subtitle_fr: playlist.subtitle_fr,
+    subtitle_en: playlist.subtitle_en,
     tracks: playlist.tracks.map((t) => ({
       id: t.id,
       position: t.position,
