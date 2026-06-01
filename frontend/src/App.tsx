@@ -40,6 +40,7 @@ import { SuperAdminRouteGuard } from './components/auth/SuperAdminRouteGuard.js'
 import { PrivacyPage } from './pages/legal/PrivacyPage.js';
 import { TermsPage } from './pages/legal/TermsPage.js';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner.js';
+import { DebugOverlay } from './components/DebugOverlay.js';
 
 // Lazy : chunks dédiés aux pages volumineuses (audio, dnd, qrcode, socket.io…)
 const DesignSystemPage = lazy(() =>
@@ -72,6 +73,10 @@ function App(): JSX.Element {
           a téléchargé une nouvelle version, propose un reload manuel. JAMAIS
           d'auto-reload (casserait une partie host en cours). */}
       <PwaUpdateBanner />
+      {/* feat/debug-audio-overlay — overlay temporaire diagnostic audio PWA
+          Safari. Activé via `?debug=audio` ou localStorage `debugAudio=true`.
+          Sinon → return null (zero coût). */}
+      <DebugOverlay />
       <Routes>
         <Route path="/" element={<HomePage />} />
 
