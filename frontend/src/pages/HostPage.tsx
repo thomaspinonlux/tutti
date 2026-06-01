@@ -623,6 +623,14 @@ function HostPageInner(): JSX.Element {
     // moindre await avant l'unlock invalide le user gesture. À placer en
     // PREMIÈRE instruction, avant tout async.
     unlockAudioSync('start-session-button');
+    // fix/pwa-player-trigger-after-unlock — IMPORTANT en PWA Safari : le
+    // unlock AudioContext seul ne suffit pas pour YouTube IFrame Player.
+    // Il faut aussi déclencher playVideo() dans le tick du gesture pour
+    // que l'iframe hérite de la permission. warmupSync = playVideo() +
+    // pauseVideo() 50ms après → marque le player "user-engaged" sans
+    // démarrer une vraie lecture parasite (la vraie lecture viendra du
+    // playTrack ci-dessous via track:start broadcast).
+    youtube.warmupSync();
     setBusy(true);
     try {
       // Active le pipeline audio Spotify (anti-blocage Chrome autoplay).

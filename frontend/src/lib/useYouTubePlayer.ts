@@ -243,7 +243,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const YT = (window as any).YT;
-        console.info(`[Player] Created on #${containerId}`);
+        console.info(`[Player] YouTube IFrame loaded on #${containerId}`);
         playerRef.current = new YT.Player(containerId, {
           height: '0',
           width: '0',
@@ -257,7 +257,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
           events: {
             onReady: () => {
               if (cancelled) return;
-              console.info('[Player] YouTube IFrame ready: true');
+              console.info('[Player] onReady fired — player available');
               setStatus('ready');
               // fix/robust-autoplay-no-refresh — queue drain via useEffect
               // séparé qui watch `status` (cf. ci-dessous). On ne touche pas
@@ -276,7 +276,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
                 [5]: 'CUED',
               };
               const stateName = stateMap[st as number] ?? `UNKNOWN(${st})`;
-              console.info(`[Player] State ${stateName}`);
+              console.info(`[Player] State change: ${stateName}`);
 
               if (st === YT_STATE.CUED && pendingPlayAfterCueRef.current) {
                 // Problème B — état CUED atteint après cueVideoById, on
@@ -392,9 +392,10 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
         window.clearTimeout(retryTimerRef.current);
         retryTimerRef.current = null;
       }
-      console.info(`[Player] CueVideo ${videoId} (startSec=${startSec}, endSec=${endSec})`);
-      console.info(`[Player] playVideo() called`);
-      // feat/debug-audio-overlay — état player 500ms après playVideo pour
+      console.info(
+        `[Player] cueVideoById(${videoId}) called (startSec=${startSec}, endSec=${endSec})`,
+      );
+      // feat/debug-audio-overlay — état player 500ms après cueVideoById pour
       // diagnostic (PWA Safari : autoplay policy peut bloquer silencieusement).
       window.setTimeout(() => {
         try {
@@ -539,27 +540,78 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
    * Bug 4 — fallback audio bloqué côté YouTube. À appeler depuis un clic
    * user direct (button onClick). Re-tape playVideo() pour débloquer la
    * pipeline iframe iOS/Chrome.
+   *
+   * fix/pwa-player-trigger-after-unlock — En PWA Safari standalone, le
+   * AudioContext unlock seul ne déclenche pas la lecture YouTube. Il FAUT
+   * appeler player.playVideo() explicitement dans le user gesture. Cette
+   * fonction est ce hook, appelée depuis HostPage.onForceAudio en complément
+   * de unlockAudioSync().
+   *
+   * Stratégie :
+   *   1. Si player pas ready → log + early return (le caller doit ré-essayer)
+   *   2. Si on a un lastVideoRef → loadVideoById (réamorce + autoplay)
+   *   3. Sinon → playVideo() direct
+   *   4. Schedule state check 500ms pour log diagnostic
    */
   const unblockAudio = useCallback((): void => {
     const p = playerRef.current;
-    if (!p) return;
+    if (!p) {
+      console.error('[Player] Cannot playVideo: ytPlayer not available (playerRef null)');
+      return;
+    }
+    if (statusRef.current !== 'ready') {
+      console.warn(
+        `[Player] unblockAudio called but status=${statusRef.current} — playVideo may fail`,
+      );
+    }
+    const last = lastVideoRef.current;
+    console.info(
+      `[Player] playVideo() called from unblockAudio (lastVideo=${last?.id ?? 'none'} status=${statusRef.current})`,
+    );
     try {
-      // Si un track est en cours, juste playVideo. Sinon, refresh la lecture
-      // depuis le dernier videoId connu (lastVideoRef).
-      const last = lastVideoRef.current;
       if (last && p.loadVideoById) {
         p.loadVideoById({
           videoId: last.id,
           startSeconds: last.startSec,
           endSeconds: last.endSec,
         });
+      } else if (p.playVideo) {
+        p.playVideo();
       } else {
-        p.playVideo?.();
+        console.error('[Player] Neither loadVideoById nor playVideo available on player');
+        return;
       }
       setIsPlaying(true);
     } catch (err) {
-      console.warn('[YouTube] unblockAudio failed:', err);
+      console.warn(
+        `[Player] Play failed: ${err instanceof Error ? err.name + ' ' + err.message : String(err)}`,
+      );
+      return;
     }
+    // Diagnostic 500ms après — log clair pour le debug overlay.
+    window.setTimeout(() => {
+      try {
+        const s = p.getPlayerState?.();
+        const stateMap: Record<number, string> = {
+          [-1]: 'UNSTARTED',
+          [0]: 'ENDED',
+          [1]: 'PLAYING',
+          [2]: 'PAUSED',
+          [3]: 'BUFFERING',
+          [5]: 'CUED',
+        };
+        const name = typeof s === 'number' ? (stateMap[s] ?? `UNKNOWN(${s})`) : 'unknown';
+        if (s === YT_STATE.PLAYING || s === YT_STATE.BUFFERING) {
+          console.info(`[Player] Play succeeded — state=${name}`);
+        } else {
+          console.warn(
+            `[Player] State after force-audio: ${s} (${name}) — not PLAYING, autoplay likely blocked`,
+          );
+        }
+      } catch (err) {
+        console.warn('[Player] State check after force-audio failed:', err);
+      }
+    }, 500);
   }, []);
 
   /**
