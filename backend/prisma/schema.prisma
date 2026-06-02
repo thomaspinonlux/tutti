@@ -741,6 +741,20 @@ model OfficialPlaylist {
   difficulty       Level    @default(MEDIUM)
   visibility       OfficialVisibility @default(public)
   track_count      Int      @default(0)
+  /// feat/playlist-categories-schema — slug de catégorie pour le grouping
+  /// dans l'UI sélection host + carrousel TV. Valeurs canoniques définies
+  /// dans backend/src/lib/playlistCategories.ts (classics, originals,
+  /// forbidden_30, wedding, decades, genres, special). Nullable pour les
+  /// playlists pas encore catégorisées (legacy ou futures).
+  category               String?  @db.VarChar(40)
+  /// Ordre d'affichage dans la catégorie. Plus petit = affiché en premier.
+  /// Tri stable : SI null → triée à la fin (par updated_at desc).
+  position_in_category   Int?
+  /// Sous-titre court affiché sous le nom dans les cards (ex: "Pour les
+  /// nostalgiques du Walkman"). Bilingue FR/EN. Backfill auto depuis le
+  /// nom au seed initial, éditable par admin ensuite.
+  subtitle_fr            String?  @db.VarChar(200)
+  subtitle_en            String?  @db.VarChar(200)
   /// User_id Supabase de l'admin qui a créé/maintient la playlist (audit).
   /// Optionnel — un script qui tourne en CI peut être null.
   created_by_admin String?  @db.Uuid
@@ -751,6 +765,7 @@ model OfficialPlaylist {
 
   @@index([visibility])
   @@index([locale_primary])
+  @@index([category, position_in_category])
   @@map("official_playlists")
 }
 
