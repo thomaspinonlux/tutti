@@ -318,6 +318,8 @@
       "searchNoResults": "No playlist found for \"{{query}}\"",
       "officialBadge": "Tutti Official",
       "premiumRequired": "Tutti Premium required",
+      "scrollLeft": "Scroll left",
+      "scrollRight": "Scroll right",
       "source": {
         "spotify": "Spotify",
         "youtube": "YouTube",
