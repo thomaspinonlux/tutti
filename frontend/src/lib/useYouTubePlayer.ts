@@ -38,7 +38,16 @@ export interface UseYouTubePlayerOptions {
   containerId?: string;
   /** Démarre la lecture en sautant les N premières secondes (défaut 0). */
   defaultStartSec?: number;
-  /** Coupe la lecture à N secondes (défaut 60 = durée d'écoute Tutti). */
+  /**
+   * Coupe la lecture à N secondes. Défaut : `undefined` = pas de limite,
+   * la track joue jusqu'à sa fin naturelle. Le host avance manuellement via
+   * "Morceau suivant →".
+   *
+   * fix/music-stops-at-60s — avant ce fix, défaut = 60 → toutes les tracks
+   * stoppaient brutalement à 1:00 (artefact d'une ancienne convention "60s
+   * preview Tutti" abandonnée). YouTube IFrame `cueVideoById({endSeconds:60})`
+   * impose un cut au 60ᵉ seconde même si la vidéo dure 3:14.
+   */
   defaultEndSec?: number;
 }
 
@@ -197,7 +206,9 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     enabled,
     containerId = DEFAULT_CONTAINER_ID,
     defaultStartSec = 0,
-    defaultEndSec = 60,
+    // fix/music-stops-at-60s — défaut RETIRÉ. Avant : 60 (cut à 1:00). Maintenant
+    // : undefined (joue jusqu'à fin naturelle). Le host avance manuellement.
+    defaultEndSec,
   } = opts;
   const [status, setStatus] = useState<YouTubePlayerStatus>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -216,7 +227,11 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null);
   const tickRef = useRef<number | null>(null);
-  const lastVideoRef = useRef<{ id: string; startSec: number; endSec: number } | null>(null);
+  // fix/music-stops-at-60s — endSec maintenant `number | undefined` pour
+  // permettre "pas de cut" (joue jusqu'à fin naturelle).
+  const lastVideoRef = useRef<{ id: string; startSec: number; endSec: number | undefined } | null>(
+    null,
+  );
   // Problème B (fix/playback-and-zombies-v4) — flag pour déclencher
   // playVideo() depuis l'event onStateChange CUED. cueVideoById met le
   // player en CUED sans démarrer la lecture ; on appelle playVideo() au
@@ -227,7 +242,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   const pendingPlayRef = useRef<{
     videoId: string;
     startSec: number;
-    endSec: number;
+    endSec: number | undefined;
   } | null>(null);
   // Tracking retries pour éviter boucle infinie. Reset à chaque nouvelle
   // demande de play (cueVideoById).
@@ -477,12 +492,15 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
         // pas en lecture), puis le handler onStateChange CUED appelle
         // playVideo() → garantit que la lecture démarre depuis un état
         // connu, même au 1er morceau de la session.
+        // fix/music-stops-at-60s — `endSeconds` omis si undefined : YouTube
+        // joue jusqu'à fin naturelle de la vidéo (le host avance manuellement).
         pendingPlayAfterCueRef.current = true;
-        p.cueVideoById({
+        const cueOpts: { videoId: string; startSeconds: number; endSeconds?: number } = {
           videoId,
           startSeconds: startSec,
-          endSeconds: endSec,
-        });
+        };
+        if (endSec !== undefined) cueOpts.endSeconds = endSec;
+        p.cueVideoById(cueOpts);
         // Belt-and-suspenders : si le player est déjà CUED ou PAUSED, le
         // onStateChange ne re-fire pas → on appelle playVideo direct.
         window.setTimeout(() => {
@@ -626,11 +644,13 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     );
     try {
       if (last && p.loadVideoById) {
-        p.loadVideoById({
+        // fix/music-stops-at-60s — endSeconds omis si undefined.
+        const loadOpts: { videoId: string; startSeconds: number; endSeconds?: number } = {
           videoId: last.id,
           startSeconds: last.startSec,
-          endSeconds: last.endSec,
-        });
+        };
+        if (last.endSec !== undefined) loadOpts.endSeconds = last.endSec;
+        p.loadVideoById(loadOpts);
       } else if (p.playVideo) {
         p.playVideo();
       } else {
@@ -748,11 +768,13 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     }
     setAudioBlocked(false);
     try {
-      p.loadVideoById?.({
+      // fix/music-stops-at-60s — endSeconds omis si undefined.
+      const loadOpts: { videoId: string; startSeconds: number; endSeconds?: number } = {
         videoId: last.id,
         startSeconds: last.startSec,
-        endSeconds: last.endSec,
-      });
+      };
+      if (last.endSec !== undefined) loadOpts.endSeconds = last.endSec;
+      p.loadVideoById?.(loadOpts);
       setIsPlaying(true);
       // Re-schedule retry au cas où le clic ne suffit toujours pas (rare).
       scheduleAutoplayRetry();
