@@ -1074,6 +1074,12 @@ router.post(
       (s): s is string => typeof s === 'string' && s.length > 0,
     );
 
+    // fix/ios-voice-cascade-mic-and-buzz-refused — log explicite du codec reçu
+    // pour diagnostiquer iOS audio/mp4 vs Chrome audio/webm en cas de match raté.
+    console.info(
+      `[Server][Voice L2] Deepgram call | session=${req.params.id} | playerId=${auth.participantId} | trackTitle="${track.canonical_title}" | trackArtist="${track.artist.canonical_name}" | mime=${audioFile.mimetype || '(none)'} | size=${Math.round(audioFile.buffer.byteLength / 1024)}KB`,
+    );
+
     let transcript = '';
     let level: 'L2' | 'L3-fallback' = 'L2';
     let source = 'deepgram';

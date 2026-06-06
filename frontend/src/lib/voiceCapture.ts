@@ -64,11 +64,23 @@ export interface VoiceCapture {
 }
 
 /**
- * Détecte le meilleur MIME type audio supporté. iOS Safari préfère mp4,
- * Chrome/Firefox webm.
+ * Détecte le meilleur MIME type audio supporté. iOS Safari préfère mp4
+ * (AAC dans MP4 container — natif), Chrome/Firefox/Edge préfèrent webm Opus
+ * (mieux supporté côté Deepgram + meilleur compression).
+ *
+ * fix/ios-voice-cascade-mic-and-buzz-refused — détection iOS pour reorder.
+ * Sur iOS, tenter webm en premier fallback presque toujours sur "(default)"
+ * = un mp4 sans header explicite → Deepgram peut le rejeter en 400. En
+ * forçant la préférence mp4 on garantit un mimeType valide.
  */
 function pickAudioMime(): string {
-  const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+  if (typeof MediaRecorder === 'undefined') return '';
+  const isiOS =
+    /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (/Macintosh/.test(navigator.userAgent) && (navigator.maxTouchPoints ?? 0) > 1);
+  const candidates = isiOS
+    ? ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']
+    : ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
   for (const m of candidates) {
     if (MediaRecorder.isTypeSupported(m)) return m;
   }
@@ -123,8 +135,11 @@ export async function startVoiceCapture(opts: VoiceCaptureOptions): Promise<Voic
   // 2) Démarre le MediaRecorder pour capturer l'audio brut.
   const mimeType = pickAudioMime();
   const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+  // Source de vérité pour le blob.type + filename → ce que le browser a
+  // réellement choisi (peut différer de notre pick si fallback navigateur).
+  const effectiveMime = recorder.mimeType || effectiveMime;
   console.info(
-    `[Voice] MediaRecorder created | mimeType=${mimeType || '(default)'} | state=${recorder.state} | ownsStream=${ownsStream}`,
+    `[Voice] MediaRecorder created | requestedMime=${mimeType || '(default)'} | effectiveMime=${effectiveMime} | state=${recorder.state} | ownsStream=${ownsStream}`,
   );
   const chunks: BlobPart[] = [];
   recorder.ondataavailable = (e): void => {
@@ -201,17 +216,17 @@ export async function startVoiceCapture(opts: VoiceCaptureOptions): Promise<Voic
   };
 
   return {
-    mimeType: mimeType || 'audio/webm',
+    mimeType: effectiveMime,
     stop: async () => {
       return new Promise<Blob>((resolve) => {
         if (recorder.state === 'inactive') {
           cleanup();
-          resolve(new Blob(chunks, { type: mimeType || 'audio/webm' }));
+          resolve(new Blob(chunks, { type: effectiveMime }));
           return;
         }
         recorder.onstop = (): void => {
           cleanup();
-          const blob = new Blob(chunks, { type: mimeType || 'audio/webm' });
+          const blob = new Blob(chunks, { type: effectiveMime });
           resolve(blob);
         };
         recorder.stop();

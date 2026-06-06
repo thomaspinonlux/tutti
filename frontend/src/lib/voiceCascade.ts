@@ -99,8 +99,17 @@ export async function postVoiceTranscribeDeepgram(
   args: CommonArgs & { audio: Blob; filename?: string },
 ): Promise<CascadeMatchResponse> {
   const form = new FormData();
-  form.append('audio', args.audio, args.filename ?? 'buzz.webm');
+  // fix/ios-voice-cascade-mic-and-buzz-refused — filename auto-adapté au
+  // blob.type (mp4 iOS, webm partout ailleurs) si le caller n'a pas explicité.
+  // Le Content-Type de la part multipart est dérivé de blob.type côté browser,
+  // donc multer côté backend récupère bien audio/mp4 ou audio/webm.
+  const ext = args.audio.type.includes('mp4') ? 'mp4' : 'webm';
+  const filename = args.filename ?? `buzz.${ext}`;
+  form.append('audio', args.audio, filename);
   form.append('token', args.token);
+  console.info(
+    `[Voice] L2 upload | blobType=${args.audio.type || '(empty)'} | filename=${filename} | size=${Math.round(args.audio.size / 1024)}KB`,
+  );
 
   const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/voice-transcribe-deepgram`;
   const res = await fetch(url, { method: 'POST', body: form });
@@ -129,8 +138,14 @@ export async function postVoiceTranscribeAssemblyAI(
   args: CommonArgs & { audio: Blob; filename?: string },
 ): Promise<CascadeMatchResponse> {
   const form = new FormData();
-  form.append('audio', args.audio, args.filename ?? 'buzz.webm');
+  // fix/ios-voice-cascade-mic-and-buzz-refused — symétrique L2, codec-aware.
+  const ext = args.audio.type.includes('mp4') ? 'mp4' : 'webm';
+  const filename = args.filename ?? `buzz.${ext}`;
+  form.append('audio', args.audio, filename);
   form.append('token', args.token);
+  console.info(
+    `[Voice] L3 upload | blobType=${args.audio.type || '(empty)'} | filename=${filename} | size=${Math.round(args.audio.size / 1024)}KB`,
+  );
 
   const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/voice-transcribe-assemblyai`;
   const res = await fetch(url, { method: 'POST', body: form });
