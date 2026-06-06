@@ -66,10 +66,28 @@ export function PlaylistCardLarge({
   const subtitle =
     (lang === 'en' ? playlist.subtitle_en : playlist.subtitle_fr) ?? playlist.theme ?? null;
 
-  const [coverFailed, setCoverFailed] = useState(false);
+  // fix/csp-meta-tag-and-cover-fallback — chaîne de fallbacks à 3 niveaux :
+  //   0. Backend mosaïque 2×2 `/api/library-cover/:slug.jpg`
+  //   1. Si 404 → Spotify cover de la 1ʳᵉ track (cover_fallback_url)
+  //   2. Si pas dispo → YouTube thumbnail (cover_fallback_youtube_id)
+  //   3. Sinon → gradient déterministe slug→hue
+  // Le PO observait 30+ requêtes /api/library-cover/* en 404 (slug manquant
+  // côté Railway DB) ; ce fallback restitue une image au lieu d'un gradient.
+  const [coverStep, setCoverStep] = useState<0 | 1 | 2 | 3>(0);
   const hue = slugToHue(playlist.slug);
   const fallbackGradient = `linear-gradient(135deg, hsl(${hue}, 55%, 35%) 0%, hsl(${(hue + 40) % 360}, 60%, 22%) 100%)`;
-  const coverUrl = `/api/library-cover/${encodeURIComponent(playlist.slug)}.jpg`;
+  const backendCoverUrl = `/api/library-cover/${encodeURIComponent(playlist.slug)}.jpg`;
+  const ytFallbackUrl = playlist.cover_fallback_youtube_id
+    ? `https://img.youtube.com/vi/${playlist.cover_fallback_youtube_id}/hqdefault.jpg`
+    : null;
+  const coverUrl =
+    coverStep === 0
+      ? backendCoverUrl
+      : coverStep === 1
+        ? (playlist.cover_fallback_url ?? null)
+        : coverStep === 2
+          ? ytFallbackUrl
+          : null;
 
   const tone = difficultyTone(playlist.difficulty);
 
@@ -101,13 +119,13 @@ export function PlaylistCardLarge({
       }}
       aria-label={name}
     >
-      {/* Cover image absolute (cache l'erreur via state) */}
-      {!coverFailed && (
+      {/* Cover image avec chaîne de fallback. Si null → gradient seul. */}
+      {coverUrl && (
         <img
           src={coverUrl}
           alt=""
           aria-hidden
-          onError={() => setCoverFailed(true)}
+          onError={() => setCoverStep((s) => (s < 3 ? ((s + 1) as 0 | 1 | 2 | 3) : 3))}
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
         />

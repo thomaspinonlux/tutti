@@ -73,9 +73,15 @@ export default defineConfig({
         // landing dans public/videos/).
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // NE PAS intercepter /api/* (live data) ni /socket.io/* (websocket).
-        // Tout le reste = NetworkFirst pour HTML navigation, sinon cache.
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
+        // fix/csp-meta-tag-and-cover-fallback — SW nouvellement installé
+        // devient actif immédiatement (skipWaiting) + reprend le contrôle
+        // des onglets ouverts (clientsClaim). Combiné : nouveau deploy =
+        // nouveau index.html (avec nouveau meta CSP) appliqué sans clic
+        // "Recharger" sur PwaUpdateBanner.
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             // Google Fonts (CSS) — StaleWhileRevalidate, expire 7j.

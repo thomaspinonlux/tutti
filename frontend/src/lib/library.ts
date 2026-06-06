@@ -29,6 +29,12 @@ export interface LibraryPlaylistSummary {
   position_in_category?: number | null;
   subtitle_fr?: string | null;
   subtitle_en?: string | null;
+  /** fix/csp-meta-tag-and-cover-fallback — fallback cover si endpoint
+   *  /api/library-cover/:slug 404. cover_fallback_url = 1ʳᵉ track avec
+   *  Spotify cover ; cover_fallback_youtube_id = thumbnail YT
+   *  hqdefault.jpg si Spotify cover absent. */
+  cover_fallback_url?: string | null;
+  cover_fallback_youtube_id?: string | null;
 }
 
 /** feat/playlist-categories-schema — entrée du JSON groupé par catégorie. */
