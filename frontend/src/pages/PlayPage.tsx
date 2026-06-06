@@ -51,6 +51,7 @@ import {
 } from '../lib/voiceCapture.js';
 import { useWebSpeech } from '../lib/useWebSpeech.js';
 import { useMicStream } from '../lib/useMicStream.js';
+import { ApiError } from '../lib/api.js';
 import {
   postVoiceMatchText,
   postVoiceTranscribeDeepgram,
@@ -1033,17 +1034,45 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         void finalizeRecording();
       }, maxDurationMs + 200);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Erreur micro';
-      if (msg.includes('ALREADY_ANSWERED')) {
-        setError(t('play.alreadyAnswered'));
-      } else if (msg.includes('PHASE_LOCKED')) {
-        setError(t('play.tooLate'));
-      } else {
-        setError(msg);
-      }
+      // fix/ios-voice-cascade-mic-and-buzz-refused — utilise ApiError.code
+      // typé (vs ancienne logique `msg.includes()` fragile) pour mapper le
+      // refus serveur sur un message i18n précis. Couvre tous les enum :
+      // NO_TRACK, PHASE_LOCKED, COOLDOWN, ALREADY_BUZZING, ALREADY_ANSWERED,
+      // PARTICIPANT_INVALID, VALIDATION_ERROR.
+      const code =
+        err instanceof ApiError ? err.code : err instanceof Error ? err.message : 'UNKNOWN';
+      console.warn(
+        `[Voice] Buzz refused | code=${code} | message=${err instanceof Error ? err.message : String(err)}`,
+      );
+      setError(translateBuzzRefusalReason(code, t));
       setRecState({ kind: 'idle' });
     }
   };
+
+  /**
+   * fix/ios-voice-cascade-mic-and-buzz-refused — résout un code d'erreur
+   * backend ("NO_TRACK", "PHASE_LOCKED"…) en message i18n explicite. Default
+   * = `buzzReason.refused` (générique) si code inconnu, pour ne pas afficher
+   * un message tech au joueur.
+   */
+  function translateBuzzRefusalReason(code: string, tFn: typeof t): string {
+    switch (code) {
+      case 'NO_TRACK':
+        return tFn('play.buzzReason.noTrack');
+      case 'PHASE_LOCKED':
+        return tFn('play.tooLate');
+      case 'COOLDOWN':
+        return tFn('play.buzzReason.cooldown');
+      case 'ALREADY_BUZZING':
+        return tFn('play.buzzReason.alreadyBuzzing');
+      case 'ALREADY_ANSWERED':
+        return tFn('play.alreadyAnswered');
+      case 'PARTICIPANT_INVALID':
+        return tFn('play.buzzReason.participantInvalid');
+      default:
+        return tFn('play.buzzReason.refused');
+    }
+  }
 
   const finalizeRecording = async (): Promise<void> => {
     setRecState((prev) => {

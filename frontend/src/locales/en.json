@@ -573,6 +573,16 @@
     "yourScore": "Your score",
     "alreadyAnswered": "You already found this one!",
     "tooLate": "Too late, buzzes are closed.",
+    "buzzReason": {
+      "notOpen": "Wait for the track to start",
+      "alreadyBuzzed": "You already tried this track",
+      "alreadyBuzzing": "Finish your recording before buzzing again",
+      "cooldown": "Wait a second before buzzing again",
+      "phaseLocked": "Too late, the answer was revealed",
+      "noTrack": "No track playing",
+      "participantInvalid": "Session expired. Please reconnect.",
+      "refused": "Buzz refused"
+    },
     "transcribing": "Got you…",
     "transcribingHint": "Whisper is analyzing your answer, 1-2s.",
     "festivePhase": "Enjoy the song, sing, dance!",

@@ -573,6 +573,16 @@
     "yourScore": "Ton score",
     "alreadyAnswered": "Tu as déjà trouvé ce morceau !",
     "tooLate": "Trop tard, le buzz est fermé.",
+    "buzzReason": {
+      "notOpen": "Attends que le morceau démarre",
+      "alreadyBuzzed": "Tu as déjà tenté ce morceau",
+      "alreadyBuzzing": "Termine ton enregistrement avant de re-buzzer",
+      "cooldown": "Attends une seconde avant de re-buzzer",
+      "phaseLocked": "Trop tard, la réponse est révélée",
+      "noTrack": "Aucun morceau en cours",
+      "participantInvalid": "Session expirée. Reconnecte-toi.",
+      "refused": "Buzz refusé"
+    },
     "transcribing": "Je t'ai entendu…",
     "transcribingHint": "Whisper analyse ta réponse, ça prend 1-2s.",
     "festivePhase": "Profite du morceau, danse, chante !",

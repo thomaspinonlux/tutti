@@ -121,6 +121,9 @@ router.post(
     // Si le joueur a déjà une bonne réponse pour ce track, on refuse — il a
     // déjà ses points, pas besoin de re-buzzer.
     if (hasCorrectAnswer(req.params.roundId, auth.participantId)) {
+      console.info(
+        `[Server][Buzz] Refused | session=${req.params.id} | playerId=${auth.participantId} | reason=ALREADY_ANSWERED`,
+      );
       res.status(409).json({
         error: { code: 'ALREADY_ANSWERED', message: 'Tu as déjà trouvé ce morceau' },
       });
@@ -135,11 +138,18 @@ router.post(
         COOLDOWN: 429,
         ALREADY_BUZZING: 409,
       };
+      console.info(
+        `[Server][Buzz] Refused | session=${req.params.id} | playerId=${auth.participantId} | reason=${result.error}`,
+      );
       res.status(codeMap[result.error]).json({
         error: { code: result.error, message: 'Buzz refusé' },
       });
       return;
     }
+
+    console.info(
+      `[Server][Buzz] Accepted | session=${req.params.id} | playerId=${auth.participantId} | buzzed_at_ms=${result.buzz.buzzed_at_ms} | window=${buzzWindowMs}ms`,
+    );
 
     // Broadcast multi-buzz : utile à l'iPad pour afficher "X joueurs en train
     // de chercher" et au tel des autres pour adapter leur UI éventuellement.
