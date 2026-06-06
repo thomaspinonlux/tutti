@@ -216,6 +216,62 @@ export function VoiceAnalyticsPage(): JSX.Element {
               chaque API. À comparer avec les vraies factures.
             </p>
           </Card>
+
+          {/* fix/ios-voice-cascade-mic-and-buzz-refused — Top 10 morceaux
+              qui ratent le plus le match. Cible à enrichir en aliases. */}
+          <Card size="md">
+            <h2 className="font-display text-lg mb-3">🎯 Top 10 morceaux à problèmes</h2>
+            {data.top_failed_tracks.length === 0 ? (
+              <p className="font-editorial italic text-ink-soft">
+                Pas assez de tentatives sur la fenêtre pour identifier des morceaux problématiques
+                (seuil : ≥3 tentatives par track).
+              </p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left border-b-2 border-ink">
+                    <th className="font-mono text-[10px] uppercase tracking-wider py-2">#</th>
+                    <th className="font-mono text-[10px] uppercase tracking-wider py-2">Morceau</th>
+                    <th className="font-mono text-[10px] uppercase tracking-wider py-2">Artiste</th>
+                    <th className="font-mono text-[10px] uppercase tracking-wider py-2 text-right">
+                      Tentatives
+                    </th>
+                    <th className="font-mono text-[10px] uppercase tracking-wider py-2 text-right">
+                      Match
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.top_failed_tracks.map((t, i) => (
+                    <tr key={t.track_id} className="border-b border-ink/10">
+                      <td className="py-2 font-mono text-xs text-ink-soft">{i + 1}</td>
+                      <td className="py-2 font-display">{t.title ?? '(sans titre)'}</td>
+                      <td className="py-2 text-ink-soft">{t.artist ?? '(inconnu)'}</td>
+                      <td className="py-2 text-right font-mono">{t.attempts}</td>
+                      <td className="py-2 text-right font-mono">
+                        <span
+                          className={
+                            t.match_rate < 0.3
+                              ? 'text-raspberry-deep font-semibold'
+                              : t.match_rate < 0.6
+                                ? 'text-ink'
+                                : 'text-basil'
+                          }
+                        >
+                          {Math.round(t.match_rate * 100)}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <p className="font-editorial italic text-xs text-ink-soft mt-3">
+              Pour les morceaux à match-rate faible, enrichir les aliases titre/artiste via l'admin
+              de la playlist. Ex : « Mistral Gagnant » mal transcrit par Deepgram en « Mister
+              Algagnen » → ajouter cet alias résout le problème.
+            </p>
+          </Card>
         </>
       )}
     </div>

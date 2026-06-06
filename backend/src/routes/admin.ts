@@ -402,6 +402,62 @@ router.get('/voice-analytics', async (req: Request, res: Response): Promise<void
 
     const escalation_rate_l2_l3 = l2.count > 0 ? l3.count / l2.count : 0;
 
+    // fix/ios-voice-cascade-mic-and-buzz-refused — Top 10 tracks où la cascade
+    // rate le plus le match. Permet de prioriser les ajustements aliases /
+    // keyterms pour les morceaux problématiques.
+    const failedTrackRows = await prisma.voiceTranscript.groupBy({
+      by: ['track_id'],
+      where: { created_at: { gte: since } },
+      _count: { _all: true },
+    });
+    // Filtre les tracks avec ≥ 3 tentatives (sinon échantillon trop petit).
+    const candidateTrackIds = failedTrackRows
+      .filter((r) => r._count._all >= 3)
+      .map((r) => r.track_id);
+    let top_failed_tracks: Array<{
+      track_id: string;
+      title: string | null;
+      artist: string | null;
+      attempts: number;
+      match_rate: number;
+    }> = [];
+    if (candidateTrackIds.length > 0) {
+      // Pour chaque candidat, compter matched_artist OR matched_title.
+      const matchedRows = await prisma.voiceTranscript.findMany({
+        where: {
+          track_id: { in: candidateTrackIds },
+          created_at: { gte: since },
+        },
+        select: { track_id: true, matched_artist: true, matched_title: true },
+      });
+      const stats = new Map<string, { matched: number; total: number }>();
+      for (const r of matchedRows) {
+        const s = stats.get(r.track_id) ?? { matched: 0, total: 0 };
+        s.total += 1;
+        if (r.matched_artist || r.matched_title) s.matched += 1;
+        stats.set(r.track_id, s);
+      }
+      const tracks = await prisma.track.findMany({
+        where: { id: { in: candidateTrackIds } },
+        include: { artist: true },
+      });
+      const trackMap = new Map(tracks.map((t) => [t.id, t]));
+      top_failed_tracks = candidateTrackIds
+        .map((id) => {
+          const s = stats.get(id) ?? { matched: 0, total: 0 };
+          const tr = trackMap.get(id);
+          return {
+            track_id: id,
+            title: tr?.canonical_title ?? null,
+            artist: tr?.artist?.canonical_name ?? null,
+            attempts: s.total,
+            match_rate: s.total > 0 ? Number((s.matched / s.total).toFixed(3)) : 0,
+          };
+        })
+        .sort((a, b) => a.match_rate - b.match_rate || b.attempts - a.attempts)
+        .slice(0, 10);
+    }
+
     res.json({
       window_days: days,
       since: since.toISOString(),
@@ -423,6 +479,7 @@ router.get('/voice-analytics', async (req: Request, res: Response): Promise<void
         assemblyai: Number(cost.assemblyai.toFixed(4)),
         total: Number(cost.total.toFixed(4)),
       },
+      top_failed_tracks,
     });
   } catch (err) {
     console.error('[GET /admin/voice-analytics] error:', err);

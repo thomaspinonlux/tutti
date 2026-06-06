@@ -137,7 +137,7 @@ export async function startVoiceCapture(opts: VoiceCaptureOptions): Promise<Voic
   const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
   // Source de vérité pour le blob.type + filename → ce que le browser a
   // réellement choisi (peut différer de notre pick si fallback navigateur).
-  const effectiveMime = recorder.mimeType || effectiveMime;
+  const effectiveMime = recorder.mimeType || mimeType || 'audio/webm';
   console.info(
     `[Voice] MediaRecorder created | requestedMime=${mimeType || '(default)'} | effectiveMime=${effectiveMime} | state=${recorder.state} | ownsStream=${ownsStream}`,
   );

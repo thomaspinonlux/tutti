@@ -122,6 +122,18 @@ export interface VoiceAnalyticsRow {
   avg_confidence: number | null;
 }
 
+/** fix/ios-voice-cascade-mic-and-buzz-refused — top morceaux qui ratent le
+ * match le plus. Permet à l'admin d'enrichir les aliases pour les titres
+ * problématiques (accents difficiles, faux amis, etc.). */
+export interface VoiceAnalyticsFailedTrack {
+  track_id: string;
+  title: string | null;
+  artist: string | null;
+  attempts: number;
+  /** 0-1, ratio (matched_artist OR matched_title) / total. */
+  match_rate: number;
+}
+
 export interface VoiceAnalytics {
   window_days: number;
   since: string;
@@ -143,6 +155,8 @@ export interface VoiceAnalytics {
     assemblyai: number;
     total: number;
   };
+  /** Top 10 tracks où le matching échoue le plus (≥3 tentatives). */
+  top_failed_tracks: VoiceAnalyticsFailedTrack[];
 }
 
 export async function getVoiceAnalytics(days = 7): Promise<VoiceAnalytics> {
