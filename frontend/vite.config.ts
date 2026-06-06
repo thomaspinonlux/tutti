@@ -66,16 +66,27 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Précache : tous les assets buildés (JS/CSS) + assets statiques de
-        // includeAssets (fonts, icônes…).
+        // Précache : assets buildés (JS/CSS hashés) + HTML + assets statiques
+        // de includeAssets (fonts, icônes…).
+        //
+        // fix/csp-definitive-and-covers-fallback — `index.html` reste précaché
+        // (sinon createHandlerBoundToURL("index.html") throw au SW install).
+        // Le fix pour la CSP cached vient de skipWaiting+clientsClaim : à
+        // chaque deploy, le SW nouvellement installé prend immédiatement la
+        // main, refresh la précache (donc une nouvelle copie de index.html
+        // avec nouveaux headers CSP) et la sert aux navigations suivantes.
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        // 5MB cap pour éviter de précacher des fichiers énormes (vidéos
-        // landing dans public/videos/).
+        // 5MB cap pour éviter de précacher des fichiers énormes.
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // NE PAS intercepter /api/* (live data) ni /socket.io/* (websocket).
-        // Tout le reste = NetworkFirst pour HTML navigation, sinon cache.
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
+        // skipWaiting : le SW nouvellement installé devient actif sans
+        // attendre la fermeture des onglets. clientsClaim : il reprend
+        // immédiatement le contrôle des onglets ouverts. Combinés : nouveau
+        // SW = nouveau comportement appliqué instantanément.
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             // Google Fonts (CSS) — StaleWhileRevalidate, expire 7j.

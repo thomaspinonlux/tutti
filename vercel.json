@@ -16,7 +16,20 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://*.youtube.com https://s.ytimg.com https://*.ytimg.com https://sdk.scdn.co https://*.scdn.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https://*.googlevideo.com https://*.scdn.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.deepgram.com https://api.assemblyai.com https://*.assemblyai.com https://api.openai.com https://api.spotify.com https://accounts.spotify.com https://www.youtube.com https://*.googleapis.com wss: ws: https:; frame-src 'self' https://www.youtube.com https://*.youtube.com https://accounts.google.com https://sdk.scdn.co; worker-src 'self' blob:; manifest-src 'self'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.youtube.com https://www.youtube-nocookie.com https://*.ytimg.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://sdk.scdn.co https://*.scdn.co https://*.spotify.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: data: https://*.googlevideo.com https://*.scdn.co https://*.youtube.com https://*.ytimg.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.deepgram.com https://api.assemblyai.com https://*.assemblyai.com https://api.openai.com https://api.spotify.com https://accounts.spotify.com https://*.spotify.com https://www.youtube.com https://*.youtube.com https://www.googleapis.com https://api.tuttiparty.app wss://api.tuttiparty.app wss: ws: https:; frame-src 'self' https://*.youtube.com https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://accounts.google.com https://sdk.scdn.co; worker-src 'self' blob:; manifest-src 'self'; child-src 'self' blob: https://*.youtube.com"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }
