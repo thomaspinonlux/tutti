@@ -45,68 +45,68 @@ enum Plan {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model WorkspaceMember {
-  id           String   @id @default(uuid()) @db.Uuid
-  workspace_id String   @db.Uuid
-  user_id      String   @db.Uuid // référence auth.users.id (Supabase Auth)
-  role         Role     @default(HOST)
+  id                       String       @id @default(uuid()) @db.Uuid
+  workspace_id             String       @db.Uuid
+  user_id                  String       @db.Uuid // référence auth.users.id (Supabase Auth)
+  role                     Role         @default(HOST)
   /// Phase 4 — Mode C : statut d'approbation manuelle.
   /// PENDING par défaut sauf si l'email est en whitelist ou si un
   /// invitation_code valide est utilisé à la création (→ APPROVED auto).
   /// Un super admin peut basculer PENDING → APPROVED ou REJECTED.
-  status       MemberStatus @default(PENDING)
+  status                   MemberStatus @default(PENDING)
   /// Email du compte au moment de la création (snapshot — auth.users
   /// peut changer l'email mais ce champ reste pour audit).
-  email        String?  @db.VarChar(320)
+  email                    String?      @db.VarChar(320)
   /// Si la création est passée par un code invitation, on garde la trace
   /// du code utilisé (debug / traçabilité parrainage).
-  invitation_code_used String? @db.VarChar(16)
+  invitation_code_used     String?      @db.VarChar(16)
   /// Date d'approbation (manuelle ou auto via whitelist/code). null
   /// tant que PENDING.
-  approved_at  DateTime?  @db.Timestamptz(6)
+  approved_at              DateTime?    @db.Timestamptz(6)
   /// User id du super admin qui a approuvé (null si auto via whitelist
   /// ou code).
-  approved_by  String?   @db.Uuid
+  approved_by              String?      @db.Uuid
   /// feat/admin-users-and-email-notifications — flag bloquage manuel par
   /// super-admin. Si true → middleware requireMember renvoie 403.
-  is_blocked   Boolean   @default(false)
-  blocked_at   DateTime? @db.Timestamptz(6)
-  blocked_by   String?   @db.Uuid
+  is_blocked               Boolean      @default(false)
+  blocked_at               DateTime?    @db.Timestamptz(6)
+  blocked_by               String?      @db.Uuid
   /// Compteur freemium : nombre de sessions lancées dans le mois courant.
   /// Reset auto via comparaison freemium_period_start (1er du mois).
   /// Bouton "Réinitialiser compteur freemium" force à 0 + bump start_date.
-  freemium_sessions_count Int      @default(0)
-  freemium_period_start   DateTime @default(now()) @db.Timestamptz(6)
+  freemium_sessions_count  Int          @default(0)
+  freemium_period_start    DateTime     @default(now()) @db.Timestamptz(6)
   /// Dernière activité user (dernier login OU action API). Affiché dans
   /// /admin/users + tri "Dernière connexion".
-  last_seen_at DateTime? @db.Timestamptz(6)
+  last_seen_at             DateTime?    @db.Timestamptz(6)
   /// feat/granular-tracks-quizz-access — feature flags par user pour
   /// contrôler l'accès aux 2 modes Tutti. Défaut true (rétro-compat).
   /// Modifiable depuis /admin/users/:id par super-admin.
-  can_use_tracks Boolean @default(true)
-  can_use_quizz  Boolean @default(true)
+  can_use_tracks           Boolean      @default(true)
+  can_use_quizz            Boolean      @default(true)
   /// feat/youtube-compliance — timestamp d'acceptation des CGU + Politique
   /// de confidentialité (checkbox required au signup). null pour les
   /// comptes legacy créés avant l'introduction de la checkbox — backfill
   /// possible via /admin/users/:id ou re-prompt à la prochaine connexion.
   /// Audit conformité YouTube API Services + RGPD.
-  accepted_terms_at DateTime? @db.Timestamptz(6)
+  accepted_terms_at        DateTime?    @db.Timestamptz(6)
   // Système de parrainage (V1.1) — auto-généré à la création du membre,
   // 6 caractères alphanumériques majuscules (ex. "K7P2X9").
-  referral_code String?  @unique @db.VarChar(8)
+  referral_code            String?      @unique @db.VarChar(8)
   // Code du parrain si l'utilisateur s'est inscrit via un lien filleul.
-  referrer_code String?  @db.VarChar(8)
+  referrer_code            String?      @db.VarChar(8)
   /// Phase 3.5 — OAuth YouTube (scope youtube.readonly).
   /// Tokens chiffrés au repos par la DB (pas de chiffrement applicatif V1).
-  youtube_access_token   String?   @db.Text
-  youtube_refresh_token  String?   @db.Text
-  youtube_token_expires_at DateTime? @db.Timestamptz(6)
+  youtube_access_token     String?      @db.Text
+  youtube_refresh_token    String?      @db.Text
+  youtube_token_expires_at DateTime?    @db.Timestamptz(6)
   /// Statut Premium détecté à la connexion (best-effort — aucune API publique
   /// fiable pour ça, défaut false. Peut être patché manuellement par l'utilisateur).
-  youtube_premium        Boolean   @default(false)
-  youtube_connected_at   DateTime? @db.Timestamptz(6)
+  youtube_premium          Boolean      @default(false)
+  youtube_connected_at     DateTime?    @db.Timestamptz(6)
   /// Email du compte Google connecté (pour affichage UI).
-  youtube_account_email  String?   @db.VarChar(320)
-  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  youtube_account_email    String?      @db.VarChar(320)
+  created_at               DateTime     @default(now()) @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
@@ -160,14 +160,14 @@ model WhitelistEmail {
 /// animateur de cloner la playlist dans son workspace via /admin/import.
 /// Single-use ou multi-usage selon max_uses. Expiration optionnelle.
 model PlaylistShareCode {
-  id           String   @id @default(uuid()) @db.Uuid
-  code         String   @unique @db.VarChar(8)
-  playlist_id  String   @db.Uuid
-  created_by   String   @db.Uuid // user_id auth.users
-  max_uses     Int?
-  uses_count   Int      @default(0)
-  expires_at   DateTime? @db.Timestamptz(6)
-  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  id          String    @id @default(uuid()) @db.Uuid
+  code        String    @unique @db.VarChar(8)
+  playlist_id String    @db.Uuid
+  created_by  String    @db.Uuid // user_id auth.users
+  max_uses    Int?
+  uses_count  Int       @default(0)
+  expires_at  DateTime? @db.Timestamptz(6)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
 
   @@index([code])
   @@index([playlist_id])
@@ -184,19 +184,19 @@ model PlaylistShareCode {
 /// optionnelle (expires_at). max_uses permet les codes multi-usage
 /// (ex: campagne marketing avec un seul code partagé).
 model InvitationCode {
-  id           String   @id @default(uuid()) @db.Uuid
-  code         String   @unique @db.VarChar(16)
+  id            String    @id @default(uuid()) @db.Uuid
+  code          String    @unique @db.VarChar(16)
   /// Notes libres (à qui ? campagne ?)
-  note         String?  @db.VarChar(500)
+  note          String?   @db.VarChar(500)
   /// User id du super admin qui a généré le code.
-  created_by   String   @db.Uuid
+  created_by    String    @db.Uuid
   /// Nombre d'utilisations max (null = illimité). Décompté dans uses_count.
-  max_uses     Int?
-  uses_count   Int      @default(0)
-  expires_at   DateTime? @db.Timestamptz(6)
+  max_uses      Int?
+  uses_count    Int       @default(0)
+  expires_at    DateTime? @db.Timestamptz(6)
   /// Date du 1er use (info, pour audit). Avec max_uses=1, marque code consommé.
   first_used_at DateTime? @db.Timestamptz(6)
-  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
 
   @@index([code])
   @@map("invitation_codes")
@@ -253,30 +253,30 @@ model MusicProviderCredential {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Playlist {
-  id                String   @id @default(uuid()) @db.Uuid
-  establishment_id  String   @db.Uuid
-  name              String
-  description       String? // V1.1 : utile pour les playlists Tutti curées
-  cover_url         String?
-  level             Level    @default(MEDIUM)
-  language          String   @default("fr") @db.VarChar(8)
-  is_published      Boolean  @default(false)
-  is_express        Boolean  @default(false) // V1 : créée à la volée pendant une session
-  is_official_tutti Boolean  @default(false) // V1.1 : playlist curée par Tutti (catalogue partagé)
-  external_links    Json? // V1.1 : { spotify: url, deezer: url, apple_music: url }
+  id                   String    @id @default(uuid()) @db.Uuid
+  establishment_id     String    @db.Uuid
+  name                 String
+  description          String? // V1.1 : utile pour les playlists Tutti curées
+  cover_url            String?
+  level                Level     @default(MEDIUM)
+  language             String    @default("fr") @db.VarChar(8)
+  is_published         Boolean   @default(false)
+  is_express           Boolean   @default(false) // V1 : créée à la volée pendant une session
+  is_official_tutti    Boolean   @default(false) // V1.1 : playlist curée par Tutti (catalogue partagé)
+  external_links       Json? // V1.1 : { spotify: url, deezer: url, apple_music: url }
   /// feat/playlist-cache-and-availability-check — dernière vérification de
   /// disponibilité (POST /check-availability) + nombre de tracks non
   /// jouables détectées. Affiché côté UI (badge / bouton coloré).
-  last_checked_at   DateTime? @db.Timestamptz(6)
-  unplayable_count  Int       @default(0)
+  last_checked_at      DateTime? @db.Timestamptz(6)
+  unplayable_count     Int       @default(0)
   /// feat/playlist-pool-random-selection — nombre de tracks pickés
   /// aléatoirement dans le pool à chaque lancement d'une manche. Une
   /// playlist devient un POOL de N tracks (~60-80) dans lequel on tire
   /// `default_session_size` morceaux (anti-doublons via PR C).
   /// Default 15. Editable depuis /admin/library/playlists/:id.
-  default_session_size Int    @default(15)
-  created_at        DateTime @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime @updatedAt @db.Timestamptz(6)
+  default_session_size Int       @default(15)
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime  @updatedAt @db.Timestamptz(6)
 
   establishment   Establishment   @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
   playlist_tracks PlaylistTrack[]
@@ -317,18 +317,18 @@ model Artist {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Track {
-  id                String   @id @default(uuid()) @db.Uuid
-  artist_id         String   @db.Uuid
-  canonical_title   String
-  aliases           String[] @default([]) // alias du titre (ex: "alors on dance", "danse alors")
-  album             String?
-  year              Int?
-  genre             String?
-  popularity        Int? // 0-100, score Spotify
-  duration_ms       Int?
-  cover_url         String?
-  provider          String   @db.VarChar(32) // "spotify", "demo"
-  provider_track_id String   @db.VarChar(128)
+  id                     String    @id @default(uuid()) @db.Uuid
+  artist_id              String    @db.Uuid
+  canonical_title        String
+  aliases                String[]  @default([]) // alias du titre (ex: "alors on dance", "danse alors")
+  album                  String?
+  year                   Int?
+  genre                  String?
+  popularity             Int? // 0-100, score Spotify
+  duration_ms            Int?
+  cover_url              String?
+  provider               String    @db.VarChar(32) // "spotify", "demo"
+  provider_track_id      String    @db.VarChar(128)
   /// feat/playlist-cache-and-availability-check — flag de jouabilité
   /// alimenté par POST /api/playlists/:id/check-availability. Pour YouTube :
   /// vérifie embeddable + privacy + region restriction. is_playable=false
@@ -342,9 +342,9 @@ model Track {
   /// YouTube API Services Developer Policies III.E.4 : les données API doivent
   /// être rafraîchies/supprimées au moins tous les 30 jours.
   last_refreshed_at      DateTime? @db.Timestamptz(6)
-  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  created_at             DateTime  @default(now()) @db.Timestamptz(6)
 
-  artist          Artist          @relation(fields: [artist_id], references: [id], onDelete: Restrict)
+  artist          Artist               @relation(fields: [artist_id], references: [id], onDelete: Restrict)
   playlist_tracks PlaylistTrack[]
   voice_logs      VoiceTranscript[]
   session_played  SessionPlayedTrack[]
@@ -465,41 +465,41 @@ enum MediaType {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Session {
-  id               String        @id @default(uuid()) @db.Uuid
-  establishment_id String        @db.Uuid
-  name             String? // étiquette éditable optionnelle ("Anniv Marc 29/04")
-  game_type        GameType
-  status           SessionStatus @default(WAITING)
-  short_code       String        @unique @db.VarChar(16) // "KOMP-7K2X"
-  mode             GameMode      @default(SOLO)
-  teams_config     Json? // [{id, name, color, ...}]
-  language         String        @default("fr") @db.VarChar(8)
-  question_set_id  String?       @db.Uuid // pour Tutti Quizz (étape 15+)
+  id                  String        @id @default(uuid()) @db.Uuid
+  establishment_id    String        @db.Uuid
+  name                String? // étiquette éditable optionnelle ("Anniv Marc 29/04")
+  game_type           GameType
+  status              SessionStatus @default(WAITING)
+  short_code          String        @unique @db.VarChar(16) // "KOMP-7K2X"
+  mode                GameMode      @default(SOLO)
+  teams_config        Json? // [{id, name, color, ...}]
+  language            String        @default("fr") @db.VarChar(8)
+  question_set_id     String?       @db.Uuid // pour Tutti Quizz (étape 15+)
   // Mode A = avec animateur (host pilote depuis l'iPad/Mac).
   // Mode B = sans animateur, défaut B2C : un joueur master pilote depuis son tel.
-  has_animator     Boolean       @default(false)
+  has_animator        Boolean       @default(false)
   // Pause master en mode B. Pas d'auto-resume — c'est le master qui
   // déclenche la reprise. Le timer continue de courir (V1 simple).
-  is_paused        Boolean       @default(false)
+  is_paused           Boolean       @default(false)
   // Durée de la fenêtre micro joueur (10s défaut, 15s en mode "détendu").
-  buzz_window_seconds Int        @default(10)
+  buzz_window_seconds Int           @default(10)
   // Cap technique de participants par session (15 V1 pour B2C).
-  max_participants Int           @default(15)
-  created_at       DateTime      @default(now()) @db.Timestamptz(6)
+  max_participants    Int           @default(15)
+  created_at          DateTime      @default(now()) @db.Timestamptz(6)
   /// Bumpé à chaque update Prisma. Utilisé par findRepresentativeSession
   /// pour ordonner les candidats (orderBy updated_at desc) — un session
   /// ENDED via POST /:id/end aura un updated_at plus récent qu'une zombie
   /// PLAYING jamais touchée. Anti-bug "TV bloquée sur ancienne session".
-  updated_at       DateTime      @updatedAt @db.Timestamptz(6)
-  started_at       DateTime?     @db.Timestamptz(6)
-  ended_at         DateTime?     @db.Timestamptz(6)
+  updated_at          DateTime      @updatedAt @db.Timestamptz(6)
+  started_at          DateTime?     @db.Timestamptz(6)
+  ended_at            DateTime?     @db.Timestamptz(6)
 
-  establishment     Establishment     @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
-  participants      Participant[]
-  rounds            SessionRound[] // succession de manches
-  score_events      ScoreEvent[]
-  voice_transcripts VoiceTranscript[]
-  played_tracks     SessionPlayedTrack[]
+  establishment      Establishment        @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
+  participants       Participant[]
+  rounds             SessionRound[] // succession de manches
+  score_events       ScoreEvent[]
+  voice_transcripts  VoiceTranscript[]
+  played_tracks      SessionPlayedTrack[]
   playlist_proposals PlaylistProposal[]
 
   @@index([short_code])
@@ -519,15 +519,15 @@ model Session {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model PlaylistProposal {
-  id                    String   @id @default(uuid()) @db.Uuid
-  session_id            String   @db.Uuid
-  participant_id        String   @db.Uuid
+  id                   String   @id @default(uuid()) @db.Uuid
+  session_id           String   @db.Uuid
+  participant_id       String   @db.Uuid
   /// Référence à la playlist OFFICIELLE Tutti (catalogue partagé). Le host
   /// peut ensuite lancer la playlist via le flow POST /api/library/playlists/
   /// :id/launch existant. On stocke aussi le name snapshot pour fallback UI.
-  official_playlist_id  String   @db.Uuid
-  playlist_name         String   @db.VarChar(200)
-  created_at            DateTime @default(now()) @db.Timestamptz(6)
+  official_playlist_id String   @db.Uuid
+  playlist_name        String   @db.VarChar(200)
+  created_at           DateTime @default(now()) @db.Timestamptz(6)
 
   session     Session     @relation(fields: [session_id], references: [id], onDelete: Cascade)
   participant Participant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
@@ -631,9 +631,9 @@ model Participant {
   fingerprint String? // empreinte navigateur pour anti-spam
   joined_at   DateTime @default(now()) @db.Timestamptz(6)
 
-  session           Session           @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  score_events      ScoreEvent[]
-  voice_transcripts VoiceTranscript[]
+  session            Session            @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  score_events       ScoreEvent[]
+  voice_transcripts  VoiceTranscript[]
   playlist_proposals PlaylistProposal[]
 
   @@index([session_id])
@@ -724,42 +724,47 @@ model VoiceTranscript {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model OfficialPlaylist {
-  id               String   @id @default(uuid()) @db.Uuid
+  id                   String             @id @default(uuid()) @db.Uuid
   /// Slug stable utilisé dans le JSON source pour upsert idempotent
   /// (ex: "official-pl-italo-disco-classics"). Sert de clé naturelle.
-  slug             String   @unique @db.VarChar(120)
-  name_fr          String
-  name_en          String
-  description_fr   String?
-  description_en   String?
+  slug                 String             @unique @db.VarChar(120)
+  name_fr              String
+  name_en              String
+  description_fr       String?
+  description_en       String?
   /// Locale principale du contenu (utile pour la reconnaissance vocale et
   /// pour filtrer par langue côté UI). Ex: "fr-FR", "en-US", "it-IT", "es-ES".
-  locale_primary   String   @db.VarChar(32)
+  locale_primary       String             @db.VarChar(32)
   /// Thème éditorial (libre, ex: "italo-disco-classics", "french-pop-2010s").
-  theme            String?  @db.VarChar(80)
+  theme                String?            @db.VarChar(80)
   /// Niveau de difficulté global (EASY/MEDIUM/EXPERT — réutilise enum Level).
-  difficulty       Level    @default(MEDIUM)
-  visibility       OfficialVisibility @default(public)
-  track_count      Int      @default(0)
+  difficulty           Level              @default(MEDIUM)
+  visibility           OfficialVisibility @default(public)
+  track_count          Int                @default(0)
+  /// feat/tv-carousel-polish — URL d'une cover mosaïque 2×2 générée à partir
+  /// des 4 premières cover_url des tracks du pool. Servie par
+  /// GET /api/library-cover/:slug.jpg (génération dynamique on-demand, cache
+  /// in-memory). Nullable — fallback texte côté UI si non-set.
+  cover_url            String?
   /// feat/playlist-categories-schema — slug de catégorie pour le grouping
   /// dans l'UI sélection host + carrousel TV. Valeurs canoniques définies
   /// dans backend/src/lib/playlistCategories.ts (classics, originals,
   /// forbidden_30, wedding, decades, genres, special). Nullable pour les
   /// playlists pas encore catégorisées (legacy ou futures).
-  category               String?  @db.VarChar(40)
+  category             String?            @db.VarChar(40)
   /// Ordre d'affichage dans la catégorie. Plus petit = affiché en premier.
   /// Tri stable : SI null → triée à la fin (par updated_at desc).
-  position_in_category   Int?
+  position_in_category Int?
   /// Sous-titre court affiché sous le nom dans les cards (ex: "Pour les
   /// nostalgiques du Walkman"). Bilingue FR/EN. Backfill auto depuis le
   /// nom au seed initial, éditable par admin ensuite.
-  subtitle_fr            String?  @db.VarChar(200)
-  subtitle_en            String?  @db.VarChar(200)
+  subtitle_fr          String?            @db.VarChar(200)
+  subtitle_en          String?            @db.VarChar(200)
   /// User_id Supabase de l'admin qui a créé/maintient la playlist (audit).
   /// Optionnel — un script qui tourne en CI peut être null.
-  created_by_admin String?  @db.Uuid
-  created_at       DateTime @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime @updatedAt       @db.Timestamptz(6)
+  created_by_admin     String?            @db.Uuid
+  created_at           DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime           @updatedAt @db.Timestamptz(6)
 
   tracks OfficialPlaylistTrack[]
 
@@ -778,32 +783,32 @@ enum OfficialVisibility {
 }
 
 model OfficialPlaylistTrack {
-  id               String   @id @default(uuid()) @db.Uuid
-  playlist_id      String   @db.Uuid
+  id                     String    @id @default(uuid()) @db.Uuid
+  playlist_id            String    @db.Uuid
   /// Position dans la playlist (1-indexed, unique par playlist).
-  position         Int
-  title            String
-  artist           String
+  position               Int
+  title                  String
+  artist                 String
   /// Année de sortie — utile pour le matching Spotify (year_range_strict).
-  year             Int?
+  year                   Int?
   /// Niveau du morceau (peut différer du niveau global de la playlist).
-  difficulty       Level    @default(MEDIUM)
+  difficulty             Level     @default(MEDIUM)
   /// IDs canoniques résolus par le script d'import. null tant que pas matché.
-  spotify_id       String?  @db.VarChar(40)
-  youtube_id       String?  @db.VarChar(40)
+  spotify_id             String?   @db.VarChar(40)
+  youtube_id             String?   @db.VarChar(40)
   /// Réponses acceptées (artist + title aliases pour la reco vocale Whisper).
   /// Format JSON : { artist: string[], title: string[], full: string[] }
-  answers_accepted Json?
+  answers_accepted       Json?
   /// URL cover album/track (récupérée via Spotify lors de l'import). Null si
   /// non résolue. Copiée dans Track.cover_url au moment du clone-on-launch.
-  cover_url        String?
+  cover_url              String?
   /// Validé via YouTube Data API (status.embeddable + regionRestriction).
   /// false si vidéo non-embeddable, retirée, ou bloquée FR/LU. Le frontend
   /// host skip ces tracks au moment du clone-on-launch.
-  is_playable      Boolean  @default(true)
+  is_playable            Boolean   @default(true)
   /// Raison de l'invalidation (null si is_playable=true). Ex: "not_embeddable",
   /// "blocked_FR", "blocked_LU", "video_not_found", "private_video".
-  playability_reason String?
+  playability_reason     String?
   /// Timestamp de la dernière vérification YouTube API. Null si jamais validé.
   /// Re-run du script validate-youtube-ids met à jour cette colonne.
   playability_checked_at DateTime? @db.Timestamptz(6)
@@ -811,15 +816,15 @@ model OfficialPlaylistTrack {
   /// (cron 30 jours) ou manuel (POST /api/admin/refresh-youtube-data).
   /// YouTube API Services Developer Policies III.E.4 : les données API doivent
   /// être rafraîchies/supprimées au moins tous les 30 jours.
-  last_refreshed_at DateTime? @db.Timestamptz(6)
+  last_refreshed_at      DateTime? @db.Timestamptz(6)
   /// Alias de prononciation curés par les super-admins pour le matching
   /// vocal Whisper. Mêmes sémantiques que Artist.aliases / Track.aliases côté
   /// playlists perso. Mergés au clone-on-launch dans Artist.aliases (artiste)
   /// et Track.aliases (titre) — propagation pour que voiceMatch les
   /// reconnaisse comme les playlists perso.
-  artist_aliases   String[] @default([])
-  title_aliases    String[] @default([])
-  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  artist_aliases         String[]  @default([])
+  title_aliases          String[]  @default([])
+  created_at             DateTime  @default(now()) @db.Timestamptz(6)
 
   playlist OfficialPlaylist @relation(fields: [playlist_id], references: [id], onDelete: Cascade)
 
@@ -839,24 +844,24 @@ model OfficialPlaylistTrack {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model OfficialQuizPack {
-  id               String   @id @default(uuid()) @db.Uuid
+  id             String             @id @default(uuid()) @db.Uuid
   /// Slug stable utilisé dans le JSON source pour upsert idempotent
   /// (ex: "official-qz-animaux-nature"). Sert de clé naturelle.
-  slug             String   @unique @db.VarChar(120)
-  name_fr          String
-  name_en          String
-  description_fr   String?
-  description_en   String?
+  slug           String             @unique @db.VarChar(120)
+  name_fr        String
+  name_en        String
+  description_fr String?
+  description_en String?
   /// Locale principale (ex: "international", "fr", "en").
-  locale_primary   String   @db.VarChar(32)
+  locale_primary String             @db.VarChar(32)
   /// Catégorie éditoriale libre (ex: "animaux", "histoire", "cinema").
-  category         String?  @db.VarChar(80)
+  category       String?            @db.VarChar(80)
   /// Niveau global (peut différer de la difficulté par question).
-  difficulty       Level    @default(MEDIUM)
-  visibility       OfficialVisibility @default(public)
-  question_count   Int      @default(0)
-  created_at       DateTime @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime @updatedAt       @db.Timestamptz(6)
+  difficulty     Level              @default(MEDIUM)
+  visibility     OfficialVisibility @default(public)
+  question_count Int                @default(0)
+  created_at     DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime           @updatedAt @db.Timestamptz(6)
 
   questions OfficialQuizQuestion[]
 
@@ -867,20 +872,20 @@ model OfficialQuizPack {
 }
 
 model OfficialQuizQuestion {
-  id               String   @id @default(uuid()) @db.Uuid
-  pack_id          String   @db.Uuid
+  id                   String       @id @default(uuid()) @db.Uuid
+  pack_id              String       @db.Uuid
   /// Position dans le pack (1-indexed, unique par pack).
-  position         Int
+  position             Int
   /// Type de question — mappé sur les 3 types présents dans les JSON
   /// sources (multiple_choice / true_false / fill_blank). MCQ / TRUE_FALSE
   /// / FREE_TEXT côté enum DB (réutilise QuestionType existant).
-  type             QuestionType
+  type                 QuestionType
   /// Énoncé bilingue.
-  question_fr      String
-  question_en      String
+  question_fr          String
+  question_en          String
   /// Choix MCQ (4 typiquement). Vide pour TRUE_FALSE / FREE_TEXT.
-  choices_fr       String[] @default([])
-  choices_en       String[] @default([])
+  choices_fr           String[]     @default([])
+  choices_en           String[]     @default([])
   /// Index réponse correcte pour MCQ (0-based). Null sinon.
   correct_answer_index Int?
   /// Réponse correcte pour TRUE_FALSE. Null sinon.
@@ -889,27 +894,27 @@ model OfficialQuizQuestion {
   correct_answer_fr    String?
   correct_answer_en    String?
   /// Alternatives orthographiques pour FREE_TEXT (matching fuzzy).
-  alternatives_fr  String[] @default([])
-  alternatives_en  String[] @default([])
+  alternatives_fr      String[]     @default([])
+  alternatives_en      String[]     @default([])
   /// Explication affichée après réponse (bilingue).
-  explanation_fr   String?
-  explanation_en   String?
+  explanation_fr       String?
+  explanation_en       String?
   /// Difficulté par question (peut différer du pack).
-  difficulty       Level    @default(MEDIUM)
+  difficulty           Level        @default(MEDIUM)
   /// URL média optionnelle (image/audio illustrant la question, legacy).
-  media_url        String?
+  media_url            String?
   /// feat/quiz-question-media — type de média structuré (NONE/AUDIO/VIDEO/IMAGE).
   /// Si AUDIO|VIDEO + media_youtube_id renseigné, le gameplay embed un IFrame
   /// YouTube qui joue [media_start_sec, media_start_sec + media_duration_sec].
   /// AUDIO = IFrame caché (audio only). VIDEO = IFrame visible.
-  media_type         MediaType @default(NONE)
+  media_type           MediaType    @default(NONE)
   /// ID YouTube (11 chars). Source du média si media_type=AUDIO|VIDEO.
-  media_youtube_id   String?
+  media_youtube_id     String?
   /// Offset de début de lecture en secondes (ex: 30 pour skip intro).
-  media_start_sec    Int?
+  media_start_sec      Int?
   /// Durée de lecture en secondes (max 30 côté UI). Coupé après ce délai.
-  media_duration_sec Int?
-  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  media_duration_sec   Int?
+  created_at           DateTime     @default(now()) @db.Timestamptz(6)
 
   pack OfficialQuizPack @relation(fields: [pack_id], references: [id], onDelete: Cascade)
 

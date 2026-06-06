@@ -156,6 +156,31 @@ app.use('/api/sessions/:id/quizz', gameplayQuizzRouter);
 app.use('/api/sessions/:id/master', sessionMasterRouter);
 app.use('/api/auth/spotify', spotifyAuthRouter);
 app.use('/api/spotify', spotifyApiRouter);
+// feat/tv-carousel-polish — cover mosaïque dynamique. Route publique
+// (servie aussi au /screen TV sans auth). Cache headers agressifs côté
+// handler (24h CDN-friendly).
+app.get('/api/library-cover/:slug.jpg', async (req, res) => {
+  try {
+    const { generateLibraryCover } = await import('./lib/libraryCover.js');
+    const entry = await generateLibraryCover(req.params.slug);
+    res.set('Cache-Control', 'public, max-age=86400, immutable');
+    res.set('Content-Type', entry.contentType);
+    res.send(entry.buffer);
+  } catch (err) {
+    const msg = (err as Error).message;
+    if (msg === 'NOT_FOUND') {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Playlist introuvable' } });
+      return;
+    }
+    if (msg === 'NO_COVERS') {
+      res.status(404).json({ error: { code: 'NO_COVERS', message: 'Pas de covers dispo' } });
+      return;
+    }
+    console.error('[GET /api/library-cover] error:', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: msg } });
+  }
+});
+
 app.use('/api/admin', adminRouter);
 app.use('/api/admin/library', adminLibraryRouter);
 app.use('/api/admin/library', adminQuizLibraryRouter);
