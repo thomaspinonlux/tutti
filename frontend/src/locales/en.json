@@ -271,6 +271,29 @@
     "safariBannerHint": "For the best blind test audio experience, allow media in your site settings (AA icon in the address bar → Website Settings).",
     "safariBannerDismiss": "Dismiss banner"
   },
+  "contentBlocker": {
+    "title": "A content blocker prevents YouTube from working",
+    "body": "Safari has an active content blocker that prevents YouTube from loading on tuttiparty.app. Without YouTube, the blind test music can't start. To fix:",
+    "option1": {
+      "title": "Disable the blocker for tuttiparty.app",
+      "step1": "Open Safari Settings (macOS) or Settings → Safari (iOS)",
+      "step2": "Go to Websites → Content Blockers",
+      "step3": "Turn off blockers for tuttiparty.app"
+    },
+    "option2": {
+      "title": "Reload without blockers",
+      "step1": "View menu (macOS) or AA icon (iOS) → \"Reload Without Content Blockers\""
+    },
+    "pwa": {
+      "title": "You are in PWA mode (installed app)",
+      "intro": "Safari content blockers also apply to your PWA. To disable them:",
+      "step1": "Open tuttiparty.app in Safari (regular browser, not the PWA)",
+      "step2": "Tap the AA icon in the address bar → Website Settings",
+      "step3": "Turn off content blockers for this site",
+      "step4": "Switch back to the Tutti PWA and reload"
+    },
+    "reloadButton": "I disabled it, reload"
+  },
   "host": {
     "eyebrow": "Waiting room",
     "eyebrowPlaying": "Round {{round}}",
@@ -623,6 +646,11 @@
     "masterPausedBadge": "Game paused"
   },
   "onboarding": {
+    "contentBlocker": {
+      "title": "Safari tip for smooth music playback",
+      "body": "For the best experience, disable content blockers on tuttiparty.app in Safari (Settings → Websites → Content Blockers). Otherwise YouTube can be blocked and the blind test music won't start.",
+      "checked": "I checked"
+    },
     "eyebrow": "Before you play",
     "welcome": "Welcome to the blind test!",
     "intro": "3 simple rules to score the most points.",
