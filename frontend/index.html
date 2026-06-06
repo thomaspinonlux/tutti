@@ -4,6 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- ==================== CSP (fix/csp-meta-tag-and-cover-fallback) ====================
+         SOURCE UNIQUE de Content-Security-Policy. Précédents fix (PR #63 / #64) passaient
+         par vercel.json `headers` mais s'appliquaient pas instantanément en prod : Vercel
+         CDN edge cache + SW Workbox servaient l'ancien HTML cached avant le déploiement
+         de la nouvelle CSP.
+         Meta tag = embarqué dans le HTML → toujours aligné avec la version SW courante.
+
+         Notes :
+         - 'unsafe-eval' : requis YouTube IFrame (www-widgetapi.js eval interne)
+         - data: dans media-src : silent WAV buffer Safari audio unlock (PreGameStartScreen)
+         - blob: dans media-src + worker-src : MediaRecorder + SW Workbox
+         - api.anthropic.com : génération aliases IA (PR #65 feat/ai-aliases-voice-matching)
+         - tuttiparty.app + wss : backend Railway + Socket.IO
+         - youtube-nocookie.com : privacy-enhanced YouTube IFrame embed mode
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.youtube.com https://www.youtube-nocookie.com https://*.ytimg.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://sdk.scdn.co https://*.scdn.co https://*.spotify.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: data: https://*.googlevideo.com https://*.scdn.co https://*.youtube.com https://*.ytimg.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.deepgram.com https://api.assemblyai.com https://*.assemblyai.com https://api.anthropic.com https://api.openai.com https://api.spotify.com https://accounts.spotify.com https://*.spotify.com https://www.youtube.com https://*.youtube.com https://www.googleapis.com https://api.tuttiparty.app wss://api.tuttiparty.app wss: ws: https:; frame-src 'self' https://*.youtube.com https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://accounts.google.com https://sdk.scdn.co; worker-src 'self' blob:; manifest-src 'self'; child-src 'self' blob: https://*.youtube.com"
+    />
+
     <!-- ==================== SEO/GEO META ==================== -->
     <title>Tutti — Blind test musical &amp; quiz pour soirées privées | Luxembourg</title>
     <meta

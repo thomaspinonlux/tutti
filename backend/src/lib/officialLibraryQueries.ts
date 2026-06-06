@@ -42,6 +42,12 @@ export interface LibraryPlaylistSummary {
   /** Sous-titre court FR (affiché sous le titre dans les cards). */
   subtitle_fr: string | null;
   subtitle_en: string | null;
+  /** fix/csp-meta-tag-and-cover-fallback — fallback cover si endpoint
+   *  /api/library-cover/:slug 404 (DB Railway peut être incomplète vs slugs
+   *  importés côté frontend). Frontend peut alors servir cover_fallback_url
+   *  ou `https://img.youtube.com/vi/${cover_fallback_youtube_id}/hqdefault.jpg`. */
+  cover_fallback_url: string | null;
+  cover_fallback_youtube_id: string | null;
 }
 
 export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
@@ -105,13 +111,21 @@ export async function listVisiblePlaylists(
     orderBy: { updated_at: 'desc' },
     include: {
       _count: { select: { tracks: true } },
-      tracks: { select: { spotify_id: true, youtube_id: true } },
+      // fix/csp-meta-tag-and-cover-fallback — fetch position (pour trier 1ʳᵉ
+      // track) + cover_url + youtube_id pour permettre au frontend de servir
+      // un thumbnail YT direct si le backend /api/library-cover/:slug 404.
+      tracks: {
+        select: { spotify_id: true, youtube_id: true, cover_url: true, position: true },
+        orderBy: { position: 'asc' },
+      },
     },
   });
 
   return playlists.map((p) => {
     const spotify_count = p.tracks.filter((t) => t.spotify_id !== null).length;
     const youtube_count = p.tracks.filter((t) => t.youtube_id !== null).length;
+    // 1ʳᵉ track avec cover_url OU youtube_id pour fallback frontend.
+    const firstWithMedia = p.tracks.find((t) => t.cover_url || t.youtube_id) ?? null;
     return {
       id: p.id,
       slug: p.slug,
@@ -131,6 +145,8 @@ export async function listVisiblePlaylists(
       position_in_category: p.position_in_category,
       subtitle_fr: p.subtitle_fr,
       subtitle_en: p.subtitle_en,
+      cover_fallback_url: firstWithMedia?.cover_url ?? null,
+      cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
     };
   });
 }
@@ -171,6 +187,8 @@ export async function getVisiblePlaylistDetail(
   const spotify_count = playlist.tracks.filter((t) => t.spotify_id !== null).length;
   const youtube_count = playlist.tracks.filter((t) => t.youtube_id !== null).length;
 
+  const firstWithMedia = playlist.tracks.find((t) => t.cover_url || t.youtube_id) ?? null;
+
   const detail: LibraryPlaylistDetail = {
     id: playlist.id,
     slug: playlist.slug,
@@ -190,6 +208,8 @@ export async function getVisiblePlaylistDetail(
     position_in_category: playlist.position_in_category,
     subtitle_fr: playlist.subtitle_fr,
     subtitle_en: playlist.subtitle_en,
+    cover_fallback_url: firstWithMedia?.cover_url ?? null,
+    cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
     tracks: playlist.tracks.map((t) => ({
       id: t.id,
       position: t.position,
