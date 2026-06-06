@@ -271,6 +271,29 @@
     "safariBannerHint": "Pour la meilleure expérience audio des blind tests, autorise les médias dans les Réglages du site (icône AA dans la barre d'adresse → Réglages du site).",
     "safariBannerDismiss": "Fermer la bannière"
   },
+  "contentBlocker": {
+    "title": "Un bloqueur de contenu empêche YouTube de fonctionner",
+    "body": "Safari a un bloqueur de contenu actif qui empêche YouTube de charger sur tuttiparty.app. Sans YouTube, la musique des blind tests ne peut pas démarrer. Pour résoudre :",
+    "option1": {
+      "title": "Désactive le bloqueur pour tuttiparty.app",
+      "step1": "Ouvre Réglages Safari (macOS) ou Réglages → Safari (iOS)",
+      "step2": "Va dans Sites web → Bloqueurs de contenu",
+      "step3": "Désactive les bloqueurs pour tuttiparty.app"
+    },
+    "option2": {
+      "title": "Recharge sans les bloqueurs",
+      "step1": "Menu Présentation (macOS) ou icône AA (iOS) → \"Recharger sans les bloqueurs de contenu\""
+    },
+    "pwa": {
+      "title": "Tu es en mode PWA (app installée)",
+      "intro": "Les bloqueurs de contenu Safari s'appliquent aussi à ta PWA. Pour les désactiver :",
+      "step1": "Ouvre tuttiparty.app dans Safari (navigateur normal, pas la PWA)",
+      "step2": "Touche l'icône AA dans la barre d'adresse → Réglages du site web",
+      "step3": "Désactive les bloqueurs de contenu pour ce site",
+      "step4": "Reviens dans la PWA Tutti et recharge"
+    },
+    "reloadButton": "J'ai désactivé, recharger"
+  },
   "host": {
     "eyebrow": "Salle d'attente",
     "eyebrowPlaying": "Manche {{round}}",
@@ -623,6 +646,11 @@
     "masterPausedBadge": "Jeu en pause"
   },
   "onboarding": {
+    "contentBlocker": {
+      "title": "Astuce Safari pour un démarrage musical fluide",
+      "body": "Pour une expérience optimale, désactive les bloqueurs de contenu sur tuttiparty.app dans Safari (Réglages → Sites web → Bloqueurs de contenu). Sinon YouTube peut être bloqué et la musique des blind tests ne démarrera pas.",
+      "checked": "J'ai vérifié"
+    },
     "eyebrow": "Avant de jouer",
     "welcome": "Bienvenue dans le blind test !",
     "intro": "3 règles simples pour marquer un max de points.",
