@@ -5,10 +5,12 @@
  * (ou avec aliases_generated_at NULL). Traite par batch de 10 en parallèle.
  *
  * Usage :
- *   pnpm tsx scripts/generateAllAliases.ts                  # toutes les tracks vides
+ *   pnpm tsx scripts/generateAllAliases.ts                  # tracks sans aliases uniquement
  *   pnpm tsx scripts/generateAllAliases.ts --all            # toutes les tracks (re-gen)
  *   pnpm tsx scripts/generateAllAliases.ts --limit=50       # cap à 50
  *   pnpm tsx scripts/generateAllAliases.ts --locale=fr      # forcer locale FR
+ *   pnpm tsx scripts/generateAllAliases.ts --force-regen    # re-gen toutes les tracks AI
+ *                                                          # (override aliases_source='ai')
  *
  * Env :
  *   ANTHROPIC_API_KEY (requis) — sinon génération désactivée
@@ -25,21 +27,27 @@ config();
 const prisma = new PrismaClient();
 const CONCURRENCY = 10;
 
-function parseArgs(): { all: boolean; limit: number | null; locale: 'fr' | 'en' | undefined } {
+function parseArgs(): {
+  all: boolean;
+  forceRegen: boolean;
+  limit: number | null;
+  locale: 'fr' | 'en' | undefined;
+} {
   const args = process.argv.slice(2);
   const all = args.includes('--all');
+  const forceRegen = args.includes('--force-regen');
   const limitArg = args.find((a) => a.startsWith('--limit='));
   const limit = limitArg ? Number.parseInt(limitArg.split('=')[1] ?? '', 10) || null : null;
   const localeArg = args.find((a) => a.startsWith('--locale='));
   const localeValue = localeArg ? localeArg.split('=')[1] : undefined;
   const locale = localeValue === 'fr' || localeValue === 'en' ? localeValue : undefined;
-  return { all, limit, locale };
+  return { all, forceRegen, limit, locale };
 }
 
 async function main(): Promise<void> {
-  const { all, limit, locale } = parseArgs();
+  const { all, forceRegen, limit, locale } = parseArgs();
   console.info(
-    `[Aliases CLI] start | all=${all} | limit=${limit ?? 'none'} | locale=${locale ?? 'auto'} | concurrency=${CONCURRENCY}`,
+    `[Aliases CLI] start | all=${all} | force-regen=${forceRegen} | limit=${limit ?? 'none'} | locale=${locale ?? 'auto'} | concurrency=${CONCURRENCY}`,
   );
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -48,7 +56,14 @@ async function main(): Promise<void> {
     return;
   }
 
-  const where = all ? {} : { OR: [{ aliases: { equals: [] } }, { aliases_generated_at: null }] };
+  // --force-regen : re-génère TOUTES les tracks AI (override qualité v1).
+  // --all : re-gen toutes les tracks (peu importe source).
+  // défaut : seulement les tracks sans aliases ou avec aliases_generated_at null.
+  const where = forceRegen
+    ? { aliases_source: 'ai' }
+    : all
+      ? {}
+      : { OR: [{ aliases: { equals: [] } }, { aliases_generated_at: null }] };
 
   const tracks = await prisma.track.findMany({
     where,

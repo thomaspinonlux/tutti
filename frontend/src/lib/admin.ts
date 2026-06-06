@@ -245,3 +245,82 @@ export async function regenerateTrackAliases(
     { method: 'POST' },
   );
 }
+
+// ───── Artist aliases (fix/aliases-quality-v2-and-artists) ───────────────
+
+export interface AliasArtistRow {
+  artist_id: string;
+  name: string;
+  aliases: string[];
+  aliases_generated_at: string | null;
+  aliases_source: string | null;
+}
+
+export interface AliasArtistListResponse {
+  page: number;
+  pageSize: number;
+  total: number;
+  artists: AliasArtistRow[];
+}
+
+export interface AliasArtistGenerateResponse {
+  total: number;
+  processed: number;
+  failed: number;
+  cost_estimate_eur: number;
+  tokens?: { input: number; output: number };
+  results: Array<{
+    artist_id: string;
+    name: string;
+    aliases: string[];
+    success: boolean;
+    error: string | null;
+  }>;
+}
+
+export async function listArtistAliases(args: {
+  hasAliases?: boolean;
+  page?: number;
+  pageSize?: number;
+}): Promise<AliasArtistListResponse> {
+  const params = new URLSearchParams();
+  if (args.hasAliases !== undefined) params.set('hasAliases', String(args.hasAliases));
+  if (args.page) params.set('page', String(args.page));
+  if (args.pageSize) params.set('pageSize', String(args.pageSize));
+  const qs = params.toString();
+  return await api<AliasArtistListResponse>(`/api/admin/aliases/artists${qs ? `?${qs}` : ''}`);
+}
+
+export async function generateArtistAliasesBatch(args: {
+  artistIds?: string[];
+  missingOnly?: boolean;
+  all?: boolean;
+  limit?: number;
+  locale?: 'fr' | 'en';
+}): Promise<AliasArtistGenerateResponse> {
+  return await api<AliasArtistGenerateResponse>('/api/admin/aliases/generate-artists', {
+    method: 'POST',
+    body: args,
+  });
+}
+
+export async function patchArtistAliases(
+  artistId: string,
+  aliases: string[],
+): Promise<AliasArtistRow> {
+  return await api<AliasArtistRow>(`/api/admin/aliases/artists/${encodeURIComponent(artistId)}`, {
+    method: 'PATCH',
+    body: { aliases },
+  });
+}
+
+export async function regenerateArtistAliasesById(
+  artistId: string,
+  locale?: 'fr' | 'en',
+): Promise<AliasArtistRow> {
+  const qs = locale ? `?locale=${locale}` : '';
+  return await api<AliasArtistRow>(
+    `/api/admin/aliases/artists/${encodeURIComponent(artistId)}/regenerate${qs}`,
+    { method: 'POST' },
+  );
+}
