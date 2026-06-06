@@ -41,18 +41,53 @@ export const useAuthStore = create<AuthState>((set) => ({
  * À appeler une fois au démarrage (dans App.tsx).
  * Initialise le store avec la session existante (si stockée en localStorage)
  * et écoute les changements d'auth.
+ *
+ * fix/prod-bugs-csp-covers-voice-auth — robust contre les refresh tokens
+ * invalides (expirés / révoqués / format changé après hotfix Supabase).
+ * Avant le fix, l'erreur "AuthApiError: Invalid Refresh Token: Refresh
+ * Token Not Found" s'affichait en boucle dans la console au boot car
+ * `getSession()` rejette quand le refresh échoue. On catch, on signOut
+ * pour vider localStorage proprement, et on continue en non-authentifié.
  */
 export function initAuth(): () => void {
   const { setSession, setLoading } = useAuthStore.getState();
 
-  // Bootstrap: lire la session courante
-  void supabase.auth.getSession().then(({ data }) => {
-    setSession(data.session);
-    setLoading(false);
-  });
+  // Bootstrap: lire la session courante avec gestion gracieuse des tokens invalides.
+  void supabase.auth
+    .getSession()
+    .then(({ data, error }) => {
+      if (error) {
+        const msg = error.message || '';
+        // Reset propre si refresh token expiré/invalide. signOut() vire le
+        // localStorage Supabase et évite que la prochaine getSession()
+        // retombe sur le même token cassé.
+        if (msg.includes('Refresh Token') || msg.includes('refresh_token')) {
+          console.info('[Auth] Stale refresh token detected — clearing and continuing anonymous');
+          void supabase.auth.signOut().catch(() => {
+            /* ignore signOut errors when there's nothing to sign out */
+          });
+          setSession(null);
+        } else {
+          console.warn('[Auth] getSession error:', msg);
+          setSession(data?.session ?? null);
+        }
+      } else {
+        setSession(data.session);
+      }
+      setLoading(false);
+    })
+    .catch((err: unknown) => {
+      // Filet de sécurité pour les erreurs hors-protocole (réseau down).
+      console.warn('[Auth] getSession threw:', err instanceof Error ? err.message : String(err));
+      setSession(null);
+      setLoading(false);
+    });
 
   // Écoute des changements (login, logout, refresh token)
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'TOKEN_REFRESHED' && !session) {
+      console.info('[Auth] TOKEN_REFRESHED with null session — refresh likely failed');
+    }
     setSession(session);
     setLoading(false);
   });

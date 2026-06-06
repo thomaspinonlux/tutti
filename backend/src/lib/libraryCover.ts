@@ -75,32 +75,70 @@ async function fetchAndResizeCover(url: string): Promise<Buffer | null> {
 /**
  * Génère la mosaïque 2×2 pour une OfficialPlaylist (slug).
  * Lève une erreur si la playlist n'existe pas ou n'a aucune cover dispo.
+ *
+ * fix/prod-bugs-csp-covers-voice-auth — fallback YouTube thumbnail.
+ * En prod, beaucoup de playlists ont été importées AVANT l'ajout du champ
+ * cover_url, donc cover_url=NULL pour tous leurs tracks → NO_COVERS → 404
+ * massif observé en test PO (30+ requêtes en erreur).
+ * Solution self-healing : on prend les 4 premiers tracks (cover_url OU
+ * youtube_id non-null) puis on construit l'URL de thumbnail YouTube
+ * (`img.youtube.com/vi/{id}/hqdefault.jpg`) si cover_url manque.
+ * Évite un backfill DB et fonctionne dès le prochain deploy.
  */
 export async function generateLibraryCover(slug: string): Promise<CacheEntry> {
+  const t0 = Date.now();
+  console.info(`[Cover] /api/library-cover/${slug}.jpg called`);
   const cached = lruGet(slug);
-  if (cached) return cached;
+  if (cached) {
+    console.info(`[Cover] Cache HIT for slug=${slug}`);
+    return cached;
+  }
+  console.info(`[Cover] Cache MISS for slug=${slug}`);
 
   const playlist = await prisma.officialPlaylist.findUnique({
     where: { slug },
     select: { id: true },
   });
-  if (!playlist) throw new Error('NOT_FOUND');
+  if (!playlist) {
+    console.warn(`[Cover] NOT_FOUND for slug=${slug}`);
+    throw new Error('NOT_FOUND');
+  }
 
   const tracks = await prisma.officialPlaylistTrack.findMany({
-    where: { playlist_id: playlist.id, cover_url: { not: null } },
+    where: {
+      playlist_id: playlist.id,
+      OR: [{ cover_url: { not: null } }, { youtube_id: { not: null } }],
+    },
     orderBy: { position: 'asc' },
     take: 4,
-    select: { cover_url: true },
+    select: { cover_url: true, youtube_id: true },
   });
-  if (tracks.length === 0) throw new Error('NO_COVERS');
+  if (tracks.length === 0) {
+    console.warn(`[Cover] NO_COVERS for slug=${slug} (no track has cover_url or youtube_id)`);
+    throw new Error('NO_COVERS');
+  }
+
+  // Résout l'URL effective par track : cover_url (Spotify) en priorité,
+  // sinon thumbnail YouTube via youtube_id.
+  const urls = tracks.map(
+    (t) =>
+      t.cover_url ??
+      (t.youtube_id ? `https://img.youtube.com/vi/${t.youtube_id}/hqdefault.jpg` : null),
+  );
+  console.info(
+    `[Cover] Fetching ${urls.length} thumbnails for playlist=${slug} | sources=${urls.map((u) => (u?.includes('youtube') ? 'YT' : u ? 'SP' : 'NULL')).join(',')}`,
+  );
 
   // Récupère + resize en parallèle.
   const buffers = await Promise.all(
-    tracks.map((t) => (t.cover_url ? fetchAndResizeCover(t.cover_url) : Promise.resolve(null))),
+    urls.map((u) => (u ? fetchAndResizeCover(u) : Promise.resolve(null))),
   );
   // Filtre les fails, duplique pour remplir 4 cases.
   const valid = buffers.filter((b): b is Buffer => b !== null);
-  if (valid.length === 0) throw new Error('NO_COVERS');
+  if (valid.length === 0) {
+    console.warn(`[Cover] All ${urls.length} thumbnail fetches failed for slug=${slug}`);
+    throw new Error('NO_COVERS');
+  }
   while (valid.length < 4) valid.push(valid[valid.length % valid.length]!);
 
   // Composite 2×2.
@@ -127,6 +165,9 @@ export async function generateLibraryCover(slug: string): Promise<CacheEntry> {
     generatedAt: Date.now(),
   };
   lruSet(slug, entry);
+  console.info(
+    `[Cover] Sharp composite completed for slug=${slug} | size=${Math.round(composite.length / 1024)}KB | elapsed=${Date.now() - t0}ms`,
+  );
   return entry;
 }
 
