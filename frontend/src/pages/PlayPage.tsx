@@ -984,8 +984,17 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       // feat/voice-cascade-l1-l2 — démarre Web Speech EN PARALLÈLE du
       // MediaRecorder. Coût quasi-nul si supporté, ignoré sinon (Firefox).
       // Le transcript sera lu dans uploadAndShowResult après stop().
-      if (webSpeech.supported) {
+      //
+      // fix/ios-voice-cascade-mic-and-buzz-refused — sur iOS, on SKIP L1
+      // (SpeechRecognition trop instable + concurrence le MediaRecorder pour
+      // l'accès micro → souvent throw "InvalidStateError" ou retour vide).
+      // On va direct L2 Deepgram. ~300ms de latence ajoutés (acceptable) en
+      // échange d'un taux de match nettement meilleur.
+      const shouldSkipL1 = mic.isiOS;
+      if (webSpeech.supported && !shouldSkipL1) {
         webSpeech.start();
+      } else if (shouldSkipL1) {
+        console.info('[Voice] iOS detected — skipping L1 Web Speech, direct L2 Deepgram');
       }
 
       // fix/ios-voice-cascade-mic-and-buzz-refused — healthcheck du stream
@@ -1068,14 +1077,18 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     let webSpeechSupported = false;
     try {
       // Finalise audio + récup transcript Web Speech en parallèle.
-      const wsStopPromise = webSpeech.supported
-        ? webSpeech.stop()
-        : Promise.resolve({
-            transcript: '',
-            supported: false,
-            elapsedMs: 0,
-            error: undefined,
-          });
+      // fix/ios-voice-cascade-mic-and-buzz-refused — sur iOS, L1 a été skipped
+      // dans handleBuzz, donc on retourne un transcript vide sans appeler
+      // webSpeech.stop() (qui throw si jamais start() pas appelé).
+      const wsStopPromise =
+        webSpeech.supported && !mic.isiOS
+          ? webSpeech.stop()
+          : Promise.resolve({
+              transcript: '',
+              supported: false,
+              elapsedMs: 0,
+              error: undefined,
+            });
       const [blobResult, wsResult] = await Promise.all([capture.stop(), wsStopPromise]);
       blob = blobResult;
       webSpeechTranscript = wsResult.transcript;
