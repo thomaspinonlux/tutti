@@ -44,6 +44,14 @@ export interface VoiceCaptureOptions {
   onLevel?: (rms: number) => void;
   /** Durée du silence considéré comme "fini de parler" (ms, défaut 1500). */
   silenceDurationMs?: number;
+  /**
+   * fix/ios-voice-cascade-mic-and-buzz-refused — stream persistant fourni par
+   * `useMicStream` (PlayPage). Si fourni, voiceCapture NE STOPPERA PAS les
+   * tracks à `stop()`/`cancel()` (le hook s'en charge au unmount global).
+   * Évite le popup système iOS à chaque buzz + le stream mort au morceau 2.
+   * Si omis, comportement legacy (création + arrêt du stream à chaque buzz).
+   */
+  stream?: MediaStream;
 }
 
 export interface VoiceCapture {
@@ -87,18 +95,37 @@ function computeRms(buffer: Float32Array): number {
  * Demande l'accès micro si pas encore donné. Si refus, throw.
  */
 export async function startVoiceCapture(opts: VoiceCaptureOptions): Promise<VoiceCapture> {
-  // 1) Demande / récupère le stream micro.
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    },
-  });
+  // 1) Stream : si fourni par useMicStream → persistant (NE PAS stopper après
+  // chaque buzz, sinon popup iOS au prochain morceau). Sinon legacy : crée
+  // un stream local et le stoppe au cleanup.
+  const ownsStream = opts.stream === undefined;
+  const stream =
+    opts.stream ??
+    (await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1,
+        sampleRate: 16_000,
+      },
+    }));
+
+  // 1b) Healthcheck du stream fourni : track doit être 'live'. Si mort
+  // (iOS background trop long), throw → caller reinit via useMicStream.
+  if (!ownsStream) {
+    const track = stream.getAudioTracks()[0];
+    if (!track || track.readyState !== 'live') {
+      throw new Error('MIC_STREAM_DEAD');
+    }
+  }
 
   // 2) Démarre le MediaRecorder pour capturer l'audio brut.
   const mimeType = pickAudioMime();
   const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+  console.info(
+    `[Voice] MediaRecorder created | mimeType=${mimeType || '(default)'} | state=${recorder.state} | ownsStream=${ownsStream}`,
+  );
   const chunks: BlobPart[] = [];
   recorder.ondataavailable = (e): void => {
     if (e.data && e.data.size > 0) chunks.push(e.data);
@@ -153,7 +180,8 @@ export async function startVoiceCapture(opts: VoiceCaptureOptions): Promise<Voic
     if (recorder.state !== 'inactive') recorder.stop();
   }, opts.maxDurationMs);
 
-  // 5) Cleanup commun.
+  // 5) Cleanup commun. NE STOPPE PAS les tracks si le stream est partagé
+  // (cf. useMicStream qui owns le lifecycle). Stoppe sinon (mode legacy).
   const cleanup = (): void => {
     if (autoTimer !== null) {
       window.clearTimeout(autoTimer);
@@ -167,7 +195,9 @@ export async function startVoiceCapture(opts: VoiceCaptureOptions): Promise<Voic
     } catch {
       /* noop */
     }
-    stream.getTracks().forEach((t) => t.stop());
+    if (ownsStream) {
+      stream.getTracks().forEach((t) => t.stop());
+    }
   };
 
   return {

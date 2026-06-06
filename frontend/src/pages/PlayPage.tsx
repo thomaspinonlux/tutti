@@ -50,6 +50,7 @@ import {
   type VoiceCapture,
 } from '../lib/voiceCapture.js';
 import { useWebSpeech } from '../lib/useWebSpeech.js';
+import { useMicStream } from '../lib/useMicStream.js';
 import {
   postVoiceMatchText,
   postVoiceTranscribeDeepgram,
@@ -922,6 +923,10 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
   // Le code langue suit i18n.language : 'fr' → 'fr-FR', sinon 'en-US'.
   const webSpeechLang = i18n.language?.toLowerCase().startsWith('fr') ? 'fr-FR' : 'en-US';
   const webSpeech = useWebSpeech({ lang: webSpeechLang });
+  // fix/ios-voice-cascade-mic-and-buzz-refused — stream micro persistant. UN
+  // SEUL getUserMedia() pour toute la session, évite le popup système iOS à
+  // chaque morceau (Bug #1) et le stream mort au morceau 2 (Bug #3).
+  const mic = useMicStream();
 
   // Auto-clear fail toast 1.5s
   useEffect(() => {
@@ -983,8 +988,20 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         webSpeech.start();
       }
 
+      // fix/ios-voice-cascade-mic-and-buzz-refused — healthcheck du stream
+      // persistant avant chaque buzz. Si mort (iOS background prolongé), on
+      // re-init en transparence avant de démarrer la capture.
+      if (!mic.isLive()) {
+        console.warn('[Voice] Mic stream not live — reinit before capture');
+        await mic.reinit();
+      }
+      const persistentStream = mic.getStream();
       const capture = await startVoiceCapture({
         maxDurationMs,
+        // Passe le stream persistant pour éviter le popup système iOS à chaque
+        // buzz (sinon getUserMedia ré-évalué par WebKit). Si null (permission
+        // pas encore accordée), voiceCapture créera son propre stream legacy.
+        stream: persistentStream ?? undefined,
         // Optim Whisper — VAD agressif (500ms silence après speech) cut early
         // dès que le joueur a fini de parler, sans attendre les 10s max.
         onSilence: () => {
