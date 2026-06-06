@@ -161,6 +161,18 @@ export function PlayPage(): JSX.Element {
       .catch(() => {});
   }, [adjustSheetOpen, identity, isMaster]);
 
+  // fix/ios-voice-cascade-mic-and-buzz-refused — log de mount unique pour
+  // corréler les bugs PO. UA + isStandalone + iOS détection visibles dans
+  // DebugOverlay (?debug=audio).
+  useEffect(() => {
+    const isStandalone =
+      typeof window !== 'undefined' &&
+      (window.matchMedia?.('(display-mode: standalone)')?.matches ||
+        (navigator as unknown as { standalone?: boolean }).standalone === true);
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '(no-ua)';
+    console.info(`[Voice] page /play mounted | userAgent="${ua}" | isStandalone=${isStandalone}`);
+  }, []);
+
   // ── Bootstrap : récupère la session publique + auto-resume éventuel ──
   useEffect(() => {
     if (!shortCode) {

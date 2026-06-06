@@ -1248,6 +1248,13 @@ router.post(
       (s): s is string => typeof s === 'string' && s.length > 0,
     );
 
+    // fix/ios-voice-cascade-mic-and-buzz-refused — log explicite L3 call avec
+    // codec reçu + size, symétrique à L2. Aide à diagnostiquer iOS L2 fail →
+    // L3 escalation chain.
+    console.info(
+      `[Server][Voice L3] AssemblyAI call | session=${req.params.id} | playerId=${auth.participantId} | trackTitle="${track.canonical_title}" | trackArtist="${track.artist.canonical_name}" | mime=${audioFile.mimetype || '(none)'} | size=${Math.round(audioFile.buffer.byteLength / 1024)}KB | lang=${aaLang}`,
+    );
+
     // ── Transcription ────────────────────────────────────────────────
     let transcript = '';
     let latency_ms = 0;
