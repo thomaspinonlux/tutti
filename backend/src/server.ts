@@ -30,6 +30,7 @@ import sessionMasterRouter from './routes/sessionMaster.js';
 import spotifyAuthRouter from './music/spotify/auth.js';
 import spotifyApiRouter from './routes/spotify.js';
 import adminRouter from './routes/admin.js';
+import adminAliasesRouter from './routes/adminAliases.js';
 import adminLibraryRouter from './routes/adminLibrary.js';
 import adminUsersRouter from './routes/adminUsers.js';
 import adminQuizLibraryRouter from './routes/adminQuizLibrary.js';
@@ -182,6 +183,7 @@ app.get('/api/library-cover/:slug.jpg', async (req, res) => {
 });
 
 app.use('/api/admin', adminRouter);
+app.use('/api/admin/aliases', adminAliasesRouter);
 app.use('/api/admin/library', adminLibraryRouter);
 app.use('/api/admin/library', adminQuizLibraryRouter);
 app.use('/api/admin/users', adminUsersRouter);

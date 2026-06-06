@@ -29,6 +29,7 @@ import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { AccountPage } from './pages/admin/AccountPage.js';
 import { SuperAdminPage } from './pages/admin/SuperAdminPage.js';
 import { VoiceAnalyticsPage } from './pages/admin/VoiceAnalyticsPage.js';
+import { AliasesPage } from './pages/admin/AliasesPage.js';
 import { UsersPage } from './pages/admin/UsersPage.js';
 import { UserDetailPage } from './pages/admin/UserDetailPage.js';
 import { ImportPlaylistPage } from './pages/admin/ImportPlaylistPage.js';
@@ -139,6 +140,7 @@ function App(): JSX.Element {
           <Route element={<SuperAdminRouteGuard />}>
             <Route path="super-admin" element={<SuperAdminPage />} />
             <Route path="voice-analytics" element={<VoiceAnalyticsPage />} />
+            <Route path="aliases" element={<AliasesPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="users/:id" element={<UserDetailPage />} />
             <Route path="library" element={<LibraryPage />} />

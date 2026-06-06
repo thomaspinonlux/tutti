@@ -16,12 +16,14 @@
     "db:studio": "prisma studio",
     "import:official-library": "tsx scripts/import-official-library.ts",
     "import:official-quiz": "tsx scripts/import-official-quiz.ts",
-    "validate:youtube-ids": "tsx scripts/validate-youtube-ids.ts"
+    "validate:youtube-ids": "tsx scripts/validate-youtube-ids.ts",
+    "generate:aliases": "tsx scripts/generateAllAliases.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.101.0",
     "@prisma/client": "^6.19.3",
     "@supabase/supabase-js": "^2.105.1",
     "@tutti/shared": "workspace:*",
