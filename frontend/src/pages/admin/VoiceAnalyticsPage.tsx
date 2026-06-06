@@ -15,7 +15,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
-import { getVoiceAnalytics, type VoiceAnalytics } from '../../lib/admin.js';
+import { generateAliasesBatch, getVoiceAnalytics, type VoiceAnalytics } from '../../lib/admin.js';
 
 const LEVEL_LABELS: Record<string, string> = {
   'web-speech': '🌐 L1 — Web Speech',
@@ -239,29 +239,14 @@ export function VoiceAnalyticsPage(): JSX.Element {
                     <th className="font-mono text-[10px] uppercase tracking-wider py-2 text-right">
                       Match
                     </th>
+                    <th className="font-mono text-[10px] uppercase tracking-wider py-2 text-right">
+                      🤖
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.top_failed_tracks.map((t, i) => (
-                    <tr key={t.track_id} className="border-b border-ink/10">
-                      <td className="py-2 font-mono text-xs text-ink-soft">{i + 1}</td>
-                      <td className="py-2 font-display">{t.title ?? '(sans titre)'}</td>
-                      <td className="py-2 text-ink-soft">{t.artist ?? '(inconnu)'}</td>
-                      <td className="py-2 text-right font-mono">{t.attempts}</td>
-                      <td className="py-2 text-right font-mono">
-                        <span
-                          className={
-                            t.match_rate < 0.3
-                              ? 'text-raspberry-deep font-semibold'
-                              : t.match_rate < 0.6
-                                ? 'text-ink'
-                                : 'text-basil'
-                          }
-                        >
-                          {Math.round(t.match_rate * 100)}%
-                        </span>
-                      </td>
-                    </tr>
+                    <FailedTrackRow key={t.track_id} track={t} index={i} />
                   ))}
                 </tbody>
               </table>
@@ -293,5 +278,76 @@ function SummaryCard({ label, value, hint, tone }: SummaryCardProps): JSX.Elemen
       <p className="font-display text-2xl mt-1">{value}</p>
       {hint && <p className="font-mono text-[11px] text-ink-soft mt-1">{hint}</p>}
     </div>
+  );
+}
+
+/**
+ * feat/ai-aliases-voice-matching — bouton "🤖 Générer aliases" en ligne sur
+ * chaque morceau du top failed. Évite à l'admin de quitter cette page pour
+ * aller dans /admin/aliases régler manuellement.
+ */
+function FailedTrackRow({
+  track,
+  index,
+}: {
+  track: VoiceAnalytics['top_failed_tracks'][number];
+  index: number;
+}): JSX.Element {
+  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+
+  const handleGenerate = async (): Promise<void> => {
+    setState('busy');
+    setErrMsg(null);
+    try {
+      const r = await generateAliasesBatch({
+        trackIds: [track.track_id],
+        locale: 'fr',
+      });
+      setState(r.processed > 0 ? 'done' : 'error');
+      if (r.processed === 0) setErrMsg(r.results[0]?.error ?? 'EMPTY');
+    } catch (err: unknown) {
+      setState('error');
+      setErrMsg(err instanceof Error ? err.message : 'Erreur');
+    }
+  };
+
+  return (
+    <tr className="border-b border-ink/10">
+      <td className="py-2 font-mono text-xs text-ink-soft">{index + 1}</td>
+      <td className="py-2 font-display">{track.title ?? '(sans titre)'}</td>
+      <td className="py-2 text-ink-soft">{track.artist ?? '(inconnu)'}</td>
+      <td className="py-2 text-right font-mono">{track.attempts}</td>
+      <td className="py-2 text-right font-mono">
+        <span
+          className={
+            track.match_rate < 0.3
+              ? 'text-raspberry-deep font-semibold'
+              : track.match_rate < 0.6
+                ? 'text-ink'
+                : 'text-basil'
+          }
+        >
+          {Math.round(track.match_rate * 100)}%
+        </span>
+      </td>
+      <td className="py-2 text-right">
+        <button
+          type="button"
+          onClick={() => void handleGenerate()}
+          disabled={state === 'busy' || state === 'done'}
+          className={`px-2 py-1 font-mono text-[10px] uppercase border border-ink rounded ${
+            state === 'done'
+              ? 'bg-basil/30 text-basil-deep'
+              : state === 'error'
+                ? 'bg-raspberry/20 text-raspberry-deep'
+                : 'bg-spritz/30 hover:bg-spritz/50'
+          } disabled:opacity-50`}
+          title={errMsg ?? 'Générer aliases via IA'}
+        >
+          {state === 'busy' ? '⏳' : state === 'done' ? '✓' : state === 'error' ? '✕' : '🤖'}
+        </button>
+      </td>
+    </tr>
   );
 }

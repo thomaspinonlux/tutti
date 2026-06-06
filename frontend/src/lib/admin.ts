@@ -164,3 +164,84 @@ export async function getVoiceAnalytics(days = 7): Promise<VoiceAnalytics> {
     `/api/admin/voice-analytics?days=${encodeURIComponent(String(days))}`,
   );
 }
+
+// ───── AI aliases (feat/ai-aliases-voice-matching) ────────────────────────
+
+export interface AliasTrackRow {
+  track_id: string;
+  title: string;
+  artist: string;
+  aliases: string[];
+  aliases_generated_at: string | null;
+  aliases_source: string | null;
+}
+
+export interface AliasListResponse {
+  page: number;
+  pageSize: number;
+  total: number;
+  tracks: AliasTrackRow[];
+}
+
+export interface AliasGenerateResponse {
+  total: number;
+  processed: number;
+  failed: number;
+  cost_estimate_eur: number;
+  tokens?: { input: number; output: number };
+  results: Array<{
+    track_id: string;
+    title: string;
+    artist: string;
+    aliases: string[];
+    success: boolean;
+    error: string | null;
+  }>;
+}
+
+export async function listAliases(args: {
+  hasAliases?: boolean;
+  page?: number;
+  pageSize?: number;
+}): Promise<AliasListResponse> {
+  const params = new URLSearchParams();
+  if (args.hasAliases !== undefined) params.set('hasAliases', String(args.hasAliases));
+  if (args.page) params.set('page', String(args.page));
+  if (args.pageSize) params.set('pageSize', String(args.pageSize));
+  const qs = params.toString();
+  return await api<AliasListResponse>(`/api/admin/aliases${qs ? `?${qs}` : ''}`);
+}
+
+export async function generateAliasesBatch(args: {
+  trackIds?: string[];
+  missingOnly?: boolean;
+  all?: boolean;
+  limit?: number;
+  locale?: 'fr' | 'en';
+}): Promise<AliasGenerateResponse> {
+  return await api<AliasGenerateResponse>('/api/admin/aliases/generate', {
+    method: 'POST',
+    body: args,
+  });
+}
+
+export async function patchTrackAliases(
+  trackId: string,
+  aliases: string[],
+): Promise<AliasTrackRow> {
+  return await api<AliasTrackRow>(`/api/admin/aliases/${encodeURIComponent(trackId)}`, {
+    method: 'PATCH',
+    body: { aliases },
+  });
+}
+
+export async function regenerateTrackAliases(
+  trackId: string,
+  locale?: 'fr' | 'en',
+): Promise<AliasTrackRow> {
+  const qs = locale ? `?locale=${locale}` : '';
+  return await api<AliasTrackRow>(
+    `/api/admin/aliases/${encodeURIComponent(trackId)}/regenerate${qs}`,
+    { method: 'POST' },
+  );
+}
