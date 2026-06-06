@@ -49,6 +49,91 @@ router.get('/playlists', async (req: Request, res: Response): Promise<void> => {
   res.json({ playlists });
 });
 
+// ───── GET /playlists-by-category ─────────────────────────────────────────
+//
+// feat/playlist-categories-schema — endpoint pour la nouvelle UI sélection
+// host (sections horizontales par catégorie, façon "This Is Blind Test").
+//
+// Output :
+//   {
+//     categories: [
+//       {
+//         slug, label_fr, label_en, description_fr, description_en, order,
+//         playlists: [LibraryPlaylistSummary, ...]
+//       },
+//       ...
+//     ]
+//   }
+//
+// Catégories ordonnées par `order` (PLAYLIST_CATEGORIES). Playlists triées
+// par `position_in_category` (NULL → fin, par updated_at desc fallback).
+
+router.get('/playlists-by-category', async (req: Request, res: Response): Promise<void> => {
+  if (!req.userId) {
+    res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'userId manquant' } });
+    return;
+  }
+  try {
+    const { PLAYLIST_CATEGORIES, UNCATEGORIZED_CATEGORY, getCategoryDef } =
+      await import('../lib/playlistCategories.js');
+    const all = await listVisiblePlaylists(req.userId, {});
+
+    // Group by category slug. Garde l'ordre de tri retourné par
+    // listVisiblePlaylists (déjà sorted par updated_at desc) puis ré-trie
+    // par position_in_category côté response (pour le futur ordering manuel
+    // via admin).
+    const byCategory = new Map<string, typeof all>();
+    for (const p of all) {
+      const slug =
+        (p as unknown as { category?: string | null }).category ?? UNCATEGORIZED_CATEGORY.slug;
+      const arr = byCategory.get(slug) ?? [];
+      arr.push(p);
+      byCategory.set(slug, arr);
+    }
+
+    // Sort dans chaque bucket par position_in_category (asc, NULL last).
+    for (const [, arr] of byCategory) {
+      arr.sort((a, b) => {
+        const pa = (a as unknown as { position_in_category?: number | null }).position_in_category;
+        const pb = (b as unknown as { position_in_category?: number | null }).position_in_category;
+        if (pa === undefined || pa === null) return 1;
+        if (pb === undefined || pb === null) return -1;
+        return pa - pb;
+      });
+    }
+
+    // Output : catégories ordered + uncategorized en dernier si non-vide.
+    const ordered = PLAYLIST_CATEGORIES.map((cat) => ({
+      slug: cat.slug,
+      label_fr: cat.label_fr,
+      label_en: cat.label_en,
+      description_fr: cat.description_fr,
+      description_en: cat.description_en,
+      order: cat.order,
+      playlists: byCategory.get(cat.slug) ?? [],
+    })).filter((entry) => entry.playlists.length > 0);
+
+    const uncat = byCategory.get(UNCATEGORIZED_CATEGORY.slug);
+    if (uncat && uncat.length > 0) {
+      const def = getCategoryDef(null);
+      ordered.push({
+        slug: def.slug,
+        label_fr: def.label_fr,
+        label_en: def.label_en,
+        description_fr: def.description_fr,
+        description_en: def.description_en,
+        order: def.order,
+        playlists: uncat,
+      });
+    }
+
+    res.json({ categories: ordered });
+  } catch (err) {
+    console.error('[GET /library/playlists-by-category] error:', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: (err as Error).message } });
+  }
+});
+
 // ───── GET /playlists/:id ─────────────────────────────────────────────────
 
 router.get('/playlists/:id', async (req: Request<{ id: string }>, res: Response): Promise<void> => {

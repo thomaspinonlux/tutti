@@ -62,6 +62,11 @@ function getAudioContext(): AudioContext | null {
   if (!Ctor) return null;
   try {
     ctxRef = new Ctor();
+    // feat/debug-audio-overlay — log diagnostic état initial dès la 1ère
+    // instanciation. Le PO doit pouvoir voir l'état exact AudioContext + PWA.
+    console.info(
+      `[PWA] standalone detected: ${isStandalone()} | [PWA] AudioContext initial state: ${ctxRef.state}`,
+    );
     return ctxRef;
   } catch (err) {
     console.warn('[Audio] AudioContext instantiation failed:', err);
@@ -80,6 +85,23 @@ function getAudioContext(): AudioContext | null {
  */
 export function unlockAudioSync(source: string): boolean {
   const standalone = isStandalone();
+  // feat/debug-audio-overlay — vérifie navigator.userActivation si dispo
+  // (Chromium-only). Sur Safari c'est undefined ; on log "n/a" pour clarté.
+  const ua =
+    typeof navigator !== 'undefined'
+      ? (
+          navigator as unknown as {
+            userActivation?: { isActive?: boolean; hasBeenActive?: boolean };
+          }
+        ).userActivation
+      : undefined;
+  const gesturePreserved =
+    ua === undefined ? 'n/a' : ua.isActive ? 'true' : ua.hasBeenActive ? 'stale' : 'false';
+
+  console.info(
+    `[Audio] unlockAudio() entry — caller: ${source} | gesturePreserved=${gesturePreserved}`,
+  );
+
   const ctx = getAudioContext();
   if (!ctx) {
     console.warn(`[Audio] unlockAudioSync(${source}) — AudioContext unavailable`);
@@ -92,12 +114,18 @@ export function unlockAudioSync(source: string): boolean {
 
   // 1. Resume sync (Safari nécessite ce kick depuis un gesture).
   if (ctx.state === 'suspended') {
+    console.info('[Audio] AudioContext.resume() called');
     // .resume() retourne une Promise mais on N'AWAIT PAS — le simple fait de
     // déclencher l'appel dans le gesture suffit à marquer la page audio-OK.
     ctx.resume().then(
-      () => console.info('[Audio] AudioContext resumed: success'),
-      (err: unknown) => console.warn('[Audio] AudioContext resumed: error', err),
+      () => console.info(`[Audio] AudioContext.resume() resolved: ${ctx.state}`),
+      (err: unknown) =>
+        console.warn(
+          `[Audio] AudioContext.resume() error: ${err instanceof Error ? err.name + ' ' + err.message : String(err)}`,
+        ),
     );
+  } else {
+    console.info(`[Audio] AudioContext.resume() skipped — state already ${ctx.state}`);
   }
 
   // 2. Silent buffer (1 sample, 22050 Hz mono) — c'est l'astuce historique
@@ -108,7 +136,7 @@ export function unlockAudioSync(source: string): boolean {
     source.buffer = buffer;
     source.connect(ctx.destination);
     source.start(0);
-    console.info('[Audio] Silent buffer played');
+    console.info('[Audio] Silent buffer created and started');
     unlockedFlag = true;
   } catch (err) {
     console.warn('[Audio] Silent buffer play failed:', err);

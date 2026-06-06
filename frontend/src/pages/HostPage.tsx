@@ -52,6 +52,8 @@ import { useSpotifyAudioSync } from '../lib/useSpotifyAudioSync.js';
 import { useYouTubePlayer } from '../lib/useYouTubePlayer.js';
 import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
 import { unlockAudioSync } from '../lib/audioUnlock.js';
+import { usePwa } from '../lib/usePwa.js';
+import { ContentBlockerWarning } from '../components/ContentBlockerWarning.js';
 // MinScreen retiré — console animateur utilisable depuis tout écran (iPhone inclus).
 import {
   Badge,
@@ -620,6 +622,9 @@ function HostPageInner(): JSX.Element {
     enabled: spotifyAllowlisted && phase === 'roundPlaying',
   });
   const youtube = useYouTubePlayer({ enabled: phase === 'roundPlaying' });
+  // feat/detect-content-blocker-youtube — lit isStandalone pour adapter
+  // les instructions du ContentBlockerWarning (PWA vs Safari classique).
+  const { isStandalone } = usePwa();
 
   // ── Audio sync unifié — single source of truth = état serveur ────────
   // Chaque sync hook ne pilote SON provider que si currentTrack.provider
@@ -660,6 +665,14 @@ function HostPageInner(): JSX.Element {
     // moindre await avant l'unlock invalide le user gesture. À placer en
     // PREMIÈRE instruction, avant tout async.
     unlockAudioSync('start-session-button');
+    // fix/pwa-player-trigger-after-unlock — IMPORTANT en PWA Safari : le
+    // unlock AudioContext seul ne suffit pas pour YouTube IFrame Player.
+    // Il faut aussi déclencher playVideo() dans le tick du gesture pour
+    // que l'iframe hérite de la permission. warmupSync = playVideo() +
+    // pauseVideo() 50ms après → marque le player "user-engaged" sans
+    // démarrer une vraie lecture parasite (la vraie lecture viendra du
+    // playTrack ci-dessous via track:start broadcast).
+    youtube.warmupSync();
     setBusy(true);
     try {
       // Active le pipeline audio Spotify (anti-blocage Chrome autoplay).
@@ -1396,6 +1409,12 @@ function HostPageInner(): JSX.Element {
           </button>
         </div>
       )}
+
+      {/* feat/detect-content-blocker-youtube — overlay informatif quand le
+          IFrame YouTube ne fire pas onReady dans les 5s (typique : Content
+          Blocker Safari qui filtre youtube.com / googlevideo.com). Variante
+          PWA si standalone (instructions pour ouvrir Safari et désactiver). */}
+      {youtube.blockedByContentFilter && <ContentBlockerWarning isStandalone={isStandalone} />}
 
       <main className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-8">
         <header className="max-w-7xl mx-auto mb-4 sm:mb-8 flex items-center justify-between flex-wrap gap-3">

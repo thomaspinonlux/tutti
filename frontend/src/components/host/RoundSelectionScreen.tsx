@@ -15,13 +15,14 @@ import { useTranslation } from 'react-i18next';
 import type { Playlist } from '@tutti/shared';
 import { listPlaylists } from '../../lib/playlists.js';
 import {
-  listLibraryPlaylists,
+  getPlaylistsByCategory,
   listLibraryQuizPacks,
+  type LibraryCategoryWithPlaylists,
   type LibraryPlaylistSummary,
   type LibraryQuizPackSummary,
 } from '../../lib/library.js';
 import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/index.js';
-import { OfficialPlaylistCard } from './library/OfficialPlaylistCard.js';
+import { CategoryRow } from './library/CategoryRow.js';
 import { OfficialQuizPackCard } from './library/OfficialQuizPackCard.js';
 
 // F1 (feat/playlist-search-and-host-improvements) — normalize pour
@@ -75,7 +76,9 @@ export function RoundSelectionScreen({
   const [tab, setTab] = useState<Tab>('mine');
   const [librarySubTab, setLibrarySubTab] = useState<LibrarySubTab>('tracks');
   const [playlists, setPlaylists] = useState<Playlist[] | null>(null);
-  const [official, setOfficial] = useState<LibraryPlaylistSummary[] | null>(null);
+  // feat/host-playlist-selection-redesign — playlists groupées par catégorie
+  // (PR 2/4 #59 + PR 2/4). Remplace l'ancien grid `official` plat.
+  const [categorized, setCategorized] = useState<LibraryCategoryWithPlaylists[] | null>(null);
   const [quizPacks, setQuizPacks] = useState<LibraryQuizPackSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   // F1 — query partagé entre les 2 onglets pour cohérence UX (un seul
@@ -88,13 +91,14 @@ export function RoundSelectionScreen({
       .catch((err: unknown) => setError((err as Error).message));
   }, []);
 
-  // Lazy-load la bibliothèque officielle Tracks quand l'onglet est ouvert.
+  // Lazy-load la bibliothèque officielle Tracks groupée par catégorie quand
+  // l'onglet est ouvert (feat/host-playlist-selection-redesign PR 2/4).
   useEffect(() => {
-    if (tab !== 'library' || librarySubTab !== 'tracks' || official !== null) return;
-    listLibraryPlaylists()
-      .then((all) => setOfficial(all))
+    if (tab !== 'library' || librarySubTab !== 'tracks' || categorized !== null) return;
+    getPlaylistsByCategory()
+      .then((cats) => setCategorized(cats))
       .catch((err: unknown) => setError((err as Error).message));
-  }, [tab, librarySubTab, official]);
+  }, [tab, librarySubTab, categorized]);
 
   // Lazy-load la bibliothèque officielle Quizz quand sub-onglet ouvert.
   // fix/quiz-library-host-access — `canUseQuizz === false` (explicite) au
@@ -116,20 +120,34 @@ export function RoundSelectionScreen({
     () => usable.filter((p) => matchesQuery(searchQuery, p.name, p.language)),
     [usable, searchQuery],
   );
-  const filteredOfficial = useMemo(
-    () =>
-      (official ?? []).filter((p) =>
-        matchesQuery(
-          searchQuery,
-          p.name_fr,
-          p.name_en,
-          p.slug,
-          p.theme,
-          p.locale_primary,
-          p.difficulty,
+  // Filtre les playlists DANS chaque catégorie + drop les catégories vides.
+  // Conserve l'ordre canonique défini côté backend (PLAYLIST_CATEGORIES.order).
+  const filteredCategorized = useMemo<LibraryCategoryWithPlaylists[]>(() => {
+    if (categorized === null) return [];
+    return categorized
+      .map((cat) => ({
+        ...cat,
+        playlists: cat.playlists.filter((p) =>
+          matchesQuery(
+            searchQuery,
+            p.name_fr,
+            p.name_en,
+            p.slug,
+            p.theme,
+            p.subtitle_fr,
+            p.subtitle_en,
+            p.locale_primary,
+            p.difficulty,
+          ),
         ),
-      ),
-    [official, searchQuery],
+      }))
+      .filter((cat) => cat.playlists.length > 0);
+  }, [categorized, searchQuery]);
+
+  /** Total playlists officielles toutes catégories confondues (pré-filtre). */
+  const totalOfficialCount = useMemo(
+    () => (categorized ?? []).reduce((acc, c) => acc + c.playlists.length, 0),
+    [categorized],
   );
   const filteredQuizPacks = useMemo(
     () =>
@@ -293,27 +311,27 @@ export function RoundSelectionScreen({
           )}
 
           {librarySubTab === 'tracks' ? (
-            official === null ? (
+            categorized === null ? (
               <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>
-            ) : official.length === 0 ? (
+            ) : totalOfficialCount === 0 ? (
               <Card tone="cream" size="md" className="text-center">
                 <p className="font-editorial italic text-ink-soft">
                   {t('host.session.empty.officialLibrary')}
                 </p>
               </Card>
-            ) : filteredOfficial.length === 0 ? (
+            ) : filteredCategorized.length === 0 ? (
               <Card tone="cream" size="md" className="text-center">
                 <p className="font-editorial italic text-ink-soft">
                   {t('host.session.searchNoResults', { query: searchQuery })}
                 </p>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-                {filteredOfficial.map((p) => (
-                  <OfficialPlaylistCard
-                    key={p.id}
-                    playlist={p}
-                    onPick={() => void onPickOfficial(p)}
+              <div className="mb-4">
+                {filteredCategorized.map((cat) => (
+                  <CategoryRow
+                    key={cat.slug}
+                    category={cat}
+                    onPick={(p) => void onPickOfficial(p)}
                     onLockedClick={() => alert(t('host.session.premiumRequired'))}
                     disabled={loading}
                   />

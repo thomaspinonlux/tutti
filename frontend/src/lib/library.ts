@@ -24,6 +24,22 @@ export interface LibraryPlaylistSummary {
   youtube_count: number;
   /** true si premium_only et user pas premium → carte grisée + cadenas. */
   locked: boolean;
+  /** feat/playlist-categories-schema — catégorie (PR 1/4 #59). */
+  category?: string | null;
+  position_in_category?: number | null;
+  subtitle_fr?: string | null;
+  subtitle_en?: string | null;
+}
+
+/** feat/playlist-categories-schema — entrée du JSON groupé par catégorie. */
+export interface LibraryCategoryWithPlaylists {
+  slug: string;
+  label_fr: string;
+  label_en: string;
+  description_fr: string;
+  description_en: string;
+  order: number;
+  playlists: LibraryPlaylistSummary[];
 }
 
 export interface LibraryTrack {
@@ -151,4 +167,15 @@ export async function launchLibraryQuizPack(
     method: 'POST',
     body: { language },
   });
+}
+
+/**
+ * feat/playlist-categories-schema — endpoint PR 1/4 (#59).
+ * Groupe les playlists officielles par catégorie (ordre canonique).
+ */
+export async function getPlaylistsByCategory(): Promise<LibraryCategoryWithPlaylists[]> {
+  const data = await api<{ categories: LibraryCategoryWithPlaylists[] }>(
+    '/api/library/playlists-by-category',
+  );
+  return data.categories;
 }
