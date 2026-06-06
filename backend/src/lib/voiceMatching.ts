@@ -51,6 +51,23 @@ const STOPWORDS = new Set([
   'the',
   'a',
   'an',
+  // fix/ios-voice-cascade-mic-and-buzz-refused — fillers Deepgram iOS courants
+  // (Nova-3 ajoute parfois ces marqueurs hésitation en début/fin de transcript).
+  'uh',
+  'um',
+  'eh',
+  'ah',
+  'oh',
+  'hey',
+  'yeah',
+  'okay',
+  'ok',
+  'euh',
+  'ben',
+  'bah',
+  'voila',
+  'hmm',
+  'mmh',
 ]);
 
 /**
@@ -210,6 +227,15 @@ export function phoneticScore(a: string, b: string): number {
  * phonétique de token), on divise le score par 2. Évite que "yo banane"
  * vs "like prayer" ne ressorte à ~11% (à cause de quelques chars communs
  * fortuits) alors qu'il s'agit clairement de phrases sans rapport.
+ *
+ * fix/ios-voice-cascade-mic-and-buzz-refused — 2 boosts pour iOS Deepgram :
+ *   1. Substring containment : si `expected` (normalisé) est strictement
+ *      inclus dans le transcript normalisé, on force ≥ 90. Couvre le cas
+ *      où le joueur dit "alors on danse de stromae" alors qu'on attend
+ *      "alors on danse" — actuellement Lev pénalise les mots en plus.
+ *   2. Token-overlap : si ≥ 80% des tokens de `expected` apparaissent
+ *      QUELQUE PART dans le transcript (ordre libre), on ajoute +15 pts.
+ *      Couvre "Mistral Gagnant Renaud" vs "Renaud Mistral Gagnant".
  */
 export function combinedScore(transcript: string, expected: string): number {
   const lev = levenshteinScore(transcript, expected);
@@ -217,6 +243,22 @@ export function combinedScore(transcript: string, expected: string): number {
   let combined = Math.round(0.6 * lev + 0.4 * phon);
   if (lev < 30 && phon === 0) {
     combined = Math.floor(combined * 0.5);
+  }
+  // Boost #1 — substring containment.
+  const nt = normalizeText(transcript);
+  const ne = normalizeText(expected);
+  if (ne.length >= 3 && nt.length >= ne.length && nt.includes(ne)) {
+    combined = Math.max(combined, 90);
+  }
+  // Boost #2 — token-overlap (ordre libre).
+  const expTokens = ne.split(' ').filter((t) => t.length >= 2);
+  if (expTokens.length >= 2) {
+    const trTokens = new Set(nt.split(' ').filter((t) => t.length >= 2));
+    const hits = expTokens.filter((t) => trTokens.has(t)).length;
+    const overlapRatio = hits / expTokens.length;
+    if (overlapRatio >= 0.8) {
+      combined = Math.min(100, combined + 15);
+    }
   }
   return combined;
 }
@@ -257,7 +299,11 @@ export function matchAnswer(
   const comboPhon = phoneticScore(transcript, combo);
   const comboCombined = combinedScore(transcript, combo);
 
-  const target: 'title' | 'artist_title' = comboCombined > titleCombined ? 'artist_title' : 'title';
+  // fix/ios-voice-cascade-mic-and-buzz-refused — préfère artist_title en cas
+  // d'égalité (boost substring/token-overlap peut tier les 2 scores) : un match
+  // qui inclut l'artiste est plus spécifique et mérite le bonus title_bonus.
+  const target: 'title' | 'artist_title' =
+    comboCombined >= titleCombined ? 'artist_title' : 'title';
   const score = Math.max(titleCombined, comboCombined);
 
   return {

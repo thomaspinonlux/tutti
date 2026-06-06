@@ -28,6 +28,7 @@ import { QuizzPage } from './pages/admin/QuizzPage.js';
 import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { AccountPage } from './pages/admin/AccountPage.js';
 import { SuperAdminPage } from './pages/admin/SuperAdminPage.js';
+import { VoiceAnalyticsPage } from './pages/admin/VoiceAnalyticsPage.js';
 import { UsersPage } from './pages/admin/UsersPage.js';
 import { UserDetailPage } from './pages/admin/UserDetailPage.js';
 import { ImportPlaylistPage } from './pages/admin/ImportPlaylistPage.js';
@@ -137,6 +138,7 @@ function App(): JSX.Element {
           {/* Le backend gate aussi via requireSuperAdmin sur /api/admin/*. */}
           <Route element={<SuperAdminRouteGuard />}>
             <Route path="super-admin" element={<SuperAdminPage />} />
+            <Route path="voice-analytics" element={<VoiceAnalyticsPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="users/:id" element={<UserDetailPage />} />
             <Route path="library" element={<LibraryPage />} />

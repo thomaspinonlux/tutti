@@ -17,7 +17,7 @@
 
 export interface CascadeMatchResponse {
   /** Niveau cascade qui a produit ce résultat. */
-  level: 'L1' | 'L2' | 'L3-fallback';
+  level: 'L1' | 'L2' | 'L3' | 'L3-fallback';
   /** Vrai si score ≥ threshold (backend a commit). */
   matched: boolean;
   /** Vrai si ScoreEvent persisté (sinon : phase 2 expirée, déjà répondu, etc.). */
@@ -44,6 +44,16 @@ export interface CascadeMatchResponse {
   };
   /** Raison du non-commit ("ALREADY_ANSWERED", "PHASE_2_EXPIRED"…). */
   reason?: string;
+  /** Latence backend (ms) — exposé pour L3 AssemblyAI. */
+  latency_ms?: number;
+}
+
+/** Erreur typée quand AssemblyAI est désactivé côté backend (503 propre). */
+export class AssemblyAIDisabledError extends Error {
+  constructor() {
+    super('ASSEMBLYAI_DISABLED');
+    this.name = 'AssemblyAIDisabledError';
+  }
 }
 
 interface CommonArgs {
@@ -89,14 +99,66 @@ export async function postVoiceTranscribeDeepgram(
   args: CommonArgs & { audio: Blob; filename?: string },
 ): Promise<CascadeMatchResponse> {
   const form = new FormData();
-  form.append('audio', args.audio, args.filename ?? 'buzz.webm');
+  // fix/ios-voice-cascade-mic-and-buzz-refused — filename auto-adapté au
+  // blob.type (mp4 iOS, webm partout ailleurs) si le caller n'a pas explicité.
+  // Le Content-Type de la part multipart est dérivé de blob.type côté browser,
+  // donc multer côté backend récupère bien audio/mp4 ou audio/webm.
+  const ext = args.audio.type.includes('mp4') ? 'mp4' : 'webm';
+  const filename = args.filename ?? `buzz.${ext}`;
+  form.append('audio', args.audio, filename);
   form.append('token', args.token);
+  console.info(
+    `[Voice] L2 upload | blobType=${args.audio.type || '(empty)'} | filename=${filename} | size=${Math.round(args.audio.size / 1024)}KB`,
+  );
 
   const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/voice-transcribe-deepgram`;
   const res = await fetch(url, { method: 'POST', body: form });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`voice-transcribe-deepgram ${res.status}: ${text.slice(0, 200)}`);
+  }
+  return (await res.json()) as CascadeMatchResponse;
+}
+
+/**
+ * POST /voice-transcribe-assemblyai — niveau 3 cascade (PR 4/4). Upload audio
+ * vers AssemblyAI Universal-2 + word_boost (titre + artiste). Latence
+ * 600-1500ms, attaquée uniquement quand L1 + L2 ont échoué.
+ *
+ * Comportement spécifique :
+ *   - HTTP 503 ASSEMBLYAI_DISABLED → throw `AssemblyAIDisabledError` (le
+ *     frontend conclut "rejeté" sans afficher d'erreur visuelle, c'est juste
+ *     une feature flag off).
+ *   - HTTP 503 ASSEMBLYAI_FAILED   → throw Error (échec réseau réel — peut
+ *     être loggé en dur côté frontend).
+ *   - HTTP 200                     → CascadeMatchResponse normal avec
+ *     `level: 'L3'`.
+ */
+export async function postVoiceTranscribeAssemblyAI(
+  args: CommonArgs & { audio: Blob; filename?: string },
+): Promise<CascadeMatchResponse> {
+  const form = new FormData();
+  // fix/ios-voice-cascade-mic-and-buzz-refused — symétrique L2, codec-aware.
+  const ext = args.audio.type.includes('mp4') ? 'mp4' : 'webm';
+  const filename = args.filename ?? `buzz.${ext}`;
+  form.append('audio', args.audio, filename);
+  form.append('token', args.token);
+  console.info(
+    `[Voice] L3 upload | blobType=${args.audio.type || '(empty)'} | filename=${filename} | size=${Math.round(args.audio.size / 1024)}KB`,
+  );
+
+  const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/voice-transcribe-assemblyai`;
+  const res = await fetch(url, { method: 'POST', body: form });
+  if (res.status === 503) {
+    const body = await res.text().catch(() => '');
+    if (body.includes('ASSEMBLYAI_DISABLED')) {
+      throw new AssemblyAIDisabledError();
+    }
+    throw new Error(`voice-transcribe-assemblyai 503: ${body.slice(0, 200)}`);
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`voice-transcribe-assemblyai ${res.status}: ${text.slice(0, 200)}`);
   }
   return (await res.json()) as CascadeMatchResponse;
 }

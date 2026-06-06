@@ -112,3 +112,55 @@ export async function createInvitation(input: {
 export async function deleteInvitation(id: string): Promise<void> {
   await api(`/api/admin/invitations/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
+
+// ───── Voice Cascade Analytics (feat/voice-cascade-l3-assemblyai) ────────
+
+export interface VoiceAnalyticsRow {
+  level: string;
+  count: number;
+  avg_latency_ms: number | null;
+  avg_confidence: number | null;
+}
+
+/** fix/ios-voice-cascade-mic-and-buzz-refused — top morceaux qui ratent le
+ * match le plus. Permet à l'admin d'enrichir les aliases pour les titres
+ * problématiques (accents difficiles, faux amis, etc.). */
+export interface VoiceAnalyticsFailedTrack {
+  track_id: string;
+  title: string | null;
+  artist: string | null;
+  attempts: number;
+  /** 0-1, ratio (matched_artist OR matched_title) / total. */
+  match_rate: number;
+}
+
+export interface VoiceAnalytics {
+  window_days: number;
+  since: string;
+  total: number;
+  distribution: VoiceAnalyticsRow[];
+  summary: {
+    l1_count: number;
+    l2_count: number;
+    l2_fallback_count: number;
+    l3_count: number;
+    l1_avg_latency_ms: number | null;
+    l2_avg_latency_ms: number | null;
+    l3_avg_latency_ms: number | null;
+    escalation_rate_l2_l3: number;
+  };
+  cost_estimate_eur: {
+    deepgram: number;
+    whisper_fallback: number;
+    assemblyai: number;
+    total: number;
+  };
+  /** Top 10 tracks où le matching échoue le plus (≥3 tentatives). */
+  top_failed_tracks: VoiceAnalyticsFailedTrack[];
+}
+
+export async function getVoiceAnalytics(days = 7): Promise<VoiceAnalytics> {
+  return await api<VoiceAnalytics>(
+    `/api/admin/voice-analytics?days=${encodeURIComponent(String(days))}`,
+  );
+}

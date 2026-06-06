@@ -50,9 +50,13 @@ import {
   type VoiceCapture,
 } from '../lib/voiceCapture.js';
 import { useWebSpeech } from '../lib/useWebSpeech.js';
+import { useMicStream } from '../lib/useMicStream.js';
+import { ApiError } from '../lib/api.js';
 import {
   postVoiceMatchText,
   postVoiceTranscribeDeepgram,
+  postVoiceTranscribeAssemblyAI,
+  AssemblyAIDisabledError,
   type CascadeMatchResponse,
 } from '../lib/voiceCascade.js';
 import {
@@ -156,6 +160,18 @@ export function PlayPage(): JSX.Element {
       .then(setCumulative)
       .catch(() => {});
   }, [adjustSheetOpen, identity, isMaster]);
+
+  // fix/ios-voice-cascade-mic-and-buzz-refused — log de mount unique pour
+  // corréler les bugs PO. UA + isStandalone + iOS détection visibles dans
+  // DebugOverlay (?debug=audio).
+  useEffect(() => {
+    const isStandalone =
+      typeof window !== 'undefined' &&
+      (window.matchMedia?.('(display-mode: standalone)')?.matches ||
+        (navigator as unknown as { standalone?: boolean }).standalone === true);
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '(no-ua)';
+    console.info(`[Voice] page /play mounted | userAgent="${ua}" | isStandalone=${isStandalone}`);
+  }, []);
 
   // ── Bootstrap : récupère la session publique + auto-resume éventuel ──
   useEffect(() => {
@@ -920,6 +936,10 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
   // Le code langue suit i18n.language : 'fr' → 'fr-FR', sinon 'en-US'.
   const webSpeechLang = i18n.language?.toLowerCase().startsWith('fr') ? 'fr-FR' : 'en-US';
   const webSpeech = useWebSpeech({ lang: webSpeechLang });
+  // fix/ios-voice-cascade-mic-and-buzz-refused — stream micro persistant. UN
+  // SEUL getUserMedia() pour toute la session, évite le popup système iOS à
+  // chaque morceau (Bug #1) et le stream mort au morceau 2 (Bug #3).
+  const mic = useMicStream();
 
   // Auto-clear fail toast 1.5s
   useEffect(() => {
@@ -977,12 +997,33 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       // feat/voice-cascade-l1-l2 — démarre Web Speech EN PARALLÈLE du
       // MediaRecorder. Coût quasi-nul si supporté, ignoré sinon (Firefox).
       // Le transcript sera lu dans uploadAndShowResult après stop().
-      if (webSpeech.supported) {
+      //
+      // fix/ios-voice-cascade-mic-and-buzz-refused — sur iOS, on SKIP L1
+      // (SpeechRecognition trop instable + concurrence le MediaRecorder pour
+      // l'accès micro → souvent throw "InvalidStateError" ou retour vide).
+      // On va direct L2 Deepgram. ~300ms de latence ajoutés (acceptable) en
+      // échange d'un taux de match nettement meilleur.
+      const shouldSkipL1 = mic.isiOS;
+      if (webSpeech.supported && !shouldSkipL1) {
         webSpeech.start();
+      } else if (shouldSkipL1) {
+        console.info('[Voice] iOS detected — skipping L1 Web Speech, direct L2 Deepgram');
       }
 
+      // fix/ios-voice-cascade-mic-and-buzz-refused — healthcheck du stream
+      // persistant avant chaque buzz. Si mort (iOS background prolongé), on
+      // re-init en transparence avant de démarrer la capture.
+      if (!mic.isLive()) {
+        console.warn('[Voice] Mic stream not live — reinit before capture');
+        await mic.reinit();
+      }
+      const persistentStream = mic.getStream();
       const capture = await startVoiceCapture({
         maxDurationMs,
+        // Passe le stream persistant pour éviter le popup système iOS à chaque
+        // buzz (sinon getUserMedia ré-évalué par WebKit). Si null (permission
+        // pas encore accordée), voiceCapture créera son propre stream legacy.
+        stream: persistentStream ?? undefined,
         // Optim Whisper — VAD agressif (500ms silence après speech) cut early
         // dès que le joueur a fini de parler, sans attendre les 10s max.
         onSilence: () => {
@@ -1005,17 +1046,45 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         void finalizeRecording();
       }, maxDurationMs + 200);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Erreur micro';
-      if (msg.includes('ALREADY_ANSWERED')) {
-        setError(t('play.alreadyAnswered'));
-      } else if (msg.includes('PHASE_LOCKED')) {
-        setError(t('play.tooLate'));
-      } else {
-        setError(msg);
-      }
+      // fix/ios-voice-cascade-mic-and-buzz-refused — utilise ApiError.code
+      // typé (vs ancienne logique `msg.includes()` fragile) pour mapper le
+      // refus serveur sur un message i18n précis. Couvre tous les enum :
+      // NO_TRACK, PHASE_LOCKED, COOLDOWN, ALREADY_BUZZING, ALREADY_ANSWERED,
+      // PARTICIPANT_INVALID, VALIDATION_ERROR.
+      const code =
+        err instanceof ApiError ? err.code : err instanceof Error ? err.message : 'UNKNOWN';
+      console.warn(
+        `[Voice] Buzz refused | code=${code} | message=${err instanceof Error ? err.message : String(err)}`,
+      );
+      setError(translateBuzzRefusalReason(code, t));
       setRecState({ kind: 'idle' });
     }
   };
+
+  /**
+   * fix/ios-voice-cascade-mic-and-buzz-refused — résout un code d'erreur
+   * backend ("NO_TRACK", "PHASE_LOCKED"…) en message i18n explicite. Default
+   * = `buzzReason.refused` (générique) si code inconnu, pour ne pas afficher
+   * un message tech au joueur.
+   */
+  function translateBuzzRefusalReason(code: string, tFn: typeof t): string {
+    switch (code) {
+      case 'NO_TRACK':
+        return tFn('play.buzzReason.noTrack');
+      case 'PHASE_LOCKED':
+        return tFn('play.tooLate');
+      case 'COOLDOWN':
+        return tFn('play.buzzReason.cooldown');
+      case 'ALREADY_BUZZING':
+        return tFn('play.buzzReason.alreadyBuzzing');
+      case 'ALREADY_ANSWERED':
+        return tFn('play.alreadyAnswered');
+      case 'PARTICIPANT_INVALID':
+        return tFn('play.buzzReason.participantInvalid');
+      default:
+        return tFn('play.buzzReason.refused');
+    }
+  }
 
   const finalizeRecording = async (): Promise<void> => {
     setRecState((prev) => {
@@ -1049,14 +1118,18 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     let webSpeechSupported = false;
     try {
       // Finalise audio + récup transcript Web Speech en parallèle.
-      const wsStopPromise = webSpeech.supported
-        ? webSpeech.stop()
-        : Promise.resolve({
-            transcript: '',
-            supported: false,
-            elapsedMs: 0,
-            error: undefined,
-          });
+      // fix/ios-voice-cascade-mic-and-buzz-refused — sur iOS, L1 a été skipped
+      // dans handleBuzz, donc on retourne un transcript vide sans appeler
+      // webSpeech.stop() (qui throw si jamais start() pas appelé).
+      const wsStopPromise =
+        webSpeech.supported && !mic.isiOS
+          ? webSpeech.stop()
+          : Promise.resolve({
+              transcript: '',
+              supported: false,
+              elapsedMs: 0,
+              error: undefined,
+            });
       const [blobResult, wsResult] = await Promise.all([capture.stop(), wsStopPromise]);
       blob = blobResult;
       webSpeechTranscript = wsResult.transcript;
@@ -1075,7 +1148,13 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
 
     const filename = capture.mimeType.includes('mp4') ? 'buzz.mp4' : 'buzz.webm';
     let finalResult: CascadeMatchResponse | null = null;
-    let finalLevel: 'L1' | 'L2' | 'L3-fallback' | 'L3-legacy-whisper' | null = null;
+    let finalLevel: 'L1' | 'L2' | 'L3' | 'L3-fallback' | 'L3-legacy-whisper' | null = null;
+    // feat/voice-cascade-l3-assemblyai — seuil d'escalade L2 → L3. Si Deepgram
+    // a retourné un score sous ce seuil, on tente AssemblyAI Universal-2 qui
+    // est meilleur sur accents prononcés / audio bruité. Au-dessus, on
+    // considère que c'est probablement une mauvaise réponse, pas un problème
+    // de transcription — AssemblyAI ne sauvera pas le coup.
+    const L3_ESCALATE_THRESHOLD = 50;
 
     // ── L1 — Web Speech ──────────────────────────────────────────────────
     if (webSpeechSupported && webSpeechTranscript.trim().length > 0) {
@@ -1134,11 +1213,49 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
           filename,
         });
         const tL2 = Date.now() - tL2Start;
+        const l2Decision = l2.matched
+          ? 'matched'
+          : l2.score < L3_ESCALATE_THRESHOLD
+            ? 'escalate-l3'
+            : 'reject';
         console.info(
-          `[Voice] L2 ${l2.level}: "${l2.transcript.slice(0, 60)}" score=${l2.score}% → ${l2.matched ? 'matched' : 'reject'} (latency=${tL2}ms)`,
+          `[Voice] L2 ${l2.level}: "${l2.transcript.slice(0, 60)}" score=${l2.score}% → ${l2Decision} (latency=${tL2}ms)`,
         );
         finalResult = l2;
         finalLevel = l2.level; // 'L2' ou 'L3-fallback' (Whisper interne)
+
+        // ── L3 — AssemblyAI Universal-2 + word_boost ───────────────────
+        // Escalade UNIQUEMENT si L2 a renvoyé un score franchement bas (sous
+        // L3_ESCALATE_THRESHOLD). Au-dessus on suppose mauvaise réponse, pas
+        // mauvaise transcription — AssemblyAI ne corrigera rien.
+        if (!l2.matched && l2.score < L3_ESCALATE_THRESHOLD) {
+          const tL3Start = Date.now();
+          try {
+            const l3 = await postVoiceTranscribeAssemblyAI({
+              apiUrl: API_BASE,
+              sessionId: identity.sessionId,
+              roundId: currentTrack.round_id,
+              token: identity.token,
+              audio: blob,
+              filename,
+            });
+            const tL3 = Date.now() - tL3Start;
+            console.info(
+              `[Voice] L3 ${l3.level}: "${l3.transcript.slice(0, 60)}" score=${l3.score}% → ${l3.matched ? 'matched' : 'reject'} (latency=${tL3}ms backend=${l3.latency_ms ?? '-'}ms)`,
+            );
+            finalResult = l3;
+            finalLevel = l3.level;
+          } catch (err: unknown) {
+            if (err instanceof AssemblyAIDisabledError) {
+              // Feature flag off côté Railway — pas d'escalade L3, on garde
+              // le résultat L2 (reject) et on conclut "rejeté".
+              console.info('[Voice] L3 skip — AssemblyAI disabled by env flag');
+            } else {
+              console.warn('[Voice] L3 AssemblyAI failed → keep L2 reject result', err);
+            }
+            // Pas de fallback supplémentaire — L2 reject reste la conclusion.
+          }
+        }
       } catch (err: unknown) {
         // L3 — Filet de sécurité : legacy /voice-answer (Whisper, route en
         // place depuis Phase C). Ne devrait jamais être atteint en pratique
