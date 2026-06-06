@@ -19,7 +19,12 @@ import pLimit from 'p-limit';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireSuperAdmin } from '../middleware/tenant.js';
-import { estimateCostEur, generateAliases } from '../lib/aliasGeneration.js';
+import {
+  estimateArtistCostEur,
+  estimateCostEur,
+  generateAliases,
+  generateArtistAliases,
+} from '../lib/aliasGeneration.js';
 
 const router: Router = Router();
 router.use(requireAuth, requireSuperAdmin);
@@ -309,6 +314,274 @@ router.post(
       track_id: updated.id,
       title: updated.canonical_title,
       artist: updated.artist.canonical_name,
+      aliases: updated.aliases,
+      aliases_generated_at: updated.aliases_generated_at,
+      aliases_source: updated.aliases_source,
+      latency_ms: r.latency_ms,
+      tokens: r.usage,
+    });
+  },
+);
+
+// ══════════════════════════════════════════════════════════════════════════
+// fix/aliases-quality-v2-and-artists — routes pour aliases d'artistes.
+// Permet à un joueur de buzz juste "Green Day" et matcher tous les morceaux
+// de Green Day (matchAnswer itère track.artist.aliases côté cascade).
+// ══════════════════════════════════════════════════════════════════════════
+
+const generateArtistsBodySchema = z
+  .object({
+    artistIds: z.array(z.string().uuid()).optional(),
+    all: z.boolean().optional(),
+    missingOnly: z.boolean().optional(),
+    limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
+    locale: z.enum(['fr', 'en']).optional(),
+  })
+  .refine((v) => v.artistIds || v.all || v.missingOnly, {
+    message: 'Au moins un de artistIds, all, missingOnly est requis',
+  });
+
+// ── POST /generate-artists — batch generation for artists ────────────────
+router.post('/generate-artists', async (req: Request, res: Response): Promise<void> => {
+  const parsed = generateArtistsBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: parsed.error.message } });
+    return;
+  }
+  const { artistIds, missingOnly, limit = DEFAULT_LIMIT, locale } = parsed.data;
+
+  const where: Record<string, unknown> = {};
+  if (artistIds && artistIds.length > 0) {
+    where.id = { in: artistIds };
+  } else if (missingOnly) {
+    where.OR = [{ aliases: { equals: [] } }, { aliases_generated_at: null }];
+  }
+
+  const artists = await prisma.artist.findMany({
+    where,
+    take: limit,
+    select: { id: true, canonical_name: true },
+  });
+
+  if (artists.length === 0) {
+    res.json({ total: 0, processed: 0, failed: 0, cost_estimate_eur: 0, results: [] });
+    return;
+  }
+
+  console.info(
+    `[Aliases] POST /generate-artists | artists=${artists.length} | locale=${locale ?? 'auto'}`,
+  );
+
+  const limiter = pLimit(BATCH_CONCURRENCY);
+  let processed = 0;
+  let failed = 0;
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+
+  const results = await Promise.all(
+    artists.map((a) =>
+      limiter(async () => {
+        const r = await generateArtistAliases(a.canonical_name, locale);
+        if (r.aliases.length === 0 || r.error) {
+          failed += 1;
+          return {
+            artist_id: a.id,
+            name: a.canonical_name,
+            aliases: [],
+            success: false,
+            error: r.error ?? 'EMPTY_OUTPUT',
+          };
+        }
+        await prisma.artist.update({
+          where: { id: a.id },
+          data: {
+            aliases: r.aliases,
+            aliases_generated_at: new Date(),
+            aliases_source: 'ai',
+          },
+        });
+        processed += 1;
+        if (r.usage) {
+          totalInputTokens += r.usage.input_tokens;
+          totalOutputTokens += r.usage.output_tokens;
+        }
+        return {
+          artist_id: a.id,
+          name: a.canonical_name,
+          aliases: r.aliases,
+          success: true,
+          error: null,
+        };
+      }),
+    ),
+  );
+
+  res.json({
+    total: artists.length,
+    processed,
+    failed,
+    cost_estimate_eur: estimateArtistCostEur(artists.length),
+    tokens: { input: totalInputTokens, output: totalOutputTokens },
+    results,
+  });
+});
+
+// ── GET /artists — paginated list ────────────────────────────────────────
+const listArtistsQuerySchema = z.object({
+  hasAliases: z
+    .string()
+    .optional()
+    .transform((v) => (v === 'true' ? true : v === 'false' ? false : undefined)),
+  page: z
+    .string()
+    .optional()
+    .transform((v) => Math.max(1, Number.parseInt(v ?? '1', 10) || 1)),
+  pageSize: z
+    .string()
+    .optional()
+    .transform((v) =>
+      Math.min(
+        MAX_LIMIT,
+        Math.max(1, Number.parseInt(v ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT),
+      ),
+    ),
+});
+
+router.get('/artists', async (req: Request, res: Response): Promise<void> => {
+  const parsed = listArtistsQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: parsed.error.message } });
+    return;
+  }
+  const { hasAliases, page, pageSize } = parsed.data;
+  const skip = (page - 1) * pageSize;
+
+  const where: Record<string, unknown> = {};
+  if (hasAliases === true) {
+    where.aliases = { not: { equals: [] } };
+  } else if (hasAliases === false) {
+    where.OR = [{ aliases: { equals: [] } }, { aliases_generated_at: null }];
+  }
+
+  const [artists, total] = await Promise.all([
+    prisma.artist.findMany({
+      where,
+      skip,
+      take: pageSize,
+      orderBy: [{ aliases_generated_at: { sort: 'asc', nulls: 'first' } }],
+      select: {
+        id: true,
+        canonical_name: true,
+        aliases: true,
+        aliases_generated_at: true,
+        aliases_source: true,
+      },
+    }),
+    prisma.artist.count({ where }),
+  ]);
+
+  res.json({
+    page,
+    pageSize,
+    total,
+    artists: artists.map((a) => ({
+      artist_id: a.id,
+      name: a.canonical_name,
+      aliases: a.aliases,
+      aliases_generated_at: a.aliases_generated_at,
+      aliases_source: a.aliases_source,
+    })),
+  });
+});
+
+// ── PATCH /artists/:artistId — manual edit ───────────────────────────────
+router.patch(
+  '/artists/:artistId',
+  async (req: Request<{ artistId: string }>, res: Response): Promise<void> => {
+    const parsed = patchBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: parsed.error.message } });
+      return;
+    }
+    const normalized = Array.from(
+      new Set(parsed.data.aliases.map((a) => a.toLowerCase().trim()).filter((a) => a.length >= 2)),
+    );
+    try {
+      const artist = await prisma.artist.update({
+        where: { id: req.params.artistId },
+        data: {
+          aliases: normalized,
+          aliases_generated_at: new Date(),
+          aliases_source: 'manual',
+        },
+        select: {
+          id: true,
+          canonical_name: true,
+          aliases: true,
+          aliases_generated_at: true,
+          aliases_source: true,
+        },
+      });
+      res.json({
+        artist_id: artist.id,
+        name: artist.canonical_name,
+        aliases: artist.aliases,
+        aliases_generated_at: artist.aliases_generated_at,
+        aliases_source: artist.aliases_source,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('No record')) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Artiste introuvable' } });
+        return;
+      }
+      console.error('[Aliases] PATCH artist error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: msg } });
+    }
+  },
+);
+
+// ── POST /artists/:artistId/regenerate ───────────────────────────────────
+router.post(
+  '/artists/:artistId/regenerate',
+  async (req: Request<{ artistId: string }>, res: Response): Promise<void> => {
+    const localeQuery = String(req.query.locale ?? '');
+    const locale = localeQuery === 'fr' || localeQuery === 'en' ? localeQuery : undefined;
+
+    const artist = await prisma.artist.findUnique({
+      where: { id: req.params.artistId },
+      select: { id: true, canonical_name: true },
+    });
+    if (!artist) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Artiste introuvable' } });
+      return;
+    }
+
+    const r = await generateArtistAliases(artist.canonical_name, locale);
+    if (r.aliases.length === 0 || r.error) {
+      res
+        .status(502)
+        .json({ error: { code: 'GENERATION_FAILED', message: r.error ?? 'EMPTY_OUTPUT' } });
+      return;
+    }
+    const updated = await prisma.artist.update({
+      where: { id: artist.id },
+      data: {
+        aliases: r.aliases,
+        aliases_generated_at: new Date(),
+        aliases_source: 'ai',
+      },
+      select: {
+        id: true,
+        canonical_name: true,
+        aliases: true,
+        aliases_generated_at: true,
+        aliases_source: true,
+      },
+    });
+    res.json({
+      artist_id: updated.id,
+      name: updated.canonical_name,
       aliases: updated.aliases,
       aliases_generated_at: updated.aliases_generated_at,
       aliases_source: updated.aliases_source,

@@ -17,7 +17,8 @@
     "import:official-library": "tsx scripts/import-official-library.ts",
     "import:official-quiz": "tsx scripts/import-official-quiz.ts",
     "validate:youtube-ids": "tsx scripts/validate-youtube-ids.ts",
-    "generate:aliases": "tsx scripts/generateAllAliases.ts"
+    "generate:aliases": "tsx scripts/generateAllAliases.ts",
+    "generate:artist-aliases": "tsx scripts/generateAllArtistAliases.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
