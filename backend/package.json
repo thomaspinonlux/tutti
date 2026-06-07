@@ -19,7 +19,8 @@
     "validate:youtube-ids": "tsx scripts/validate-youtube-ids.ts",
     "generate:aliases": "tsx scripts/generateAllAliases.ts",
     "generate:artist-aliases": "tsx scripts/generateAllArtistAliases.ts",
-    "enrich:official-playlists": "tsx scripts/enrichOfficialPlaylists.ts"
+    "enrich:official-playlists": "tsx scripts/enrichOfficialPlaylists.ts",
+    "sync:workspace-playlists": "tsx scripts/syncWorkspacePlaylists.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
