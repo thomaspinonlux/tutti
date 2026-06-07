@@ -644,20 +644,16 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
    *   3. Sinon → playVideo() direct
    *   4. Schedule state check 500ms pour log diagnostic
    */
-  const unblockAudio = useCallback((): void => {
-    const p = playerRef.current;
-    if (!p) {
-      console.error('[Player] Cannot playVideo: ytPlayer not available (playerRef null)');
-      return;
-    }
-    if (statusRef.current !== 'ready') {
-      console.warn(
-        `[Player] unblockAudio called but status=${statusRef.current} — playVideo may fail`,
-      );
-    }
+  /**
+   * fix/force-audio-button-not-playing — exécute la routine playVideo/
+   * loadVideoById sur un player KNOWN ready. Factorisé pour permettre
+   * appel immédiat (player déjà ready) OU différé après polling.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tryPlayNow = useCallback((p: any, source: string): boolean => {
     const last = lastVideoRef.current;
     console.info(
-      `[Player] playVideo() called from unblockAudio (lastVideo=${last?.id ?? 'none'} status=${statusRef.current})`,
+      `[Player] playVideo() called from ${source} (lastVideo=${last?.id ?? 'none'} status=${statusRef.current})`,
     );
     try {
       if (last && p.loadVideoById) {
@@ -672,14 +668,14 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
         p.playVideo();
       } else {
         console.error('[Player] Neither loadVideoById nor playVideo available on player');
-        return;
+        return false;
       }
       setIsPlaying(true);
     } catch (err) {
       console.warn(
         `[Player] Play failed: ${err instanceof Error ? err.name + ' ' + err.message : String(err)}`,
       );
-      return;
+      return false;
     }
     // Diagnostic 500ms après — log clair pour le debug overlay.
     window.setTimeout(() => {
@@ -698,14 +694,73 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
           console.info(`[Player] Play succeeded — state=${name}`);
         } else {
           console.warn(
-            `[Player] State after force-audio: ${s} (${name}) — not PLAYING, autoplay likely blocked`,
+            `[Player] State after ${source}: ${s} (${name}) — not PLAYING, autoplay likely blocked`,
           );
         }
       } catch (err) {
-        console.warn('[Player] State check after force-audio failed:', err);
+        console.warn('[Player] State check after play failed:', err);
       }
     }, 500);
+    return true;
   }, []);
+
+  /**
+   * Bug 4 — fallback audio bloqué côté YouTube. À appeler depuis un clic
+   * user direct (button onClick). Re-tape playVideo() pour débloquer la
+   * pipeline iframe iOS/Chrome.
+   *
+   * fix/pwa-player-trigger-after-unlock — En PWA Safari standalone, le
+   * AudioContext unlock seul ne déclenche pas la lecture YouTube. Il FAUT
+   * appeler player.playVideo() explicitement dans le user gesture.
+   *
+   * fix/force-audio-button-not-playing — robuste contre la race condition
+   * où le user clique "Forcer audio" AVANT que YT IFrame ne soit ready
+   * (1ʳᵉ visite, pas encore de cache). Avant : early-return silencieux →
+   * musique ne démarre pas. Après : poll readiness pendant 3s puis playVideo.
+   *
+   * Stratégie :
+   *   1. Si player ready → playVideo direct
+   *   2. Sinon → polling 100ms × 30 (max 3s) → playVideo dès que ready
+   *   3. Si timeout → warn log dans DebugOverlay
+   */
+  const unblockAudio = useCallback((): void => {
+    const p = playerRef.current;
+    const state = p?.getPlayerState?.();
+    console.info(
+      `[Player] unblockAudio invoked | playerRef=${!!p} | status=${statusRef.current} | state=${state ?? 'unknown'}`,
+    );
+
+    // Fast path : player ready → play immédiat dans le gesture user.
+    if (p && statusRef.current === 'ready') {
+      tryPlayNow(p, 'force-audio-button');
+      return;
+    }
+
+    // Slow path : player pas ready, polling jusqu'à 3s.
+    console.warn(
+      `[Player] unblockAudio : player pas ready (status=${statusRef.current}) — polling jusqu'à 3s`,
+    );
+    const startMs = Date.now();
+    const pollId = window.setInterval(() => {
+      const elapsedMs = Date.now() - startMs;
+      const p2 = playerRef.current;
+      const s = p2?.getPlayerState?.();
+      console.info(
+        `[Player] Polling for ready | elapsed=${elapsedMs}ms | playerRef=${!!p2} | status=${statusRef.current} | state=${s ?? 'unknown'}`,
+      );
+      if (p2 && statusRef.current === 'ready') {
+        window.clearInterval(pollId);
+        tryPlayNow(p2, 'force-audio-button-after-polling');
+        return;
+      }
+      if (elapsedMs > 3000) {
+        window.clearInterval(pollId);
+        console.error(
+          `[Player] unblockAudio polling timeout — player jamais ready après 3s (status=${statusRef.current})`,
+        );
+      }
+    }, 100);
+  }, [tryPlayNow]);
 
   /**
    * Bug autoplay v6 — playVideo() SYNC depuis click handler pour libérer
