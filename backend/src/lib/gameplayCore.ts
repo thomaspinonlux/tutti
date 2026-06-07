@@ -164,6 +164,83 @@ export async function getSessionPlayedTrackIds(sessionId: string): Promise<Set<s
   return new Set(rows.map((r) => r.track_id));
 }
 
+/** Default session size si playlist.default_session_size est null. */
+export const DEFAULT_SESSION_SIZE = 15;
+
+export interface RandomPickResult {
+  selectedTrackIds: string[];
+  poolSize: number;
+  playedSize: number;
+  eligibleSize: number;
+}
+
+/**
+ * fix/session-pick-respect-default-size — extrait de POST /sessions/:id/rounds
+ * (sessions.ts) pour partage entre les 3 endpoints qui créent des rounds :
+ *   - POST /sessions/:id/rounds          (sessions.ts)
+ *   - POST /library/playlists/:id/launch (library.ts, clone-on-launch)
+ *   - POST /sessions/:id/pick-round      (sessionMaster.ts)
+ *
+ * Avant ce fix, library.ts et sessionMaster.ts créaient des rounds sans
+ * `selected_track_ids` → `gameplayCore.buildAndBroadcastTrack` fallback sur
+ * la playlist complète → host jouait les 80 tracks au lieu des 15 random.
+ *
+ * Récupère tout le pool de la playlist, filtre les tracks déjà jouées dans
+ * la session (anti-doublon cross-playlist), shuffle Fisher-Yates, take N.
+ *
+ * Si la table `session_played_tracks` n'existe pas ou erreur DB → dégrade
+ * proprement en ignorant le filtre (pool complet).
+ */
+export async function pickRandomTrackIdsForRound(
+  sessionId: string,
+  playlistId: string,
+  sessionSize: number,
+): Promise<RandomPickResult> {
+  const poolTracks = await prisma.playlistTrack.findMany({
+    where: { playlist_id: playlistId },
+    select: { track_id: true },
+    orderBy: { position: 'asc' },
+  });
+  const playedTrackIds = await prisma.sessionPlayedTrack
+    .findMany({
+      where: { session_id: sessionId },
+      select: { track_id: true },
+    })
+    .then((rows) => new Set(rows.map((r) => r.track_id)))
+    .catch((err) => {
+      console.warn(
+        '[pickRandomTrackIdsForRound] SessionPlayedTrack lookup failed, degrading:',
+        err,
+      );
+      return new Set<string>();
+    });
+
+  const candidates = poolTracks.map((pt) => pt.track_id).filter((tid) => !playedTrackIds.has(tid));
+
+  const eligibleSize = candidates.length;
+  if (eligibleSize === 0) {
+    return {
+      selectedTrackIds: [],
+      poolSize: poolTracks.length,
+      playedSize: playedTrackIds.size,
+      eligibleSize: 0,
+    };
+  }
+
+  const targetN = Math.min(sessionSize, eligibleSize);
+  // Fisher-Yates shuffle (in-place).
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i]!, candidates[j]!] = [candidates[j]!, candidates[i]!];
+  }
+  return {
+    selectedTrackIds: candidates.slice(0, targetN),
+    poolSize: poolTracks.length,
+    playedSize: playedTrackIds.size,
+    eligibleSize,
+  };
+}
+
 /**
  * "Recommencer le morceau" — reset gameState (phase=phase1, started_at=now,
  * vide buzzes/answers) ET re-broadcast 'track:start' avec nouveau state pour
