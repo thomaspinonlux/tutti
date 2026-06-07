@@ -22,7 +22,11 @@ import { generateAliases } from '../lib/aliases.js';
 import { broadcastToSession } from '../socket/index.js';
 import { invalidateCachedPlaylist } from '../lib/playlistCache.js';
 import { classifyYoutubeIds } from '../lib/youtubeValidation.js';
-import { DEFAULT_SESSION_SIZE, pickRandomTrackIdsForRound } from '../lib/gameplayCore.js';
+import {
+  DEFAULT_SESSION_SIZE,
+  getEffectiveRoundTrackCount,
+  pickRandomTrackIdsForRound,
+} from '../lib/gameplayCore.js';
 
 const router: Router = Router();
 
@@ -429,6 +433,7 @@ router.post(
       position: round.position,
       status: round.status,
       current_track_index: round.current_track_index,
+      selected_track_ids: round.selected_track_ids,
       started_at: round.started_at,
       ended_at: round.ended_at,
       created_at: round.created_at,
@@ -436,7 +441,8 @@ router.post(
         id: round.playlist.id,
         name: round.playlist.name,
         level: round.playlist.level,
-        tracks_count: round.playlist._count.playlist_tracks,
+        tracks_count: getEffectiveRoundTrackCount(round),
+        selected_tracks_count: pick.selectedTrackIds.length,
       },
     };
     broadcastToSession(session.id, 'round:created', { round: enriched });

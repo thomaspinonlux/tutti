@@ -26,7 +26,7 @@ import type {
 } from '@tutti/shared';
 import { prisma } from './prisma.js';
 import { getCumulativeScores } from './scores.js';
-import { buildCurrentTrackStateSnapshot } from './gameplayCore.js';
+import { buildCurrentTrackStateSnapshot, getEffectiveRoundTrackCount } from './gameplayCore.js';
 import type { GameMode, Team } from '@tutti/shared';
 
 export type ScreenState =
@@ -221,7 +221,7 @@ function serializeSession(
         id: r.playlist.id,
         name: r.playlist.name,
         level: r.playlist.level,
-        tracks_count: r.playlist._count.playlist_tracks,
+        tracks_count: getEffectiveRoundTrackCount(r),
       },
     })),
   };
