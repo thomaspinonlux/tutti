@@ -18,7 +18,8 @@
     "import:official-quiz": "tsx scripts/import-official-quiz.ts",
     "validate:youtube-ids": "tsx scripts/validate-youtube-ids.ts",
     "generate:aliases": "tsx scripts/generateAllAliases.ts",
-    "generate:artist-aliases": "tsx scripts/generateAllArtistAliases.ts"
+    "generate:artist-aliases": "tsx scripts/generateAllArtistAliases.ts",
+    "enrich:official-playlists": "tsx scripts/enrichOfficialPlaylists.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
