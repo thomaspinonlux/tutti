@@ -30,7 +30,22 @@ const YT_STATE = {
   CUED: 5,
 } as const;
 
-export type YouTubePlayerStatus = 'idle' | 'loading_api' | 'ready' | 'error';
+export type YouTubePlayerStatus = 'idle' | 'loading_api' | 'loading_player' | 'ready' | 'error';
+
+/** Mapping codes onError YT IFrame Player. cf. https://developers.google.com/youtube/iframe_api_reference#onError */
+const YT_ERROR_CODES: Record<number, string> = {
+  2: 'Invalid parameter',
+  5: 'HTML5 player error',
+  100: 'Video not found',
+  101: 'Video not allowed in embedded players',
+  150: 'Video not allowed in embedded players',
+};
+
+/** fix/yt-player-error-state-retry — nombre max de tentatives de création
+ *  du YT.Player avant de give up + afficher overlay user. */
+const PLAYER_INIT_MAX_ATTEMPTS = 3;
+/** Délai entre 2 tentatives — laisse le temps à YT IFrame de se nettoyer. */
+const PLAYER_RETRY_DELAY_MS = 500;
 
 export interface UseYouTubePlayerOptions {
   enabled: boolean;
@@ -259,39 +274,91 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     if (!enabled) return;
     let cancelled = false;
     let onReadyTimeoutId: number | null = null;
+    let retryTimeoutId: number | null = null;
     setStatus('loading_api');
     setError(null);
     setBlockedByContentFilter(false);
+    console.info('[Player] Init step: YT API loading…');
 
-    loadIframeApi()
-      .then(() => {
-        if (cancelled) return;
-        const container = document.getElementById(containerId);
-        if (!container) {
-          setError(`Container #${containerId} introuvable`);
-          setStatus('error');
+    /**
+     * fix/yt-player-error-state-retry — création YT.Player avec retry sur
+     * onError. Tente jusqu'à PLAYER_INIT_MAX_ATTEMPTS (3) fois avant de
+     * laisser status='error' final.
+     *
+     * Chaque tentative :
+     *   1. Vérifie window.YT.Player dispo + container DOM présent
+     *   2. Détruit l'instance précédente (try/catch)
+     *   3. Crée new YT.Player(containerId, ...)
+     *   4. onReady → status=ready (fin)
+     *   5. onError → log code + map + schedule retry après 500ms
+     */
+    const createPlayer = (attempt: number): void => {
+      if (cancelled) return;
+      console.info(
+        `[Player] Init step: createPlayer attempt ${attempt}/${PLAYER_INIT_MAX_ATTEMPTS}`,
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const YT = (window as any).YT;
+      if (!YT?.Player) {
+        console.warn('[Player] Init step: YT.Player not available, polling 100ms');
+        retryTimeoutId = window.setTimeout(() => createPlayer(attempt), 100);
+        return;
+      }
+
+      const container = document.getElementById(containerId);
+      console.info(`[Player] Init step: Container lookup #${containerId} → found=${!!container}`);
+      if (!container) {
+        if (attempt < PLAYER_INIT_MAX_ATTEMPTS) {
+          console.warn(
+            `[Player] Init step: container #${containerId} introuvable, retry après ${PLAYER_RETRY_DELAY_MS}ms`,
+          );
+          retryTimeoutId = window.setTimeout(
+            () => createPlayer(attempt + 1),
+            PLAYER_RETRY_DELAY_MS,
+          );
           return;
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const YT = (window as any).YT;
-        console.info(`[Player] YouTube IFrame loaded on #${containerId}`);
+        setError(`Container #${containerId} introuvable après ${attempt} tentatives`);
+        setStatus('error');
+        return;
+      }
 
-        // feat/detect-content-blocker-youtube — timeout 5s sur onReady.
-        // Si le player est instancié mais que `youtube.com/embed/*` est
-        // filtré par un Content Blocker, onReady ne fire jamais. L'overlay
-        // ContentBlockerWarning explique alors comment désactiver.
-        onReadyTimeoutId = window.setTimeout(() => {
-          if (cancelled) return;
-          // statusRef est plus fiable que status (fresh) car la closure
-          // peut avoir capturé un state stale.
-          if (statusRef.current !== 'ready') {
+      // Détruit l'instance précédente proprement (try/catch + queueMicrotask
+      // cf. fix/host-content-boundary-notfound-error).
+      const prev = playerRef.current;
+      playerRef.current = null;
+      if (prev?.destroy) {
+        queueMicrotask(() => {
+          try {
+            prev.destroy();
+          } catch (e) {
             console.warn(
-              '[Player] Timeout: IFrame did not fire onReady within 5s — likely blocked by Content Blocker (Safari content filter on youtube.com / googlevideo.com)',
+              '[Player] previous destroy() ignored:',
+              e instanceof Error ? e.message : String(e),
             );
-            setBlockedByContentFilter(true);
           }
-        }, 5000);
+        });
+      }
 
+      setStatus('loading_player');
+      console.info(`[Player] Init step: new YT.Player(${containerId}) called`);
+
+      // feat/detect-content-blocker-youtube — timeout 5s sur onReady.
+      // Si le player est instancié mais que `youtube.com/embed/*` est
+      // filtré par un Content Blocker, onReady ne fire jamais.
+      if (onReadyTimeoutId !== null) window.clearTimeout(onReadyTimeoutId);
+      onReadyTimeoutId = window.setTimeout(() => {
+        if (cancelled) return;
+        if (statusRef.current !== 'ready') {
+          console.warn(
+            '[Player] Timeout: IFrame did not fire onReady within 5s — likely Content Blocker',
+          );
+          setBlockedByContentFilter(true);
+        }
+      }, 5000);
+
+      try {
         playerRef.current = new YT.Player(containerId, {
           height: '0',
           width: '0',
@@ -305,17 +372,13 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
           events: {
             onReady: () => {
               if (cancelled) return;
-              console.info('[Player] onReady fired — player available');
+              console.info('[Player] Init step: onReady fired — status=ready');
               if (onReadyTimeoutId !== null) {
                 window.clearTimeout(onReadyTimeoutId);
                 onReadyTimeoutId = null;
               }
-              // Si l'overlay s'était affiché par erreur, on cache.
               setBlockedByContentFilter(false);
               setStatus('ready');
-              // fix/robust-autoplay-no-refresh — queue drain via useEffect
-              // séparé qui watch `status` (cf. ci-dessous). On ne touche pas
-              // au player ici directement pour éviter les race avec setState.
             },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onStateChange: (e: any) => {
@@ -333,8 +396,6 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
               console.info(`[Player] State change: ${stateName}`);
 
               if (st === YT_STATE.CUED && pendingPlayAfterCueRef.current) {
-                // Problème B — état CUED atteint après cueVideoById, on
-                // déclenche maintenant playVideo() depuis ce handler.
                 pendingPlayAfterCueRef.current = false;
                 console.info('[Player] PlayVideo called (after CUED)');
                 try {
@@ -347,11 +408,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
 
               if (st === YT_STATE.PLAYING) {
                 setIsPlaying(true);
-                // fix/robust-autoplay-no-refresh — autoplay a réussi, on
-                // peut cacher l'overlay "Démarrer la lecture" si visible.
                 setAudioBlocked(false);
-                // Cancel retry timer en cours (si la vidéo démarre avant
-                // qu'on ait fini d'attendre les 1.5s).
                 if (retryTimerRef.current !== null) {
                   window.clearTimeout(retryTimerRef.current);
                   retryTimerRef.current = null;
@@ -368,11 +425,63 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onError: (e: any) => {
               if (cancelled) return;
-              setError(`YT player error code ${e.data}`);
+              const code = e?.data as number | undefined;
+              const codeLabel =
+                code !== undefined ? (YT_ERROR_CODES[code] ?? 'unknown') : 'no-data';
+              console.error(
+                `[Player] Init step: onError fired | code=${code} | label="${codeLabel}" | attempt=${attempt}/${PLAYER_INIT_MAX_ATTEMPTS}`,
+              );
+
+              if (onReadyTimeoutId !== null) {
+                window.clearTimeout(onReadyTimeoutId);
+                onReadyTimeoutId = null;
+              }
+
+              // 100/101/150 = video not allowed / not found → pas un bug
+              // d'init, c'est la track elle-même qui foire. Pas de retry, on
+              // laisse le user choisir un autre track.
+              if (code === 100 || code === 101 || code === 150) {
+                setError(`YT error ${code}: ${codeLabel}`);
+                setStatus('error');
+                return;
+              }
+
+              // 2 / 5 / autres → bug d'init récupérable → retry.
+              if (attempt < PLAYER_INIT_MAX_ATTEMPTS) {
+                console.warn(
+                  `[Player] Init step: scheduling retry ${attempt + 1}/${PLAYER_INIT_MAX_ATTEMPTS} après ${PLAYER_RETRY_DELAY_MS}ms`,
+                );
+                retryTimeoutId = window.setTimeout(
+                  () => createPlayer(attempt + 1),
+                  PLAYER_RETRY_DELAY_MS,
+                );
+                return;
+              }
+              setError(`YT error ${code}: ${codeLabel} (${attempt} tentatives)`);
               setStatus('error');
             },
           },
         });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`[Player] Init step: new YT.Player threw sync: ${msg}`);
+        if (attempt < PLAYER_INIT_MAX_ATTEMPTS) {
+          retryTimeoutId = window.setTimeout(
+            () => createPlayer(attempt + 1),
+            PLAYER_RETRY_DELAY_MS,
+          );
+          return;
+        }
+        setError(msg);
+        setStatus('error');
+      }
+    };
+
+    loadIframeApi()
+      .then(() => {
+        if (cancelled) return;
+        console.info('[Player] Init step: YT API ready');
+        createPlayer(1);
       })
       .catch((err: Error) => {
         if (cancelled) return;
@@ -398,6 +507,11 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
       if (onReadyTimeoutId !== null) {
         window.clearTimeout(onReadyTimeoutId);
         onReadyTimeoutId = null;
+      }
+      // fix/yt-player-error-state-retry — cancel pending retry on unmount.
+      if (retryTimeoutId !== null) {
+        window.clearTimeout(retryTimeoutId);
+        retryTimeoutId = null;
       }
       // fix/host-content-boundary-notfound-error — destroy() est différé via
       // queueMicrotask pour s'exécuter APRÈS le commit React courant. Sinon
