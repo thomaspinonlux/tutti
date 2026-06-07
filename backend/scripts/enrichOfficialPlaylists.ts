@@ -79,8 +79,11 @@ const USD_TO_EUR = 0.92;
 
 interface CliArgs {
   limit: number | null;
-  playlistSlug: string | null;
+  /** Liste de slugs (comma-separated via --playlist=a,b,c). null = toutes. */
+  playlistSlugs: string[] | null;
   targetSize: number;
+  /** Skip si déjà ≥ ce nombre de tracks (idempotence des relances). */
+  skipExistingLarge: number | null;
   dryRun: boolean;
   skipValidation: boolean;
 }
@@ -90,14 +93,32 @@ function parseArgs(): CliArgs {
   const limitArg = args.find((a) => a.startsWith('--limit='));
   const limit = limitArg ? Number.parseInt(limitArg.split('=')[1] ?? '', 10) || null : null;
   const playlistArg = args.find((a) => a.startsWith('--playlist='));
-  const playlistSlug = playlistArg ? (playlistArg.split('=')[1] ?? null) : null;
+  const playlistSlugs = playlistArg
+    ? (playlistArg.split('=')[1] ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+    : null;
   const targetArg = args.find((a) => a.startsWith('--target-size='));
   const targetSize = targetArg
     ? Number.parseInt(targetArg.split('=')[1] ?? '', 10) || TARGET_POOL_DEFAULT
     : TARGET_POOL_DEFAULT;
+  const skipLargeArg = args.find((a) => a.startsWith('--skip-existing-large'));
+  let skipExistingLarge: number | null = null;
+  if (skipLargeArg) {
+    const eq = skipLargeArg.split('=')[1];
+    skipExistingLarge = eq ? Number.parseInt(eq, 10) || 60 : 60;
+  }
   const dryRun = args.includes('--dry-run');
   const skipValidation = args.includes('--skip-validation');
-  return { limit, playlistSlug, targetSize, dryRun, skipValidation };
+  return {
+    limit,
+    playlistSlugs: playlistSlugs && playlistSlugs.length > 0 ? playlistSlugs : null,
+    targetSize,
+    skipExistingLarge,
+    dryRun,
+    skipValidation,
+  };
 }
 
 // ───── Helpers ────────────────────────────────────────────────────────────
@@ -596,9 +617,10 @@ async function enrichOnePlaylist(
 // ───── Main ───────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const { limit, playlistSlug, targetSize, dryRun, skipValidation } = parseArgs();
+  const { limit, playlistSlugs, targetSize, skipExistingLarge, dryRun, skipValidation } =
+    parseArgs();
   console.info(
-    `[EnrichCLI] start | limit=${limit ?? 'none'} | playlist=${playlistSlug ?? 'all'} | target-size=${targetSize} | dry-run=${dryRun} | skip-validation=${skipValidation}`,
+    `[EnrichCLI] start | limit=${limit ?? 'none'} | playlist=${playlistSlugs?.join(',') ?? 'all'} | target-size=${targetSize} | skip-existing-large=${skipExistingLarge ?? 'no'} | dry-run=${dryRun} | skip-validation=${skipValidation}`,
   );
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -613,7 +635,12 @@ async function main(): Promise<void> {
   }
 
   const where: Record<string, unknown> = {};
-  if (playlistSlug) where.slug = playlistSlug;
+  if (playlistSlugs && playlistSlugs.length > 0) {
+    where.slug = playlistSlugs.length === 1 ? playlistSlugs[0] : { in: playlistSlugs };
+  }
+  if (skipExistingLarge !== null) {
+    where.track_count = { lt: skipExistingLarge };
+  }
 
   const playlists = (await prisma.officialPlaylist.findMany({
     where,
