@@ -730,8 +730,13 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
       `[Player] unblockAudio invoked | playerRef=${!!p} | status=${statusRef.current} | state=${state ?? 'unknown'}`,
     );
 
-    // Fast path : player ready → play immédiat dans le gesture user.
-    if (p && statusRef.current === 'ready') {
+    // fix/pwa-regression-first-track-audio — accepte aussi status='error'.
+    // En cas de stale onError (ancien playVideo() sur empty player → code=5),
+    // statusRef reste à 'error' alors qu'un nouveau cueVideoById a été
+    // émis depuis. tryPlayNow vérifie playerState live → si BUFFERING/CUED/
+    // PAUSED il déclenche playVideo OK.
+    const canTryPlay = p && (statusRef.current === 'ready' || statusRef.current === 'error');
+    if (canTryPlay) {
       tryPlayNow(p, 'force-audio-button');
       return;
     }
@@ -748,7 +753,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
       console.info(
         `[Player] Polling for ready | elapsed=${elapsedMs}ms | playerRef=${!!p2} | status=${statusRef.current} | state=${s ?? 'unknown'}`,
       );
-      if (p2 && statusRef.current === 'ready') {
+      if (p2 && (statusRef.current === 'ready' || statusRef.current === 'error')) {
         window.clearInterval(pollId);
         tryPlayNow(p2, 'force-audio-button-after-polling');
         return;
@@ -775,9 +780,27 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
       console.info('[YouTube] warmupSync : player pas encore instancié, skip');
       return;
     }
+    // fix/pwa-regression-first-track-audio — REGRESSION fix : appeler
+    // playVideo() sur un player sans video chargée fait émettre par YT
+    // IFrame un onError(code=5) "HTML5 player error" → statusRef passe à
+    // 'error' → unblockAudio() ne sort jamais de son polling 3s → click
+    // "Forcer audio" silencieux jusqu'au refresh manuel. Avant PR #58
+    // (PWA), aucun warmupSync n'était appelé pré-load → status restait
+    // 'ready' → "Forcer audio" marchait au 1er coup. On ne fait le warmup
+    // QUE si une video est déjà chargée (ronde 2+), cas où playVideo()
+    // est un vrai no-op safe.
+    let hasVideo = false;
     try {
-      // playVideo synchrone — déclenche autoplay claim côté browser.
-      // Si pas de video chargée, no-op silencieux côté SDK.
+      const videoId = p.getVideoData?.()?.video_id;
+      hasVideo = typeof videoId === 'string' && videoId.length > 0;
+    } catch {
+      hasVideo = false;
+    }
+    if (!hasVideo) {
+      console.info('[YouTube] warmupSync : aucune video chargée, skip (évite onError code=5)');
+      return;
+    }
+    try {
       if (typeof p.playVideo === 'function') {
         p.playVideo();
         console.info('[YouTube] warmupSync : playVideo() appelé sync');
