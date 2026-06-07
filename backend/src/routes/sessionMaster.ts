@@ -38,8 +38,10 @@ import { getCumulativeScores } from '../lib/scores.js';
 import {
   advanceToNextOrEndRound,
   buildAndBroadcastTrack,
+  DEFAULT_SESSION_SIZE,
   endRoundInternal,
   findRoundForSession,
+  pickRandomTrackIdsForRound,
   restartCurrentTrackAndBroadcast,
   revealCurrentTrack,
 } from '../lib/gameplayCore.js';
@@ -430,6 +432,30 @@ router.post('/pick-round', async (req: Request<{ id: string }>, res: Response): 
     });
 
     // 3) Crée le nouveau round à la position suivante.
+    //    fix/session-pick-respect-default-size — random pick depuis le pool.
+    //    Avant ce fix, ce path créait des rounds avec selected_track_ids
+    //    vide → gameplayCore fallback sur full playlist → 80 tracks joués
+    //    au lieu des 15 attendus pour les playlists enrichies.
+    const sessionSize = playlist.default_session_size ?? DEFAULT_SESSION_SIZE;
+    const pick = await pickRandomTrackIdsForRound(
+      req.params.id,
+      parsed.data.playlist_id,
+      sessionSize,
+    );
+    if (pick.eligibleSize === 0) {
+      res.status(409).json({
+        error: {
+          code: 'EXHAUSTED_POOL',
+          message:
+            'Plus aucun morceau disponible dans cette playlist pour cette session (déjà tous joués)',
+        },
+      });
+      return;
+    }
+    console.info(
+      `[POST /pick-round] session=${req.params.id} playlist=${parsed.data.playlist_id} | pool=${pick.poolSize} played=${pick.playedSize} eligible=${pick.eligibleSize} session_size=${sessionSize} → selected=${pick.selectedTrackIds.length}`,
+    );
+
     const lastRound = await prisma.sessionRound.findFirst({
       where: { session_id: req.params.id },
       orderBy: { position: 'desc' },
@@ -441,6 +467,7 @@ router.post('/pick-round', async (req: Request<{ id: string }>, res: Response): 
         playlist_id: parsed.data.playlist_id,
         position: (lastRound?.position ?? 0) + 1,
         status: 'PENDING',
+        selected_track_ids: pick.selectedTrackIds,
       },
       include: { playlist: { select: PLAYLIST_LIGHT } },
     });

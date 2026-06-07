@@ -36,6 +36,7 @@ import { requireWorkspace } from '../middleware/tenant.js';
 import { generateUniqueShortCode } from '../lib/shortCode.js';
 import { broadcastToSession } from '../socket/index.js';
 import { getActiveTrack } from '../lib/gameState.js';
+import { DEFAULT_SESSION_SIZE, pickRandomTrackIdsForRound } from '../lib/gameplayCore.js';
 import { signParticipantToken } from '../lib/participantToken.js';
 import { getCumulativeScores } from '../lib/scores.js';
 
@@ -899,36 +900,13 @@ router.post(
       return;
     }
     try {
-      // feat/playlist-pool-random-selection — récupère TOUS les tracks du pool
-      // de la playlist, filtre ceux déjà joués dans la session (anti-doublon
-      // cross-playlist PR C), shuffle, take N = default_session_size.
-      //
-      // Si après filtrage le pool restant < N → on prend tout ce qui reste
-      // (et le frontend affichera "Pool partiellement utilisé"). Si reste 0
-      // → 409 EXHAUSTED_POOL pour signaler au host de choisir une autre.
-      const poolTracks = await prisma.playlistTrack.findMany({
-        where: { playlist_id: parsed.data.playlist_id },
-        select: { track_id: true },
-        orderBy: { position: 'asc' },
-      });
-      const playedTrackIds = await prisma.sessionPlayedTrack
-        .findMany({
-          where: { session_id: req.params.id },
-          select: { track_id: true },
-        })
-        .then((rows) => new Set(rows.map((r) => r.track_id)))
-        .catch((err) => {
-          // Si la table n'existe pas encore (PR C pas déployée), on degrade
-          // proprement : pas de filtre, on tire dans le pool complet.
-          console.warn('[POST /rounds] SessionPlayedTrack lookup failed, degrading:', err);
-          return new Set<string>();
-        });
-
-      const candidates = poolTracks
-        .map((pt) => pt.track_id)
-        .filter((tid) => !playedTrackIds.has(tid));
-
-      if (candidates.length === 0) {
+      const sessionSize = playlist.default_session_size ?? DEFAULT_SESSION_SIZE;
+      const pick = await pickRandomTrackIdsForRound(
+        req.params.id,
+        parsed.data.playlist_id,
+        sessionSize,
+      );
+      if (pick.eligibleSize === 0) {
         res.status(409).json({
           error: {
             code: 'EXHAUSTED_POOL',
@@ -938,18 +916,10 @@ router.post(
         });
         return;
       }
-
-      // Fisher-Yates shuffle (in-place) puis take N.
-      const sessionSize = playlist.default_session_size ?? 15;
-      const targetN = Math.min(sessionSize, candidates.length);
-      for (let i = candidates.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [candidates[i]!, candidates[j]!] = [candidates[j]!, candidates[i]!];
-      }
-      const selected = candidates.slice(0, targetN);
+      const selected = pick.selectedTrackIds;
 
       console.info(
-        `[POST /rounds] session=${req.params.id} playlist=${parsed.data.playlist_id} | pool=${poolTracks.length} played=${playedTrackIds.size} eligible=${candidates.length} → selected=${selected.length}`,
+        `[POST /rounds] session=${req.params.id} playlist=${parsed.data.playlist_id} | pool=${pick.poolSize} played=${pick.playedSize} eligible=${pick.eligibleSize} session_size=${sessionSize} → selected=${selected.length}`,
       );
 
       const lastRound = await prisma.sessionRound.findFirst({

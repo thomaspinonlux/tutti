@@ -22,6 +22,7 @@ import { generateAliases } from '../lib/aliases.js';
 import { broadcastToSession } from '../socket/index.js';
 import { invalidateCachedPlaylist } from '../lib/playlistCache.js';
 import { classifyYoutubeIds } from '../lib/youtubeValidation.js';
+import { DEFAULT_SESSION_SIZE, pickRandomTrackIdsForRound } from '../lib/gameplayCore.js';
 
 const router: Router = Router();
 
@@ -372,7 +373,7 @@ router.post(
         is_express: false,
         language: detail.locale_primary.startsWith('fr') ? 'fr' : 'en',
       },
-      select: { id: true },
+      select: { id: true, default_session_size: true },
     });
     await prisma.playlistTrack.createMany({
       data: trackIds.map((trackId, idx) => ({
@@ -383,6 +384,16 @@ router.post(
     });
 
     // 6. Créer SessionRound
+    //    fix/session-pick-respect-default-size — random pick depuis le pool
+    //    (playlist enrichie peut avoir 80 tracks, on n'en joue que 15).
+    //    Avant ce fix, ce path créait des rounds avec selected_track_ids
+    //    vide → gameplayCore fallback sur full playlist → 80 tracks joués.
+    const sessionSize = playlist.default_session_size ?? DEFAULT_SESSION_SIZE;
+    const pick = await pickRandomTrackIdsForRound(session.id, playlist.id, sessionSize);
+    console.info(
+      `[POST /library/launch] session=${session.id} playlist=${playlist.id} | pool=${pick.poolSize} played=${pick.playedSize} eligible=${pick.eligibleSize} session_size=${sessionSize} → selected=${pick.selectedTrackIds.length}`,
+    );
+
     const existingRoundsCount = await prisma.sessionRound.count({
       where: { session_id: session.id },
     });
@@ -393,6 +404,7 @@ router.post(
         position: existingRoundsCount + 1,
         status: 'PENDING',
         current_track_index: 0,
+        selected_track_ids: pick.selectedTrackIds,
       },
       include: {
         playlist: {
