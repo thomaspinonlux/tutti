@@ -1748,9 +1748,20 @@ function HostPageInner(): JSX.Element {
       <MultiColorBar height="md" />
 
       {/* Phase 3d — container DOM pour YouTube IFrame Player. Toujours présent
-          quand on est en gameplay pour que useYouTubePlayer puisse y monter
-          l'iframe. Taille 0×0 — la lecture est audio-only blind test. */}
-      {phase === 'roundPlaying' && (
+          PENDANT TOUT LE GAMEPLAY (roundPlaying + intermission + roundSelection)
+          pour que useYouTubePlayer puisse y monter l'iframe ET la détruire
+          proprement.
+          Taille 0×0 — la lecture est audio-only blind test.
+
+          fix/host-content-boundary-notfound-error — avant ce fix, condition
+          `phase === 'roundPlaying'` retirait le div au passage en intermission
+          AVANT que useYouTubePlayer cleanup ait fini son `player.destroy()`.
+          YT IFrame async tentait alors `removeChild` sur un parent déjà retiré
+          par React → NotFoundError non-catchable côté JS (déclenchée dans un
+          callback YT interne). Solution : garder le div monté pendant tout
+          `inGameplay` ; useYouTubePlayer.cleanup peut alors démonter
+          proprement son iframe. */}
+      {inGameplay && (
         <div
           id="youtube-player-host"
           aria-hidden

@@ -399,13 +399,30 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
         window.clearTimeout(onReadyTimeoutId);
         onReadyTimeoutId = null;
       }
-      if (playerRef.current?.destroy) {
-        try {
-          playerRef.current.destroy();
-        } catch {
-          // ignore
-        }
-        playerRef.current = null;
+      // fix/host-content-boundary-notfound-error — destroy() est différé via
+      // queueMicrotask pour s'exécuter APRÈS le commit React courant. Sinon
+      // YT IFrame tentait `removeChild` sur un parent que React a déjà retiré
+      // → NotFoundError non-catchable (postMessage async côté YT).
+      // Belt-and-suspenders : try/catch sync + log warn pour visibilité +
+      // check parent node avant destroy.
+      const p = playerRef.current;
+      playerRef.current = null;
+      if (p?.destroy) {
+        queueMicrotask(() => {
+          try {
+            const container = document.getElementById(containerId);
+            if (!container) {
+              console.warn('[Player] destroy skipped — container already removed');
+              return;
+            }
+            p.destroy();
+          } catch (e) {
+            console.warn(
+              '[Player] destroy() error ignored:',
+              e instanceof Error ? e.message : String(e),
+            );
+          }
+        });
       }
     };
   }, [enabled, containerId]);
