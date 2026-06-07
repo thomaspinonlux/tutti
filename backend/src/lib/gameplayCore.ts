@@ -92,15 +92,41 @@ export async function buildAndBroadcastTrack(
   round: RoundWithTracks,
   trackIndex: number,
 ): Promise<CurrentTrackState | null> {
-  const selected = round.selected_track_ids ?? [];
-  let playlistTrack: RoundWithTracks['playlist']['playlist_tracks'][number] | undefined;
-  if (selected.length > 0) {
-    const targetTrackId = selected[trackIndex];
-    if (!targetTrackId) return null;
-    playlistTrack = round.playlist.playlist_tracks.find((pt) => pt.track.id === targetTrackId);
-  } else {
-    playlistTrack = round.playlist.playlist_tracks[trackIndex];
+  let selected = round.selected_track_ids ?? [];
+
+  // fix/session-pick-respect-default-size — DEFENSE IN DEPTH.
+  // Si selected_track_ids est vide (round legacy créé avant PR #75 OU bug
+  // silencieux à l'écriture), on AUTO-CLAMP à default_session_size random
+  // au lieu de fallback sur les 80 tracks du pool. Persist en DB pour que
+  // les advance/next-track suivants utilisent le même sous-ensemble.
+  if (selected.length === 0) {
+    const sessionSize = round.playlist.default_session_size ?? DEFAULT_SESSION_SIZE;
+    const allTrackIds = round.playlist.playlist_tracks.map((pt) => pt.track.id);
+    if (allTrackIds.length > sessionSize) {
+      // Fisher-Yates pick
+      for (let i = allTrackIds.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allTrackIds[i]!, allTrackIds[j]!] = [allTrackIds[j]!, allTrackIds[i]!];
+      }
+      selected = allTrackIds.slice(0, sessionSize);
+    } else {
+      selected = allTrackIds;
+    }
+    console.warn(
+      `[gameplayCore] Round ${round.id} avait selected_track_ids vide — AUTO-CLAMP à ${selected.length} tracks (pool=${allTrackIds.length}, sessionSize=${sessionSize})`,
+    );
+    // Persist pour les advance suivants
+    await prisma.sessionRound.update({
+      where: { id: round.id },
+      data: { selected_track_ids: selected },
+    });
+    round.selected_track_ids = selected;
   }
+
+  let playlistTrack: RoundWithTracks['playlist']['playlist_tracks'][number] | undefined;
+  const targetTrackId = selected[trackIndex];
+  if (!targetTrackId) return null;
+  playlistTrack = round.playlist.playlist_tracks.find((pt) => pt.track.id === targetTrackId);
   if (!playlistTrack) return null;
   const track = playlistTrack.track;
 
@@ -287,12 +313,17 @@ export async function advanceToNextOrEndRound(
   { ended: true; round: EnrichedEndedRound | null } | { ended: false; state: CurrentTrackState }
 > {
   const nextIndex = round.current_track_index + 1;
-  // feat/playlist-pool-random-selection — longueur effective = selected si set,
-  // sinon full playlist (rétro-compat).
-  const effectiveLength =
+  // fix/session-pick-respect-default-size — défense en profondeur : clamp
+  // à default_session_size. Si selected_track_ids est vide, l'auto-clamp
+  // côté buildAndBroadcastTrack a déjà persisté un sous-ensemble — mais on
+  // protège aussi ici au cas où on entre dans advance avant le 1er
+  // buildAndBroadcastTrack.
+  const sessionSize = round.playlist.default_session_size ?? DEFAULT_SESSION_SIZE;
+  const rawLength =
     (round.selected_track_ids?.length ?? 0) > 0
       ? round.selected_track_ids.length
       : round.playlist.playlist_tracks.length;
+  const effectiveLength = Math.min(sessionSize, rawLength);
   if (nextIndex < effectiveLength) {
     // fix/next-track-resume-buzz-unlock — si la session était en pause au
     // moment du "Morceau suivant", auto-resume avant de broadcast track:start.
