@@ -547,7 +547,10 @@ export function PlayPage(): JSX.Element {
   return (
     <div className="min-h-screen flex flex-col">
       <MultiColorBar height="md" />
-      <main className="flex-1 px-4 py-3 flex items-start justify-center">
+      {/* fix/prevent-safari-reader-mode — role="application" évite que Safari
+          détecte la page joueur (peu de texte structuré) comme article éditorial
+          et propose son mode Lecteur (casserait micro + buzz + animations). */}
+      <main role="application" className="flex-1 px-4 py-3 flex items-start justify-center">
         <div className="w-full max-w-[500px]">
           <header className="mb-6 relative">
             <div className="absolute top-0 right-0">

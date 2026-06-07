@@ -1416,7 +1416,10 @@ function HostPageInner(): JSX.Element {
           PWA si standalone (instructions pour ouvrir Safari et désactiver). */}
       {youtube.blockedByContentFilter && <ContentBlockerWarning isStandalone={isStandalone} />}
 
-      <main className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-8">
+      {/* fix/prevent-safari-reader-mode — role="application" évite que Safari
+          détecte la page host comme article éditorial et propose son mode
+          Lecteur (qui casserait YT IFrame + boutons + audio). */}
+      <main role="application" className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-8">
         <header className="max-w-7xl mx-auto mb-4 sm:mb-8 flex items-center justify-between flex-wrap gap-3">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-1">

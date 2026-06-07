@@ -94,6 +94,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Tutti" />
 
+    <!-- ==================== ANTI-READER MODE (Safari) ====================
+         fix/prevent-safari-reader-mode — Safari peut suggérer son mode Lecteur
+         sur des pages détectées comme "articles" (structure sémantique +
+         beaucoup de texte). Tutti est une SPA interactive — la lecture mode
+         lecteur casse tout (YT IFrame retiré, boutons inactifs, audio coupé).
+         format-detection telephone=no aide Safari à comprendre qu'on n'est
+         pas un article éditorial. Combiné avec role="application" sur <main>
+         côté HostPage/LandingPage. -->
+    <meta name="format-detection" content="telephone=no" />
+
     <!-- ==================== FONTS ==================== -->
     <!-- Fraunces 900 italic auto-hébergé (preload critique pour le H1 hero <em>) -->
     <link

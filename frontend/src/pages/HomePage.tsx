@@ -43,7 +43,10 @@ export function HomePage(): JSX.Element {
       <div data-scope="landing" className="min-h-screen">
         <ColorBand />
         <Nav />
-        <main>
+        {/* fix/prevent-safari-reader-mode — role="application" évite que Safari
+            détecte la landing comme article éditorial et propose son mode Lecteur
+            (qui retirerait tous les composants interactifs). */}
+        <main role="application">
           <Hero />
           <ProductsSection />
           <HowItWorks />
