@@ -7,11 +7,18 @@
  *   - Bouton 📺 toujours visible : clic = ouvre /screen?session=CODE
  *     (positionné sur écran externe si détecté, sinon nouvel onglet manuel)
  *   - Choix mémorisé en localStorage pour la session.
+ *
+ * feat/pwa-standalone-safety-controls — en mode PWA standalone (iPad PWA),
+ * window.open() est bloqué/redirigé sur la fenêtre courante → trap (l'host
+ * se retrouve sur /screen sans moyen de revenir). Dans ce mode, si aucun
+ * écran secondaire n'est détecté, on affiche un modal "Aucun écran détecté"
+ * avec bouton retour, AU LIEU d'ouvrir /screen et de bloquer l'host.
  */
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useExternalScreen } from '../../lib/useExternalScreen.js';
+import { usePwa } from '../../lib/usePwa.js';
 import { Button, Card } from '../ui/index.js';
 
 interface Props {
@@ -20,6 +27,7 @@ interface Props {
 
 export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
   const { t } = useTranslation();
+  const { isStandalone } = usePwa();
   const {
     apiSupported,
     hasExternalScreen,
@@ -30,6 +38,9 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
   } = useExternalScreen();
   const [showPrompt, setShowPrompt] = useState(false);
   const [opened, setOpened] = useState(false);
+  /** feat/pwa-standalone-safety-controls — modal "no screen detected" pour
+   *  éviter le trap PWA standalone. */
+  const [showNoScreenModal, setShowNoScreenModal] = useState(false);
 
   // Auto-popup au 1er mount si écran détecté + pas de choix mémorisé
   useEffect(() => {
@@ -51,6 +62,13 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
   };
 
   const handleManualOpen = async (): Promise<void> => {
+    // PWA standalone + no external screen → window.open ne s'ouvrira pas
+    // dans une vraie nouvelle fenêtre. Afficher un modal d'info au lieu
+    // de naviguer hors host.
+    if (isStandalone && !hasExternalScreen) {
+      setShowNoScreenModal(true);
+      return;
+    }
     const ok = await openOnExternalScreen(shortCode);
     if (ok) setOpened(true);
   };
@@ -100,6 +118,38 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
                 {t('host.externalScreen.noExternalDetected')}
               </p>
             )}
+          </Card>
+        </div>
+      )}
+
+      {showNoScreenModal && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="no-screen-title"
+          className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center p-6 animate-fade-in"
+          onClick={() => setShowNoScreenModal(false)}
+        >
+          <Card
+            tone="cream"
+            size="lg"
+            className="max-w-md text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="font-display text-3xl mb-2" aria-hidden>
+              📺
+            </p>
+            <h3 id="no-screen-title" className="font-display text-2xl mb-2">
+              {t('host.externalScreen.noScreenStandaloneTitle')}
+            </h3>
+            <p className="font-editorial italic text-ink-soft mb-4">
+              {t('host.externalScreen.noScreenStandaloneBody')}
+            </p>
+            <div className="flex justify-center">
+              <Button onClick={() => setShowNoScreenModal(false)}>
+                {t('host.externalScreen.noScreenBackButton')}
+              </Button>
+            </div>
           </Card>
         </div>
       )}
