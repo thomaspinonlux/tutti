@@ -4,6 +4,11 @@
  * Enrichit les playlists officielles du catalogue (`official_playlists` /
  * `official_playlist_tracks`) jusqu'à un POOL CIBLE de N tracks (default 80).
  *
+ * PIVOT STRATÉGIQUE (2026-06-07) — abandon de search.list (quota 100/jour
+ * épuisé) au profit de videos.list batch 50 (1 unit each, 10k/jour). Claude
+ * génère directement les youtubeVideoId depuis sa connaissance, on valide
+ * ensuite en batch.
+ *
  * Cause initiale (audit 2026-06) : les 95 playlists du catalogue ont toutes
  * exactement 15 tracks, default_session_size=15 → `Math.min(15,15)=15` →
  * set identique à chaque session. PO confirme "mêmes morceaux à chaque
@@ -11,11 +16,10 @@
  *
  * Workflow par playlist :
  *   1. Récupère les tracks existantes (title, artist, year).
- *   2. Claude Sonnet 4.5 → génère N suggestions complémentaires (même thème,
- *      époque, langue), en lui passant les tracks existantes pour éviter
- *      les doublons sémantiques.
- *   3. Pour chaque suggestion : YouTube Data API search avec scoring
- *      VEVO/Official/Topic, anti-doublon par slug(artist+title).
+ *   2. Claude Sonnet 4.5 → génère N suggestions complémentaires AVEC
+ *      youtubeVideoId fourni depuis sa knowledge (null si pas sûr).
+ *   3. Validate en batch via videos.list?id=v1,v2,...,v50&part=...
+ *      Critères : exists, status.embeddable=true, durée 90-360s, vues > 50k.
  *   4. INSERT official_playlist_tracks avec position incrémentale.
  *   5. UPDATE official_playlists.track_count.
  *
@@ -25,14 +29,15 @@
  *   pnpm enrich:official-playlists --playlist=italo-disco-classics
  *   pnpm enrich:official-playlists --target-size=60   # pool plus petit
  *   pnpm enrich:official-playlists --dry-run          # preview sans INSERT
+ *   pnpm enrich:official-playlists --skip-validation  # debug, skip videos.list
  *
  * Env requis : ANTHROPIC_API_KEY, YOUTUBE_API_KEY, DATABASE_URL.
  *
  * Coût estimé (pool=80, 95 playlists) :
- *   - Claude Sonnet 4.5 : ~95 × 85 tracks × ~350 tok = ~22M tok out = ~$3.30
- *     + ~22M tok in = ~$0.65 → ~$4 (~3.7€)
- *   - YouTube quota : 85 × 100 units × 95 = ~810k → 1 jour de quota max ou
- *     étaler. Default quota 10k/day → augmentation requise OU --limit=10.
+ *   - Claude Sonnet 4.5 : ~95 × 85 tracks × ~400 tok = ~25M tok out = ~$3.75
+ *     + ~22M tok in = ~$0.65 → ~$4.40 (~4€)
+ *   - YouTube quota : ~95 × 85 / 50 ≈ 162 batches × 1 unit = ~165 units
+ *     (vs 800k en version search) → quasi gratuit.
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -47,15 +52,22 @@ const prisma = new PrismaClient();
 const TARGET_POOL_DEFAULT = 80;
 const OVERREQUEST_FACTOR = 1.5;
 const PLAYLIST_CONCURRENCY = 2;
-/** Limite GLOBALE (toutes playlists confondues) pour rester sous le quota
- * YouTube per-minute (~300/min sur quota standard). 4 en parallèle = ~240
- * requêtes/min en burst, ce qui passe en général. */
-const YT_GLOBAL_CONCURRENCY = 4;
+/** videos.list accepte jusqu'à 50 IDs par requête (toujours 1 unit). */
+const VIDEOS_LIST_BATCH = 50;
+/** Concurrency global pour les batches videos.list. 2 = ~120 ID validés/sec
+ * en burst, largement sous les rate limits. */
+const YT_GLOBAL_CONCURRENCY = 2;
 /** Max tracks par artiste dans les suggestions retenues. Claude ignore parfois
  * la consigne "max 2" → on enforce côté code. */
 const MAX_TRACKS_PER_ARTIST = 2;
+/** Durée minimum/maximum acceptée (en secondes) pour une track YouTube.
+ * < 90s = teaser/extrait, > 360s = remix étendu ou DJ set. */
+const MIN_DURATION_SEC = 90;
+const MAX_DURATION_SEC = 360;
+/** Vues minimum pour considérer la track populaire (anti-bootleg). */
+const MIN_VIEW_COUNT = 50_000;
 const ANTHROPIC_MODEL = 'claude-sonnet-4-5-20250929';
-const MAX_TOKENS = 6000;
+const MAX_TOKENS = 8000;
 
 // Limite globale partagée par toutes les playlists pour les appels YouTube.
 const ytGlobalLimit = pLimit(YT_GLOBAL_CONCURRENCY);
@@ -70,6 +82,7 @@ interface CliArgs {
   playlistSlug: string | null;
   targetSize: number;
   dryRun: boolean;
+  skipValidation: boolean;
 }
 
 function parseArgs(): CliArgs {
@@ -83,7 +96,8 @@ function parseArgs(): CliArgs {
     ? Number.parseInt(targetArg.split('=')[1] ?? '', 10) || TARGET_POOL_DEFAULT
     : TARGET_POOL_DEFAULT;
   const dryRun = args.includes('--dry-run');
-  return { limit, playlistSlug, targetSize, dryRun };
+  const skipValidation = args.includes('--skip-validation');
+  return { limit, playlistSlug, targetSize, dryRun, skipValidation };
 }
 
 // ───── Helpers ────────────────────────────────────────────────────────────
@@ -162,6 +176,8 @@ interface SuggestedTrack {
   artist: string;
   year: number | null;
   language: string;
+  /** youtubeVideoId fourni par Claude depuis sa knowledge. null si pas sûr. */
+  youtubeVideoId: string | null;
 }
 
 interface PlaylistContext {
@@ -199,6 +215,8 @@ ${existingList || '(aucune)'}
 
 Génère EXACTEMENT ${requestN} tracks supplémentaires cohérentes avec le thème, l'époque et la langue de la playlist.
 
+CRITIQUE — POUR CHAQUE TRACK : fournis le YouTube videoId EXACT du clip officiel ou audio officiel (chaîne VEVO, "Official Video", "Official Audio", "Artist - Topic"). Tu connais les videoIds des morceaux populaires dans ta knowledge. Si tu n'es PAS 100% SÛR du videoId, mets "youtubeVideoId": null (on validera côté code, mieux vaut null qu'un mauvais ID).
+
 Critères OBLIGATOIRES :
 - Morceaux populaires reconnaissables au blind test (pas de B-side obscur)
 - Tracks RÉELLES existantes (pas inventées)
@@ -209,7 +227,20 @@ Critères OBLIGATOIRES :
 
 Format JSON STRICT (array uniquement, pas de préambule) :
 [
-  { "title": "Titre exact", "artist": "Nom artiste exact", "year": 1995, "language": "fr" }
+  {
+    "title": "Bohemian Rhapsody",
+    "artist": "Queen",
+    "year": 1975,
+    "language": "en",
+    "youtubeVideoId": "fJ9rUzIMcZQ"
+  },
+  {
+    "title": "Titre dont tu n'es pas sûr du videoId",
+    "artist": "Artiste",
+    "year": 2000,
+    "language": "fr",
+    "youtubeVideoId": null
+  }
 ]
 
 Réponds UNIQUEMENT avec le JSON array, rien d'autre.`;
@@ -271,64 +302,109 @@ async function suggestComplementaryTracks(
     const year =
       typeof obj.year === 'number' && Number.isFinite(obj.year) ? Math.floor(obj.year) : null;
     const language = typeof obj.language === 'string' ? obj.language : pl.locale_primary;
-    tracks.push({ title, artist, year, language });
+    // Accepter "youtubeVideoId" ou "youtube_video_id" ou "videoId" pour
+    // robustesse face aux variations Claude.
+    const rawId =
+      (typeof obj.youtubeVideoId === 'string' && obj.youtubeVideoId) ||
+      (typeof obj.youtube_video_id === 'string' && obj.youtube_video_id) ||
+      (typeof obj.videoId === 'string' && obj.videoId) ||
+      null;
+    const youtubeVideoId = rawId && /^[A-Za-z0-9_-]{11}$/.test(rawId) ? rawId : null;
+    tracks.push({ title, artist, year, language, youtubeVideoId });
   }
   return { tracks, usage, costEur, raw: text };
 }
 
-// ───── YouTube Data API search ────────────────────────────────────────────
+// ───── YouTube Data API videos.list batch validation ──────────────────────
 
-interface YouTubeSearchItem {
-  id: { videoId?: string };
-  snippet: { title: string; channelTitle: string; publishedAt?: string };
+interface YouTubeVideoItem {
+  id: string;
+  snippet?: { title: string; channelTitle: string };
+  contentDetails?: { duration: string };
+  status?: { embeddable?: boolean; uploadStatus?: string; privacyStatus?: string };
+  statistics?: { viewCount?: string };
 }
 
-async function searchYouTubeVideo(track: SuggestedTrack): Promise<string | null> {
+/** Parse ISO 8601 duration (PT1H2M3S → seconds). Returns 0 on parse fail. */
+function parseIsoDuration(iso: string): number {
+  const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);
+  if (!m) return 0;
+  const h = m[1] ? Number.parseInt(m[1], 10) : 0;
+  const min = m[2] ? Number.parseInt(m[2], 10) : 0;
+  const s = m[3] ? Number.parseInt(m[3], 10) : 0;
+  return h * 3600 + min * 60 + s;
+}
+
+interface ValidationVerdict {
+  ok: boolean;
+  reason?: string;
+}
+
+/**
+ * Valide les videoIds via videos.list batched. 1 unit de quota par batch
+ * (jusqu'à 50 IDs). Retourne map<videoId, verdict>.
+ */
+async function validateVideoIdsBatch(ids: string[]): Promise<Map<string, ValidationVerdict>> {
   const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) return null;
-  const q = `${track.artist} - ${track.title}${track.year ? ` ${track.year}` : ''}`;
+  const out = new Map<string, ValidationVerdict>();
+  if (!apiKey || ids.length === 0) {
+    for (const id of ids) out.set(id, { ok: false, reason: 'no_api_key' });
+    return out;
+  }
   const params = new URLSearchParams({
-    part: 'snippet',
-    q,
-    type: 'video',
-    maxResults: '10',
-    videoEmbeddable: 'true',
-    safeSearch: 'none',
+    id: ids.join(','),
+    part: 'snippet,contentDetails,status,statistics',
     key: apiKey,
   });
-  const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params.toString()}`);
+  const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params.toString()}`);
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    console.warn(
-      `[YT] search failed "${track.artist} - ${track.title}" : ${res.status} ${body.slice(0, 200)}`,
-    );
-    return null;
+    console.warn(`[YT] videos.list failed : ${res.status} ${body.slice(0, 200)}`);
+    for (const id of ids) out.set(id, { ok: false, reason: `http_${res.status}` });
+    return out;
   }
-  const data = (await res.json()) as { items: YouTubeSearchItem[] };
-  let candidates = data.items.filter((it) => Boolean(it.id.videoId));
-  candidates = candidates.filter(
-    (it) => !containsForbidden(it.snippet.title) && !containsForbidden(it.snippet.channelTitle),
+  const data = (await res.json()) as { items: YouTubeVideoItem[] };
+  const foundIds = new Set(data.items.map((it) => it.id));
+  for (const id of ids) {
+    if (!foundIds.has(id)) {
+      out.set(id, { ok: false, reason: 'not_found' });
+    }
+  }
+  for (const it of data.items) {
+    const snippet = it.snippet;
+    const titleStr = snippet?.title ?? '';
+    const channelStr = snippet?.channelTitle ?? '';
+    const duration = it.contentDetails?.duration ? parseIsoDuration(it.contentDetails.duration) : 0;
+    const views = it.statistics?.viewCount ? Number.parseInt(it.statistics.viewCount, 10) || 0 : 0;
+    const embeddable = it.status?.embeddable === true;
+    const isPublic = it.status?.privacyStatus === 'public';
+    let verdict: ValidationVerdict = { ok: true };
+    if (!embeddable) verdict = { ok: false, reason: 'not_embeddable' };
+    else if (!isPublic) verdict = { ok: false, reason: `privacy_${it.status?.privacyStatus}` };
+    else if (duration < MIN_DURATION_SEC) verdict = { ok: false, reason: `too_short_${duration}s` };
+    else if (duration > MAX_DURATION_SEC) verdict = { ok: false, reason: `too_long_${duration}s` };
+    else if (views < MIN_VIEW_COUNT) verdict = { ok: false, reason: `low_views_${views}` };
+    else if (containsForbidden(titleStr) || containsForbidden(channelStr))
+      verdict = { ok: false, reason: 'forbidden_term' };
+    out.set(it.id, verdict);
+  }
+  return out;
+}
+
+/** Découpe ids en batches de VIDEOS_LIST_BATCH puis valide en parallèle. */
+async function validateVideoIds(ids: string[]): Promise<Map<string, ValidationVerdict>> {
+  const result = new Map<string, ValidationVerdict>();
+  const batches: string[][] = [];
+  for (let i = 0; i < ids.length; i += VIDEOS_LIST_BATCH) {
+    batches.push(ids.slice(i, i + VIDEOS_LIST_BATCH));
+  }
+  const partials = await Promise.all(
+    batches.map((batch) => ytGlobalLimit(() => validateVideoIdsBatch(batch))),
   );
-  if (candidates.length === 0) return null;
-  const artistLower = lower(track.artist);
-  const scored = candidates.map((it) => {
-    const channel = lower(it.snippet.channelTitle);
-    const title = it.snippet.title;
-    const titleDist = levenshtein(title, `${track.artist} - ${track.title}`);
-    let score = titleDist;
-    if (channel.includes('vevo')) score -= 0.4;
-    if (channel.includes('official')) score -= 0.25;
-    if (channel.includes(artistLower)) score -= 0.2;
-    if (channel.endsWith('- topic')) score -= 0.35;
-    return { item: it, score };
-  });
-  scored.sort((a, b) => a.score - b.score);
-  const best = scored[0];
-  if (!best || !best.item.id.videoId) return null;
-  if (best.score > 0.7) {
-    return null;
+  for (const p of partials) {
+    for (const [k, v] of p) result.set(k, v);
   }
-  return best.item.id.videoId;
+  return result;
 }
 
 // ───── Enrich one playlist ────────────────────────────────────────────────
@@ -338,14 +414,16 @@ interface EnrichResult {
   name: string;
   existingCount: number;
   suggestionsGenerated: number;
+  withVideoId: number;
   newAfterDedup: number;
-  resolvedOnYouTube: number;
+  validated: number;
   inserted: number;
   costEur: number;
   inputTokens: number;
   outputTokens: number;
   ytQuotaUsed: number;
   sampleTitles: string[];
+  validationReasons: Record<string, number>;
   error?: string;
 }
 
@@ -353,6 +431,7 @@ async function enrichOnePlaylist(
   pl: PlaylistContext,
   targetSize: number,
   dryRun: boolean,
+  skipValidation: boolean,
 ): Promise<EnrichResult> {
   const existing = await prisma.officialPlaylistTrack.findMany({
     where: { playlist_id: pl.id },
@@ -366,14 +445,16 @@ async function enrichOnePlaylist(
     name: pl.name_fr,
     existingCount,
     suggestionsGenerated: 0,
+    withVideoId: 0,
     newAfterDedup: 0,
-    resolvedOnYouTube: 0,
+    validated: 0,
     inserted: 0,
     costEur: 0,
     inputTokens: 0,
     outputTokens: 0,
     ytQuotaUsed: 0,
     sampleTitles: [],
+    validationReasons: {},
   };
   if (needed <= 0) {
     console.info(`[Enrich] "${pl.name_fr}" déjà à ${existingCount}/${targetSize} → skip`);
@@ -407,8 +488,12 @@ async function enrichOnePlaylist(
     return baseResult;
   }
 
-  // Step 2 : dedup against existing by slug(artist+title)
-  //          + cap per artist (Claude ignore parfois la consigne max-2)
+  // Count tracks that Claude provided a videoId for.
+  baseResult.withVideoId = suggestions.filter((s) => s.youtubeVideoId !== null).length;
+
+  // Step 2 : dedup against existing by slug(artist+title) and against
+  //          videoIds déjà présents en DB (anti-doublon strict) + cap per
+  //          artist (Claude ignore parfois la consigne max-2).
   const existingKeys = new Set(existing.map((t) => slugifyKey(t.artist, t.title)));
   const existingArtistCounts = new Map<string, number>();
   for (const t of existing) {
@@ -416,43 +501,60 @@ async function enrichOnePlaylist(
     existingArtistCounts.set(k, (existingArtistCounts.get(k) ?? 0) + 1);
   }
   const seenKeys = new Set<string>();
+  const seenVideoIds = new Set<string>();
   const perArtistCount = new Map<string, number>(existingArtistCounts);
   const fresh: SuggestedTrack[] = [];
   for (const s of suggestions) {
     const key = slugifyKey(s.artist, s.title);
     if (existingKeys.has(key) || seenKeys.has(key)) continue;
+    // Skip si Claude n'a pas fourni de videoId (on n'a pas search.list pour
+    // résoudre derrière sans cramer le quota). On compense via OVERREQUEST.
+    if (!s.youtubeVideoId) continue;
+    if (seenVideoIds.has(s.youtubeVideoId)) continue;
     const artistKey = lower(s.artist);
     const count = perArtistCount.get(artistKey) ?? 0;
     if (count >= MAX_TRACKS_PER_ARTIST) continue;
     seenKeys.add(key);
+    seenVideoIds.add(s.youtubeVideoId);
     perArtistCount.set(artistKey, count + 1);
     fresh.push(s);
   }
   baseResult.newAfterDedup = fresh.length;
   console.info(
-    `[Enrich] "${pl.name_fr}" : ${suggestions.length} suggérés → ${fresh.length} fresh après dedup+cap`,
+    `[Enrich] "${pl.name_fr}" : ${suggestions.length} suggérés (${baseResult.withVideoId} avec videoId) → ${fresh.length} fresh après dedup+cap`,
   );
 
-  // Step 3 : resolve YouTube IDs via global concurrency limit (shared across
-  // all playlists) to stay under YouTube per-minute quota.
-  const resolved = await Promise.all(
-    fresh.map((s) =>
-      ytGlobalLimit(async () => {
-        const id = await searchYouTubeVideo(s);
-        baseResult.ytQuotaUsed += 100;
-        return { ...s, youtube_id: id };
-      }),
-    ),
-  );
-  const playable = resolved.filter((t): t is SuggestedTrack & { youtube_id: string } =>
-    Boolean(t.youtube_id),
-  );
-  baseResult.resolvedOnYouTube = playable.length;
-  console.info(`[Enrich] "${pl.name_fr}" : ${playable.length}/${fresh.length} résolus sur YouTube`);
+  // Step 3 : validate videoIds via videos.list batch (1 unit per 50 IDs).
+  let validated = fresh;
+  if (!skipValidation) {
+    const idsToValidate = fresh.map((t) => t.youtubeVideoId!).filter((id) => id !== null);
+    const verdicts = await validateVideoIds(idsToValidate);
+    const batchCount = Math.ceil(idsToValidate.length / VIDEOS_LIST_BATCH);
+    baseResult.ytQuotaUsed += batchCount; // 1 unit per batch
+    const accepted: SuggestedTrack[] = [];
+    for (const t of fresh) {
+      const verdict = verdicts.get(t.youtubeVideoId!);
+      if (verdict?.ok) {
+        accepted.push(t);
+      } else {
+        const reason = verdict?.reason ?? 'unknown';
+        baseResult.validationReasons[reason] = (baseResult.validationReasons[reason] ?? 0) + 1;
+      }
+    }
+    validated = accepted;
+    console.info(
+      `[Enrich] "${pl.name_fr}" : ${accepted.length}/${fresh.length} validés via videos.list (${batchCount} batches = ${batchCount} units)`,
+    );
+  } else {
+    console.info(`[Enrich] "${pl.name_fr}" : --skip-validation → ${fresh.length} accepted as-is`);
+  }
+  baseResult.validated = validated.length;
 
   // Step 4 : cap at needed + insert
-  const toInsert = playable.slice(0, needed);
-  baseResult.sampleTitles = toInsert.slice(0, 5).map((t) => `${t.artist} — ${t.title}`);
+  const toInsert = validated.slice(0, needed);
+  baseResult.sampleTitles = toInsert
+    .slice(0, 5)
+    .map((t) => `${t.artist} — ${t.title} (${t.youtubeVideoId})`);
 
   if (dryRun) {
     console.info(
@@ -476,7 +578,7 @@ async function enrichOnePlaylist(
       artist: t.artist,
       year: t.year,
       difficulty: pl.difficulty,
-      youtube_id: t.youtube_id,
+      youtube_id: t.youtubeVideoId,
     })),
     skipDuplicates: true,
   });
@@ -494,9 +596,9 @@ async function enrichOnePlaylist(
 // ───── Main ───────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const { limit, playlistSlug, targetSize, dryRun } = parseArgs();
+  const { limit, playlistSlug, targetSize, dryRun, skipValidation } = parseArgs();
   console.info(
-    `[EnrichCLI] start | limit=${limit ?? 'none'} | playlist=${playlistSlug ?? 'all'} | target-size=${targetSize} | dry-run=${dryRun}`,
+    `[EnrichCLI] start | limit=${limit ?? 'none'} | playlist=${playlistSlug ?? 'all'} | target-size=${targetSize} | dry-run=${dryRun} | skip-validation=${skipValidation}`,
   );
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -540,28 +642,44 @@ async function main(): Promise<void> {
 
   const playlistLimit = pLimit(PLAYLIST_CONCURRENCY);
   const results = await Promise.all(
-    playlists.map((p) => playlistLimit(() => enrichOnePlaylist(p, targetSize, dryRun))),
+    playlists.map((p) =>
+      playlistLimit(() => enrichOnePlaylist(p, targetSize, dryRun, skipValidation)),
+    ),
   );
 
   // Summary
   const totalInserted = results.reduce((s, r) => s + r.inserted, 0);
   const totalSuggested = results.reduce((s, r) => s + r.suggestionsGenerated, 0);
-  const totalResolved = results.reduce((s, r) => s + r.resolvedOnYouTube, 0);
+  const totalWithVideoId = results.reduce((s, r) => s + r.withVideoId, 0);
+  const totalValidated = results.reduce((s, r) => s + r.validated, 0);
   const totalCost = results.reduce((s, r) => s + r.costEur, 0);
   const totalIn = results.reduce((s, r) => s + r.inputTokens, 0);
   const totalOut = results.reduce((s, r) => s + r.outputTokens, 0);
   const totalQuota = results.reduce((s, r) => s + r.ytQuotaUsed, 0);
   const errored = results.filter((r) => r.error);
+  const aggregatedReasons: Record<string, number> = {};
+  for (const r of results) {
+    for (const [reason, count] of Object.entries(r.validationReasons)) {
+      aggregatedReasons[reason] = (aggregatedReasons[reason] ?? 0) + count;
+    }
+  }
 
   console.info('\n[EnrichCLI] ═══════════════ SUMMARY ═══════════════');
   console.info(`  Playlists processed       : ${results.length}`);
   console.info(`  Total suggested (Claude)  : ${totalSuggested}`);
-  console.info(`  Total resolved on YouTube : ${totalResolved}`);
+  console.info(`  Suggested w/ videoId      : ${totalWithVideoId}`);
+  console.info(`  Validated via videos.list : ${totalValidated}`);
   console.info(`  Total INSERTED            : ${totalInserted}${dryRun ? ' (DRY-RUN)' : ''}`);
   console.info(`  Claude in tokens          : ${totalIn.toLocaleString()}`);
   console.info(`  Claude out tokens         : ${totalOut.toLocaleString()}`);
   console.info(`  Claude cost (EUR)         : ${totalCost.toFixed(2)}€`);
   console.info(`  YouTube quota units used  : ${totalQuota.toLocaleString()}`);
+  if (Object.keys(aggregatedReasons).length > 0) {
+    console.info('  Validation failures :');
+    for (const [reason, count] of Object.entries(aggregatedReasons).sort((a, b) => b[1] - a[1])) {
+      console.info(`    - ${reason}: ${count}`);
+    }
+  }
   if (errored.length > 0) {
     console.info(`  Errored playlists         : ${errored.length}`);
     for (const e of errored) {
