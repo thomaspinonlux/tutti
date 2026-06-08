@@ -19,7 +19,8 @@ export type ScreenStateValue =
   | 'PLAYING'
   | 'PAUSED'
   | 'ROUND_PODIUM'
-  | 'FINAL_PODIUM';
+  | 'FINAL_PODIUM'
+  | 'PLAYLIST_SELECTION';
 
 export type ScreenState =
   | { state: 'IDLE'; lastUpdate: string }
@@ -75,7 +76,35 @@ export type ScreenState =
       sessionName: string | null;
       finalScores: CumulativeScore[];
       lastUpdate: string;
+    }
+  | {
+      /** feat/tv-playlist-selection-sync — TV affiche playlist focused par
+       *  l'animateur dans le carrousel de sélection (avant partie OU entre
+       *  manches). */
+      state: 'PLAYLIST_SELECTION';
+      sessionId: string;
+      joinCode: string;
+      sessionName: string | null;
+      playlist: {
+        id: string;
+        slug: string;
+        name: string;
+        description: string | null;
+        cover_url: string | null;
+        tracks_count: number;
+        category: string | null;
+        difficulty: string;
+      };
+      lastUpdate: string;
     };
+
+/** POST le playlist_id actuellement centré (null = sortie sélection). */
+export async function postFocusedPlaylist(playlistId: string | null): Promise<void> {
+  await api('/api/workspace/screen-state/focused-playlist', {
+    method: 'POST',
+    body: { playlist_id: playlistId },
+  });
+}
 
 /**
  * Récupère l'état screen actuel.
