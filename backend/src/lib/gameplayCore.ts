@@ -193,6 +193,24 @@ export async function getSessionPlayedTrackIds(sessionId: string): Promise<Set<s
 /** Default session size si playlist.default_session_size est null. */
 export const DEFAULT_SESSION_SIZE = 15;
 
+/**
+ * fix/round-tracks-count-clamped-to-selected — calcul du nombre de tracks
+ * EFFECTIFS pour un round sérialisé vers le frontend. Si selected_track_ids
+ * est non-vide, c'est la longueur de cette liste (= taille de la manche, 15).
+ * Sinon, fallback sur la taille du pool de la playlist (legacy rounds).
+ *
+ * Avant ce fix, tous les serializers renvoyaient `_count.playlist_tracks`
+ * (= taille du pool = 80) → le frontend HostPage affichait
+ * "Morceau X / 80" alors que le round n'en joue que 15. PO confusion.
+ */
+export function getEffectiveRoundTrackCount(round: {
+  selected_track_ids?: string[] | null;
+  playlist: { _count: { playlist_tracks: number } };
+}): number {
+  const n = round.selected_track_ids?.length ?? 0;
+  return n > 0 ? n : round.playlist._count.playlist_tracks;
+}
+
 export interface RandomPickResult {
   selectedTrackIds: string[];
   poolSize: number;

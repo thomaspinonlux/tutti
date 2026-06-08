@@ -36,7 +36,11 @@ import { requireWorkspace } from '../middleware/tenant.js';
 import { generateUniqueShortCode } from '../lib/shortCode.js';
 import { broadcastToSession } from '../socket/index.js';
 import { getActiveTrack } from '../lib/gameState.js';
-import { DEFAULT_SESSION_SIZE, pickRandomTrackIdsForRound } from '../lib/gameplayCore.js';
+import {
+  DEFAULT_SESSION_SIZE,
+  getEffectiveRoundTrackCount,
+  pickRandomTrackIdsForRound,
+} from '../lib/gameplayCore.js';
 import { signParticipantToken } from '../lib/participantToken.js';
 import { getCumulativeScores } from '../lib/scores.js';
 
@@ -77,7 +81,7 @@ function serializeSession(session: NonNullable<EnrichedSession>) {
         id: r.playlist.id,
         name: r.playlist.name,
         level: r.playlist.level,
-        tracks_count: r.playlist._count.playlist_tracks,
+        tracks_count: getEffectiveRoundTrackCount(r),
       },
     })),
   };
@@ -419,7 +423,7 @@ router.get(
           id: r.playlist.id,
           name: r.playlist.name,
           level: r.playlist.level,
-          tracks_count: r.playlist._count.playlist_tracks,
+          tracks_count: getEffectiveRoundTrackCount(r),
         },
       }));
       res.json({
@@ -952,7 +956,7 @@ router.post(
           id: round.playlist.id,
           name: round.playlist.name,
           level: round.playlist.level,
-          tracks_count: round.playlist._count.playlist_tracks,
+          tracks_count: getEffectiveRoundTrackCount(round),
           // Côté UI on affiche aussi la taille effective du round (selected).
           selected_tracks_count: selected.length,
         },
@@ -1009,7 +1013,7 @@ router.post(
           id: round.playlist.id,
           name: round.playlist.name,
           level: round.playlist.level,
-          tracks_count: round.playlist._count.playlist_tracks,
+          tracks_count: getEffectiveRoundTrackCount(round),
         },
       };
       broadcastToSession(req.params.id, 'round:started', { round: enriched });
@@ -1055,7 +1059,7 @@ router.post(
           id: round.playlist.id,
           name: round.playlist.name,
           level: round.playlist.level,
-          tracks_count: round.playlist._count.playlist_tracks,
+          tracks_count: getEffectiveRoundTrackCount(round),
         },
       };
       broadcastToSession(req.params.id, 'round:ended', { round: enriched });

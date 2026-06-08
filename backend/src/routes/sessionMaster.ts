@@ -41,6 +41,7 @@ import {
   DEFAULT_SESSION_SIZE,
   endRoundInternal,
   findRoundForSession,
+  getEffectiveRoundTrackCount,
   pickRandomTrackIdsForRound,
   restartCurrentTrackAndBroadcast,
   revealCurrentTrack,
@@ -81,6 +82,7 @@ const PLAYLIST_LIGHT = {
 
 function enrichRound<
   R extends {
+    selected_track_ids?: string[] | null;
     playlist: { id: string; name: string; level: string; _count: { playlist_tracks: number } };
   },
 >(round: R) {
@@ -90,7 +92,7 @@ function enrichRound<
       id: round.playlist.id,
       name: round.playlist.name,
       level: round.playlist.level,
-      tracks_count: round.playlist._count.playlist_tracks,
+      tracks_count: getEffectiveRoundTrackCount(round),
     },
   };
 }
