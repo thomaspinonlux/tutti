@@ -452,7 +452,21 @@
       "detectedHint": "Project the public view on this screen (TV)? Your control interface stays here.",
       "projectNow": "Project now",
       "apiUnsupported": "Auto-detection not supported by your browser — use the manual button.",
-      "noExternalDetected": "No external screen detected."
+      "noExternalDetected": "No external screen detected.",
+      "noScreenStandaloneTitle": "No secondary screen detected",
+      "noScreenStandaloneBody": "Connect a TV/monitor via HDMI or AirPlay, or open the app in Safari to launch the TV screen in a new tab.",
+      "noScreenBackButton": "Back"
+    },
+    "pwaSafety": {
+      "label": "PWA controls",
+      "reloadShort": "Reload",
+      "reloadHint": "Reload the page (useful if the app is stuck)",
+      "reloadConfirmShort": "Confirm?",
+      "reloadConfirm": "Click again to confirm reload",
+      "debugOn": "Debug ON",
+      "debugOff": "Debug",
+      "debugOnHint": "Disable the audio debug overlay (reloads the page)",
+      "debugOffHint": "Enable the audio debug overlay (reloads the page)"
     },
     "masterSectionLabel": "Game animator",
     "masterPickHint": "Mode B: pick a player as the animator — they'll run the game from their phone (next track, pause, adjust points). The Start button unlocks once an animator is picked.",

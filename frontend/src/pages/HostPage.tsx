@@ -102,6 +102,7 @@ import { PlayersPanel } from '../components/host/PlayersPanel.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { ExternalScreenButton } from '../components/host/ExternalScreenButton.js';
+import { PwaSafetyControls } from '../components/host/PwaSafetyControls.js';
 
 interface Toast {
   id: string;
@@ -1245,6 +1246,7 @@ function HostPageInner(): JSX.Element {
         )}
         {/* Badge master + change-master accessible discrètement en haut-droite */}
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
+          <PwaSafetyControls />
           <ExternalScreenButton shortCode={session.short_code} />
           <MasterBadge
             master={currentMaster}
@@ -1462,6 +1464,7 @@ function HostPageInner(): JSX.Element {
                 ← {t('host.backDashboard')}
               </Button>
             )}
+            <PwaSafetyControls />
             <ExternalScreenButton shortCode={session.short_code} />
             {!session.has_animator &&
               (effectivePhase === 'roundPlaying' ||

@@ -452,7 +452,21 @@
       "detectedHint": "Veux-tu projeter la vue grand public sur cet écran (TV) ? On garde ton interface de pilotage ici.",
       "projectNow": "Projeter maintenant",
       "apiUnsupported": "Détection auto non supportée par ton navigateur — utilise le bouton manuel.",
-      "noExternalDetected": "Aucun écran externe détecté."
+      "noExternalDetected": "Aucun écran externe détecté.",
+      "noScreenStandaloneTitle": "Aucun écran secondaire détecté",
+      "noScreenStandaloneBody": "Branche un écran/TV en HDMI ou AirPlay, ou utilise l'app dans Safari pour ouvrir l'écran TV dans un nouvel onglet.",
+      "noScreenBackButton": "Retour"
+    },
+    "pwaSafety": {
+      "label": "Contrôles PWA",
+      "reloadShort": "Recharger",
+      "reloadHint": "Recharger la page (utile si l'app est bloquée)",
+      "reloadConfirmShort": "Confirmer ?",
+      "reloadConfirm": "Re-clique pour confirmer le rechargement",
+      "debugOn": "Debug ON",
+      "debugOff": "Debug",
+      "debugOnHint": "Désactiver l'overlay de debug audio (recharge la page)",
+      "debugOffHint": "Activer l'overlay de debug audio (recharge la page)"
     },
     "masterSectionLabel": "Animateur de la partie",
     "masterPickHint": "Mode B : désigne un joueur comme animateur — il pilotera la partie depuis son tel (lancer le morceau suivant, faire pause, ajuster les points). Le bouton Démarrer s'activera dès qu'un animateur est désigné.",
