@@ -27,6 +27,7 @@ import type {
 import { prisma } from './prisma.js';
 import { getCumulativeScores } from './scores.js';
 import { buildCurrentTrackStateSnapshot, getEffectiveRoundTrackCount } from './gameplayCore.js';
+import { getFocusedPlaylist } from './playlistSelectionStore.js';
 import type { GameMode, Team } from '@tutti/shared';
 
 export type ScreenState =
@@ -82,6 +83,26 @@ export type ScreenState =
       joinCode: string;
       sessionName: string | null;
       finalScores: CumulativeScore[];
+      lastUpdate: string;
+    }
+  | {
+      /** feat/tv-playlist-selection-sync — host scrolle dans la sélection
+       *  playlist (avant partie OU entre 2 manches). TV affiche la playlist
+       *  focused : grande cover + titre + description + nb tracks. */
+      state: 'PLAYLIST_SELECTION';
+      sessionId: string;
+      joinCode: string;
+      sessionName: string | null;
+      playlist: {
+        id: string;
+        slug: string;
+        name: string;
+        description: string | null;
+        cover_url: string | null;
+        tracks_count: number;
+        category: string | null;
+        difficulty: string;
+      };
       lastUpdate: string;
     };
 
@@ -312,6 +333,52 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       roundsTotal,
       lastUpdate,
     };
+  }
+
+  // PLAYLIST_SELECTION : host scrolle dans la sélection playlist (carrousel).
+  // Prioritaire sur ROUND_PODIUM et LOBBY (pas sur PAUSED/PLAYING/FINAL_PODIUM).
+  // Le store in-memory (TTL 30s) est alimenté par POST /screen-state/focused-playlist.
+  const focusedPlaylistId = getFocusedPlaylist(workspaceId);
+  if (focusedPlaylistId) {
+    const pl = await prisma.officialPlaylist.findUnique({
+      where: { id: focusedPlaylistId },
+      select: {
+        id: true,
+        slug: true,
+        name_fr: true,
+        name_en: true,
+        description_fr: true,
+        description_en: true,
+        locale_primary: true,
+        cover_url: true,
+        track_count: true,
+        category: true,
+        difficulty: true,
+      },
+    });
+    if (pl) {
+      const useEn = pl.locale_primary?.startsWith('en');
+      console.info(
+        `[ScreenState] Workspace ${workspaceId} → PLAYLIST_SELECTION (session=${session.id}, playlist=${pl.slug})`,
+      );
+      return {
+        state: 'PLAYLIST_SELECTION',
+        sessionId: session.id,
+        joinCode: session.short_code,
+        sessionName: session.name,
+        playlist: {
+          id: pl.id,
+          slug: pl.slug,
+          name: useEn ? pl.name_en : pl.name_fr,
+          description: useEn ? pl.description_en : pl.description_fr,
+          cover_url: pl.cover_url,
+          tracks_count: pl.track_count,
+          category: pl.category,
+          difficulty: pl.difficulty,
+        },
+        lastUpdate,
+      };
+    }
   }
 
   // ROUND_PODIUM : session PLAYING (status) ET dernier round ENDED (entre 2 manches)

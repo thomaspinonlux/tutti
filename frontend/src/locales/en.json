@@ -478,6 +478,15 @@
     "masterChange": "Change animator"
   },
   "screen": {
+    "playlistSelection": {
+      "eyebrow": "Host is picking",
+      "tracks": "{{n}} tracks",
+      "difficulty": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "expert": "Hard"
+      }
+    },
     "castTitle": "Cast by code",
     "castSubtitle": "Enter the session code to display the game on this TV.",
     "codeLabel": "Session code",

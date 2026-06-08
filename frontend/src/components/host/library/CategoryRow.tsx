@@ -144,7 +144,7 @@ export function CategoryRow({
             role="list"
           >
             {category.playlists.map((p) => (
-              <div key={p.id} role="listitem">
+              <div key={p.id} role="listitem" data-focus-playlist-id={p.id}>
                 <PlaylistCardLarge
                   playlist={p}
                   onPick={() => onPick(p)}

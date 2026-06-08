@@ -148,6 +148,9 @@ export function ScreenPage(): JSX.Element {
       'round:created',
       'round:started',
       'round:ended',
+      // feat/tv-playlist-selection-sync — re-poll quand l'host change la
+      // playlist focused dans le carrousel.
+      'screen-state:focus-changed',
     ];
     events.forEach((ev) => socket.on(ev, trigger));
     return () => {
@@ -258,6 +261,8 @@ export function ScreenPage(): JSX.Element {
           finalScores={screenState.finalScores}
         />
       );
+    case 'PLAYLIST_SELECTION':
+      return <ScreenPlaylistSelectionView playlist={screenState.playlist} />;
     default:
       return <ScreenIdleView />;
   }
@@ -374,6 +379,75 @@ function ScreenLobbyView({
 // MainScreenView via screenStateToMainScreenProps adapter (cf. switch render
 // + import en haut). Récupère vinyl rotation, confettis, countdown 15s,
 // dance pulse, reveal cover, phase eyebrow, etc. d'un coup.
+
+/**
+ * feat/tv-playlist-selection-sync — vue TV pendant la sélection de
+ * playlist par l'animateur. Affiche la playlist actuellement focused dans
+ * le carrousel host : grande cover + titre Fraunces XXL + description +
+ * badge nb de morceaux. Lisible à distance, pas une mini-liste.
+ */
+function ScreenPlaylistSelectionView({
+  playlist,
+}: {
+  playlist: {
+    id: string;
+    slug: string;
+    name: string;
+    description: string | null;
+    cover_url: string | null;
+    tracks_count: number;
+    category: string | null;
+    difficulty: string;
+  };
+}): JSX.Element {
+  const { t } = useTranslation();
+  const coverUrl =
+    playlist.cover_url ?? `/api/library-cover/${encodeURIComponent(playlist.slug)}.jpg`;
+  return (
+    <div key={playlist.id} className="min-h-screen flex flex-col bg-cream animate-fade-in">
+      <MultiColorBar height="md" />
+      <main className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-12 p-12">
+        {/* Cover */}
+        <div className="shrink-0">
+          <div
+            className="w-[420px] h-[420px] lg:w-[520px] lg:h-[520px] border-4 border-ink rounded-2xl shadow-pop-lg overflow-hidden bg-cream-2"
+            style={{
+              backgroundImage: `url(${coverUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+            aria-label={playlist.name}
+          />
+        </div>
+        {/* Texte */}
+        <div className="max-w-2xl text-center lg:text-left">
+          <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-3">
+            {t('screen.playlistSelection.eyebrow')}
+          </p>
+          <TitleHandwritten as="h1" className="text-7xl lg:text-8xl mb-6 leading-none">
+            <Underline>{playlist.name}</Underline>
+          </TitleHandwritten>
+          {playlist.description && (
+            <p className="font-editorial italic text-2xl lg:text-3xl text-ink-2 mb-6 leading-relaxed">
+              {playlist.description}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+            <span className="inline-block font-mono text-lg uppercase tracking-wider px-4 py-2 border-2 border-ink rounded-full bg-white">
+              {t('screen.playlistSelection.tracks', { n: playlist.tracks_count })}
+            </span>
+            <span className="inline-block font-mono text-lg uppercase tracking-wider px-4 py-2 border-2 border-ink rounded-full bg-spritz/30">
+              {t(`screen.playlistSelection.difficulty.${playlist.difficulty.toLowerCase()}`, {
+                defaultValue: playlist.difficulty,
+              })}
+            </span>
+          </div>
+        </div>
+      </main>
+      <MultiColorBar height="md" />
+    </div>
+  );
+}
 
 function ScreenRoundPodiumView({
   joinCode,

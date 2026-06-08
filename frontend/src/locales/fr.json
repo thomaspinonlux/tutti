@@ -478,6 +478,15 @@
     "masterChange": "Changer d'animateur"
   },
   "screen": {
+    "playlistSelection": {
+      "eyebrow": "L'animateur choisit",
+      "tracks": "{{n}} morceaux",
+      "difficulty": {
+        "easy": "Facile",
+        "medium": "Moyen",
+        "expert": "Difficile"
+      }
+    },
     "castTitle": "Cast par code",
     "castSubtitle": "Entre le code de la session pour afficher le jeu sur cette TV.",
     "codeLabel": "Code session",
