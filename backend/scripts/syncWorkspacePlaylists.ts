@@ -183,26 +183,38 @@ async function syncOnePlaylist(
 
     // Upsert Artist — fix/catalog-level-aliases : merge les aliases catalogue
     // dans Artist.aliases (même pattern que le clone-on-launch library.ts).
-    const existingArtist = await prisma.artist.findUnique({
-      where: { canonical_name: c.artist },
-      select: { id: true, aliases: true },
-    });
-    let artistId: string;
-    if (existingArtist) {
-      const mergedArtist = Array.from(new Set([...existingArtist.aliases, ...c.artist_aliases]));
-      if (mergedArtist.length !== existingArtist.aliases.length) {
+    // Le même artiste apparaît dans plusieurs playlists synchronisées en
+    // parallèle (SYNC_CONCURRENCY=4) et l'upsert Prisma n'est pas atomique
+    // sous concurrence → catch P2002 + retry lecture (l'autre worker vient
+    // de le créer).
+    let artist: { id: string; aliases: string[] };
+    try {
+      artist = await prisma.artist.upsert({
+        where: { canonical_name: c.artist },
+        create: { canonical_name: c.artist, aliases: c.artist_aliases },
+        update: {},
+        select: { id: true, aliases: true },
+      });
+    } catch (err) {
+      const isP2002 =
+        typeof err === 'object' && err !== null && (err as { code?: string }).code === 'P2002';
+      if (!isP2002) throw err;
+      const found = await prisma.artist.findUnique({
+        where: { canonical_name: c.artist },
+        select: { id: true, aliases: true },
+      });
+      if (!found) throw err;
+      artist = found;
+    }
+    const artistId = artist.id;
+    if (c.artist_aliases.length > 0) {
+      const mergedArtist = Array.from(new Set([...artist.aliases, ...c.artist_aliases]));
+      if (mergedArtist.length !== artist.aliases.length) {
         await prisma.artist.update({
-          where: { id: existingArtist.id },
+          where: { id: artistId },
           data: { aliases: mergedArtist },
         });
       }
-      artistId = existingArtist.id;
-    } else {
-      const created = await prisma.artist.create({
-        data: { canonical_name: c.artist, aliases: c.artist_aliases },
-        select: { id: true },
-      });
-      artistId = created.id;
     }
 
     // Upsert Track : look up by (provider, provider_track_id).
