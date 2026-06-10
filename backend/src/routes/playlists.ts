@@ -26,6 +26,7 @@ import { requireWorkspace } from '../middleware/tenant.js';
 import { getProvider } from '../music/registry.js';
 import { generateAliases } from '../lib/aliases.js';
 import { computeLevelFromPopularities } from '../lib/level.js';
+import { ingestTrackAliases } from '../lib/songCatalog.js';
 
 const router: Router = Router();
 
@@ -97,6 +98,9 @@ async function findOrCreateTrack(
   artistId: string,
   fields: {
     canonical_title: string;
+    /** Nom canonique de l'artiste — requis pour le matching catalogue
+     *  canonique (feat/canonical-song-catalog). */
+    artist_name: string;
     album: string | null;
     year: number | null;
     popularity: number | null;
@@ -109,12 +113,14 @@ async function findOrCreateTrack(
     select: { id: true },
   });
   if (existing) return existing;
-  return prisma.track.create({
+  const created = await prisma.track.create({
     data: {
       artist_id: artistId,
       provider: providerId,
       provider_track_id: providerTrackId,
       canonical_title: fields.canonical_title,
+      // Aliases heuristiques immédiats (fallback fuzzy pendant la latence du
+      // catalogue canonique ci-dessous).
       aliases: generateAliases(fields.canonical_title),
       album: fields.album,
       year: fields.year,
@@ -124,6 +130,29 @@ async function findOrCreateTrack(
     },
     select: { id: true },
   });
+
+  // feat/canonical-song-catalog — matching canonique :
+  //   chanson connue (videoId OU titre+artiste normalisés) → copie des
+  //   aliases catalogue, 0 appel Claude ;
+  //   artiste connu + chanson nouvelle → génération async du titre seul ;
+  //   tout inédit → génération async titre + artiste, écrite au catalogue
+  //   puis recopiée ici. Non-bloquant : le POST répond immédiatement.
+  try {
+    const lookup = await ingestTrackAliases({
+      title: fields.canonical_title,
+      artist: fields.artist_name,
+      videoId: providerId === 'youtube' ? providerTrackId : null,
+      workspaceTrackId: created.id,
+    });
+    await prisma.track.update({
+      where: { id: created.id },
+      data: { song_id: lookup.songId },
+    });
+  } catch (err) {
+    // Pas bloquant — la track reste jouable avec ses aliases heuristiques.
+    console.warn('[Playlists] ingestTrackAliases failed:', err);
+  }
+  return created;
 }
 
 /**
@@ -440,6 +469,7 @@ router.post('/:id/tracks', async (req: Request<{ id: string }>, res: Response): 
     // 2) Lookup ou crée le Track (catalogue partagé via provider+provider_track_id).
     const track = await findOrCreateTrack(meta.provider, meta.provider_track_id, artist.id, {
       canonical_title: meta.title,
+      artist_name: meta.artist,
       album: meta.album ?? null,
       year: meta.year ?? null,
       popularity: meta.popularity ?? null,
@@ -751,6 +781,7 @@ router.post(
           const artist = await findOrCreateArtist(meta.artist);
           const track = await findOrCreateTrack(meta.provider, meta.provider_track_id, artist.id, {
             canonical_title: meta.title,
+            artist_name: meta.artist,
             album: meta.album ?? null,
             year: meta.year ?? null,
             popularity: meta.popularity ?? null,
