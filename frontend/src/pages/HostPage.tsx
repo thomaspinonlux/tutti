@@ -9,7 +9,7 @@
  *   - ended          : session terminée, podium final cumulé
  */
 
-import { Component, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
@@ -619,10 +619,20 @@ function HostPageInner(): JSX.Element {
     };
   }, []);
 
+  // fix/ipad-pwa-audio-persistent-player — le YT.Player reste VIVANT pendant
+  // tout le gameplay (roundPlaying + intermission + roundSelection). Avant :
+  // `enabled: phase === 'roundPlaying'` → destroy() à chaque intermission →
+  // nouvelle iframe à la manche suivante créée dans un useEffect (hors
+  // gesture user) → iOS PWA standalone refuse le claim audio → musique gelée
+  // à ~11s (buffer chargé, décode audio bloquée) sur la manche 2+.
+  // Le container DOM est déjà persistant sur inGameplay (PR #69) — garder
+  // l'iframe vivante évite aussi le path destroy/recreate du NotFoundError.
+  const playerAlive =
+    phase === 'roundPlaying' || phase === 'intermission' || phase === 'roundSelection';
   const spotify = useSpotifyPlayer({
-    enabled: spotifyAllowlisted && phase === 'roundPlaying',
+    enabled: spotifyAllowlisted && playerAlive,
   });
-  const youtube = useYouTubePlayer({ enabled: phase === 'roundPlaying' });
+  const youtube = useYouTubePlayer({ enabled: playerAlive });
   // feat/detect-content-blocker-youtube — lit isStandalone pour adapter
   // les instructions du ContentBlockerWarning (PWA vs Safari classique).
   const { isStandalone } = usePwa();
@@ -642,6 +652,22 @@ function HostPageInner(): JSX.Element {
     isPaused: session?.is_paused ?? false,
     enabled: phase === 'roundPlaying',
   });
+
+  // fix/ipad-pwa-audio-persistent-player — le player survit à l'intermission
+  // (plus de destroy entre manches) : il faut PAUSER explicitement quand on
+  // quitte roundPlaying, sinon la musique continue sur le mini-podium.
+  // Avant, destroy() coupait l'audio en tuant l'iframe.
+  const prevPhaseRef = useRef<Phase | null>(null);
+  useEffect(() => {
+    if (prevPhaseRef.current === 'roundPlaying' && phase !== 'roundPlaying') {
+      console.info(
+        `[Player] Phase ${prevPhaseRef.current} → ${phase} : pauseVideo (player persistant)`,
+      );
+      youtube.pause();
+    }
+    prevPhaseRef.current = phase;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   // ── Phase 3d — provider courant pour position/durée/affichage ──────────
   const isYouTubeTrack = currentTrack?.provider === 'youtube';
@@ -676,10 +702,13 @@ function HostPageInner(): JSX.Element {
     youtube.warmupSync();
     setBusy(true);
     try {
-      // Active le pipeline audio Spotify (anti-blocage Chrome autoplay).
-      // Ce clic est la 1ʳᵉ interaction utilisateur — moment idéal pour
-      // débloquer le HTMLMediaElement interne du SDK.
-      await spotify.activate();
+      // fix/ipad-pwa-audio-persistent-player — n'active le pipeline Spotify
+      // que pour les users allowlistés. Pour les autres (pivot YouTube-only),
+      // activer le HTMLMediaElement Spotify crée une contention d'audio
+      // session iOS avec l'iframe YT.
+      if (spotifyAllowlisted) {
+        await spotify.activate();
+      }
       await startSession(session.id);
       if (pendingRound) {
         await startRound(session.id, pendingRound.id);
@@ -883,11 +912,28 @@ function HostPageInner(): JSX.Element {
     // fix/pwa-safari-audio-unlock — voir handleStartSession. Doit être SYNC
     // avant tout await pour préserver le user gesture en PWA standalone.
     unlockAudioSync('start-first-play-button');
+    // fix/ipad-pwa-audio-persistent-player — claim YouTube SYNC dans le
+    // gesture, AVANT tout await. Asymétrie corrigée : handleStartSession le
+    // faisait, pas ce handler. Avec le player persistant, à la manche 2+ le
+    // player garde la dernière vidéo cued → warmupSync fait un vrai
+    // playVideo/pauseVideo qui re-claim l'audio iOS. (Manche 1 : player tout
+    // neuf sans vidéo → no-op safe cf. #73, le claim passe par le flow
+    // cueVideoById→CUED→playVideo de PreGameStartScreen.)
+    youtube.warmupSync();
     setBusy(true);
     try {
-      // Activate les deux pipelines audio (idempotent). Important : depuis
-      // ce click handler direct → gesture user frais consommé.
-      await spotify.activate();
+      // fix/ipad-pwa-audio-persistent-player — n'active QUE le pipeline du
+      // provider qui va jouer. iOS = audio session singleton : activer
+      // Spotify SDK (HTMLMediaElement interne) juste avant que l'iframe YT
+      // demande son claim crée une contention → YT perd → musique gelée.
+      // Pivot YouTube-only : les playlists officielles forcent youtube
+      // (library.ts), donc skip Spotify sauf si explicitement préféré.
+      const wantsSpotify =
+        spotifyAllowlisted &&
+        (pendingFirstPlay.source === 'official' ? pendingFirstPlay.prefer === 'spotify' : true);
+      if (wantsSpotify) {
+        await spotify.activate();
+      }
       let roundId: string;
       if (pendingFirstPlay.source === 'perso') {
         const round = await createRound(session.id, pendingFirstPlay.playlistId);
@@ -1319,17 +1365,38 @@ function HostPageInner(): JSX.Element {
         : 'Spotify'
       : null;
     return (
-      <PreGameStartScreen
-        playlistName={playlistName}
-        trackCount={pendingFirstPlay.trackCount}
-        badge={isOfficial ? t('preGame.officialBadge') : null}
-        providerLabel={providerLabel}
-        busy={busy}
-        onStart={() => void handleStartFirstPlay()}
-        onCancel={handleCancelFirstPlay}
-        onYoutubeWarmup={youtube.warmupSync}
-        getYoutubeState={youtube.getPlayerState}
-      />
+      <>
+        {/* fix/ipad-pwa-audio-persistent-player — le player YT est vivant
+            dès roundSelection : le container DOM doit exister dans CE render
+            aussi, sinon React retire l'iframe au passage sélection→pregame
+            et le claim audio est perdu. */}
+        {playerAlive && (
+          <div
+            id="youtube-player-host"
+            aria-hidden
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: 1,
+              height: 1,
+              opacity: 0,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+        <PreGameStartScreen
+          playlistName={playlistName}
+          trackCount={pendingFirstPlay.trackCount}
+          badge={isOfficial ? t('preGame.officialBadge') : null}
+          providerLabel={providerLabel}
+          busy={busy}
+          onStart={() => void handleStartFirstPlay()}
+          onCancel={handleCancelFirstPlay}
+          onYoutubeWarmup={youtube.warmupSync}
+          getYoutubeState={youtube.getPlayerState}
+        />
+      </>
     );
   }
 

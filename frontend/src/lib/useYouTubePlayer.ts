@@ -132,6 +132,13 @@ declare global {
 
 let apiLoadPromise: Promise<void> | null = null;
 
+// fix/ipad-pwa-audio-persistent-player — compteur de créations YT.Player.
+// Attendu : 1 par session host (player persistant entre les manches).
+// Si ce compteur monte à chaque manche dans les logs, la condition
+// `enabled` côté HostPage a régressé (destroy/recreate = perte du claim
+// audio iOS PWA → musique gelée manche 2+).
+let playerCreateCount = 0;
+
 /**
  * Bug 2 (fix/critical-bugs-v3) — race condition : refresh nécessaire pour
  * lancer la musique sur la 1ère session.
@@ -342,7 +349,10 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
       }
 
       setStatus('loading_player');
-      console.info(`[Player] Init step: new YT.Player(${containerId}) called`);
+      playerCreateCount += 1;
+      console.info(
+        `[Player] Init step: new YT.Player(${containerId}) called | createCount=${playerCreateCount} (attendu: 1/session, persistant entre manches)`,
+      );
 
       // feat/detect-content-blocker-youtube — timeout 5s sur onReady.
       // Si le player est instancié mais que `youtube.com/embed/*` est
