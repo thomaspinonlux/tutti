@@ -124,6 +124,11 @@ async function syncOnePlaylist(
       spotify_id: true,
       cover_url: true,
       difficulty: true,
+      // fix/catalog-level-aliases — propage les aliases catalogue vers les
+      // Track/Artist workspace créés par le sync (symétrie avec le
+      // clone-on-launch de library.ts).
+      title_aliases: true,
+      artist_aliases: true,
     },
     orderBy: { position: 'asc' },
   });
@@ -176,31 +181,58 @@ async function syncOnePlaylist(
     if (!providerId) continue;
     const provider = c.youtube_id ? 'youtube' : 'spotify';
 
-    // Upsert Artist
-    const artist = await prisma.artist.upsert({
+    // Upsert Artist — fix/catalog-level-aliases : merge les aliases catalogue
+    // dans Artist.aliases (même pattern que le clone-on-launch library.ts).
+    const existingArtist = await prisma.artist.findUnique({
       where: { canonical_name: c.artist },
-      create: { canonical_name: c.artist },
-      update: {},
-      select: { id: true },
+      select: { id: true, aliases: true },
     });
+    let artistId: string;
+    if (existingArtist) {
+      const mergedArtist = Array.from(new Set([...existingArtist.aliases, ...c.artist_aliases]));
+      if (mergedArtist.length !== existingArtist.aliases.length) {
+        await prisma.artist.update({
+          where: { id: existingArtist.id },
+          data: { aliases: mergedArtist },
+        });
+      }
+      artistId = existingArtist.id;
+    } else {
+      const created = await prisma.artist.create({
+        data: { canonical_name: c.artist, aliases: c.artist_aliases },
+        select: { id: true },
+      });
+      artistId = created.id;
+    }
 
-    // Upsert Track : look up by (provider, provider_track_id)
+    // Upsert Track : look up by (provider, provider_track_id).
+    // fix/catalog-level-aliases : aliases catalogue copiés au create + mergés
+    // si la track existe déjà sans aliases.
     let track = await prisma.track.findFirst({
       where: { provider, provider_track_id: providerId },
-      select: { id: true },
+      select: { id: true, aliases: true },
     });
     if (!track) {
       track = await prisma.track.create({
         data: {
-          artist_id: artist.id,
+          artist_id: artistId,
           canonical_title: c.title,
           year: c.year,
           provider,
           provider_track_id: providerId,
           cover_url: c.cover_url,
+          aliases: c.title_aliases,
         },
-        select: { id: true },
+        select: { id: true, aliases: true },
       });
+    } else if (c.title_aliases.length > 0) {
+      const mergedTitle = Array.from(new Set([...track.aliases, ...c.title_aliases]));
+      if (mergedTitle.length !== track.aliases.length) {
+        await prisma.track.update({
+          where: { id: track.id },
+          data: { aliases: mergedTitle },
+        });
+      }
     }
 
     // Create PlaylistTrack (unique pair playlist+track on existing DB constraint

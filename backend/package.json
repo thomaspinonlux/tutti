@@ -20,7 +20,8 @@
     "generate:aliases": "tsx scripts/generateAllAliases.ts",
     "generate:artist-aliases": "tsx scripts/generateAllArtistAliases.ts",
     "enrich:official-playlists": "tsx scripts/enrichOfficialPlaylists.ts",
-    "sync:workspace-playlists": "tsx scripts/syncWorkspacePlaylists.ts"
+    "sync:workspace-playlists": "tsx scripts/syncWorkspacePlaylists.ts",
+    "backfill:catalog-aliases": "tsx scripts/backfillCatalogAliases.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
