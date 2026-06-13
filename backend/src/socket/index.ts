@@ -28,7 +28,10 @@ import { Server as SocketIOServer, type Socket } from 'socket.io';
 import { supabaseAdmin } from '../lib/supabase.js';
 import { verifyParticipantToken } from '../lib/participantToken.js';
 import { prisma } from '../lib/prisma.js';
-import { buildCurrentTrackStateSnapshot } from '../lib/gameplayCore.js';
+import {
+  buildCurrentTrackStateSnapshot,
+  getEffectiveRoundTrackCount,
+} from '../lib/gameplayCore.js';
 import { getCumulativeScores } from '../lib/scores.js';
 
 type SocketIdentity =
@@ -72,7 +75,11 @@ function serializeSession(session: SessionWithIncludes) {
         id: r.playlist.id,
         name: r.playlist.name,
         level: r.playlist.level,
-        tracks_count: r.playlist._count.playlist_tracks,
+        // BUG3 — taille EFFECTIVE de manche (selected_track_ids.length, capé à
+        // 15 au pick), JAMAIS le pool brut. Ce serializer socket était le
+        // dernier site oublié par fix/round-tracks-count-clamped-to-selected →
+        // HostPage affichait "Morceau X/18" (pool) après un update socket.
+        tracks_count: getEffectiveRoundTrackCount(r),
       },
     })),
   };
