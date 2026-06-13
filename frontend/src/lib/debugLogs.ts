@@ -18,7 +18,8 @@
  *     symétrie mais n'est pas observable).
  */
 
-const TAG_REGEX = /\[(Audio|Player|PWA|YouTube|Spotify SDK|Deepgram|AssemblyAI|Whisper|Voice)\]/;
+const TAG_REGEX =
+  /\[(Audio|Player|PWA|YouTube|Spotify SDK|Deepgram|AssemblyAI|Whisper|Voice|HostContentBoundary|HostPageTopLevel)\]/;
 const MAX_LOGS = 100;
 
 export interface DebugLogEntry {

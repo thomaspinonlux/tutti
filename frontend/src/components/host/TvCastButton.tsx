@@ -18,7 +18,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../ui/index.js';
 import { QRCode } from './QRCode.js';
-import { usePwa } from '../../lib/usePwa.js';
 
 interface Props {
   /** Code court de salon (5 chars). null si pas encore dispo. */
@@ -27,17 +26,32 @@ interface Props {
   shortCode: string;
 }
 
+/**
+ * Détection "vrai desktop" (souris + survol) — pas juste "hors PWA". Un iPad
+ * ou un téléphone EN NAVIGATEUR (DuckDuckGo, Safari onglet) n'est PAS standalone
+ * mais reste tactile → window.open y piège pareil. On exige donc pointer:fine
+ * (souris/trackpad) + any-hover (survol possible) + absence de touch primaire.
+ */
+function isRealDesktop(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
+  const canHover = window.matchMedia('(any-hover: hover)').matches;
+  const coarse = window.matchMedia('(any-pointer: coarse)').matches; // tactile présent
+  return finePointer && canHover && !coarse;
+}
+
 export function TvCastButton({ tvCode, shortCode }: Props): JSX.Element | null {
   const { t } = useTranslation();
-  const { isStandalone } = usePwa();
   const [open, setOpen] = useState(false);
 
   if (!tvCode) return null;
 
   const joinUrl = `${window.location.origin}/tv/${tvCode}`;
-  // Plein écran "même appareil" : seulement hors PWA standalone (desktop
-  // multi-fenêtres). En PWA iPad, window.open piège → on ne le propose pas.
-  const canOpenHere = !isStandalone;
+  // Plein écran "même appareil" : UNIQUEMENT sur un vrai desktop multi-fenêtres.
+  // Jamais sur iPad/tablette/téléphone (même en navigateur, pas seulement PWA)
+  // — window.open y redirige sur l'onglet courant = piège. Sur ces appareils :
+  // uniquement code + QR pour qu'un 2e device rejoigne.
+  const canOpenHere = isRealDesktop();
 
   const openHere = (): void => {
     window.open(`/screen?session=${encodeURIComponent(shortCode)}`, '_blank', 'noopener');

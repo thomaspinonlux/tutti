@@ -127,7 +127,14 @@ class HostContentBoundary extends Component<
     return { error };
   }
   componentDidCatch(error: Error, info: { componentStack?: string | null }): void {
-    console.error('[HostContentBoundary] Caught render error', error, info);
+    // fix/tv-cast-desktop-guard-and-boundary-capture — log TAGGÉ (capturé par
+    // DebugOverlay 🐛 sur iPad) avec message + stack complète + component stack
+    // React, pour diagnostiquer le crash host à distance (pas d'accès console).
+    const msg = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? (error.stack ?? '(no stack)') : '';
+    console.error(
+      `[HostContentBoundary] Caught render error | message=${msg}\nstack=${stack}\ncomponentStack=${info.componentStack ?? '(none)'}`,
+    );
   }
   render(): ReactNode {
     if (this.state.error) {
@@ -162,6 +169,11 @@ export function HostPage(): JSX.Element {
  * eux-mêmes throw) pour garantir une UI lisible quoi qu'il arrive.
  */
 function HostPageTopLevelFallback(): JSX.Element {
+  // fix/tv-cast-desktop-guard-and-boundary-capture — marqueur taggé capturé par
+  // le DebugOverlay 🐛 : confirme que c'est le boundary TOP-LEVEL qui a rendu
+  // (vs le boundary de contenu interne). À lire avec le log
+  // [HostContentBoundary] message+stack émis juste avant.
+  console.error('[HostPageTopLevel] Fallback rendu — crash hors phase (corps HostPage / hook)');
   return (
     <main className="min-h-screen flex items-center justify-center bg-cream p-6">
       <div className="max-w-lg text-center border-2 border-ink rounded-lg bg-white p-6 shadow-pop">
