@@ -25,6 +25,7 @@ import type {
   SessionWithParticipants,
   Team,
 } from '@tutti/shared';
+import { DEFAULT_SESSION_SIZE } from '@tutti/shared';
 import {
   createRound,
   endRound,
@@ -789,7 +790,11 @@ function HostPageInner(): JSX.Element {
       source: 'perso',
       playlistId: playlist.id,
       name: playlist.name,
-      trackCount: playlist.tracks_count ?? 0,
+      // BUG3 — annonce la taille EFFECTIVE de la manche (capée), pas le pool.
+      trackCount: Math.min(
+        playlist.tracks_count ?? 0,
+        playlist.default_session_size ?? DEFAULT_SESSION_SIZE,
+      ),
     });
   };
 
@@ -799,7 +804,8 @@ function HostPageInner(): JSX.Element {
       source: 'perso',
       playlistId: info.id,
       name: info.name,
-      trackCount: info.tracks_count,
+      // BUG3 — l'express modal ne porte que le pool ; cape à la taille de manche.
+      trackCount: Math.min(info.tracks_count, DEFAULT_SESSION_SIZE),
     });
   };
 
@@ -910,7 +916,9 @@ function HostPageInner(): JSX.Element {
       source: 'official',
       previewPlaylist,
       prefer,
-      trackCount: playableCount,
+      // BUG3 — cape à la taille de manche (official dss=15) : la manche ne joue
+      // que min(15, playable), jamais tout le pool playable.
+      trackCount: Math.min(playableCount, DEFAULT_SESSION_SIZE),
     });
     setPreviewPlaylist(null);
     setPreviewReport(null);

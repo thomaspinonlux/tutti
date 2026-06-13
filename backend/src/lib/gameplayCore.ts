@@ -11,6 +11,7 @@
  */
 
 import type { CurrentTrackState } from '@tutti/shared';
+import { DEFAULT_SESSION_SIZE } from '@tutti/shared';
 import { prisma } from './prisma.js';
 import { broadcastToSession } from '../socket/index.js';
 import {
@@ -190,8 +191,12 @@ export async function getSessionPlayedTrackIds(sessionId: string): Promise<Set<s
   return new Set(rows.map((r) => r.track_id));
 }
 
-/** Default session size si playlist.default_session_size est null. */
-export const DEFAULT_SESSION_SIZE = 15;
+/**
+ * Default session size si playlist.default_session_size est null.
+ * Source unique = @tutti/shared (partagé avec le frontend). Re-export pour les
+ * importeurs backend existants (sessions/library/sessionMaster).
+ */
+export { DEFAULT_SESSION_SIZE };
 
 /**
  * fix/round-tracks-count-clamped-to-selected — calcul du nombre de tracks
@@ -407,7 +412,9 @@ export async function endRoundInternal(
           id: updated.playlist.id,
           name: updated.playlist.name,
           level: updated.playlist.level,
-          tracks_count: updated.playlist._count.playlist_tracks,
+          // BUG3 — taille EFFECTIVE de manche (selected_track_ids.length, capé
+          // à 15), jamais le pool brut de la playlist.
+          tracks_count: getEffectiveRoundTrackCount(updated),
         },
       }
     : null;
