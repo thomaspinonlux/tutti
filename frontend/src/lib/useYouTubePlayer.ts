@@ -270,6 +270,12 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   // demande de play (cueVideoById).
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef<number | null>(null);
+  // fix/youtube-removechild-notfound — true si CE hook a créé le nœud
+  // container sous <body> (vs trouvé existant). Le hook est l'UNIQUE
+  // propriétaire du démontage : React ne rend jamais ce nœud, donc ne tente
+  // jamais de removeChild dessus (source du NotFoundError au changement de
+  // phase, l'IFrame YT ayant remplacé l'élément cible par une <iframe>).
+  const ownsContainerRef = useRef(false);
   // statusRef pour qu'un useCallback puisse lire la valeur courante sans
   // dépendre de status (qui aurait recréé play() à chaque transition →
   // perte de stabilité référentielle).
@@ -286,6 +292,36 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     setError(null);
     setBlockedByContentFilter(false);
     console.info('[Player] Init step: YT API loading…');
+
+    // fix/youtube-removechild-notfound — le hook POSSÈDE le nœud container.
+    // YT IFrame remplace l'élément cible par une <iframe> de même id, ce qui
+    // désynchronise le fiber React : au changement de phase (roundSelection →
+    // pregame → roundPlaying) React démontait SON <div id="youtube-player-host">
+    // et appelait removeChild sur un nœud déjà remplacé par YT → NotFoundError
+    // (componentStack HostPage). En créant le nœud nous-mêmes sous <body>,
+    // React ne le rend jamais, ne le démonte jamais : un seul propriétaire du
+    // démontage (côté IFrame). Le nœud persiste sur toute la durée gameplay
+    // (enabled stable) → l'iframe survit aux manches (persistance audio #80).
+    let container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      container.setAttribute('aria-hidden', 'true');
+      Object.assign(container.style, {
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '1px',
+        height: '1px',
+        opacity: '0',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(container);
+      ownsContainerRef.current = true;
+      console.info(
+        `[Player] Init step: container #${containerId} créé sous <body> (owned by hook)`,
+      );
+    }
 
     /**
      * fix/yt-player-error-state-retry — création YT.Player avec retry sur
@@ -523,31 +559,42 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
         window.clearTimeout(retryTimeoutId);
         retryTimeoutId = null;
       }
-      // fix/host-content-boundary-notfound-error — destroy() est différé via
-      // queueMicrotask pour s'exécuter APRÈS le commit React courant. Sinon
-      // YT IFrame tentait `removeChild` sur un parent que React a déjà retiré
-      // → NotFoundError non-catchable (postMessage async côté YT).
-      // Belt-and-suspenders : try/catch sync + log warn pour visibilité +
-      // check parent node avant destroy.
+      // fix/youtube-removechild-notfound — teardown à propriétaire UNIQUE.
+      // destroy() différé via queueMicrotask (après le commit React courant),
+      // PUIS retrait du nœud container que CE hook a créé. React n'a jamais
+      // rendu ce nœud → il ne tente jamais removeChild dessus → plus de
+      // NotFoundError. YT.destroy() retire son <iframe> ; on retire ensuite le
+      // nœud résiduel si on en est propriétaire (no-op si YT l'a déjà fait).
       const p = playerRef.current;
       playerRef.current = null;
-      if (p?.destroy) {
-        queueMicrotask(() => {
-          try {
-            const container = document.getElementById(containerId);
-            if (!container) {
+      const ownsContainer = ownsContainerRef.current;
+      ownsContainerRef.current = false;
+      queueMicrotask(() => {
+        try {
+          const el = document.getElementById(containerId);
+          if (p?.destroy) {
+            if (el) {
+              p.destroy();
+            } else {
               console.warn('[Player] destroy skipped — container already removed');
-              return;
             }
-            p.destroy();
-          } catch (e) {
-            console.warn(
-              '[Player] destroy() error ignored:',
-              e instanceof Error ? e.message : String(e),
-            );
           }
-        });
-      }
+        } catch (e) {
+          console.warn(
+            '[Player] destroy() error ignored:',
+            e instanceof Error ? e.message : String(e),
+          );
+        }
+        // Retire le nœud dont le hook est propriétaire (jamais touché par React).
+        if (ownsContainer) {
+          const el = document.getElementById(containerId);
+          try {
+            el?.parentNode?.removeChild(el);
+          } catch {
+            /* noop — déjà retiré par YT.destroy */
+          }
+        }
+      });
     };
   }, [enabled, containerId]);
 
