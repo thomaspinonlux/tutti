@@ -63,6 +63,9 @@ const PlayPage = lazy(() => import('./pages/PlayPage.js').then((m) => ({ default
 const ScreenPage = lazy(() =>
   import('./pages/ScreenPage.js').then((m) => ({ default: m.ScreenPage })),
 );
+const TvJoinPage = lazy(() =>
+  import('./pages/TvJoinPage.js').then((m) => ({ default: m.TvJoinPage })),
+);
 
 function App(): JSX.Element {
   useEffect(() => {
@@ -176,6 +179,24 @@ function App(): JSX.Element {
           element={
             <Suspense fallback={null}>
               <ScreenPage />
+            </Suspense>
+          }
+        />
+        {/* feat/tv-join-code-multidevice — jonction 2e device en mode Écran TV.
+            /tv (saisie code) + /tv/:code (accès direct via QR). Public. */}
+        <Route
+          path="/tv"
+          element={
+            <Suspense fallback={null}>
+              <TvJoinPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/tv/:code"
+          element={
+            <Suspense fallback={null}>
+              <TvJoinPage />
             </Suspense>
           }
         />

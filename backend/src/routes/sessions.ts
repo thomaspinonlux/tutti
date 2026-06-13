@@ -34,6 +34,7 @@ import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { generateUniqueShortCode } from '../lib/shortCode.js';
+import { generateUniqueTvCode } from '../lib/tvCode.js';
 import { broadcastToSession } from '../socket/index.js';
 import { getActiveTrack } from '../lib/gameState.js';
 import {
@@ -161,6 +162,9 @@ router.post(
       }
 
       const shortCode = await generateUniqueShortCode(establishment.name);
+      // feat/tv-join-code-multidevice — code court "Écran TV" généré à la
+      // création, mort avec la session.
+      const tvCode = await generateUniqueTvCode();
 
       // Bug 4 (fix/critical-bugs-v3) — Auto-cleanup zombies AVANT de créer
       // la nouvelle session. Toute session WAITING/PLAYING antérieure du
@@ -209,6 +213,7 @@ router.post(
           question_set_id: parsed.data.question_set_id ?? null,
           has_animator: parsed.data.has_animator,
           short_code: shortCode,
+          tv_code: tvCode,
           status: 'WAITING',
         },
       });

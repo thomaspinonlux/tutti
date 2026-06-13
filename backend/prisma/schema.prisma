@@ -521,6 +521,11 @@ model Session {
   game_type           GameType
   status              SessionStatus @default(WAITING)
   short_code          String        @unique @db.VarChar(16) // "KOMP-7K2X"
+  /// feat/tv-join-code-multidevice — code court (5 chars, alphabet non
+  /// ambigu) pour qu'un 2e device rejoigne en mode "Écran TV" via /tv/{CODE}
+  /// ou saisie manuelle sur /tv. Lié à la session, mort quand elle se termine.
+  /// Distinct de short_code (8 chars, code joueur).
+  tv_code             String?       @unique @db.VarChar(8)
   mode                GameMode      @default(SOLO)
   teams_config        Json? // [{id, name, color, ...}]
   language            String        @default("fr") @db.VarChar(8)
