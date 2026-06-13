@@ -1312,20 +1312,10 @@ function HostPageInner(): JSX.Element {
             onToggleMaster={handleToggleMaster}
           />
         </div>
-        {/* Phase 3d — container DOM YouTube IFrame Player (mode B aussi). */}
-        <div
-          id="youtube-player-host"
-          aria-hidden
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: 1,
-            height: 1,
-            opacity: 0,
-            pointerEvents: 'none',
-          }}
-        />
+        {/* fix/youtube-removechild-notfound — le container DOM YouTube est
+            désormais créé et possédé par useYouTubePlayer sous <body>, hors de
+            l'arbre React (évite le removeChild NotFoundError au changement de
+            phase). Plus aucun <div id="youtube-player-host"> rendu ici. */}
         <MainScreenView
           session={session}
           currentTrack={currentTrack}
@@ -1378,25 +1368,10 @@ function HostPageInner(): JSX.Element {
       : null;
     return (
       <>
-        {/* fix/ipad-pwa-audio-persistent-player — le player YT est vivant
-            dès roundSelection : le container DOM doit exister dans CE render
-            aussi, sinon React retire l'iframe au passage sélection→pregame
-            et le claim audio est perdu. */}
-        {playerAlive && (
-          <div
-            id="youtube-player-host"
-            aria-hidden
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: 1,
-              height: 1,
-              opacity: 0,
-              pointerEvents: 'none',
-            }}
-          />
-        )}
+        {/* fix/youtube-removechild-notfound — container YT possédé par le hook
+            sous <body>, hors arbre React. Le player reste vivant dès
+            roundSelection sans qu'aucun <div> rendu ici ne soit démonté au
+            passage sélection→pregame→playing (plus de NotFoundError). */}
         <PreGameStartScreen
           playlistName={playlistName}
           trackCount={pendingFirstPlay.trackCount}
@@ -1832,35 +1807,13 @@ function HostPageInner(): JSX.Element {
 
       <MultiColorBar height="md" />
 
-      {/* Phase 3d — container DOM pour YouTube IFrame Player. Toujours présent
-          PENDANT TOUT LE GAMEPLAY (roundPlaying + intermission + roundSelection)
-          pour que useYouTubePlayer puisse y monter l'iframe ET la détruire
-          proprement.
-          Taille 0×0 — la lecture est audio-only blind test.
-
-          fix/host-content-boundary-notfound-error — avant ce fix, condition
-          `phase === 'roundPlaying'` retirait le div au passage en intermission
-          AVANT que useYouTubePlayer cleanup ait fini son `player.destroy()`.
-          YT IFrame async tentait alors `removeChild` sur un parent déjà retiré
-          par React → NotFoundError non-catchable côté JS (déclenchée dans un
-          callback YT interne). Solution : garder le div monté pendant tout
-          `inGameplay` ; useYouTubePlayer.cleanup peut alors démonter
-          proprement son iframe. */}
-      {inGameplay && (
-        <div
-          id="youtube-player-host"
-          aria-hidden
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: 1,
-            height: 1,
-            opacity: 0,
-            pointerEvents: 'none',
-          }}
-        />
-      )}
+      {/* fix/youtube-removechild-notfound — le container DOM YouTube est créé
+          et possédé par useYouTubePlayer sous <body>, en dehors de l'arbre
+          React. React ne le monte ni ne le démonte jamais : fini le
+          NotFoundError (removeChild sur un nœud déjà remplacé par l'<iframe>
+          YT) au passage roundSelection→pregame→roundPlaying→intermission.
+          Le nœud persiste tant que le player est `enabled` → l'iframe survit
+          aux manches (persistance audio iPad PWA #80). */}
 
       {/* Debug Spotify (visible uniquement quand SDK actif) */}
       {spotify.status !== 'idle' && (
