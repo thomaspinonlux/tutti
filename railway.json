@@ -2,7 +2,7 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @tutti/backend build"
+    "buildCommand": "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @tutti/shared build && pnpm --filter @tutti/backend build"
   },
   "deploy": {
     "startCommand": "cd backend && pnpm exec prisma migrate deploy && node dist/server.js",
