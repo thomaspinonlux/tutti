@@ -101,7 +101,7 @@ import { SafariMediaBanner } from '../components/admin/SafariMediaBanner.js';
 import { PlayersPanel } from '../components/host/PlayersPanel.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
-import { ExternalScreenButton } from '../components/host/ExternalScreenButton.js';
+import { TvCastButton } from '../components/host/TvCastButton.js';
 import { PwaSafetyControls } from '../components/host/PwaSafetyControls.js';
 
 interface Toast {
@@ -1293,7 +1293,7 @@ function HostPageInner(): JSX.Element {
         {/* Badge master + change-master accessible discrètement en haut-droite */}
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <PwaSafetyControls />
-          <ExternalScreenButton shortCode={session.short_code} />
+          <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
           <MasterBadge
             master={currentMaster}
             participants={session.participants}
@@ -1532,7 +1532,7 @@ function HostPageInner(): JSX.Element {
               </Button>
             )}
             <PwaSafetyControls />
-            <ExternalScreenButton shortCode={session.short_code} />
+            <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
             {!session.has_animator &&
               (effectivePhase === 'roundPlaying' ||
                 effectivePhase === 'roundSelection' ||

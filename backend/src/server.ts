@@ -38,6 +38,7 @@ import quizLibraryRouter from './routes/quizLibrary.js';
 import libraryRouter from './routes/library.js';
 import youtubeAuthRouter from './routes/youtubeAuth.js';
 import screenStateRouter from './routes/screenState.js';
+import tvRouter from './routes/tv.js';
 import { prisma } from './lib/prisma.js';
 import { initSocketIO } from './socket/index.js';
 
@@ -191,6 +192,7 @@ app.use('/api/library', quizLibraryRouter);
 app.use('/api/library', libraryRouter);
 app.use('/api/auth/youtube', youtubeAuthRouter);
 app.use('/api/workspace', screenStateRouter);
+app.use('/api/tv', tvRouter);
 
 // 404 par défaut
 app.use((_req, res) => {

@@ -142,6 +142,8 @@ export interface Session {
   game_type: GameType;
   status: SessionStatus;
   short_code: string; // ex. "KOMP-7K2X"
+  /** feat/tv-join-code-multidevice — code court "Écran TV" (5 chars). */
+  tv_code?: string | null;
   mode: GameMode;
   teams_config: Team[] | null;
   language: string;

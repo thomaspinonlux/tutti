@@ -477,6 +477,32 @@
     "masterNone": "No animator picked",
     "masterChange": "Change animator"
   },
+  "tv": {
+    "title": "Join the TV screen",
+    "subtitle": "Enter the code shown on the host's screen.",
+    "codeLabel": "Room code",
+    "joinButton": "Join",
+    "resolving": "Connecting to the room…",
+    "errorTooShort": "The code is 5 characters.",
+    "errorNotFound": "No active game for code {{code}}. Check the code on the host's screen.",
+    "roleQuestion": "Use this device as:",
+    "roleScreen": "TV Screen",
+    "roleScreenHint": "Display for the room (QR, scores, track). Read-only.",
+    "roleController": "Controller / Host",
+    "roleControllerHint": "To play or run the game from this device.",
+    "exit": "Back to home"
+  },
+  "tvCast": {
+    "button": "TV Screen",
+    "openHint": "Show code + QR to connect a 2nd screen",
+    "title": "Connect a TV screen",
+    "intro": "On a 2nd device (TV, tablet, computer), scan the QR or go to the site and enter the code.",
+    "codeLabel": "Room code",
+    "codeAria": "Code {{code}}",
+    "urlHint": "On {{origin}}/tv",
+    "qrHint": "Scan to open directly in TV Screen mode.",
+    "openHereButton": "Open here (new window)"
+  },
   "screen": {
     "playlistSelection": {
       "eyebrow": "Host is picking",

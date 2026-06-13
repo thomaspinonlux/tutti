@@ -477,6 +477,32 @@
     "masterNone": "Pas d'animateur désigné",
     "masterChange": "Changer d'animateur"
   },
+  "tv": {
+    "title": "Rejoindre l'écran TV",
+    "subtitle": "Saisis le code affiché sur l'écran de l'animateur.",
+    "codeLabel": "Code de salon",
+    "joinButton": "Rejoindre",
+    "resolving": "Connexion au salon…",
+    "errorTooShort": "Le code fait 5 caractères.",
+    "errorNotFound": "Aucune partie active pour le code {{code}}. Vérifie le code sur l'écran de l'animateur.",
+    "roleQuestion": "Tu veux utiliser cet appareil comme :",
+    "roleScreen": "Écran TV",
+    "roleScreenHint": "Affichage pour la salle (QR, scores, morceau). Lecture seule.",
+    "roleController": "Manette / Animateur",
+    "roleControllerHint": "Pour jouer ou piloter la partie depuis cet appareil.",
+    "exit": "Retour à l'accueil"
+  },
+  "tvCast": {
+    "button": "Écran TV",
+    "openHint": "Afficher le code + QR pour brancher un 2e écran",
+    "title": "Brancher un écran TV",
+    "intro": "Sur un 2e appareil (TV, tablette, ordi), scanne le QR ou va sur le site et entre le code.",
+    "codeLabel": "Code de salon",
+    "codeAria": "Code {{code}}",
+    "urlHint": "Sur {{origin}}/tv",
+    "qrHint": "Scanne pour ouvrir directement en mode Écran TV.",
+    "openHereButton": "Ouvrir ici (nouvelle fenêtre)"
+  },
   "screen": {
     "playlistSelection": {
       "eyebrow": "L'animateur choisit",
