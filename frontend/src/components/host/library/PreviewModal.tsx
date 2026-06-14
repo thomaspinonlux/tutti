@@ -88,23 +88,10 @@ export function PreviewModal({
             )}
           </div>
 
-          {/* Liste tracks scrollable (Issue 3 brief) */}
-          <div className="flex-1 min-h-0 overflow-y-auto border-2 border-ink/20 rounded mb-3 bg-cream-2">
-            <ol className="divide-y divide-ink/10">
-              {playlist.tracks.map((tr) => (
-                <li key={tr.id} className="flex items-baseline gap-2 px-3 py-1.5 text-sm">
-                  <span className="font-mono text-[11px] tabular-nums text-ink-soft w-6">
-                    {tr.position}.
-                  </span>
-                  <span className="flex-1 truncate">
-                    <span className="font-medium">{tr.title}</span>
-                    <span className="text-ink-soft"> — {tr.artist}</span>
-                    {tr.year ? <span className="text-ink-faded text-xs"> · {tr.year}</span> : null}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
+          {/* feat/selection-ui-mirroring — la liste numérotée des morceaux a été
+              RETIRÉE : elle dévoilait les réponses (titre — artiste) avant le
+              lancement. On garde la présentation (nom, theme/level/lang, compteur
+              de morceaux, bloc de jouabilité). */}
 
           {/* Boutons actions */}
           <div className="flex gap-2 shrink-0">
