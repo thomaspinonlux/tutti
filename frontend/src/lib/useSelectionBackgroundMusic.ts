@@ -7,15 +7,9 @@
  * sélection → unmount du composant qui appelle ce hook).
  *
  * ── Slot de configuration ──────────────────────────────────────────────────
- * L'URL de l'asset est volontairement un SLOT vide par défaut : tant qu'aucune
- * URL n'est fournie, le hook est un no-op (la PR ne dépend donc pas de l'asset).
- * Pour activer : déposer un fichier audio royalty-free et renseigner soit la
- * const ci-dessous, soit la variable d'env Vite `VITE_SELECTION_MUSIC_URL`.
- *
- * Asset attendu (à fournir par Thomas) : boucle instrumentale royalty-free,
- * ambiance lounge/upbeat ~60-120s, MP3/AAC, sans voix. Placer dans
- * `frontend/public/audio/selection-loop.mp3` puis :
- *   VITE_SELECTION_MUSIC_URL=/audio/selection-loop.mp3
+ * Asset bundlé par défaut : `public/audio/selection-loop.mp3` (boucle upbeat
+ * royalty-free, ~2:22, 128 kbps, sans voix — fournie par Thomas). Override via
+ * `VITE_SELECTION_MUSIC_URL` (ex: CDN), ou '' pour désactiver (no-op).
  *
  * ── Autoplay ───────────────────────────────────────────────────────────────
  * Si le navigateur bloque l'autoplay (pas de geste user récent), on réessaie au
@@ -29,9 +23,13 @@
 
 import { useEffect, useRef } from 'react';
 
-/** Slot config — laisser vide pour désactiver (no-op). Override via env. */
+/**
+ * Slot config — URL de l'asset. Défaut = la boucle bundlée dans public/audio/.
+ * Override possible via `VITE_SELECTION_MUSIC_URL` (ex: CDN), ou la mettre à ''
+ * pour désactiver (no-op).
+ */
 const SELECTION_MUSIC_URL: string =
-  (import.meta.env.VITE_SELECTION_MUSIC_URL as string | undefined) ?? '';
+  (import.meta.env.VITE_SELECTION_MUSIC_URL as string | undefined) ?? '/audio/selection-loop.mp3';
 
 /** Volume d'ambiance (0..1) — discret pour rester en fond. */
 const DEFAULT_VOLUME = 0.35;
