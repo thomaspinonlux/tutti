@@ -224,6 +224,12 @@ function PlaylistsTab(): JSX.Element {
           >
             🔍 Audit tracks non jouables
           </Link>
+          <Link
+            to="/admin/library/tags"
+            className="font-mono text-sm px-3 py-2 border-2 border-ink rounded hover:bg-cream transition-colors"
+          >
+            🏷️ Révision des tags
+          </Link>
           <Button
             type="button"
             variant="primary"
