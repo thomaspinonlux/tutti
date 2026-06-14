@@ -143,9 +143,12 @@ export function AliasesPage(): JSX.Element {
           Aliases de prononciation gérés par Claude Sonnet 4.5. Améliore le matching vocal pour les
           titres mal transcrits (accents, phonétique FR→EN, etc.).
         </p>
-        <p className="font-mono text-xs">
+        <p className="font-mono text-xs flex gap-4">
           <Link to="/admin/aliases-artists" className="underline">
             Aliases artistes →
+          </Link>
+          <Link to="/admin/library/tags" className="underline">
+            🏷️ Révision des tags →
           </Link>
         </p>
       </header>
