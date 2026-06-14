@@ -316,6 +316,31 @@ model Song {
   /// Aliases de prononciation du TITRE (aliases artiste → Artist.aliases).
   title_aliases   String[] @default([])
   aliases_source  String?  @db.VarChar(16)
+
+  // ─── feat/song-tags-classification (ÉTAPE 1) ──────────────────────────────
+  // Tags de classification portés par la CHANSON canonique. Une playlist
+  // devient une requête (theme, langue, niveau_max) sur ces tags ; le pick
+  // reste capé à 15 (règle absolue). Tout additif/nullable → zéro casse.
+  /// Slugs de thèmes (multi). Vocabulaire canonique : lib/songThemes.ts.
+  themes          String[] @default([])
+  /// Langue : 2 booléens INDÉPENDANTS (un titre peut être les deux = mixte).
+  /// francophone = titre FR OU artiste francophone ; international = titre
+  /// anglais connu hors zone franco OU artiste non-francophone.
+  is_francophone  Boolean  @default(false)
+  is_international Boolean  @default(false)
+  /// Niveau 1 | 2 | 3. Sélection cumulative : niveau N pioche dans 1..N.
+  /// null = pas encore tagué.
+  level           Int?
+  /// ÉTAPE 2 — pour les thèmes "œuvre" (film/série/dessin animé/jeu/comédie
+  /// musicale) : la RÉPONSE et l'affichage = le nom de l'œuvre, pas l'artiste.
+  work_title      String?
+  /// Type d'œuvre : film|serie|dessin_anime|jeu_video|comedie_musicale.
+  work_kind       String?  @db.VarChar(24)
+  /// false = tags posés par la passe auto (ÉTAPE 3), à vérifier à la main
+  /// dans l'UI biblio (ÉTAPE 4). true = relu/validé par un humain.
+  tags_reviewed   Boolean  @default(false)
+  // ──────────────────────────────────────────────────────────────────────────
+
   created_at      DateTime @default(now()) @db.Timestamptz(6)
   updated_at      DateTime @updatedAt @db.Timestamptz(6)
 
@@ -324,6 +349,8 @@ model Song {
   workspace_tracks Track[]
 
   @@index([artist_id])
+  @@index([level])
+  @@index([themes], type: Gin)
   @@map("songs")
 }
 
