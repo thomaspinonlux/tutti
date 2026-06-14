@@ -20,8 +20,10 @@ RUN pnpm install --frozen-lockfile
 COPY shared/ shared/
 COPY backend/ backend/
 
-# Build shared types (no-op pour notre setup, mais utile si TS)
-RUN pnpm --filter @tutti/shared run build || true
+# Build @tutti/shared → shared/dist. Consommé au RUNTIME via exports
+# "node": "./dist/index.js". PAS de `|| true` : si shared ne compile pas on
+# veut casser le build ici, pas produire une image qui crash-loop au boot.
+RUN pnpm --filter @tutti/shared run build
 
 # Generate Prisma client + compile TypeScript
 WORKDIR /app/backend
@@ -42,10 +44,13 @@ COPY shared/package.json shared/
 # Install only production deps
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy compiled output + Prisma artifacts
+# Copy compiled output + Prisma artifacts.
+# shared/DIST (pas src) : le runtime résout @tutti/shared via exports
+# "node":"./dist/index.js". Sans dist dans l'image, Node retombait sur le .ts
+# source (shared/src/index.ts → import './types/index.js' absent) = crash-loop.
 COPY --from=builder /app/backend/dist backend/dist
 COPY --from=builder /app/backend/prisma backend/prisma
-COPY --from=builder /app/shared/src shared/src
+COPY --from=builder /app/shared/dist shared/dist
 COPY --from=builder /app/node_modules/.pnpm/@prisma+client* node_modules/.pnpm/
 
 # Re-generate Prisma client at runtime stage to ensure native binaries match
