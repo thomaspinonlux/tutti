@@ -78,31 +78,31 @@ export type ScreenState =
       lastUpdate: string;
     }
   | {
-      /** feat/tv-playlist-selection-sync — TV affiche playlist focused par
-       *  l'animateur dans le carrousel de sélection (avant partie OU entre
-       *  manches). */
+      /** feat/tv-grid-mirror — la TV mirrore la GRILLE complète de l'écran de
+       *  sélection animateur (catalogue fetché par la TV elle-même), highlight
+       *  la playlist centrée et applique le scroll de l'animateur. */
       state: 'PLAYLIST_SELECTION';
       sessionId: string;
       joinCode: string;
       sessionName: string | null;
-      playlist: {
-        id: string;
-        slug: string;
-        name: string;
-        description: string | null;
-        cover_url: string | null;
-        tracks_count: number;
-        category: string | null;
-        difficulty: string;
-      };
+      /** Playlist centrée côté animateur → carte highlightée sur la TV. */
+      focused_playlist_id: string;
+      /** Position de scroll de la grille host, ratio 0..1. */
+      scroll_ratio: number;
       lastUpdate: string;
     };
 
-/** POST le playlist_id actuellement centré (null = sortie sélection). */
-export async function postFocusedPlaylist(playlistId: string | null): Promise<void> {
+/**
+ * POST la sélection courante : playlist centrée (null = sortie sélection) +
+ * position de scroll de la grille (ratio 0..1) pour le scroll-sync TV.
+ */
+export async function postFocusedPlaylist(
+  playlistId: string | null,
+  scrollRatio?: number,
+): Promise<void> {
   await api('/api/workspace/screen-state/focused-playlist', {
     method: 'POST',
-    body: { playlist_id: playlistId },
+    body: { playlist_id: playlistId, scroll_ratio: scrollRatio },
   });
 }
 

@@ -185,3 +185,15 @@ export async function getPlaylistsByCategory(): Promise<LibraryCategoryWithPlayl
   );
   return data.categories;
 }
+
+/**
+ * feat/tv-grid-mirror — catalogue PUBLIC (sans auth) pour l'écran TV.
+ * Même structure que getPlaylistsByCategory mais vue anonyme : la TV mirrore
+ * la grille de l'animateur sans cookies admin.
+ */
+export async function getPublicCatalog(): Promise<LibraryCategoryWithPlaylists[]> {
+  const data = await api<{ categories: LibraryCategoryWithPlaylists[] }>(
+    '/api/library-public/catalog',
+  );
+  return data.categories;
+}

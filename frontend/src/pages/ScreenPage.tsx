@@ -43,6 +43,8 @@ import { getMe } from '../lib/me.js';
 import { connectAsSpectator } from '../lib/socket.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { screenStateToMainScreenProps } from './screen/adapters/screenStateToMainScreenProps.js';
+import { getPublicCatalog, type LibraryCategoryWithPlaylists } from '../lib/library.js';
+import { CategoryRow } from '../components/host/library/CategoryRow.js';
 
 const POLL_FAST_MS = 2000;
 const POLL_SLOW_MS = 5000;
@@ -262,7 +264,12 @@ export function ScreenPage(): JSX.Element {
         />
       );
     case 'PLAYLIST_SELECTION':
-      return <ScreenPlaylistSelectionView playlist={screenState.playlist} />;
+      return (
+        <ScreenPlaylistGridView
+          focusedId={screenState.focused_playlist_id}
+          scrollRatio={screenState.scroll_ratio}
+        />
+      );
     default:
       return <ScreenIdleView />;
   }
@@ -381,69 +388,76 @@ function ScreenLobbyView({
 // dance pulse, reveal cover, phase eyebrow, etc. d'un coup.
 
 /**
- * feat/tv-playlist-selection-sync — vue TV pendant la sélection de
- * playlist par l'animateur. Affiche la playlist actuellement focused dans
- * le carrousel host : grande cover + titre Fraunces XXL + description +
- * badge nb de morceaux. Lisible à distance, pas une mini-liste.
+ * feat/tv-grid-mirror — vue TV pendant la sélection de playlist. Mirror
+ * READ-ONLY de l'écran de sélection de l'animateur :
+ *   - grille COMPLÈTE du catalogue officiel (mêmes CategoryRow/cards que le host,
+ *     mais non-interactives), fetchée par la TV elle-même (endpoint public) ;
+ *   - la card centrée côté animateur est highlightée (focusedId) ;
+ *   - la position de scroll de l'animateur (scrollRatio 0..1) est appliquée à
+ *     la grille → la TV suit l'écran host en direct.
+ * Aucun clic, aucune recherche, aucun onglet : affichage seul.
  */
-function ScreenPlaylistSelectionView({
-  playlist,
+function ScreenPlaylistGridView({
+  focusedId,
+  scrollRatio,
 }: {
-  playlist: {
-    id: string;
-    slug: string;
-    name: string;
-    description: string | null;
-    cover_url: string | null;
-    tracks_count: number;
-    category: string | null;
-    difficulty: string;
-  };
+  focusedId: string;
+  scrollRatio: number;
 }): JSX.Element {
   const { t } = useTranslation();
-  const coverUrl =
-    playlist.cover_url ?? `/api/library-cover/${encodeURIComponent(playlist.slug)}.jpg`;
+  const [categories, setCategories] = useState<LibraryCategoryWithPlaylists[] | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Fetch du catalogue public une seule fois (la TV n'a pas de cookies admin).
+  useEffect(() => {
+    let cancelled = false;
+    void getPublicCatalog()
+      .then((cats) => {
+        if (!cancelled) setCategories(cats);
+      })
+      .catch(() => {
+        if (!cancelled) setCategories([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Scroll-sync : applique le ratio reçu de l'animateur à la grille TV.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const max = el.scrollHeight - el.clientHeight;
+    if (max <= 0) return;
+    el.scrollTop = scrollRatio * max;
+  }, [scrollRatio, categories]);
+
   return (
-    <div key={playlist.id} className="min-h-screen flex flex-col bg-cream animate-fade-in">
+    <div className="h-screen flex flex-col bg-cream">
       <MultiColorBar height="md" />
-      <main className="flex-1 flex flex-col lg:flex-row items-center justify-center gap-12 p-12">
-        {/* Cover */}
-        <div className="shrink-0">
-          <div
-            className="w-[420px] h-[420px] lg:w-[520px] lg:h-[520px] border-4 border-ink rounded-2xl shadow-pop-lg overflow-hidden bg-cream-2"
-            style={{
-              backgroundImage: `url(${coverUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-            aria-label={playlist.name}
-          />
-        </div>
-        {/* Texte */}
-        <div className="max-w-2xl text-center lg:text-left">
-          <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-3">
-            {t('screen.playlistSelection.eyebrow')}
-          </p>
-          <TitleHandwritten as="h1" className="text-7xl lg:text-8xl mb-6 leading-none">
-            <Underline>{playlist.name}</Underline>
-          </TitleHandwritten>
-          {playlist.description && (
-            <p className="font-editorial italic text-2xl lg:text-3xl text-ink-2 mb-6 leading-relaxed">
-              {playlist.description}
-            </p>
-          )}
-          <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-            <span className="inline-block font-mono text-lg uppercase tracking-wider px-4 py-2 border-2 border-ink rounded-full bg-white">
-              {t('screen.playlistSelection.tracks', { n: playlist.tracks_count })}
-            </span>
-            <span className="inline-block font-mono text-lg uppercase tracking-wider px-4 py-2 border-2 border-ink rounded-full bg-spritz/30">
-              {t(`screen.playlistSelection.difficulty.${playlist.difficulty.toLowerCase()}`, {
-                defaultValue: playlist.difficulty,
-              })}
-            </span>
-          </div>
-        </div>
-      </main>
+      <header className="px-10 pt-6 pb-2 shrink-0">
+        <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-1">
+          {t('screen.playlistSelection.eyebrow')}
+        </p>
+        <TitleHandwritten as="h1" className="text-5xl leading-none">
+          <Underline>{t('screen.playlistSelection.gridTitle')}</Underline>
+        </TitleHandwritten>
+      </header>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-10 pb-10 pt-4">
+        {categories === null ? (
+          <p className="font-mono text-ink-soft animate-pulse">{t('common.loading')}</p>
+        ) : (
+          categories.map((cat) => (
+            <CategoryRow
+              key={cat.slug}
+              category={cat}
+              onPick={() => undefined}
+              highlightId={focusedId}
+              readOnly
+            />
+          ))
+        )}
+      </div>
       <MultiColorBar height="md" />
     </div>
   );

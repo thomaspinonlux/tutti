@@ -152,6 +152,57 @@ export async function listVisiblePlaylists(
 }
 
 /**
+ * feat/tv-grid-mirror — liste publique (sans auth) des playlists officielles
+ * pour l'écran TV. La TV mirrore la grille de l'animateur, donc on renvoie le
+ * MÊME ensemble qu'un host FREE : `public` + `premium_only` (ces dernières
+ * marquées `locked: true`, comme côté host non-premium). `private` exclues.
+ * Aucune donnée sensible (juste métadonnées : titre, cover, compteurs ; le
+ * détail tracks reste protégé). Pas de filtres : la TV affiche toute la grille.
+ */
+export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
+  const playlists = await prisma.officialPlaylist.findMany({
+    where: { visibility: { in: ['public', 'premium_only'] } },
+    orderBy: { updated_at: 'desc' },
+    include: {
+      _count: { select: { tracks: true } },
+      tracks: {
+        select: { spotify_id: true, youtube_id: true, cover_url: true, position: true },
+        orderBy: { position: 'asc' },
+      },
+    },
+  });
+
+  return playlists.map((p) => {
+    const spotify_count = p.tracks.filter((t) => t.spotify_id !== null).length;
+    const youtube_count = p.tracks.filter((t) => t.youtube_id !== null).length;
+    const firstWithMedia = p.tracks.find((t) => t.cover_url || t.youtube_id) ?? null;
+    return {
+      id: p.id,
+      slug: p.slug,
+      name_fr: p.name_fr,
+      name_en: p.name_en,
+      description_fr: p.description_fr,
+      description_en: p.description_en,
+      locale_primary: p.locale_primary,
+      theme: p.theme,
+      difficulty: p.difficulty,
+      visibility: p.visibility,
+      track_count: p._count.tracks,
+      spotify_count,
+      youtube_count,
+      // TV = vue anonyme (non-premium) → premium_only verrouillées.
+      locked: p.visibility === 'premium_only',
+      category: p.category,
+      position_in_category: p.position_in_category,
+      subtitle_fr: p.subtitle_fr,
+      subtitle_en: p.subtitle_en,
+      cover_fallback_url: firstWithMedia?.cover_url ?? null,
+      cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
+    };
+  });
+}
+
+/**
  * Détail d'une playlist officielle. Retourne null si non trouvée OU si l'user
  * n'a pas accès (private, ou premium_only sans premium).
  */

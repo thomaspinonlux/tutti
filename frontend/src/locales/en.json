@@ -506,6 +506,7 @@
   "screen": {
     "playlistSelection": {
       "eyebrow": "Host is picking",
+      "gridTitle": "The selection",
       "tracks": "{{n}} tracks",
       "difficulty": {
         "easy": "Easy",

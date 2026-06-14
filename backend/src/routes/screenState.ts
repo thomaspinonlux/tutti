@@ -66,6 +66,9 @@ router.get(
 
 const focusBodySchema = z.object({
   playlist_id: z.string().uuid().nullable(),
+  // feat/tv-grid-mirror — position de scroll de la grille host (ratio 0..1),
+  // throttle ~100ms côté host. La TV l'applique à sa propre grille.
+  scroll_ratio: z.number().min(0).max(1).optional(),
 });
 
 router.post(
@@ -81,7 +84,7 @@ router.post(
       return;
     }
     const workspaceId = req.workspaceId!;
-    setFocusedPlaylist(workspaceId, parsed.data.playlist_id);
+    setFocusedPlaylist(workspaceId, parsed.data.playlist_id, parsed.data.scroll_ratio ?? 0);
 
     // Broadcast aux spectators TV pour re-poll immédiat (< 100ms).
     // Best-effort : si pas de session active, no-op.
