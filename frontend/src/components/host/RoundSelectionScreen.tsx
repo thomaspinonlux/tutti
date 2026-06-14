@@ -25,6 +25,7 @@ import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/i
 import { CategoryRow } from './library/CategoryRow.js';
 import { OfficialQuizPackCard } from './library/OfficialQuizPackCard.js';
 import { useFocusedPlaylistSync } from '../../lib/useFocusedPlaylistSync.js';
+import { useSelectionBackgroundMusic } from '../../lib/useSelectionBackgroundMusic.js';
 
 // F1 (feat/playlist-search-and-host-improvements) — normalize pour
 // matcher insensible casse + accents. "été" → "ete", "Été" → "ete".
@@ -81,6 +82,10 @@ export function RoundSelectionScreen({
   // carrousel et POST l'id au backend. Actif uniquement sur l'onglet
   // bibliothèque tracks (les autres sub-tabs n'ont pas de focus playlist).
   useFocusedPlaylistSync({ enabled: tab === 'library' && librarySubTab === 'tracks' });
+  // feat/selection-ui-mirroring (item 4) — musique d'ambiance pendant toute la
+  // sélection (joue au montage du composant, stop au choix d'une playlist ou à
+  // la sortie = unmount). No-op tant que VITE_SELECTION_MUSIC_URL n'est pas set.
+  useSelectionBackgroundMusic({ enabled: true });
   const [playlists, setPlaylists] = useState<Playlist[] | null>(null);
   // feat/host-playlist-selection-redesign — playlists groupées par catégorie
   // (PR 2/4 #59 + PR 2/4). Remplace l'ancien grid `official` plat.
