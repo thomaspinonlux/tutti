@@ -5,8 +5,9 @@
  * Réglages design actés :
  *  - table large alignée en desktop, empilée en fallback étroit.
  *  - Franco bleuté / Inter coral (teinte douce) ; N1/N2/N3 monochrome inversé.
- *  - tout save (édition OU « Valider ») → tags_reviewed=true ; rien ne repasse
- *    à false en usage normal.
+ *  - on édite librement (brouillon local) ; « Enregistrer » envoie le PATCH
+ *    (tags + tags_reviewed=true). Action répétable, ne dé-valide jamais : le
+ *    repère vert « révisé » reste, le bouton reste « Enregistrer ».
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -107,7 +108,7 @@ export function LibraryTagsPage(): JSX.Element {
   }, [filter, page]);
   useEffect(load, [load]);
 
-  // Save partiel d'une song (optimiste). Tout save → tags_reviewed=true.
+  // Save d'une song (optimiste). « Enregistrer » → tags_reviewed=true.
   const save = useCallback(
     async (id: string, patch: SongTagPatch, optimistic: Partial<SongTagRow>): Promise<void> => {
       setSaving((s) => ({ ...s, [id]: true }));
@@ -129,7 +130,11 @@ export function LibraryTagsPage(): JSX.Element {
   );
 
   const bulkValidate = useCallback(async (): Promise<void> => {
-    if (!window.confirm(`Valider les ${total} morceaux filtrés ?\n(accepte le tagging tel quel)`))
+    if (
+      !window.confirm(
+        `Marquer ${total} morceaux comme révisés ?\n(accepte le tagging auto tel quel, ne modifie aucun tag)`,
+      )
+    )
       return;
     try {
       await bulkValidateSongTags(filter);
@@ -153,7 +158,7 @@ export function LibraryTagsPage(): JSX.Element {
             {globalReviewed !== null && globalTotal !== null
               ? `${globalReviewed} / ${globalTotal} révisés`
               : '…'}{' '}
-            · révise à la main, ou valide en masse le tagging auto
+            · édite et enregistre, ou marque en masse le tagging auto
           </p>
         </div>
         <Link to="/admin/library" className="font-mono text-xs text-spritz-deep hover:underline">
@@ -206,7 +211,7 @@ export function LibraryTagsPage(): JSX.Element {
           onClick={() => void bulkValidate()}
           disabled={total === 0 || rows === null}
         >
-          ✓ Valider les {total} filtrés
+          ✓ Marquer {total} comme révisés
         </Button>
       </div>
 
@@ -217,7 +222,7 @@ export function LibraryTagsPage(): JSX.Element {
       )}
 
       {/* En-tête colonnes (desktop) */}
-      <div className="hidden lg:grid grid-cols-[minmax(200px,2.2fr)_150px_120px_minmax(180px,2fr)_minmax(170px,1.6fr)_90px] gap-3 px-3 font-mono text-[11px] uppercase tracking-wider text-ink-soft">
+      <div className="hidden lg:grid grid-cols-[minmax(200px,2.2fr)_150px_120px_minmax(180px,2fr)_minmax(170px,1.6fr)_120px] gap-3 px-3 font-mono text-[11px] uppercase tracking-wider text-ink-soft">
         <span>Morceau</span>
         <span>Langue</span>
         <span>Niveau</span>
@@ -272,6 +277,26 @@ export function LibraryTagsPage(): JSX.Element {
   );
 }
 
+interface RowDraft {
+  themes: string[];
+  is_francophone: boolean;
+  is_international: boolean;
+  level: 1 | 2 | 3 | null;
+  work_kind: WorkKind | null;
+  work_title: string;
+}
+
+function toDraft(r: SongTagRow): RowDraft {
+  return {
+    themes: r.themes,
+    is_francophone: r.is_francophone,
+    is_international: r.is_international,
+    level: r.level,
+    work_kind: r.work_kind,
+    work_title: r.work_title ?? '',
+  };
+}
+
 // ── Ligne ────────────────────────────────────────────────────────────────
 function SongRowView({
   row,
@@ -286,28 +311,38 @@ function SongRowView({
   themeLabel: Map<string, string>;
   onSave: (id: string, patch: SongTagPatch, optimistic: Partial<SongTagRow>) => void;
 }): JSX.Element {
-  const [wtDraft, setWtDraft] = useState(row.work_title ?? '');
-  useEffect(() => setWtDraft(row.work_title ?? ''), [row.work_title]);
+  // Brouillon local : on édite librement, rien n'est envoyé tant qu'on ne
+  // clique pas « Enregistrer ». Re-sync sur la donnée serveur après save/reload.
+  const [draft, setDraft] = useState<RowDraft>(() => toDraft(row));
+  useEffect(() => setDraft(toDraft(row)), [row]);
 
   const done = row.tags_reviewed;
-  const workTitleMissing = !!row.work_kind && !(row.work_title ?? '').trim();
-  const availThemes = themes.filter((t) => !row.themes.includes(t.slug));
+  const workTitleMissing = !!draft.work_kind && !draft.work_title.trim();
+  const availThemes = themes.filter((t) => !draft.themes.includes(t.slug));
 
-  const toggleLevel = (n: 1 | 2 | 3): void =>
-    onSave(row.id, { level: row.level === n ? null : n }, { level: row.level === n ? null : n });
-  const addTheme = (slug: string): void => {
-    if (!slug || row.themes.includes(slug)) return;
-    const themesNext = [...row.themes, slug];
-    onSave(row.id, { themes: themesNext }, { themes: themesNext });
-  };
-  const removeTheme = (slug: string): void => {
-    const themesNext = row.themes.filter((s) => s !== slug);
-    onSave(row.id, { themes: themesNext }, { themes: themesNext });
+  const dirty =
+    draft.is_francophone !== row.is_francophone ||
+    draft.is_international !== row.is_international ||
+    draft.level !== row.level ||
+    draft.work_kind !== row.work_kind ||
+    (draft.work_title.trim() || null) !== (row.work_title ?? null) ||
+    draft.themes.join(',') !== row.themes.join(',');
+
+  const handleSave = (): void => {
+    const patch: SongTagPatch = {
+      themes: draft.themes,
+      is_francophone: draft.is_francophone,
+      is_international: draft.is_international,
+      level: draft.level,
+      work_kind: draft.work_kind,
+      work_title: draft.work_title.trim() || null,
+    };
+    onSave(row.id, patch, patch);
   };
 
   return (
     <div
-      className={`bg-white border-2 border-ink/10 rounded-lg px-3 py-2.5 lg:grid lg:grid-cols-[minmax(200px,2.2fr)_150px_120px_minmax(180px,2fr)_minmax(170px,1.6fr)_90px] lg:gap-3 lg:items-center flex flex-col gap-2.5 border-l-4 ${
+      className={`bg-white border-2 border-ink/10 rounded-lg px-3 py-2.5 lg:grid lg:grid-cols-[minmax(200px,2.2fr)_150px_120px_minmax(180px,2fr)_minmax(170px,1.6fr)_120px] lg:gap-3 lg:items-center flex flex-col gap-2.5 border-l-4 ${
         done ? 'border-l-basil' : 'border-l-spritz/50'
       } ${saving ? 'opacity-70' : ''}`}
     >
@@ -321,28 +356,16 @@ function SongRowView({
       {/* Langue */}
       <div className="flex gap-1.5">
         <LangToggle
-          active={row.is_francophone}
+          active={draft.is_francophone}
           tone="franco"
           label="Franco"
-          onClick={() =>
-            onSave(
-              row.id,
-              { is_francophone: !row.is_francophone },
-              { is_francophone: !row.is_francophone },
-            )
-          }
+          onClick={() => setDraft((d) => ({ ...d, is_francophone: !d.is_francophone }))}
         />
         <LangToggle
-          active={row.is_international}
+          active={draft.is_international}
           tone="inter"
           label="Inter"
-          onClick={() =>
-            onSave(
-              row.id,
-              { is_international: !row.is_international },
-              { is_international: !row.is_international },
-            )
-          }
+          onClick={() => setDraft((d) => ({ ...d, is_international: !d.is_international }))}
         />
       </div>
 
@@ -351,11 +374,13 @@ function SongRowView({
         {([1, 2, 3] as const).map((n) => (
           <button
             key={n}
-            onClick={() => toggleLevel(n)}
+            onClick={() => setDraft((d) => ({ ...d, level: d.level === n ? null : n }))}
             className={`w-9 h-7 text-xs font-medium ${n > 1 ? 'border-l-2 border-ink/20' : ''} ${
-              row.level === n ? 'bg-ink text-cream' : 'bg-transparent text-ink-soft hover:bg-ink/5'
+              draft.level === n
+                ? 'bg-ink text-cream'
+                : 'bg-transparent text-ink-soft hover:bg-ink/5'
             }`}
-            aria-pressed={row.level === n}
+            aria-pressed={draft.level === n}
           >
             N{n}
           </button>
@@ -364,14 +389,16 @@ function SongRowView({
 
       {/* Thèmes */}
       <div className="flex flex-wrap gap-1.5 items-center">
-        {row.themes.map((slug) => (
+        {draft.themes.map((slug) => (
           <span
             key={slug}
             className="inline-flex items-center gap-1 text-xs pl-2 pr-1 py-0.5 bg-cream-2 border border-ink/15 rounded-full"
           >
             {themeLabel.get(slug) ?? slug}
             <button
-              onClick={() => removeTheme(slug)}
+              onClick={() =>
+                setDraft((d) => ({ ...d, themes: d.themes.filter((s) => s !== slug) }))
+              }
               aria-label={`retirer ${slug}`}
               className="text-ink-faded hover:text-raspberry text-sm leading-none px-0.5"
             >
@@ -381,7 +408,10 @@ function SongRowView({
         ))}
         <select
           value=""
-          onChange={(e) => addTheme(e.target.value)}
+          onChange={(e) => {
+            const s = e.target.value;
+            if (s) setDraft((d) => (d.themes.includes(s) ? d : { ...d, themes: [...d.themes, s] }));
+          }}
           className="text-xs border border-dashed border-ink/30 rounded px-1 py-0.5 bg-white text-ink-soft"
           aria-label="Ajouter un thème"
         >
@@ -397,13 +427,9 @@ function SongRowView({
       {/* Œuvre */}
       <div className="flex flex-col gap-1">
         <select
-          value={row.work_kind ?? ''}
+          value={draft.work_kind ?? ''}
           onChange={(e) =>
-            onSave(
-              row.id,
-              { work_kind: (e.target.value || null) as WorkKind | null },
-              { work_kind: (e.target.value || null) as WorkKind | null },
-            )
+            setDraft((d) => ({ ...d, work_kind: (e.target.value || null) as WorkKind | null }))
           }
           className="text-xs border-2 border-ink/20 rounded px-1 py-1 bg-white"
           aria-label="Type d'œuvre"
@@ -415,15 +441,10 @@ function SongRowView({
             </option>
           ))}
         </select>
-        {row.work_kind && (
+        {draft.work_kind && (
           <input
-            value={wtDraft}
-            onChange={(e) => setWtDraft(e.target.value)}
-            onBlur={() => {
-              const v = wtDraft.trim();
-              if (v !== (row.work_title ?? ''))
-                onSave(row.id, { work_title: v || null }, { work_title: v || null });
-            }}
+            value={draft.work_title}
+            onChange={(e) => setDraft((d) => ({ ...d, work_title: e.target.value }))}
             placeholder={workTitleMissing ? 'nom de l’œuvre à saisir' : 'nom de l’œuvre'}
             className={`text-xs rounded px-2 py-1 border-2 ${
               workTitleMissing
@@ -435,23 +456,24 @@ function SongRowView({
         )}
       </div>
 
-      {/* Statut / Valider */}
-      <div className="flex lg:justify-end">
-        {done ? (
-          <span className="inline-flex items-center gap-1 text-basil-deep text-xs font-medium">
-            ✓ révisé
-          </span>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onSave(row.id, {}, {})}
-            disabled={saving}
-            className="!text-basil-deep"
+      {/* Statut / Enregistrer */}
+      <div className="flex items-center gap-2 lg:justify-end">
+        {done && (
+          <span
+            className="inline-flex items-center gap-1 text-basil-deep text-xs font-medium"
+            title="déjà révisé"
           >
-            Valider
-          </Button>
+            ✓
+          </span>
         )}
+        <Button
+          variant={dirty || !done ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? '…' : 'Enregistrer'}
+        </Button>
       </div>
     </div>
   );
