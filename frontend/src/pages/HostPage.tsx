@@ -2305,9 +2305,13 @@ function AnimatorTrackInfo({
             ♪
           </div>
         )}
-        <div className="text-left min-w-0 max-w-[260px]">
-          <p className="font-display text-2xl text-ink truncate">{track.title}</p>
-          <p className="font-editorial italic text-ink-2 truncate">{track.artist}</p>
+        {/* feat/selection-ui-mirroring (item 3) — bloc "morceau en cours" :
+            largeur responsive (flex-1, plus de cap dur 260px) + word-wrap au
+            lieu de truncate → les titres longs s'affichent en entier sans coupe
+            ni débordement. */}
+        <div className="text-left min-w-0 flex-1">
+          <p className="font-display text-2xl text-ink break-words">{track.title}</p>
+          <p className="font-editorial italic text-ink-2 break-words">{track.artist}</p>
           {track.year && <p className="font-mono text-xs text-ink-soft">{track.year}</p>}
         </div>
       </div>

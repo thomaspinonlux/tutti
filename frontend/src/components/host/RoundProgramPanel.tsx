@@ -116,8 +116,11 @@ function ProgramRow({ track }: { track: RoundProgramItem }): JSX.Element {
       )}
 
       <div className="min-w-0 flex-1">
-        <p className="font-display text-sm text-ink truncate">{track.title}</p>
-        <p className="font-editorial italic text-xs text-ink-2 truncate">
+        {/* feat/selection-ui-mirroring (item 3) — word-wrap au lieu de truncate :
+            les titres/artistes longs s'enroulent sur plusieurs lignes au lieu
+            d'être coupés ou de déborder. */}
+        <p className="font-display text-sm text-ink break-words">{track.title}</p>
+        <p className="font-editorial italic text-xs text-ink-2 break-words">
           {track.artist}
           {track.year ? ` · ${track.year}` : ''}
         </p>
