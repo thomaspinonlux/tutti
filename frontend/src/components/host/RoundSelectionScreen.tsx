@@ -78,10 +78,15 @@ export function RoundSelectionScreen({
   const [tab, setTab] = useState<Tab>('mine');
   const [librarySubTab, setLibrarySubTab] = useState<LibrarySubTab>('tracks');
 
-  // feat/tv-playlist-selection-sync — observe les cards centrées dans le
-  // carrousel et POST l'id au backend. Actif uniquement sur l'onglet
-  // bibliothèque tracks (les autres sub-tabs n'ont pas de focus playlist).
-  useFocusedPlaylistSync({ enabled: tab === 'library' && librarySubTab === 'tracks' });
+  // feat/selection-ui-mirroring (item 2) — mirror TV armé sur TOUTE la durée de
+  // la sélection : ENTRE au montage (arrivée sur l'écran de choix) et SORT à
+  // l'unmount (choix d'une playlist OU sortie de la sélection). L'observer ne
+  // cible que les cards officielles ([data-focus-playlist-id] du carrousel
+  // Bibliothèque) : sur "Mes playlists" / "Quizz" il n'y a aucune cible → POST
+  // null → la TV reste idle (pas de mirror obsolète) ; sur la Bibliothèque, la
+  // card centrée pilote la PRÉSENTATION TV (cover + titre + nb morceaux), jamais
+  // la liste des titres (le payload ScreenState ne contient pas les tracks).
+  useFocusedPlaylistSync({ enabled: true });
   // feat/selection-ui-mirroring (item 4) — musique d'ambiance pendant toute la
   // sélection (joue au montage du composant, stop au choix d'une playlist ou à
   // la sortie = unmount). No-op tant que VITE_SELECTION_MUSIC_URL n'est pas set.
