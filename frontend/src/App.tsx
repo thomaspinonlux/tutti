@@ -38,6 +38,7 @@ import { LibraryPage } from './pages/admin/LibraryPage.js';
 import { LibraryPlaylistDetailPage } from './pages/admin/LibraryPlaylistDetailPage.js';
 import { LibraryQuizPackDetailPage } from './pages/admin/LibraryQuizPackDetailPage.js';
 import { LibraryAuditPage } from './pages/admin/LibraryAuditPage.js';
+import { LibraryTagsPage } from './pages/admin/LibraryTagsPage.js';
 import { ProtectedRoute } from './components/auth/ProtectedRoute.js';
 import { SuperAdminRouteGuard } from './components/auth/SuperAdminRouteGuard.js';
 import { PrivacyPage } from './pages/legal/PrivacyPage.js';
@@ -150,6 +151,7 @@ function App(): JSX.Element {
             <Route path="users/:id" element={<UserDetailPage />} />
             <Route path="library" element={<LibraryPage />} />
             <Route path="library/audit" element={<LibraryAuditPage />} />
+            <Route path="library/tags" element={<LibraryTagsPage />} />
             <Route path="library/playlists/:id" element={<LibraryPlaylistDetailPage />} />
             <Route path="library/quiz-packs/:id" element={<LibraryQuizPackDetailPage />} />
           </Route>
