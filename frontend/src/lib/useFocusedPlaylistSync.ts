@@ -43,32 +43,27 @@ interface Options {
 const clamp01 = (n: number): number => Math.min(1, Math.max(0, n));
 
 /**
- * Trouve le conteneur scrollable vertical qui porte la grille (overflow-y
- * auto/scroll). Fallback null → c'est le document/window qui scrolle.
+ * Résout l'élément RÉELLEMENT scrollé depuis la cible d'un event `scroll`.
+ * Le host scrolle un conteneur interne (pas window) → on ne devine pas, on
+ * prend la cible de l'event :
+ *   - élément → lui-même
+ *   - document / Document → scrollingElement (ou documentElement) en fallback
  */
-function findScroller(): HTMLElement | null {
-  const anchor = document.querySelector<HTMLElement>('[data-focus-playlist-id]');
-  let el: HTMLElement | null = anchor?.parentElement ?? null;
-  while (el) {
-    const oy = window.getComputedStyle(el).overflowY;
-    if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 4) {
-      return el;
-    }
-    el = el.parentElement;
+function resolveScrollEl(target: EventTarget | null): HTMLElement | null {
+  if (target instanceof HTMLElement) return target;
+  if (target === document || target instanceof Document) {
+    return (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
   }
   return null;
 }
 
-/** Ratio de scroll vertical 0..1 du conteneur de la grille (ou du document). */
-function computeScrollRatio(): number {
-  const scroller = findScroller();
-  if (scroller) {
-    const max = scroller.scrollHeight - scroller.clientHeight;
-    return max > 0 ? clamp01(scroller.scrollTop / max) : 0;
-  }
-  const doc = document.documentElement;
-  const max = doc.scrollHeight - window.innerHeight;
-  return max > 0 ? clamp01(window.scrollY / max) : 0;
+/** Ratio de scroll vertical 0..1 de l'élément donné (fallback document). */
+function computeScrollRatio(el: HTMLElement | null): number {
+  const scroller =
+    el ?? (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
+  if (!scroller) return 0;
+  const max = scroller.scrollHeight - scroller.clientHeight;
+  return max > 0 ? clamp01(scroller.scrollTop / max) : 0;
 }
 
 export function useFocusedPlaylistSync({ enabled }: Options): void {
@@ -84,6 +79,10 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
   useEffect(() => {
     if (!enabled) return;
 
+    // Dernier conteneur VERTICALEMENT scrollé, capté depuis les events scroll
+    // (cf. onScroll). null tant qu'aucun scroll → fallback document.
+    let scrollerEl: HTMLElement | null = null;
+
     /**
      * Envoie l'état courant (focused + scroll). Par défaut, no-op si identique
      * au dernier POST (dedup). `force` = re-POST quoi qu'il arrive (keepalive
@@ -91,7 +90,7 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
      */
     const flush = (force = false): void => {
       const id = focusedIdRef.current;
-      const ratio = id ? computeScrollRatio() : 0;
+      const ratio = id ? computeScrollRatio(scrollerEl) : 0;
       const idChanged = id !== sentIdRef.current;
       const ratioChanged = Math.abs(ratio - sentRatioRef.current) >= SCROLL_EPSILON;
       if (!force && !idChanged && !ratioChanged) return;
@@ -174,10 +173,17 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
 
     // ── Scroll-sync (throttle ~100ms) ─────────────────────────────────────
     // Listener en phase CAPTURE sur window : les events `scroll` ne bubblent
-    // pas mais sont capturés → on intercepte aussi le scroll d'un éventuel
-    // conteneur interne, sans connaître sa cible à l'avance.
+    // pas mais sont capturés → on intercepte le scroll de n'importe quel
+    // conteneur. On CALCULE le ratio depuis la CIBLE de l'event (l'élément qui
+    // scrolle vraiment), pas window — le host scrolle un conteneur interne donc
+    // window.scrollY reste 0. On ne retient la cible que si elle a un overflow
+    // VERTICAL (> 4px) → ignore le scroll horizontal des carrousels.
     let scrollThrottle: number | null = null;
-    const onScroll = (): void => {
+    const onScroll = (e: Event): void => {
+      const el = resolveScrollEl(e.target);
+      if (el && el.scrollHeight - el.clientHeight > 4) {
+        scrollerEl = el;
+      }
       if (scrollThrottle !== null) return;
       scrollThrottle = window.setTimeout(() => {
         scrollThrottle = null;
