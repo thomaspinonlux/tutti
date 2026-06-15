@@ -85,6 +85,13 @@ router.post(
       return;
     }
     const workspaceId = req.workspaceId!;
+    // TEMP DIAG (scroll-sync debug) — log la valeur BRUTE reçue. `undefined` =
+    // le host n'envoie pas scroll_ratio ; nombre qui bouge = scroll OK. À retirer.
+    console.info(
+      `[FocusPost] ws=${workspaceId} playlist=${parsed.data.playlist_id ?? 'null'} scroll_ratio=${
+        parsed.data.scroll_ratio ?? 'undefined'
+      }`,
+    );
     setFocusedPlaylist(workspaceId, parsed.data.playlist_id, parsed.data.scroll_ratio ?? 0);
 
     // Broadcast aux spectators TV pour re-poll immédiat (< 100ms).
