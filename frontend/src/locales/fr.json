@@ -506,6 +506,7 @@
   "screen": {
     "playlistSelection": {
       "eyebrow": "L'animateur choisit",
+      "gridTitle": "La sélection",
       "tracks": "{{n}} morceaux",
       "difficulty": {
         "easy": "Facile",

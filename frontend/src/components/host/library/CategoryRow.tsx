@@ -21,6 +21,12 @@ interface Props {
   onPick: (playlist: LibraryPlaylistSummary) => void;
   onLockedClick?: (playlist: LibraryPlaylistSummary) => void;
   disabled?: boolean;
+  /** feat/tv-grid-mirror — id de la playlist à highlighter (carte centrée
+   *  côté animateur). Ajoute un ring autour de la card correspondante. */
+  highlightId?: string | null;
+  /** feat/tv-grid-mirror — mode TV : aucune interaction (pointer-events-none),
+   *  flèches de scroll masquées. Affichage seul. */
+  readOnly?: boolean;
 }
 
 /** Distance scrollée par click sur les flèches (≈ 2 cards + gap). */
@@ -31,6 +37,8 @@ export function CategoryRow({
   onPick,
   onLockedClick,
   disabled,
+  highlightId,
+  readOnly,
 }: Props): JSX.Element | null {
   const { i18n, t } = useTranslation();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'fr';
@@ -72,7 +80,7 @@ export function CategoryRow({
 
   return (
     <section
-      className="mb-8"
+      className={`mb-8${readOnly ? ' pointer-events-none select-none' : ''}`}
       aria-labelledby={`cat-${category.slug}-label`}
       data-category-slug={category.slug}
     >
@@ -103,35 +111,38 @@ export function CategoryRow({
 
         {/* ─── Scroll horizontal (droite) ─── */}
         <div className="md:basis-[70%] lg:basis-3/4 relative min-w-0">
-          {/* Bouton scroll gauche — desktop only */}
-          <button
-            type="button"
-            onClick={() => scrollBy(-1)}
-            disabled={!canLeft}
-            aria-label={t('host.session.scrollLeft')}
-            className={`hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-cream border-2 border-ink shadow-pop transition-opacity ${
-              canLeft ? 'opacity-100 hover:bg-cream-2' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <span aria-hidden className="font-display text-xl leading-none">
-              ‹
-            </span>
-          </button>
+          {/* Flèches de scroll — desktop only, masquées en mode TV (readOnly) */}
+          {!readOnly && (
+            <>
+              <button
+                type="button"
+                onClick={() => scrollBy(-1)}
+                disabled={!canLeft}
+                aria-label={t('host.session.scrollLeft')}
+                className={`hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-cream border-2 border-ink shadow-pop transition-opacity ${
+                  canLeft ? 'opacity-100 hover:bg-cream-2' : 'opacity-0 pointer-events-none'
+                }`}
+              >
+                <span aria-hidden className="font-display text-xl leading-none">
+                  ‹
+                </span>
+              </button>
 
-          {/* Bouton scroll droit — desktop only */}
-          <button
-            type="button"
-            onClick={() => scrollBy(1)}
-            disabled={!canRight}
-            aria-label={t('host.session.scrollRight')}
-            className={`hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-cream border-2 border-ink shadow-pop transition-opacity ${
-              canRight ? 'opacity-100 hover:bg-cream-2' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <span aria-hidden className="font-display text-xl leading-none">
-              ›
-            </span>
-          </button>
+              <button
+                type="button"
+                onClick={() => scrollBy(1)}
+                disabled={!canRight}
+                aria-label={t('host.session.scrollRight')}
+                className={`hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-cream border-2 border-ink shadow-pop transition-opacity ${
+                  canRight ? 'opacity-100 hover:bg-cream-2' : 'opacity-0 pointer-events-none'
+                }`}
+              >
+                <span aria-hidden className="font-display text-xl leading-none">
+                  ›
+                </span>
+              </button>
+            </>
+          )}
 
           <div
             ref={scrollRef}
@@ -144,7 +155,16 @@ export function CategoryRow({
             role="list"
           >
             {category.playlists.map((p) => (
-              <div key={p.id} role="listitem" data-focus-playlist-id={p.id}>
+              <div
+                key={p.id}
+                role="listitem"
+                data-focus-playlist-id={p.id}
+                className={`rounded-2xl transition-all duration-200 ${
+                  highlightId === p.id
+                    ? 'ring-4 ring-spritz ring-offset-2 ring-offset-cream scale-[1.02]'
+                    : ''
+                }`}
+              >
                 <PlaylistCardLarge
                   playlist={p}
                   onPick={() => onPick(p)}

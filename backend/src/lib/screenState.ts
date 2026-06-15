@@ -27,7 +27,7 @@ import type {
 import { prisma } from './prisma.js';
 import { getCumulativeScores } from './scores.js';
 import { buildCurrentTrackStateSnapshot, getEffectiveRoundTrackCount } from './gameplayCore.js';
-import { getFocusedPlaylist } from './playlistSelectionStore.js';
+import { getFocusedSelection } from './playlistSelectionStore.js';
 import type { GameMode, Team } from '@tutti/shared';
 
 export type ScreenState =
@@ -86,23 +86,17 @@ export type ScreenState =
       lastUpdate: string;
     }
   | {
-      /** feat/tv-playlist-selection-sync — host scrolle dans la sélection
-       *  playlist (avant partie OU entre 2 manches). TV affiche la playlist
-       *  focused : grande cover + titre + description + nb tracks. */
+      /** feat/tv-grid-mirror — host est sur l'écran de sélection (avant partie
+       *  OU entre 2 manches). La TV mirrore la GRILLE complète (qu'elle fetch
+       *  elle-même via /api/library-public/catalog), highlight la playlist
+       *  centrée et applique le scroll de l'animateur. */
       state: 'PLAYLIST_SELECTION';
       sessionId: string;
       joinCode: string;
       sessionName: string | null;
-      playlist: {
-        id: string;
-        slug: string;
-        name: string;
-        description: string | null;
-        cover_url: string | null;
-        tracks_count: number;
-        category: string | null;
-        difficulty: string;
-      };
+      focused_playlist_id: string;
+      /** Position de scroll de la grille host, ratio 0..1. */
+      scroll_ratio: number;
       lastUpdate: string;
     };
 
@@ -335,50 +329,25 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
     };
   }
 
-  // PLAYLIST_SELECTION : host scrolle dans la sélection playlist (carrousel).
+  // PLAYLIST_SELECTION : host est sur l'écran de sélection (grille playlists).
   // Prioritaire sur ROUND_PODIUM et LOBBY (pas sur PAUSED/PLAYING/FINAL_PODIUM).
   // Le store in-memory (TTL 30s) est alimenté par POST /screen-state/focused-playlist.
-  const focusedPlaylistId = getFocusedPlaylist(workspaceId);
-  if (focusedPlaylistId) {
-    const pl = await prisma.officialPlaylist.findUnique({
-      where: { id: focusedPlaylistId },
-      select: {
-        id: true,
-        slug: true,
-        name_fr: true,
-        name_en: true,
-        description_fr: true,
-        description_en: true,
-        locale_primary: true,
-        cover_url: true,
-        track_count: true,
-        category: true,
-        difficulty: true,
-      },
-    });
-    if (pl) {
-      const useEn = pl.locale_primary?.startsWith('en');
-      console.info(
-        `[ScreenState] Workspace ${workspaceId} → PLAYLIST_SELECTION (session=${session.id}, playlist=${pl.slug})`,
-      );
-      return {
-        state: 'PLAYLIST_SELECTION',
-        sessionId: session.id,
-        joinCode: session.short_code,
-        sessionName: session.name,
-        playlist: {
-          id: pl.id,
-          slug: pl.slug,
-          name: useEn ? pl.name_en : pl.name_fr,
-          description: useEn ? pl.description_en : pl.description_fr,
-          cover_url: pl.cover_url,
-          tracks_count: pl.track_count,
-          category: pl.category,
-          difficulty: pl.difficulty,
-        },
-        lastUpdate,
-      };
-    }
+  // On renvoie juste l'id focused + le scroll : la TV fetch la grille catalogue
+  // elle-même (/api/library-public/catalog) et mirrore l'écran animateur.
+  const focus = getFocusedSelection(workspaceId);
+  if (focus) {
+    console.info(
+      `[ScreenState] Workspace ${workspaceId} → PLAYLIST_SELECTION (session=${session.id}, focus=${focus.playlistId}, scroll=${focus.scrollRatio.toFixed(2)})`,
+    );
+    return {
+      state: 'PLAYLIST_SELECTION',
+      sessionId: session.id,
+      joinCode: session.short_code,
+      sessionName: session.name,
+      focused_playlist_id: focus.playlistId,
+      scroll_ratio: focus.scrollRatio,
+      lastUpdate,
+    };
   }
 
   // ROUND_PODIUM : session PLAYING (status) ET dernier round ENDED (entre 2 manches)
