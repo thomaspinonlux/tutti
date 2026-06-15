@@ -24,6 +24,7 @@ import {
 import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/index.js';
 import { CategoryRow } from './library/CategoryRow.js';
 import { OfficialQuizPackCard } from './library/OfficialQuizPackCard.js';
+import { JoinQrCorner } from './JoinQrCorner.js';
 import { useFocusedPlaylistSync } from '../../lib/useFocusedPlaylistSync.js';
 import { useSelectionBackgroundMusic } from '../../lib/useSelectionBackgroundMusic.js';
 
@@ -62,6 +63,8 @@ interface Props {
   onCreateExpress: () => void;
   onEndSession: () => void | Promise<void>;
   loading?: boolean;
+  /** feat/tv-join-qr-codes — short_code session → QR de rejoindre en coin. */
+  joinCode?: string;
 }
 
 export function RoundSelectionScreen({
@@ -73,6 +76,7 @@ export function RoundSelectionScreen({
   onCreateExpress,
   onEndSession,
   loading,
+  joinCode,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('mine');
@@ -183,6 +187,9 @@ export function RoundSelectionScreen({
 
   return (
     <div>
+      {/* feat/tv-join-qr-codes (C) — QR rejoindre en coin, visible pendant
+          qu'on choisit la playlist. Mirroré sur la TV via ScreenPlaylistGridView. */}
+      {joinCode && <JoinQrCorner joinCode={joinCode} />}
       <header className="mb-6 flex items-center justify-between flex-wrap gap-3">
         <TitleHandwritten as="h2">
           <Underline>{isFirstRound ? t('host.pickFirstRound') : t('host.pickNextRound')}</Underline>

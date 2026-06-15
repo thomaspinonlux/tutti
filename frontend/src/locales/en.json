@@ -295,6 +295,10 @@
     "reloadButton": "I disabled it, reload"
   },
   "host": {
+    "joinQr": {
+      "label": "Join",
+      "tapToEnlarge": "Enlarge on TV"
+    },
     "eyebrow": "Waiting room",
     "eyebrowPlaying": "Round {{round}}",
     "eyebrowEnded": "Game over",

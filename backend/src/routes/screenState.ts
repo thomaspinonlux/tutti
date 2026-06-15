@@ -13,6 +13,7 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { computeScreenState } from '../lib/screenState.js';
 import { setFocusedPlaylist } from '../lib/playlistSelectionStore.js';
+import { setQrOverlay } from '../lib/qrOverlayStore.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { prisma } from '../lib/prisma.js';
@@ -104,6 +105,52 @@ router.post(
       }
     } catch (err: unknown) {
       console.warn('[POST /screen-state/focused-playlist] broadcast failed:', err);
+    }
+    res.json({ ok: true });
+  },
+);
+
+// ── POST /screen-state/qr-overlay (host) ──────────────────────────────────
+// feat/tv-join-qr-codes — l'animateur (pendant la PARTIE ou la sélection)
+// toggle l'affichage du QR de rejoindre EN GRAND sur la TV. Flag in-memory
+// INDÉPENDANT du focus/scroll (vaut pendant PLAYING aussi), lu par la TV via
+// screen-state. Réutilise le canal screen-state : même broadcast `focus-changed`
+// pour le re-poll immédiat de la TV.
+
+const qrOverlayBodySchema = z.object({
+  enabled: z.boolean(),
+});
+
+router.post(
+  '/screen-state/qr-overlay',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request, res: Response): Promise<void> => {
+    const parsed = qrOverlayBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    const workspaceId = req.workspaceId!;
+    setQrOverlay(workspaceId, parsed.data.enabled);
+
+    // Re-poll TV immédiat (best-effort) via le canal screen-state existant.
+    try {
+      const session = await prisma.session.findFirst({
+        where: {
+          establishment: { workspace_id: workspaceId },
+          status: { in: ['WAITING', 'PLAYING'] },
+        },
+        select: { id: true },
+        orderBy: { updated_at: 'desc' },
+      });
+      if (session) {
+        broadcastToSession(session.id, 'screen-state:focus-changed', {
+          qr_overlay: parsed.data.enabled,
+        });
+      }
+    } catch (err: unknown) {
+      console.warn('[POST /screen-state/qr-overlay] broadcast failed:', err);
     }
     res.json({ ok: true });
   },
