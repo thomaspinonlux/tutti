@@ -85,9 +85,17 @@ export function ScreenPage(): JSX.Element {
     let cancelled = false;
     let timeoutId: number | null = null;
     let inFlight = false;
+    // fix/tv-mirror — un trigger (event socket) arrivé pendant un poll in-flight
+    // était DROPPÉ sans rejouer → en plein scroll-sync, la TV ne se mettait à
+    // jour qu'au tick 2s au lieu de chaque POST scroll (~100ms) = "scroll suit
+    // pas". On mémorise le trigger et on re-poll immédiatement au finally.
+    let pendingTrigger = false;
 
     const poll = async (): Promise<void> => {
-      if (inFlight) return; // dédup : pas 2 fetchs concurrents
+      if (inFlight) {
+        pendingTrigger = true; // sera consommé au finally du poll en cours
+        return;
+      }
       inFlight = true;
       try {
         const next = await getScreenState(workspaceId);
@@ -101,17 +109,26 @@ export function ScreenPage(): JSX.Element {
         setError((err as Error).message);
       } finally {
         inFlight = false;
-        if (cancelled) return;
-        if (timeoutId !== null) window.clearTimeout(timeoutId);
-        const interval =
-          idleStreakRef.current >= SLOW_THRESHOLD_IDLE_TICKS ? POLL_SLOW_MS : POLL_FAST_MS;
-        timeoutId = window.setTimeout(() => void poll(), interval);
+        if (!cancelled) {
+          if (timeoutId !== null) window.clearTimeout(timeoutId);
+          if (pendingTrigger) {
+            // Un event est arrivé pendant le fetch → re-poll tout de suite pour
+            // récupérer le dernier scroll_ratio (latence ≈ 1 RTT, pas 2s).
+            pendingTrigger = false;
+            timeoutId = null;
+            void poll();
+          } else {
+            const interval =
+              idleStreakRef.current >= SLOW_THRESHOLD_IDLE_TICKS ? POLL_SLOW_MS : POLL_FAST_MS;
+            timeoutId = window.setTimeout(() => void poll(), interval);
+          }
+        }
       }
     };
 
     triggerPollRef.current = () => {
-      // Annule le timeout en cours et déclenche un poll immédiat. Le finally
-      // re-armera le timeout suivant.
+      // Annule le timeout en cours et déclenche un poll immédiat. Si un poll est
+      // déjà in-flight, poll() mémorise pendingTrigger et rejoue au finally.
       if (timeoutId !== null) {
         window.clearTimeout(timeoutId);
         timeoutId = null;
@@ -424,12 +441,27 @@ function ScreenPlaylistGridView({
   }, []);
 
   // Scroll-sync : applique le ratio reçu de l'animateur à la grille TV.
+  // Double application : immédiate + rAF (le scrollHeight change après le
+  // chargement async des covers → max recalculé sur le vrai layout).
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const max = el.scrollHeight - el.clientHeight;
-    if (max <= 0) return;
-    el.scrollTop = scrollRatio * max;
+    const apply = (): void => {
+      const max = el.scrollHeight - el.clientHeight;
+      if (max <= 0) {
+        // Grille plus courte que le viewport TV → rien à scroller. Diagnostic
+        // explicite (vu en console TV) pour distinguer "max=0" d'un scroll figé.
+        console.info(`[GridMirror] no overflow (max=${max}) — grille tient à l'écran`);
+        return;
+      }
+      el.scrollTop = scrollRatio * max;
+      console.info(
+        `[GridMirror] apply ratio=${scrollRatio.toFixed(3)} max=${max} → top=${Math.round(el.scrollTop)}`,
+      );
+    };
+    apply();
+    const raf = window.requestAnimationFrame(apply);
+    return () => window.cancelAnimationFrame(raf);
   }, [scrollRatio, categories]);
 
   return (

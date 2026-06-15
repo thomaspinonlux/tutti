@@ -24,6 +24,12 @@ import { postFocusedPlaylist } from './screenState.js';
 const FOCUS_DEBOUNCE_MS = 300;
 /** Throttle des updates de scroll. */
 const SCROLL_THROTTLE_MS = 100;
+/**
+ * Keepalive : re-POST focus+scroll même immobile, pour rafraîchir le TTL 30s
+ * du store backend. Sans ça, animateur immobile > 30s → PLAYLIST_SELECTION
+ * tombe → la TV revient sur le QR/lobby. 10s = 3× de marge sous le TTL.
+ */
+const KEEPALIVE_MS = 10_000;
 /** Seuil de visibilité minimum pour qu'une card soit considérée "focused". */
 const VISIBILITY_THRESHOLD = 0.5;
 /** Delta de ratio en-dessous duquel on ne re-POST pas (anti-spam). */
@@ -78,13 +84,17 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
   useEffect(() => {
     if (!enabled) return;
 
-    /** Envoie l'état courant (focused + scroll) si différent du dernier POST. */
-    const flush = (): void => {
+    /**
+     * Envoie l'état courant (focused + scroll). Par défaut, no-op si identique
+     * au dernier POST (dedup). `force` = re-POST quoi qu'il arrive (keepalive
+     * TTL : rafraîchir le store backend même immobile).
+     */
+    const flush = (force = false): void => {
       const id = focusedIdRef.current;
       const ratio = id ? computeScrollRatio() : 0;
       const idChanged = id !== sentIdRef.current;
       const ratioChanged = Math.abs(ratio - sentRatioRef.current) >= SCROLL_EPSILON;
-      if (!idChanged && !ratioChanged) return;
+      if (!force && !idChanged && !ratioChanged) return;
       if (inFlightRef.current) {
         dirtyRef.current = true;
         return;
@@ -93,6 +103,9 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
       dirtyRef.current = false;
       sentIdRef.current = id;
       sentRatioRef.current = ratio;
+      console.info(
+        `[FocusedSync] POST id=${id ?? 'null'} ratio=${ratio.toFixed(3)}${force ? ' (keepalive)' : ''}`,
+      );
       postFocusedPlaylist(id, ratio)
         .catch((err) => {
           // Pas critique : le polling backend garde la dernière valeur (TTL 30s).
@@ -173,10 +186,20 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
     };
     window.addEventListener('scroll', onScroll, { capture: true, passive: true });
 
+    // ── Keepalive TTL (re-POST toutes les 10s tant qu'une playlist est focused) ──
+    // Rafraîchit le store backend (TTL 30s) même si l'animateur ne bouge pas →
+    // la TV reste sur la grille au lieu de retomber sur le QR/lobby. Skip si
+    // aucun focus (ex: onglet "Mes playlists" sans cards officielles → on laisse
+    // le TTL expirer, il n'y a pas de grille officielle à mirrorer).
+    const keepaliveTimer = window.setInterval(() => {
+      if (focusedIdRef.current) flush(true);
+    }, KEEPALIVE_MS);
+
     return () => {
       observer.disconnect();
       mutationObserver.disconnect();
       window.removeEventListener('scroll', onScroll, { capture: true } as EventListenerOptions);
+      window.clearInterval(keepaliveTimer);
       if (focusTimer !== null) window.clearTimeout(focusTimer);
       if (scrollThrottle !== null) window.clearTimeout(scrollThrottle);
       // Signale au backend "host a quitté la sélection".
