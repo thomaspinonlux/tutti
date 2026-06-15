@@ -67,9 +67,12 @@ router.get(
 
 const focusBodySchema = z.object({
   playlist_id: z.string().uuid().nullable(),
-  // feat/tv-grid-mirror — position de scroll de la grille host (ratio 0..1),
-  // throttle ~100ms côté host. La TV l'applique à sa propre grille.
+  // feat/tv-grid-mirror — position de scroll VERTICALE de la grille host
+  // (ratio 0..1), throttle ~100ms côté host. La TV l'applique à sa propre grille.
   scroll_ratio: z.number().min(0).max(1).optional(),
+  // feat/tv-h-scroll — position de scroll HORIZONTALE par carrousel de catégorie
+  // { catSlug: ratio 0..1 }. La TV applique chaque ratio au carrousel matchant.
+  h_ratios: z.record(z.string(), z.number().min(0).max(1)).optional(),
 });
 
 router.post(
@@ -85,7 +88,12 @@ router.post(
       return;
     }
     const workspaceId = req.workspaceId!;
-    setFocusedPlaylist(workspaceId, parsed.data.playlist_id, parsed.data.scroll_ratio ?? 0);
+    setFocusedPlaylist(
+      workspaceId,
+      parsed.data.playlist_id,
+      parsed.data.scroll_ratio ?? 0,
+      parsed.data.h_ratios,
+    );
 
     // Broadcast aux spectators TV pour re-poll immédiat (< 100ms).
     // Best-effort : si pas de session active, no-op.

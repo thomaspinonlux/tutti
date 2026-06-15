@@ -146,6 +146,9 @@ export function CategoryRow({
 
           <div
             ref={scrollRef}
+            // feat/tv-h-scroll — marqueur stable pour le scroll-sync horizontal :
+            // host lit scrollLeft de ce carrousel, TV l'applique au même slug.
+            data-carousel-cat={category.slug}
             className="flex gap-3 overflow-x-auto pb-2 scroll-smooth"
             style={{
               scrollSnapType: 'x mandatory',

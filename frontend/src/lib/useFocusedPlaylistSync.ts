@@ -66,12 +66,42 @@ function computeScrollRatio(el: HTMLElement | null): number {
   return max > 0 ? clamp01(scroller.scrollTop / max) : 0;
 }
 
+type HRatios = Record<string, number>;
+
+/**
+ * Ratio de scroll HORIZONTAL 0..1 de chaque carrousel de catégorie, clé = slug.
+ * Lit tous les `[data-carousel-cat]` du DOM (rendus par CategoryRow).
+ */
+function computeHRatios(): HRatios {
+  const out: HRatios = {};
+  document.querySelectorAll<HTMLElement>('[data-carousel-cat]').forEach((el) => {
+    const slug = el.getAttribute('data-carousel-cat');
+    if (!slug) return;
+    const max = el.scrollWidth - el.clientWidth;
+    out[slug] = max > 0 ? clamp01(el.scrollLeft / max) : 0;
+  });
+  return out;
+}
+
+/** true si un slug a changé de ≥ epsilon, ou si le set de clés diffère. */
+function hRatiosChanged(a: HRatios, b: HRatios): boolean {
+  const ak = Object.keys(a);
+  if (ak.length !== Object.keys(b).length) return true;
+  for (const k of ak) {
+    const bv = b[k];
+    if (bv === undefined) return true;
+    if (Math.abs(a[k]! - bv) >= SCROLL_EPSILON) return true;
+  }
+  return false;
+}
+
 export function useFocusedPlaylistSync({ enabled }: Options): void {
   // État "voulu" (dernier calcul local).
   const focusedIdRef = useRef<string | null>(null);
   // État "envoyé" (dernier POST réussi/en cours).
   const sentIdRef = useRef<string | null>(null);
   const sentRatioRef = useRef<number>(-1);
+  const sentHRatiosRef = useRef<HRatios>({});
   // Garde-fou réseau + coalescing.
   const inFlightRef = useRef<boolean>(false);
   const dirtyRef = useRef<boolean>(false);
@@ -91,9 +121,11 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
     const flush = (force = false): void => {
       const id = focusedIdRef.current;
       const ratio = id ? computeScrollRatio(scrollerEl) : 0;
+      const hRatios = id ? computeHRatios() : {};
       const idChanged = id !== sentIdRef.current;
       const ratioChanged = Math.abs(ratio - sentRatioRef.current) >= SCROLL_EPSILON;
-      if (!force && !idChanged && !ratioChanged) return;
+      const hChanged = hRatiosChanged(hRatios, sentHRatiosRef.current);
+      if (!force && !idChanged && !ratioChanged && !hChanged) return;
       if (inFlightRef.current) {
         dirtyRef.current = true;
         return;
@@ -102,10 +134,14 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
       dirtyRef.current = false;
       sentIdRef.current = id;
       sentRatioRef.current = ratio;
+      sentHRatiosRef.current = hRatios;
+      const hLog = Object.entries(hRatios)
+        .map(([k, v]) => `${k}:${v.toFixed(2)}`)
+        .join(',');
       console.info(
-        `[FocusedSync] POST id=${id ?? 'null'} ratio=${ratio.toFixed(3)}${force ? ' (keepalive)' : ''}`,
+        `[FocusedSync] POST id=${id ?? 'null'} ratio=${ratio.toFixed(3)} h={${hLog}}${force ? ' (keepalive)' : ''}`,
       );
-      postFocusedPlaylist(id, ratio)
+      postFocusedPlaylist(id, ratio, hRatios)
         .catch((err) => {
           // Pas critique : le polling backend garde la dernière valeur (TTL 30s).
           console.warn('[FocusedPlaylistSync] post failed:', err);
@@ -213,6 +249,7 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
       focusedIdRef.current = null;
       sentIdRef.current = null;
       sentRatioRef.current = -1;
+      sentHRatiosRef.current = {};
     };
   }, [enabled]);
 }

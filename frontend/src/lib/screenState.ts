@@ -91,8 +91,10 @@ export type ScreenState =
       sessionName: string | null;
       /** Playlist centrée côté animateur → carte highlightée sur la TV. */
       focused_playlist_id: string;
-      /** Position de scroll de la grille host, ratio 0..1. */
+      /** Position de scroll VERTICALE de la grille host, ratio 0..1. */
       scroll_ratio: number;
+      /** feat/tv-h-scroll — scroll HORIZONTAL par carrousel { catSlug: 0..1 }. */
+      h_ratios: Record<string, number>;
       /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
       qr_overlay: boolean;
       lastUpdate: string;
@@ -100,15 +102,17 @@ export type ScreenState =
 
 /**
  * POST la sélection courante : playlist centrée (null = sortie sélection) +
- * position de scroll de la grille (ratio 0..1) pour le scroll-sync TV.
+ * scroll VERTICAL (ratio 0..1) + scroll HORIZONTAL par catégorie
+ * (`{ catSlug: 0..1 }`) pour le scroll-sync TV (vertical + horizontal).
  */
 export async function postFocusedPlaylist(
   playlistId: string | null,
   scrollRatio?: number,
+  hRatios?: Record<string, number>,
 ): Promise<void> {
   await api('/api/workspace/screen-state/focused-playlist', {
     method: 'POST',
-    body: { playlist_id: playlistId, scroll_ratio: scrollRatio },
+    body: { playlist_id: playlistId, scroll_ratio: scrollRatio, h_ratios: hRatios },
   });
 }
 
