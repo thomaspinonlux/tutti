@@ -28,6 +28,7 @@ import { prisma } from './prisma.js';
 import { getCumulativeScores } from './scores.js';
 import { buildCurrentTrackStateSnapshot, getEffectiveRoundTrackCount } from './gameplayCore.js';
 import { getFocusedSelection } from './playlistSelectionStore.js';
+import { getQrOverlay } from './qrOverlayStore.js';
 import type { GameMode, Team } from '@tutti/shared';
 
 export type ScreenState =
@@ -57,6 +58,8 @@ export type ScreenState =
       phase2StartedAt: string | null;
       roundPosition: number;
       roundsTotal: number;
+      /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
+      qr_overlay: boolean;
       lastUpdate: string;
     }
   | {
@@ -66,6 +69,8 @@ export type ScreenState =
       sessionName: string | null;
       session: SessionWithParticipants;
       currentTrack: CurrentTrackState | null;
+      /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
+      qr_overlay: boolean;
       lastUpdate: string;
     }
   | {
@@ -97,6 +102,8 @@ export type ScreenState =
       focused_playlist_id: string;
       /** Position de scroll de la grille host, ratio 0..1. */
       scroll_ratio: number;
+      /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
+      qr_overlay: boolean;
       lastUpdate: string;
     };
 
@@ -297,6 +304,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       sessionName: session.name,
       session: serializeSession(session),
       currentTrack,
+      qr_overlay: getQrOverlay(workspaceId),
       lastUpdate,
     };
   }
@@ -325,6 +333,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       phase2StartedAt: currentTrack?.phase2_started_at ?? null,
       roundPosition: playingRound.position,
       roundsTotal,
+      qr_overlay: getQrOverlay(workspaceId),
       lastUpdate,
     };
   }
@@ -346,6 +355,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       sessionName: session.name,
       focused_playlist_id: focus.playlistId,
       scroll_ratio: focus.scrollRatio,
+      qr_overlay: getQrOverlay(workspaceId),
       lastUpdate,
     };
   }

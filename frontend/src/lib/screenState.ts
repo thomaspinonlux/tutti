@@ -49,6 +49,8 @@ export type ScreenState =
       phase2StartedAt: string | null;
       roundPosition: number;
       roundsTotal: number;
+      /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
+      qr_overlay: boolean;
       lastUpdate: string;
     }
   | {
@@ -58,6 +60,8 @@ export type ScreenState =
       sessionName: string | null;
       session: SessionWithParticipants;
       currentTrack: CurrentTrackState | null;
+      /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
+      qr_overlay: boolean;
       lastUpdate: string;
     }
   | {
@@ -89,6 +93,8 @@ export type ScreenState =
       focused_playlist_id: string;
       /** Position de scroll de la grille host, ratio 0..1. */
       scroll_ratio: number;
+      /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
+      qr_overlay: boolean;
       lastUpdate: string;
     };
 
@@ -103,6 +109,17 @@ export async function postFocusedPlaylist(
   await api('/api/workspace/screen-state/focused-playlist', {
     method: 'POST',
     body: { playlist_id: playlistId, scroll_ratio: scrollRatio },
+  });
+}
+
+/**
+ * feat/tv-join-qr-codes — toggle l'overlay QR géant sur la TV. Indépendant du
+ * focus/scroll : marche pendant la partie comme pendant la sélection.
+ */
+export async function postQrOverlay(enabled: boolean): Promise<void> {
+  await api('/api/workspace/screen-state/qr-overlay', {
+    method: 'POST',
+    body: { enabled },
   });
 }
 

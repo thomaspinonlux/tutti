@@ -45,6 +45,7 @@ import { MainScreenView } from './screen/MainScreenView.js';
 import { screenStateToMainScreenProps } from './screen/adapters/screenStateToMainScreenProps.js';
 import { getPublicCatalog, type LibraryCategoryWithPlaylists } from '../lib/library.js';
 import { CategoryRow } from '../components/host/library/CategoryRow.js';
+import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 
 const POLL_FAST_MS = 2000;
 const POLL_SLOW_MS = 5000;
@@ -262,9 +263,18 @@ export function ScreenPage(): JSX.Element {
       // Rebranchement MainScreenView via adapter — récupère confettis,
       // countdown phase 2, vinyl rotation, dance pulse, reveal cover, phase
       // eyebrow, toasts firstFound, etc. (cf. PR fix/tv-screen-regressions).
-      return <MainScreenView {...screenStateToMainScreenProps(screenState)} />;
+      // feat/tv-join-qr-codes (D) — overlay QR géant si l'animateur l'a toggle.
+      return (
+        <ScreenWithQrOverlay joinCode={screenState.joinCode} show={screenState.qr_overlay}>
+          <MainScreenView {...screenStateToMainScreenProps(screenState)} />
+        </ScreenWithQrOverlay>
+      );
     case 'PAUSED':
-      return <MainScreenView {...screenStateToMainScreenProps(screenState)} />;
+      return (
+        <ScreenWithQrOverlay joinCode={screenState.joinCode} show={screenState.qr_overlay}>
+          <MainScreenView {...screenStateToMainScreenProps(screenState)} />
+        </ScreenWithQrOverlay>
+      );
     case 'ROUND_PODIUM':
       return (
         <ScreenRoundPodiumView
@@ -285,6 +295,7 @@ export function ScreenPage(): JSX.Element {
         <ScreenPlaylistGridView
           focusedId={screenState.focused_playlist_id}
           scrollRatio={screenState.scroll_ratio}
+          joinCode={screenState.joinCode}
         />
       );
     default:
@@ -417,9 +428,11 @@ function ScreenLobbyView({
 function ScreenPlaylistGridView({
   focusedId,
   scrollRatio,
+  joinCode,
 }: {
   focusedId: string;
   scrollRatio: number;
+  joinCode: string;
 }): JSX.Element {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<LibraryCategoryWithPlaylists[] | null>(null);
@@ -491,6 +504,42 @@ function ScreenPlaylistGridView({
         )}
       </div>
       <MultiColorBar height="md" />
+      {/* feat/tv-join-qr-codes (C) — QR rejoindre en coin, mirroir de l'écran
+          animateur. Affichage seul (la TV ne pilote rien). */}
+      <JoinQrCorner joinCode={joinCode} />
+    </div>
+  );
+}
+
+/**
+ * feat/tv-join-qr-codes (D) — wrappe l'écran de jeu et affiche, par-dessus, le
+ * QR de rejoindre EN GRAND centré quand l'animateur l'a togglé (`show`). TV
+ * read-only : c'est l'animateur qui pilote le flag via screen-state.
+ */
+function ScreenWithQrOverlay({
+  joinCode,
+  show,
+  children,
+}: {
+  joinCode: string;
+  show: boolean;
+  children: React.ReactNode;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const url = `${window.location.origin}/play?session=${joinCode}`;
+  return (
+    <div className="relative">
+      {children}
+      {show && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-ink/85 backdrop-blur-sm animate-fade-in">
+          <p className="font-mono text-base uppercase tracking-[0.3em] text-cream">
+            {t('screen.joinTitle')}
+          </p>
+          <QRCode value={url} size={440} />
+          <p className="font-mono text-5xl font-bold tracking-[0.3em] text-cream">{joinCode}</p>
+          <p className="font-editorial italic text-2xl text-cream/80">{t('screen.joinHint')}</p>
+        </div>
+      )}
     </div>
   );
 }

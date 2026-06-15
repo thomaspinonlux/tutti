@@ -295,6 +295,10 @@
     "reloadButton": "J'ai désactivé, recharger"
   },
   "host": {
+    "joinQr": {
+      "label": "Rejoindre",
+      "tapToEnlarge": "Agrandir sur la TV"
+    },
     "eyebrow": "Salle d'attente",
     "eyebrowPlaying": "Manche {{round}}",
     "eyebrowEnded": "Partie terminée",

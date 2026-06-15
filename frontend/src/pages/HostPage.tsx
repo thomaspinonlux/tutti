@@ -45,7 +45,8 @@ import {
   startSession,
   toggleParticipantMaster,
 } from '../lib/sessions.js';
-import { abandonSession } from '../lib/screenState.js';
+import { abandonSession, postQrOverlay } from '../lib/screenState.js';
+import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 import { connectAsHost } from '../lib/socket.js';
 import { getMe } from '../lib/me.js';
 import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
@@ -584,6 +585,25 @@ function HostPageInner(): JSX.Element {
 
   const effectivePhase: Phase =
     forcedSelection && phase === 'intermission' ? 'roundSelection' : phase;
+
+  // feat/tv-join-qr-codes (D) — toggle overlay QR géant sur la TV pendant la
+  // partie. Flag piloté par l'animateur, lu par la TV via screen-state.
+  const [qrBig, setQrBig] = useState(false);
+  const toggleQrBig = (): void => {
+    setQrBig((prev) => {
+      const next = !prev;
+      void postQrOverlay(next).catch(() => undefined);
+      return next;
+    });
+  };
+  // Sort de la partie (ou changement de phase) → on coupe l'overlay pour ne
+  // pas le laisser collé sur l'écran de sélection / podium.
+  useEffect(() => {
+    if (effectivePhase !== 'roundPlaying' && qrBig) {
+      setQrBig(false);
+      void postQrOverlay(false).catch(() => undefined);
+    }
+  }, [effectivePhase, qrBig]);
 
   const playingRound = session?.rounds.find((r) => r.status === 'PLAYING') ?? null;
   const lastEndedRound = session
@@ -1621,6 +1641,7 @@ function HostPageInner(): JSX.Element {
                 onCreateExpress={() => setExpressModalOpen(true)}
                 onEndSession={handleEndSession}
                 loading={busy}
+                joinCode={session.short_code}
               />
             )}
 
@@ -1680,6 +1701,12 @@ function HostPageInner(): JSX.Element {
                 onRestartTrack={() => void handleRestartTrack()}
                 onRevealAnswer={() => void handleGiveAnswer()}
               />
+            )}
+
+            {/* feat/tv-join-qr-codes (D) — petit QR en coin pendant la partie ;
+                clic → overlay QR géant sur la TV (re-clic → off). */}
+            {effectivePhase === 'roundPlaying' && playingRound && (
+              <JoinQrCorner joinCode={session.short_code} onClick={toggleQrBig} active={qrBig} />
             )}
 
             {effectivePhase === 'intermission' &&
