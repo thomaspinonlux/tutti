@@ -100,8 +100,10 @@ export type ScreenState =
       joinCode: string;
       sessionName: string | null;
       focused_playlist_id: string;
-      /** Position de scroll de la grille host, ratio 0..1. */
+      /** Position de scroll VERTICALE de la grille host, ratio 0..1. */
       scroll_ratio: number;
+      /** feat/tv-h-scroll — scroll HORIZONTAL par carrousel { catSlug: 0..1 }. */
+      h_ratios: Record<string, number>;
       /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
       qr_overlay: boolean;
       lastUpdate: string;
@@ -355,6 +357,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       sessionName: session.name,
       focused_playlist_id: focus.playlistId,
       scroll_ratio: focus.scrollRatio,
+      h_ratios: focus.hRatios,
       qr_overlay: getQrOverlay(workspaceId),
       lastUpdate,
     };

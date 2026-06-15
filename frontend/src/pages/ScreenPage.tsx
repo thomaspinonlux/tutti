@@ -295,6 +295,7 @@ export function ScreenPage(): JSX.Element {
         <ScreenPlaylistGridView
           focusedId={screenState.focused_playlist_id}
           scrollRatio={screenState.scroll_ratio}
+          hRatios={screenState.h_ratios}
           joinCode={screenState.joinCode}
         />
       );
@@ -428,10 +429,12 @@ function ScreenLobbyView({
 function ScreenPlaylistGridView({
   focusedId,
   scrollRatio,
+  hRatios,
   joinCode,
 }: {
   focusedId: string;
   scrollRatio: number;
+  hRatios: Record<string, number>;
   joinCode: string;
 }): JSX.Element {
   const { t } = useTranslation();
@@ -476,6 +479,30 @@ function ScreenPlaylistGridView({
     const raf = window.requestAnimationFrame(apply);
     return () => window.cancelAnimationFrame(raf);
   }, [scrollRatio, categories]);
+
+  // Scroll-sync HORIZONTAL : applique chaque hRatio[catSlug] au carrousel
+  // matchant (même `data-carousel-cat` côté host et TV). Dimension en plus du
+  // vertical, indépendante. Log [GridMirror] hApply = preuve côté TV.
+  useEffect(() => {
+    const root = scrollRef.current;
+    if (!root) return;
+    const apply = (): void => {
+      const parts: string[] = [];
+      for (const [slug, r] of Object.entries(hRatios)) {
+        // Quoté + CSS.escape : robuste si un slug contient un jour espace/accent/&/quote.
+        const el = root.querySelector<HTMLElement>(`[data-carousel-cat="${CSS.escape(slug)}"]`);
+        if (!el) continue;
+        const max = el.scrollWidth - el.clientWidth;
+        if (max <= 0) continue;
+        el.scrollLeft = r * max;
+        parts.push(`${slug}:${r.toFixed(2)}→${Math.round(el.scrollLeft)}`);
+      }
+      if (parts.length) console.info(`[GridMirror] hApply ${parts.join(' ')}`);
+    };
+    apply();
+    const raf = window.requestAnimationFrame(apply);
+    return () => window.cancelAnimationFrame(raf);
+  }, [hRatios, categories]);
 
   return (
     <div className="h-screen flex flex-col bg-cream">
