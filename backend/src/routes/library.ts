@@ -279,93 +279,154 @@ router.post(
       );
     }
 
-    // 4. Upsert Artist (par canonical_name) + Track (par provider+id)
-    // feat/official-library-aliases — Merge des alias officiels curés avec
-    // les alias auto-générés. Si Artist/Track existent déjà, on ajoute les
-    // nouveaux alias en dédoublonnant (Set) pour ne pas perdre ceux déjà
-    // ajoutés manuellement par l'admin (ex: même artiste dans plusieurs
-    // playlists officielles).
-    const trackIds: string[] = [];
+    // 4. Upsert Artist (par canonical_name) + Track (par provider+id) en BATCH.
+    //
+    // perf/library-launch-batch-clone — l'ancienne boucle faisait 2 à 4 requêtes
+    // SÉQUENTIELLES par track (findUnique/findFirst + create|update) = 160-320
+    // allers-retours Supabase pour 80 tracks → 1-2 min de latence au lancement.
+    // Ici : ~8 requêtes set-based (findMany + createMany + re-findMany, updates
+    // en parallèle). Clés de dédup INCHANGÉES (Artist par canonical_name unique,
+    // Track par (provider, provider_track_id)) + copie des aliases officiels
+    // catalogue→clone (feat/official-library-aliases) préservée.
+    const cloneStartedAt = Date.now();
+
+    // ── Artists ──────────────────────────────────────────────────────────
+    // Union des aliases officiels par nom (un artiste = plusieurs tracks).
+    const artistOfficialAliases = new Map<string, Set<string>>();
     for (const c of chosen) {
-      const generatedArtistAliases = generateAliases(c.artist, 'artist');
-      const mergedArtistAliases = Array.from(
-        new Set([...generatedArtistAliases, ...c.official_artist_aliases]),
-      );
-
-      const existingArtist = await prisma.artist.findUnique({
-        where: { canonical_name: c.artist },
-        select: { id: true, aliases: true },
-      });
-      let artistId: string;
-      if (existingArtist) {
-        // Merge alias officiels avec ceux déjà en DB pour cet Artist.
-        const allArtistAliases = Array.from(
-          new Set([...existingArtist.aliases, ...c.official_artist_aliases]),
-        );
-        if (allArtistAliases.length !== existingArtist.aliases.length) {
-          await prisma.artist.update({
-            where: { id: existingArtist.id },
-            data: { aliases: allArtistAliases },
-          });
-        }
-        artistId = existingArtist.id;
-      } else {
-        const createdArtist = await prisma.artist.create({
-          data: {
-            canonical_name: c.artist,
-            aliases: mergedArtistAliases,
-          },
-          select: { id: true },
-        });
-        artistId = createdArtist.id;
-      }
-
-      const generatedTitleAliases = generateAliases(c.title);
-      const mergedTitleAliases = Array.from(
-        new Set([...generatedTitleAliases, ...c.official_title_aliases]),
-      );
-
-      const existingTrack = await prisma.track.findFirst({
-        where: { provider: c.provider, provider_track_id: c.provider_track_id },
-        select: { id: true, cover_url: true, aliases: true },
-      });
-      let trackId: string;
-      if (existingTrack) {
-        // Backfill cover_url + merge alias officiels avec ceux déjà en DB.
-        const allTitleAliases = Array.from(
-          new Set([...existingTrack.aliases, ...c.official_title_aliases]),
-        );
-        const updateData: Record<string, unknown> = {};
-        if (!existingTrack.cover_url && c.cover_url) {
-          updateData.cover_url = c.cover_url;
-        }
-        if (allTitleAliases.length !== existingTrack.aliases.length) {
-          updateData.aliases = allTitleAliases;
-        }
-        if (Object.keys(updateData).length > 0) {
-          await prisma.track.update({
-            where: { id: existingTrack.id },
-            data: updateData,
-          });
-        }
-        trackId = existingTrack.id;
-      } else {
-        const created = await prisma.track.create({
-          data: {
-            artist_id: artistId,
-            canonical_title: c.title,
-            aliases: mergedTitleAliases,
-            year: c.year,
-            provider: c.provider,
-            provider_track_id: c.provider_track_id,
-            cover_url: c.cover_url,
-          },
-          select: { id: true },
-        });
-        trackId = created.id;
-      }
-      trackIds.push(trackId);
+      const set = artistOfficialAliases.get(c.artist) ?? new Set<string>();
+      c.official_artist_aliases.forEach((a) => set.add(a));
+      artistOfficialAliases.set(c.artist, set);
     }
+    const artistNames = [...artistOfficialAliases.keys()];
+
+    const existingArtists = await prisma.artist.findMany({
+      where: { canonical_name: { in: artistNames } },
+      select: { id: true, canonical_name: true, aliases: true },
+    });
+    const existingArtistNames = new Set(existingArtists.map((a) => a.canonical_name));
+
+    // Créations : artistes absents (canonical_name @unique → skipDuplicates safe).
+    const artistsToCreate = artistNames
+      .filter((name) => !existingArtistNames.has(name))
+      .map((name) => {
+        const official = [...(artistOfficialAliases.get(name) ?? [])];
+        const aliases = Array.from(new Set([...generateAliases(name, 'artist'), ...official]));
+        return { canonical_name: name, aliases };
+      });
+    if (artistsToCreate.length > 0) {
+      await prisma.artist.createMany({ data: artistsToCreate, skipDuplicates: true });
+    }
+
+    // Mises à jour : artistes existants dont le set d'aliases grandit (merge
+    // official). En parallèle (Promise.all) — pas séquentiel.
+    const artistUpdates = existingArtists.flatMap((a) => {
+      const official = [...(artistOfficialAliases.get(a.canonical_name) ?? [])];
+      const merged = Array.from(new Set([...a.aliases, ...official]));
+      return merged.length !== a.aliases.length
+        ? [prisma.artist.update({ where: { id: a.id }, data: { aliases: merged } })]
+        : [];
+    });
+    if (artistUpdates.length > 0) await Promise.all(artistUpdates);
+
+    // Re-fetch ids (créés + existants) — autoritaire (gère une création concurrente).
+    const allArtists = await prisma.artist.findMany({
+      where: { canonical_name: { in: artistNames } },
+      select: { id: true, canonical_name: true },
+    });
+    const artistIdByName = new Map(allArtists.map((a) => [a.canonical_name, a.id]));
+
+    // ── Tracks ───────────────────────────────────────────────────────────
+    const trackKey = (provider: string, id: string): string => `${provider} ${id}`;
+    interface TrackAgg {
+      provider: 'spotify' | 'youtube';
+      provider_track_id: string;
+      title: string;
+      artist: string;
+      year: number | null;
+      cover_url: string | null;
+      official: Set<string>;
+    }
+    // Dédup `chosen` par (provider, provider_track_id) + union aliases officiels.
+    const trackAggByKey = new Map<string, TrackAgg>();
+    for (const c of chosen) {
+      const k = trackKey(c.provider, c.provider_track_id);
+      const agg =
+        trackAggByKey.get(k) ??
+        ({
+          provider: c.provider,
+          provider_track_id: c.provider_track_id,
+          title: c.title,
+          artist: c.artist,
+          year: c.year,
+          cover_url: c.cover_url,
+          official: new Set<string>(),
+        } satisfies TrackAgg);
+      c.official_title_aliases.forEach((a) => agg.official.add(a));
+      trackAggByKey.set(k, agg);
+    }
+    const providerTrackIds = [...trackAggByKey.values()].map((t) => t.provider_track_id);
+
+    const existingTracks = await prisma.track.findMany({
+      where: { provider_track_id: { in: providerTrackIds } },
+      select: { id: true, provider: true, provider_track_id: true, cover_url: true, aliases: true },
+    });
+    const existingTrackKeys = new Set(
+      existingTracks.map((t) => trackKey(t.provider, t.provider_track_id)),
+    );
+
+    // Créations : tracks absentes. Dédup APP (pas de contrainte unique sur
+    // (provider, provider_track_id) → skipDuplicates inopérant ici ; même
+    // fenêtre de course que l'ancien findFirst+create).
+    const tracksToCreate = [...trackAggByKey.values()]
+      .filter((t) => !existingTrackKeys.has(trackKey(t.provider, t.provider_track_id)))
+      .map((t) => ({
+        artist_id: artistIdByName.get(t.artist)!,
+        canonical_title: t.title,
+        aliases: Array.from(new Set([...generateAliases(t.title), ...t.official])),
+        year: t.year,
+        provider: t.provider,
+        provider_track_id: t.provider_track_id,
+        cover_url: t.cover_url,
+      }));
+    if (tracksToCreate.length > 0) {
+      await prisma.track.createMany({ data: tracksToCreate });
+    }
+
+    // Mises à jour : tracks existantes — backfill cover_url + merge aliases. Parallèle.
+    const trackUpdates = existingTracks.flatMap((t) => {
+      const agg = trackAggByKey.get(trackKey(t.provider, t.provider_track_id));
+      if (!agg) return [];
+      const merged = Array.from(new Set([...t.aliases, ...agg.official]));
+      const data: { cover_url?: string | null; aliases?: string[] } = {};
+      if (!t.cover_url && agg.cover_url) data.cover_url = agg.cover_url;
+      if (merged.length !== t.aliases.length) data.aliases = merged;
+      return Object.keys(data).length > 0
+        ? [prisma.track.update({ where: { id: t.id }, data })]
+        : [];
+    });
+    if (trackUpdates.length > 0) await Promise.all(trackUpdates);
+
+    // Re-fetch ids (créés + existants).
+    const allTracks = await prisma.track.findMany({
+      where: { provider_track_id: { in: providerTrackIds } },
+      select: { id: true, provider: true, provider_track_id: true },
+    });
+    const trackIdByKey = new Map(
+      allTracks.map((t) => [trackKey(t.provider, t.provider_track_id), t.id]),
+    );
+
+    // Ordre + doublons préservés : 1 entrée par `chosen` (positions playlist).
+    const trackIds: string[] = chosen.map(
+      (c) => trackIdByKey.get(trackKey(c.provider, c.provider_track_id))!,
+    );
+
+    // Mesure perf (avant : N+1 séquentiel 160-320 RT ≈ 1-2 min ; après : ~8 RT).
+    console.info(
+      `[Launch] clone-batch done in ${Date.now() - cloneStartedAt}ms | tracks=${chosen.length} ` +
+        `artists(new=${artistsToCreate.length},upd=${artistUpdates.length}) ` +
+        `tracks(new=${tracksToCreate.length},upd=${trackUpdates.length})`,
+    );
 
     // 5. Créer Playlist clone (is_official_tutti=true → caché de "Mes playlists")
     const playlist = await prisma.playlist.create({
