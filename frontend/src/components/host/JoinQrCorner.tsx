@@ -35,11 +35,18 @@ export function JoinQrCorner({
   const { t } = useTranslation();
   const url = `${window.location.origin}/play?session=${joinCode}`;
 
+  // Label sous le QR : reflète l'action courante (agrandir / fermer / statique).
+  const actionLabel = onClick
+    ? active
+      ? t('host.joinQr.close')
+      : t('host.joinQr.tapToEnlarge')
+    : t('host.joinQr.label');
+
   const inner = (
     <>
       <QRCode value={url} size={size} className="!p-2 !shadow-pop !border-2" />
       <span className="mt-1 font-mono text-[9px] uppercase tracking-wider text-ink-soft text-center leading-tight">
-        {onClick ? t('host.joinQr.tapToEnlarge') : t('host.joinQr.label')}
+        {actionLabel}
       </span>
     </>
   );
@@ -48,17 +55,40 @@ export function JoinQrCorner({
 
   if (onClick) {
     return (
-      <button
-        type="button"
-        onClick={onClick}
-        aria-pressed={active}
-        aria-label={t('host.joinQr.tapToEnlarge')}
-        className={`${position} flex flex-col items-center rounded-xl p-1 transition-transform hover:-translate-y-0.5 ${
-          active ? 'ring-4 ring-spritz ring-offset-2 ring-offset-cream' : ''
-        }`}
-      >
-        {inner}
-      </button>
+      // Conteneur relatif : la croix de fermeture est un bouton SŒUR (pas
+      // imbriqué) positionné en haut-droite du QR agrandi.
+      <div className={`${position} flex flex-col items-center`}>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={onClick}
+            aria-pressed={active}
+            aria-label={active ? t('host.joinQr.close') : t('host.joinQr.tapToEnlarge')}
+            className={`flex flex-col items-center rounded-xl p-1 transition-transform hover:-translate-y-0.5 ${
+              active ? 'ring-4 ring-spritz ring-offset-2 ring-offset-cream' : ''
+            }`}
+          >
+            {inner}
+          </button>
+
+          {/* feat/qr-overlay-close — croix bien visible quand le QR géant est
+              affiché sur la TV : 1 tap évident pour refermer (postQrOverlay(false)
+              via le même onClick toggle). Le re-clic sur le QR reste possible. */}
+          {active && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
+              aria-label={t('host.joinQr.close')}
+              className="absolute -top-3 -right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink bg-raspberry text-cream shadow-pop-lg font-display text-2xl leading-none transition-transform active:scale-90"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
     );
   }
 

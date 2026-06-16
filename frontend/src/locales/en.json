@@ -297,7 +297,8 @@
   "host": {
     "joinQr": {
       "label": "Join",
-      "tapToEnlarge": "Enlarge on TV"
+      "tapToEnlarge": "Enlarge on TV",
+      "close": "Close"
     },
     "eyebrow": "Waiting room",
     "eyebrowPlaying": "Round {{round}}",
