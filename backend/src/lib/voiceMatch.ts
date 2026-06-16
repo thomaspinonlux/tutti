@@ -163,22 +163,26 @@ function generateNgrams(tokens: string[], maxN: number): string[] {
 function matchAnyAlias(
   ngrams: string[],
   aliasesNormalized: string[],
-): { matched: boolean; confidence: number } {
-  if (aliasesNormalized.length === 0) return { matched: false, confidence: 0 };
+): { matched: boolean; confidence: number; ngram: string | null } {
+  if (aliasesNormalized.length === 0) return { matched: false, confidence: 0, ngram: null };
   let best = 0;
+  let bestNgram: string | null = null;
   for (const alias of aliasesNormalized) {
     if (alias.length < 2) continue;
     for (const ngram of ngrams) {
       // Si la longueur diverge trop, skip pour ne pas matcher du bruit.
       if (Math.abs(ngram.length - alias.length) > Math.max(3, alias.length * 0.5)) continue;
       const sim = similarity(alias, ngram);
-      if (sim > best) best = sim;
+      if (sim > best) {
+        best = sim;
+        bestNgram = ngram;
+      }
       if (best >= 1 - FUZZY_THRESHOLD) {
-        return { matched: true, confidence: best };
+        return { matched: true, confidence: best, ngram };
       }
     }
   }
-  return { matched: best >= 1 - FUZZY_THRESHOLD, confidence: best };
+  return { matched: best >= 1 - FUZZY_THRESHOLD, confidence: best, ngram: bestNgram };
 }
 
 // ── API publique ─────────────────────────────────────────────────────────
@@ -192,6 +196,11 @@ export interface MatchInput {
 export interface MatchResult {
   matched_artist: boolean;
   matched_title: boolean;
+  /**
+   * true si artiste ET titre ont matché sur le MÊME n-gram (ex. un titre qui
+   * contient le nom de l'artiste) → ambigu, ne doit PAS compter "double".
+   */
+  same_ngram: boolean;
   /** Confiance globale 0-1 (max entre artist et title). */
   confidence: number;
   /** Transcript normalisé pour le log. */
@@ -213,6 +222,7 @@ export function matchTranscript(input: MatchInput): MatchResult {
     return {
       matched_artist: false,
       matched_title: false,
+      same_ngram: false,
       confidence: 0,
       transcript_normalized: transcriptNormalized,
     };
@@ -261,9 +271,18 @@ export function matchTranscript(input: MatchInput): MatchResult {
   }
   console.info('[Voice Match] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
+  // Garde "double imérité" : si artiste ET titre matchent sur le MÊME n-gram
+  // (titre contenant le nom de l'artiste, p.ex.), c'est ambigu → pas de double.
+  const sameNgram =
+    artistMatch.matched &&
+    titleMatch.matched &&
+    artistMatch.ngram !== null &&
+    artistMatch.ngram === titleMatch.ngram;
+
   return {
     matched_artist: artistMatch.matched,
     matched_title: titleMatch.matched,
+    same_ngram: sameNgram,
     confidence: Math.max(artistMatch.confidence, titleMatch.confidence),
     transcript_normalized: transcriptNormalized,
   };

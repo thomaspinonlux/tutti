@@ -281,8 +281,8 @@ router.post(
       })
       .catch((err) => console.warn('[voice-answer] log error:', err));
 
-    if (!matchResult.matched_artist) {
-      // Pas de match → pas de score, pas de pénalité, le joueur peut rebuzzer.
+    if (!matchResult.matched_artist && !matchResult.matched_title) {
+      // Ni artiste ni titre → pas de score, pas de pénalité, rebuzz illimité.
       res.json({
         matched: false,
         transcript: matchResult.transcript_normalized,
@@ -290,14 +290,15 @@ router.post(
       return;
     }
 
-    // L'artiste est trouvé : on enregistre la bonne réponse + on calcule le score.
-    // Le scoring nécessite la position (1, 2, 3...), qu'on calcule provisoirement
-    // pour passer à computeAnswerScore. On va recalculer avec le score réel
-    // et persister.
+    // Artiste OU titre trouvé : on enregistre + on calcule le score (points de
+    // position dès qu'un des deux match, +10 si les deux sur n-grams distincts).
     const tentativePosition = (active.correct_answers.length ?? 0) + 1;
+    // Garde "double imérité" : titre comptant pour le bonus seulement si
+    // distinct du n-gram artiste (titre contenant le nom de l'artiste → pas double).
+    const titleForScore = matchResult.matched_title && !matchResult.same_ngram;
     const tentativeScore = computeAnswerScore({
-      matched_artist: true,
-      matched_title: matchResult.matched_title,
+      matched_artist: matchResult.matched_artist,
+      matched_title: titleForScore,
       position: tentativePosition,
       answered_at_ms: Date.now() - active.started_at_ms,
     });
@@ -306,7 +307,7 @@ router.post(
       participant_id: auth.participantId,
       pseudo: participant.pseudo,
       team_id: participant.team_id,
-      matched_artist: true,
+      matched_artist: matchResult.matched_artist,
       matched_title: matchResult.matched_title,
       score: tentativeScore.total,
       score_position: tentativeScore.artist_base,
@@ -325,7 +326,7 @@ router.post(
       return;
     }
 
-    // Persiste les ScoreEvent (un ARTIST_FOUND + éventuellement TITLE_BONUS + SPEED_BONUS).
+    // Persiste les ScoreEvent (FOUND base + éventuellement DOUBLE + SPEED).
     await persistScoreEvents({
       sessionId: req.params.id,
       sessionRoundId: req.params.roundId,
@@ -333,6 +334,7 @@ router.post(
       teamId: participant.team_id,
       trackIndex: active.track_index,
       breakdown: tentativeScore,
+      matchedArtist: matchResult.matched_artist,
       matchedTitle: matchResult.matched_title,
       buzzTimeMs: registered.entry.answered_at_ms,
       transcriptPreview: matchResult.transcript_normalized.slice(0, 200),
@@ -486,15 +488,16 @@ router.post(
       })
       .catch((err) => console.warn('[text-answer] log error:', err));
 
-    if (!matchResult.matched_artist) {
+    if (!matchResult.matched_artist && !matchResult.matched_title) {
       res.json({ matched: false });
       return;
     }
 
     const tentativePosition = (active.correct_answers.length ?? 0) + 1;
+    const titleForScore = matchResult.matched_title && !matchResult.same_ngram;
     const tentativeScore = computeAnswerScore({
-      matched_artist: true,
-      matched_title: matchResult.matched_title,
+      matched_artist: matchResult.matched_artist,
+      matched_title: titleForScore,
       position: tentativePosition,
       answered_at_ms: Date.now() - active.started_at_ms,
     });
@@ -503,7 +506,7 @@ router.post(
       participant_id: auth.participantId,
       pseudo: participant.pseudo,
       team_id: participant.team_id,
-      matched_artist: true,
+      matched_artist: matchResult.matched_artist,
       matched_title: matchResult.matched_title,
       score: tentativeScore.total,
       score_position: tentativeScore.artist_base,
@@ -522,6 +525,7 @@ router.post(
       teamId: participant.team_id,
       trackIndex: active.track_index,
       breakdown: tentativeScore,
+      matchedArtist: matchResult.matched_artist,
       matchedTitle: matchResult.matched_title,
       buzzTimeMs: registered.entry.answered_at_ms,
       transcriptPreview: `[TEXT] ${text.slice(0, 200)}`,
@@ -594,6 +598,7 @@ interface PersistArgs {
   teamId: string | null;
   trackIndex: number;
   breakdown: ReturnType<typeof computeAnswerScore>;
+  matchedArtist: boolean;
   matchedTitle: boolean;
   buzzTimeMs: number;
   transcriptPreview: string;
@@ -601,6 +606,8 @@ interface PersistArgs {
 
 async function persistScoreEvents(args: PersistArgs): Promise<void> {
   const events: Promise<unknown>[] = [];
+  // Points de position (artiste OU titre). Type ARTIST_FOUND conservé (enum DB),
+  // mais les flags match_* reflètent la réalité (titre seul → match_artist=false).
   if (args.breakdown.artist_base > 0) {
     events.push(
       prisma.scoreEvent.create({
@@ -613,13 +620,14 @@ async function persistScoreEvents(args: PersistArgs): Promise<void> {
           type: ScoreEventType.ARTIST_FOUND,
           points: args.breakdown.artist_base,
           buzz_time_ms: args.buzzTimeMs,
-          match_artist: true,
+          match_artist: args.matchedArtist,
           match_title: args.matchedTitle,
           voice_transcript: args.transcriptPreview,
         },
       }),
     );
   }
+  // Bonus "double réponse" (artiste ET titre). Type TITLE_BONUS conservé (enum DB).
   if (args.breakdown.title_bonus > 0) {
     events.push(
       prisma.scoreEvent.create({
@@ -649,7 +657,7 @@ async function persistScoreEvents(args: PersistArgs): Promise<void> {
           type: ScoreEventType.SPEED_BONUS,
           points: args.breakdown.speed_bonus,
           buzz_time_ms: args.buzzTimeMs,
-          match_artist: true,
+          match_artist: args.matchedArtist,
           match_title: args.matchedTitle,
         },
       }),
@@ -791,8 +799,10 @@ async function runMatchAndCommit(
           participant_id: args.participantId,
           track_id: track.id,
           transcript: `[${args.source}] ${args.transcript.slice(0, 980)}`,
-          matched_artist: best.score >= VOICE_MATCH_THRESHOLD,
-          matched_title: best.score >= VOICE_MATCH_THRESHOLD && best.target === 'artist_title',
+          // Matcher cascade title-centric : target 'title' → titre seul,
+          // 'artist_title' → artiste + titre. (Plus de faux "artiste" sur titre seul.)
+          matched_artist: best.score >= VOICE_MATCH_THRESHOLD && best.target === 'artist_title',
+          matched_title: best.score >= VOICE_MATCH_THRESHOLD,
           confidence: best.score / 100,
           level: args.source,
           latency_ms: args.latencyMs,
@@ -817,10 +827,13 @@ async function runMatchAndCommit(
   }
 
   // Score ≥ threshold → commit (broadcast + ScoreEvent).
-  const matchedTitle = best.target === 'artist_title';
+  // Matcher cascade title-centric : 'title' → titre seul, 'artist_title' → les deux.
+  // → titre toujours présent quand ça matche ; artiste seulement sur le combo.
+  const matchedArtist = best.target === 'artist_title';
+  const matchedTitle = true;
   const tentativePosition = (active.correct_answers.length ?? 0) + 1;
   const tentativeScore = computeAnswerScore({
-    matched_artist: true,
+    matched_artist: matchedArtist,
     matched_title: matchedTitle,
     position: tentativePosition,
     answered_at_ms: Date.now() - active.started_at_ms,
@@ -830,7 +843,7 @@ async function runMatchAndCommit(
     participant_id: args.participantId,
     pseudo: args.participantPseudo,
     team_id: args.participantTeamId,
-    matched_artist: true,
+    matched_artist: matchedArtist,
     matched_title: matchedTitle,
     score: tentativeScore.total,
     score_position: tentativeScore.artist_base,
@@ -855,6 +868,7 @@ async function runMatchAndCommit(
     teamId: args.participantTeamId,
     trackIndex: active.track_index,
     breakdown: tentativeScore,
+    matchedArtist,
     matchedTitle,
     buzzTimeMs: registered.entry.answered_at_ms,
     transcriptPreview: `[${args.source}] ${args.transcript.slice(0, 200)}`,
