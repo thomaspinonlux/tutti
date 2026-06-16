@@ -555,6 +555,7 @@
     "btnGiveAnswer": "Révéler la réponse",
     "btnNext": "Morceau suivant",
     "thisTrack": "Sur ce morceau",
+    "doubleAnswer": "Double réponse",
     "finderArtistAndTitle": "Artiste + titre · {{seconds}}s",
     "finderArtistOnly": "Artiste seul · {{seconds}}s",
     "foundInSeconds": "trouvé en {{seconds}}s !",
