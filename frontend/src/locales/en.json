@@ -555,6 +555,7 @@
     "btnGiveAnswer": "Reveal answer",
     "btnNext": "Next track",
     "thisTrack": "On this track",
+    "doubleAnswer": "Double answer",
     "finderArtistAndTitle": "Artist + title · {{seconds}}s",
     "finderArtistOnly": "Artist only · {{seconds}}s",
     "foundInSeconds": "found in {{seconds}}s!",

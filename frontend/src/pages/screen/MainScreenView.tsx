@@ -634,6 +634,216 @@ function FindersRecap({ correctAnswers }: { correctAnswers: CorrectAnswerEntry[]
   );
 }
 
+// ── Écran RÉSULTAT (reveal phase 3) — maquette validée ────────────────────
+// Reskin layout uniquement : réutilise les tokens couleur existants (ink,
+// cream, plum/raspberry, lemon, spritz, basil…). Pochette dominante à gauche,
+// titre > artiste, chip playlist + mini QR en haut, classement CUMUL DE LA
+// PARTIE à droite (total cumulé + delta du morceau).
+
+/** Grande pochette : vraie cover si dispo, sinon dégradé + titre en fallback. */
+function RevealCover({ track, title }: { track: CurrentTrackState; title: string }): JSX.Element {
+  const cover = track.cover_url;
+  return (
+    <div className="relative aspect-square w-full max-w-[min(48vh,540px)] animate-reveal-pop">
+      <div
+        className="w-full h-full border-[6px] border-ink rounded-2xl shadow-pop-xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-plum to-raspberry"
+        style={
+          cover
+            ? {
+                backgroundImage: `url(${cover})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : undefined
+        }
+      >
+        {!cover && (
+          <span
+            className="font-display text-cream text-center px-6 text-4xl lg:text-5xl leading-tight"
+            style={{ textShadow: '4px 4px 0 #1a1410' }}
+          >
+            {title}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Classement = CUMUL DE LA PARTIE (réutilise `cumulative`, total cumulé — aucun
+ * nouveau champ backend). Par joueur, on ajoute en petit le gain de CE morceau
+ * (delta `+30 ✦` si double), pour voir le classement général ET qui vient de
+ * scorer. Leader doré (bg-lemon). Match cumul↔delta par id (participant OU team).
+ */
+function RevealLeaderboard({
+  cumulative,
+  correctAnswers,
+}: {
+  cumulative: CumulativeScore[];
+  correctAnswers: CorrectAnswerEntry[];
+}): JSX.Element {
+  const { t } = useTranslation();
+  // Delta de CE morceau par id (clé = participant_id en solo, team_id en équipe ;
+  // les deux espaces d'id sont disjoints → un seul map couvre les 2 modes).
+  const deltaById = useMemo(() => {
+    const m = new Map<string, { gain: number; double: boolean }>();
+    for (const ca of correctAnswers) {
+      for (const key of [ca.participant_id, ca.team_id]) {
+        if (!key) continue;
+        const cur = m.get(key) ?? { gain: 0, double: false };
+        cur.gain += ca.score;
+        cur.double = cur.double || (ca.matched_artist && ca.matched_title);
+        m.set(key, cur);
+      }
+    }
+    return m;
+  }, [correctAnswers]);
+
+  const rows = cumulative.slice(0, 8);
+  const medals = ['🥇', '🥈', '🥉'];
+  return (
+    <Card size="md" className="!border-4 flex-1 flex flex-col min-h-0">
+      <div className="flex items-center gap-2 mb-4 shrink-0">
+        <span
+          aria-hidden
+          className="w-9 h-9 rounded-full bg-lemon border-2 border-ink flex items-center justify-center text-lg"
+        >
+          🏆
+        </span>
+        <p className="font-display text-2xl lg:text-3xl">{t('screen.leaderboardLabel')}</p>
+      </div>
+      {rows.length === 0 ? (
+        <p className="font-editorial italic text-ink-soft text-center py-12 text-lg">
+          {t('host.noScoresYet')}
+        </p>
+      ) : (
+        <ul className="space-y-2.5 overflow-y-auto">
+          {rows.map((entry, idx) => {
+            const isLeader = idx === 0;
+            const delta = deltaById.get(entry.id);
+            return (
+              <li
+                key={entry.id}
+                className={`grid grid-cols-[auto_1fr_auto] gap-3 items-center px-4 py-3 border-2 border-ink rounded-xl ${
+                  isLeader ? 'bg-lemon shadow-pop' : 'bg-cream'
+                }`}
+              >
+                <span className="font-display text-2xl lg:text-3xl w-10 text-center">
+                  {medals[idx] ?? idx + 1}
+                </span>
+                <div className="min-w-0 flex items-center gap-2">
+                  {entry.color && (
+                    <span
+                      aria-hidden
+                      className="inline-block w-3 h-3 rounded-full border border-ink shrink-0"
+                      style={{ backgroundColor: entry.color }}
+                    />
+                  )}
+                  <span
+                    className={`truncate font-bold ${isLeader ? 'text-2xl lg:text-3xl' : 'text-lg lg:text-xl'}`}
+                  >
+                    {entry.label}
+                  </span>
+                </div>
+                <div className="text-right whitespace-nowrap">
+                  <span className="font-mono font-bold tabular-nums text-ink text-xl lg:text-2xl">
+                    {entry.total_points}
+                  </span>
+                  <span className="font-mono text-xs lg:text-sm text-ink-soft"> pts</span>
+                  {delta && delta.gain > 0 && (
+                    <span className="ml-2 font-mono text-sm lg:text-base font-bold text-basil-deep">
+                      +{delta.gain}
+                      {delta.double && (
+                        <span className="text-basil" aria-label={t('screen.doubleAnswer')}>
+                          {' '}
+                          ✦
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+/** Layout résultat complet (remplace le `<main>` standard pendant le reveal). */
+function RevealResultMain({
+  track,
+  reveal,
+  playlistName,
+  cumulative,
+  correctAnswers,
+  joinCode,
+  showConfetti,
+}: {
+  track: CurrentTrackState;
+  reveal: { artist: string; title: string } | null;
+  playlistName: string;
+  cumulative: CumulativeScore[];
+  correctAnswers: CorrectAnswerEntry[];
+  joinCode: string;
+  showConfetti: boolean;
+}): JSX.Element {
+  const title = reveal?.title ?? track.title;
+  const artist = reveal?.artist ?? track.artist;
+  const joinUrl = `${window.location.origin}/play?session=${joinCode}`;
+  return (
+    <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-6 p-6 relative z-10">
+      {/* Gauche — pochette dominante + infos */}
+      <section className="relative bg-cream-2 border-4 border-ink rounded-3xl shadow-pop-lg flex flex-col p-6 lg:p-8 overflow-hidden min-h-[500px]">
+        {/* Haut : chip playlist (gauche) + MINI QR rejoindre en coin (droite) */}
+        <div className="shrink-0 flex items-start justify-between gap-3">
+          <span className="inline-flex items-center gap-2 font-mono text-xs sm:text-sm uppercase tracking-[0.2em] text-spritz-deep bg-cream border-2 border-ink rounded-full px-4 py-1.5 shadow-pop-sm">
+            <span aria-hidden>♪</span>
+            <span className="truncate max-w-[50vw] lg:max-w-sm">{playlistName}</span>
+          </span>
+          <div className="flex flex-col items-center shrink-0">
+            <QRCode value={joinUrl} size={72} className="!p-1.5 !shadow-pop !border-2" />
+            <span className="font-mono text-[9px] uppercase tracking-wider text-ink-soft mt-0.5">
+              {joinCode}
+            </span>
+          </div>
+        </div>
+        {/* Pochette GRANDE — remplit le centre */}
+        <div className="flex-1 flex items-center justify-center my-4 lg:my-6 min-h-0">
+          <RevealCover track={track} title={title} />
+        </div>
+        {/* Titre très grand (serif) > artiste grand dessous */}
+        <div className="shrink-0">
+          <div
+            className="font-display text-ink leading-[0.92] text-5xl sm:text-6xl lg:text-7xl xl:text-8xl mb-2 animate-slide-up"
+            title={title}
+          >
+            {title}
+          </div>
+          <div
+            className="font-editorial italic font-semibold text-raspberry text-2xl sm:text-3xl lg:text-4xl animate-slide-up"
+            style={{ animationDelay: '150ms' }}
+          >
+            {artist}
+          </div>
+        </div>
+        {showConfetti && (
+          <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+            <ConfettiBurst />
+          </div>
+        )}
+      </section>
+
+      {/* Droite — classement CUMUL DE LA PARTIE, large, leader doré */}
+      <aside className="min-w-0 flex flex-col">
+        <RevealLeaderboard cumulative={cumulative} correctAnswers={correctAnswers} />
+      </aside>
+    </main>
+  );
+}
+
 // ── Vue principale ────────────────────────────────────────────────────────
 
 export interface MainScreenViewProps {
@@ -736,95 +946,111 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
         durationMs={durationMs}
       />
 
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 p-6 relative z-10">
-        {/* Center stage */}
-        <section className="relative bg-cream-2 border-4 border-ink rounded-3xl shadow-pop-lg flex flex-col items-center justify-center p-8 overflow-hidden min-h-[500px]">
-          {!playingRound ? (
-            <BetweenRoundsContent lastEnded={lastEnded} master={master} />
-          ) : !currentTrack ? (
-            <WaitingTrackContent round={playingRound} />
-          ) : (
-            <>
-              {/* Phase 1 — buzz counter */}
-              {isPhase1 && <Phase1BuzzCounter count={activeBuzzCount} />}
+      {isRevealed && currentTrack && playingRound ? (
+        /* Écran RÉSULTAT (reveal) — maquette validée, tokens existants réutilisés. */
+        <RevealResultMain
+          track={currentTrack}
+          reveal={lastReveal}
+          playlistName={playingRound.playlist.name}
+          cumulative={cumulative}
+          correctAnswers={correctAnswers}
+          joinCode={session.short_code}
+          showConfetti={showConfetti}
+        />
+      ) : (
+        <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 p-6 relative z-10">
+          {/* Center stage */}
+          <section className="relative bg-cream-2 border-4 border-ink rounded-3xl shadow-pop-lg flex flex-col items-center justify-center p-8 overflow-hidden min-h-[500px]">
+            {!playingRound ? (
+              <BetweenRoundsContent lastEnded={lastEnded} master={master} />
+            ) : !currentTrack ? (
+              <WaitingTrackContent round={playingRound} />
+            ) : (
+              <>
+                {/* Phase 1 — buzz counter */}
+                {isPhase1 && <Phase1BuzzCounter count={activeBuzzCount} />}
 
-              {/* Phase 2 — found stack au top du stage */}
-              {isPhase2 && correctAnswers.length > 0 && (
-                <FoundStack correctAnswers={correctAnswers} />
-              )}
+                {/* Phase 2 — found stack au top du stage */}
+                {isPhase2 && correctAnswers.length > 0 && (
+                  <FoundStack correctAnswers={correctAnswers} />
+                )}
 
-              {/* Phase 2 — timer jaune décollé droite (gelé si pause) */}
-              {isPhase2 && phase2StartedAt && (
-                <Phase2YellowTimer phase2StartedAt={phase2StartedAt} isPaused={session.is_paused} />
-              )}
+                {/* Phase 2 — timer jaune décollé droite (gelé si pause) */}
+                {isPhase2 && phase2StartedAt && (
+                  <Phase2YellowTimer
+                    phase2StartedAt={phase2StartedAt}
+                    isPaused={session.is_paused}
+                  />
+                )}
 
-              {/* Cover — mystère en phase 1+2, révélée en phase 3 */}
-              <MysteryCover track={currentTrack} revealed={isRevealed} />
+                {/* Cover — mystère en phase 1+2, révélée en phase 3 */}
+                <MysteryCover track={currentTrack} revealed={isRevealed} />
 
-              {/* Track info — révélée en phase 3 uniquement */}
-              {isRevealed && (
-                <div className="text-center mt-6">
-                  <div
-                    className="font-display text-5xl text-ink leading-none mb-1 animate-slide-up"
-                    style={{ animationDelay: '200ms' }}
-                  >
-                    {lastReveal?.artist ?? currentTrack.artist}
+                {/* Track info — révélée en phase 3 uniquement */}
+                {isRevealed && (
+                  <div className="text-center mt-6">
+                    <div
+                      className="font-display text-5xl text-ink leading-none mb-1 animate-slide-up"
+                      style={{ animationDelay: '200ms' }}
+                    >
+                      {lastReveal?.artist ?? currentTrack.artist}
+                    </div>
+                    <div
+                      className="font-editorial italic text-2xl text-raspberry font-semibold animate-slide-up"
+                      style={{ animationDelay: '400ms' }}
+                    >
+                      {lastReveal?.title ?? currentTrack.title}
+                    </div>
                   </div>
-                  <div
-                    className="font-editorial italic text-2xl text-raspberry font-semibold animate-slide-up"
-                    style={{ animationDelay: '400ms' }}
-                  >
-                    {lastReveal?.title ?? currentTrack.title}
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Phase 3-skipped : message neutre, pas de reveal */}
-              {phase === 'phase3-skipped' && (
-                <div className="text-center mt-6">
-                  <p className="font-display text-3xl text-ink-soft mb-1">⏭</p>
-                  <p className="font-editorial italic text-ink-2 text-lg">
-                    {t('screen.trackSkipped')}
+                {/* Phase 3-skipped : message neutre, pas de reveal */}
+                {phase === 'phase3-skipped' && (
+                  <div className="text-center mt-6">
+                    <p className="font-display text-3xl text-ink-soft mb-1">⏭</p>
+                    <p className="font-editorial italic text-ink-2 text-lg">
+                      {t('screen.trackSkipped')}
+                    </p>
+                  </div>
+                )}
+
+                {/* Phase 1 hint — "écoute et buzze" */}
+                {isPhase1 && (
+                  <p className="font-editorial italic text-ink-2 text-lg mt-6">
+                    {t('screen.listenAndBuzz')}
                   </p>
-                </div>
-              )}
+                )}
 
-              {/* Phase 1 hint — "écoute et buzze" */}
-              {isPhase1 && (
-                <p className="font-editorial italic text-ink-2 text-lg mt-6">
-                  {t('screen.listenAndBuzz')}
-                </p>
-              )}
+                {/* Phase 3 — bandeau dance call */}
+                {isRevealed && <Phase3DanceCall />}
 
-              {/* Phase 3 — bandeau dance call */}
-              {isRevealed && <Phase3DanceCall />}
+                {/* Confettis confinés au stage — seulement si gagnant. */}
+                {showConfetti && (
+                  <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+                    <ConfettiBurst />
+                  </div>
+                )}
+              </>
+            )}
+          </section>
 
-              {/* Confettis confinés au stage — seulement si gagnant. */}
-              {showConfetti && (
-                <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
-                  <ConfettiBurst />
-                </div>
-              )}
-            </>
-          )}
-        </section>
-
-        {/* Right panel */}
-        <aside className="flex flex-col gap-5 min-w-0">
-          <LiveLeaderboard cumulative={cumulative} />
-          {/* Refonte #5 — affichage live phase 2 (entre 1er gagnant et fin) :
+          {/* Right panel */}
+          <aside className="flex flex-col gap-5 min-w-0">
+            <LiveLeaderboard cumulative={cumulative} />
+            {/* Refonte #5 — affichage live phase 2 (entre 1er gagnant et fin) :
               les retardataires voient les positions actuelles + qui a déjà
               le bonus titre, pour estimer s'ils peuvent encore scorer. */}
-          {isPhase2 && correctAnswers.length > 0 && (
-            <FindersRecap correctAnswers={correctAnswers} />
-          )}
-          {isPhase3 && correctAnswers.length > 0 && (
-            <FindersRecap correctAnswers={correctAnswers} />
-          )}
-          {/* Feature — QR code permanent pour rejoindre en cours de partie */}
-          <JoinQrPanel shortCode={session.short_code} />
-        </aside>
-      </main>
+            {isPhase2 && correctAnswers.length > 0 && (
+              <FindersRecap correctAnswers={correctAnswers} />
+            )}
+            {isPhase3 && correctAnswers.length > 0 && (
+              <FindersRecap correctAnswers={correctAnswers} />
+            )}
+            {/* Feature — QR code permanent pour rejoindre en cours de partie */}
+            <JoinQrPanel shortCode={session.short_code} />
+          </aside>
+        </main>
+      )}
 
       <IPadFooter
         participantsCount={participantsCount}
