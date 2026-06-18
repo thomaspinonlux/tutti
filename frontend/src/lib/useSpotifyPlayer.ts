@@ -71,6 +71,8 @@ export interface UseSpotifyPlayerResult {
   activate: () => Promise<boolean>;
   /** Recommence le morceau courant depuis le début (position_ms = 0). */
   restartCurrentTrack: () => Promise<boolean>;
+  /** feat/seek-bar — seek absolu (ms) via le SDK (player.seek). Host-only. */
+  seek: (ms: number) => Promise<void>;
   /** Bug 2 — true si Chrome/Safari ont bloqué la lecture audio. UI doit
    * afficher un bouton "🔊 Forcer audio" qui appelle unblockAudio(). */
   audioBlocked: boolean;
@@ -588,6 +590,30 @@ export function useSpotifyPlayer({
     }
   };
 
+  /**
+   * feat/seek-bar — seek absolu host-only via le SDK Web Playback (player.seek).
+   * Ne se bat pas avec useSpotifyAudioSync : la synchro ne re-play que sur
+   * changement started_at/track_id, jamais sur la position courante.
+   */
+  const seek = async (ms: number): Promise<void> => {
+    const p = playerRef.current;
+    if (!p) return;
+    const target = Math.max(0, Math.round(ms));
+    try {
+      await p.seek(target);
+      // Anchor optimiste : positionMs reflète le seek immédiatement ;
+      // player_state_changed confirmera la vraie position juste après.
+      positionAnchorRef.current = {
+        ms: target,
+        timestamp: Date.now(),
+        paused: positionAnchorRef.current.paused,
+      };
+      setPositionMs(target);
+    } catch (err) {
+      console.warn('[Spotify Play] seek failed:', err);
+    }
+  };
+
   /** Vérifie le state du player après play() — détecte si Chrome a bloqué. */
   const verifyPlayback = (uri: string): void => {
     const p = playerRef.current;
@@ -749,6 +775,7 @@ export function useSpotifyPlayer({
     transferToTutti,
     activate,
     restartCurrentTrack,
+    seek,
     audioBlocked,
     unblockAudio,
   };

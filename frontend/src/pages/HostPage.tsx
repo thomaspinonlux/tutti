@@ -1700,6 +1700,11 @@ function HostPageInner(): JSX.Element {
                 onResumeAudio={() => void handleResumeAudio()}
                 onRestartTrack={() => void handleRestartTrack()}
                 onRevealAnswer={() => void handleGiveAnswer()}
+                onSeek={(ms) => {
+                  // feat/seek-bar — route vers le provider du morceau courant.
+                  if (currentTrack?.provider === 'youtube') youtube.seek(ms);
+                  else void spotify.seek(ms);
+                }}
               />
             )}
 
@@ -2086,6 +2091,7 @@ function RoundPlayingScreen({
   onResumeAudio,
   onRestartTrack,
   onRevealAnswer,
+  onSeek,
 }: {
   sessionId: string;
   round: SessionRoundWithPlaylist;
@@ -2107,6 +2113,7 @@ function RoundPlayingScreen({
   onResumeAudio: () => void;
   onRestartTrack: () => void;
   onRevealAnswer: () => void;
+  onSeek: (ms: number) => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const top5 = cumulative.slice(0, 5);
@@ -2169,7 +2176,12 @@ function RoundPlayingScreen({
         ) : (
           // Position progress mini-bar (info utile à l'animateur sans
           // dupliquer cover/titre/artiste — déjà dans Programme manche).
-          <AnimatorTrackInfo track={currentTrack} positionMs={positionMs} durationMs={durationMs} />
+          <AnimatorTrackInfo
+            track={currentTrack}
+            positionMs={positionMs}
+            durationMs={durationMs}
+            onSeek={onSeek}
+          />
         )}
 
         <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
@@ -2304,13 +2316,43 @@ function AnimatorTrackInfo({
   track,
   positionMs,
   durationMs,
+  onSeek,
 }: {
   track: CurrentTrackState;
   positionMs: number;
   durationMs: number;
+  onSeek: (ms: number) => void;
 }): JSX.Element {
+  const { t } = useTranslation();
   const total = durationMs || track.duration_ms || 0;
-  const elapsed = Math.min(positionMs, total);
+  // feat/seek-bar — pendant le drag on affiche la valeur draggée (dragMs) au
+  // lieu du tick 250ms, et on commit onSeek au relâcher (pas de bataille).
+  const [dragMs, setDragMs] = useState<number | null>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const seekable = total > 0;
+  const msFromClientX = (clientX: number): number => {
+    const el = barRef.current;
+    if (!el) return 0;
+    const r = el.getBoundingClientRect();
+    const ratio = r.width > 0 ? (clientX - r.left) / r.width : 0;
+    return Math.min(total, Math.max(0, ratio * total));
+  };
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>): void => {
+    if (!seekable) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDragMs(msFromClientX(e.clientX));
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>): void => {
+    if (dragMs === null) return;
+    setDragMs(msFromClientX(e.clientX));
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>): void => {
+    if (dragMs === null) return;
+    const target = msFromClientX(e.clientX);
+    setDragMs(null);
+    onSeek(target);
+  };
+  const elapsed = Math.min(dragMs ?? positionMs, total);
   const remaining = Math.max(0, total - elapsed);
   const progress = total > 0 ? elapsed / total : 0;
   const remainingMin = Math.floor(remaining / 60_000);
@@ -2342,12 +2384,28 @@ function AnimatorTrackInfo({
           {track.year && <p className="font-mono text-xs text-ink-soft">{track.year}</p>}
         </div>
       </div>
-      {/* Barre de progression + temps restant */}
+      {/* Barre de progression SEEKABLE (host-only) + temps restant */}
       <div className="max-w-md mx-auto">
-        <div className="h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden">
+        <div
+          ref={barRef}
+          role="slider"
+          aria-label={t('host.seekBar')}
+          aria-valuemin={0}
+          aria-valuemax={Math.round(total)}
+          aria-valuenow={Math.round(elapsed)}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          className={`relative h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden ${
+            seekable ? 'cursor-pointer touch-none' : ''
+          } ${dragMs !== null ? 'ring-2 ring-spritz ring-offset-1' : ''}`}
+        >
           <div
-            className="h-full bg-spritz-deep transition-[width] duration-150 ease-linear"
-            style={{ width: `${Math.round(progress * 100)}%` }}
+            className="h-full bg-spritz-deep ease-linear"
+            style={{
+              width: `${Math.round(progress * 100)}%`,
+              transition: dragMs === null ? 'width 150ms linear' : 'none',
+            }}
           />
         </div>
         <div className="flex justify-between mt-1 font-mono text-xs text-ink-soft tabular-nums">

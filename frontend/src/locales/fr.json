@@ -444,6 +444,7 @@
     "pauseAudio": "Pause",
     "resumeAudio": "Reprendre",
     "restartTrack": "Recommencer",
+    "seekBar": "Barre de lecture",
     "revealAnswer": "Révéler la réponse",
     "audioBlockedBanner": "Le son est bloqué par ton navigateur — Clique pour activer",
     "youtubeBlockedTitle": "Clique pour démarrer la musique",
