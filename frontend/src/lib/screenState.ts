@@ -12,6 +12,7 @@ import type {
   SessionWithParticipants,
 } from '@tutti/shared';
 import { api } from './api.js';
+import type { RoundRankingEntry, FastestPlayer } from './sessions.js';
 
 export type ScreenStateValue =
   | 'IDLE'
@@ -70,6 +71,8 @@ export type ScreenState =
       joinCode: string;
       sessionName: string | null;
       cumulative: CumulativeScore[];
+      roundRanking: RoundRankingEntry[];
+      fastestPlayer: FastestPlayer | null;
       lastEndedRoundPosition: number;
       lastUpdate: string;
     }

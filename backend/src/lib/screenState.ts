@@ -25,6 +25,7 @@ import type {
   SessionWithParticipants,
 } from '@tutti/shared';
 import { prisma } from './prisma.js';
+import { computeRoundResults, type RoundRankingEntry, type FastestPlayer } from './roundResults.js';
 import { getCumulativeScores } from './scores.js';
 import { buildCurrentTrackStateSnapshot, getEffectiveRoundTrackCount } from './gameplayCore.js';
 import { getFocusedSelection } from './playlistSelectionStore.js';
@@ -79,6 +80,9 @@ export type ScreenState =
       joinCode: string;
       sessionName: string | null;
       cumulative: CumulativeScore[];
+      /** feat/tv-round-results — classement de la manche + plus rapide (mirror TV). */
+      roundRanking: RoundRankingEntry[];
+      fastestPlayer: FastestPlayer | null;
       lastEndedRoundPosition: number;
       lastUpdate: string;
     }
@@ -365,12 +369,15 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
 
   // ROUND_PODIUM : session PLAYING (status) ET dernier round ENDED (entre 2 manches)
   if (lastEndedRound && session.status === 'PLAYING') {
-    const cumulative = await getCumulativeScores({
-      sessionId: session.id,
-      mode: session.mode as GameMode,
-      teams: (session.teams_config as Team[] | null) ?? null,
-      participants: players,
-    });
+    const [cumulative, roundResults] = await Promise.all([
+      getCumulativeScores({
+        sessionId: session.id,
+        mode: session.mode as GameMode,
+        teams: (session.teams_config as Team[] | null) ?? null,
+        participants: players,
+      }),
+      computeRoundResults(session.id, lastEndedRound.id),
+    ]);
     console.info(
       `[ScreenState] Workspace ${workspaceId} → ROUND_PODIUM (session=${session.id}, lastRound=${lastEndedRound.position})`,
     );
@@ -380,6 +387,8 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       joinCode: session.short_code,
       sessionName: session.name,
       cumulative,
+      roundRanking: roundResults.round_ranking,
+      fastestPlayer: roundResults.fastest_player,
       lastEndedRoundPosition: lastEndedRound.position,
       lastUpdate,
     };

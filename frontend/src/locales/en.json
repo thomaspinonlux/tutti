@@ -596,6 +596,8 @@
     "scoreboard": "Leaderboard",
     "roundPodiumEyebrow": "End of round {{n}}",
     "roundPodiumTitle": "Top of the moment",
+    "roundRankingTitle": "Round ranking",
+    "generalRankingTitle": "Overall ranking",
     "roundPodiumWaiting": "The animator is preparing the next round…"
   },
   "play": {
