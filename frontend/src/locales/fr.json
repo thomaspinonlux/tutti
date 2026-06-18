@@ -256,6 +256,16 @@
     "create": "Créer la partie",
     "creating": "Création…"
   },
+  "rules": {
+    "title": "Comment jouer",
+    "howTitle": "Comment répondre",
+    "howBody": "Au buzz : parle dans le micro ou écris ta réponse au clavier.",
+    "whatTitle": "Quoi répondre",
+    "whatBody": "Le nom de l'artiste ET/OU le titre de la chanson.",
+    "scoreTitle": "Les points",
+    "scoreBody": "Une bonne réponse (artiste ou titre) = des points. Les deux = double réponse, bonus !",
+    "hostToggle": "Règles du jeu"
+  },
   "preGame": {
     "readyTitle": "Prêt à jouer ?",
     "trackCount_one": "{{count}} morceau",

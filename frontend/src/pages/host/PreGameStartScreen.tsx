@@ -28,6 +28,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, MultiColorBar, TitleHandwritten, Underline } from '../../components/ui/index.js';
+import { GameRules } from '../../components/play/GameRules.js';
 
 // 0.1s de silence WAV encodé en base64 — 44 bytes inline. Le contenu
 // importe peu, c'est l'appel synchrone à .play() qui débloque le contexte
@@ -83,6 +84,8 @@ export function PreGameStartScreen({
   const { t } = useTranslation();
   const silentAudioRef = useRef<HTMLAudioElement | null>(null);
   const [unlockFailed, setUnlockFailed] = useState(false);
+  // feat/rules — option host : aperçu des règles que voient les joueurs.
+  const [showRules, setShowRules] = useState(false);
   const detectionTimerRef = useRef<number | null>(null);
 
   // Cleanup detection timer si composant unmount.
@@ -222,6 +225,22 @@ export function PreGameStartScreen({
               </button>
             </div>
           )}
+
+          {/* feat/rules — option host : voir/masquer les règles que voient les joueurs */}
+          <div className="mt-8">
+            <button
+              type="button"
+              onClick={() => setShowRules((s) => !s)}
+              className="font-mono text-sm text-cream/80 hover:text-cream underline"
+            >
+              {(showRules ? '▾ ' : '▸ ') + t('rules.hostToggle')}
+            </button>
+            {showRules && (
+              <div className="mt-4 max-w-md mx-auto">
+                <GameRules />
+              </div>
+            )}
+          </div>
         </div>
       </main>
 

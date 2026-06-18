@@ -256,6 +256,16 @@
     "create": "Create the game",
     "creating": "Creating…"
   },
+  "rules": {
+    "title": "How to play",
+    "howTitle": "How to answer",
+    "howBody": "On buzz: speak into the mic or type your answer.",
+    "whatTitle": "What to answer",
+    "whatBody": "The artist's name AND/OR the song title.",
+    "scoreTitle": "Scoring",
+    "scoreBody": "A correct answer (artist or title) = points. Both = double answer, bonus!",
+    "hostToggle": "Game rules"
+  },
   "preGame": {
     "readyTitle": "Ready to play?",
     "trackCount_one": "{{count}} track",

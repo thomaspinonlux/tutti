@@ -75,6 +75,7 @@ import {
 import { useWakeLock } from '../lib/useWakeLock.js';
 import { ConnectionIndicator } from '../components/ConnectionIndicator.js';
 import { OnboardingScreen } from '../components/play/OnboardingScreen.js';
+import { GameRules } from '../components/play/GameRules.js';
 import { MicPermissionErrorScreen } from '../components/play/MicPermissionErrorScreen.js';
 import { MasterMenu } from '../components/play/MasterMenu.js';
 import { MasterPlaylistPicker } from '../components/play/MasterPlaylistPicker.js';
@@ -686,30 +687,34 @@ export function PlayPage(): JSX.Element {
           )}
 
           {step === 'waiting' && identity && (
-            <Card size="md" tone="basil" className="text-center">
-              <p className="text-xs font-mono uppercase tracking-wider text-basil-deep mb-3">
-                {t('play.youAreIn')}
-              </p>
-              <TitleHandwritten as="h2" className="mb-2">
-                {identity.pseudo}
-              </TitleHandwritten>
-              {identity.teamId && (
-                <Badge tone="ink" tilt={-1} className="mb-4">
-                  {teams.find((t2) => t2.id === identity.teamId)?.name}
-                </Badge>
-              )}
-              <p className="font-editorial italic text-ink-2 mt-4">{t('play.waitingMessage')}</p>
-              <p className="font-mono text-xs text-ink-soft mt-3">
-                {participantsCount} {t('play.participantsConnected')}
-              </p>
-              <div className="mt-6 h-1 bg-cream-3 rounded overflow-hidden relative" aria-hidden>
-                <div className="absolute inset-y-0 w-1/3 bg-spritz animate-pulse" />
-              </div>
-              {/* feat/tv-playlist-carousel — proposer une playlist depuis le
+            <>
+              <Card size="md" tone="basil" className="text-center">
+                <p className="text-xs font-mono uppercase tracking-wider text-basil-deep mb-3">
+                  {t('play.youAreIn')}
+                </p>
+                <TitleHandwritten as="h2" className="mb-2">
+                  {identity.pseudo}
+                </TitleHandwritten>
+                {identity.teamId && (
+                  <Badge tone="ink" tilt={-1} className="mb-4">
+                    {teams.find((t2) => t2.id === identity.teamId)?.name}
+                  </Badge>
+                )}
+                <p className="font-editorial italic text-ink-2 mt-4">{t('play.waitingMessage')}</p>
+                <p className="font-mono text-xs text-ink-soft mt-3">
+                  {participantsCount} {t('play.participantsConnected')}
+                </p>
+                <div className="mt-6 h-1 bg-cream-3 rounded overflow-hidden relative" aria-hidden>
+                  <div className="absolute inset-y-0 w-1/3 bg-spritz animate-pulse" />
+                </div>
+                {/* feat/tv-playlist-carousel — proposer une playlist depuis le
                   lobby. Modal qui charge le catalogue OfficialPlaylist + POST
                   /api/sessions/by-code/:short_code/proposals. */}
-              <ProposePlaylistButton shortCode={shortCode} token={identity.token} />
-            </Card>
+                <ProposePlaylistButton shortCode={shortCode} token={identity.token} />
+              </Card>
+              {/* feat/rules — règles concises visibles dans le lobby avant la manche 1 */}
+              <GameRules className="mt-4" />
+            </>
           )}
 
           {step === 'playing' && identity && view?.game_type === 'QUIZZ' && (
