@@ -26,7 +26,7 @@
  * optimisation au-dessus du polling (V3).
  */
 
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -39,6 +39,7 @@ import {
 } from '../components/ui/index.js';
 import { QRCode } from '../components/host/QRCode.js';
 import { getScreenState, type ScreenState } from '../lib/screenState.js';
+import type { RoundRankingEntry, FastestPlayer } from '../lib/sessions.js';
 import { getMe } from '../lib/me.js';
 import { connectAsSpectator } from '../lib/socket.js';
 import { MainScreenView } from './screen/MainScreenView.js';
@@ -280,6 +281,8 @@ export function ScreenPage(): JSX.Element {
         <ScreenRoundPodiumView
           joinCode={screenState.joinCode}
           cumulative={screenState.cumulative}
+          roundRanking={screenState.roundRanking}
+          fastest={screenState.fastestPlayer}
           roundPosition={screenState.lastEndedRoundPosition}
         />
       );
@@ -571,45 +574,170 @@ function ScreenWithQrOverlay({
   );
 }
 
+// feat/tv-round-results — liste à auto-défilement : la TV n'a personne pour
+// scroller, donc on défile lentement haut↔bas SEULEMENT si le contenu déborde
+// (gère 15-20+ joueurs). Une seule boucle rAF montée à vie du composant ; elle
+// lit scrollHeight/clientHeight à chaque frame → s'adapte aux updates 2s.
+function AutoScrollList({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}): JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let raf = 0;
+    let dir = 1;
+    let pause = 90; // frames d'arrêt en haut/bas (~1.5s)
+    let acc = 0;
+    const step = (): void => {
+      const max = el.scrollHeight - el.clientHeight;
+      if (max > 2) {
+        if (pause > 0) {
+          pause -= 1;
+        } else {
+          acc += dir * 0.6;
+          if (acc >= max) {
+            acc = max;
+            dir = -1;
+            pause = 90;
+          } else if (acc <= 0) {
+            acc = 0;
+            dir = 1;
+            pause = 90;
+          }
+          el.scrollTop = acc;
+        }
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return (
+    <div ref={ref} className={`overflow-hidden ${className ?? ''}`}>
+      {children}
+    </div>
+  );
+}
+
 function ScreenRoundPodiumView({
   joinCode,
   cumulative,
+  roundRanking,
+  fastest,
   roundPosition,
 }: {
   joinCode: string;
   cumulative: import('@tutti/shared').CumulativeScore[];
+  roundRanking: RoundRankingEntry[];
+  fastest: FastestPlayer | null;
   roundPosition: number;
 }): JSX.Element {
   const { t } = useTranslation();
-  const top5 = cumulative.slice(0, 5);
+  const cumulTop = cumulative.slice(0, 10);
+  const fastestAvgSec =
+    fastest && typeof fastest.avg_buzz_ms === 'number'
+      ? (fastest.avg_buzz_ms / 1000).toFixed(2)
+      : '—';
   return (
     <div className="min-h-screen flex flex-col bg-cream">
       <MultiColorBar height="md" />
-      <main className="flex-1 flex flex-col items-center justify-center p-8">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-spritz-deep mb-2">
+      <main className="flex-1 flex flex-col items-center px-8 py-6 overflow-hidden">
+        <p className="font-mono text-xs uppercase tracking-[0.3em] text-spritz-deep mb-1">
           {t('screen.roundPodiumEyebrow', { n: roundPosition })}
         </p>
-        <TitleHandwritten as="h1" className="text-6xl mb-8">
+        <TitleHandwritten as="h1" className="text-5xl mb-5">
           <Underline>{t('screen.roundPodiumTitle')}</Underline>
         </TitleHandwritten>
-        <ol className="space-y-3 max-w-2xl w-full">
-          {top5.map((entry, idx) => (
-            <li
-              key={entry.id}
-              className="flex items-center gap-4 px-5 py-4 border-4 border-ink rounded-xl bg-white shadow-pop"
-            >
-              <span aria-hidden className="text-3xl">
-                {['🥇', '🥈', '🥉', '🎯', '🎯'][idx]}
-              </span>
-              <span className="font-display text-2xl flex-1 truncate">{entry.label}</span>
-              <span className="font-mono text-2xl font-bold">{entry.total_points}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="font-editorial italic text-xl text-ink-soft mt-8">
-          {t('screen.roundPodiumWaiting')}
-        </p>
-        <p className="font-mono text-base tracking-[0.3em] text-ink-soft mt-4">{joinCode}</p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 w-full max-w-6xl flex-1 min-h-0">
+          {/* Classement COMPLET de la manche — auto-scroll si débordement */}
+          <section className="flex flex-col min-h-0">
+            <p className="font-mono text-xs uppercase tracking-wider text-spritz-deep mb-3">
+              🏆 {t('screen.roundRankingTitle')}
+            </p>
+            {roundRanking.length === 0 ? (
+              <p className="font-editorial italic text-ink-soft">
+                {t('host.intermission.noPoints')}
+              </p>
+            ) : (
+              <AutoScrollList className="flex-1 min-h-0">
+                <ol className="space-y-2 pr-1">
+                  {roundRanking.map((e, idx) => (
+                    <li
+                      key={e.participant_id}
+                      className={`flex items-center gap-4 px-4 py-3 border-2 border-ink rounded-xl ${
+                        idx === 0
+                          ? 'bg-lemon'
+                          : idx === 1
+                            ? 'bg-cream-2'
+                            : idx === 2
+                              ? 'bg-spritz/20'
+                              : 'bg-white'
+                      }`}
+                    >
+                      <span aria-hidden className="text-2xl w-9 text-center">
+                        {['🥇', '🥈', '🥉'][idx] ?? (
+                          <span className="font-mono text-lg text-ink-soft">{idx + 1}</span>
+                        )}
+                      </span>
+                      <span className="font-display text-2xl flex-1 truncate">{e.pseudo}</span>
+                      <span className="font-mono text-2xl font-bold">+{e.points}</span>
+                    </li>
+                  ))}
+                </ol>
+              </AutoScrollList>
+            )}
+          </section>
+
+          {/* Plus rapide + classement général (cumul) */}
+          <section className="flex flex-col min-h-0 gap-4">
+            <div className="border-2 border-raspberry rounded-xl bg-white px-4 py-4 text-center shrink-0">
+              <p className="font-mono text-xs uppercase tracking-wider text-raspberry-deep mb-2">
+                ⚡ {t('host.intermission.fastest')}
+              </p>
+              {fastest ? (
+                <>
+                  <p className="font-display text-3xl mb-1">{fastest.pseudo}</p>
+                  <p className="font-mono text-sm text-ink-soft">
+                    {t('host.intermission.avgBuzz', { ms: fastestAvgSec })}
+                  </p>
+                </>
+              ) : (
+                <p className="font-editorial italic text-ink-soft">
+                  {t('host.intermission.noBuzz')}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col min-h-0">
+              <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
+                📊 {t('screen.generalRankingTitle')}
+              </p>
+              <AutoScrollList className="flex-1 min-h-0">
+                <ol className="space-y-1.5 pr-1">
+                  {cumulTop.map((e, idx) => (
+                    <li
+                      key={e.id}
+                      className={`flex items-center gap-3 px-3 py-2 border rounded-lg ${
+                        idx === 0 ? 'border-spritz bg-spritz/10' : 'border-ink/20 bg-white'
+                      }`}
+                    >
+                      <span className="font-mono text-sm w-6 text-ink-soft">{idx + 1}.</span>
+                      <span className="font-display text-xl flex-1 truncate">{e.label}</span>
+                      <span className="font-mono text-xl font-bold">{e.total_points}</span>
+                    </li>
+                  ))}
+                </ol>
+              </AutoScrollList>
+            </div>
+          </section>
+        </div>
+
+        <p className="font-mono text-sm tracking-[0.3em] text-ink-soft mt-4 shrink-0">{joinCode}</p>
       </main>
       <MultiColorBar height="md" />
     </div>

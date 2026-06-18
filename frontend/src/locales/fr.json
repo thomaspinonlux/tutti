@@ -596,6 +596,8 @@
     "scoreboard": "Classement",
     "roundPodiumEyebrow": "Fin de manche {{n}}",
     "roundPodiumTitle": "Top du moment",
+    "roundRankingTitle": "Classement de la manche",
+    "generalRankingTitle": "Classement général",
     "roundPodiumWaiting": "L'animateur prépare la prochaine manche…"
   },
   "play": {
