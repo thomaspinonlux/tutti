@@ -617,7 +617,7 @@ function FindersRecap({ correctAnswers }: { correctAnswers: CorrectAnswerEntry[]
             <div className="font-bold">
               {entry.pseudo}
               <small className="block font-editorial italic font-normal text-xs opacity-70">
-                {entry.matched_title
+                {(entry.score_title_bonus ?? 0) > 0
                   ? t('screen.finderArtistAndTitle', {
                       seconds: (entry.answered_at_ms / 1000).toFixed(1),
                     })
@@ -693,7 +693,7 @@ function RevealLeaderboard({
         if (!key) continue;
         const cur = m.get(key) ?? { gain: 0, double: false };
         cur.gain += ca.score;
-        cur.double = cur.double || (ca.matched_artist && ca.matched_title);
+        cur.double = cur.double || (ca.score_title_bonus ?? 0) > 0;
         m.set(key, cur);
       }
     }

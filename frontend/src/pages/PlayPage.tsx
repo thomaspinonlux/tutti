@@ -1713,7 +1713,9 @@ function ValidatedBanner({
       {showConfetti && <PhoneConfettiBurst />}
       <div className="bg-basil border-4 border-ink rounded-2xl px-5 py-7 text-center shadow-pop-lg animate-valid-pop relative z-10">
         <span className="font-display text-6xl block mb-1.5 text-cream">✓</span>
-        <p className="font-display text-2xl text-cream mb-1.5">{t('play.answerValidated')}</p>
+        <p className="font-display text-2xl text-cream mb-1.5">
+          {scoreTitleBonus ? t('play.doubleValidated') : t('play.answerValidated')}
+        </p>
         {hasBreakdown && (
           <ul className="space-y-0.5 mb-2 text-cream-2 font-mono text-sm">
             {!!scorePosition && (
