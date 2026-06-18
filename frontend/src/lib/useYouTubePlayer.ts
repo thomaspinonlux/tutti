@@ -78,6 +78,8 @@ export interface UseYouTubePlayerResult {
   resume: () => void;
   /** Repart à 0 (post-startSec). */
   restart: () => void;
+  /** feat/seek-bar — seek absolu (ms). Host-only, barre de lecture seekable. */
+  seek: (ms: number) => void;
   /** Bug 4 — débloque audio YouTube depuis un clic user direct. */
   unblockAudio: () => void;
   /**
@@ -798,6 +800,21 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     }
   }, []);
 
+  // feat/seek-bar — seek absolu host-only (ms). seekTo(seconds, allowSeekAhead).
+  // Ne se bat pas avec la synchro : useYouTubeAudioSync ne re-play que sur
+  // changement started_at/track_id, jamais sur la position courante.
+  const seek = useCallback((ms: number): void => {
+    const p = playerRef.current;
+    if (!p?.seekTo) return;
+    try {
+      const sec = Math.max(0, ms / 1000);
+      p.seekTo(sec, true);
+      setPositionMs(Math.round(sec * 1000)); // optimiste — le tick 250ms confirmera
+    } catch {
+      // ignore
+    }
+  }, []);
+
   /**
    * Bug 4 — fallback audio bloqué côté YouTube. À appeler depuis un clic
    * user direct (button onClick). Re-tape playVideo() pour débloquer la
@@ -1069,6 +1086,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     pause,
     resume,
     restart,
+    seek,
     unblockAudio,
     warmupSync,
     getPlayerState,
