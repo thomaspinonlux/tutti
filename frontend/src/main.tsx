@@ -4,6 +4,7 @@ import './index.css';
 import './styles/landing.css';
 import './i18n/index.ts';
 import App from './App.tsx';
+import { RootErrorBoundary } from './components/RootErrorBoundary.tsx';
 // feat/debug-audio-overlay — installe le wrapper console.* AVANT le render
 // pour capturer même les logs émis pendant le bootstrap (registerSW, audio
 // unlock initial…). Idempotent.
@@ -17,6 +18,8 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <RootErrorBoundary>
+      <App />
+    </RootErrorBoundary>
   </StrictMode>,
 );
