@@ -81,7 +81,15 @@ router.get('/playlists-by-category', async (req: Request, res: Response): Promis
   try {
     const { PLAYLIST_CATEGORIES, UNCATEGORIZED_CATEGORY, getCategoryDef } =
       await import('../lib/playlistCategories.js');
-    const all = await listVisiblePlaylists(req.userId, {});
+    // feat/two-provider-libraries — onglet provider. 'spotify' ne garde que les
+    // playlists ayant ≥15 tracks avec spotify_id (1 manche = 15 → jouable).
+    const provider = req.query.provider === 'spotify' ? 'spotify' : 'youtube';
+    const SPOTIFY_MIN_TRACKS = 15;
+    const all = (await listVisiblePlaylists(req.userId, {})).filter(
+      (p) =>
+        provider !== 'spotify' ||
+        ((p as unknown as { spotify_count?: number }).spotify_count ?? 0) >= SPOTIFY_MIN_TRACKS,
+    );
 
     // Group by category slug. Garde l'ordre de tri retourné par
     // listVisiblePlaylists (déjà sorted par updated_at desc) puis ré-trie
@@ -182,8 +190,11 @@ router.post(
       return;
     }
     const { session_id } = parsed.data;
-    // Force YouTube quel que soit le body — pivot YT-only officielle.
-    const preferProvider: 'spotify' | 'youtube' = 'youtube';
+    // feat/two-provider-libraries — on RESPECTE le provider demandé (défaut
+    // youtube via le schema → comportement inchangé pour tous). 'spotify' n'est
+    // envoyé que par l'onglet Spotify (host allowlisté), qui ne liste que des
+    // playlists couvertes → clone 100% Spotify, aucun fallback YouTube.
+    const preferProvider: 'spotify' | 'youtube' = parsed.data.preferProvider;
 
     // 1. Vérif accès playlist (visibilité + premium)
     const detail = await getVisiblePlaylistDetail(userId, req.params.id);
@@ -236,19 +247,25 @@ router.post(
         skippedNotPlayable += 1;
         continue;
       }
-      // Pivot YouTube-only : on tente youtube_id en priorité. Spotify
-      // reste un fallback ULTIME si une vieille track n'a pas de
-      // youtube_id (legacy) — sera supprimé après resync complet.
+      // feat/two-provider-libraries — choix provider selon l'onglet :
+      //   spotify → UNIQUEMENT spotify_id, provider='spotify', AUCUN fallback
+      //             (les tracks sans spotify_id sont skip → playlist 100% Spotify)
+      //   youtube → youtube_id prioritaire, spotify_id en fallback legacy ultime
       let provider: 'spotify' | 'youtube' | null = null;
       let providerId: string | null = null;
-      if (t.youtube_id) {
+      if (preferProvider === 'spotify') {
+        if (t.spotify_id) {
+          provider = 'spotify';
+          providerId = t.spotify_id;
+        }
+      } else if (t.youtube_id) {
         provider = 'youtube';
         providerId = t.youtube_id;
       } else if (t.spotify_id) {
         provider = 'spotify';
         providerId = t.spotify_id;
       }
-      if (!provider || !providerId) continue; // track non jouable, skip
+      if (!provider || !providerId) continue; // track non jouable pour ce provider, skip
       // Fallback cover : si pas de cover_url stockée et qu'on a un youtube_id,
       // on dérive la thumbnail YouTube. Garantit un visuel pour chaque track.
       const coverUrl =

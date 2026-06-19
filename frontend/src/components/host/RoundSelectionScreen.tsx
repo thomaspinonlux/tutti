@@ -52,7 +52,12 @@ interface Props {
    *  le PreGameStartScreen avec name + tracks_count sans re-fetch. */
   onPickPlaylist: (playlist: Playlist) => void | Promise<void>;
   /** Pick playlist officielle Tutti — déclenche flow validation + clone. */
-  onPickOfficial: (playlist: LibraryPlaylistSummary) => void | Promise<void>;
+  onPickOfficial: (
+    playlist: LibraryPlaylistSummary,
+    provider: 'youtube' | 'spotify',
+  ) => void | Promise<void>;
+  /** feat/two-provider-libraries — onglet Spotify dispo (host allowlisté + Spotify connecté). */
+  spotifyLibraryAvailable?: boolean;
   /** Pick pack quizz officiel Tutti — clone + crée session game_type=QUIZZ
    *  + redirige vers /host?session=<short_code>. Optionnel : visible seulement
    *  si user.can_use_quizz === true (gating WorkspaceMember). */
@@ -77,10 +82,14 @@ export function RoundSelectionScreen({
   onEndSession,
   loading,
   joinCode,
+  spotifyLibraryAvailable,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('mine');
   const [librarySubTab, setLibrarySubTab] = useState<LibrarySubTab>('tracks');
+  // feat/two-provider-libraries — provider de la bibliothèque officielle.
+  // youtube (défaut, tous) | spotify (host allowlisté+connecté, playlists couvertes).
+  const [provider, setProvider] = useState<'youtube' | 'spotify'>('youtube');
 
   // feat/selection-ui-mirroring (item 2) — mirror TV armé sur TOUTE la durée de
   // la sélection : ENTRE au montage (arrivée sur l'écran de choix) et SORT à
@@ -113,12 +122,17 @@ export function RoundSelectionScreen({
 
   // Lazy-load la bibliothèque officielle Tracks groupée par catégorie quand
   // l'onglet est ouvert (feat/host-playlist-selection-redesign PR 2/4).
+  // feat/two-provider-libraries — changer de provider vide le cache → refetch.
+  useEffect(() => {
+    setCategorized(null);
+  }, [provider]);
+
   useEffect(() => {
     if (tab !== 'library' || librarySubTab !== 'tracks' || categorized !== null) return;
-    getPlaylistsByCategory()
+    getPlaylistsByCategory(provider)
       .then((cats) => setCategorized(cats))
       .catch((err: unknown) => setError((err as Error).message));
-  }, [tab, librarySubTab, categorized]);
+  }, [tab, librarySubTab, categorized, provider]);
 
   // Lazy-load la bibliothèque officielle Quizz quand sub-onglet ouvert.
   // fix/quiz-library-host-access — `canUseQuizz === false` (explicite) au
@@ -333,6 +347,31 @@ export function RoundSelectionScreen({
             </div>
           )}
 
+          {/* feat/two-provider-libraries — switch YouTube / Spotify (Spotify
+              visible seulement si host allowlisté + Spotify connecté). */}
+          {librarySubTab === 'tracks' && spotifyLibraryAvailable && (
+            <div className="flex gap-2 mb-3" role="tablist" aria-label="Source musicale">
+              {(['youtube', 'spotify'] as const).map((pv) => (
+                <button
+                  key={pv}
+                  type="button"
+                  role="tab"
+                  aria-selected={provider === pv}
+                  onClick={() => setProvider(pv)}
+                  className={`px-3 py-1 font-mono text-xs uppercase tracking-wider border-2 border-ink rounded-full transition-colors ${
+                    provider === pv
+                      ? pv === 'spotify'
+                        ? 'bg-basil text-cream shadow-pop-sm'
+                        : 'bg-spritz text-cream shadow-pop-sm'
+                      : 'bg-cream text-ink-soft hover:bg-cream-2'
+                  }`}
+                >
+                  {pv === 'spotify' ? '🟢 Spotify' : '▶️ YouTube'}
+                </button>
+              ))}
+            </div>
+          )}
+
           {librarySubTab === 'tracks' ? (
             categorized === null ? (
               <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>
@@ -354,7 +393,7 @@ export function RoundSelectionScreen({
                   <CategoryRow
                     key={cat.slug}
                     category={cat}
-                    onPick={(p) => void onPickOfficial(p)}
+                    onPick={(p) => void onPickOfficial(p, provider)}
                     onLockedClick={() => alert(t('host.session.premiumRequired'))}
                     disabled={loading}
                   />

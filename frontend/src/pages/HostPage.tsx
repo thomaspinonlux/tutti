@@ -833,6 +833,9 @@ function HostPageInner(): JSX.Element {
   const [hostProviders, setHostProviders] = useState<HostProviders | null>(null);
   const [noProviderOpen, setNoProviderOpen] = useState(false);
   const [previewPlaylist, setPreviewPlaylist] = useState<LibraryPlaylistDetail | null>(null);
+  // feat/two-provider-libraries — provider de l'onglet bibliothèque au moment du
+  // pick (youtube|spotify), relu au launch. Ref : survit pick→preview→confirm.
+  const pickedProviderRef = useRef<'youtube' | 'spotify'>('youtube');
   const [previewReport, setPreviewReport] = useState<PlayabilityReport | null>(null);
 
   const fetchHostProviders = async (): Promise<HostProviders> => {
@@ -853,9 +856,13 @@ function HostPageInner(): JSX.Element {
     return providers;
   };
 
-  const handlePickOfficial = async (summary: LibraryPlaylistSummary): Promise<void> => {
+  const handlePickOfficial = async (
+    summary: LibraryPlaylistSummary,
+    provider: 'youtube' | 'spotify' = 'youtube',
+  ): Promise<void> => {
     if (!session) return;
     if (summary.locked) return; // ne devrait pas arriver — card disabled
+    pickedProviderRef.current = provider; // onglet choisi → relu au launch
 
     // 1. Charge providers connectés
     const providers = await fetchHostProviders();
@@ -923,7 +930,10 @@ function HostPageInner(): JSX.Element {
 
   const handleConfirmLaunchOfficial = (): void => {
     if (!session || !previewPlaylist || !hostProviders) return;
-    const prefer = preferredProvider(hostProviders);
+    // feat/two-provider-libraries — onglet Spotify → force 'spotify' (playlist
+    // couverte + host allowlisté/connecté). Sinon provider habituel (youtube).
+    const prefer =
+      pickedProviderRef.current === 'spotify' ? 'spotify' : preferredProvider(hostProviders);
     if (!prefer) {
       setNoProviderOpen(true);
       setPreviewPlaylist(null);
@@ -1636,6 +1646,7 @@ function HostPageInner(): JSX.Element {
                 isFirstRound={session.rounds.length === 0}
                 onPickPlaylist={handlePickPlaylist}
                 onPickOfficial={handlePickOfficial}
+                spotifyLibraryAvailable={spotifyAllowlisted && !!hostProviders?.spotify.connected}
                 onPickQuizOfficial={handlePickQuizOfficial}
                 canUseQuizz={canUseQuizz}
                 onCreateExpress={() => setExpressModalOpen(true)}
