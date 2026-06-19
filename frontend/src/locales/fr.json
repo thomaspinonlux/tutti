@@ -356,6 +356,7 @@
       "lvl_hard": "Difficile",
       "lvl_mix": "Mix (tous niveaux)",
       "backToThemes": "Retour aux thèmes",
+      "chooseLevel": "Choisis le niveau",
       "themeLevels": "{{count}} niveaux",
       "quizPackQuestionCount": "questions",
       "searchPlaceholder": "Rechercher une playlist...",
