@@ -70,7 +70,8 @@ type HRatios = Record<string, number>;
 
 /**
  * Ratio de scroll HORIZONTAL 0..1 de chaque carrousel de catégorie, clé = slug.
- * Lit tous les `[data-carousel-cat]` du DOM (rendus par CategoryRow).
+ * Lit tous les `[data-carousel-cat]` du DOM (rendus par OfficialCatalogSections,
+ * partagé host ⇄ TV).
  */
 function computeHRatios(): HRatios {
   const out: HRatios = {};

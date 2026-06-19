@@ -17,6 +17,8 @@ interface Props {
   subtitle: string;
   onClick: () => void;
   disabled?: boolean;
+  /** feat/tv-host-catalog-parity — carte centrée côté host → surbrillance (mirror TV). */
+  highlighted?: boolean;
 }
 
 function slugToHue(slug: string): number {
@@ -25,7 +27,14 @@ function slugToHue(slug: string): number {
   return h;
 }
 
-export function ThemeCard({ cover, title, subtitle, onClick, disabled }: Props): JSX.Element {
+export function ThemeCard({
+  cover,
+  title,
+  subtitle,
+  onClick,
+  disabled,
+  highlighted,
+}: Props): JSX.Element {
   // Même chaîne de fallback que PlaylistCardLarge : mosaïque → spotify → yt → gradient.
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   const hue = slugToHue(cover.slug);
@@ -48,11 +57,13 @@ export function ThemeCard({ cover, title, subtitle, onClick, disabled }: Props):
       onClick={onClick}
       disabled={disabled}
       initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
       whileHover={disabled ? undefined : { scale: 1.05 }}
       whileTap={disabled ? undefined : { scale: 0.98 }}
-      className="group relative shrink-0 text-left rounded-lg overflow-hidden border-2 border-ink shadow-pop disabled:opacity-50 w-full"
+      animate={highlighted ? { opacity: 1, y: 0, scale: 1.04 } : { opacity: 1, y: 0 }}
+      className={`group relative shrink-0 text-left rounded-lg overflow-hidden border-2 border-ink shadow-pop disabled:opacity-50 w-full ${
+        highlighted ? 'ring-4 ring-raspberry ring-offset-2 ring-offset-cream z-10' : ''
+      }`}
       style={{ height: 180, background: gradient }}
       aria-label={title}
     >
