@@ -23,8 +23,7 @@ import {
 } from '../../lib/library.js';
 import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/index.js';
 import { OfficialQuizPackCard } from './library/OfficialQuizPackCard.js';
-import { OfficialCatalogSections } from './library/OfficialCatalogSections.js';
-import { buildThemeSections, flattenThemes } from '../../lib/officialThemes.js';
+import { ThemeCard } from './library/ThemeCard.js';
 import { JoinQrCorner } from './JoinQrCorner.js';
 import { useFocusedPlaylistSync } from '../../lib/useFocusedPlaylistSync.js';
 import { useSelectionBackgroundMusic } from '../../lib/useSelectionBackgroundMusic.js';
@@ -44,8 +43,29 @@ function matchesQuery(query: string, ...haystacks: (string | null | undefined)[]
   return false;
 }
 
-// feat/tv-host-catalog-parity — deriveTheme + le groupement par sections vivent
-// désormais dans lib/officialThemes.ts (source unique partagée host ⇄ TV).
+// feat/theme-level-picker — dérive thème + niveau depuis le slug/nom officiel.
+// Le champ `difficulty` MENT (80s-hard = MEDIUM en base) → on lit le SUFFIXE
+// du slug (-easy/-medium/-hard/-mix), seule source fiable.
+type LevelKey = 'easy' | 'medium' | 'hard' | 'mix';
+const LEVEL_ORDER: Record<LevelKey, number> = { easy: 0, medium: 1, hard: 2, mix: 3 };
+function deriveTheme(
+  slug: string,
+  nameFr: string,
+): { key: string; name: string; level: LevelKey | null } {
+  const base = slug.replace(/^official-pl-/, '');
+  const m = base.match(/^(.+)-(easy|medium|hard|mix)$/);
+  if (m) {
+    return {
+      key: m[1]!,
+      // nom thème = nom_fr sans le suffixe " — Facile/Moyen/Difficile/Mix".
+      name: nameFr
+        .replace(/\s*[—–-]\s*(Facile|Moyen|Difficile|Mix|Easy|Medium|Hard)\s*$/i, '')
+        .trim(),
+      level: m[2] as LevelKey,
+    };
+  }
+  return { key: base, name: nameFr, level: null };
+}
 
 type Tab = 'mine' | 'library';
 type LibrarySubTab = 'tracks' | 'quizz';
@@ -193,16 +213,36 @@ export function RoundSelectionScreen({
     [categorized],
   );
 
-  // feat/tv-host-catalog-parity — catalogue groupé en SECTIONS par catégorie,
-  // chacune ses thèmes (variantes de niveau). Source UNIQUE partagée avec la TV
-  // (lib/officialThemes.buildThemeSections + <OfficialCatalogSections>).
-  const themeSections = useMemo(
-    () => buildThemeSections(filteredCategorized),
-    [filteredCategorized],
-  );
+  // feat/theme-level-picker — regroupe les playlists officielles (déjà filtrées
+  // par recherche + provider) par THÈME ; chaque thème porte ses variantes de
+  // niveau (easy/medium/hard/mix). Source du picker thème→niveau.
+  type ThemeVariant = { level: LevelKey | null; playlist: LibraryPlaylistSummary };
+  type ThemeGroup = { key: string; name: string; cover: string | null; variants: ThemeVariant[] };
+  const themeGroups = useMemo<ThemeGroup[]>(() => {
+    const map = new Map<string, ThemeGroup>();
+    for (const cat of filteredCategorized) {
+      for (const p of cat.playlists) {
+        const d = deriveTheme(p.slug, p.name_fr);
+        const g = map.get(d.key) ?? { key: d.key, name: d.name, cover: null, variants: [] };
+        g.variants.push({ level: d.level, playlist: p });
+        if (!g.cover) {
+          g.cover =
+            (p as unknown as { cover_fallback_url?: string | null }).cover_fallback_url ?? null;
+        }
+        map.set(d.key, g);
+      }
+    }
+    const groups = [...map.values()];
+    for (const g of groups) {
+      g.variants.sort(
+        (a, b) => (a.level ? LEVEL_ORDER[a.level] : 9) - (b.level ? LEVEL_ORDER[b.level] : 9),
+      );
+    }
+    return groups;
+  }, [filteredCategorized]);
   const selectedTheme = useMemo(
-    () => (selectedThemeKey ? (flattenThemes(themeSections).get(selectedThemeKey) ?? null) : null),
-    [themeSections, selectedThemeKey],
+    () => themeGroups.find((g) => g.key === selectedThemeKey) ?? null,
+    [themeGroups, selectedThemeKey],
   );
   const filteredQuizPacks = useMemo(
     () =>
@@ -409,19 +449,32 @@ export function RoundSelectionScreen({
                 </p>
               </Card>
             ) : selectedTheme === null ? (
-              // feat/tv-host-catalog-parity — ÉTAPE THÈME : sections par catégorie,
-              // rangées horizontales de cartes thème. MÊME composant que le mirror
-              // TV (OfficialCatalogSections) → parité de structure garantie.
-              <div className="mb-4">
-                <OfficialCatalogSections
-                  sections={themeSections}
-                  disabled={loading}
-                  onPickTheme={(th) => {
-                    if (th.variants.length === 1)
-                      void onPickOfficial(th.variants[0]!.playlist, provider);
-                    else setSelectedThemeKey(th.key);
-                  }}
-                />
+              // feat/theme-level-picker — ÉTAPE THÈME : grille de cartes thème.
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                {themeGroups.map((th) => {
+                  const single = th.variants.length === 1 ? th.variants[0]! : null;
+                  // cover représentative : la variante Mix si elle existe, sinon la 1ʳᵉ.
+                  const cover = (th.variants.find((v) => v.level === 'mix') ?? th.variants[0]!)
+                    .playlist;
+                  return (
+                    <div key={th.key} data-focus-playlist-id={single?.playlist.id}>
+                      <ThemeCard
+                        cover={cover}
+                        title={th.name}
+                        subtitle={
+                          single
+                            ? `${single.playlist.track_count ?? 0} ${t('playlists.tracksCount')}`
+                            : t('host.session.themeLevels', { count: th.variants.length })
+                        }
+                        disabled={loading}
+                        onClick={() => {
+                          if (single) void onPickOfficial(single.playlist, provider);
+                          else setSelectedThemeKey(th.key);
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               // feat/theme-level-picker — ÉTAPE NIVEAU : sous-catégorie claire,
