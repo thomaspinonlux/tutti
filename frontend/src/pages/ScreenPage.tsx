@@ -26,7 +26,7 @@
  * optimisation au-dessus du polling (V3).
  */
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -45,7 +45,8 @@ import { connectAsSpectator } from '../lib/socket.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { screenStateToMainScreenProps } from './screen/adapters/screenStateToMainScreenProps.js';
 import { getPublicCatalog, type LibraryCategoryWithPlaylists } from '../lib/library.js';
-import { CategoryRow } from '../components/host/library/CategoryRow.js';
+import { OfficialCatalogSections } from '../components/host/library/OfficialCatalogSections.js';
+import { buildThemeSections } from '../lib/officialThemes.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 
 const POLL_FAST_MS = 2000;
@@ -420,10 +421,11 @@ function ScreenLobbyView({
 // dance pulse, reveal cover, phase eyebrow, etc. d'un coup.
 
 /**
- * feat/tv-grid-mirror — vue TV pendant la sélection de playlist. Mirror
+ * feat/tv-host-catalog-parity — vue TV pendant la sélection de playlist. Mirror
  * READ-ONLY de l'écran de sélection de l'animateur :
- *   - grille COMPLÈTE du catalogue officiel (mêmes CategoryRow/cards que le host,
- *     mais non-interactives), fetchée par la TV elle-même (endpoint public) ;
+ *   - MÊMES sections/cartes que le host via <OfficialCatalogSections> (source
+ *     unique buildThemeSections), non-interactives, fetchée par la TV elle-même
+ *     (endpoint public) à chaque entrée en PLAYLIST_SELECTION (remount) ;
  *   - la card centrée côté animateur est highlightée (focusedId) ;
  *   - la position de scroll de l'animateur (scrollRatio 0..1) est appliquée à
  *     la grille → la TV suit l'écran host en direct.
@@ -507,6 +509,9 @@ function ScreenPlaylistGridView({
     return () => window.cancelAnimationFrame(raf);
   }, [hRatios, categories]);
 
+  // feat/tv-host-catalog-parity — MÊME groupement que le host (source unique).
+  const sections = useMemo(() => buildThemeSections(categories ?? []), [categories]);
+
   return (
     <div className="h-screen flex flex-col bg-cream">
       <MultiColorBar height="md" />
@@ -522,15 +527,7 @@ function ScreenPlaylistGridView({
         {categories === null ? (
           <p className="font-mono text-ink-soft animate-pulse">{t('common.loading')}</p>
         ) : (
-          categories.map((cat) => (
-            <CategoryRow
-              key={cat.slug}
-              category={cat}
-              onPick={() => undefined}
-              highlightId={focusedId}
-              readOnly
-            />
-          ))
+          <OfficialCatalogSections sections={sections} highlightId={focusedId} readOnly />
         )}
       </div>
       <MultiColorBar height="md" />
