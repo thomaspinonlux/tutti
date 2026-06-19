@@ -22,7 +22,6 @@ import {
   type LibraryQuizPackSummary,
 } from '../../lib/library.js';
 import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/index.js';
-import { CategoryRow } from './library/CategoryRow.js';
 import { OfficialQuizPackCard } from './library/OfficialQuizPackCard.js';
 import { JoinQrCorner } from './JoinQrCorner.js';
 import { useFocusedPlaylistSync } from '../../lib/useFocusedPlaylistSync.js';
@@ -41,6 +40,30 @@ function matchesQuery(query: string, ...haystacks: (string | null | undefined)[]
     if (h && normalize(h).includes(needle)) return true;
   }
   return false;
+}
+
+// feat/theme-level-picker — dérive thème + niveau depuis le slug/nom officiel.
+// Le champ `difficulty` MENT (80s-hard = MEDIUM en base) → on lit le SUFFIXE
+// du slug (-easy/-medium/-hard/-mix), seule source fiable.
+type LevelKey = 'easy' | 'medium' | 'hard' | 'mix';
+const LEVEL_ORDER: Record<LevelKey, number> = { easy: 0, medium: 1, hard: 2, mix: 3 };
+function deriveTheme(
+  slug: string,
+  nameFr: string,
+): { key: string; name: string; level: LevelKey | null } {
+  const base = slug.replace(/^official-pl-/, '');
+  const m = base.match(/^(.+)-(easy|medium|hard|mix)$/);
+  if (m) {
+    return {
+      key: m[1]!,
+      // nom thème = nom_fr sans le suffixe " — Facile/Moyen/Difficile/Mix".
+      name: nameFr
+        .replace(/\s*[—–-]\s*(Facile|Moyen|Difficile|Mix|Easy|Medium|Hard)\s*$/i, '')
+        .trim(),
+      level: m[2] as LevelKey,
+    };
+  }
+  return { key: base, name: nameFr, level: null };
 }
 
 type Tab = 'mine' | 'library';
@@ -90,6 +113,9 @@ export function RoundSelectionScreen({
   // feat/two-provider-libraries — provider de la bibliothèque officielle.
   // youtube (défaut, tous) | spotify (host allowlisté+connecté, playlists couvertes).
   const [provider, setProvider] = useState<'youtube' | 'spotify'>('youtube');
+  // feat/theme-level-picker — null = étape THÈME (grille) ; sinon = étape NIVEAU
+  // du thème sélectionné (cartes Facile/Moyen/Difficile/Mix).
+  const [selectedThemeKey, setSelectedThemeKey] = useState<string | null>(null);
 
   // feat/selection-ui-mirroring (item 2) — mirror TV armé sur TOUTE la durée de
   // la sélection : ENTRE au montage (arrivée sur l'écran de choix) et SORT à
@@ -123,8 +149,10 @@ export function RoundSelectionScreen({
   // Lazy-load la bibliothèque officielle Tracks groupée par catégorie quand
   // l'onglet est ouvert (feat/host-playlist-selection-redesign PR 2/4).
   // feat/two-provider-libraries — changer de provider vide le cache → refetch.
+  // feat/theme-level-picker — et revient à l'étape thème.
   useEffect(() => {
     setCategorized(null);
+    setSelectedThemeKey(null);
   }, [provider]);
 
   useEffect(() => {
@@ -182,6 +210,38 @@ export function RoundSelectionScreen({
   const totalOfficialCount = useMemo(
     () => (categorized ?? []).reduce((acc, c) => acc + c.playlists.length, 0),
     [categorized],
+  );
+
+  // feat/theme-level-picker — regroupe les playlists officielles (déjà filtrées
+  // par recherche + provider) par THÈME ; chaque thème porte ses variantes de
+  // niveau (easy/medium/hard/mix). Source du picker thème→niveau.
+  type ThemeVariant = { level: LevelKey | null; playlist: LibraryPlaylistSummary };
+  type ThemeGroup = { key: string; name: string; cover: string | null; variants: ThemeVariant[] };
+  const themeGroups = useMemo<ThemeGroup[]>(() => {
+    const map = new Map<string, ThemeGroup>();
+    for (const cat of filteredCategorized) {
+      for (const p of cat.playlists) {
+        const d = deriveTheme(p.slug, p.name_fr);
+        const g = map.get(d.key) ?? { key: d.key, name: d.name, cover: null, variants: [] };
+        g.variants.push({ level: d.level, playlist: p });
+        if (!g.cover) {
+          g.cover =
+            (p as unknown as { cover_fallback_url?: string | null }).cover_fallback_url ?? null;
+        }
+        map.set(d.key, g);
+      }
+    }
+    const groups = [...map.values()];
+    for (const g of groups) {
+      g.variants.sort(
+        (a, b) => (a.level ? LEVEL_ORDER[a.level] : 9) - (b.level ? LEVEL_ORDER[b.level] : 9),
+      );
+    }
+    return groups;
+  }, [filteredCategorized]);
+  const selectedTheme = useMemo(
+    () => themeGroups.find((g) => g.key === selectedThemeKey) ?? null,
+    [themeGroups, selectedThemeKey],
   );
   const filteredQuizPacks = useMemo(
     () =>
@@ -387,17 +447,73 @@ export function RoundSelectionScreen({
                   {t('host.session.searchNoResults', { query: searchQuery })}
                 </p>
               </Card>
+            ) : selectedTheme === null ? (
+              // feat/theme-level-picker — ÉTAPE THÈME : grille de cartes thème.
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                {themeGroups.map((th) => {
+                  const single = th.variants.length === 1 ? th.variants[0]! : null;
+                  return (
+                    <button
+                      key={th.key}
+                      type="button"
+                      disabled={loading}
+                      data-focus-playlist-id={single?.playlist.id}
+                      onClick={() => {
+                        if (single) void onPickOfficial(single.playlist, provider);
+                        else setSelectedThemeKey(th.key);
+                      }}
+                      className="group text-left disabled:opacity-50"
+                    >
+                      <Card
+                        size="md"
+                        className="h-full transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg"
+                      >
+                        <p className="font-display text-lg mb-1 break-words">{th.name}</p>
+                        <p className="font-mono text-xs text-ink-soft">
+                          {single
+                            ? `${single.playlist.track_count ?? 0} ${t('playlists.tracksCount')}`
+                            : t('host.session.themeLevels', { count: th.variants.length })}
+                        </p>
+                      </Card>
+                    </button>
+                  );
+                })}
+              </div>
             ) : (
+              // feat/theme-level-picker — ÉTAPE NIVEAU : cartes Facile/Moyen/Difficile/Mix.
               <div className="mb-4">
-                {filteredCategorized.map((cat) => (
-                  <CategoryRow
-                    key={cat.slug}
-                    category={cat}
-                    onPick={(p) => void onPickOfficial(p, provider)}
-                    onLockedClick={() => alert(t('host.session.premiumRequired'))}
-                    disabled={loading}
-                  />
-                ))}
+                <button
+                  type="button"
+                  onClick={() => setSelectedThemeKey(null)}
+                  className="font-mono text-xs uppercase tracking-wider text-ink-soft hover:text-ink mb-3 inline-flex items-center gap-1"
+                >
+                  ← {t('host.session.backToThemes')}
+                </button>
+                <p className="font-display text-2xl mb-3">{selectedTheme.name}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {selectedTheme.variants.map((v) => (
+                    <button
+                      key={v.playlist.id}
+                      type="button"
+                      disabled={loading}
+                      data-focus-playlist-id={v.playlist.id}
+                      onClick={() => void onPickOfficial(v.playlist, provider)}
+                      className="group text-left disabled:opacity-50"
+                    >
+                      <Card
+                        size="md"
+                        className="h-full text-center transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg"
+                      >
+                        <p className="font-display text-xl mb-1">
+                          {v.level ? t(`host.session.lvl_${v.level}`) : selectedTheme.name}
+                        </p>
+                        <p className="font-mono text-xs text-ink-soft">
+                          {v.playlist.track_count ?? 0} {t('playlists.tracksCount')}
+                        </p>
+                      </Card>
+                    </button>
+                  ))}
+                </div>
               </div>
             )
           ) : quizPacks === null ? (
