@@ -23,7 +23,8 @@ import {
 } from '../../lib/library.js';
 import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/index.js';
 import { OfficialQuizPackCard } from './library/OfficialQuizPackCard.js';
-import { ThemeCard } from './library/ThemeCard.js';
+import { OfficialCatalogSections } from './library/OfficialCatalogSections.js';
+import { buildThemeSections, flattenThemes } from '../../lib/officialThemes.js';
 import { JoinQrCorner } from './JoinQrCorner.js';
 import { useFocusedPlaylistSync } from '../../lib/useFocusedPlaylistSync.js';
 import { useSelectionBackgroundMusic } from '../../lib/useSelectionBackgroundMusic.js';
@@ -43,29 +44,8 @@ function matchesQuery(query: string, ...haystacks: (string | null | undefined)[]
   return false;
 }
 
-// feat/theme-level-picker — dérive thème + niveau depuis le slug/nom officiel.
-// Le champ `difficulty` MENT (80s-hard = MEDIUM en base) → on lit le SUFFIXE
-// du slug (-easy/-medium/-hard/-mix), seule source fiable.
-type LevelKey = 'easy' | 'medium' | 'hard' | 'mix';
-const LEVEL_ORDER: Record<LevelKey, number> = { easy: 0, medium: 1, hard: 2, mix: 3 };
-function deriveTheme(
-  slug: string,
-  nameFr: string,
-): { key: string; name: string; level: LevelKey | null } {
-  const base = slug.replace(/^official-pl-/, '');
-  const m = base.match(/^(.+)-(easy|medium|hard|mix)$/);
-  if (m) {
-    return {
-      key: m[1]!,
-      // nom thème = nom_fr sans le suffixe " — Facile/Moyen/Difficile/Mix".
-      name: nameFr
-        .replace(/\s*[—–-]\s*(Facile|Moyen|Difficile|Mix|Easy|Medium|Hard)\s*$/i, '')
-        .trim(),
-      level: m[2] as LevelKey,
-    };
-  }
-  return { key: base, name: nameFr, level: null };
-}
+// feat/host-tv-catalog-parity-v2 — deriveTheme + le groupement par sections
+// vivent dans lib/officialThemes.ts (source unique partagée host ⇄ TV).
 
 type Tab = 'mine' | 'library';
 type LibrarySubTab = 'tracks' | 'quizz';
@@ -118,15 +98,6 @@ export function RoundSelectionScreen({
   // du thème sélectionné (cartes Facile/Moyen/Difficile/Mix).
   const [selectedThemeKey, setSelectedThemeKey] = useState<string | null>(null);
 
-  // feat/selection-ui-mirroring (item 2) — mirror TV armé sur TOUTE la durée de
-  // la sélection : ENTRE au montage (arrivée sur l'écran de choix) et SORT à
-  // l'unmount (choix d'une playlist OU sortie de la sélection). L'observer ne
-  // cible que les cards officielles ([data-focus-playlist-id] du carrousel
-  // Bibliothèque) : sur "Mes playlists" / "Quizz" il n'y a aucune cible → POST
-  // null → la TV reste idle (pas de mirror obsolète) ; sur la Bibliothèque, la
-  // card centrée pilote la PRÉSENTATION TV (cover + titre + nb morceaux), jamais
-  // la liste des titres (le payload ScreenState ne contient pas les tracks).
-  useFocusedPlaylistSync({ enabled: true });
   // feat/selection-ui-mirroring (item 4) — musique d'ambiance pendant toute la
   // sélection (joue au montage du composant, stop au choix d'une playlist ou à
   // la sortie = unmount). No-op tant que VITE_SELECTION_MUSIC_URL n'est pas set.
@@ -213,36 +184,16 @@ export function RoundSelectionScreen({
     [categorized],
   );
 
-  // feat/theme-level-picker — regroupe les playlists officielles (déjà filtrées
-  // par recherche + provider) par THÈME ; chaque thème porte ses variantes de
-  // niveau (easy/medium/hard/mix). Source du picker thème→niveau.
-  type ThemeVariant = { level: LevelKey | null; playlist: LibraryPlaylistSummary };
-  type ThemeGroup = { key: string; name: string; cover: string | null; variants: ThemeVariant[] };
-  const themeGroups = useMemo<ThemeGroup[]>(() => {
-    const map = new Map<string, ThemeGroup>();
-    for (const cat of filteredCategorized) {
-      for (const p of cat.playlists) {
-        const d = deriveTheme(p.slug, p.name_fr);
-        const g = map.get(d.key) ?? { key: d.key, name: d.name, cover: null, variants: [] };
-        g.variants.push({ level: d.level, playlist: p });
-        if (!g.cover) {
-          g.cover =
-            (p as unknown as { cover_fallback_url?: string | null }).cover_fallback_url ?? null;
-        }
-        map.set(d.key, g);
-      }
-    }
-    const groups = [...map.values()];
-    for (const g of groups) {
-      g.variants.sort(
-        (a, b) => (a.level ? LEVEL_ORDER[a.level] : 9) - (b.level ? LEVEL_ORDER[b.level] : 9),
-      );
-    }
-    return groups;
-  }, [filteredCategorized]);
+  // feat/host-tv-catalog-parity-v2 — sections par catégorie → thèmes →
+  // variantes de niveau (source UNIQUE partagée avec la TV via
+  // buildThemeSections + <OfficialCatalogSections>).
+  const themeSections = useMemo(
+    () => buildThemeSections(filteredCategorized),
+    [filteredCategorized],
+  );
   const selectedTheme = useMemo(
-    () => themeGroups.find((g) => g.key === selectedThemeKey) ?? null,
-    [themeGroups, selectedThemeKey],
+    () => (selectedThemeKey ? (flattenThemes(themeSections).get(selectedThemeKey) ?? null) : null),
+    [themeSections, selectedThemeKey],
   );
   const filteredQuizPacks = useMemo(
     () =>
@@ -259,6 +210,19 @@ export function RoundSelectionScreen({
       ),
     [quizPacks, searchQuery],
   );
+
+  // feat/selection-ui-mirroring (item 2) — mirror TV armé sur TOUTE la durée
+  // de la sélection : ENTRE au montage (arrivée sur l'écran de choix) et SORT
+  // à l'unmount. L'observer ne cible que les cards officielles
+  // ([data-focus-playlist-id] du carrousel Bibliothèque) : sur "Mes playlists"
+  // / "Quizz" il n'y a aucune cible → POST null → la TV reste idle.
+  //
+  // feat/host-tv-catalog-parity-v2 — signalKey : signale au hook de re-observer
+  // les nouvelles cards quand la structure change (tab, sub-tab, provider,
+  // recherche, étape thème⇄niveau). Remplace l'ancien MutationObserver global
+  // (coûteux sur Safari Mac/iPad).
+  const focusSignalKey = `${tab}|${librarySubTab}|${provider}|${themeSections.length}|${selectedThemeKey ?? ''}|${searchQuery}`;
+  useFocusedPlaylistSync({ enabled: true, signalKey: focusSignalKey });
 
   return (
     <div>
@@ -449,32 +413,19 @@ export function RoundSelectionScreen({
                 </p>
               </Card>
             ) : selectedTheme === null ? (
-              // feat/theme-level-picker — ÉTAPE THÈME : grille de cartes thème.
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-                {themeGroups.map((th) => {
-                  const single = th.variants.length === 1 ? th.variants[0]! : null;
-                  // cover représentative : la variante Mix si elle existe, sinon la 1ʳᵉ.
-                  const cover = (th.variants.find((v) => v.level === 'mix') ?? th.variants[0]!)
-                    .playlist;
-                  return (
-                    <div key={th.key} data-focus-playlist-id={single?.playlist.id}>
-                      <ThemeCard
-                        cover={cover}
-                        title={th.name}
-                        subtitle={
-                          single
-                            ? `${single.playlist.track_count ?? 0} ${t('playlists.tracksCount')}`
-                            : t('host.session.themeLevels', { count: th.variants.length })
-                        }
-                        disabled={loading}
-                        onClick={() => {
-                          if (single) void onPickOfficial(single.playlist, provider);
-                          else setSelectedThemeKey(th.key);
-                        }}
-                      />
-                    </div>
-                  );
-                })}
+              // feat/host-tv-catalog-parity-v2 — ÉTAPE THÈME : sections par
+              // catégorie, rangées horizontales. MÊME composant que le mirror TV
+              // (OfficialCatalogSections) → parité de structure garantie.
+              <div className="mb-4">
+                <OfficialCatalogSections
+                  sections={themeSections}
+                  disabled={loading}
+                  onPickTheme={(th) => {
+                    if (th.variants.length === 1)
+                      void onPickOfficial(th.variants[0]!.playlist, provider);
+                    else setSelectedThemeKey(th.key);
+                  }}
+                />
               </div>
             ) : (
               // feat/theme-level-picker — ÉTAPE NIVEAU : sous-catégorie claire,

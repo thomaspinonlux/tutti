@@ -1,12 +1,15 @@
 /**
- * <ThemeCard /> — feat/theme-picker-design
+ * <ThemeCard /> — feat/theme-picker-design (light, no framer-motion)
  *
  * Carte "thème" pour l'étape 1 du picker thème→niveau. Même langage visuel que
  * PlaylistCardLarge (cover 280×180 + overlay + titre), mais affiche un THÈME
  * (nom + sous-titre type "4 niveaux") et non une playlist. La cover est dérivée
  * de la playlist représentative du thème (slug → mosaïque /api/library-cover).
+ *
+ * Perf (Phase 1 / host-tv-catalog-parity-v2) : pas de framer-motion (= pas de
+ * subscriber par carte). Transitions hover/tap en CSS via Tailwind. Image en
+ * loading="lazy" — décodée à l'apparition seulement.
  */
-import { motion } from 'framer-motion';
 import { useState } from 'react';
 import type { LibraryPlaylistSummary } from '../../../lib/library.js';
 
@@ -17,6 +20,8 @@ interface Props {
   subtitle: string;
   onClick: () => void;
   disabled?: boolean;
+  /** Carte centrée côté host → surbrillance (mirror TV). */
+  highlighted?: boolean;
 }
 
 function slugToHue(slug: string): number {
@@ -25,8 +30,15 @@ function slugToHue(slug: string): number {
   return h;
 }
 
-export function ThemeCard({ cover, title, subtitle, onClick, disabled }: Props): JSX.Element {
-  // Même chaîne de fallback que PlaylistCardLarge : mosaïque → spotify → yt → gradient.
+export function ThemeCard({
+  cover,
+  title,
+  subtitle,
+  onClick,
+  disabled,
+  highlighted,
+}: Props): JSX.Element {
+  // Chaîne de fallback : mosaïque → spotify → yt → gradient.
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   const hue = slugToHue(cover.slug);
   const gradient = `linear-gradient(135deg, hsl(${hue}, 55%, 35%) 0%, hsl(${(hue + 40) % 360}, 60%, 22%) 100%)`;
@@ -43,16 +55,13 @@ export function ThemeCard({ cover, title, subtitle, onClick, disabled }: Props):
           : null;
 
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      whileHover={disabled ? undefined : { scale: 1.05 }}
-      whileTap={disabled ? undefined : { scale: 0.98 }}
-      className="group relative shrink-0 text-left rounded-lg overflow-hidden border-2 border-ink shadow-pop disabled:opacity-50 w-full"
+      className={`group relative shrink-0 text-left rounded-lg overflow-hidden border-2 border-ink shadow-pop disabled:opacity-50 w-full transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98] ${
+        highlighted ? 'ring-4 ring-raspberry ring-offset-2 ring-offset-cream z-10 scale-[1.04]' : ''
+      }`}
       style={{ height: 180, background: gradient }}
       aria-label={title}
     >
@@ -64,6 +73,7 @@ export function ThemeCard({ cover, title, subtitle, onClick, disabled }: Props):
           onError={() => setStep((s) => (s < 3 ? ((s + 1) as 0 | 1 | 2 | 3) : 3))}
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
+          decoding="async"
         />
       )}
       <div
@@ -87,6 +97,6 @@ export function ThemeCard({ cover, title, subtitle, onClick, disabled }: Props):
           {subtitle}
         </p>
       </div>
-    </motion.button>
+    </button>
   );
 }
