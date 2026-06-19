@@ -23,6 +23,8 @@ import {
 } from '../../lib/library.js';
 import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/index.js';
 import { OfficialQuizPackCard } from './library/OfficialQuizPackCard.js';
+import { PlaylistCardLarge } from './library/PlaylistCardLarge.js';
+import { ThemeCard } from './library/ThemeCard.js';
 import { JoinQrCorner } from './JoinQrCorner.js';
 import { useFocusedPlaylistSync } from '../../lib/useFocusedPlaylistSync.js';
 import { useSelectionBackgroundMusic } from '../../lib/useSelectionBackgroundMusic.js';
@@ -449,33 +451,29 @@ export function RoundSelectionScreen({
               </Card>
             ) : selectedTheme === null ? (
               // feat/theme-level-picker — ÉTAPE THÈME : grille de cartes thème.
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
                 {themeGroups.map((th) => {
                   const single = th.variants.length === 1 ? th.variants[0]! : null;
+                  // cover représentative : la variante Mix si elle existe, sinon la 1ʳᵉ.
+                  const cover = (th.variants.find((v) => v.level === 'mix') ?? th.variants[0]!)
+                    .playlist;
                   return (
-                    <button
-                      key={th.key}
-                      type="button"
-                      disabled={loading}
-                      data-focus-playlist-id={single?.playlist.id}
-                      onClick={() => {
-                        if (single) void onPickOfficial(single.playlist, provider);
-                        else setSelectedThemeKey(th.key);
-                      }}
-                      className="group text-left disabled:opacity-50"
-                    >
-                      <Card
-                        size="md"
-                        className="h-full transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg"
-                      >
-                        <p className="font-display text-lg mb-1 break-words">{th.name}</p>
-                        <p className="font-mono text-xs text-ink-soft">
-                          {single
+                    <div key={th.key} data-focus-playlist-id={single?.playlist.id}>
+                      <ThemeCard
+                        cover={cover}
+                        title={th.name}
+                        subtitle={
+                          single
                             ? `${single.playlist.track_count ?? 0} ${t('playlists.tracksCount')}`
-                            : t('host.session.themeLevels', { count: th.variants.length })}
-                        </p>
-                      </Card>
-                    </button>
+                            : t('host.session.themeLevels', { count: th.variants.length })
+                        }
+                        disabled={loading}
+                        onClick={() => {
+                          if (single) void onPickOfficial(single.playlist, provider);
+                          else setSelectedThemeKey(th.key);
+                        }}
+                      />
+                    </div>
                   );
                 })}
               </div>
@@ -490,28 +488,21 @@ export function RoundSelectionScreen({
                   ← {t('host.session.backToThemes')}
                 </button>
                 <p className="font-display text-2xl mb-3">{selectedTheme.name}</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="flex flex-wrap gap-3">
                   {selectedTheme.variants.map((v) => (
-                    <button
-                      key={v.playlist.id}
-                      type="button"
-                      disabled={loading}
-                      data-focus-playlist-id={v.playlist.id}
-                      onClick={() => void onPickOfficial(v.playlist, provider)}
-                      className="group text-left disabled:opacity-50"
-                    >
-                      <Card
-                        size="md"
-                        className="h-full text-center transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg"
-                      >
-                        <p className="font-display text-xl mb-1">
-                          {v.level ? t(`host.session.lvl_${v.level}`) : selectedTheme.name}
+                    <div key={v.playlist.id} data-focus-playlist-id={v.playlist.id}>
+                      {v.level && (
+                        <p className="font-mono text-xs uppercase tracking-wider text-spritz-deep mb-1 text-center">
+                          {t(`host.session.lvl_${v.level}`)}
                         </p>
-                        <p className="font-mono text-xs text-ink-soft">
-                          {v.playlist.track_count ?? 0} {t('playlists.tracksCount')}
-                        </p>
-                      </Card>
-                    </button>
+                      )}
+                      <PlaylistCardLarge
+                        playlist={v.playlist}
+                        onPick={() => void onPickOfficial(v.playlist, provider)}
+                        onLockedClick={() => alert(t('host.session.premiumRequired'))}
+                        disabled={loading}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>
