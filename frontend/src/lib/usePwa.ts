@@ -11,10 +11,11 @@
  *                      → l'app doit afficher des instructions manuelles)
  *
  * registerSW vient de virtual:pwa-register (injecté par vite-plugin-pwa).
- * `registerType: 'prompt'` côté vite.config.ts garantit que `onNeedRefresh` est
- * appelé QUAND une mise à jour est dispo, mais qu'on attend confirmation user
- * avant de skipWaiting (sinon le SW peut redémarrer la page en plein milieu
- * d'une partie — désastreux côté host).
+ * `registerType: 'autoUpdate'` côté vite.config.ts : un nouveau SW s'active et
+ * reload la page automatiquement, mais SEULEMENT au (ré)chargement de l'app
+ * (pas de vérif périodique en session → jamais de reload en pleine partie).
+ * `needsRefresh`/`applyUpdate` restent exposés en fallback (navigateurs sans
+ * auto-reload), mais en pratique le banner ne s'affiche plus.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -86,17 +87,13 @@ export function usePwa(): PwaApi {
         const updater = registerSW({
           immediate: true,
           onNeedRefresh: () => setNeedsRefresh(true),
-          onRegistered: (reg) => {
-            // Re-vérifie l'update toutes les 30min (idéal pour les longues
-            // sessions host qui restent ouvertes).
-            if (reg) {
-              setInterval(
-                () => {
-                  void reg.update().catch(() => {});
-                },
-                30 * 60 * 1000,
-              );
-            }
+          onRegistered: () => {
+            // registerType 'autoUpdate' : le nouveau SW s'active + reload la page
+            // tout seul, mais UNIQUEMENT au (ré)chargement de l'app. On NE
+            // re-vérifie PAS périodiquement en session : un deploy pendant une
+            // partie live ne doit jamais reloader l'onglet host en plein jeu.
+            // L'update est récupérée au prochain ouverture de l'app (≈ aucun jeu
+            // en cours à ce moment-là).
           },
           onRegisterError: (err) => {
             console.warn('[PWA] SW register error', err);
