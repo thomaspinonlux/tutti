@@ -38,6 +38,14 @@ const SCROLL_EPSILON = 0.004;
 interface Options {
   /** Désactive l'observer si false (ex: pas sur l'onglet bibliothèque). */
   enabled: boolean;
+  /**
+   * Signal de changement de structure DOM (ex: themeSections.length, ou un
+   * compteur incrémenté quand le contenu mirroré change). Quand il change,
+   * on (re-)observe TOUS les `[data-focus-playlist-id]` du DOM avec le même
+   * IntersectionObserver (idempotent). Remplace l'ancien MutationObserver
+   * globale `document.body`, plus léger sur Safari Mac/iPad.
+   */
+  signalKey?: string | number;
 }
 
 const clamp01 = (n: number): number => Math.min(1, Math.max(0, n));
@@ -95,7 +103,7 @@ function hRatiosChanged(a: HRatios, b: HRatios): boolean {
   return false;
 }
 
-export function useFocusedPlaylistSync({ enabled }: Options): void {
+export function useFocusedPlaylistSync({ enabled, signalKey }: Options): void {
   // État "voulu" (dernier calcul local).
   const focusedIdRef = useRef<string | null>(null);
   // État "envoyé" (dernier POST réussi/en cours).
@@ -105,6 +113,9 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
   // Garde-fou réseau + coalescing.
   const inFlightRef = useRef<boolean>(false);
   const dirtyRef = useRef<boolean>(false);
+  // Observer partagé — exposé via ref pour qu'un effet séparé (déclenché par
+  // signalKey) puisse appeler observeAll() sur les nouveaux nœuds rendus.
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -186,6 +197,7 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
       },
       { threshold: [0.25, 0.5, 0.75, 1.0] },
     );
+    observerRef.current = observer;
 
     const observeAll = (): void => {
       document
@@ -193,19 +205,11 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
         .forEach((el) => observer.observe(el));
     };
     observeAll();
-
-    const mutationObserver = new MutationObserver((mutations) => {
-      for (const m of mutations) {
-        m.addedNodes.forEach((node) => {
-          if (!(node instanceof HTMLElement)) return;
-          if (node.matches?.('[data-focus-playlist-id]')) observer.observe(node);
-          node
-            .querySelectorAll?.('[data-focus-playlist-id]')
-            .forEach((el) => observer.observe(el as HTMLElement));
-        });
-      }
-    });
-    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    // Note : pas de MutationObserver global sur document.body (coûteux sur
+    // Safari Mac/iPad). Les ré-observations après changement de structure
+    // (themeSections, search, level step) sont déclenchées par le signalKey
+    // dans un effet séparé ci-dessous. IntersectionObserver.observe est
+    // idempotent → on peut re-observer les mêmes nœuds sans risque.
 
     // ── Scroll-sync (throttle ~100ms) ─────────────────────────────────────
     // Listener en phase CAPTURE sur window : les events `scroll` ne bubblent
@@ -239,7 +243,7 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
 
     return () => {
       observer.disconnect();
-      mutationObserver.disconnect();
+      observerRef.current = null;
       window.removeEventListener('scroll', onScroll, { capture: true } as EventListenerOptions);
       window.clearInterval(keepaliveTimer);
       if (focusTimer !== null) window.clearTimeout(focusTimer);
@@ -252,4 +256,17 @@ export function useFocusedPlaylistSync({ enabled }: Options): void {
       sentHRatiosRef.current = {};
     };
   }, [enabled]);
+
+  // Re-observation idempotente quand la structure DOM change (signalKey).
+  // observer.observe est idempotent → re-observer un nœud déjà observé est
+  // un no-op. Cible : nouvelles cards apparues après changement de provider,
+  // de recherche, de filtre, ou d'étape (thème ⇄ niveau).
+  useEffect(() => {
+    if (!enabled) return;
+    const obs = observerRef.current;
+    if (!obs) return;
+    document
+      .querySelectorAll<HTMLElement>('[data-focus-playlist-id]')
+      .forEach((el) => obs.observe(el));
+  }, [enabled, signalKey]);
 }
