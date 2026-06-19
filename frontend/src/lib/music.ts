@@ -95,6 +95,17 @@ export async function getSpotifyToken(): Promise<SpotifyTokenResponse> {
   return api<SpotifyTokenResponse>('/api/auth/spotify/token');
 }
 
+/**
+ * feat/tv-audio-output — version PUBLIQUE (sans auth) pour la TV ouverte via
+ * tv_code sur un appareil séparé. Backend exige une session active dans le
+ * workspace (anti-zombie). Renvoie le même token Premium que le host.
+ */
+export async function getSpotifyTokenPublic(workspaceId: string): Promise<SpotifyTokenResponse> {
+  return api<SpotifyTokenResponse>(
+    `/api/auth/spotify/token-public/${encodeURIComponent(workspaceId)}`,
+  );
+}
+
 export async function getTrack(providerTrackId: string): Promise<TrackResult | null> {
   try {
     const data = await api<{ track: TrackResult }>(

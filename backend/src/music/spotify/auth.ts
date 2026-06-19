@@ -314,6 +314,62 @@ router.get(
   },
 );
 
+// ───── GET /token-public/:workspaceId ────────────────────────────────────
+// feat/tv-audio-output — endpoint PUBLIC (sans auth) qui renvoie un access
+// token Spotify pour le workspace. Utilisé par la TV ouverte via tv_code
+// sur un appareil séparé, sans cookies admin.
+//
+// Trust model : équivalent à GET /screen-state/:workspaceId (déjà public).
+// Quiconque connaît le workspaceId peut lire l'état → peut aussi obtenir le
+// token Spotify. Gating supplémentaire : on EXIGE qu'une session
+// WAITING/PLAYING existe pour ce workspace (anti-zombie + force que l'admin
+// ait démarré une partie).
+//
+// Le token retourné a les scopes Web Playback (streaming + control), donc
+// il permet de jouer/contrôler la lecture Spotify avec le compte Premium
+// du workspace owner. C'est le même token que reçoit le host.
+
+router.get(
+  '/token-public/:workspaceId',
+  async (req: Request<{ workspaceId: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.params.workspaceId;
+    try {
+      // Gate : require active session in this workspace.
+      const session = await prisma.session.findFirst({
+        where: {
+          establishment: { workspace_id: workspaceId },
+          status: { in: ['WAITING', 'PLAYING'] },
+        },
+        select: { id: true },
+      });
+      if (!session) {
+        res
+          .status(404)
+          .json({ error: { code: 'NO_ACTIVE_SESSION', message: 'Aucune session active' } });
+        return;
+      }
+      const token = await getValidSpotifyAccessToken(workspaceId);
+      res.set('Cache-Control', 'no-store');
+      res.json({
+        access_token: token.access_token,
+        expires_at: token.expires_at.toISOString(),
+        account_email: token.account_email,
+      });
+    } catch (err: unknown) {
+      if (err instanceof SpotifyAuthError) {
+        if (err.code === 'NOT_CONNECTED' || err.code === 'NO_REFRESH_TOKEN') {
+          res.status(409).json({ error: { code: err.code, message: err.message } });
+          return;
+        }
+      }
+      console.error('[spotify token-public] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur token Spotify (TV)' } });
+    }
+  },
+);
+
 // ───── DELETE /disconnect ─────────────────────────────────────────────────
 
 router.delete(

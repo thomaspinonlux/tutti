@@ -310,6 +310,10 @@
       "tapToEnlarge": "Agrandir sur la TV",
       "close": "Fermer"
     },
+    "audioTarget": {
+      "onHost": "Son ici",
+      "onTv": "Son sur la TV"
+    },
     "eyebrow": "Salle d'attente",
     "eyebrowPlaying": "Manche {{round}}",
     "eyebrowEnded": "Partie terminée",
@@ -527,6 +531,10 @@
     "openHereButton": "Ouvrir ici (nouvelle fenêtre)"
   },
   "screen": {
+    "tvAudio": {
+      "activate": "Activer le son sur cet écran",
+      "connectSpotify": "Connecter Spotify ici"
+    },
     "playlistSelection": {
       "eyebrow": "L'animateur choisit",
       "gridTitle": "La sélection",
