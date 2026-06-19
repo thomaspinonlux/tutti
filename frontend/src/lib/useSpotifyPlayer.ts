@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { getSpotifyToken } from './music.js';
+import { getSpotifyToken, type SpotifyTokenResponse } from './music.js';
 
 const SDK_SCRIPT_URL = 'https://sdk.scdn.co/spotify-player.js';
 const SDK_SCRIPT_ID = 'spotify-web-playback-sdk';
@@ -36,6 +36,18 @@ export interface UseSpotifyPlayerOptions {
   enabled: boolean;
   /** Volume initial 0..1 (défaut 0.5). */
   initialVolume?: number;
+  /**
+   * feat/tv-audio-output — fetcher de token override. Défaut = getSpotifyToken
+   * (host authentifié). La TV (ouverte via ?workspace=UUID) passe une closure
+   * vers getSpotifyTokenPublic(workspaceId).
+   */
+  tokenFetcher?: () => Promise<SpotifyTokenResponse>;
+  /**
+   * feat/tv-audio-output — nom du device Spotify Connect. Défaut "Tutti Tracks
+   * - Soirée" (host). Côté TV on passe "Tutti TV" pour les distinguer dans
+   * l'app Spotify et permettre le Transfer Connect ciblé.
+   */
+  deviceName?: string;
 }
 
 export interface UseSpotifyPlayerResult {
@@ -122,7 +134,11 @@ async function loadSpotifySdk(): Promise<void> {
 export function useSpotifyPlayer({
   enabled,
   initialVolume = 0.5,
+  tokenFetcher,
+  deviceName,
 }: UseSpotifyPlayerOptions): UseSpotifyPlayerResult {
+  const fetchTokenImpl = tokenFetcher ?? getSpotifyToken;
+  const playerDeviceName = deviceName ?? 'Tutti Tracks - Soirée';
   const [status, setStatus] = useState<SpotifyPlayerStatus>('idle');
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -236,7 +252,7 @@ export function useSpotifyPlayer({
           cb(tokenRef.current);
           return;
         }
-        const t = await getSpotifyToken();
+        const t = await fetchTokenImpl();
         tokenRef.current = t.access_token;
         tokenExpiresAtRef.current = new Date(t.expires_at).getTime();
         cb(t.access_token);
@@ -253,7 +269,7 @@ export function useSpotifyPlayer({
         // Préchauffe le token pour vérifier qu'on est connecté avant de
         // charger le SDK (et pour donner un message d'erreur clair sinon).
         try {
-          const initialToken = await getSpotifyToken();
+          const initialToken = await fetchTokenImpl();
           tokenRef.current = initialToken.access_token;
           tokenExpiresAtRef.current = new Date(initialToken.expires_at).getTime();
           console.info(
@@ -286,14 +302,14 @@ export function useSpotifyPlayer({
 
         setStatus('connecting');
         player = new window.Spotify.Player({
-          name: 'Tutti Tracks - Soirée',
+          name: playerDeviceName,
           getOAuthToken: (cb) => {
             void fetchToken(cb);
           },
           volume: initialVolume,
         });
         playerRef.current = player;
-        console.info('[Spotify SDK] Player créé : Tutti Tracks - Soirée');
+        console.info('[Spotify SDK] Player créé :', playerDeviceName);
 
         player.addListener('ready', ({ device_id }) => {
           if (cancelled) return;

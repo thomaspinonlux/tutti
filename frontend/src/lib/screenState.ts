@@ -52,6 +52,10 @@ export type ScreenState =
       roundsTotal: number;
       /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
       qr_overlay: boolean;
+      /** feat/tv-audio-output — routing audio (sink). */
+      audio_target: 'host' | 'tv';
+      tv_audio_armed: boolean;
+      tv_spotify_ready: boolean;
       lastUpdate: string;
     }
   | {
@@ -63,6 +67,10 @@ export type ScreenState =
       currentTrack: CurrentTrackState | null;
       /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
       qr_overlay: boolean;
+      /** feat/tv-audio-output — routing audio (sink). */
+      audio_target: 'host' | 'tv';
+      tv_audio_armed: boolean;
+      tv_spotify_ready: boolean;
       lastUpdate: string;
     }
   | {
@@ -127,6 +135,40 @@ export async function postQrOverlay(enabled: boolean): Promise<void> {
   await api('/api/workspace/screen-state/qr-overlay', {
     method: 'POST',
     body: { enabled },
+  });
+}
+
+/**
+ * feat/tv-audio-output — host POST le routing audio (sink) "host" vs "tv".
+ * In-memory backend, TTL 4h safety net. Re-poll TV immédiat via socket.
+ */
+export async function postAudioTarget(target: 'host' | 'tv'): Promise<void> {
+  await api('/api/workspace/screen-state/audio-target', {
+    method: 'POST',
+    body: { audio_target: target },
+  });
+}
+
+/**
+ * feat/tv-audio-output — TV signale que l'utilisateur a cliqué "Activer le son
+ * sur cet écran" (gesture autoplay unlock). Heartbeat 30s. Endpoint public
+ * (TV ouverte sans cookies admin).
+ */
+export async function postTvAudioArmed(workspaceId: string, value: boolean): Promise<void> {
+  await api(`/api/workspace/screen-state/${encodeURIComponent(workspaceId)}/tv-audio-armed`, {
+    method: 'POST',
+    body: { value },
+  });
+}
+
+/**
+ * feat/tv-audio-output — TV signale que son Spotify Web Playback SDK est
+ * connecté+ready (= peut sortir du son Spotify). Heartbeat 30s.
+ */
+export async function postTvSpotifyReady(workspaceId: string, value: boolean): Promise<void> {
+  await api(`/api/workspace/screen-state/${encodeURIComponent(workspaceId)}/tv-spotify-ready`, {
+    method: 'POST',
+    body: { value },
   });
 }
 

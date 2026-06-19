@@ -30,6 +30,12 @@ import { getCumulativeScores } from './scores.js';
 import { buildCurrentTrackStateSnapshot, getEffectiveRoundTrackCount } from './gameplayCore.js';
 import { getFocusedSelection } from './playlistSelectionStore.js';
 import { getQrOverlay } from './qrOverlayStore.js';
+import {
+  getAudioTarget,
+  getTvAudioArmed,
+  getTvSpotifyReady,
+  type AudioTarget,
+} from './tvAudioTargetStore.js';
 import type { GameMode, Team } from '@tutti/shared';
 
 export type ScreenState =
@@ -61,6 +67,10 @@ export type ScreenState =
       roundsTotal: number;
       /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
       qr_overlay: boolean;
+      /** feat/tv-audio-output — routing audio (sink). */
+      audio_target: AudioTarget;
+      tv_audio_armed: boolean;
+      tv_spotify_ready: boolean;
       lastUpdate: string;
     }
   | {
@@ -72,6 +82,10 @@ export type ScreenState =
       currentTrack: CurrentTrackState | null;
       /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
       qr_overlay: boolean;
+      /** feat/tv-audio-output — routing audio (sink). */
+      audio_target: AudioTarget;
+      tv_audio_armed: boolean;
+      tv_spotify_ready: boolean;
       lastUpdate: string;
     }
   | {
@@ -311,6 +325,9 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       session: serializeSession(session),
       currentTrack,
       qr_overlay: getQrOverlay(workspaceId),
+      audio_target: getAudioTarget(workspaceId),
+      tv_audio_armed: getTvAudioArmed(workspaceId),
+      tv_spotify_ready: getTvSpotifyReady(workspaceId),
       lastUpdate,
     };
   }
@@ -340,6 +357,9 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       roundPosition: playingRound.position,
       roundsTotal,
       qr_overlay: getQrOverlay(workspaceId),
+      audio_target: getAudioTarget(workspaceId),
+      tv_audio_armed: getTvAudioArmed(workspaceId),
+      tv_spotify_ready: getTvSpotifyReady(workspaceId),
       lastUpdate,
     };
   }

@@ -310,6 +310,10 @@
       "tapToEnlarge": "Enlarge on TV",
       "close": "Close"
     },
+    "audioTarget": {
+      "onHost": "Sound here",
+      "onTv": "Sound on TV"
+    },
     "eyebrow": "Waiting room",
     "eyebrowPlaying": "Round {{round}}",
     "eyebrowEnded": "Game over",
@@ -527,6 +531,10 @@
     "openHereButton": "Open here (new window)"
   },
   "screen": {
+    "tvAudio": {
+      "activate": "Activate sound on this screen",
+      "connectSpotify": "Connect Spotify here"
+    },
     "playlistSelection": {
       "eyebrow": "Host is picking",
       "gridTitle": "The selection",

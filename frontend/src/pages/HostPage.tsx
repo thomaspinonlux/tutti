@@ -46,6 +46,8 @@ import {
   toggleParticipantMaster,
 } from '../lib/sessions.js';
 import { abandonSession, postQrOverlay } from '../lib/screenState.js';
+import { resolveAudioSink, type AudioTarget } from '../lib/audioSink.js';
+import { useTvAudioFlags } from '../lib/useTvAudioFlags.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 import { connectAsHost } from '../lib/socket.js';
 import { getMe } from '../lib/me.js';
@@ -104,6 +106,7 @@ import { PlayersPanel } from '../components/host/PlayersPanel.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
+import { AudioTargetToggle } from '../components/host/AudioTargetToggle.js';
 import { PwaSafetyControls } from '../components/host/PwaSafetyControls.js';
 
 interface Toast {
@@ -670,21 +673,66 @@ function HostPageInner(): JSX.Element {
   // les instructions du ContentBlockerWarning (PWA vs Safari classique).
   const { isStandalone } = usePwa();
 
+  // ── Audio sink (feat/tv-audio-output) ────────────────────────────────
+  // Le routing audio (host vs TV) est résolu à partir de flags backend lus
+  // toutes les 3s pendant le gameplay (audio_target/tv_audio_armed/
+  // tv_spotify_ready). Sink calculé IDENTIQUEMENT côté TV (cf. lib/audioSink).
+  // Sink === 'host' = comportement actuel ; sink === 'tv' = on coupe le
+  // player local mais on garde les contrôles + l'horloge serveur.
+  const tvAudioFlags = useTvAudioFlags(phase === 'roundPlaying');
+  // Optimistic override : reflète le clic instantanément, réconcilié quand le
+  // poll suivant ramène la valeur (≤ 3s).
+  const [audioTargetOverride, setAudioTargetOverride] = useState<AudioTarget | null>(null);
+  useEffect(() => {
+    if (audioTargetOverride && audioTargetOverride === tvAudioFlags.audio_target) {
+      setAudioTargetOverride(null);
+    }
+  }, [audioTargetOverride, tvAudioFlags.audio_target]);
+  const currentAudioTarget: AudioTarget = audioTargetOverride ?? tvAudioFlags.audio_target;
+  const audioSink = resolveAudioSink({
+    audio_target: currentAudioTarget,
+    tv_audio_armed: tvAudioFlags.tv_audio_armed,
+    tv_spotify_ready: tvAudioFlags.tv_spotify_ready,
+    provider: currentTrack?.provider ?? null,
+  });
+
   // ── Audio sync unifié — single source of truth = état serveur ────────
   // Chaque sync hook ne pilote SON provider que si currentTrack.provider
   // matche. Pas de conflit : un seul provider actif à la fois.
+  // feat/tv-audio-output — `audioSink === 'host'` requis : si la TV a pris
+  // le relais, le host ne pilote plus son player (l'horloge serveur reste
+  // intacte, on évite juste de sortir du son local).
   useSpotifyAudioSync({
     spotify,
     currentTrack,
     isPaused: session?.is_paused ?? false,
-    enabled: spotifyAllowlisted && phase === 'roundPlaying',
+    enabled: spotifyAllowlisted && phase === 'roundPlaying' && audioSink === 'host',
   });
   useYouTubeAudioSync({
     youtube,
     currentTrack,
     isPaused: session?.is_paused ?? false,
-    enabled: phase === 'roundPlaying',
+    enabled: phase === 'roundPlaying' && audioSink === 'host',
   });
+
+  // feat/tv-audio-output — quand le sink BASCULE host→tv (toggle activé +
+  // TV armée + provider supporté), on pause explicitement le player host
+  // pour couper le son local. Les useXAudioSync ci-dessus deviennent
+  // enabled=false (= ils ne lancent plus rien) mais ne pausent pas le
+  // player s'il était déjà en lecture — d'où ce pause explicite.
+  const prevAudioSinkRef = useRef<'host' | 'tv'>('host');
+  useEffect(() => {
+    const prev = prevAudioSinkRef.current;
+    if (prev === 'host' && audioSink === 'tv') {
+      console.info('[Audio Sink] host → tv : mute host players (youtube + spotify)');
+      youtube.pause();
+      void spotify.pause();
+    }
+    if (prev === 'tv' && audioSink === 'host') {
+      console.info('[Audio Sink] tv → host : host reprend la main (sync hooks re-jouent)');
+    }
+    prevAudioSinkRef.current = audioSink;
+  }, [audioSink, youtube, spotify]);
 
   // fix/ipad-pwa-audio-persistent-player — le player survit à l'intermission
   // (plus de destroy entre manches) : il faut PAUSER explicitement quand on
@@ -1344,6 +1392,13 @@ function HostPageInner(): JSX.Element {
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <PwaSafetyControls />
           <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
+          {/* feat/tv-audio-output — toggle "son sur la TV" à côté du cast TV.
+              Visible pendant le gameplay uniquement (mode B = même flow). */}
+          <AudioTargetToggle
+            value={currentAudioTarget}
+            onChange={setAudioTargetOverride}
+            disabled={busy}
+          />
           <MasterBadge
             master={currentMaster}
             participants={session.participants}
@@ -1558,6 +1613,15 @@ function HostPageInner(): JSX.Element {
             )}
             <PwaSafetyControls />
             <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
+            {/* feat/tv-audio-output — toggle son→TV à côté du cast TV. Visible
+                en mode A (animateur sur l'iPad), gameplay uniquement. */}
+            {effectivePhase === 'roundPlaying' && (
+              <AudioTargetToggle
+                value={currentAudioTarget}
+                onChange={setAudioTargetOverride}
+                disabled={busy}
+              />
+            )}
             {!session.has_animator &&
               (effectivePhase === 'roundPlaying' ||
                 effectivePhase === 'roundSelection' ||
