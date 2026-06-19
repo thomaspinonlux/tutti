@@ -110,7 +110,9 @@ export async function getLibraryPlaylist(id: string): Promise<LibraryPlaylistDet
 export async function launchLibraryPlaylist(
   id: string,
   sessionId: string,
-  preferProvider: PreferProvider = 'spotify',
+  // feat/two-provider-libraries — défaut YOUTUBE (sécurité : le backend respecte
+  // désormais ce champ ; 'spotify' n'est passé QUE depuis l'onglet Spotify).
+  preferProvider: PreferProvider = 'youtube',
 ): Promise<LaunchResult> {
   return api<LaunchResult>(`/api/library/playlists/${encodeURIComponent(id)}/launch`, {
     method: 'POST',
@@ -179,9 +181,12 @@ export async function launchLibraryQuizPack(
  * feat/playlist-categories-schema — endpoint PR 1/4 (#59).
  * Groupe les playlists officielles par catégorie (ordre canonique).
  */
-export async function getPlaylistsByCategory(): Promise<LibraryCategoryWithPlaylists[]> {
+export async function getPlaylistsByCategory(
+  provider: 'youtube' | 'spotify' = 'youtube',
+): Promise<LibraryCategoryWithPlaylists[]> {
+  const qs = provider === 'spotify' ? '?provider=spotify' : '';
   const data = await api<{ categories: LibraryCategoryWithPlaylists[] }>(
-    '/api/library/playlists-by-category',
+    `/api/library/playlists-by-category${qs}`,
   );
   return data.categories;
 }
@@ -191,9 +196,12 @@ export async function getPlaylistsByCategory(): Promise<LibraryCategoryWithPlayl
  * Même structure que getPlaylistsByCategory mais vue anonyme : la TV mirrore
  * la grille de l'animateur sans cookies admin.
  */
-export async function getPublicCatalog(): Promise<LibraryCategoryWithPlaylists[]> {
+export async function getPublicCatalog(
+  provider: 'youtube' | 'spotify' = 'youtube',
+): Promise<LibraryCategoryWithPlaylists[]> {
+  const qs = provider === 'spotify' ? '?provider=spotify' : '';
   const data = await api<{ categories: LibraryCategoryWithPlaylists[] }>(
-    '/api/library-public/catalog',
+    `/api/library-public/catalog${qs}`,
   );
   return data.categories;
 }

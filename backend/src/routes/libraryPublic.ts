@@ -24,11 +24,19 @@ const router: Router = Router();
 // Même structure de réponse que GET /api/library/playlists-by-category, pour
 // que la TV réutilise le même composant de grille que l'animateur.
 
-router.get('/catalog', async (_req: Request, res: Response): Promise<void> => {
+router.get('/catalog', async (req: Request, res: Response): Promise<void> => {
   try {
     const { PLAYLIST_CATEGORIES, UNCATEGORIZED_CATEGORY, getCategoryDef } =
       await import('../lib/playlistCategories.js');
-    const all = await listPublicPlaylists();
+    // feat/two-provider-libraries — onglet provider (mirror TV). 'spotify' ne
+    // garde que les playlists ≥15 tracks spotify_id (cohérent avec le host).
+    const provider = req.query.provider === 'spotify' ? 'spotify' : 'youtube';
+    const SPOTIFY_MIN_TRACKS = 15;
+    const all = (await listPublicPlaylists()).filter(
+      (p) =>
+        provider !== 'spotify' ||
+        ((p as unknown as { spotify_count?: number }).spotify_count ?? 0) >= SPOTIFY_MIN_TRACKS,
+    );
 
     // Group by category slug (cf. /playlists-by-category).
     const byCategory = new Map<string, typeof all>();
