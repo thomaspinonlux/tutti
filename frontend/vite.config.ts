@@ -8,8 +8,12 @@ import { VitePWA } from 'vite-plugin-pwa';
 //
 // Stratégie cache :
 //   - Assets statiques (JS/CSS/fonts/images/icons) : précachés à l'install (SW)
-//     puis servis depuis le cache. Auto-update à la nouvelle version (registerType
-//     'prompt' + bouton "Recharger" déclenche skipWaiting).
+//     puis servis depuis le cache. registerType 'autoUpdate' : un nouveau deploy
+//     s'active TOUT SEUL au prochain (ré)ouverture de l'app (skipWaiting +
+//     clientsClaim + reload auto injecté par vite-plugin-pwa). Plus de bouton
+//     "Recharger" à cliquer → fini les clients coincés sur un vieux bundle.
+//     Le reload n'arrive qu'au chargement de la page (jamais en pleine partie :
+//     la vérif périodique en session est retirée côté usePwa).
 //   - API calls (/api/*) : exclus du cache (NetworkOnly) — données live, pas de
 //     stale jamais.
 //   - Socket.IO (/socket.io/*) : exclus aussi (long-poll + ws, jamais cacheable).
@@ -21,7 +25,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: [
         'favicon.ico',
