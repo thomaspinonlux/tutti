@@ -33,6 +33,13 @@ export default {
         grapefruit: '#e89a64',
         lemon: '#e8c547',
         plum: '#6e3a6e',
+        // feat/arcade-buttons-vinyl-buzzer — rose = action principale
+        // (CTA, boutons primary). Pince entre raspberry (destructif, plus
+        // saturé/rouge) et le rose tendre, garde la chaleur Pop Cocktail.
+        rose: {
+          DEFAULT: '#e85c8a',
+          deep: '#c43b6e',
+        },
       },
       fontFamily: {
         display: ['Caprasimo', 'serif'],
@@ -46,6 +53,13 @@ export default {
         pop: '4px 4px 0 0 #1a1410',
         'pop-lg': '6px 6px 0 0 #1a1410',
         'pop-xl': '8px 8px 0 0 #1a1410',
+        // feat/arcade-buttons-vinyl-buzzer — l'ombre dure de l'arcade. Alias
+        // sémantique pour les boutons du nouveau système (press = translate
+        // (4px,4px) + shadow-arcade-flat). Les ombres pop existantes restent
+        // utilisables pour les Cards et autres surfaces.
+        arcade: '4px 4px 0 0 #1a1410',
+        'arcade-sm': '2px 2px 0 0 #1a1410',
+        'arcade-flat': '0 0 0 0 #1a1410',
       },
       borderWidth: {
         3: '3px',
@@ -145,6 +159,19 @@ export default {
           '0%': { transform: 'translate(0, -50%) scale(0.5)', opacity: '0' },
           '100%': { transform: 'translate(0, -50%) scale(1)', opacity: '1' },
         },
+        // feat/arcade-buttons-vinyl-buzzer — vinyl en lecture (rotation infinie)
+        'vinyl-spin': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        // Scratch au buzz : aller-retour rapide, garde l'angle final 0
+        'vinyl-scratch': {
+          '0%': { transform: 'rotate(0deg)' },
+          '22%': { transform: 'rotate(-26deg)' },
+          '50%': { transform: 'rotate(15deg)' },
+          '74%': { transform: 'rotate(-7deg)' },
+          '100%': { transform: 'rotate(0deg)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 200ms ease-out',
@@ -166,6 +193,9 @@ export default {
         'slide-up': 'slide-up 600ms ease-out both',
         'mic-pulse': 'mic-pulse 1.2s ease-in-out infinite',
         'valid-pop': 'valid-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+        // Vinyl
+        'vinyl-spin': 'vinyl-spin 1.9s linear infinite',
+        'vinyl-scratch': 'vinyl-scratch 500ms cubic-bezier(0.3, 0.6, 0.4, 1) forwards',
       },
     },
   },
