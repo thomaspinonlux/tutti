@@ -38,6 +38,9 @@ export function AudioTargetToggle({ value, onChange, disabled }: Props): JSX.Ele
     });
   };
 
+  // feat/arcade-buttons-vinyl-buzzer — toggle pill arcade : bord 2px ink,
+  // track basil (green) ON / cream OFF, knob cream avec ombre dure ; press
+  // arcade (translate + shadow flat) cohérent avec <Button />.
   return (
     <button
       type="button"
@@ -46,12 +49,19 @@ export function AudioTargetToggle({ value, onChange, disabled }: Props): JSX.Ele
       aria-pressed={onTv}
       aria-label={label}
       title={label}
-      className={`flex items-center gap-1.5 px-3 py-2 border-2 border-ink rounded-lg font-mono text-xs uppercase tracking-wider transition-colors disabled:opacity-50 ${
-        onTv ? 'bg-spritz text-cream shadow-pop-sm' : 'bg-cream text-ink hover:bg-cream-2'
+      className={`group flex items-center gap-2 pl-1 pr-3 py-1 border-2 border-ink rounded-full shadow-arcade-sm transition-all duration-[80ms] ease-out active:translate-x-[2px] active:translate-y-[2px] active:shadow-arcade-flat disabled:opacity-[0.38] disabled:active:translate-x-0 disabled:active:translate-y-0 ${
+        onTv ? 'bg-basil text-cream' : 'bg-cream text-ink hover:bg-cream-2'
       }`}
     >
-      <span aria-hidden>{onTv ? '📺🔊' : '🎧'}</span>
-      <span className="hidden sm:inline">{label}</span>
+      <span
+        aria-hidden
+        className={`flex items-center justify-center w-7 h-7 rounded-full border-2 border-ink shadow-arcade-flat text-base ${
+          onTv ? 'bg-cream text-ink translate-x-0' : 'bg-cream text-ink'
+        }`}
+      >
+        {onTv ? '📺' : '🎧'}
+      </span>
+      <span className="font-mono text-xs uppercase tracking-wider hidden sm:inline">{label}</span>
     </button>
   );
 }

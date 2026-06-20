@@ -93,7 +93,7 @@ import {
   Underline,
 } from '../components/ui/index.js';
 import { PlayQuizzView } from '../components/play/quizz/PlayQuizzView.js';
-import { VoiceButton } from '../components/play/VoiceButton.js';
+import { VinylBuzzer } from '../components/play/VinylBuzzer.js';
 
 type Step =
   | 'pseudo'
@@ -1484,6 +1484,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
               isPhase3Skipped={phase === 'phase3-skipped'}
               error={error}
               analyzing={recState.kind === 'uploading'}
+              isPlaying={!!currentTrack && !isPaused && (isPhase1 || isPhase2)}
             />
           </div>
           {/* Saisie texte alternative au buzz vocal — collée sous le BUZZ
@@ -1790,6 +1791,7 @@ function BuzzerArea({
   isPhase3Skipped,
   error,
   analyzing = false,
+  isPlaying,
 }: {
   onBuzz: () => void;
   disabled: boolean;
@@ -1799,16 +1801,18 @@ function BuzzerArea({
   /** Bug 3 — true pendant l'analyse Whisper. Affiche spinner discret sur
    * le bouton sans masquer le reste, pour préserver l'UX rapidité. */
   analyzing?: boolean;
+  /** feat/arcade-buttons-vinyl-buzzer — vraie lecture audio en cours côté
+   *  serveur (currentTrack && !isPaused && phase active). Pilote la rotation
+   *  infinie du vinyle. */
+  isPlaying: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
-  // feat/voice-button-redesign — mapping recState vers VoiceButton state.
-  // RecordingView (legacy) garde la responsabilité de l'état 'listening' avec
-  // waveform + boutons cancel/submit (out of scope cette PR). VoiceButton ici
-  // couvre 'idle' + 'processing' visibles dans BuzzerArea. 'success'/'fail'
-  // sont gérés par ValidatedBanner (success externe) et failToast (fail
-  // transient hors VoiceButton dans cette PR).
-  const voiceState: 'idle' | 'processing' = analyzing ? 'processing' : 'idle';
-  const labelOverride = isPhase3Skipped
+  // feat/arcade-buttons-vinyl-buzzer — VinylBuzzer remplace VoiceButton pour
+  // l'IDLE (= le buzz trigger). Quand le joueur tape, on déclenche onBuzz
+  // (= pipeline existante : start recording → RecordingView prend le relais
+  // pour listening avec waveform + cancel/submit). `buzzed=analyzing` rend le
+  // scratch + glow tant que l'analyse Whisper est en cours.
+  const hint = isPhase3Skipped
     ? t('play.buzzerHintSkipped')
     : isPhase3
       ? t('play.buzzerHintPhase3')
@@ -1817,23 +1821,14 @@ function BuzzerArea({
         : t('play.buzzerHintActive');
   return (
     <div className="flex flex-col items-center gap-2">
-      <VoiceButton
-        state={voiceState}
-        onStart={onBuzz}
-        onStop={() => {
-          /* géré par RecordingView une fois en listening */
-        }}
-        labelOverride={labelOverride}
+      <VinylBuzzer
+        isPlaying={isPlaying && !analyzing && !disabled}
+        buzzed={analyzing}
         disabled={disabled}
-        labels={{
-          idle: t('play.voiceButton.idle'),
-          listening: t('play.voiceButton.listening'),
-          processing: t('play.voiceButton.processing'),
-          success: t('play.voiceButton.success'),
-          fail: t('play.voiceButton.fail'),
-          ariaIdle: t('play.voiceButton.ariaIdle'),
-          ariaListening: t('play.voiceButton.ariaListening'),
-        }}
+        hint={hint}
+        feedbackLabel={analyzing ? t('play.voiceButton.processing') : null}
+        onBuzz={onBuzz}
+        ariaLabel={t('play.voiceButton.ariaIdle')}
       />
       {error && (
         <p role="alert" className="text-sm text-raspberry text-center">
