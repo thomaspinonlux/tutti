@@ -854,6 +854,12 @@ model OfficialPlaylist {
   /// User_id Supabase de l'admin qui a créé/maintient la playlist (audit).
   /// Optionnel — un script qui tourne en CI peut être null.
   created_by_admin     String?            @db.Uuid
+  /// feat/guess-work-mode — mode de "devine" :
+  ///   - null (défaut) : matching contre artist+title (mode standard).
+  ///   - 'work'        : matching contre work_title + work_aliases de la
+  ///     track (= devine l'ŒUVRE, ex: "Le Roi Lion" pour la chanson
+  ///     "Circle of Life"). Câblé au clone-on-launch (cf. library.ts).
+  guess_mode           String?            @db.VarChar(16)
   created_at           DateTime           @default(now()) @db.Timestamptz(6)
   updated_at           DateTime           @updatedAt @db.Timestamptz(6)
 
@@ -920,6 +926,15 @@ model OfficialPlaylistTrack {
   /// Les colonnes artist_aliases/title_aliases ci-dessus restent en cache
   /// dénormalisé (lues par le clone-on-launch), resynchronisées depuis Song.
   song_id                String?   @db.Uuid
+  /// feat/guess-work-mode — titre de l'ŒUVRE (film, série, dessin animé)
+  /// dont la chanson est issue. La réponse à deviner si la playlist a
+  /// `guess_mode = 'work'`. Ex: "The Lion King" pour la chanson "Circle of
+  /// Life". Null pour les playlists standard (mode artist+title).
+  work_title             String?
+  /// feat/guess-work-mode — alias acceptés pour le work_title (traductions,
+  /// raccourcis). Ex: ["Le Roi Lion"] pour "The Lion King". Mergés dans
+  /// Track.aliases au clone-on-launch quand guess_mode='work'.
+  work_aliases           String[]  @default([])
   created_at             DateTime  @default(now()) @db.Timestamptz(6)
 
   playlist OfficialPlaylist @relation(fields: [playlist_id], references: [id], onDelete: Cascade)

@@ -48,6 +48,8 @@ export interface LibraryPlaylistSummary {
    *  ou `https://img.youtube.com/vi/${cover_fallback_youtube_id}/hqdefault.jpg`. */
   cover_fallback_url: string | null;
   cover_fallback_youtube_id: string | null;
+  /** feat/guess-work-mode — null (défaut, artist+title) | 'work' (devine l'œuvre). */
+  guess_mode: string | null;
 }
 
 export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
@@ -65,6 +67,9 @@ export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
     playability_reason: string | null;
     artist_aliases: string[];
     title_aliases: string[];
+    /** feat/guess-work-mode — titre de l'œuvre à deviner (si guess_mode='work'). */
+    work_title: string | null;
+    work_aliases: string[];
   }>;
 }
 
@@ -147,6 +152,7 @@ export async function listVisiblePlaylists(
       subtitle_en: p.subtitle_en,
       cover_fallback_url: firstWithMedia?.cover_url ?? null,
       cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
+      guess_mode: p.guess_mode,
     };
   });
 }
@@ -198,6 +204,7 @@ export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
       subtitle_en: p.subtitle_en,
       cover_fallback_url: firstWithMedia?.cover_url ?? null,
       cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
+      guess_mode: p.guess_mode,
     };
   });
 }
@@ -261,6 +268,7 @@ export async function getVisiblePlaylistDetail(
     subtitle_en: playlist.subtitle_en,
     cover_fallback_url: firstWithMedia?.cover_url ?? null,
     cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
+    guess_mode: playlist.guess_mode,
     tracks: playlist.tracks.map((t) => ({
       id: t.id,
       position: t.position,
@@ -275,6 +283,8 @@ export async function getVisiblePlaylistDetail(
       playability_reason: t.playability_reason,
       artist_aliases: t.artist_aliases,
       title_aliases: t.title_aliases,
+      work_title: t.work_title,
+      work_aliases: t.work_aliases,
     })),
   };
   setCachedPlaylist(playlistId, detail, playlist.updated_at);

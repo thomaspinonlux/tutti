@@ -238,6 +238,12 @@ router.post(
     };
     const chosen: ChosenTrack[] = [];
     let skippedNotPlayable = 0;
+    // feat/guess-work-mode — playlist "devine l'œuvre" : la réponse à matcher
+    // côté Whisper/text n'est pas l'artiste+titre, mais le nom de l'œuvre
+    // (work_title) + ses alias. Le clone substitue donc title ↔ work_title et
+    // pousse work_aliases dans Track.aliases. L'artiste reste pour affichage
+    // (reveal) mais n'intervient pas dans le matching.
+    const isGuessWork = detail.guess_mode === 'work';
     for (const t of detail.tracks) {
       // Problème A (fix/playback-and-zombies-v4) — skip tracks invalidées par
       // validate-youtube-ids (vidéo retirée, non-embeddable, blocked FR/LU).
@@ -271,9 +277,16 @@ router.post(
       const coverUrl =
         t.cover_url ??
         (t.youtube_id ? `https://img.youtube.com/vi/${t.youtube_id}/hqdefault.jpg` : null);
+      // feat/guess-work-mode — substitue title ↔ work_title si guess_mode='work'.
+      // Si la track n'a pas de work_title rempli, on retombe sur le titre
+      // chanson original (fallback safe → pas de NaN/empty match).
+      const matchTitle = isGuessWork && t.work_title ? t.work_title : t.title;
+      const matchTitleAliases = isGuessWork
+        ? [...(t.work_aliases ?? []), ...(t.title_aliases ?? [])]
+        : (t.title_aliases ?? []);
       chosen.push({
         position: t.position,
-        title: t.title,
+        title: matchTitle,
         artist: t.artist,
         year: t.year,
         provider,
@@ -281,7 +294,7 @@ router.post(
         cover_url: coverUrl,
         answers_accepted: null,
         official_artist_aliases: t.artist_aliases ?? [],
-        official_title_aliases: t.title_aliases ?? [],
+        official_title_aliases: matchTitleAliases,
       });
     }
     if (chosen.length === 0) {
