@@ -1397,6 +1397,7 @@ function HostPageInner(): JSX.Element {
           <AudioTargetToggle
             value={currentAudioTarget}
             onChange={setAudioTargetOverride}
+            armed={tvAudioFlags.tv_audio_armed}
             disabled={busy}
           />
           <MasterBadge
@@ -1603,7 +1604,7 @@ function HostPageInner(): JSX.Element {
                 ne démarre. Confirme si des joueurs sont déjà connectés. */}
             {effectivePhase === 'waiting' && (
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={() => void handleCancelWaiting()}
                 disabled={busy}
@@ -1619,6 +1620,7 @@ function HostPageInner(): JSX.Element {
               <AudioTargetToggle
                 value={currentAudioTarget}
                 onChange={setAudioTargetOverride}
+                armed={tvAudioFlags.tv_audio_armed}
                 disabled={busy}
               />
             )}
@@ -1639,7 +1641,7 @@ function HostPageInner(): JSX.Element {
                 effectivePhase === 'roundSelection' ||
                 effectivePhase === 'intermission') && (
                 <Button
-                  variant="ghost"
+                  variant="danger"
                   size="sm"
                   onClick={() => void handleEndSession()}
                   disabled={busy}
