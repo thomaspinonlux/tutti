@@ -122,6 +122,9 @@ export type ScreenState =
       scroll_ratio: number;
       /** feat/tv-h-scroll — scroll HORIZONTAL par carrousel { catSlug: 0..1 }. */
       h_ratios: Record<string, number>;
+      /** feat/host-tv-level-mirror — thème ouvert côté host (étape NIVEAU) ;
+       *  null = étape THÈMES. La TV mirrore les cartes de niveau si non-null. */
+      selected_theme_key: string | null;
       /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
       qr_overlay: boolean;
       lastUpdate: string;
@@ -382,6 +385,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       focused_playlist_id: focus.playlistId,
       scroll_ratio: focus.scrollRatio,
       h_ratios: focus.hRatios,
+      selected_theme_key: focus.selectedThemeKey,
       qr_overlay: getQrOverlay(workspaceId),
       lastUpdate,
     };

@@ -46,6 +46,11 @@ interface Options {
    * globale `document.body`, plus léger sur Safari Mac/iPad.
    */
   signalKey?: string | number;
+  /**
+   * feat/host-tv-level-mirror — clé du thème ouvert (étape NIVEAU) côté host ;
+   * null = étape THÈMES. POSTé avec le focus → la TV mirrore l'étape niveau.
+   */
+  selectedThemeKey?: string | null;
 }
 
 const clamp01 = (n: number): number => Math.min(1, Math.max(0, n));
@@ -103,7 +108,7 @@ function hRatiosChanged(a: HRatios, b: HRatios): boolean {
   return false;
 }
 
-export function useFocusedPlaylistSync({ enabled, signalKey }: Options): void {
+export function useFocusedPlaylistSync({ enabled, signalKey, selectedThemeKey }: Options): void {
   // État "voulu" (dernier calcul local).
   const focusedIdRef = useRef<string | null>(null);
   // État "envoyé" (dernier POST réussi/en cours).
@@ -116,6 +121,11 @@ export function useFocusedPlaylistSync({ enabled, signalKey }: Options): void {
   // Observer partagé — exposé via ref pour qu'un effet séparé (déclenché par
   // signalKey) puisse appeler observeAll() sur les nouveaux nœuds rendus.
   const observerRef = useRef<IntersectionObserver | null>(null);
+  // feat/host-tv-level-mirror — thème ouvert (étape niveau) courant + dernier
+  // envoyé (dedup) + flush exposé pour push immédiat au changement d'étape.
+  const selectedThemeKeyRef = useRef<string | null>(selectedThemeKey ?? null);
+  const sentThemeKeyRef = useRef<string | null | undefined>(undefined);
+  const flushRef = useRef<((force?: boolean) => void) | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -133,10 +143,12 @@ export function useFocusedPlaylistSync({ enabled, signalKey }: Options): void {
       const id = focusedIdRef.current;
       const ratio = id ? computeScrollRatio(scrollerEl) : 0;
       const hRatios = id ? computeHRatios() : {};
+      const themeKey = id ? selectedThemeKeyRef.current : null;
       const idChanged = id !== sentIdRef.current;
       const ratioChanged = Math.abs(ratio - sentRatioRef.current) >= SCROLL_EPSILON;
       const hChanged = hRatiosChanged(hRatios, sentHRatiosRef.current);
-      if (!force && !idChanged && !ratioChanged && !hChanged) return;
+      const themeKeyChanged = themeKey !== sentThemeKeyRef.current;
+      if (!force && !idChanged && !ratioChanged && !hChanged && !themeKeyChanged) return;
       if (inFlightRef.current) {
         dirtyRef.current = true;
         return;
@@ -146,13 +158,14 @@ export function useFocusedPlaylistSync({ enabled, signalKey }: Options): void {
       sentIdRef.current = id;
       sentRatioRef.current = ratio;
       sentHRatiosRef.current = hRatios;
+      sentThemeKeyRef.current = themeKey;
       const hLog = Object.entries(hRatios)
         .map(([k, v]) => `${k}:${v.toFixed(2)}`)
         .join(',');
       console.info(
-        `[FocusedSync] POST id=${id ?? 'null'} ratio=${ratio.toFixed(3)} h={${hLog}}${force ? ' (keepalive)' : ''}`,
+        `[FocusedSync] POST id=${id ?? 'null'} ratio=${ratio.toFixed(3)} h={${hLog}} theme=${themeKey ?? '∅'}${force ? ' (keepalive)' : ''}`,
       );
-      postFocusedPlaylist(id, ratio, hRatios)
+      postFocusedPlaylist(id, ratio, hRatios, themeKey)
         .catch((err) => {
           // Pas critique : le polling backend garde la dernière valeur (TTL 30s).
           console.warn('[FocusedPlaylistSync] post failed:', err);
@@ -163,6 +176,7 @@ export function useFocusedPlaylistSync({ enabled, signalKey }: Options): void {
           if (dirtyRef.current) flush();
         });
     };
+    flushRef.current = flush;
 
     // ── Focus (IntersectionObserver) ──────────────────────────────────────
     const ratios = new Map<string, number>();
@@ -250,12 +264,21 @@ export function useFocusedPlaylistSync({ enabled, signalKey }: Options): void {
       if (scrollThrottle !== null) window.clearTimeout(scrollThrottle);
       // Signale au backend "host a quitté la sélection".
       void postFocusedPlaylist(null).catch(() => undefined);
+      flushRef.current = null;
       focusedIdRef.current = null;
       sentIdRef.current = null;
       sentRatioRef.current = -1;
       sentHRatiosRef.current = {};
+      sentThemeKeyRef.current = undefined;
     };
   }, [enabled]);
+
+  // feat/host-tv-level-mirror — push immédiat quand l'étape change (thème ⇄
+  // niveau), même si la card focused reste la même (ex: cover == 1ʳᵉ variante).
+  useEffect(() => {
+    selectedThemeKeyRef.current = selectedThemeKey ?? null;
+    if (enabled) flushRef.current?.();
+  }, [enabled, selectedThemeKey]);
 
   // Re-observation idempotente quand la structure DOM change (signalKey).
   // observer.observe est idempotent → re-observer un nœud déjà observé est
