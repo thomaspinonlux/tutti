@@ -212,6 +212,45 @@ router.post(
   },
 );
 
+// ── POST /screen-state/:workspaceId/audio-target (public, TV self-serve) ──
+// feat/tv-audio-self-serve — la TV elle-même prend le son (ou le rend au host)
+// d'UN clic, sans toucher la tablette animateur. PUBLIQUE + scoped par
+// :workspaceId (comme tv-audio-armed/tv-spotify-ready), PAS la route host-auth.
+// Même store in-memory (setAudioTarget). Re-poll host/TV immédiat via broadcast.
+// "Lecture seule" préservée : ne route QUE l'audio, aucun contrôle de jeu.
+
+router.post(
+  '/screen-state/:workspaceId/audio-target',
+  async (req: Request<{ workspaceId: string }>, res: Response): Promise<void> => {
+    const parsed = audioTargetBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    const workspaceId = req.params.workspaceId;
+    setAudioTarget(workspaceId, parsed.data.audio_target);
+
+    try {
+      const session = await prisma.session.findFirst({
+        where: {
+          establishment: { workspace_id: workspaceId },
+          status: { in: ['WAITING', 'PLAYING'] },
+        },
+        select: { id: true },
+        orderBy: { updated_at: 'desc' },
+      });
+      if (session) {
+        broadcastToSession(session.id, 'screen-state:focus-changed', {
+          audio_target: parsed.data.audio_target,
+        });
+      }
+    } catch (err: unknown) {
+      console.warn('[POST /screen-state/:id/audio-target] broadcast failed:', err);
+    }
+    res.json({ ok: true });
+  },
+);
+
 // ── POST /screen-state/:workspaceId/tv-audio-armed (public, TV) ───────────
 // feat/tv-audio-output — la TV signale que l'utilisateur a cliqué "Activer le
 // son sur cet écran" (gesture d'unlock autoplay). Heartbeat : re-POSTé toutes
