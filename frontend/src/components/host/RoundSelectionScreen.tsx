@@ -24,6 +24,7 @@ import {
 import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/index.js';
 import { OfficialQuizPackCard } from './library/OfficialQuizPackCard.js';
 import { OfficialCatalogSections } from './library/OfficialCatalogSections.js';
+import { ThemeLevelCards } from './library/ThemeLevelCards.js';
 import { buildThemeSections, flattenThemes } from '../../lib/officialThemes.js';
 import { JoinQrCorner } from './JoinQrCorner.js';
 import { useFocusedPlaylistSync } from '../../lib/useFocusedPlaylistSync.js';
@@ -222,7 +223,7 @@ export function RoundSelectionScreen({
   // recherche, étape thème⇄niveau). Remplace l'ancien MutationObserver global
   // (coûteux sur Safari Mac/iPad).
   const focusSignalKey = `${tab}|${librarySubTab}|${provider}|${themeSections.length}|${selectedThemeKey ?? ''}|${searchQuery}`;
-  useFocusedPlaylistSync({ enabled: true, signalKey: focusSignalKey });
+  useFocusedPlaylistSync({ enabled: true, signalKey: focusSignalKey, selectedThemeKey });
 
   return (
     <div>
@@ -428,53 +429,14 @@ export function RoundSelectionScreen({
                 />
               </div>
             ) : (
-              // feat/theme-level-picker — ÉTAPE NIVEAU : sous-catégorie claire,
-              // grosses cartes Facile/Moyen/Difficile/Mix (couleur par niveau).
-              <div className="mb-4">
-                <button
-                  type="button"
-                  onClick={() => setSelectedThemeKey(null)}
-                  className="font-mono text-xs uppercase tracking-wider text-ink-soft hover:text-ink mb-3 inline-flex items-center gap-1"
-                >
-                  ← {t('host.session.backToThemes')}
-                </button>
-                <p className="font-display text-3xl">{selectedTheme.name}</p>
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-4">
-                  {t('host.session.chooseLevel')}
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {selectedTheme.variants.map((v) => {
-                    const tone =
-                      v.level === 'easy'
-                        ? 'bg-basil text-cream'
-                        : v.level === 'medium'
-                          ? 'bg-lemon text-ink'
-                          : v.level === 'hard'
-                            ? 'bg-raspberry text-cream'
-                            : 'bg-spritz text-cream';
-                    return (
-                      <div key={v.playlist.id} data-focus-playlist-id={v.playlist.id}>
-                        <button
-                          type="button"
-                          disabled={loading}
-                          onClick={() => void onPickOfficial(v.playlist, provider)}
-                          className={`w-full h-32 rounded-xl border-2 border-ink shadow-pop flex flex-col items-center justify-center gap-1 transition-transform hover:-translate-y-0.5 hover:shadow-pop-lg disabled:opacity-50 ${tone}`}
-                        >
-                          <span
-                            className="font-display font-bold uppercase text-center px-2 leading-tight"
-                            style={{ fontFamily: 'Fraunces, serif', fontSize: 22 }}
-                          >
-                            {v.level ? t(`host.session.lvl_${v.level}`) : selectedTheme.name}
-                          </span>
-                          <span className="font-mono text-xs opacity-80">
-                            {v.playlist.track_count ?? 0} {t('playlists.tracksCount')}
-                          </span>
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              // feat/host-tv-level-mirror — ÉTAPE NIVEAU : composant PARTAGÉ avec
+              // le mirror TV (ThemeLevelCards) → parité de structure garantie.
+              <ThemeLevelCards
+                theme={selectedTheme}
+                disabled={loading}
+                onBack={() => setSelectedThemeKey(null)}
+                onPickLevel={(pl) => void onPickOfficial(pl, provider)}
+              />
             )
           ) : quizPacks === null ? (
             <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>

@@ -106,6 +106,9 @@ export type ScreenState =
       scroll_ratio: number;
       /** feat/tv-h-scroll — scroll HORIZONTAL par carrousel { catSlug: 0..1 }. */
       h_ratios: Record<string, number>;
+      /** feat/host-tv-level-mirror — thème ouvert côté host (étape NIVEAU) ;
+       *  null = étape THÈMES. La TV mirrore les cartes de niveau si non-null. */
+      selected_theme_key: string | null;
       /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
       qr_overlay: boolean;
       lastUpdate: string;
@@ -120,10 +123,16 @@ export async function postFocusedPlaylist(
   playlistId: string | null,
   scrollRatio?: number,
   hRatios?: Record<string, number>,
+  selectedThemeKey?: string | null,
 ): Promise<void> {
   await api('/api/workspace/screen-state/focused-playlist', {
     method: 'POST',
-    body: { playlist_id: playlistId, scroll_ratio: scrollRatio, h_ratios: hRatios },
+    body: {
+      playlist_id: playlistId,
+      scroll_ratio: scrollRatio,
+      h_ratios: hRatios,
+      selected_theme_key: selectedThemeKey ?? null,
+    },
   });
 }
 

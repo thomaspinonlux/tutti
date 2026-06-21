@@ -46,7 +46,8 @@ import { MainScreenView } from './screen/MainScreenView.js';
 import { screenStateToMainScreenProps } from './screen/adapters/screenStateToMainScreenProps.js';
 import { getPublicCatalog, type LibraryCategoryWithPlaylists } from '../lib/library.js';
 import { OfficialCatalogSections } from '../components/host/library/OfficialCatalogSections.js';
-import { buildThemeSections } from '../lib/officialThemes.js';
+import { ThemeLevelCards } from '../components/host/library/ThemeLevelCards.js';
+import { buildThemeSections, flattenThemes } from '../lib/officialThemes.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 import { TvAudioOutput } from './screen/TvAudioOutput.js';
 
@@ -323,6 +324,7 @@ export function ScreenPage(): JSX.Element {
           focusedId={screenState.focused_playlist_id}
           scrollRatio={screenState.scroll_ratio}
           hRatios={screenState.h_ratios}
+          selectedThemeKey={screenState.selected_theme_key}
           joinCode={screenState.joinCode}
         />
       );
@@ -459,11 +461,13 @@ function ScreenPlaylistGridView({
   focusedId,
   scrollRatio,
   hRatios,
+  selectedThemeKey,
   joinCode,
 }: {
   focusedId: string;
   scrollRatio: number;
   hRatios: Record<string, number>;
+  selectedThemeKey: string | null;
   joinCode: string;
 }): JSX.Element {
   const { t } = useTranslation();
@@ -535,6 +539,12 @@ function ScreenPlaylistGridView({
 
   // feat/host-tv-catalog-parity-v2 — MÊME groupement que le host (source unique).
   const sections = useMemo(() => buildThemeSections(categories ?? []), [categories]);
+  // feat/host-tv-level-mirror — si le host est dans un thème (étape niveau),
+  // on mirrore ses cartes de niveau au lieu des sections de thèmes.
+  const selectedTheme = useMemo(
+    () => (selectedThemeKey ? (flattenThemes(sections).get(selectedThemeKey) ?? null) : null),
+    [sections, selectedThemeKey],
+  );
 
   return (
     <div className="h-screen flex flex-col bg-cream">
@@ -550,6 +560,8 @@ function ScreenPlaylistGridView({
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-10 pb-10 pt-4">
         {categories === null ? (
           <p className="font-mono text-ink-soft animate-pulse">{t('common.loading')}</p>
+        ) : selectedTheme ? (
+          <ThemeLevelCards theme={selectedTheme} highlightId={focusedId} readOnly />
         ) : (
           <OfficialCatalogSections sections={sections} highlightId={focusedId} readOnly />
         )}

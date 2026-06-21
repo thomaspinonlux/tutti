@@ -22,6 +22,11 @@ interface FocusEntry {
   scrollRatio: number;
   /** Position de scroll HORIZONTALE par carrousel de catégorie (feat/tv-h-scroll). */
   hRatios: HRatios;
+  /**
+   * feat/host-tv-level-mirror — clé du thème ouvert côté host (étape NIVEAU).
+   * null = étape THÈMES (grille). Sert à la TV pour mirrorer l'étape niveau.
+   */
+  selectedThemeKey: string | null;
   ts: number;
 }
 
@@ -47,6 +52,7 @@ export function setFocusedPlaylist(
   playlistId: string | null,
   scrollRatio = 0,
   hRatios?: HRatios,
+  selectedThemeKey: string | null = null,
 ): void {
   if (playlistId === null) {
     focusByWorkspace.delete(workspaceId);
@@ -57,6 +63,7 @@ export function setFocusedPlaylist(
     playlistId,
     scrollRatio: ratio,
     hRatios: sanitizeHRatios(hRatios),
+    selectedThemeKey: typeof selectedThemeKey === 'string' ? selectedThemeKey : null,
     ts: Date.now(),
   });
 }
@@ -65,16 +72,24 @@ export function setFocusedPlaylist(
  * Lit la sélection courante (playlist focused + scroll V + scroll H). null si
  * rien stocké ou focus trop ancien (> 30s, host probablement parti).
  */
-export function getFocusedSelection(
-  workspaceId: string,
-): { playlistId: string; scrollRatio: number; hRatios: HRatios } | null {
+export function getFocusedSelection(workspaceId: string): {
+  playlistId: string;
+  scrollRatio: number;
+  hRatios: HRatios;
+  selectedThemeKey: string | null;
+} | null {
   const entry = focusByWorkspace.get(workspaceId);
   if (!entry) return null;
   if (Date.now() - entry.ts > FOCUS_TTL_MS) {
     focusByWorkspace.delete(workspaceId);
     return null;
   }
-  return { playlistId: entry.playlistId, scrollRatio: entry.scrollRatio, hRatios: entry.hRatios };
+  return {
+    playlistId: entry.playlistId,
+    scrollRatio: entry.scrollRatio,
+    hRatios: entry.hRatios,
+    selectedThemeKey: entry.selectedThemeKey,
+  };
 }
 
 /** Test helper — vide le store. */

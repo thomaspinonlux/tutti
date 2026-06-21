@@ -74,6 +74,9 @@ const focusBodySchema = z.object({
   // feat/tv-h-scroll — position de scroll HORIZONTALE par carrousel de catégorie
   // { catSlug: ratio 0..1 }. La TV applique chaque ratio au carrousel matchant.
   h_ratios: z.record(z.string(), z.number().min(0).max(1)).optional(),
+  // feat/host-tv-level-mirror — clé du thème ouvert (étape NIVEAU) ; null/absent
+  // = étape THÈMES. La TV mirrore l'étape niveau quand non-null.
+  selected_theme_key: z.string().max(120).nullable().optional(),
 });
 
 router.post(
@@ -94,6 +97,7 @@ router.post(
       parsed.data.playlist_id,
       parsed.data.scroll_ratio ?? 0,
       parsed.data.h_ratios,
+      parsed.data.selected_theme_key ?? null,
     );
 
     // Broadcast aux spectators TV pour re-poll immédiat (< 100ms).
