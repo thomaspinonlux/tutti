@@ -60,7 +60,12 @@ export function TvCastButton({ tvCode, shortCode }: Props): JSX.Element | null {
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)} title={t('tvCast.openHint')}>
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() => setOpen(true)}
+        title={t('tvCast.openHint')}
+      >
         📺 {t('tvCast.button')}
       </Button>
 

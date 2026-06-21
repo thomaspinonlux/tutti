@@ -312,7 +312,8 @@
     },
     "audioTarget": {
       "onHost": "Son ici",
-      "onTv": "Son sur la TV"
+      "onTv": "Son sur la TV",
+      "connectHint": "Pour sortir le son sur la TV : ouvre « 📺 Écran TV », rejoins l'écran sur la TV, puis clique « 🔊 Activer le son » là-bas. Sans ça, le son reste ici."
     },
     "eyebrow": "Salle d'attente",
     "eyebrowPlaying": "Manche {{round}}",

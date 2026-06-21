@@ -312,7 +312,8 @@
     },
     "audioTarget": {
       "onHost": "Sound here",
-      "onTv": "Sound on TV"
+      "onTv": "Sound on TV",
+      "connectHint": "To play sound on the TV: open “📺 TV screen”, join it on the TV, then tap “🔊 Enable sound” over there. Until then, sound stays here."
     },
     "eyebrow": "Waiting room",
     "eyebrowPlaying": "Round {{round}}",
