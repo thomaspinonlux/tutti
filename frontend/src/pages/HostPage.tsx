@@ -679,7 +679,11 @@ function HostPageInner(): JSX.Element {
   // tv_spotify_ready). Sink calculé IDENTIQUEMENT côté TV (cf. lib/audioSink).
   // Sink === 'host' = comportement actuel ; sink === 'tv' = on coupe le
   // player local mais on garde les contrôles + l'horloge serveur.
-  const tvAudioFlags = useTvAudioFlags(phase === 'roundPlaying');
+  // feat/tv-audio-self-serve — poll les flags audio sur TOUT le in-game (pas
+  // que roundPlaying) → le toggle host marche aussi en sélection/intermission.
+  const tvAudioFlags = useTvAudioFlags(
+    phase === 'roundPlaying' || phase === 'roundSelection' || phase === 'intermission',
+  );
   // Optimistic override : reflète le clic instantanément, réconcilié quand le
   // poll suivant ramène la valeur (≤ 3s).
   const [audioTargetOverride, setAudioTargetOverride] = useState<AudioTarget | null>(null);
@@ -1616,7 +1620,7 @@ function HostPageInner(): JSX.Element {
             <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
             {/* feat/tv-audio-output — toggle son→TV à côté du cast TV. Visible
                 en mode A (animateur sur l'iPad), gameplay uniquement. */}
-            {effectivePhase === 'roundPlaying' && (
+            {inGameplay && (
               <AudioTargetToggle
                 value={currentAudioTarget}
                 onChange={setAudioTargetOverride}

@@ -37,7 +37,11 @@ import { useYouTubeAudioSync } from '../../lib/useYouTubeAudioSync.js';
 import { useSpotifyPlayer } from '../../lib/useSpotifyPlayer.js';
 import { useSpotifyAudioSync } from '../../lib/useSpotifyAudioSync.js';
 import { resolveAudioSink } from '../../lib/audioSink.js';
-import { postTvAudioArmed, postTvSpotifyReady } from '../../lib/screenState.js';
+import {
+  postTvAudioArmed,
+  postTvSpotifyReady,
+  postAudioTargetPublic,
+} from '../../lib/screenState.js';
 import { getSpotifyTokenPublic } from '../../lib/music.js';
 import { unlockAudioSync } from '../../lib/audioUnlock.js';
 
@@ -62,27 +66,44 @@ export function TvAudioOutput({
 }: Props): JSX.Element | null {
   const { t } = useTranslation();
   const provider = currentTrack?.provider ?? null;
+
+  // ── feat/tv-audio-self-serve — état local optimiste ───────────────────
+  // La TV prend / rend le son d'UN clic. `localDesired` force l'état attendu
+  // SANS attendre le prochain poll (≤2s) : 'tv' = je prends le son ici,
+  // 'host' = je le rends, null = je suis le screen-state polled. Réconcilié
+  // dès que les props (audio_target / tv_audio_armed) confirment.
+  const [localDesired, setLocalDesired] = useState<'tv' | 'host' | null>(null);
+  useEffect(() => {
+    if (localDesired === 'tv' && audioTarget === 'tv' && tvAudioArmed) setLocalDesired(null);
+    if (localDesired === 'host' && audioTarget !== 'tv') setLocalDesired(null);
+  }, [localDesired, audioTarget, tvAudioArmed]);
+
+  const effectiveOnTv = localDesired ? localDesired === 'tv' : audioTarget === 'tv';
+  const effectiveArmed =
+    localDesired === 'tv' ? true : localDesired === 'host' ? false : tvAudioArmed;
+
   const audioSink = resolveAudioSink({
-    audio_target: audioTarget,
-    tv_audio_armed: tvAudioArmed,
+    audio_target: effectiveOnTv ? 'tv' : 'host',
+    tv_audio_armed: effectiveArmed,
     tv_spotify_ready: tvSpotifyReady,
     provider,
   });
-  const armOnTv = audioTarget === 'tv';
+  const active = effectiveOnTv && effectiveArmed; // son routé sur CET écran
 
   // ── Players TV ────────────────────────────────────────────────────────
-  // YouTube : monté tant que la TV est en mode "son sur TV" ET armée.
-  const youtube = useYouTubePlayer({ enabled: armOnTv && tvAudioArmed });
+  // Montés (enabled) tant que le son est routé ici ET armé. Le composant
+  // reste TOUJOURS monté (jamais de `return null`) → aucun remount du
+  // sous-arbre audio au re-render (cf #121).
+  const youtube = useYouTubePlayer({ enabled: active });
 
-  // Spotify : monté seulement si l'animateur a activé le routage TV ET
-  // l'user a armé l'audio (= cliqué le bouton). Token = endpoint public
-  // /api/auth/spotify/token-public/:workspaceId (creds Premium workspace).
+  // Spotify : token = endpoint public /api/auth/spotify/token-public/:workspaceId
+  // (creds Premium workspace).
   const spotifyTokenFetcher = useMemo(
     () => () => getSpotifyTokenPublic(workspaceId),
     [workspaceId],
   );
   const spotify = useSpotifyPlayer({
-    enabled: armOnTv && tvAudioArmed,
+    enabled: active,
     tokenFetcher: spotifyTokenFetcher,
     deviceName: 'Tutti TV',
   });
@@ -103,32 +124,32 @@ export function TvAudioOutput({
 
   // ── Heartbeat tv_audio_armed (TTL backend 60s, ré-POST 30s) ───────────
   useEffect(() => {
-    if (!armOnTv || !tvAudioArmed) return;
+    if (!active) return;
     const tick = (): void => {
       void postTvAudioArmed(workspaceId, true).catch(() => undefined);
     };
     const id = window.setInterval(tick, HEARTBEAT_MS);
     return () => window.clearInterval(id);
-  }, [armOnTv, tvAudioArmed, workspaceId]);
+  }, [active, workspaceId]);
 
   // ── tv_spotify_ready : sync flag avec status SDK ──────────────────────
   const spotifyReadyRef = useRef(false);
   useEffect(() => {
-    const isReady = armOnTv && spotify.status === 'ready';
+    const isReady = active && spotify.status === 'ready';
     if (isReady !== spotifyReadyRef.current) {
       spotifyReadyRef.current = isReady;
       void postTvSpotifyReady(workspaceId, isReady).catch(() => undefined);
     }
-  }, [armOnTv, spotify.status, workspaceId]);
+  }, [active, spotify.status, workspaceId]);
 
   // Heartbeat tv_spotify_ready tant que le SDK est ready.
   useEffect(() => {
-    if (!armOnTv || spotify.status !== 'ready') return;
+    if (!active || spotify.status !== 'ready') return;
     const id = window.setInterval(() => {
       void postTvSpotifyReady(workspaceId, true).catch(() => undefined);
     }, HEARTBEAT_MS);
     return () => window.clearInterval(id);
-  }, [armOnTv, spotify.status, workspaceId]);
+  }, [active, spotify.status, workspaceId]);
 
   // Cleanup unmount : reset les 2 flags pour que le sink retombe sur host.
   useEffect(() => {
@@ -138,57 +159,78 @@ export function TvAudioOutput({
     };
   }, [workspaceId]);
 
-  // ── Bouton "Activer le son sur cet écran" ─────────────────────────────
-  const [arming, setArming] = useState(false);
-  const handleArm = (): void => {
-    // SYNC unlock dans le tick du clic (PreGameStartScreen pattern).
-    unlockAudioSync('tv-screen-arm-button');
+  // ── Action : PRENDRE le son sur cet écran (1 clic) ────────────────────
+  // (a) audio_target='tv' via la route PUBLIQUE scoped workspace (sans toucher
+  // la tablette) (b) arme l'autoplay (tv_audio_armed=true) (c) la lecture du
+  // currentTrack démarre via les sync hooks (audioSink devient 'tv').
+  const [busy, setBusy] = useState(false);
+  const handleTakeSound = (): void => {
+    // SYNC unlock + warmup DANS le tick du clic (gesture autoplay navigateur).
+    unlockAudioSync('tv-screen-take-sound');
     youtube.warmupSync?.();
-    setArming(true);
-    void postTvAudioArmed(workspaceId, true)
-      .catch((err: unknown) => {
-        console.warn('[TvAudioOutput] arm POST failed:', err);
-      })
-      .finally(() => setArming(false));
+    setLocalDesired('tv'); // optimiste → players enabled + sink 'tv' immédiat
+    setBusy(true);
+    void Promise.allSettled([
+      postAudioTargetPublic(workspaceId, 'tv'),
+      postTvAudioArmed(workspaceId, true),
+    ]).finally(() => setBusy(false));
   };
 
-  // ── Bouton "Connecter Spotify ici" — Spotify déjà monté à `tvAudioArmed` ;
-  // le SDK se connecte automatiquement avec le token public workspace. Le
-  // bouton est un FALLBACK pour ré-tenter si l'init a foiré (token périmé,
-  // SDK script bloqué, etc.). En pratique : si `spotify.status === 'error'`,
-  // on propose un retry.
+  // ── Action : RENDRE le son au host (toggle off) ───────────────────────
+  const handleReleaseSound = (): void => {
+    setLocalDesired('host'); // optimiste → players disabled, host reprend
+    setBusy(true);
+    void Promise.allSettled([
+      postAudioTargetPublic(workspaceId, 'host'),
+      postTvAudioArmed(workspaceId, false),
+    ]).finally(() => setBusy(false));
+  };
+
+  // ── Bouton "Connecter Spotify ici" — fallback retry si le SDK n'est pas
+  // ready (token périmé, script bloqué…). Spotify est déjà monté à `active`.
   const handleSpotifyRetry = (): void => {
     unlockAudioSync('tv-screen-spotify-retry');
     void spotify.unblockAudio?.().catch(() => undefined);
   };
 
-  if (!armOnTv) return null;
+  const needSpotify = active && currentTrack?.provider === 'spotify' && spotify.status !== 'ready';
 
-  const needArm = !tvAudioArmed;
-  const needSpotify =
-    !needArm && currentTrack?.provider === 'spotify' && spotify.status !== 'ready';
-
+  // Toujours rendu (jamais `return null`) : l'opérateur de la salle prend le
+  // son d'UN clic sur la TV, sans condition côté host.
   return (
     <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center pointer-events-none">
       <div className="flex flex-col items-center gap-3 pointer-events-auto">
-        {needArm && (
+        {!active ? (
           <button
             type="button"
-            onClick={handleArm}
-            disabled={arming}
+            onClick={handleTakeSound}
+            disabled={busy}
             className="px-6 py-4 text-lg font-display font-bold bg-spritz text-cream border-2 border-ink shadow-pop-lg rounded-xl flex items-center gap-3 transition-transform hover:-translate-y-0.5 disabled:opacity-50"
           >
             <span aria-hidden className="text-2xl">
               🔊
             </span>
-            {t('screen.tvAudio.activate')}
+            {t('screen.tvAudio.takeSound')}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleReleaseSound}
+            disabled={busy}
+            aria-pressed
+            className="px-6 py-4 text-lg font-display font-bold bg-basil text-cream border-2 border-ink shadow-pop-lg rounded-xl flex items-center gap-3 transition-transform hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            <span aria-hidden className="text-2xl">
+              🔊
+            </span>
+            {t('screen.tvAudio.soundActive')}
           </button>
         )}
         {needSpotify && (
           <button
             type="button"
             onClick={handleSpotifyRetry}
-            className="px-5 py-3 text-base font-display font-bold bg-basil text-cream border-2 border-ink shadow-pop rounded-xl flex items-center gap-3 transition-transform hover:-translate-y-0.5"
+            className="px-5 py-3 text-base font-display font-bold bg-plum text-cream border-2 border-ink shadow-pop rounded-xl flex items-center gap-3 transition-transform hover:-translate-y-0.5"
           >
             <span aria-hidden className="text-xl">
               🟢

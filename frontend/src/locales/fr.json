@@ -534,6 +534,8 @@
   "screen": {
     "tvAudio": {
       "activate": "Activer le son sur cet écran",
+      "takeSound": "Mettre le son sur cet écran",
+      "soundActive": "Son actif sur cet écran",
       "connectSpotify": "Connecter Spotify ici"
     },
     "playlistSelection": {

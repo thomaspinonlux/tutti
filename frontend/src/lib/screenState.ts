@@ -159,6 +159,21 @@ export async function postAudioTarget(target: 'host' | 'tv'): Promise<void> {
 }
 
 /**
+ * feat/tv-audio-self-serve — la TV elle-même route le son (host ⇄ tv) d'un clic,
+ * sans toucher la tablette animateur. Endpoint PUBLIC scoped par workspaceId
+ * (même modèle que postTvAudioArmed), distinct de postAudioTarget (host-auth).
+ */
+export async function postAudioTargetPublic(
+  workspaceId: string,
+  target: 'host' | 'tv',
+): Promise<void> {
+  await api(`/api/workspace/screen-state/${encodeURIComponent(workspaceId)}/audio-target`, {
+    method: 'POST',
+    body: { audio_target: target },
+  });
+}
+
+/**
  * feat/tv-audio-output — TV signale que l'utilisateur a cliqué "Activer le son
  * sur cet écran" (gesture autoplay unlock). Heartbeat 30s. Endpoint public
  * (TV ouverte sans cookies admin).
