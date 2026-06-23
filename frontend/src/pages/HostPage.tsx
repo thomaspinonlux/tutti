@@ -683,6 +683,7 @@ function HostPageInner(): JSX.Element {
   // que roundPlaying) → le toggle host marche aussi en sélection/intermission.
   const tvAudioFlags = useTvAudioFlags(
     phase === 'roundPlaying' || phase === 'roundSelection' || phase === 'intermission',
+    hostSocket, // F1 — mute instantané via socket screen-state:focus-changed
   );
   // Optimistic override : reflète le clic instantanément, réconcilié quand le
   // poll suivant ramène la valeur (≤ 3s).
@@ -755,9 +756,17 @@ function HostPageInner(): JSX.Element {
   }, [phase]);
 
   // ── Phase 3d — provider courant pour position/durée/affichage ──────────
+  // F2 (host-tv-perfect-sync) — la position/durée du LECTEUR LOCAL ne fait foi
+  // QUE si le host joue le son (sink==='host'). Quand le son est sur la TV, le
+  // lecteur host est muet/en pause → sa position est figée : on passe undefined
+  // pour que l'affichage retombe sur l'HORLOGE SERVEUR (started_at + isPaused,
+  // pause-aware), identique côté TV. → le timer tourne pareil quel que soit le
+  // sink, la pause fige les deux.
   const isYouTubeTrack = currentTrack?.provider === 'youtube';
-  const audioPositionMs = isYouTubeTrack ? youtube.positionMs : spotify.positionMs;
-  const audioDurationMs = isYouTubeTrack ? youtube.durationMs : spotify.durationMs;
+  const audioPositionMs =
+    audioSink === 'host' ? (isYouTubeTrack ? youtube.positionMs : spotify.positionMs) : undefined;
+  const audioDurationMs =
+    audioSink === 'host' ? (isYouTubeTrack ? youtube.durationMs : spotify.durationMs) : undefined;
 
   // ── Actions ────────────────────────────────────────────────────────────
   const refreshCumulative = async (sid: string): Promise<void> => {
@@ -2151,6 +2160,36 @@ function WaitingPhase({
   );
 }
 
+/**
+ * F2 (host-tv-perfect-sync) — horloge serveur pause-aware côté host. Compte le
+ * temps écoulé depuis `startedAtIso` (reset 0 au changement), +delta par tick si
+ * !isPaused, FIGE si isPaused. Sert de fallback à la position du lecteur local
+ * quand le son est sur la TV (lecteur host muet → position figée). MÊME logique
+ * que la TV (MainScreenView.useTimeElapsed) → les 2 timers restent synchrones.
+ * Lecture seule — NE touche PAS started_at_ms (ancre buzz/scoring).
+ */
+function useServerElapsedMs(startedAtIso: string | null, isPaused: boolean): number {
+  const [elapsed, setElapsed] = useState(0);
+  const lastTickRef = useRef<number>(Date.now());
+  useEffect(() => {
+    setElapsed(0);
+    lastTickRef.current = Date.now();
+  }, [startedAtIso]);
+  useEffect(() => {
+    if (!startedAtIso) return;
+    const tick = (): void => {
+      const now = Date.now();
+      const delta = now - lastTickRef.current;
+      lastTickRef.current = now;
+      if (!isPaused) setElapsed((e) => e + delta);
+    };
+    lastTickRef.current = Date.now();
+    const id = window.setInterval(tick, 250);
+    return () => window.clearInterval(id);
+  }, [isPaused, startedAtIso]);
+  return elapsed;
+}
+
 function RoundPlayingScreen({
   sessionId,
   round,
@@ -2184,8 +2223,9 @@ function RoundPlayingScreen({
   onEndRound: () => Promise<void>;
   busy: boolean;
   isPaused: boolean;
-  positionMs: number;
-  durationMs: number;
+  /** F2 — undefined quand le son est sur la TV → fallback horloge serveur. */
+  positionMs?: number;
+  durationMs?: number;
   spotifyStatus: import('../lib/useSpotifyPlayer.js').SpotifyPlayerStatus;
   spotifyError: string | null;
   spotifyErrorCode: string | null;
@@ -2197,6 +2237,12 @@ function RoundPlayingScreen({
   onSeek: (ms: number) => void;
 }): JSX.Element {
   const { t } = useTranslation();
+  // F2 — position/durée effectives : lecteur local si fourni (sink=host), sinon
+  // horloge serveur (sink=tv → lecteur host muet). Le timer tourne pareil et la
+  // pause (isPaused serveur) fige les deux côtés.
+  const serverElapsedMs = useServerElapsedMs(currentTrack?.started_at ?? null, isPaused);
+  const effPositionMs = positionMs ?? serverElapsedMs;
+  const effDurationMs = durationMs ?? currentTrack?.duration_ms ?? 0;
   const top5 = cumulative.slice(0, 5);
   const totalTracks = round.playlist.tracks_count ?? 0;
   const trackPosition = currentTrack ? currentTrack.track_index + 1 : round.current_track_index + 1;
@@ -2259,8 +2305,8 @@ function RoundPlayingScreen({
           // dupliquer cover/titre/artiste — déjà dans Programme manche).
           <AnimatorTrackInfo
             track={currentTrack}
-            positionMs={positionMs}
-            durationMs={durationMs}
+            positionMs={effPositionMs}
+            durationMs={effDurationMs}
             onSeek={onSeek}
           />
         )}
