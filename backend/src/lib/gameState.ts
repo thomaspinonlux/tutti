@@ -52,8 +52,19 @@ export interface ActiveTrackState {
   round_id: string;
   track_index: number;
   track_id: string;
-  /** Date.now() au lancement du track. */
+  /**
+   * Date.now() au lancement du track. ANCRE BUZZ/SCORING (answered_at_ms =
+   * Date.now() − started_at_ms). JAMAIS modifiée après le lancement — ni par
+   * pause/resume/seek (cf. horloge audio découplée ci-dessous).
+   */
   started_at_ms: number;
+  /**
+   * feat/host-tv-perfect-sync (F3) — HORLOGE AUDIO DÉCOUPLÉE de started_at_ms.
+   * Position du morceau (ms) au dernier reset : start→0, seek→X, pause→elapsed.
+   */
+  audio_position_ms: number;
+  /** Date.now() du dernier reset de audio_position_ms. */
+  audio_anchor_at_ms: number;
   /** Phase courante. */
   phase: GameTrackPhase;
   /**
@@ -87,12 +98,55 @@ export function setActiveTrack(
 ): void {
   activeTracks.set(roundId, {
     ...init,
+    // F3 — horloge audio : démarre à 0, ancrée au lancement du track.
+    audio_position_ms: 0,
+    audio_anchor_at_ms: init.started_at_ms,
     phase: 'phase1',
     phase2_started_at_ms: null,
     active_buzzes: new Map(),
     correct_answers: [],
     last_buzz_at_ms: new Map(),
   });
+}
+
+/**
+ * F3 — elapsed audio courant (ms) calculé depuis l'horloge découplée.
+ * `isPaused` doit être l'état serveur (session.is_paused).
+ *   playing → audio_position_ms + (now − audio_anchor_at_ms)
+ *   paused  → audio_position_ms (figé au moment de la pause)
+ */
+export function computeAudioElapsedMs(state: ActiveTrackState, isPaused: boolean): number {
+  if (isPaused) return Math.max(0, state.audio_position_ms);
+  return Math.max(0, state.audio_position_ms + (Date.now() - state.audio_anchor_at_ms));
+}
+
+/** F3 — seek : pose la position audio à `positionMs`, ré-ancre à maintenant. */
+export function setAudioSeek(roundId: string, positionMs: number): ActiveTrackState | null {
+  const state = activeTracks.get(roundId);
+  if (!state) return null;
+  state.audio_position_ms = Math.max(0, Math.round(positionMs));
+  state.audio_anchor_at_ms = Date.now();
+  return state;
+}
+
+/**
+ * F3 — pause : FIGE la position audio à l'elapsed courant (playing) + ré-ancre.
+ * À appeler AVANT de marquer is_paused côté DB (calcule l'elapsed en mode play).
+ */
+export function setAudioPaused(roundId: string): ActiveTrackState | null {
+  const state = activeTracks.get(roundId);
+  if (!state) return null;
+  state.audio_position_ms = computeAudioElapsedMs(state, false);
+  state.audio_anchor_at_ms = Date.now();
+  return state;
+}
+
+/** F3 — resume : ré-ancre à maintenant (audio_position_ms conservé). */
+export function setAudioResumed(roundId: string): ActiveTrackState | null {
+  const state = activeTracks.get(roundId);
+  if (!state) return null;
+  state.audio_anchor_at_ms = Date.now();
+  return state;
 }
 
 /**
@@ -103,11 +157,15 @@ export function setActiveTrack(
 export function restartActiveTrack(roundId: string): ActiveTrackState | null {
   const state = activeTracks.get(roundId);
   if (!state) return null;
+  const now = Date.now();
   const fresh: ActiveTrackState = {
     round_id: state.round_id,
     track_index: state.track_index,
     track_id: state.track_id,
-    started_at_ms: Date.now(),
+    started_at_ms: now,
+    // F3 — restart = nouveau morceau depuis 0.
+    audio_position_ms: 0,
+    audio_anchor_at_ms: now,
     phase: 'phase1',
     phase2_started_at_ms: null,
     active_buzzes: new Map(),

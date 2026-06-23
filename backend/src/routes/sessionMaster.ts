@@ -28,7 +28,13 @@ import type { GameMode, Team } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { requireMasterParticipant } from '../middleware/master.js';
 import { broadcastToSession } from '../socket/index.js';
-import { clearActiveTrack, getActiveTrack, restartActiveTrack } from '../lib/gameState.js';
+import {
+  clearActiveTrack,
+  getActiveTrack,
+  restartActiveTrack,
+  setAudioPaused,
+  setAudioResumed,
+} from '../lib/gameState.js';
 import {
   clearActiveQuestion,
   getActiveQuestion,
@@ -248,6 +254,12 @@ router.post('/reveal', giveAnswerHandler);
 
 router.post('/pause', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
+    // F3 — fige l'horloge audio du round actif (mode B / master) avant is_paused.
+    const playingRound = await prisma.sessionRound.findFirst({
+      where: { session_id: req.params.id, status: 'PLAYING' },
+      select: { id: true },
+    });
+    const audio = playingRound ? setAudioPaused(playingRound.id) : null;
     const session = await prisma.session.update({
       where: { id: req.params.id },
       data: { is_paused: true },
@@ -256,6 +268,14 @@ router.post('/pause', async (req: Request<{ id: string }>, res: Response): Promi
       session_id: session.id,
       requested_by: req.master!.pseudo,
     });
+    if (playingRound && audio) {
+      broadcastToSession(req.params.id, 'track:seek', {
+        round_id: playingRound.id,
+        reason: 'pause',
+        audio_position_ms: audio.audio_position_ms,
+        audio_anchor_at: new Date(audio.audio_anchor_at_ms).toISOString(),
+      });
+    }
     res.json({ ok: true });
   } catch (err: unknown) {
     console.error('[POST master/pause] error:', err);
@@ -267,11 +287,24 @@ router.post('/pause', async (req: Request<{ id: string }>, res: Response): Promi
 
 router.post('/resume', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
+    const playingRound = await prisma.sessionRound.findFirst({
+      where: { session_id: req.params.id, status: 'PLAYING' },
+      select: { id: true },
+    });
+    const audio = playingRound ? setAudioResumed(playingRound.id) : null;
     const session = await prisma.session.update({
       where: { id: req.params.id },
       data: { is_paused: false },
     });
     broadcastToSession(req.params.id, 'session:resumed', { session_id: session.id });
+    if (playingRound && audio) {
+      broadcastToSession(req.params.id, 'track:seek', {
+        round_id: playingRound.id,
+        reason: 'resume',
+        audio_position_ms: audio.audio_position_ms,
+        audio_anchor_at: new Date(audio.audio_anchor_at_ms).toISOString(),
+      });
+    }
     res.json({ ok: true });
   } catch (err: unknown) {
     console.error('[POST master/resume] error:', err);

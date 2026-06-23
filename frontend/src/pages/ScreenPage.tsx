@@ -63,6 +63,9 @@ export function ScreenPage(): JSX.Element {
   const [codeInput, setCodeInput] = useState('');
   const [screenState, setScreenState] = useState<ScreenState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // F3 — dernier seek réel reçu (reason='seek') → TvAudioOutput applique sur son
+  // lecteur si la TV est le sink. nonce force le re-déclenchement.
+  const [seekSignal, setSeekSignal] = useState<{ positionMs: number; nonce: number } | null>(null);
   const idleStreakRef = useRef(0);
 
   // Auto-detect workspaceId via cookies Supabase si pas en param URL
@@ -175,10 +178,24 @@ export function ScreenPage(): JSX.Element {
       // feat/tv-playlist-selection-sync — re-poll quand l'host change la
       // playlist focused dans le carrousel.
       'screen-state:focus-changed',
+      // F3 — re-poll instantané sur seek/pause/resume (recale l'horloge audio
+      // de la barre TV). L'application du seek sur le LECTEUR TV passe par le
+      // handler dédié ci-dessous (besoin de `reason` pour ne seeker QUE sur seek).
+      'track:seek',
     ];
     events.forEach((ev) => socket.on(ev, trigger));
+    // F3 — signal de seek réel (reason='seek') → TvAudioOutput applique le seek
+    // sur son lecteur si la TV est le sink. nonce = re-déclenche l'effet même si
+    // on re-seek à la même position.
+    const onSeek = (payload: { reason?: string; audio_position_ms?: number }): void => {
+      if (payload?.reason === 'seek' && typeof payload.audio_position_ms === 'number') {
+        setSeekSignal({ positionMs: payload.audio_position_ms, nonce: Date.now() });
+      }
+    };
+    socket.on('track:seek', onSeek);
     return () => {
       events.forEach((ev) => socket.off(ev, trigger));
+      socket.off('track:seek', onSeek);
       socket.disconnect();
     };
   }, [joinCode]);
@@ -281,6 +298,7 @@ export function ScreenPage(): JSX.Element {
               tvSpotifyReady={screenState.tv_spotify_ready}
               isPaused={screenState.session.is_paused}
               currentTrack={screenState.currentTrack}
+              seekSignal={seekSignal}
             />
           )}
         </ScreenWithQrOverlay>
@@ -297,6 +315,7 @@ export function ScreenPage(): JSX.Element {
               tvSpotifyReady={screenState.tv_spotify_ready}
               isPaused={screenState.session.is_paused}
               currentTrack={screenState.currentTrack}
+              seekSignal={seekSignal}
             />
           )}
         </ScreenWithQrOverlay>

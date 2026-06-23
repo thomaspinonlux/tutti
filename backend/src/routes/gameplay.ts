@@ -15,11 +15,18 @@
 
 import { Router, type Request, type Response } from 'express';
 import type { RoundProgramItem, RoundProgramResponse, RoundStatus } from '@tutti/shared';
+import { z } from 'zod';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { broadcastToSession } from '../socket/index.js';
 import { prisma } from '../lib/prisma.js';
-import { restartActiveTrack } from '../lib/gameState.js';
+import {
+  getActiveTrack,
+  restartActiveTrack,
+  setAudioPaused,
+  setAudioResumed,
+  setAudioSeek,
+} from '../lib/gameState.js';
 import {
   advanceToNextOrEndRound,
   buildAndBroadcastTrack,
@@ -137,6 +144,9 @@ router.post(
   requireWorkspace,
   async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
     try {
+      // F3 — fige l'horloge audio à l'elapsed courant (calculé en mode play)
+      // AVANT de marquer is_paused. started_at_ms (buzz) n'est PAS touché.
+      const audio = setAudioPaused(req.params.roundId);
       const session = await prisma.session.update({
         where: { id: req.params.id },
         data: { is_paused: true },
@@ -145,6 +155,14 @@ router.post(
         session_id: session.id,
         requested_by: 'host',
       });
+      if (audio) {
+        broadcastToSession(req.params.id, 'track:seek', {
+          round_id: req.params.roundId,
+          reason: 'pause',
+          audio_position_ms: audio.audio_position_ms,
+          audio_anchor_at: new Date(audio.audio_anchor_at_ms).toISOString(),
+        });
+      }
       res.json({ ok: true });
     } catch (err: unknown) {
       console.error('[POST host/pause] error:', err);
@@ -159,16 +177,73 @@ router.post(
   requireWorkspace,
   async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
     try {
+      // F3 — ré-ancre l'horloge audio à maintenant (audio_position_ms conservé)
+      // pour que l'elapsed reparte exactement de la valeur figée à la pause.
+      const audio = setAudioResumed(req.params.roundId);
       const session = await prisma.session.update({
         where: { id: req.params.id },
         data: { is_paused: false },
       });
       broadcastToSession(req.params.id, 'session:resumed', { session_id: session.id });
+      if (audio) {
+        broadcastToSession(req.params.id, 'track:seek', {
+          round_id: req.params.roundId,
+          reason: 'resume',
+          audio_position_ms: audio.audio_position_ms,
+          audio_anchor_at: new Date(audio.audio_anchor_at_ms).toISOString(),
+        });
+      }
       res.json({ ok: true });
     } catch (err: unknown) {
       console.error('[POST host/resume] error:', err);
       res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur reprise' } });
     }
+  },
+);
+
+// ── POST /seek (host) ─────────────────────────────────────────────────────
+// feat/host-tv-perfect-sync (F3) — seek serveur. Pose l'horloge audio à
+// `position_ms` (découplée de started_at_ms = ancre buzz, intouchée) et
+// broadcast track:seek reason='seek' → le SINK (host si son=host, TV si
+// son=tv) applique le seek sur SON lecteur ; le non-sink recale juste sa barre.
+
+const seekBodySchema = z.object({
+  position_ms: z.number().min(0).max(86_400_000),
+});
+
+router.post(
+  '/seek',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const round = await findRoundForWorkspace(req.params.roundId, req.params.id, workspaceId);
+    if (!round) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
+      return;
+    }
+    const parsed = seekBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({ error: { code: 'VALIDATION_ERROR', message: 'position_ms invalide' } });
+      return;
+    }
+    const active = getActiveTrack(req.params.roundId);
+    if (!active) {
+      res.status(409).json({ error: { code: 'NO_ACTIVE_TRACK', message: 'Aucun morceau actif' } });
+      return;
+    }
+    const audio = setAudioSeek(req.params.roundId, parsed.data.position_ms);
+    if (audio) {
+      broadcastToSession(req.params.id, 'track:seek', {
+        round_id: req.params.roundId,
+        reason: 'seek',
+        audio_position_ms: audio.audio_position_ms,
+        audio_anchor_at: new Date(audio.audio_anchor_at_ms).toISOString(),
+      });
+    }
+    res.json({ ok: true, position_ms: audio?.audio_position_ms ?? parsed.data.position_ms });
   },
 );
 

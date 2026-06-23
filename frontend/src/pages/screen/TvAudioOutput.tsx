@@ -54,6 +54,12 @@ interface Props {
   tvSpotifyReady: boolean;
   isPaused: boolean;
   currentTrack: CurrentTrackState | null;
+  /**
+   * feat/host-tv-perfect-sync (F3) — dernier seek réel (reason='seek') reçu via
+   * socket par ScreenPage. Quand la TV est le sink (active), on applique le seek
+   * sur SON lecteur. `nonce` force le re-déclenchement même à position identique.
+   */
+  seekSignal?: { positionMs: number; nonce: number } | null;
 }
 
 export function TvAudioOutput({
@@ -63,6 +69,7 @@ export function TvAudioOutput({
   tvSpotifyReady,
   isPaused,
   currentTrack,
+  seekSignal,
 }: Props): JSX.Element | null {
   const { t } = useTranslation();
   const provider = currentTrack?.provider ?? null;
@@ -150,6 +157,16 @@ export function TvAudioOutput({
     }, HEARTBEAT_MS);
     return () => window.clearInterval(id);
   }, [active, spotify.status, workspaceId]);
+
+  // F3 — la TV est le SINK : applique le seek serveur (reason='seek') sur son
+  // lecteur. nonce dans les deps → re-seek à position identique re-déclenche.
+  useEffect(() => {
+    if (!seekSignal || !active) return;
+    const ms = seekSignal.positionMs;
+    if (currentTrack?.provider === 'youtube') youtube.seek(ms);
+    else void spotify.seek(ms);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seekSignal?.nonce, active]);
 
   // Cleanup unmount : reset les 2 flags pour que le sink retombe sur host.
   useEffect(() => {
