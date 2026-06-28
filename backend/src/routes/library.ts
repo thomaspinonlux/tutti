@@ -177,6 +177,11 @@ router.get('/playlists/:id', async (req: Request<{ id: string }>, res: Response)
 const launchBody = z.object({
   session_id: z.string().uuid(),
   preferProvider: z.enum(['spotify', 'youtube']).default('youtube'),
+  // feat/thematic-level-filter — niveau choisi sur une playlist thématique. Le
+  // clone ne matérialise QUE les OfficialPlaylistTrack de ce difficulty
+  // (clone-filtré, pas de migration schéma). Absent / undefined = tous niveaux
+  // (Mix, décennies, legacy plates). Garde-fou côté route : pool < 15 → Mix.
+  difficulty: z.enum(['EASY', 'MEDIUM', 'EXPERT']).optional(),
 });
 
 router.post(
@@ -236,66 +241,98 @@ router.post(
       official_artist_aliases: string[];
       official_title_aliases: string[];
     };
-    const chosen: ChosenTrack[] = [];
-    let skippedNotPlayable = 0;
     // feat/guess-work-mode — playlist "devine l'œuvre" : la réponse à matcher
     // côté Whisper/text n'est pas l'artiste+titre, mais le nom de l'œuvre
     // (work_title) + ses alias. Le clone substitue donc title ↔ work_title et
     // pousse work_aliases dans Track.aliases. L'artiste reste pour affichage
     // (reveal) mais n'intervient pas dans le matching.
     const isGuessWork = detail.guess_mode === 'work';
-    for (const t of detail.tracks) {
-      // Problème A (fix/playback-and-zombies-v4) — skip tracks invalidées par
-      // validate-youtube-ids (vidéo retirée, non-embeddable, blocked FR/LU).
-      // Sans ce filtre, le SDK YouTube tombait sur "video not embeddable" en
-      // pleine partie → blocage host.
-      if (t.is_playable === false) {
-        skippedNotPlayable += 1;
-        continue;
-      }
-      // feat/two-provider-libraries — choix provider selon l'onglet :
-      //   spotify → UNIQUEMENT spotify_id, provider='spotify', AUCUN fallback
-      //             (les tracks sans spotify_id sont skip → playlist 100% Spotify)
-      //   youtube → youtube_id prioritaire, spotify_id en fallback legacy ultime
-      let provider: 'spotify' | 'youtube' | null = null;
-      let providerId: string | null = null;
-      if (preferProvider === 'spotify') {
-        if (t.spotify_id) {
+
+    // feat/thematic-level-filter — construit le pool clonable. difficultyFilter
+    // ≠ null → ne matérialise QUE les tracks de ce niveau (clone-filtré) ;
+    // null → tous niveaux (Mix / décennies / legacy plates = comportement
+    // historique inchangé). La playabilité (is_playable + provider) est
+    // appliquée APRÈS le filtre niveau.
+    const buildChosen = (
+      difficultyFilter: 'EASY' | 'MEDIUM' | 'EXPERT' | null,
+    ): { chosen: ChosenTrack[]; skippedNotPlayable: number } => {
+      const out: ChosenTrack[] = [];
+      let skipped = 0;
+      for (const t of detail.tracks) {
+        // Clone-filtré : skip les tracks hors du niveau choisi (ne compte pas
+        // comme "non jouable", c'est un filtre volontaire).
+        if (difficultyFilter && t.difficulty !== difficultyFilter) continue;
+        // Problème A (fix/playback-and-zombies-v4) — skip tracks invalidées par
+        // validate-youtube-ids (vidéo retirée, non-embeddable, blocked FR/LU).
+        // Sans ce filtre, le SDK YouTube tombait sur "video not embeddable" en
+        // pleine partie → blocage host.
+        if (t.is_playable === false) {
+          skipped += 1;
+          continue;
+        }
+        // feat/two-provider-libraries — choix provider selon l'onglet :
+        //   spotify → UNIQUEMENT spotify_id, provider='spotify', AUCUN fallback
+        //             (les tracks sans spotify_id sont skip → playlist 100% Spotify)
+        //   youtube → youtube_id prioritaire, spotify_id en fallback legacy ultime
+        let provider: 'spotify' | 'youtube' | null = null;
+        let providerId: string | null = null;
+        if (preferProvider === 'spotify') {
+          if (t.spotify_id) {
+            provider = 'spotify';
+            providerId = t.spotify_id;
+          }
+        } else if (t.youtube_id) {
+          provider = 'youtube';
+          providerId = t.youtube_id;
+        } else if (t.spotify_id) {
           provider = 'spotify';
           providerId = t.spotify_id;
         }
-      } else if (t.youtube_id) {
-        provider = 'youtube';
-        providerId = t.youtube_id;
-      } else if (t.spotify_id) {
-        provider = 'spotify';
-        providerId = t.spotify_id;
+        if (!provider || !providerId) continue; // track non jouable pour ce provider, skip
+        // Fallback cover : si pas de cover_url stockée et qu'on a un youtube_id,
+        // on dérive la thumbnail YouTube. Garantit un visuel pour chaque track.
+        const coverUrl =
+          t.cover_url ??
+          (t.youtube_id ? `https://img.youtube.com/vi/${t.youtube_id}/hqdefault.jpg` : null);
+        // feat/guess-work-mode — substitue title ↔ work_title si guess_mode='work'.
+        // Si la track n'a pas de work_title rempli, on retombe sur le titre
+        // chanson original (fallback safe → pas de NaN/empty match).
+        const matchTitle = isGuessWork && t.work_title ? t.work_title : t.title;
+        const matchTitleAliases = isGuessWork
+          ? [...(t.work_aliases ?? []), ...(t.title_aliases ?? [])]
+          : (t.title_aliases ?? []);
+        out.push({
+          position: t.position,
+          title: matchTitle,
+          artist: t.artist,
+          year: t.year,
+          provider,
+          provider_track_id: providerId,
+          cover_url: coverUrl,
+          answers_accepted: null,
+          official_artist_aliases: t.artist_aliases ?? [],
+          official_title_aliases: matchTitleAliases,
+        });
       }
-      if (!provider || !providerId) continue; // track non jouable pour ce provider, skip
-      // Fallback cover : si pas de cover_url stockée et qu'on a un youtube_id,
-      // on dérive la thumbnail YouTube. Garantit un visuel pour chaque track.
-      const coverUrl =
-        t.cover_url ??
-        (t.youtube_id ? `https://img.youtube.com/vi/${t.youtube_id}/hqdefault.jpg` : null);
-      // feat/guess-work-mode — substitue title ↔ work_title si guess_mode='work'.
-      // Si la track n'a pas de work_title rempli, on retombe sur le titre
-      // chanson original (fallback safe → pas de NaN/empty match).
-      const matchTitle = isGuessWork && t.work_title ? t.work_title : t.title;
-      const matchTitleAliases = isGuessWork
-        ? [...(t.work_aliases ?? []), ...(t.title_aliases ?? [])]
-        : (t.title_aliases ?? []);
-      chosen.push({
-        position: t.position,
-        title: matchTitle,
-        artist: t.artist,
-        year: t.year,
-        provider,
-        provider_track_id: providerId,
-        cover_url: coverUrl,
-        answers_accepted: null,
-        official_artist_aliases: t.artist_aliases ?? [],
-        official_title_aliases: matchTitleAliases,
-      });
+      return { chosen: out, skippedNotPlayable: skipped };
+    };
+
+    // feat/thematic-level-filter — applique le niveau demandé, avec garde-fou :
+    // si le pool filtré tombe sous 15 tracks jouables → fallback Mix (jamais
+    // d'écran vide ni de manche famélique). Anti-répétition + tirage aléatoire
+    // (pickRandomTrackIdsForRound) restent INCHANGÉS en aval.
+    const MIN_LEVEL_POOL = 15;
+    const requestedDifficulty = parsed.data.difficulty ?? null;
+    let { chosen, skippedNotPlayable } = buildChosen(requestedDifficulty);
+    if (requestedDifficulty && chosen.length < MIN_LEVEL_POOL) {
+      console.info(
+        `[Launch] Playlist ${detail.slug}: niveau ${requestedDifficulty} → pool=${chosen.length} < ${MIN_LEVEL_POOL} jouables → fallback Mix (tous niveaux)`,
+      );
+      ({ chosen, skippedNotPlayable } = buildChosen(null));
+    } else if (requestedDifficulty) {
+      console.info(
+        `[Launch] Playlist ${detail.slug}: clone-filtré niveau ${requestedDifficulty} → pool=${chosen.length} jouables`,
+      );
     }
     if (chosen.length === 0) {
       res

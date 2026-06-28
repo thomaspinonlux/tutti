@@ -862,6 +862,9 @@ function HostPageInner(): JSX.Element {
         previewPlaylist: LibraryPlaylistDetail;
         prefer: PreferProvider;
         trackCount: number;
+        // feat/thematic-level-filter — niveau choisi sur une thématique éclatée
+        // (clone-filtré au launch). undefined = tous niveaux (Mix / décennies).
+        difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT';
       };
   const [pendingFirstPlay, setPendingFirstPlay] = useState<PendingFirstPlay | null>(null);
 
@@ -897,6 +900,10 @@ function HostPageInner(): JSX.Element {
   // feat/two-provider-libraries — provider de l'onglet bibliothèque au moment du
   // pick (youtube|spotify), relu au launch. Ref : survit pick→preview→confirm.
   const pickedProviderRef = useRef<'youtube' | 'spotify'>('youtube');
+  // feat/thematic-level-filter — niveau choisi sur une thématique éclatée, relu
+  // au launch (clone-filtré). Ref : survit pick→preview→confirm. undefined =
+  // tous niveaux (Mix / décennies / thématique non éclatée).
+  const pickedDifficultyRef = useRef<'EASY' | 'MEDIUM' | 'EXPERT' | undefined>(undefined);
   const [previewReport, setPreviewReport] = useState<PlayabilityReport | null>(null);
 
   const fetchHostProviders = async (): Promise<HostProviders> => {
@@ -920,10 +927,12 @@ function HostPageInner(): JSX.Element {
   const handlePickOfficial = async (
     summary: LibraryPlaylistSummary,
     provider: 'youtube' | 'spotify' = 'youtube',
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
   ): Promise<void> => {
     if (!session) return;
     if (summary.locked) return; // ne devrait pas arriver — card disabled
     pickedProviderRef.current = provider; // onglet choisi → relu au launch
+    pickedDifficultyRef.current = difficulty; // niveau choisi → relu au launch
 
     // 1. Charge providers connectés
     const providers = await fetchHostProviders();
@@ -1010,6 +1019,8 @@ function HostPageInner(): JSX.Element {
       // BUG3 — cape à la taille de manche (official dss=15) : la manche ne joue
       // que min(15, playable), jamais tout le pool playable.
       trackCount: Math.min(playableCount, DEFAULT_SESSION_SIZE),
+      // feat/thematic-level-filter — niveau choisi au pick (ref), relu ici.
+      difficulty: pickedDifficultyRef.current,
     });
     setPreviewPlaylist(null);
     setPreviewReport(null);
@@ -1054,6 +1065,7 @@ function HostPageInner(): JSX.Element {
           pendingFirstPlay.previewPlaylist.id,
           session.id,
           pendingFirstPlay.prefer,
+          pendingFirstPlay.difficulty,
         );
         roundId = result.round.id;
       }

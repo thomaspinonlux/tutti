@@ -66,8 +66,21 @@ router.get(
 // PLAYLIST_SELECTION au prochain tick (+ broadcast spectator pour re-poll
 // immédiat). Body `{ playlist_id: null }` pour sortir de la sélection.
 
+// feat/thematic-level-filter — l'ancre de focus est soit un UUID de playlist
+// (cartes thèmes + décennies), soit un variantId `${uuid}::${level}` pour les
+// sous-cartes de niveau d'une thématique éclatée. On valide donc la BASE comme
+// UUID (le suffixe ::easy|medium|hard|mix est purement décoratif côté ancre ;
+// l'id n'est jamais utilisé comme clé de lookup DB, seulement comme highlight
+// opaque relayé à la TV). Reste strict (rejette tout id non-UUID).
+const focusIdSchema = z
+  .string()
+  .max(80)
+  .refine((s) => z.string().uuid().safeParse(s.split('::')[0]).success, {
+    message: 'playlist_id doit être un UUID (suffixe ::level optionnel)',
+  });
+
 const focusBodySchema = z.object({
-  playlist_id: z.string().uuid().nullable(),
+  playlist_id: focusIdSchema.nullable(),
   // feat/tv-grid-mirror — position de scroll VERTICALE de la grille host
   // (ratio 0..1), throttle ~100ms côté host. La TV l'applique à sa propre grille.
   scroll_ratio: z.number().min(0).max(1).optional(),

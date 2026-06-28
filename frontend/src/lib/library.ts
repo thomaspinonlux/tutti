@@ -22,6 +22,12 @@ export interface LibraryPlaylistSummary {
   track_count: number;
   spotify_count: number;
   youtube_count: number;
+  /** feat/thematic-level-filter — répartition des tracks par difficulty au
+   *  niveau catalogue. Optionnel (défensif : une réponse API servie par un
+   *  vieux service worker peut l'omettre → traité comme tout-zéro, donc pas de
+   *  sous-picker). Pilote l'affichage du sous-picker de niveau sur les
+   *  thématiques (≥2 niveaux ≥15). */
+  difficulty_counts?: { EASY: number; MEDIUM: number; EXPERT: number };
   /** true si premium_only et user pas premium → carte grisée + cadenas. */
   locked: boolean;
   /** feat/playlist-categories-schema — catégorie (PR 1/4 #59). */
@@ -113,10 +119,13 @@ export async function launchLibraryPlaylist(
   // feat/two-provider-libraries — défaut YOUTUBE (sécurité : le backend respecte
   // désormais ce champ ; 'spotify' n'est passé QUE depuis l'onglet Spotify).
   preferProvider: PreferProvider = 'youtube',
+  // feat/thematic-level-filter — niveau choisi sur une thématique (clone-filtré
+  // côté backend). undefined = tous niveaux (Mix / décennies / legacy plates).
+  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
 ): Promise<LaunchResult> {
   return api<LaunchResult>(`/api/library/playlists/${encodeURIComponent(id)}/launch`, {
     method: 'POST',
-    body: { session_id: sessionId, preferProvider },
+    body: { session_id: sessionId, preferProvider, ...(difficulty ? { difficulty } : {}) },
   });
 }
 
