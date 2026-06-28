@@ -13,6 +13,7 @@
 import type { CurrentTrackState } from '@tutti/shared';
 import { DEFAULT_SESSION_SIZE } from '@tutti/shared';
 import { prisma } from './prisma.js';
+import type { Tier } from '../config/levelWeights.js';
 import { broadcastToSession } from '../socket/index.js';
 import {
   clearActiveTrack,
@@ -288,6 +289,125 @@ export async function pickRandomTrackIdsForRound(
     playedSize: playedTrackIds.size,
     eligibleSize,
   };
+}
+
+function fisherYates<T>(arr: T[]): void {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i]!, arr[j]!] = [arr[j]!, arr[i]!];
+  }
+}
+
+/**
+ * feat/thematic-level-cumulative-weighted — tirage PONDÉRÉ par tier sur un pool
+ * cumulé. Même contrat que pickRandomTrackIdsForRound (anti-répétition via
+ * SessionPlayedTrack conservée) mais, au lieu d'un shuffle plat, échantillonne
+ * `sessionSize` tracks selon des PROPORTIONS-CIBLES par tier (`weights`,
+ * lues depuis config/levelWeights.ts).
+ *
+ * Stratifié : pass 1 → quota cible par tier (round(part × N), borné par le
+ * dispo ET par le reste à pourvoir, tiers traités part décroissante pour que
+ * le tier dominant obtienne son quota) ; pass 2 → si court (tier épuisé), comble
+ * depuis les restes, choix de tier pondéré par la part ; puis shuffle final.
+ *
+ * `tierByTrackId` : tier de chaque track clonée (construit au clone-on-launch,
+ * où la difficulty catalogue est connue). Tracks absentes de la map → MEDIUM
+ * (défensif, ne doit pas arriver).
+ */
+export async function pickWeightedTrackIdsForRound(
+  sessionId: string,
+  playlistId: string,
+  sessionSize: number,
+  tierByTrackId: Map<string, Tier>,
+  weights: Partial<Record<Tier, number>>,
+): Promise<RandomPickResult> {
+  const poolTracks = await prisma.playlistTrack.findMany({
+    where: { playlist_id: playlistId },
+    select: { track_id: true },
+    orderBy: { position: 'asc' },
+  });
+  const playedTrackIds = await prisma.sessionPlayedTrack
+    .findMany({ where: { session_id: sessionId }, select: { track_id: true } })
+    .then((rows) => new Set(rows.map((r) => r.track_id)))
+    .catch((err) => {
+      console.warn(
+        '[pickWeightedTrackIdsForRound] SessionPlayedTrack lookup failed, degrading:',
+        err,
+      );
+      return new Set<string>();
+    });
+
+  const candidates = poolTracks.map((pt) => pt.track_id).filter((tid) => !playedTrackIds.has(tid));
+  const eligibleSize = candidates.length;
+  if (eligibleSize === 0) {
+    return {
+      selectedTrackIds: [],
+      poolSize: poolTracks.length,
+      playedSize: playedTrackIds.size,
+      eligibleSize: 0,
+    };
+  }
+  const targetN = Math.min(sessionSize, eligibleSize);
+  const selected = weightedStratifiedSample(candidates, tierByTrackId, weights, targetN);
+  return {
+    selectedTrackIds: selected,
+    poolSize: poolTracks.length,
+    playedSize: playedTrackIds.size,
+    eligibleSize,
+  };
+}
+
+/**
+ * feat/thematic-level-cumulative-weighted — échantillonnage stratifié pur
+ * (sans DB → testable). Tire `targetN` ids parmi `candidates` selon des
+ * PROPORTIONS-CIBLES par tier (`weights`, normalisées). Pass 1 : quota cible par
+ * tier (round(part × N), borné par dispo ET reste, tiers part décroissante →
+ * le tier dominant sert en premier). Pass 2 : si court (tier épuisé), comble
+ * depuis les restes (choix de tier pondéré par la part). Shuffle final pour
+ * que l'ordre de jeu ne soit pas groupé par tier.
+ */
+export function weightedStratifiedSample(
+  candidates: string[],
+  tierByTrackId: Map<string, Tier>,
+  weights: Partial<Record<Tier, number>>,
+  targetN: number,
+): string[] {
+  const byTier: Record<Tier, string[]> = { EASY: [], MEDIUM: [], EXPERT: [] };
+  for (const tid of candidates) byTier[tierByTrackId.get(tid) ?? 'MEDIUM'].push(tid);
+  fisherYates(byTier.EASY);
+  fisherYates(byTier.MEDIUM);
+  fisherYates(byTier.EXPERT);
+
+  const tiers = (Object.keys(weights) as Tier[]).filter((t) => (weights[t] ?? 0) > 0);
+  const totalWeight = tiers.reduce((s, t) => s + (weights[t] ?? 0), 0) || 1;
+  const selected: string[] = [];
+
+  // Pass 1 — quota cible par tier (part décroissante → tier dominant en premier).
+  for (const tier of [...tiers].sort((a, b) => (weights[b] ?? 0) - (weights[a] ?? 0))) {
+    const want = Math.round(((weights[tier] ?? 0) / totalWeight) * targetN);
+    const take = Math.min(want, byTier[tier].length, targetN - selected.length);
+    if (take > 0) selected.push(...byTier[tier].splice(0, take));
+  }
+
+  // Pass 2 — comble le reste depuis les leftovers, tier choisi pondéré par la part.
+  while (selected.length < targetN) {
+    const avail = tiers.filter((t) => byTier[t].length > 0);
+    if (avail.length === 0) break;
+    const wsum = avail.reduce((s, t) => s + (weights[t] ?? 0), 0) || 1;
+    let r = Math.random() * wsum;
+    let chosenTier: Tier = avail[avail.length - 1]!;
+    for (const t of avail) {
+      r -= weights[t] ?? 0;
+      if (r <= 0) {
+        chosenTier = t;
+        break;
+      }
+    }
+    selected.push(byTier[chosenTier].shift()!);
+  }
+
+  fisherYates(selected);
+  return selected.slice(0, targetN);
 }
 
 /**

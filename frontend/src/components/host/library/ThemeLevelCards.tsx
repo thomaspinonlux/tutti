@@ -96,11 +96,7 @@ export function ThemeLevelCards({
                   className="font-display font-bold uppercase text-center px-2 leading-tight"
                   style={{ fontFamily: 'Fraunces, serif', fontSize: 22 }}
                 >
-                  {v.difficulty === 'EXPERT'
-                    ? t('host.session.lvl_expert')
-                    : v.level
-                      ? t(`host.session.lvl_${v.level}`)
-                      : theme.name}
+                  {v.level ? t(`host.session.lvl_${v.level}`) : theme.name}
                 </span>
                 <span className="font-mono text-xs opacity-80">
                   {v.count ?? v.playlist.track_count ?? 0} {t('playlists.tracksCount')}

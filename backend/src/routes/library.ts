@@ -26,7 +26,9 @@ import {
   DEFAULT_SESSION_SIZE,
   getEffectiveRoundTrackCount,
   pickRandomTrackIdsForRound,
+  pickWeightedTrackIdsForRound,
 } from '../lib/gameplayCore.js';
+import { LEVEL_WEIGHTS, cumulativeTiers, type Tier } from '../config/levelWeights.js';
 
 const router: Router = Router();
 
@@ -240,6 +242,10 @@ router.post(
       // blind test.
       official_artist_aliases: string[];
       official_title_aliases: string[];
+      // feat/thematic-level-cumulative-weighted — tier catalogue, conservé en
+      // mémoire jusqu'au tirage pour la pondération (Track clonée sans champ
+      // difficulty).
+      tier: Tier;
     };
     // feat/guess-work-mode — playlist "devine l'œuvre" : la réponse à matcher
     // côté Whisper/text n'est pas l'artiste+titre, mais le nom de l'œuvre
@@ -248,20 +254,23 @@ router.post(
     // (reveal) mais n'intervient pas dans le matching.
     const isGuessWork = detail.guess_mode === 'work';
 
-    // feat/thematic-level-filter — construit le pool clonable. difficultyFilter
-    // ≠ null → ne matérialise QUE les tracks de ce niveau (clone-filtré) ;
+    // feat/thematic-level-cumulative-weighted — construit le pool clonable.
+    // level ≠ null → pool CUMULATIF (inclusif vers le bas) : ne matérialise que
+    // les tiers de cumulativeTiers(level) (ex. EXPERT → EASY+MEDIUM+EXPERT) ;
     // null → tous niveaux (Mix / décennies / legacy plates = comportement
     // historique inchangé). La playabilité (is_playable + provider) est
-    // appliquée APRÈS le filtre niveau.
+    // appliquée APRÈS le filtre niveau. Chaque track conserve son `tier`.
     const buildChosen = (
-      difficultyFilter: 'EASY' | 'MEDIUM' | 'EXPERT' | null,
+      level: Tier | null,
     ): { chosen: ChosenTrack[]; skippedNotPlayable: number } => {
+      const allowedTiers = level ? cumulativeTiers(level) : null;
       const out: ChosenTrack[] = [];
       let skipped = 0;
       for (const t of detail.tracks) {
-        // Clone-filtré : skip les tracks hors du niveau choisi (ne compte pas
-        // comme "non jouable", c'est un filtre volontaire).
-        if (difficultyFilter && t.difficulty !== difficultyFilter) continue;
+        const tier = (t.difficulty as Tier) ?? 'MEDIUM';
+        // Pool cumulé : skip les tracks hors des tiers du niveau choisi (filtre
+        // volontaire, ne compte pas comme "non jouable").
+        if (allowedTiers && !allowedTiers.includes(tier)) continue;
         // Problème A (fix/playback-and-zombies-v4) — skip tracks invalidées par
         // validate-youtube-ids (vidéo retirée, non-embeddable, blocked FR/LU).
         // Sans ce filtre, le SDK YouTube tombait sur "video not embeddable" en
@@ -312,26 +321,31 @@ router.post(
           answers_accepted: null,
           official_artist_aliases: t.artist_aliases ?? [],
           official_title_aliases: matchTitleAliases,
+          tier,
         });
       }
       return { chosen: out, skippedNotPlayable: skipped };
     };
 
-    // feat/thematic-level-filter — applique le niveau demandé, avec garde-fou :
-    // si le pool filtré tombe sous 15 tracks jouables → fallback Mix (jamais
-    // d'écran vide ni de manche famélique). Anti-répétition + tirage aléatoire
-    // (pickRandomTrackIdsForRound) restent INCHANGÉS en aval.
+    // feat/thematic-level-cumulative-weighted — applique le niveau demandé
+    // (pool CUMULATIF), avec garde-fou : si le pool cumulé tombe sous 15 tracks
+    // jouables → fallback Mix (tous niveaux, tirage plat) → jamais d'écran vide
+    // ni de manche famélique. `effectiveDifficulty` = niveau réellement appliqué
+    // (null si fallback Mix), relu au tirage pour décider pondéré vs plat.
+    // Anti-répétition (SessionPlayedTrack) conservée en aval.
     const MIN_LEVEL_POOL = 15;
-    const requestedDifficulty = parsed.data.difficulty ?? null;
+    const requestedDifficulty = (parsed.data.difficulty as Tier | undefined) ?? null;
+    let effectiveDifficulty: Tier | null = requestedDifficulty;
     let { chosen, skippedNotPlayable } = buildChosen(requestedDifficulty);
     if (requestedDifficulty && chosen.length < MIN_LEVEL_POOL) {
       console.info(
-        `[Launch] Playlist ${detail.slug}: niveau ${requestedDifficulty} → pool=${chosen.length} < ${MIN_LEVEL_POOL} jouables → fallback Mix (tous niveaux)`,
+        `[Launch] Playlist ${detail.slug}: niveau ${requestedDifficulty} → pool cumulé=${chosen.length} < ${MIN_LEVEL_POOL} jouables → fallback Mix (tous niveaux, tirage plat)`,
       );
+      effectiveDifficulty = null;
       ({ chosen, skippedNotPlayable } = buildChosen(null));
     } else if (requestedDifficulty) {
       console.info(
-        `[Launch] Playlist ${detail.slug}: clone-filtré niveau ${requestedDifficulty} → pool=${chosen.length} jouables`,
+        `[Launch] Playlist ${detail.slug}: niveau cumulé ${requestedDifficulty} (tiers ${cumulativeTiers(requestedDifficulty).join('+')}) → pool=${chosen.length} jouables`,
       );
     }
     if (chosen.length === 0) {
@@ -488,6 +502,14 @@ router.post(
       (c) => trackIdByKey.get(trackKey(c.provider, c.provider_track_id))!,
     );
 
+    // feat/thematic-level-cumulative-weighted — map trackId cloné → tier
+    // catalogue (pour la pondération au tirage). Même track = même tier.
+    const tierByTrackId = new Map<string, Tier>();
+    chosen.forEach((c, i) => {
+      const tid = trackIds[i];
+      if (tid) tierByTrackId.set(tid, c.tier);
+    });
+
     // Mesure perf (avant : N+1 séquentiel 160-320 RT ≈ 1-2 min ; après : ~8 RT).
     console.info(
       `[Launch] clone-batch done in ${Date.now() - cloneStartedAt}ms | tracks=${chosen.length} ` +
@@ -521,9 +543,23 @@ router.post(
     //    Avant ce fix, ce path créait des rounds avec selected_track_ids
     //    vide → gameplayCore fallback sur full playlist → 80 tracks joués.
     const sessionSize = playlist.default_session_size ?? DEFAULT_SESSION_SIZE;
-    const pick = await pickRandomTrackIdsForRound(session.id, playlist.id, sessionSize);
+    // feat/thematic-level-cumulative-weighted — niveau choisi (≠ Mix) → tirage
+    // PONDÉRÉ par tier (proportions LEVEL_WEIGHTS) ; Mix / décennies / perso →
+    // tirage plat historique. Anti-répétition conservée dans les deux cas.
+    const pick = effectiveDifficulty
+      ? await pickWeightedTrackIdsForRound(
+          session.id,
+          playlist.id,
+          sessionSize,
+          tierByTrackId,
+          LEVEL_WEIGHTS[effectiveDifficulty],
+        )
+      : await pickRandomTrackIdsForRound(session.id, playlist.id, sessionSize);
     console.info(
-      `[POST /library/launch] session=${session.id} playlist=${playlist.id} | pool=${pick.poolSize} played=${pick.playedSize} eligible=${pick.eligibleSize} session_size=${sessionSize} → selected=${pick.selectedTrackIds.length}`,
+      `[POST /library/launch] session=${session.id} playlist=${playlist.id} | ` +
+        `mode=${effectiveDifficulty ? `weighted:${effectiveDifficulty}` : 'flat'} ` +
+        `pool=${pick.poolSize} played=${pick.playedSize} eligible=${pick.eligibleSize} ` +
+        `session_size=${sessionSize} → selected=${pick.selectedTrackIds.length}`,
     );
 
     const existingRoundsCount = await prisma.sessionRound.count({
