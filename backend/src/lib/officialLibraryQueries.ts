@@ -30,6 +30,14 @@ export interface LibraryPlaylistSummary {
   spotify_count: number;
   youtube_count: number;
   /**
+   * feat/thematic-level-filter — répartition des tracks par difficulty
+   * (EASY/MEDIUM/EXPERT) au niveau CATALOGUE. Sert au sous-picker de niveau sur
+   * les playlists thématiques : affiché SSI ≥2 niveaux ont chacun ≥15 tracks
+   * (sinon une seule carte). Les décennies (slug -easy/-medium/-hard) ne
+   * l'utilisent pas (niveau = playlist séparée).
+   */
+  difficulty_counts: { EASY: number; MEDIUM: number; EXPERT: number };
+  /**
    * true si premium_only ET user n'a pas le plan premium → playlist affichée
    * grisée côté UI avec cadenas. Le détail (`tracks`) reste 403 pour ces
    * playlists.
@@ -71,6 +79,24 @@ export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
     work_title: string | null;
     work_aliases: string[];
   }>;
+}
+
+/**
+ * feat/thematic-level-filter — compte les tracks par difficulty pour le
+ * sous-picker de niveau. Tolérant aux valeurs inconnues (ignorées).
+ */
+function countDifficulties(tracks: Array<{ difficulty: string }>): {
+  EASY: number;
+  MEDIUM: number;
+  EXPERT: number;
+} {
+  const counts = { EASY: 0, MEDIUM: 0, EXPERT: 0 };
+  for (const t of tracks) {
+    if (t.difficulty === 'EASY' || t.difficulty === 'MEDIUM' || t.difficulty === 'EXPERT') {
+      counts[t.difficulty] += 1;
+    }
+  }
+  return counts;
 }
 
 /**
@@ -120,7 +146,13 @@ export async function listVisiblePlaylists(
       // track) + cover_url + youtube_id pour permettre au frontend de servir
       // un thumbnail YT direct si le backend /api/library-cover/:slug 404.
       tracks: {
-        select: { spotify_id: true, youtube_id: true, cover_url: true, position: true },
+        select: {
+          spotify_id: true,
+          youtube_id: true,
+          cover_url: true,
+          position: true,
+          difficulty: true,
+        },
         orderBy: { position: 'asc' },
       },
     },
@@ -145,6 +177,7 @@ export async function listVisiblePlaylists(
       track_count: p._count.tracks,
       spotify_count,
       youtube_count,
+      difficulty_counts: countDifficulties(p.tracks),
       locked: p.visibility === 'premium_only' && !premium,
       category: p.category,
       position_in_category: p.position_in_category,
@@ -172,7 +205,13 @@ export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
     include: {
       _count: { select: { tracks: true } },
       tracks: {
-        select: { spotify_id: true, youtube_id: true, cover_url: true, position: true },
+        select: {
+          spotify_id: true,
+          youtube_id: true,
+          cover_url: true,
+          position: true,
+          difficulty: true,
+        },
         orderBy: { position: 'asc' },
       },
     },
@@ -196,6 +235,7 @@ export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
       track_count: p._count.tracks,
       spotify_count,
       youtube_count,
+      difficulty_counts: countDifficulties(p.tracks),
       // TV = vue anonyme (non-premium) → premium_only verrouillées.
       locked: p.visibility === 'premium_only',
       category: p.category,
@@ -261,6 +301,7 @@ export async function getVisiblePlaylistDetail(
     track_count: playlist.tracks.length,
     spotify_count,
     youtube_count,
+    difficulty_counts: countDifficulties(playlist.tracks),
     locked: false,
     category: playlist.category,
     position_in_category: playlist.position_in_category,

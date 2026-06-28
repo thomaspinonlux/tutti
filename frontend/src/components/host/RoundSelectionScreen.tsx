@@ -56,10 +56,13 @@ interface Props {
   /** Pick playlist perso (existante). Reçoit l'objet complet pour afficher
    *  le PreGameStartScreen avec name + tracks_count sans re-fetch. */
   onPickPlaylist: (playlist: Playlist) => void | Promise<void>;
-  /** Pick playlist officielle Tutti — déclenche flow validation + clone. */
+  /** Pick playlist officielle Tutti — déclenche flow validation + clone.
+   *  `difficulty` (feat/thematic-level-filter) : niveau choisi sur une
+   *  thématique éclatée → clone-filtré au launch. undefined = tous niveaux. */
   onPickOfficial: (
     playlist: LibraryPlaylistSummary,
     provider: 'youtube' | 'spotify',
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
   ) => void | Promise<void>;
   /** feat/two-provider-libraries — onglet Spotify dispo (host allowlisté + Spotify connecté). */
   spotifyLibraryAvailable?: boolean;
@@ -435,7 +438,7 @@ export function RoundSelectionScreen({
                 theme={selectedTheme}
                 disabled={loading}
                 onBack={() => setSelectedThemeKey(null)}
-                onPickLevel={(pl) => void onPickOfficial(pl, provider)}
+                onPickLevel={(pl, difficulty) => void onPickOfficial(pl, provider, difficulty)}
               />
             )
           ) : quizPacks === null ? (

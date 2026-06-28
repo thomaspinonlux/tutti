@@ -25,8 +25,15 @@ interface Props {
   disabled?: boolean;
   /** Host : retour à l'étape thèmes. */
   onBack?: () => void;
-  /** Host : pick d'un niveau → lance la playlist. */
-  onPickLevel?: (playlist: LibraryPlaylistSummary) => void;
+  /**
+   * Host : pick d'un niveau → lance la playlist. `difficulty` est défini pour
+   * les sous-cartes d'une thématique éclatée (clone-filtré au launch) ;
+   * undefined pour Mix et les décennies (niveau = playlist séparée).
+   */
+  onPickLevel?: (
+    playlist: LibraryPlaylistSummary,
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+  ) => void;
 }
 
 export function ThemeLevelCards({
@@ -64,15 +71,18 @@ export function ThemeLevelCards({
                 : v.level === 'hard'
                   ? 'bg-raspberry text-cream'
                   : 'bg-spritz text-cream';
-          const highlighted = !!highlightId && highlightId === v.playlist.id;
+          // feat/thematic-level-filter — ancre/key = variantId (= playlist.id
+          // pour les décennies → mirror #121 inchangé ; `${id}::${level}` pour
+          // une thématique éclatée → cartes uniques malgré la même playlist).
+          const highlighted = !!highlightId && highlightId === v.variantId;
           return (
-            <div key={v.playlist.id} data-focus-playlist-id={v.playlist.id}>
+            <div key={v.variantId} data-focus-playlist-id={v.variantId}>
               <button
                 type="button"
                 disabled={disabled || readOnly}
                 onClick={() => {
                   if (readOnly) return;
-                  onPickLevel?.(v.playlist);
+                  onPickLevel?.(v.playlist, v.difficulty);
                 }}
                 className={`w-full h-32 rounded-xl border-2 border-ink shadow-pop flex flex-col items-center justify-center gap-1 transition-transform ${
                   readOnly ? '' : 'hover:-translate-y-0.5 hover:shadow-pop-lg'
@@ -86,10 +96,14 @@ export function ThemeLevelCards({
                   className="font-display font-bold uppercase text-center px-2 leading-tight"
                   style={{ fontFamily: 'Fraunces, serif', fontSize: 22 }}
                 >
-                  {v.level ? t(`host.session.lvl_${v.level}`) : theme.name}
+                  {v.difficulty === 'EXPERT'
+                    ? t('host.session.lvl_expert')
+                    : v.level
+                      ? t(`host.session.lvl_${v.level}`)
+                      : theme.name}
                 </span>
                 <span className="font-mono text-xs opacity-80">
-                  {v.playlist.track_count ?? 0} {t('playlists.tracksCount')}
+                  {v.count ?? v.playlist.track_count ?? 0} {t('playlists.tracksCount')}
                 </span>
               </button>
             </div>
