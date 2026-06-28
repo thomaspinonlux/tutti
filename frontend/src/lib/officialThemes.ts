@@ -84,33 +84,63 @@ export interface CategoryThemeSection {
 }
 
 /**
- * feat/thematic-level-filter — éclate une thématique en variantes de niveau si
- * sa répartition difficulty le justifie. Retourne null si la règle n'est pas
- * remplie (< 2 niveaux à ≥ THEMATIC_LEVEL_MIN) → le thème reste une carte.
+ * feat/thematic-level-cumulative-weighted — éclate une thématique en niveaux
+ * CUMULATIFS (inclusif vers le bas) si sa répartition difficulty le justifie.
  *
- * Variantes produites (ordonnées) : une carte par niveau ATTEIGNANT le seuil
- * (Facile/Moyen/Expert) + toujours une carte Mix (tous niveaux). On masque les
- * niveaux sous le seuil pour ne jamais proposer une carte qui retomberait en
- * fallback Mix côté backend.
+ * Règle d'AFFICHAGE (inchangée) : sous-picker SSI ≥2 tiers ont chacun ≥
+ * THEMATIC_LEVEL_MIN tracks ; sinon null → le thème reste une carte (legacy
+ * plates incluses).
+ *
+ * Cartes produites = niveaux dont le POOL CUMULÉ ≥ seuil :
+ *   Facile    → EASY                  (affiché si EASY ≥ seuil)
+ *   Moyen     → EASY+MEDIUM
+ *   Difficile → EASY+MEDIUM+EXPERT
+ *   Mix       → tout (tirage plat, difficulty undefined)
+ * Le `difficulty` porté (EASY/MEDIUM/EXPERT) désigne le tier SOMMET du niveau ;
+ * le backend en déduit le pool cumulé + la pondération (LEVEL_WEIGHTS).
+ * `count` = taille du pool cumulé (affichage). Les niveaux Moyen/Difficile/Mix
+ * sont garantis ≥ seuil dès que le gate passe (2 tiers ≥15 → cumul ≥30).
  */
 export function expandThematicLevels(p: LibraryPlaylistSummary): ThemeVariant[] | null {
-  const counts = p.difficulty_counts;
-  if (!counts) return null;
-  const levels: Array<{ level: 'easy' | 'medium' | 'hard'; count: number }> = [
-    { level: 'easy', count: counts.EASY },
-    { level: 'medium', count: counts.MEDIUM },
-    { level: 'hard', count: counts.EXPERT },
-  ];
-  const qualifying = levels.filter((l) => l.count >= THEMATIC_LEVEL_MIN);
-  if (qualifying.length < 2) return null; // règle : ≥2 niveaux ≥15 → sinon une carte
-  const variants: ThemeVariant[] = qualifying.map((l) => ({
-    level: l.level,
-    playlist: p,
-    variantId: `${p.id}::${l.level}`,
-    difficulty: LEVEL_TO_DIFFICULTY[l.level],
-    count: l.count,
-  }));
-  // Carte Mix (tous niveaux) — difficulty undefined → clone complet côté backend.
+  const c = p.difficulty_counts;
+  if (!c) return null;
+  const tiersQualifying = [c.EASY, c.MEDIUM, c.EXPERT].filter(
+    (n) => n >= THEMATIC_LEVEL_MIN,
+  ).length;
+  if (tiersQualifying < 2) return null; // gate : ≥2 tiers ≥15 → sinon une carte
+
+  const cumEasy = c.EASY;
+  const cumMedium = c.EASY + c.MEDIUM;
+  const cumExpert = c.EASY + c.MEDIUM + c.EXPERT;
+  const variants: ThemeVariant[] = [];
+  if (cumEasy >= THEMATIC_LEVEL_MIN) {
+    variants.push({
+      level: 'easy',
+      playlist: p,
+      variantId: `${p.id}::easy`,
+      difficulty: LEVEL_TO_DIFFICULTY.easy,
+      count: cumEasy,
+    });
+  }
+  if (cumMedium >= THEMATIC_LEVEL_MIN) {
+    variants.push({
+      level: 'medium',
+      playlist: p,
+      variantId: `${p.id}::medium`,
+      difficulty: LEVEL_TO_DIFFICULTY.medium,
+      count: cumMedium,
+    });
+  }
+  if (cumExpert >= THEMATIC_LEVEL_MIN) {
+    variants.push({
+      level: 'hard',
+      playlist: p,
+      variantId: `${p.id}::hard`,
+      difficulty: LEVEL_TO_DIFFICULTY.hard,
+      count: cumExpert,
+    });
+  }
+  // Carte Mix (tout, tirage plat) — difficulty undefined → clone complet backend.
   variants.push({
     level: 'mix',
     playlist: p,
