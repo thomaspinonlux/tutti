@@ -38,6 +38,7 @@ import type {
 import { Badge, Button, Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { fireConfetti } from '../../components/ui/Confetti.js';
 import { QRCode } from '../../components/host/QRCode.js';
+import { useAudioClock } from '../../lib/useAudioClock.js';
 
 // ── Hooks utilitaires ─────────────────────────────────────────────────────
 
@@ -348,7 +349,15 @@ function IPadHeader({
   const { t } = useTranslation();
   // Source de vérité Spotify si dispo, sinon fallback interpolation
   const fallbackElapsed = useTimeElapsed(currentTrack?.started_at ?? null, isPaused);
-  const elapsed = positionMs ?? fallbackElapsed;
+  // F3 — horloge audio DÉCOUPLÉE (reflète seek/pause/resume serveur) dès qu'elle
+  // est dispo ; sinon fallback legacy started_at. positionMs (lecteur local host)
+  // garde la priorité s'il est fourni (sink=host).
+  const audioElapsed = useAudioClock(
+    currentTrack?.audio_position_ms,
+    currentTrack?.audio_anchor_at,
+    isPaused,
+  );
+  const elapsed = positionMs ?? (currentTrack?.audio_anchor_at ? audioElapsed : fallbackElapsed);
   const totalMs = durationMs ?? currentTrack?.duration_ms ?? null;
   const remaining = totalMs ? Math.max(0, totalMs - elapsed) : null;
   return (
@@ -425,7 +434,15 @@ function IPadFooter({
 }): JSX.Element {
   const { t } = useTranslation();
   const fallbackElapsed = useTimeElapsed(currentTrack?.started_at ?? null, isPaused);
-  const elapsed = positionMs ?? fallbackElapsed;
+  // F3 — horloge audio DÉCOUPLÉE (reflète seek/pause/resume serveur) dès qu'elle
+  // est dispo ; sinon fallback legacy started_at. positionMs (lecteur local host)
+  // garde la priorité s'il est fourni (sink=host).
+  const audioElapsed = useAudioClock(
+    currentTrack?.audio_position_ms,
+    currentTrack?.audio_anchor_at,
+    isPaused,
+  );
+  const elapsed = positionMs ?? (currentTrack?.audio_anchor_at ? audioElapsed : fallbackElapsed);
   const totalMs = durationMs ?? currentTrack?.duration_ms ?? null;
   const progress = totalMs && totalMs > 0 ? Math.min(1, elapsed / totalMs) : 0;
   // Bouton "Suivant" mis en évidence en phase 3

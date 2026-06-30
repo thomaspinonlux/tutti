@@ -36,6 +36,7 @@ import {
   hostPauseSession,
   hostResumeSession,
   hostRestartTrack,
+  hostSeekTrack,
   kickParticipant,
   moveParticipantTeam,
   nextTrack,
@@ -48,6 +49,7 @@ import {
 import { abandonSession, postQrOverlay } from '../lib/screenState.js';
 import { resolveAudioSink, type AudioTarget } from '../lib/audioSink.js';
 import { useTvAudioFlags } from '../lib/useTvAudioFlags.js';
+import { useAudioClock } from '../lib/useAudioClock.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 import { connectAsHost } from '../lib/socket.js';
 import { getMe } from '../lib/me.js';
@@ -420,6 +422,33 @@ function HostPageInner(): JSX.Element {
           setLastReveal(null);
           setActiveBuzzers(new Set());
         });
+        // F3 — horloge audio découplée : seek/pause/resume serveur. On recale
+        // l'horloge (audio_position_ms/anchor) sur le currentTrack → les 2
+        // barres bougent pareil. Si le host est le SINK et que c'est un vrai
+        // seek, on applique aussi le seek sur SON lecteur (le non-sink ne fait
+        // que recaler sa barre).
+        socket.on(
+          'track:seek',
+          (payload: {
+            round_id: string;
+            reason: 'seek' | 'pause' | 'resume';
+            audio_position_ms: number;
+            audio_anchor_at: string;
+          }) => {
+            setCurrentTrack((prev) =>
+              prev && prev.round_id === payload.round_id
+                ? {
+                    ...prev,
+                    audio_position_ms: payload.audio_position_ms,
+                    audio_anchor_at: payload.audio_anchor_at,
+                  }
+                : prev,
+            );
+            if (payload.reason === 'seek' && audioSinkRef.current === 'host') {
+              playerSeekRef.current(payload.audio_position_ms);
+            }
+          },
+        );
         socket.on(
           'buzz:received',
           (payload: {
@@ -700,6 +729,16 @@ function HostPageInner(): JSX.Element {
     tv_spotify_ready: tvAudioFlags.tv_spotify_ready,
     provider: currentTrack?.provider ?? null,
   });
+
+  // F3 — refs frais pour le listener socket `track:seek` (monté une fois) :
+  // savoir si le host est le sink + comment seeker son lecteur courant.
+  const audioSinkRef = useRef<'host' | 'tv'>(audioSink);
+  audioSinkRef.current = audioSink;
+  const playerSeekRef = useRef<(ms: number) => void>(() => {});
+  playerSeekRef.current = (ms: number): void => {
+    if (currentTrack?.provider === 'youtube') youtube.seek(ms);
+    else void spotify.seek(ms);
+  };
 
   // ── Audio sync unifié — single source of truth = état serveur ────────
   // Chaque sync hook ne pilote SON provider que si currentTrack.provider
@@ -1803,9 +1842,12 @@ function HostPageInner(): JSX.Element {
                 onRestartTrack={() => void handleRestartTrack()}
                 onRevealAnswer={() => void handleGiveAnswer()}
                 onSeek={(ms) => {
-                  // feat/seek-bar — route vers le provider du morceau courant.
-                  if (currentTrack?.provider === 'youtube') youtube.seek(ms);
-                  else void spotify.seek(ms);
+                  // F3 — seek SERVEUR (plus le seek lecteur local). Le serveur
+                  // pose l'horloge audio + broadcast track:seek → le SINK (host
+                  // ou TV) applique le seek sur son lecteur (cf. listener socket).
+                  if (session && playingRound) {
+                    void hostSeekTrack(session.id, playingRound.id, ms);
+                  }
                 }}
               />
             )}
@@ -2172,36 +2214,6 @@ function WaitingPhase({
   );
 }
 
-/**
- * F2 (host-tv-perfect-sync) — horloge serveur pause-aware côté host. Compte le
- * temps écoulé depuis `startedAtIso` (reset 0 au changement), +delta par tick si
- * !isPaused, FIGE si isPaused. Sert de fallback à la position du lecteur local
- * quand le son est sur la TV (lecteur host muet → position figée). MÊME logique
- * que la TV (MainScreenView.useTimeElapsed) → les 2 timers restent synchrones.
- * Lecture seule — NE touche PAS started_at_ms (ancre buzz/scoring).
- */
-function useServerElapsedMs(startedAtIso: string | null, isPaused: boolean): number {
-  const [elapsed, setElapsed] = useState(0);
-  const lastTickRef = useRef<number>(Date.now());
-  useEffect(() => {
-    setElapsed(0);
-    lastTickRef.current = Date.now();
-  }, [startedAtIso]);
-  useEffect(() => {
-    if (!startedAtIso) return;
-    const tick = (): void => {
-      const now = Date.now();
-      const delta = now - lastTickRef.current;
-      lastTickRef.current = now;
-      if (!isPaused) setElapsed((e) => e + delta);
-    };
-    lastTickRef.current = Date.now();
-    const id = window.setInterval(tick, 250);
-    return () => window.clearInterval(id);
-  }, [isPaused, startedAtIso]);
-  return elapsed;
-}
-
 function RoundPlayingScreen({
   sessionId,
   round,
@@ -2249,11 +2261,16 @@ function RoundPlayingScreen({
   onSeek: (ms: number) => void;
 }): JSX.Element {
   const { t } = useTranslation();
-  // F2 — position/durée effectives : lecteur local si fourni (sink=host), sinon
-  // horloge serveur (sink=tv → lecteur host muet). Le timer tourne pareil et la
-  // pause (isPaused serveur) fige les deux côtés.
-  const serverElapsedMs = useServerElapsedMs(currentTrack?.started_at ?? null, isPaused);
-  const effPositionMs = positionMs ?? serverElapsedMs;
+  // F3 — la barre lit l'HORLOGE AUDIO DÉCOUPLÉE (audio_position_ms + anchor du
+  // serveur), identique sur l'iPad et la TV, jamais le positionMs d'un lecteur
+  // local. La pause fige les deux, un seek serveur recale les deux. `positionMs`
+  // (lecteur local F2) n'est plus utilisé pour l'affichage.
+  void positionMs;
+  const effPositionMs = useAudioClock(
+    currentTrack?.audio_position_ms,
+    currentTrack?.audio_anchor_at,
+    isPaused,
+  );
   const effDurationMs = durationMs ?? currentTrack?.duration_ms ?? 0;
   const top5 = cumulative.slice(0, 5);
   const totalTracks = round.playlist.tracks_count ?? 0;

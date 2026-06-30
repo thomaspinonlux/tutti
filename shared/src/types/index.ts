@@ -259,6 +259,19 @@ export interface CurrentTrackState {
   started_at: string;
   /** Durée du Track Spotify en ms (informatif, le morceau joue jusqu'au bout). */
   duration_ms: number | null;
+  /**
+   * feat/host-tv-perfect-sync (F3) — HORLOGE AUDIO DÉCOUPLÉE de `started_at`
+   * (= ancre buzz/scoring, JAMAIS modifiée). Position du morceau au dernier
+   * reset (start→0 / seek→X / pause→elapsed-figé) en ms.
+   */
+  audio_position_ms: number;
+  /**
+   * Wall-clock ISO du dernier reset de `audio_position_ms`. Les 2 appareils
+   * calculent l'elapsed audio IDENTIQUEMENT :
+   *   elapsed = is_paused ? audio_position_ms
+   *                       : audio_position_ms + (now − audio_anchor_at)
+   */
+  audio_anchor_at: string;
   phase: GameTrackPhase;
   /**
    * Date de démarrage de la phase 2 (ISO) si on y est. Permet aux clients

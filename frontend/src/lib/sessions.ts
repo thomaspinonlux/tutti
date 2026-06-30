@@ -310,6 +310,23 @@ export async function hostRestartTrack(sessionId: string, roundId: string): Prom
 }
 
 /**
+ * feat/host-tv-perfect-sync (F3) — seek serveur. Pose l'horloge audio à
+ * `positionMs` côté serveur → broadcast track:seek → le sink (host ou TV)
+ * applique le seek sur son lecteur. Remplace le seek du lecteur LOCAL (qui ne
+ * propageait pas à la TV). started_at_ms (buzz) non touché.
+ */
+export async function hostSeekTrack(
+  sessionId: string,
+  roundId: string,
+  positionMs: number,
+): Promise<void> {
+  await api(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/seek`,
+    { method: 'POST', body: { position_ms: Math.max(0, Math.round(positionMs)) } },
+  );
+}
+
+/**
  * GET /api/sessions/:id/rounds/:rid/program — Phase 2.1
  * Programme complet de la manche (tracks + statut PLAYED/CURRENT/UPCOMING).
  */

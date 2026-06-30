@@ -146,6 +146,9 @@ export async function buildAndBroadcastTrack(
     cover_url: track.cover_url,
     started_at: new Date(nowMs).toISOString(),
     duration_ms: track.duration_ms,
+    // F3 — horloge audio découplée : démarre à 0, ancrée au lancement.
+    audio_position_ms: 0,
+    audio_anchor_at: new Date(nowMs).toISOString(),
     phase: 'phase1',
     phase2_started_at: null,
     correct_answers: [],
@@ -587,6 +590,9 @@ export async function buildCurrentTrackStateSnapshot(
     cover_url: track.cover_url,
     started_at: new Date(active.started_at_ms).toISOString(),
     duration_ms: track.duration_ms,
+    // F3 — horloge audio découplée (depuis l'état mémoire).
+    audio_position_ms: active.audio_position_ms,
+    audio_anchor_at: new Date(active.audio_anchor_at_ms).toISOString(),
     phase: active.phase,
     phase2_started_at: active.phase2_started_at_ms
       ? new Date(active.phase2_started_at_ms).toISOString()
