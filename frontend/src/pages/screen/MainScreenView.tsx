@@ -83,18 +83,22 @@ function useTimeRemaining(startedAtIso: string, durationMs: number, isPaused = f
  * incrémente par delta de tick si !isPaused, fige sinon.
  */
 function useTimeElapsed(startedAtIso: string | null, isPaused = false): number {
-  const [elapsed, setElapsed] = useState(0);
+  // Amorce depuis l'horloge serveur (now - started_at), PAS depuis 0 : sinon la barre
+  // repart à 0 à chaque (re)montage — très visible quand le son est sur la TV
+  // (positionMs undefined → on tombe sur ce fallback) → barre figée / en retard.
+  const seed = (): number => {
+    if (!startedAtIso) return 0;
+    const ms = Date.now() - new Date(startedAtIso).getTime();
+    return Number.isFinite(ms) && ms > 0 ? ms : 0;
+  };
+  const [elapsed, setElapsed] = useState(seed);
   const lastTickRef = useRef<number>(Date.now());
 
   useEffect(() => {
-    setElapsed(0);
+    setElapsed(seed());
     lastTickRef.current = Date.now();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startedAtIso]);
-
-  // Log à chaque changement de isPaused pour vérifier la propagation
-  useEffect(() => {
-    console.info('[useTimeElapsed] isPaused changed →', isPaused);
-  }, [isPaused]);
 
   useEffect(() => {
     if (!startedAtIso) return;
@@ -102,9 +106,7 @@ function useTimeElapsed(startedAtIso: string | null, isPaused = false): number {
       const now = Date.now();
       const delta = now - lastTickRef.current;
       lastTickRef.current = now;
-      if (!isPaused) {
-        setElapsed((e) => e + delta);
-      }
+      if (!isPaused) setElapsed((e) => e + delta);
     };
     lastTickRef.current = Date.now();
     const id = window.setInterval(tick, 250);
