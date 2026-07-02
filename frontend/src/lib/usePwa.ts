@@ -18,7 +18,7 @@
  * auto-reload), mais en pratique le banner ne s'affiche plus.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /** Type minimal de l'event beforeinstallprompt (pas standard TS). */
 interface BeforeInstallPromptEvent extends Event {
@@ -76,6 +76,9 @@ export function usePwa(): PwaApi {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [isStandalone, setIsStandalone] = useState<boolean>(() => detectStandalone());
   const [isIos] = useState<boolean>(() => detectIos());
+  // Réf. du SW enregistré + throttle des vérifs d'update (anti-spam au switch d'app).
+  const swRegistrationRef = useRef<ServiceWorkerRegistration | undefined>(undefined);
+  const lastUpdateCheckRef = useRef(0);
 
   // Enregistre le service worker via virtual:pwa-register. Import dynamique
   // pour ne pas casser le build si le plugin est absent.
@@ -87,13 +90,14 @@ export function usePwa(): PwaApi {
         const updater = registerSW({
           immediate: true,
           onNeedRefresh: () => setNeedsRefresh(true),
-          onRegistered: () => {
-            // registerType 'autoUpdate' : le nouveau SW s'active + reload la page
-            // tout seul, mais UNIQUEMENT au (ré)chargement de l'app. On NE
-            // re-vérifie PAS périodiquement en session : un deploy pendant une
-            // partie live ne doit jamais reloader l'onglet host en plein jeu.
-            // L'update est récupérée au prochain ouverture de l'app (≈ aucun jeu
-            // en cours à ce moment-là).
+          onRegistered: (r) => {
+            // Capture la registration pour forcer une vérif d'update au refocus
+            // (cf. effet ci-dessous). registerType 'autoUpdate' : si une nouvelle
+            // version est trouvée, le SW s'active (skipWaiting) + la page reload.
+            // On NE poll PAS en continu : un deploy en pleine partie ne doit pas
+            // reloader l'onglet host. Le check se fait au RETOUR dans l'app
+            // (visibilitychange), instant où l'on ne joue pas.
+            swRegistrationRef.current = r;
           },
           onRegisterError: (err) => {
             console.warn('[PWA] SW register error', err);
@@ -106,6 +110,28 @@ export function usePwa(): PwaApi {
       });
     return () => {
       cancelled = true;
+    };
+  }, []);
+
+  // Vérifie une nouvelle version À CHAQUE retour dans l'app (visibilitychange / focus).
+  // Corrige le bundle périmé sur un onglet resté ouvert AVANT un deploy : iOS Safari ne
+  // re-checke pas le SW tout seul en session, donc un host laissé ouvert servait l'ancien
+  // bundle indéfiniment (capsule son fantôme, etc.). Throttle 20s (anti-spam au switch
+  // d'app). Avec registerType 'autoUpdate', une version trouvée s'active + reload — au
+  // refocus on ne joue pas à cet instant, donc pas de reload en plein morceau.
+  useEffect(() => {
+    const check = (): void => {
+      if (document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      if (now - lastUpdateCheckRef.current < 20_000) return;
+      lastUpdateCheckRef.current = now;
+      void swRegistrationRef.current?.update().catch(() => undefined);
+    };
+    document.addEventListener('visibilitychange', check);
+    window.addEventListener('focus', check);
+    return () => {
+      document.removeEventListener('visibilitychange', check);
+      window.removeEventListener('focus', check);
     };
   }, []);
 
