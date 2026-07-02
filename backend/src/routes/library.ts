@@ -279,10 +279,11 @@ router.post(
           skipped += 1;
           continue;
         }
-        // feat/two-provider-libraries — choix provider selon l'onglet :
-        //   spotify → UNIQUEMENT spotify_id, provider='spotify', AUCUN fallback
-        //             (les tracks sans spotify_id sont skip → playlist 100% Spotify)
-        //   youtube → youtube_id prioritaire, spotify_id en fallback legacy ultime
+        // feat/watertight-provider — mondes ÉTANCHES : la source active impose
+        // SON id, aucun fallback croisé. YouTube → uniquement youtube_id ;
+        // Spotify → uniquement spotify_id. Une track sans l'id de la source
+        // active est SKIP → la playlist clonée est 100% mono-provider (jamais de
+        // mix qui bloquerait le son si le host n'a pas de compte Spotify).
         let provider: 'spotify' | 'youtube' | null = null;
         let providerId: string | null = null;
         if (preferProvider === 'spotify') {
@@ -293,11 +294,8 @@ router.post(
         } else if (t.youtube_id) {
           provider = 'youtube';
           providerId = t.youtube_id;
-        } else if (t.spotify_id) {
-          provider = 'spotify';
-          providerId = t.spotify_id;
         }
-        if (!provider || !providerId) continue; // track non jouable pour ce provider, skip
+        if (!provider || !providerId) continue; // pas d'id pour la source active → skip
         // Fallback cover : si pas de cover_url stockée et qu'on a un youtube_id,
         // on dérive la thumbnail YouTube. Garantit un visuel pour chaque track.
         const coverUrl =
