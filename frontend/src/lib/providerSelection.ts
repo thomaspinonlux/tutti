@@ -72,16 +72,30 @@ export interface PlayabilityReport {
 export function computePlayability(
   tracks: LibraryTrackProviderIds[],
   host: HostProviders,
+  // feat/watertight-provider — source ACTIVE (toggle UI). Si fournie, compte
+  // STRICTEMENT cette source (mondes étanches) : mode youtube → seuls les
+  // youtube_id comptent (via_spotify = 0) ; mode spotify → inverse. Sans elle →
+  // legacy (selectProvider spotify-first). L'aperçu doit refléter la source.
+  forceProvider?: 'youtube' | 'spotify',
 ): PlayabilityReport {
   let playable = 0;
   let viaSpotify = 0;
   let viaYouTube = 0;
   for (const t of tracks) {
-    const choice = selectProvider(t, host);
-    if (choice.provider !== null) {
+    let provider: 'spotify' | 'youtube' | null;
+    if (forceProvider === 'youtube') {
+      provider = host.youtube.connected && t.youtube_id ? 'youtube' : null;
+    } else if (forceProvider === 'spotify') {
+      provider = host.spotify.connected && t.spotify_id ? 'spotify' : null;
+    } else {
+      provider = selectProvider(t, host).provider;
+    }
+    if (provider === 'spotify') {
       playable += 1;
-      if (choice.provider === 'spotify') viaSpotify += 1;
-      else viaYouTube += 1;
+      viaSpotify += 1;
+    } else if (provider === 'youtube') {
+      playable += 1;
+      viaYouTube += 1;
     }
   }
   return { total: tracks.length, playable, via_spotify: viaSpotify, via_youtube: viaYouTube };
