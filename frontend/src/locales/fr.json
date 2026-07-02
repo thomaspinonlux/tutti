@@ -538,9 +538,7 @@
       "activate": "Activer le son sur cet écran",
       "takeSound": "Mettre le son sur cet écran",
       "soundActive": "Son actif sur cet écran",
-      "connectSpotify": "Connecter Spotify ici",
-      "tapToStart": "Touchez l'écran pour démarrer le son",
-      "managedOnConsole": "Son géré sur la console"
+      "connectSpotify": "Connecter Spotify ici"
     },
     "playlistSelection": {
       "eyebrow": "L'animateur choisit",
