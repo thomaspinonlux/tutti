@@ -279,6 +279,24 @@ router.post('/resume', async (req: Request<{ id: string }>, res: Response): Prom
   }
 });
 
+// ── POST /seek ────────────────────────────────────────────────────────────
+// feat/sans-animateur — la télécommande (master) demande un seek (avance/recul
+// ±10s → position absolue). On NE touche PAS started_at (ancre buzz/scoring) :
+// on broadcast track:seek, et la CONSOLE applique sur SON lecteur (seule à émettre
+// du son). La télécommande n'émet aucun son.
+router.post('/seek', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const positionMs = Number((req.body as { position_ms?: unknown } | undefined)?.position_ms);
+  if (!Number.isFinite(positionMs) || positionMs < 0) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'position_ms invalide' } });
+    return;
+  }
+  broadcastToSession(req.params.id, 'track:seek', {
+    session_id: req.params.id,
+    position_ms: Math.round(positionMs),
+  });
+  res.json({ ok: true });
+});
+
 // ── POST /restart-track ──────────────────────────────────────────────────
 // "Recommencer le morceau" : broadcast track:restart aux clients pour qu'ils
 // relancent l'audio Spotify à position_ms=0. Ne change pas la phase ni le

@@ -31,6 +31,10 @@ export interface MasterMenuProps {
   onPause: () => Promise<void>;
   onResume: () => Promise<void>;
   onRestartTrack?: () => Promise<void>;
+  /** feat/sans-animateur — recul/avance de 10s. Seek serveur → la console
+   *  applique sur SON lecteur (la télécommande n'émet aucun son). */
+  onSeekBack?: () => void;
+  onSeekForward?: () => void;
   /** F3 (feat/playlist-search-and-host-improvements) — terminer la manche
    *  courante depuis l'interface du master en mode B. Affiche un bouton
    *  visible uniquement quand hasActiveRound. Avant : seul l'host desktop
@@ -90,6 +94,22 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
             🔄 {t('play.masterRestart')}
           </Button>
         )}
+
+        {/* ── Avance / recul ±10s (seek serveur → lecteur de la console) ── */}
+        {props.hasActiveRound &&
+          props.currentTrack &&
+          !props.isPaused &&
+          props.onSeekBack &&
+          props.onSeekForward && (
+            <>
+              <Button variant="ghost" size="sm" onClick={props.onSeekBack} disabled={props.busy}>
+                ⏪ −10s
+              </Button>
+              <Button variant="ghost" size="sm" onClick={props.onSeekForward} disabled={props.busy}>
+                +10s ⏩
+              </Button>
+            </>
+          )}
 
         {/* ── Phase listening : Réponse + Sauter ──────────────────────── */}
         {phase === 'phase1' && !props.isPaused && (

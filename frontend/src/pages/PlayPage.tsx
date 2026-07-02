@@ -38,6 +38,7 @@ import {
   masterPickRound,
   masterRestartTrack,
   masterResume,
+  masterSeek,
   masterSkipTrack,
   postBuzz,
 } from '../lib/sessions.js';
@@ -515,6 +516,15 @@ export function PlayPage(): JSX.Element {
       if (!identity || !currentRound) return;
       await masterRestartTrack(identity.sessionId, currentRound.id, identity.token);
     });
+  // feat/sans-animateur — recul/avance ±10s. Position estimée depuis l'horloge
+  // serveur (started_at) ; la console applique + re-synchronise sa vraie position.
+  const handleMasterSeek = (deltaMs: number): void => {
+    void masterCall(async () => {
+      if (!identity || !currentTrack?.started_at) return;
+      const elapsed = Math.max(0, Date.now() - new Date(currentTrack.started_at).getTime());
+      await masterSeek(identity.sessionId, identity.token, Math.max(0, elapsed + deltaMs));
+    });
+  };
   const handleMasterEndSession = (): Promise<void> =>
     masterCall(async () => {
       if (!identity) return;
@@ -772,6 +782,8 @@ export function PlayPage(): JSX.Element {
                     onPause={handleMasterPause}
                     onResume={handleMasterResume}
                     onRestartTrack={handleMasterRestart}
+                    onSeekBack={() => handleMasterSeek(-10_000)}
+                    onSeekForward={() => handleMasterSeek(10_000)}
                     onEndRound={handleMasterEndRound}
                     onEndSession={handleMasterEndSession}
                     onPickRound={() => setMasterPickerOpen(true)}
