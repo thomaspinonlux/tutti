@@ -774,6 +774,22 @@ function HostPageInner(): JSX.Element {
   const audioDurationMs =
     audioSink === 'host' ? (isYouTubeTrack ? youtube.durationMs : spotify.durationMs) : undefined;
 
+  // 🐞 DEBUG TEMPORAIRE — badge audio collé sur document.body (hors arbre React) →
+  // visible dans TOUTES les phases du host (lobby + jeu), quelle que soit la vue
+  // rendue. À retirer après diagnostic du double son.
+  useEffect(() => {
+    const id = 'tutti-audio-debug';
+    let el = document.getElementById(id) as HTMLDivElement | null;
+    if (!el) {
+      el = document.createElement('div');
+      el.id = id;
+      el.style.cssText =
+        'position:fixed;left:0;top:0;z-index:99999;background:rgba(0,0,0,.85);color:#a3e635;font:11px/1.35 monospace;padding:2px 6px;pointer-events:none;white-space:nowrap';
+      document.body.appendChild(el);
+    }
+    el.textContent = `v=diag2 · sink=${audioSink} · armed=${String(tvAudioFlags.tv_audio_armed)} · sReady=${String(tvAudioFlags.tv_spotify_ready)} · yt=${youtube.status} · sp=${spotify.status} · prov=${currentTrack?.provider ?? '-'} · pos=${audioPositionMs ?? '-'}`;
+  });
+
   // ── Actions ────────────────────────────────────────────────────────────
   const refreshCumulative = async (sid: string): Promise<void> => {
     try {
@@ -1446,14 +1462,6 @@ function HostPageInner(): JSX.Element {
             désormais créé et possédé par useYouTubePlayer sous <body>, hors de
             l'arbre React (évite le removeChild NotFoundError au changement de
             phase). Plus aucun <div id="youtube-player-host"> rendu ici. */}
-        {/* 🐞 DEBUG TEMPORAIRE — mouchard audio (retiré après diagnostic).
-            Screenshot pendant le double son → révèle sink/armed réels. */}
-        <div className="fixed left-0 top-0 z-[9999] bg-black/85 px-2 py-0.5 font-mono text-[10px] leading-tight text-lime-300 pointer-events-none select-none">
-          v=diag1 · sink={audioSink} · armed={String(tvAudioFlags.tv_audio_armed)} · sReady=
-          {String(tvAudioFlags.tv_spotify_ready)} · yt={youtube.status} · sp={spotify.status} ·
-          prov=
-          {currentTrack?.provider ?? '—'} · pos={audioPositionMs ?? '—'}
-        </div>
         <MainScreenView
           session={session}
           currentTrack={currentTrack}
