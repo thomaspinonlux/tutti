@@ -1446,6 +1446,14 @@ function HostPageInner(): JSX.Element {
             désormais créé et possédé par useYouTubePlayer sous <body>, hors de
             l'arbre React (évite le removeChild NotFoundError au changement de
             phase). Plus aucun <div id="youtube-player-host"> rendu ici. */}
+        {/* 🐞 DEBUG TEMPORAIRE — mouchard audio (retiré après diagnostic).
+            Screenshot pendant le double son → révèle sink/armed réels. */}
+        <div className="fixed left-0 top-0 z-[9999] bg-black/85 px-2 py-0.5 font-mono text-[10px] leading-tight text-lime-300 pointer-events-none select-none">
+          v=diag1 · sink={audioSink} · armed={String(tvAudioFlags.tv_audio_armed)} · sReady=
+          {String(tvAudioFlags.tv_spotify_ready)} · yt={youtube.status} · sp={spotify.status} ·
+          prov=
+          {currentTrack?.provider ?? '—'} · pos={audioPositionMs ?? '—'}
+        </div>
         <MainScreenView
           session={session}
           currentTrack={currentTrack}
