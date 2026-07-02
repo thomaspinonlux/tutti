@@ -771,8 +771,15 @@ function HostPageInner(): JSX.Element {
   const isYouTubeTrack = currentTrack?.provider === 'youtube';
   const audioPositionMs =
     audioSink === 'host' ? (isYouTubeTrack ? youtube.positionMs : spotify.positionMs) : undefined;
+  // Durée : lecteur host si son-console ; sinon durée RELAYÉE par la TV
+  // (tv_track_duration_ms) → la barre marche même quand le son sort sur la TV
+  // (un morceau YouTube n'a pas de durée serveur, seul le lecteur TV la connaît).
   const audioDurationMs =
-    audioSink === 'host' ? (isYouTubeTrack ? youtube.durationMs : spotify.durationMs) : undefined;
+    audioSink === 'host'
+      ? isYouTubeTrack
+        ? youtube.durationMs
+        : spotify.durationMs
+      : (tvAudioFlags.tv_track_duration_ms ?? undefined);
 
   // 🐞 DEBUG TEMPORAIRE — badge audio collé sur document.body (hors arbre React) →
   // visible dans TOUTES les phases du host (lobby + jeu), quelle que soit la vue
@@ -787,7 +794,7 @@ function HostPageInner(): JSX.Element {
         'position:fixed;left:0;top:0;z-index:99999;background:rgba(0,0,0,.85);color:#a3e635;font:11px/1.35 monospace;padding:2px 6px;pointer-events:none;white-space:nowrap';
       document.body.appendChild(el);
     }
-    el.textContent = `v=diag3 · sink=${audioSink} · armed=${String(tvAudioFlags.tv_audio_armed)} · sReady=${String(tvAudioFlags.tv_spotify_ready)} · yt=${youtube.status} · sp=${spotify.status} · prov=${currentTrack?.provider ?? '-'} · pos=${audioPositionMs ?? '-'}`;
+    el.textContent = `v=diag4 · sink=${audioSink} · armed=${String(tvAudioFlags.tv_audio_armed)} · dur=${audioDurationMs ?? '-'} · yt=${youtube.status} · sp=${spotify.status} · prov=${currentTrack?.provider ?? '-'} · pos=${audioPositionMs ?? '-'}`;
   });
 
   // ── Actions ────────────────────────────────────────────────────────────

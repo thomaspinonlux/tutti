@@ -87,9 +87,26 @@ export function getTvSpotifyReady(workspaceId: string): boolean {
   return readWithTtl(tvSpotifyReadyByWorkspace, workspaceId, TV_FLAG_TTL_MS) ?? false;
 }
 
+// Durée (ms) du morceau courant RELAYÉE par la TV. Quand le son sort sur la TV,
+// le host n'a pas la durée d'un morceau YouTube (seul le lecteur TV la connaît)
+// → la TV la poste, le host l'utilise pour la barre de progression. Re-POSTée à
+// chaque morceau + heartbeat. TTL 60s (retombe à null si la TV se déconnecte).
+const tvTrackDurationByWorkspace = new Map<string, { value: number; ts: number }>();
+export function setTvTrackDurationMs(workspaceId: string, ms: number): void {
+  if (!ms || ms <= 0) {
+    tvTrackDurationByWorkspace.delete(workspaceId);
+    return;
+  }
+  tvTrackDurationByWorkspace.set(workspaceId, { value: Math.round(ms), ts: Date.now() });
+}
+export function getTvTrackDurationMs(workspaceId: string): number | null {
+  return readWithTtl(tvTrackDurationByWorkspace, workspaceId, TV_FLAG_TTL_MS);
+}
+
 /** Test helper — vide tous les stores audio target. */
 export function _clearAllTvAudioStores(): void {
   targetByWorkspace.clear();
   tvAudioArmedByWorkspace.clear();
   tvSpotifyReadyByWorkspace.clear();
+  tvTrackDurationByWorkspace.clear();
 }

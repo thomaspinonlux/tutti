@@ -36,7 +36,11 @@ import { useYouTubeAudioSync } from '../../lib/useYouTubeAudioSync.js';
 import { useSpotifyPlayer } from '../../lib/useSpotifyPlayer.js';
 import { useSpotifyAudioSync } from '../../lib/useSpotifyAudioSync.js';
 import { resolveAudioSink } from '../../lib/audioSink.js';
-import { postTvAudioArmed, postTvSpotifyReady } from '../../lib/screenState.js';
+import {
+  postTvAudioArmed,
+  postTvSpotifyReady,
+  postTvTrackDurationMs,
+} from '../../lib/screenState.js';
 import { getSpotifyTokenPublic } from '../../lib/music.js';
 import { unlockAudioSync } from '../../lib/audioUnlock.js';
 
@@ -173,6 +177,15 @@ export function TvAudioOutput({
     }, HEARTBEAT_MS);
     return () => window.clearInterval(id);
   }, [active, spotify.status, workspaceId]);
+
+  // Relaie la durée du morceau YouTube au host : le host n'a pas la durée d'un
+  // morceau YouTube quand le son sort sur la TV (seul CE lecteur la connaît) → il
+  // s'en sert pour la barre de progression. Re-POSTé dès que la durée est connue.
+  useEffect(() => {
+    if (!active || currentTrack?.provider !== 'youtube') return;
+    const d = youtube.durationMs;
+    if (d && d > 0) void postTvTrackDurationMs(workspaceId, d).catch(() => undefined);
+  }, [active, currentTrack?.provider, youtube.durationMs, workspaceId]);
 
   // Cleanup unmount : reset les 2 flags pour que le sink retombe sur host.
   useEffect(() => {

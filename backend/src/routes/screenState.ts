@@ -14,7 +14,12 @@ import { z } from 'zod';
 import { computeScreenState } from '../lib/screenState.js';
 import { setFocusedPlaylist } from '../lib/playlistSelectionStore.js';
 import { setQrOverlay } from '../lib/qrOverlayStore.js';
-import { setAudioTarget, setTvAudioArmed, setTvSpotifyReady } from '../lib/tvAudioTargetStore.js';
+import {
+  setAudioTarget,
+  setTvAudioArmed,
+  setTvSpotifyReady,
+  setTvTrackDurationMs,
+} from '../lib/tvAudioTargetStore.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { prisma } from '../lib/prisma.js';
@@ -302,6 +307,25 @@ router.post(
     } catch (err: unknown) {
       console.warn('[POST /screen-state/tv-audio-armed] broadcast failed:', err);
     }
+    res.json({ ok: true });
+  },
+);
+
+// ── POST /screen-state/:workspaceId/tv-track-duration (public, TV) ────────
+// La TV relaie la durée (ms) du morceau courant. Le host n'a pas la durée d'un
+// morceau YouTube quand le son est sur la TV (seul le lecteur TV la connaît) →
+// il l'utilise pour la barre de progression. Heartbeat comme les autres flags TV.
+const tvDurationBodySchema = z.object({ value: z.number().nonnegative() });
+
+router.post(
+  '/screen-state/:workspaceId/tv-track-duration',
+  async (req: Request<{ workspaceId: string }>, res: Response): Promise<void> => {
+    const parsed = tvDurationBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    setTvTrackDurationMs(req.params.workspaceId, parsed.data.value);
     res.json({ ok: true });
   },
 );

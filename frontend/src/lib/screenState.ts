@@ -56,6 +56,8 @@ export type ScreenState =
       audio_target: 'host' | 'tv';
       tv_audio_armed: boolean;
       tv_spotify_ready: boolean;
+      /** Durée (ms) du morceau relayée par la TV — barre de progression quand son sur TV. */
+      tv_track_duration_ms: number | null;
       lastUpdate: string;
     }
   | {
@@ -71,6 +73,8 @@ export type ScreenState =
       audio_target: 'host' | 'tv';
       tv_audio_armed: boolean;
       tv_spotify_ready: boolean;
+      /** Durée (ms) du morceau relayée par la TV — barre de progression quand son sur TV. */
+      tv_track_duration_ms: number | null;
       lastUpdate: string;
     }
   | {
@@ -191,6 +195,18 @@ export async function postTvAudioArmed(workspaceId: string, value: boolean): Pro
  */
 export async function postTvSpotifyReady(workspaceId: string, value: boolean): Promise<void> {
   await api(`/api/workspace/screen-state/${encodeURIComponent(workspaceId)}/tv-spotify-ready`, {
+    method: 'POST',
+    body: { value },
+  });
+}
+
+/**
+ * La TV relaie la durée (ms) du morceau courant → le host affiche la barre de
+ * progression même quand le son sort sur la TV (un morceau YouTube n'a pas de
+ * durée côté serveur : seul le lecteur TV la connaît). Re-POSTé à chaque morceau.
+ */
+export async function postTvTrackDurationMs(workspaceId: string, value: number): Promise<void> {
+  await api(`/api/workspace/screen-state/${encodeURIComponent(workspaceId)}/tv-track-duration`, {
     method: 'POST',
     body: { value },
   });

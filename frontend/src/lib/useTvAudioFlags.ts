@@ -30,12 +30,15 @@ export interface TvAudioFlags {
   audio_target: AudioTarget;
   tv_audio_armed: boolean;
   tv_spotify_ready: boolean;
+  /** Durée (ms) du morceau relayée par la TV — barre de progression quand son sur TV. */
+  tv_track_duration_ms: number | null;
 }
 
 const DEFAULT_FLAGS: TvAudioFlags = {
   audio_target: 'host',
   tv_audio_armed: false,
   tv_spotify_ready: false,
+  tv_track_duration_ms: null,
 };
 
 export function useTvAudioFlags(enabled: boolean, socket?: Socket | null): TvAudioFlags {
@@ -56,6 +59,7 @@ export function useTvAudioFlags(enabled: boolean, socket?: Socket | null): TvAud
             audio_target: state.audio_target,
             tv_audio_armed: state.tv_audio_armed,
             tv_spotify_ready: state.tv_spotify_ready,
+            tv_track_duration_ms: state.tv_track_duration_ms,
           });
         }
       } catch {

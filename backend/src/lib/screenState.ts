@@ -34,6 +34,7 @@ import {
   getAudioTarget,
   getTvAudioArmed,
   getTvSpotifyReady,
+  getTvTrackDurationMs,
   type AudioTarget,
 } from './tvAudioTargetStore.js';
 import type { GameMode, Team } from '@tutti/shared';
@@ -71,6 +72,8 @@ export type ScreenState =
       audio_target: AudioTarget;
       tv_audio_armed: boolean;
       tv_spotify_ready: boolean;
+      /** Durée (ms) du morceau relayée par la TV — barre de progression quand son sur TV. */
+      tv_track_duration_ms: number | null;
       lastUpdate: string;
     }
   | {
@@ -86,6 +89,8 @@ export type ScreenState =
       audio_target: AudioTarget;
       tv_audio_armed: boolean;
       tv_spotify_ready: boolean;
+      /** Durée (ms) du morceau relayée par la TV — barre de progression quand son sur TV. */
+      tv_track_duration_ms: number | null;
       lastUpdate: string;
     }
   | {
@@ -337,6 +342,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       audio_target: getAudioTarget(workspaceId),
       tv_audio_armed: getTvAudioArmed(workspaceId),
       tv_spotify_ready: getTvSpotifyReady(workspaceId),
+      tv_track_duration_ms: getTvTrackDurationMs(workspaceId),
       lastUpdate,
     };
   }
@@ -369,6 +375,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       audio_target: getAudioTarget(workspaceId),
       tv_audio_armed: getTvAudioArmed(workspaceId),
       tv_spotify_ready: getTvSpotifyReady(workspaceId),
+      tv_track_duration_ms: getTvTrackDurationMs(workspaceId),
       lastUpdate,
     };
   }
