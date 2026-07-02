@@ -46,7 +46,7 @@ import {
   toggleParticipantMaster,
 } from '../lib/sessions.js';
 import { abandonSession, postQrOverlay } from '../lib/screenState.js';
-import { resolveAudioSink, type AudioTarget } from '../lib/audioSink.js';
+import { resolveAudioSink } from '../lib/audioSink.js';
 import { useTvAudioFlags } from '../lib/useTvAudioFlags.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 import { connectAsHost } from '../lib/socket.js';
@@ -105,7 +105,6 @@ import { PlayersPanel } from '../components/host/PlayersPanel.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
-import { AudioTargetToggle } from '../components/host/AudioTargetToggle.js';
 import { PwaSafetyControls } from '../components/host/PwaSafetyControls.js';
 
 interface Toast {
@@ -640,6 +639,20 @@ function HostPageInner(): JSX.Element {
         if (cancelled) return;
         setSpotifyAllowlisted(me.spotify_allowlist === true);
         setCanUseQuizz(me.can_use_quizz !== false);
+        // feat/audio-auto-routing — SENTINELLE "je suis la console" : on écrit
+        // le workspaceId (même source que ScreenPage : me.workspace.id) dans
+        // localStorage. Une 2e fenêtre /screen ouverte sur CETTE machine lira
+        // ce marqueur, verra qu'elle est sur la même console que le host, et
+        // refusera d'armer l'audio (évite le double son console+2e-fenêtre).
+        // Un vrai écran TV externe est une autre machine → localStorage vide
+        // ou workspaceId différent → il arme normalement.
+        if (me.workspace?.id) {
+          try {
+            window.localStorage.setItem('tutti-console-ws', me.workspace.id);
+          } catch {
+            /* localStorage indispo (mode privé strict) — non bloquant */
+          }
+        }
         console.info(
           `[HostPage] /api/me OK · spotify_allowlist=${me.spotify_allowlist === true ? 'ON' : 'OFF'} · can_use_quizz=${me.can_use_quizz !== false ? 'ON' : 'OFF'}`,
         );
@@ -684,17 +697,11 @@ function HostPageInner(): JSX.Element {
     phase === 'roundPlaying' || phase === 'roundSelection' || phase === 'intermission',
     hostSocket, // F1 — mute instantané via socket screen-state:focus-changed
   );
-  // Optimistic override : reflète le clic instantanément, réconcilié quand le
-  // poll suivant ramène la valeur (≤ 3s).
-  const [audioTargetOverride, setAudioTargetOverride] = useState<AudioTarget | null>(null);
-  useEffect(() => {
-    if (audioTargetOverride && audioTargetOverride === tvAudioFlags.audio_target) {
-      setAudioTargetOverride(null);
-    }
-  }, [audioTargetOverride, tvAudioFlags.audio_target]);
-  const currentAudioTarget: AudioTarget = audioTargetOverride ?? tvAudioFlags.audio_target;
+  // feat/audio-auto-routing — ROUTING AUTO : plus de toggle `audio_target`.
+  // Le sink est décidé uniquement par la présence d'un écran TV externe prêt
+  // (tv_audio_armed, armé par un vrai /screen distant) + le provider courant.
+  // Si un tel écran est prêt → 'tv' (la console se mute) ; sinon → 'host'.
   const audioSink = resolveAudioSink({
-    audio_target: currentAudioTarget,
     tv_audio_armed: tvAudioFlags.tv_audio_armed,
     tv_spotify_ready: tvAudioFlags.tv_spotify_ready,
     provider: currentTrack?.provider ?? null,
@@ -726,17 +733,17 @@ function HostPageInner(): JSX.Element {
   // player s'il était déjà en lecture — d'où ce pause explicite.
   const prevAudioSinkRef = useRef<'host' | 'tv'>('host');
   useEffect(() => {
-    const prev = prevAudioSinkRef.current;
-    if (prev === 'host' && audioSink === 'tv') {
-      console.info('[Audio Sink] host → tv : mute host players (youtube + spotify)');
+    // Invariant anti-double-son : le host ne joue QUE si audioSink==='host'.
+    // Quand le son est sur la TV, on force la pause des lecteurs host à CHAQUE
+    // changement (sink OU track) — pas seulement au flip host→tv — pour rattraper
+    // tout ce qui aurait pu relancer le son local (bouton "Activer le son",
+    // nouveau morceau…). Garantit qu'on n'a jamais host + TV en même temps.
+    if (audioSink === 'tv') {
       youtube.pause();
       void spotify.pause();
     }
-    if (prev === 'tv' && audioSink === 'host') {
-      console.info('[Audio Sink] tv → host : host reprend la main (sync hooks re-jouent)');
-    }
     prevAudioSinkRef.current = audioSink;
-  }, [audioSink, youtube, spotify]);
+  }, [audioSink, youtube, spotify, currentTrack?.track_id, currentTrack?.started_at]);
 
   // fix/ipad-pwa-audio-persistent-player — le player survit à l'intermission
   // (plus de destroy entre manches) : il faut PAUSER explicitement quand on
@@ -1426,14 +1433,9 @@ function HostPageInner(): JSX.Element {
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <PwaSafetyControls />
           <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
-          {/* feat/tv-audio-output — toggle "son sur la TV" à côté du cast TV.
-              Visible pendant le gameplay uniquement (mode B = même flow). */}
-          <AudioTargetToggle
-            value={currentAudioTarget}
-            onChange={setAudioTargetOverride}
-            armed={tvAudioFlags.tv_audio_armed}
-            disabled={busy}
-          />
+          {/* feat/audio-auto-routing — capsule "son sur la TV" retirée : le
+              routing est désormais automatique (écran TV externe prêt → TV,
+              sinon console). Plus aucun bouton de choix côté host. */}
           <MasterBadge
             master={currentMaster}
             participants={session.participants}
@@ -1648,16 +1650,8 @@ function HostPageInner(): JSX.Element {
             )}
             <PwaSafetyControls />
             <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
-            {/* feat/tv-audio-output — toggle son→TV à côté du cast TV. Visible
-                en mode A (animateur sur l'iPad), gameplay uniquement. */}
-            {inGameplay && (
-              <AudioTargetToggle
-                value={currentAudioTarget}
-                onChange={setAudioTargetOverride}
-                armed={tvAudioFlags.tv_audio_armed}
-                disabled={busy}
-              />
-            )}
+            {/* feat/audio-auto-routing — capsule son→TV retirée : routing
+                automatique (écran TV externe prêt → TV, sinon console). */}
             {!session.has_animator &&
               (effectivePhase === 'roundPlaying' ||
                 effectivePhase === 'roundSelection' ||
@@ -1794,6 +1788,10 @@ function HostPageInner(): JSX.Element {
                 spotifyError={spotify.error}
                 spotifyErrorCode={spotify.errorCode}
                 onForceAudio={() => {
+                  // Anti-double-son : si le son est routé sur la TV, le bouton
+                  // "Activer le son" du host ne DOIT PAS lancer le lecteur local
+                  // (sinon host + TV jouent en même temps). No-op dans ce cas.
+                  if (audioSink === 'tv') return;
                   // fix/pwa-safari-audio-unlock — débloque l'audio en mode
                   // FULLY SYNC dans le gesture (resume AudioContext + silent
                   // buffer). Doit être la 1ʳᵉ instruction avant tout async.

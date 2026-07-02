@@ -31,6 +31,11 @@ export function useYouTubeAudioSync({
 
   useEffect(() => {
     if (!enabled) {
+      // feat/audio-auto-routing — CUT SUR L'AUTRE : le device inactif doit
+      // COUPER réellement le son, pas juste cesser de piloter. Sans ce pause,
+      // le player continue de jouer là où il en était (bug "pause sur TV mais
+      // continue sur iPad"). On pause AVANT de reset les refs.
+      youtube.pause();
       prevTrackIdRef.current = null;
       prevStartedAtRef.current = null;
       prevIsPausedRef.current = false;
@@ -102,6 +107,11 @@ export function useYouTubeAudioSync({
   }, [
     enabled,
     youtube,
+    // feat/audio-auto-routing — BUG 1ère track : le player passe à 'ready'
+    // APRÈS track:start ; sans youtube.status dans les deps, l'effet ne rejoue
+    // pas et le 1er morceau ne démarre jamais. On l'ajoute pour re-déclencher
+    // dès que le player devient ready.
+    youtube.status,
     currentTrack,
     currentTrack?.track_id,
     currentTrack?.started_at,
