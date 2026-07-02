@@ -1,30 +1,29 @@
 /**
- * <TvAudioOutput /> — feat/tv-audio-output
+ * <TvAudioOutput /> — feat/audio-auto-routing
  *
- * Composant TV-side qui :
+ * Composant TV-side. ROUTING AUTOMATIQUE : plus de capsule de choix. Un vrai
+ * écran TV externe (autre appareil que la console) s'ARME au premier tap
+ * (déblocage autoplay navigateur, inévitable) puis joue le son automatiquement
+ * tant qu'il est armé. La console se mute alors toute seule (cf. lib/audioSink,
+ * sink === 'tv' dès que tv_audio_armed).
  *
- *   1. Monte `useYouTubePlayer` + `useSpotifyPlayer` côté TV quand
- *      `audio_target === 'tv'` (l'animateur a activé le routage TV).
- *      → Spotify SDK utilise le TOKEN PUBLIC du workspace (même compte
- *      Premium que le host, scope streaming).
+ *   1. Garde SAME-DEVICE : si cette fenêtre /screen tourne sur la MÊME machine
+ *      que la console host (2e fenêtre), elle NE s'arme JAMAIS (sinon double
+ *      son console + fenêtre). Détectée via localStorage['tutti-console-ws']
+ *      écrit par HostPage. Dans ce cas → juste un texte "Son géré sur la
+ *      console", `active` reste false, aucun player monté.
  *
- *   2. Branche `useYouTubeAudioSync` / `useSpotifyAudioSync` sur le
- *      `currentTrack` polled par ScreenPage. enabled=`audioSink === 'tv'`.
- *      → MÊME logique data-driven que le host (started_at / isPaused /
- *      provider → play/pause/seek). Pas de chemin de contrôle parallèle.
+ *   2. Vrai écran externe → overlay plein écran "Touchez l'écran pour démarrer
+ *      le son" tant que `!tvAudioArmed`. Au tap : unlock autoplay + warmup +
+ *      POST tv-audio-armed=true (+ state optimiste). Une fois armé, l'overlay
+ *      disparaît, les players jouent via les sync hooks data-driven, heartbeat
+ *      30s garde le flag frais (TTL backend 60s). Au unmount : POST false.
  *
- *   3. POST `tv_audio_armed=true` au clic du bouton "🔊 Activer le son sur
- *      cet écran" (gesture user nécessaire pour débloquer l'autoplay
- *      navigateur). Heartbeat 30s pour rafraîchir le TTL backend (60s).
- *      Au unmount : POST `false` → la résolution du sink retombe sur host.
+ *   3. POST `tv_spotify_ready=true` quand le Spotify SDK est ready ; `false`
+ *      au unmount ou error. Tant que ce flag vaut false, les tracks Spotify
+ *      restent sur la console (le sink est calculé par lib/audioSink).
  *
- *   4. POST `tv_spotify_ready=true` quand le Spotify SDK est ready ;
- *      `false` au unmount ou error. Tant que ce flag vaut false, les tracks
- *      Spotify restent sur le host (le sink est calculé par lib/audioSink).
- *
- *   5. Affiche :
- *      - bouton "🔊 Activer le son sur cet écran" si !tv_audio_armed
- *      - bouton "🟢 Connecter Spotify ici" si track Spotify et !tv_spotify_ready
+ *   4. Bouton "Connecter Spotify ici" si track Spotify et !tv_spotify_ready.
  *
  * Crashs SDK Spotify déjà couverts par le RootErrorBoundary racine (#115).
  */
@@ -37,11 +36,7 @@ import { useYouTubeAudioSync } from '../../lib/useYouTubeAudioSync.js';
 import { useSpotifyPlayer } from '../../lib/useSpotifyPlayer.js';
 import { useSpotifyAudioSync } from '../../lib/useSpotifyAudioSync.js';
 import { resolveAudioSink } from '../../lib/audioSink.js';
-import {
-  postTvAudioArmed,
-  postTvSpotifyReady,
-  postAudioTargetPublic,
-} from '../../lib/screenState.js';
+import { postTvAudioArmed, postTvSpotifyReady } from '../../lib/screenState.js';
 import { getSpotifyTokenPublic } from '../../lib/music.js';
 import { unlockAudioSync } from '../../lib/audioUnlock.js';
 
@@ -58,7 +53,6 @@ interface Props {
 
 export function TvAudioOutput({
   workspaceId,
-  audioTarget,
   tvAudioArmed,
   tvSpotifyReady,
   isPaused,
@@ -67,33 +61,43 @@ export function TvAudioOutput({
   const { t } = useTranslation();
   const provider = currentTrack?.provider ?? null;
 
-  // ── feat/tv-audio-self-serve — état local optimiste ───────────────────
-  // La TV prend / rend le son d'UN clic. `localDesired` force l'état attendu
-  // SANS attendre le prochain poll (≤2s) : 'tv' = je prends le son ici,
-  // 'host' = je le rends, null = je suis le screen-state polled. Réconcilié
-  // dès que les props (audio_target / tv_audio_armed) confirment.
-  const [localDesired, setLocalDesired] = useState<'tv' | 'host' | null>(null);
-  useEffect(() => {
-    if (localDesired === 'tv' && audioTarget === 'tv' && tvAudioArmed) setLocalDesired(null);
-    if (localDesired === 'host' && audioTarget !== 'tv') setLocalDesired(null);
-  }, [localDesired, audioTarget, tvAudioArmed]);
+  // ── feat/audio-auto-routing — garde SAME-DEVICE ───────────────────────
+  // Au mount, on lit le marqueur écrit par HostPage. Si le workspaceId de la
+  // console == le nôtre → cette fenêtre /screen tourne sur la MÊME machine que
+  // le host (2e fenêtre / onglet) → elle ne doit JAMAIS armer, sinon la console
+  // ET cette fenêtre sortent le son en double. Un vrai écran TV externe est une
+  // autre machine → pas de marqueur (ou workspace différent) → arme normalement.
+  const isSameDeviceAsConsole = useMemo(() => {
+    try {
+      return window.localStorage.getItem('tutti-console-ws') === workspaceId;
+    } catch {
+      return false; // localStorage indispo → on suppose écran externe (safe)
+    }
+  }, [workspaceId]);
 
-  const effectiveOnTv = localDesired ? localDesired === 'tv' : audioTarget === 'tv';
-  const effectiveArmed =
-    localDesired === 'tv' ? true : localDesired === 'host' ? false : tvAudioArmed;
+  // ── feat/audio-auto-routing — arm optimiste ───────────────────────────
+  // Au premier tap sur l'overlay, on marque localArmed=true SANS attendre le
+  // prochain poll (≤2-3s) pour que les players montent et jouent tout de suite.
+  // Réconcilié : dès que la prop tvAudioArmed confirme, on relâche l'optimisme.
+  const [localArmed, setLocalArmed] = useState(false);
+  useEffect(() => {
+    if (localArmed && tvAudioArmed) setLocalArmed(false);
+  }, [localArmed, tvAudioArmed]);
+
+  // Armé = flag backend OU optimiste local. Same-device → jamais armé.
+  const armed = !isSameDeviceAsConsole && (tvAudioArmed || localArmed);
+  const active = armed; // son routé sur CET écran (= armé, hors same-device)
 
   const audioSink = resolveAudioSink({
-    audio_target: effectiveOnTv ? 'tv' : 'host',
-    tv_audio_armed: effectiveArmed,
+    tv_audio_armed: armed,
     tv_spotify_ready: tvSpotifyReady,
     provider,
   });
-  const active = effectiveOnTv && effectiveArmed; // son routé sur CET écran
 
   // ── Players TV ────────────────────────────────────────────────────────
-  // Montés (enabled) tant que le son est routé ici ET armé. Le composant
-  // reste TOUJOURS monté (jamais de `return null`) → aucun remount du
-  // sous-arbre audio au re-render (cf #121).
+  // Montés (enabled) tant que le son est armé ici. Le composant reste TOUJOURS
+  // monté (jamais de `return null`) → aucun remount du sous-arbre audio au
+  // re-render (cf #121).
   const youtube = useYouTubePlayer({ enabled: active });
 
   // Spotify : token = endpoint public /api/auth/spotify/token-public/:workspaceId
@@ -159,31 +163,15 @@ export function TvAudioOutput({
     };
   }, [workspaceId]);
 
-  // ── Action : PRENDRE le son sur cet écran (1 clic) ────────────────────
-  // (a) audio_target='tv' via la route PUBLIQUE scoped workspace (sans toucher
-  // la tablette) (b) arme l'autoplay (tv_audio_armed=true) (c) la lecture du
-  // currentTrack démarre via les sync hooks (audioSink devient 'tv').
-  const [busy, setBusy] = useState(false);
-  const handleTakeSound = (): void => {
-    // SYNC unlock + warmup DANS le tick du clic (gesture autoplay navigateur).
-    unlockAudioSync('tv-screen-take-sound');
+  // ── Action : ARMER l'audio sur cet écran (1 tap, déblocage autoplay) ──
+  // (a) unlock + warmup SYNC dans le tick du tap (gesture autoplay navigateur)
+  // (b) POST tv-audio-armed=true (c) la lecture du currentTrack démarre via les
+  // sync hooks (audioSink devient 'tv' → la console se mute automatiquement).
+  const handleArm = (): void => {
+    unlockAudioSync('tv-start');
     youtube.warmupSync?.();
-    setLocalDesired('tv'); // optimiste → players enabled + sink 'tv' immédiat
-    setBusy(true);
-    void Promise.allSettled([
-      postAudioTargetPublic(workspaceId, 'tv'),
-      postTvAudioArmed(workspaceId, true),
-    ]).finally(() => setBusy(false));
-  };
-
-  // ── Action : RENDRE le son au host (toggle off) ───────────────────────
-  const handleReleaseSound = (): void => {
-    setLocalDesired('host'); // optimiste → players disabled, host reprend
-    setBusy(true);
-    void Promise.allSettled([
-      postAudioTargetPublic(workspaceId, 'host'),
-      postTvAudioArmed(workspaceId, false),
-    ]).finally(() => setBusy(false));
+    setLocalArmed(true); // optimiste → players enabled + sink 'tv' immédiat
+    void postTvAudioArmed(workspaceId, true).catch(() => undefined);
   };
 
   // ── Bouton "Connecter Spotify ici" — fallback retry si le SDK n'est pas
@@ -195,68 +183,65 @@ export function TvAudioOutput({
 
   const needSpotify = active && currentTrack?.provider === 'spotify' && spotify.status !== 'ready';
 
-  // Toujours rendu (jamais `return null`) : l'opérateur de la salle prend le
-  // son d'UN clic sur la TV, sans condition côté host.
-  return (
-    <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center pointer-events-none">
-      <div className="flex flex-col items-center gap-3 pointer-events-auto">
-        {/* feat/audio-sink-capsule — MÊME capsule que le host (AudioTargetToggle) :
-            2 segments [ 🎧 Son ici | 📺 Son sur la TV ]. Segment actif = plein
-            contrasté, inactif = grisé. Clic "TV" = prend le son ici
-            (handleTakeSound) ; clic "ici" = rend au host (handleReleaseSound).
-            État sync host⇄TV via audio_target. */}
-        <div
-          className="inline-flex border-2 border-ink rounded-xl overflow-hidden shadow-pop-lg"
-          role="group"
-          aria-label={`${t('host.audioTarget.onHost')} / ${t('host.audioTarget.onTv')}`}
-        >
-          <button
-            type="button"
-            onClick={handleReleaseSound}
-            disabled={busy}
-            aria-pressed={!active}
-            className={`px-6 py-4 text-lg font-display font-bold flex items-center gap-2 transition-colors disabled:opacity-50 ${
-              !active ? 'bg-spritz text-cream' : 'bg-cream text-ink-soft/50'
-            }`}
-          >
-            <span aria-hidden className="text-2xl">
-              🎧
-            </span>
-            {t('host.audioTarget.onHost')}
-          </button>
-          <button
-            type="button"
-            onClick={handleTakeSound}
-            disabled={busy}
-            aria-pressed={active}
-            className={`px-6 py-4 text-lg font-display font-bold flex items-center gap-2 transition-colors disabled:opacity-50 ${
-              active ? 'bg-basil text-cream' : 'bg-cream text-ink-soft/50'
-            }`}
-          >
-            <span aria-hidden className="text-2xl">
-              📺
-            </span>
-            {t('host.audioTarget.onTv')}
-          </button>
-        </div>
-        {needSpotify && (
-          <button
-            type="button"
-            onClick={handleSpotifyRetry}
-            className="px-5 py-3 text-base font-display font-bold bg-plum text-cream border-2 border-ink shadow-pop rounded-xl flex items-center gap-3 transition-transform hover:-translate-y-0.5"
-          >
-            <span aria-hidden className="text-xl">
-              🟢
-            </span>
-            {t('screen.tvAudio.connectSpotify')}
-          </button>
-        )}
-        {spotify.error && (
-          <p className="text-xs font-mono text-raspberry bg-cream px-3 py-1 rounded">
-            Spotify : {spotify.error}
-          </p>
-        )}
+  // ── Garde same-device : 2e fenêtre sur la console → juste un texte, rien
+  // d'autre (pas d'overlay, pas de player, `active` déjà false ci-dessus).
+  if (isSameDeviceAsConsole) {
+    return (
+      <div className="fixed inset-x-0 bottom-6 z-40 flex justify-center pointer-events-none">
+        <p className="font-mono text-xs uppercase tracking-wider text-ink-soft/60 bg-cream/80 px-3 py-1.5 rounded-full">
+          {t('screen.tvAudio.managedOnConsole')}
+        </p>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <>
+      {/* feat/audio-auto-routing — overlay plein écran "Touchez pour démarrer".
+          Affiché UNIQUEMENT tant que non armé : c'est le déblocage autoplay
+          navigateur (gesture user inévitable), PAS un bouton de routing. Une
+          fois armé, il disparaît et le son joue automatiquement. */}
+      {!armed && (
+        <button
+          type="button"
+          onClick={handleArm}
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-ink/90 text-cream cursor-pointer"
+          aria-label={t('screen.tvAudio.tapToStart')}
+        >
+          <span aria-hidden className="text-7xl animate-pulse">
+            👆
+          </span>
+          <span className="font-display text-3xl sm:text-4xl font-bold text-center px-8">
+            {t('screen.tvAudio.tapToStart')}
+          </span>
+        </button>
+      )}
+
+      {/* Bouton "Connecter Spotify ici" — fallback quand le SDK Spotify n'est
+          pas ready sur un track Spotify. Reste au-dessus du contenu, discret. */}
+      {(needSpotify || spotify.error) && (
+        <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center pointer-events-none">
+          <div className="flex flex-col items-center gap-3 pointer-events-auto">
+            {needSpotify && (
+              <button
+                type="button"
+                onClick={handleSpotifyRetry}
+                className="px-5 py-3 text-base font-display font-bold bg-plum text-cream border-2 border-ink shadow-pop rounded-xl flex items-center gap-3 transition-transform hover:-translate-y-0.5"
+              >
+                <span aria-hidden className="text-xl">
+                  🟢
+                </span>
+                {t('screen.tvAudio.connectSpotify')}
+              </button>
+            )}
+            {spotify.error && (
+              <p className="text-xs font-mono text-raspberry bg-cream px-3 py-1 rounded">
+                Spotify : {spotify.error}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
