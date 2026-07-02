@@ -733,17 +733,17 @@ function HostPageInner(): JSX.Element {
   // player s'il était déjà en lecture — d'où ce pause explicite.
   const prevAudioSinkRef = useRef<'host' | 'tv'>('host');
   useEffect(() => {
-    const prev = prevAudioSinkRef.current;
-    if (prev === 'host' && audioSink === 'tv') {
-      console.info('[Audio Sink] host → tv : mute host players (youtube + spotify)');
+    // Invariant anti-double-son : le host ne joue QUE si audioSink==='host'.
+    // Quand le son est sur la TV, on force la pause des lecteurs host à CHAQUE
+    // changement (sink OU track) — pas seulement au flip host→tv — pour rattraper
+    // tout ce qui aurait pu relancer le son local (bouton "Activer le son",
+    // nouveau morceau…). Garantit qu'on n'a jamais host + TV en même temps.
+    if (audioSink === 'tv') {
       youtube.pause();
       void spotify.pause();
     }
-    if (prev === 'tv' && audioSink === 'host') {
-      console.info('[Audio Sink] tv → host : host reprend la main (sync hooks re-jouent)');
-    }
     prevAudioSinkRef.current = audioSink;
-  }, [audioSink, youtube, spotify]);
+  }, [audioSink, youtube, spotify, currentTrack?.track_id, currentTrack?.started_at]);
 
   // fix/ipad-pwa-audio-persistent-player — le player survit à l'intermission
   // (plus de destroy entre manches) : il faut PAUSER explicitement quand on
@@ -1788,6 +1788,10 @@ function HostPageInner(): JSX.Element {
                 spotifyError={spotify.error}
                 spotifyErrorCode={spotify.errorCode}
                 onForceAudio={() => {
+                  // Anti-double-son : si le son est routé sur la TV, le bouton
+                  // "Activer le son" du host ne DOIT PAS lancer le lecteur local
+                  // (sinon host + TV jouent en même temps). No-op dans ce cas.
+                  if (audioSink === 'tv') return;
                   // fix/pwa-safari-audio-unlock — débloque l'audio en mode
                   // FULLY SYNC dans le gesture (resume AudioContext + silent
                   // buffer). Doit être la 1ʳᵉ instruction avant tout async.
