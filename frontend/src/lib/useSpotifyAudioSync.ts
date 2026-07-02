@@ -43,11 +43,6 @@ export function useSpotifyAudioSync({
 
   useEffect(() => {
     if (!enabled) {
-      // feat/audio-auto-routing — CUT SUR L'AUTRE : le device inactif doit
-      // COUPER réellement le son, pas juste cesser de piloter. Sans ce pause,
-      // le player continue de jouer là où il en était (bug "pause sur TV mais
-      // continue sur iPad"). On pause AVANT de reset les refs.
-      void spotify.pause();
       prevTrackIdRef.current = null;
       prevStartedAtRef.current = null;
       prevIsPausedRef.current = false;
@@ -130,11 +125,6 @@ export function useSpotifyAudioSync({
   }, [
     enabled,
     spotify,
-    // feat/audio-auto-routing — BUG 1ère track : le SDK passe à 'ready' APRÈS
-    // track:start ; sans spotify.status dans les deps, l'effet ne rejoue pas
-    // et le 1er morceau ne démarre jamais. On l'ajoute pour re-déclencher dès
-    // que le SDK devient ready.
-    spotify.status,
     currentTrack,
     currentTrack?.track_id,
     currentTrack?.started_at,

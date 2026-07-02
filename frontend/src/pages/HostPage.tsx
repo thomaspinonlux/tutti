@@ -46,7 +46,7 @@ import {
   toggleParticipantMaster,
 } from '../lib/sessions.js';
 import { abandonSession, postQrOverlay } from '../lib/screenState.js';
-import { resolveAudioSink } from '../lib/audioSink.js';
+import { resolveAudioSink, type AudioTarget } from '../lib/audioSink.js';
 import { useTvAudioFlags } from '../lib/useTvAudioFlags.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 import { connectAsHost } from '../lib/socket.js';
@@ -105,6 +105,7 @@ import { PlayersPanel } from '../components/host/PlayersPanel.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
+import { AudioTargetToggle } from '../components/host/AudioTargetToggle.js';
 import { PwaSafetyControls } from '../components/host/PwaSafetyControls.js';
 
 interface Toast {
@@ -639,20 +640,6 @@ function HostPageInner(): JSX.Element {
         if (cancelled) return;
         setSpotifyAllowlisted(me.spotify_allowlist === true);
         setCanUseQuizz(me.can_use_quizz !== false);
-        // feat/audio-auto-routing — SENTINELLE "je suis la console" : on écrit
-        // le workspaceId (même source que ScreenPage : me.workspace.id) dans
-        // localStorage. Une 2e fenêtre /screen ouverte sur CETTE machine lira
-        // ce marqueur, verra qu'elle est sur la même console que le host, et
-        // refusera d'armer l'audio (évite le double son console+2e-fenêtre).
-        // Un vrai écran TV externe est une autre machine → localStorage vide
-        // ou workspaceId différent → il arme normalement.
-        if (me.workspace?.id) {
-          try {
-            window.localStorage.setItem('tutti-console-ws', me.workspace.id);
-          } catch {
-            /* localStorage indispo (mode privé strict) — non bloquant */
-          }
-        }
         console.info(
           `[HostPage] /api/me OK · spotify_allowlist=${me.spotify_allowlist === true ? 'ON' : 'OFF'} · can_use_quizz=${me.can_use_quizz !== false ? 'ON' : 'OFF'}`,
         );
@@ -697,11 +684,17 @@ function HostPageInner(): JSX.Element {
     phase === 'roundPlaying' || phase === 'roundSelection' || phase === 'intermission',
     hostSocket, // F1 — mute instantané via socket screen-state:focus-changed
   );
-  // feat/audio-auto-routing — ROUTING AUTO : plus de toggle `audio_target`.
-  // Le sink est décidé uniquement par la présence d'un écran TV externe prêt
-  // (tv_audio_armed, armé par un vrai /screen distant) + le provider courant.
-  // Si un tel écran est prêt → 'tv' (la console se mute) ; sinon → 'host'.
+  // Optimistic override : reflète le clic instantanément, réconcilié quand le
+  // poll suivant ramène la valeur (≤ 3s).
+  const [audioTargetOverride, setAudioTargetOverride] = useState<AudioTarget | null>(null);
+  useEffect(() => {
+    if (audioTargetOverride && audioTargetOverride === tvAudioFlags.audio_target) {
+      setAudioTargetOverride(null);
+    }
+  }, [audioTargetOverride, tvAudioFlags.audio_target]);
+  const currentAudioTarget: AudioTarget = audioTargetOverride ?? tvAudioFlags.audio_target;
   const audioSink = resolveAudioSink({
+    audio_target: currentAudioTarget,
     tv_audio_armed: tvAudioFlags.tv_audio_armed,
     tv_spotify_ready: tvAudioFlags.tv_spotify_ready,
     provider: currentTrack?.provider ?? null,
@@ -1433,9 +1426,14 @@ function HostPageInner(): JSX.Element {
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <PwaSafetyControls />
           <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
-          {/* feat/audio-auto-routing — capsule "son sur la TV" retirée : le
-              routing est désormais automatique (écran TV externe prêt → TV,
-              sinon console). Plus aucun bouton de choix côté host. */}
+          {/* feat/tv-audio-output — toggle "son sur la TV" à côté du cast TV.
+              Visible pendant le gameplay uniquement (mode B = même flow). */}
+          <AudioTargetToggle
+            value={currentAudioTarget}
+            onChange={setAudioTargetOverride}
+            armed={tvAudioFlags.tv_audio_armed}
+            disabled={busy}
+          />
           <MasterBadge
             master={currentMaster}
             participants={session.participants}
@@ -1650,8 +1648,16 @@ function HostPageInner(): JSX.Element {
             )}
             <PwaSafetyControls />
             <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
-            {/* feat/audio-auto-routing — capsule son→TV retirée : routing
-                automatique (écran TV externe prêt → TV, sinon console). */}
+            {/* feat/tv-audio-output — toggle son→TV à côté du cast TV. Visible
+                en mode A (animateur sur l'iPad), gameplay uniquement. */}
+            {inGameplay && (
+              <AudioTargetToggle
+                value={currentAudioTarget}
+                onChange={setAudioTargetOverride}
+                armed={tvAudioFlags.tv_audio_armed}
+                disabled={busy}
+              />
+            )}
             {!session.has_animator &&
               (effectivePhase === 'roundPlaying' ||
                 effectivePhase === 'roundSelection' ||
