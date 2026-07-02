@@ -164,7 +164,13 @@ async function findRepresentativeSession(workspaceId: string) {
       status: { in: ['WAITING', 'PLAYING'] },
       created_at: { gte: zombieCreatedCutoff },
     },
-    orderBy: { updated_at: 'desc' },
+    // fix/tv-session-loop — ordre DÉTERMINISTE : created_at desc d'abord. La
+    // session COURANTE est toujours la plus récemment créée (le cleanup au POST
+    // /sessions END les précédentes). created_at est IMMUABLE → si deux sessions
+    // actives coexistent transitoirement, la TV ne peut plus osciller entre elles
+    // (avant : updated_at desc flippait à chaque poll qui touchait l'ancienne →
+    // écran TV en boucle entre l'actuelle et l'ancienne). updated_at en tiebreak.
+    orderBy: [{ created_at: 'desc' }, { updated_at: 'desc' }],
     include: {
       participants: { where: { is_kicked: false } },
       rounds: {
