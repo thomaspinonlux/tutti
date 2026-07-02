@@ -2184,11 +2184,19 @@ function WaitingPhase({
  * Lecture seule — NE touche PAS started_at_ms (ancre buzz/scoring).
  */
 function useServerElapsedMs(startedAtIso: string | null, isPaused: boolean): number {
-  const [elapsed, setElapsed] = useState(0);
+  // Amorce depuis l'horloge serveur (now - started_at), PAS depuis 0 — cf.
+  // MainScreenView.useTimeElapsed : sinon la barre repart à 0 à chaque (re)montage.
+  const seed = (): number => {
+    if (!startedAtIso) return 0;
+    const ms = Date.now() - new Date(startedAtIso).getTime();
+    return Number.isFinite(ms) && ms > 0 ? ms : 0;
+  };
+  const [elapsed, setElapsed] = useState(seed);
   const lastTickRef = useRef<number>(Date.now());
   useEffect(() => {
-    setElapsed(0);
+    setElapsed(seed());
     lastTickRef.current = Date.now();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startedAtIso]);
   useEffect(() => {
     if (!startedAtIso) return;
