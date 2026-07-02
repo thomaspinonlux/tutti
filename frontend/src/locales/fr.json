@@ -362,6 +362,8 @@
       "lvl_mix": "Mix (tous niveaux)",
       "backToThemes": "Retour aux thèmes",
       "chooseLevel": "Choisis le niveau",
+      "sourceLabel": "Source du son",
+      "sourceSpotifyLocked": "Connecte un compte Spotify pour utiliser cette source",
       "themeLevels": "{{count}} niveaux",
       "quizPackQuestionCount": "questions",
       "searchPlaceholder": "Rechercher une playlist...",

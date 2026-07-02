@@ -200,32 +200,45 @@ export function TvAudioOutput({
   return (
     <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center pointer-events-none">
       <div className="flex flex-col items-center gap-3 pointer-events-auto">
-        {!active ? (
-          <button
-            type="button"
-            onClick={handleTakeSound}
-            disabled={busy}
-            className="px-6 py-4 text-lg font-display font-bold bg-spritz text-cream border-2 border-ink shadow-pop-lg rounded-xl flex items-center gap-3 transition-transform hover:-translate-y-0.5 disabled:opacity-50"
-          >
-            <span aria-hidden className="text-2xl">
-              🔊
-            </span>
-            {t('screen.tvAudio.takeSound')}
-          </button>
-        ) : (
+        {/* feat/audio-sink-capsule — MÊME capsule que le host (AudioTargetToggle) :
+            2 segments [ 🎧 Son ici | 📺 Son sur la TV ]. Segment actif = plein
+            contrasté, inactif = grisé. Clic "TV" = prend le son ici
+            (handleTakeSound) ; clic "ici" = rend au host (handleReleaseSound).
+            État sync host⇄TV via audio_target. */}
+        <div
+          className="inline-flex border-2 border-ink rounded-xl overflow-hidden shadow-pop-lg"
+          role="group"
+          aria-label={`${t('host.audioTarget.onHost')} / ${t('host.audioTarget.onTv')}`}
+        >
           <button
             type="button"
             onClick={handleReleaseSound}
             disabled={busy}
-            aria-pressed
-            className="px-6 py-4 text-lg font-display font-bold bg-basil text-cream border-2 border-ink shadow-pop-lg rounded-xl flex items-center gap-3 transition-transform hover:-translate-y-0.5 disabled:opacity-50"
+            aria-pressed={!active}
+            className={`px-6 py-4 text-lg font-display font-bold flex items-center gap-2 transition-colors disabled:opacity-50 ${
+              !active ? 'bg-spritz text-cream' : 'bg-cream text-ink-soft/50'
+            }`}
           >
             <span aria-hidden className="text-2xl">
-              🔊
+              🎧
             </span>
-            {t('screen.tvAudio.soundActive')}
+            {t('host.audioTarget.onHost')}
           </button>
-        )}
+          <button
+            type="button"
+            onClick={handleTakeSound}
+            disabled={busy}
+            aria-pressed={active}
+            className={`px-6 py-4 text-lg font-display font-bold flex items-center gap-2 transition-colors disabled:opacity-50 ${
+              active ? 'bg-basil text-cream' : 'bg-cream text-ink-soft/50'
+            }`}
+          >
+            <span aria-hidden className="text-2xl">
+              📺
+            </span>
+            {t('host.audioTarget.onTv')}
+          </button>
+        </div>
         {needSpotify && (
           <button
             type="button"

@@ -376,28 +376,49 @@ export function RoundSelectionScreen({
             </div>
           )}
 
-          {/* feat/two-provider-libraries — switch YouTube / Spotify (Spotify
-              visible seulement si host allowlisté + Spotify connecté). */}
-          {librarySubTab === 'tracks' && spotifyLibraryAvailable && (
-            <div className="flex gap-2 mb-3" role="tablist" aria-label="Source musicale">
-              {(['youtube', 'spotify'] as const).map((pv) => (
-                <button
-                  key={pv}
-                  type="button"
-                  role="tab"
-                  aria-selected={provider === pv}
-                  onClick={() => setProvider(pv)}
-                  className={`px-3 py-1 font-mono text-xs uppercase tracking-wider border-2 border-ink rounded-full transition-colors ${
-                    provider === pv
-                      ? pv === 'spotify'
-                        ? 'bg-basil text-cream shadow-pop-sm'
-                        : 'bg-spritz text-cream shadow-pop-sm'
-                      : 'bg-cream text-ink-soft hover:bg-cream-2'
-                  }`}
-                >
-                  {pv === 'spotify' ? '🟢 Spotify' : '▶️ YouTube'}
-                </button>
-              ))}
+          {/* feat/watertight-provider — sélecteur de SOURCE en haut de la
+              bibliothèque, TOUJOURS visible (défaut YouTube). Capsule 2
+              segments ; Spotify grisé/non cliquable si host non connecté
+              Spotify. La source pilote le fetch catalogue ET le tirage (clone
+              100% mono-provider côté backend — jamais de mix). */}
+          {librarySubTab === 'tracks' && (
+            <div className="mb-3">
+              <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-soft mb-1">
+                {t('host.session.sourceLabel')}
+              </p>
+              <div
+                className="inline-flex border-2 border-ink rounded-full overflow-hidden shadow-pop-sm"
+                role="tablist"
+                aria-label={t('host.session.sourceLabel')}
+              >
+                {(['youtube', 'spotify'] as const).map((pv) => {
+                  const active = provider === pv;
+                  const locked = pv === 'spotify' && !spotifyLibraryAvailable;
+                  return (
+                    <button
+                      key={pv}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      disabled={locked}
+                      onClick={() => !locked && setProvider(pv)}
+                      title={locked ? t('host.session.sourceSpotifyLocked') : undefined}
+                      className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
+                        active
+                          ? pv === 'spotify'
+                            ? 'bg-basil text-cream'
+                            : 'bg-spritz text-cream'
+                          : locked
+                            ? 'bg-cream-2 text-ink-soft/40 cursor-not-allowed'
+                            : 'bg-cream text-ink-soft hover:bg-cream-2'
+                      }`}
+                    >
+                      {pv === 'spotify' ? '🟢 Spotify' : '▶️ YouTube'}
+                      {locked ? ' 🔒' : ''}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 

@@ -35,44 +35,58 @@ interface Props {
 export function AudioTargetToggle({ value, onChange, armed, disabled }: Props): JSX.Element {
   const { t } = useTranslation();
   const onTv = value === 'tv';
-  const label = onTv ? t('host.audioTarget.onTv') : t('host.audioTarget.onHost');
   // Cible TV choisie mais aucun écran TV armé → le son reste sur le host.
   const showHint = onTv && !armed;
 
-  const handleClick = (): void => {
-    const next: AudioTarget = onTv ? 'host' : 'tv';
+  const handleSet = (next: AudioTarget): void => {
+    if (next === value) return;
     onChange(next);
     void postAudioTarget(next).catch((err: unknown) => {
       console.warn('[AudioTargetToggle] POST failed:', err);
     });
   };
 
-  // feat/arcade-buttons-vinyl-buzzer — toggle pill arcade : bord 2px ink,
-  // track basil (green) ON / cream OFF, knob cream avec ombre dure ; press
-  // arcade (translate + shadow flat) cohérent avec <Button />.
+  // feat/audio-sink-capsule — capsule 2 segments [ 🎧 Son ici | 📺 Son sur la
+  // TV ]. Segment actif = fond plein contrasté, inactif = grisé. Même capsule
+  // côté TV (TvAudioOutput). État sync host⇄TV via audio_target.
+  const segments: Array<{ tgt: AudioTarget; icon: string; label: string; activeCls: string }> = [
+    {
+      tgt: 'host',
+      icon: '🎧',
+      label: t('host.audioTarget.onHost'),
+      activeCls: 'bg-spritz text-ink',
+    },
+    { tgt: 'tv', icon: '📺', label: t('host.audioTarget.onTv'), activeCls: 'bg-basil text-cream' },
+  ];
   return (
     <div className="relative">
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={disabled}
-        aria-pressed={onTv}
-        aria-label={label}
-        title={label}
-        className={`group flex items-center gap-2 pl-1 pr-3 py-1 border-2 border-ink rounded-full shadow-arcade-sm transition-all duration-[80ms] ease-out active:translate-x-[2px] active:translate-y-[2px] active:shadow-arcade-flat disabled:opacity-[0.38] disabled:active:translate-x-0 disabled:active:translate-y-0 ${
-          onTv ? 'bg-basil text-cream' : 'bg-cream text-ink hover:bg-cream-2'
-        }`}
+      <div
+        className="inline-flex border-2 border-ink rounded-full overflow-hidden shadow-arcade-sm"
+        role="group"
+        aria-label={`${t('host.audioTarget.onHost')} / ${t('host.audioTarget.onTv')}`}
       >
-        <span
-          aria-hidden
-          className={`flex items-center justify-center w-7 h-7 rounded-full border-2 border-ink shadow-arcade-flat text-base ${
-            onTv ? 'bg-cream text-ink translate-x-0' : 'bg-cream text-ink'
-          }`}
-        >
-          {onTv ? '📺' : '🎧'}
-        </span>
-        <span className="font-mono text-xs uppercase tracking-wider hidden sm:inline">{label}</span>
-      </button>
+        {segments.map((s) => {
+          const active = value === s.tgt;
+          return (
+            <button
+              key={s.tgt}
+              type="button"
+              onClick={() => handleSet(s.tgt)}
+              disabled={disabled}
+              aria-pressed={active}
+              title={s.label}
+              className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors disabled:opacity-[0.38] ${
+                active ? s.activeCls : 'bg-cream text-ink-soft/60 hover:bg-cream-2'
+              }`}
+            >
+              <span aria-hidden className="text-base">
+                {s.icon}
+              </span>
+              <span className="hidden sm:inline">{s.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Hint de connexion : la cible TV est sélectionnée mais aucun écran TV
           n'a armé son audio → on explique l'étape manquante. Popover absolu
