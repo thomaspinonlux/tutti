@@ -14,7 +14,7 @@
  * Le composant ne pilote QUE le UI : les actions sont passées par props.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CurrentTrackState } from '@tutti/shared';
 import { Badge, Button, Card } from '../ui/index.js';
@@ -45,11 +45,35 @@ export interface MasterMenuProps {
   onAdjustPoints: () => void; // ouvre la sheet (modale gérée à l'extérieur)
 }
 
+/** Temps écoulé (ms) depuis started_at, pause-aware (approché : gèle en pause). */
+function useElapsedMs(startedAt: string | null | undefined, isPaused: boolean): number {
+  const [ms, setMs] = useState(0);
+  useEffect(() => {
+    if (!startedAt) {
+      setMs(0);
+      return;
+    }
+    const compute = (): number => Math.max(0, Date.now() - new Date(startedAt).getTime());
+    setMs(compute());
+    if (isPaused) return;
+    const id = window.setInterval(() => setMs(compute()), 500);
+    return () => window.clearInterval(id);
+  }, [startedAt, isPaused]);
+  return ms;
+}
+
+function fmtTime(ms: number): string {
+  const s = Math.floor(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
 export function MasterMenu(props: MasterMenuProps): JSX.Element {
   const { t } = useTranslation();
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [confirmEndRound, setConfirmEndRound] = useState(false);
   const phase = props.currentTrack?.phase ?? null;
+  const elapsedMs = useElapsedMs(props.currentTrack?.started_at, props.isPaused);
+  const totalMs = props.currentTrack?.duration_ms ?? null;
 
   return (
     <Card tone="cream" size="md" className="!border-3 border-spritz-deep">
@@ -59,6 +83,31 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         </span>
         <p className="font-display text-base">{t('play.masterMenuTitle')}</p>
       </div>
+
+      {/* feat/sans-animateur — timeline synchro (horloge serveur). La position
+          exacte vit sur la console ; ici l'écoulé approché + la barre. */}
+      {props.hasActiveRound && props.currentTrack && (
+        <div className="mb-3">
+          <div className="flex items-center justify-between font-mono text-xs text-ink-soft mb-1">
+            <span className="tabular-nums">{fmtTime(elapsedMs)}</span>
+            {totalMs ? (
+              <span className="tabular-nums">{fmtTime(totalMs)}</span>
+            ) : (
+              <span aria-hidden>♪</span>
+            )}
+          </div>
+          <div className="h-2 bg-ink/10 rounded overflow-hidden">
+            <div
+              className="h-full bg-spritz transition-[width] duration-500 ease-linear"
+              style={{
+                width: totalMs
+                  ? `${Math.min(100, Math.round((elapsedMs / totalMs) * 100))}%`
+                  : '0%',
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-2">
         {/* ── Pause / Reprise (toujours visible quand on a un round) ───── */}

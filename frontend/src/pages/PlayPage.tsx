@@ -40,6 +40,7 @@ import {
   masterResume,
   masterSeek,
   masterSkipTrack,
+  claimMaster,
   postBuzz,
 } from '../lib/sessions.js';
 import type { CorrectAnswerEntry, CumulativeScore } from '@tutti/shared';
@@ -525,6 +526,13 @@ export function PlayPage(): JSX.Element {
       await masterSeek(identity.sessionId, identity.token, Math.max(0, elapsed + deltaMs));
     });
   };
+  // feat/sans-animateur — se désigner soi-même télécommande (mode B sans
+  // animateur). Le broadcast participant:master_changed fera apparaître le menu.
+  const handleClaimMaster = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity) return;
+      await claimMaster(identity.sessionId, identity.token);
+    });
   const handleMasterEndSession = (): Promise<void> =>
     masterCall(async () => {
       if (!identity) return;
@@ -768,6 +776,26 @@ export function PlayPage(): JSX.Element {
                 onOpenMasterMenu={isMaster ? () => setMasterPickerOpen(false) : undefined}
                 onMasterPause={isMaster ? handleMasterPause : undefined}
               />
+
+              {/* feat/sans-animateur — self-claim télécommande : visible tant qu'on
+                  n'est pas déjà master. Le 1er qui clique tient la manette (les
+                  autres reçoivent 409). Devient master → le MasterMenu remplace ce bouton. */}
+              {!isMaster && identity && (
+                <div className="mt-4">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => void handleClaimMaster()}
+                    disabled={busy}
+                  >
+                    🎮 Piloter la musique (télécommande)
+                  </Button>
+                  <p className="mt-1 text-center font-mono text-[11px] text-ink-soft">
+                    Play/pause, ±10s, morceau suivant. Le son reste sur la console.
+                  </p>
+                </div>
+              )}
 
               {isMaster && (
                 <div className="mt-4">

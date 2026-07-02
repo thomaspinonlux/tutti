@@ -492,6 +492,23 @@ export async function masterSeek(
   });
 }
 
+/**
+ * feat/sans-animateur — un participant se désigne LUI-MÊME télécommande (master,
+ * mode B). Autorisé si aucun master, ou `takeover=true` pour reprendre la main.
+ * 409 MASTER_TAKEN si déjà pris et pas de takeover.
+ */
+export async function claimMaster(
+  sessionId: string,
+  token: string,
+  takeover = false,
+): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/participants/claim-master`, {
+    method: 'POST',
+    body: { token, takeover },
+    anonymous: true,
+  });
+}
+
 export async function masterRestartTrack(
   sessionId: string,
   roundId: string,
