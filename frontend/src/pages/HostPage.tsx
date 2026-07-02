@@ -83,7 +83,6 @@ import {
 import { PreGameStartScreen } from './host/PreGameStartScreen.js';
 import {
   computePlayability,
-  preferredProvider,
   type HostProviders,
   type PlayabilityReport,
 } from '../lib/providerSelection.js';
@@ -945,7 +944,10 @@ function HostPageInner(): JSX.Element {
     // 2. Charge détail playlist + calcule playability
     try {
       const detail = await getLibraryPlaylist(summary.id);
-      const report = computePlayability(detail.tracks, providers);
+      // feat/watertight-provider — aperçu STRICTEMENT sur la source choisie
+      // (via YouTube: N / via Spotify: 0 en mode youtube). Cohérent avec le
+      // clone étanche côté launch.
+      const report = computePlayability(detail.tracks, providers, provider);
       setPreviewPlaylist(detail);
       setPreviewReport(report);
     } catch (err) {
@@ -967,8 +969,11 @@ function HostPageInner(): JSX.Element {
       return;
     }
     try {
+      // Proposition joueur → source YouTube (défaut du pivot). Relu au launch.
+      pickedProviderRef.current = 'youtube';
+      pickedDifficultyRef.current = undefined;
       const detail = await getLibraryPlaylist(officialPlaylistId);
-      const report = computePlayability(detail.tracks, providers);
+      const report = computePlayability(detail.tracks, providers, 'youtube');
       setPreviewPlaylist(detail);
       setPreviewReport(report);
     } catch (err) {
@@ -1000,11 +1005,15 @@ function HostPageInner(): JSX.Element {
 
   const handleConfirmLaunchOfficial = (): void => {
     if (!session || !previewPlaylist || !hostProviders) return;
-    // feat/two-provider-libraries — onglet Spotify → force 'spotify' (playlist
-    // couverte + host allowlisté/connecté). Sinon provider habituel (youtube).
-    const prefer =
-      pickedProviderRef.current === 'spotify' ? 'spotify' : preferredProvider(hostProviders);
-    if (!prefer) {
+    // feat/watertight-provider — la SOURCE choisie via le toggle UI est
+    // transmise TELLE QUELLE au launch (plus d'override par preferredProvider,
+    // qui écrasait le choix YouTube et laissait passer un clone Spotify). Le
+    // backend clone alors 100% mono-provider (étanche). Garde : la source doit
+    // être connectée, sinon on renvoie vers l'écran "connecter un provider".
+    const prefer: PreferProvider = pickedProviderRef.current;
+    const connected =
+      prefer === 'spotify' ? hostProviders.spotify.connected : hostProviders.youtube.connected;
+    if (!connected) {
       setNoProviderOpen(true);
       setPreviewPlaylist(null);
       setPreviewReport(null);
