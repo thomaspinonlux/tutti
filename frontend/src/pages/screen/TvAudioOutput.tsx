@@ -42,6 +42,14 @@ import { unlockAudioSync } from '../../lib/audioUnlock.js';
 
 const HEARTBEAT_MS = 30_000;
 
+// feat/tv-audio-persist — mémoire de SESSION : survit aux remontages du composant
+// (TvAudioOutput n'est monté qu'en PLAYING/PAUSED → il se démonte entre 2 playlists),
+// mais PAS au reload de la page. Passe à true dès que l'utilisateur a débloqué
+// l'autoplay par 1 tap → on ré-arme ensuite AUTOMATIQUEMENT à chaque nouvelle
+// playlist, sans re-toucher l'écran. (Le domaine a déjà l'activation utilisateur
+// → les players se relancent sans nouveau geste tant que la page n'est pas rechargée.)
+let hasUnlockedThisPageSession = false;
+
 interface Props {
   workspaceId: string;
   audioTarget: 'host' | 'tv';
@@ -79,7 +87,11 @@ export function TvAudioOutput({
   // Au premier tap sur l'overlay, on marque localArmed=true SANS attendre le
   // prochain poll (≤2-3s) pour que les players montent et jouent tout de suite.
   // Réconcilié : dès que la prop tvAudioArmed confirme, on relâche l'optimisme.
-  const [localArmed, setLocalArmed] = useState(false);
+  // Ré-arm auto : si l'user a déjà débloqué le son cette session (page non
+  // rechargée), on démarre DÉJÀ armé au remontage → pas d'overlay, pas de re-tap.
+  const [localArmed, setLocalArmed] = useState(
+    () => hasUnlockedThisPageSession && !isSameDeviceAsConsole,
+  );
   useEffect(() => {
     if (localArmed && tvAudioArmed) setLocalArmed(false);
   }, [localArmed, tvAudioArmed]);
@@ -136,6 +148,13 @@ export function TvAudioOutput({
     return () => window.clearInterval(id);
   }, [active, workspaceId]);
 
+  // Poste armed=true DÈS que l'écran devient actif (tap OU ré-arm auto à la
+  // nouvelle playlist) — sans attendre le 1er tick du heartbeat (30 s). Garantit
+  // que le host voit tv_audio_armed et se mute tout de suite → pas de double son.
+  useEffect(() => {
+    if (active) void postTvAudioArmed(workspaceId, true).catch(() => undefined);
+  }, [active, workspaceId]);
+
   // ── tv_spotify_ready : sync flag avec status SDK ──────────────────────
   const spotifyReadyRef = useRef(false);
   useEffect(() => {
@@ -170,6 +189,7 @@ export function TvAudioOutput({
   const handleArm = (): void => {
     unlockAudioSync('tv-start');
     youtube.warmupSync?.();
+    hasUnlockedThisPageSession = true; // → ré-arm auto aux playlists suivantes (0 re-tap)
     setLocalArmed(true); // optimiste → players enabled + sink 'tv' immédiat
     void postTvAudioArmed(workspaceId, true).catch(() => undefined);
   };
