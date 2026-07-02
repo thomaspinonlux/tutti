@@ -46,8 +46,6 @@ import {
   toggleParticipantMaster,
 } from '../lib/sessions.js';
 import { abandonSession, postQrOverlay } from '../lib/screenState.js';
-import { resolveAudioSink } from '../lib/audioSink.js';
-import { useTvAudioFlags } from '../lib/useTvAudioFlags.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 import { connectAsHost } from '../lib/socket.js';
 import { getMe } from '../lib/me.js';
@@ -512,6 +510,14 @@ function HostPageInner(): JSX.Element {
           console.info('[Socket] session:resumed received');
           setSession((prev) => (prev ? { ...prev, is_paused: false } : prev));
         });
+        // feat/sans-animateur — la télécommande (master) a demandé un seek → la
+        // CONSOLE applique sur SON lecteur (cf. effet pendingSeek plus bas).
+        // On passe par un state (pas d'appel direct) pour éviter la closure
+        // périmée : l'effet lit le lecteur/provider courants.
+        socket.on('track:seek', ({ position_ms }: { position_ms: number }) => {
+          console.info('[Socket] track:seek received →', position_ms, 'ms');
+          setPendingSeek({ ms: position_ms, at: Date.now() });
+        });
         socket.on('scores:invalidated', () => {
           const sid = sessionIdRef.current;
           if (sid) {
@@ -685,117 +691,53 @@ function HostPageInner(): JSX.Element {
   // les instructions du ContentBlockerWarning (PWA vs Safari classique).
   const { isStandalone } = usePwa();
 
-  // ── Audio sink (feat/tv-audio-output) ────────────────────────────────
-  // Le routing audio (host vs TV) est résolu à partir de flags backend lus
-  // toutes les 3s pendant le gameplay (audio_target/tv_audio_armed/
-  // tv_spotify_ready). Sink calculé IDENTIQUEMENT côté TV (cf. lib/audioSink).
-  // Sink === 'host' = comportement actuel ; sink === 'tv' = on coupe le
-  // player local mais on garde les contrôles + l'horloge serveur.
-  // feat/tv-audio-self-serve — poll les flags audio sur TOUT le in-game (pas
-  // que roundPlaying) → le toggle host marche aussi en sélection/intermission.
-  const tvAudioFlags = useTvAudioFlags(
-    phase === 'roundPlaying' || phase === 'roundSelection' || phase === 'intermission',
-    hostSocket, // F1 — mute instantané via socket screen-state:focus-changed
-  );
-  // feat/audio-auto-routing — ROUTING AUTO : plus de toggle `audio_target`.
-  // Le sink est décidé uniquement par la présence d'un écran TV externe prêt
-  // (tv_audio_armed, armé par un vrai /screen distant) + le provider courant.
-  // Si un tel écran est prêt → 'tv' (la console se mute) ; sinon → 'host'.
-  const audioSink = resolveAudioSink({
-    tv_audio_armed: tvAudioFlags.tv_audio_armed,
-    tv_spotify_ready: tvAudioFlags.tv_spotify_ready,
-    provider: currentTrack?.provider ?? null,
-  });
-
-  // ── Audio sync unifié — single source of truth = état serveur ────────
-  // Chaque sync hook ne pilote SON provider que si currentTrack.provider
-  // matche. Pas de conflit : un seul provider actif à la fois.
-  // feat/tv-audio-output — `audioSink === 'host'` requis : si la TV a pris
-  // le relais, le host ne pilote plus son player (l'horloge serveur reste
-  // intacte, on évite juste de sortir du son local).
+  // ── Audio — la CONSOLE joue TOUJOURS le son ───────────────────────────
+  // feat/sans-animateur — plus AUCUN routing audio vers un autre appareil
+  // (l'ancien #131 causait les doubles sons / bugs). Le lecteur vit sur la
+  // console ; le 2e onglet /screen est VISUEL uniquement. Un master/télécommande
+  // distant pilote via des broadcasts serveur (session:paused, session:resumed,
+  // track:start, track:seek) que le host applique sur SON lecteur (cf. sync hooks
+  // + listener track:seek plus bas). Aucun son ne sort jamais d'un autre appareil.
   useSpotifyAudioSync({
     spotify,
     currentTrack,
     isPaused: session?.is_paused ?? false,
-    enabled: spotifyAllowlisted && phase === 'roundPlaying' && audioSink === 'host',
+    enabled: spotifyAllowlisted && phase === 'roundPlaying',
   });
   useYouTubeAudioSync({
     youtube,
     currentTrack,
     isPaused: session?.is_paused ?? false,
-    enabled: phase === 'roundPlaying' && audioSink === 'host',
+    enabled: phase === 'roundPlaying',
   });
 
-  // feat/tv-audio-output — quand le sink BASCULE host→tv (toggle activé +
-  // TV armée + provider supporté), on pause explicitement le player host
-  // pour couper le son local. Les useXAudioSync ci-dessus deviennent
-  // enabled=false (= ils ne lancent plus rien) mais ne pausent pas le
-  // player s'il était déjà en lecture — d'où ce pause explicite.
-  const prevAudioSinkRef = useRef<'host' | 'tv'>('host');
-  useEffect(() => {
-    // Invariant anti-double-son : le host ne joue QUE si audioSink==='host'.
-    // Quand le son est sur la TV, on force la pause des lecteurs host à CHAQUE
-    // changement (sink OU track) — pas seulement au flip host→tv — pour rattraper
-    // tout ce qui aurait pu relancer le son local (bouton "Activer le son",
-    // nouveau morceau…). Garantit qu'on n'a jamais host + TV en même temps.
-    if (audioSink === 'tv') {
-      youtube.pause();
-      void spotify.pause();
-    }
-    prevAudioSinkRef.current = audioSink;
-  }, [audioSink, youtube, spotify, currentTrack?.track_id, currentTrack?.started_at]);
-
   // fix/ipad-pwa-audio-persistent-player — le player survit à l'intermission
-  // (plus de destroy entre manches) : il faut PAUSER explicitement quand on
-  // quitte roundPlaying, sinon la musique continue sur le mini-podium.
-  // Avant, destroy() coupait l'audio en tuant l'iframe.
+  // (plus de destroy entre manches) : pause explicite en quittant roundPlaying,
+  // sinon la musique continue sur le mini-podium.
   const prevPhaseRef = useRef<Phase | null>(null);
   useEffect(() => {
     if (prevPhaseRef.current === 'roundPlaying' && phase !== 'roundPlaying') {
-      console.info(
-        `[Player] Phase ${prevPhaseRef.current} → ${phase} : pauseVideo (player persistant)`,
-      );
       youtube.pause();
+      void spotify.pause();
     }
     prevPhaseRef.current = phase;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  // ── Phase 3d — provider courant pour position/durée/affichage ──────────
-  // F2 (host-tv-perfect-sync) — la position/durée du LECTEUR LOCAL ne fait foi
-  // QUE si le host joue le son (sink==='host'). Quand le son est sur la TV, le
-  // lecteur host est muet/en pause → sa position est figée : on passe undefined
-  // pour que l'affichage retombe sur l'HORLOGE SERVEUR (started_at + isPaused,
-  // pause-aware), identique côté TV. → le timer tourne pareil quel que soit le
-  // sink, la pause fige les deux.
+  // Position/durée = lecteur LOCAL de la console (elle joue toujours le son).
   const isYouTubeTrack = currentTrack?.provider === 'youtube';
-  const audioPositionMs =
-    audioSink === 'host' ? (isYouTubeTrack ? youtube.positionMs : spotify.positionMs) : undefined;
-  // Durée : lecteur host si son-console ; sinon durée RELAYÉE par la TV
-  // (tv_track_duration_ms) → la barre marche même quand le son sort sur la TV
-  // (un morceau YouTube n'a pas de durée serveur, seul le lecteur TV la connaît).
-  const audioDurationMs =
-    audioSink === 'host'
-      ? isYouTubeTrack
-        ? youtube.durationMs
-        : spotify.durationMs
-      : (tvAudioFlags.tv_track_duration_ms ?? undefined);
+  const audioPositionMs = isYouTubeTrack ? youtube.positionMs : spotify.positionMs;
+  const audioDurationMs = isYouTubeTrack ? youtube.durationMs : spotify.durationMs;
 
-  // 🐞 DEBUG TEMPORAIRE — badge audio collé sur document.body (hors arbre React) →
-  // visible dans TOUTES les phases du host (lobby + jeu), quelle que soit la vue
-  // rendue. À retirer après diagnostic du double son.
+  // feat/sans-animateur — seek demandé par la télécommande (broadcast track:seek).
+  // Appliqué sur le lecteur LOCAL de la console (seule à émettre du son). State +
+  // effet (pas d'appel direct dans le handler socket) → lit le lecteur courant.
+  const [pendingSeek, setPendingSeek] = useState<{ ms: number; at: number } | null>(null);
   useEffect(() => {
-    const id = 'tutti-audio-debug';
-    let el = document.getElementById(id) as HTMLDivElement | null;
-    if (!el) {
-      el = document.createElement('div');
-      el.id = id;
-      el.style.cssText =
-        'position:fixed;left:0;top:0;z-index:99999;background:rgba(0,0,0,.85);color:#a3e635;font:11px/1.35 monospace;padding:2px 6px;pointer-events:none;white-space:nowrap';
-      document.body.appendChild(el);
-    }
-    el.textContent = `v=diag4 · sink=${audioSink} · armed=${String(tvAudioFlags.tv_audio_armed)} · dur=${audioDurationMs ?? '-'} · yt=${youtube.status} · sp=${spotify.status} · prov=${currentTrack?.provider ?? '-'} · pos=${audioPositionMs ?? '-'}`;
-  });
+    if (!pendingSeek) return;
+    if (isYouTubeTrack) youtube.seek(pendingSeek.ms);
+    else void spotify.seek(pendingSeek.ms);
+  }, [pendingSeek, isYouTubeTrack, youtube, spotify]);
 
   // ── Actions ────────────────────────────────────────────────────────────
   const refreshCumulative = async (sid: string): Promise<void> => {
@@ -1456,6 +1398,17 @@ function HostPageInner(): JSX.Element {
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <PwaSafetyControls />
           <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
+          {/* feat/sans-animateur — ouvre l'écran TV dans un 2e onglet SUR CE MÊME
+              appareil (affichage visuel salle). Le son reste sur cette console :
+              /screen est visuel uniquement (aucune sortie son sur un device tiers). */}
+          <button
+            type="button"
+            onClick={() => window.open('/screen', '_blank', 'noopener,noreferrer')}
+            title="Ouvre l'écran TV dans un 2e onglet — le son reste sur cette console"
+            className="px-3 py-2 text-sm font-display font-bold bg-ink text-cream border-2 border-ink rounded-xl flex items-center gap-1.5 whitespace-nowrap"
+          >
+            📺 Écran TV
+          </button>
           {/* feat/audio-auto-routing — capsule "son sur la TV" retirée : le
               routing est désormais automatique (écran TV externe prêt → TV,
               sinon console). Plus aucun bouton de choix côté host. */}
@@ -1673,6 +1626,17 @@ function HostPageInner(): JSX.Element {
             )}
             <PwaSafetyControls />
             <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
+            {/* feat/sans-animateur — ouvre l'écran TV dans un 2e onglet SUR CE MÊME
+              appareil (affichage visuel salle). Le son reste sur cette console :
+              /screen est visuel uniquement (aucune sortie son sur un device tiers). */}
+            <button
+              type="button"
+              onClick={() => window.open('/screen', '_blank', 'noopener,noreferrer')}
+              title="Ouvre l'écran TV dans un 2e onglet — le son reste sur cette console"
+              className="px-3 py-2 text-sm font-display font-bold bg-ink text-cream border-2 border-ink rounded-xl flex items-center gap-1.5 whitespace-nowrap"
+            >
+              📺 Écran TV
+            </button>
             {/* feat/audio-auto-routing — capsule son→TV retirée : routing
                 automatique (écran TV externe prêt → TV, sinon console). */}
             {!session.has_animator &&
@@ -1811,10 +1775,6 @@ function HostPageInner(): JSX.Element {
                 spotifyError={spotify.error}
                 spotifyErrorCode={spotify.errorCode}
                 onForceAudio={() => {
-                  // Anti-double-son : si le son est routé sur la TV, le bouton
-                  // "Activer le son" du host ne DOIT PAS lancer le lecteur local
-                  // (sinon host + TV jouent en même temps). No-op dans ce cas.
-                  if (audioSink === 'tv') return;
                   // fix/pwa-safari-audio-unlock — débloque l'audio en mode
                   // FULLY SYNC dans le gesture (resume AudioContext + silent
                   // buffer). Doit être la 1ʳᵉ instruction avant tout async.

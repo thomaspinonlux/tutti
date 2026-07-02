@@ -49,7 +49,6 @@ import { OfficialCatalogSections } from '../components/host/library/OfficialCata
 import { ThemeLevelCards } from '../components/host/library/ThemeLevelCards.js';
 import { buildThemeSections, flattenThemes } from '../lib/officialThemes.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
-import { TvAudioOutput } from './screen/TvAudioOutput.js';
 
 const POLL_FAST_MS = 2000;
 const POLL_SLOW_MS = 5000;
@@ -268,37 +267,15 @@ export function ScreenPage(): JSX.Element {
       // countdown phase 2, vinyl rotation, dance pulse, reveal cover, phase
       // eyebrow, toasts firstFound, etc. (cf. PR fix/tv-screen-regressions).
       // feat/tv-join-qr-codes (D) — overlay QR géant si l'animateur l'a toggle.
-      // feat/tv-audio-output — <TvAudioOutput /> sort le son sur la TV quand
-      // audio_target='tv' + l'user clique le bouton "Activer le son".
       return (
         <ScreenWithQrOverlay joinCode={screenState.joinCode} show={screenState.qr_overlay}>
           <MainScreenView {...screenStateToMainScreenProps(screenState)} />
-          {workspaceId && (
-            <TvAudioOutput
-              workspaceId={workspaceId}
-              audioTarget={screenState.audio_target}
-              tvAudioArmed={screenState.tv_audio_armed}
-              tvSpotifyReady={screenState.tv_spotify_ready}
-              isPaused={screenState.session.is_paused}
-              currentTrack={screenState.currentTrack}
-            />
-          )}
         </ScreenWithQrOverlay>
       );
     case 'PAUSED':
       return (
         <ScreenWithQrOverlay joinCode={screenState.joinCode} show={screenState.qr_overlay}>
           <MainScreenView {...screenStateToMainScreenProps(screenState)} />
-          {workspaceId && (
-            <TvAudioOutput
-              workspaceId={workspaceId}
-              audioTarget={screenState.audio_target}
-              tvAudioArmed={screenState.tv_audio_armed}
-              tvSpotifyReady={screenState.tv_spotify_ready}
-              isPaused={screenState.session.is_paused}
-              currentTrack={screenState.currentTrack}
-            />
-          )}
         </ScreenWithQrOverlay>
       );
     case 'ROUND_PODIUM':

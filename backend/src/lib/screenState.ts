@@ -30,13 +30,6 @@ import { getCumulativeScores } from './scores.js';
 import { buildCurrentTrackStateSnapshot, getEffectiveRoundTrackCount } from './gameplayCore.js';
 import { getFocusedSelection } from './playlistSelectionStore.js';
 import { getQrOverlay } from './qrOverlayStore.js';
-import {
-  getAudioTarget,
-  getTvAudioArmed,
-  getTvSpotifyReady,
-  getTvTrackDurationMs,
-  type AudioTarget,
-} from './tvAudioTargetStore.js';
 import type { GameMode, Team } from '@tutti/shared';
 
 export type ScreenState =
@@ -68,12 +61,6 @@ export type ScreenState =
       roundsTotal: number;
       /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
       qr_overlay: boolean;
-      /** feat/tv-audio-output — routing audio (sink). */
-      audio_target: AudioTarget;
-      tv_audio_armed: boolean;
-      tv_spotify_ready: boolean;
-      /** Durée (ms) du morceau relayée par la TV — barre de progression quand son sur TV. */
-      tv_track_duration_ms: number | null;
       lastUpdate: string;
     }
   | {
@@ -85,12 +72,6 @@ export type ScreenState =
       currentTrack: CurrentTrackState | null;
       /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
       qr_overlay: boolean;
-      /** feat/tv-audio-output — routing audio (sink). */
-      audio_target: AudioTarget;
-      tv_audio_armed: boolean;
-      tv_spotify_ready: boolean;
-      /** Durée (ms) du morceau relayée par la TV — barre de progression quand son sur TV. */
-      tv_track_duration_ms: number | null;
       lastUpdate: string;
     }
   | {
@@ -339,10 +320,6 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       session: serializeSession(session),
       currentTrack,
       qr_overlay: getQrOverlay(workspaceId),
-      audio_target: getAudioTarget(workspaceId),
-      tv_audio_armed: getTvAudioArmed(workspaceId),
-      tv_spotify_ready: getTvSpotifyReady(workspaceId),
-      tv_track_duration_ms: getTvTrackDurationMs(workspaceId),
       lastUpdate,
     };
   }
@@ -372,10 +349,6 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       roundPosition: playingRound.position,
       roundsTotal,
       qr_overlay: getQrOverlay(workspaceId),
-      audio_target: getAudioTarget(workspaceId),
-      tv_audio_armed: getTvAudioArmed(workspaceId),
-      tv_spotify_ready: getTvSpotifyReady(workspaceId),
-      tv_track_duration_ms: getTvTrackDurationMs(workspaceId),
       lastUpdate,
     };
   }

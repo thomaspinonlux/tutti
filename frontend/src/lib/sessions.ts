@@ -475,6 +475,23 @@ export async function masterResume(sessionId: string, token: string): Promise<vo
   });
 }
 
+/**
+ * feat/sans-animateur — la télécommande demande un seek (avance/recul ±10s →
+ * position absolue en ms). Broadcast track:seek → la console applique sur SON
+ * lecteur. La télécommande n'émet aucun son.
+ */
+export async function masterSeek(
+  sessionId: string,
+  token: string,
+  positionMs: number,
+): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/seek`, {
+    method: 'POST',
+    body: { token, position_ms: Math.max(0, Math.round(positionMs)) },
+    anonymous: true,
+  });
+}
+
 export async function masterRestartTrack(
   sessionId: string,
   roundId: string,
