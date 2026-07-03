@@ -112,6 +112,20 @@ export async function isUserPremium(userId: string): Promise<boolean> {
   return member.workspace.plan !== 'FREE';
 }
 
+/**
+ * feat/animator-full-control — variante keyée sur un workspace (le master
+ * participant n'a PAS de userId, seulement l'établissement→workspace de la
+ * session). Même règle premium : plan workspace !== 'FREE'.
+ */
+export async function isWorkspacePremium(workspaceId: string): Promise<boolean> {
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { plan: true },
+  });
+  if (!workspace) return false;
+  return workspace.plan !== 'FREE';
+}
+
 interface ListFilters {
   locale?: string;
   theme?: string;
@@ -119,17 +133,14 @@ interface ListFilters {
 }
 
 /**
- * Liste les playlists officielles visibles pour un user.
- *   - Toujours inclut les `public`
- *   - Inclut `premium_only` si user premium (sinon : inclut MAIS marquées `locked: true`)
- *   - Exclut les `private` toujours
+ * feat/animator-full-control — cœur partagé entre les variantes user- et
+ * workspace- de la liste. Le statut premium est calculé par l'appelant (via
+ * isUserPremium ou isWorkspacePremium) pour éviter de dupliquer la projection.
  */
-export async function listVisiblePlaylists(
-  userId: string,
+async function listVisiblePlaylistsCore(
+  premium: boolean,
   filters: ListFilters = {},
 ): Promise<LibraryPlaylistSummary[]> {
-  const premium = await isUserPremium(userId);
-
   const where: Record<string, unknown> = {
     visibility: { in: ['public', 'premium_only'] },
   };
@@ -188,6 +199,33 @@ export async function listVisiblePlaylists(
       guess_mode: p.guess_mode,
     };
   });
+}
+
+/**
+ * Liste les playlists officielles visibles pour un user.
+ *   - Toujours inclut les `public`
+ *   - Inclut `premium_only` si user premium (sinon : inclut MAIS marquées `locked: true`)
+ *   - Exclut les `private` toujours
+ */
+export async function listVisiblePlaylists(
+  userId: string,
+  filters: ListFilters = {},
+): Promise<LibraryPlaylistSummary[]> {
+  const premium = await isUserPremium(userId);
+  return listVisiblePlaylistsCore(premium, filters);
+}
+
+/**
+ * feat/animator-full-control — même sortie que listVisiblePlaylists mais le
+ * statut premium est déduit du plan du workspace (pour le master participant,
+ * qui n'a pas de userId). Contrat identique (LibraryPlaylistSummary[]).
+ */
+export async function listVisiblePlaylistsForWorkspace(
+  workspaceId: string,
+  filters: ListFilters = {},
+): Promise<LibraryPlaylistSummary[]> {
+  const premium = await isWorkspacePremium(workspaceId);
+  return listVisiblePlaylistsCore(premium, filters);
 }
 
 /**
@@ -250,15 +288,14 @@ export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
 }
 
 /**
- * Détail d'une playlist officielle. Retourne null si non trouvée OU si l'user
- * n'a pas accès (private, ou premium_only sans premium).
+ * feat/animator-full-control — cœur partagé entre les variantes user- et
+ * workspace- du détail. Le statut premium est calculé par l'appelant. Retourne
+ * null si non trouvée OU si accès refusé (private, ou premium_only sans premium).
  */
-export async function getVisiblePlaylistDetail(
-  userId: string,
+async function getVisiblePlaylistDetailCore(
+  premium: boolean,
   playlistId: string,
 ): Promise<LibraryPlaylistDetail | null> {
-  const premium = await isUserPremium(userId);
-
   // feat/playlist-cache-and-availability-check — premier round-trip DB
   // léger : fetch uniquement updated_at + visibility pour décider du cache
   // HIT/MISS. Si cache HIT, on évite le include tracks (le coût principal).
@@ -330,4 +367,29 @@ export async function getVisiblePlaylistDetail(
   };
   setCachedPlaylist(playlistId, detail, playlist.updated_at);
   return detail;
+}
+
+/**
+ * Détail d'une playlist officielle. Retourne null si non trouvée OU si l'user
+ * n'a pas accès (private, ou premium_only sans premium).
+ */
+export async function getVisiblePlaylistDetail(
+  userId: string,
+  playlistId: string,
+): Promise<LibraryPlaylistDetail | null> {
+  const premium = await isUserPremium(userId);
+  return getVisiblePlaylistDetailCore(premium, playlistId);
+}
+
+/**
+ * feat/animator-full-control — même détail que getVisiblePlaylistDetail mais le
+ * statut premium est déduit du plan du workspace (pour le master participant,
+ * qui n'a pas de userId). Contrat identique (LibraryPlaylistDetail | null).
+ */
+export async function getVisiblePlaylistDetailForWorkspace(
+  workspaceId: string,
+  playlistId: string,
+): Promise<LibraryPlaylistDetail | null> {
+  const premium = await isWorkspacePremium(workspaceId);
+  return getVisiblePlaylistDetailCore(premium, playlistId);
 }

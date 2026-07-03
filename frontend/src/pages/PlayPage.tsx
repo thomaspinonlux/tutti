@@ -36,6 +36,7 @@ import {
   masterNextTrack,
   masterPause,
   masterPickRound,
+  masterLaunchOfficial,
   masterRestartTrack,
   masterResume,
   masterSeek,
@@ -586,6 +587,25 @@ export function PlayPage(): JSX.Element {
       await masterPickRound(identity.sessionId, playlistId, identity.token);
     });
   };
+  // feat/animator-full-control — l'animateur lance une playlist OFFICIELLE
+  // (source + niveau) depuis son tel. Même effet que le launch host, son console.
+  const handleMasterPickOfficial = async (
+    playlistId: string,
+    provider: 'youtube' | 'spotify',
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+  ): Promise<void> => {
+    setMasterPickerOpen(false);
+    return masterCall(async () => {
+      if (!identity) return;
+      await masterLaunchOfficial(
+        identity.sessionId,
+        playlistId,
+        identity.token,
+        provider,
+        difficulty,
+      );
+    });
+  };
   const handleMasterAdjust = async (args: {
     target_participant_id: string;
     delta: number;
@@ -763,6 +783,34 @@ export function PlayPage(): JSX.Element {
                   /api/sessions/by-code/:short_code/proposals. */}
                 <ProposePlaylistButton shortCode={shortCode} token={identity.token} />
               </Card>
+              {/* feat/animator-full-control — l'animateur désigné lance la 1ʳᵉ manche
+                  DEPUIS LE LOBBY (bibliothèque + niveau + source ou playlist perso).
+                  Le backend passe la session WAITING → PLAYING. */}
+              {isMaster && (
+                <Card
+                  size="md"
+                  tone="cream"
+                  className="mt-4 !border-3 border-spritz-deep text-center"
+                >
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span aria-hidden className="text-lg">
+                      👑
+                    </span>
+                    <p className="font-display text-base">{t('play.masterMenuTitle')}</p>
+                  </div>
+                  <p className="font-editorial italic text-ink-2 text-sm mb-3">
+                    Tu pilotes la partie — choisis une playlist et lance le blind test.
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => setMasterPickerOpen(true)}
+                  >
+                    🎬 Choisir une playlist &amp; démarrer
+                  </Button>
+                </Card>
+              )}
               {/* feat/rules — règles concises visibles dans le lobby avant la manche 1 */}
               <GameRules className="mt-4" />
             </>
@@ -836,6 +884,16 @@ export function PlayPage(): JSX.Element {
                     onEndSession={handleMasterEndSession}
                     onPickRound={() => setMasterPickerOpen(true)}
                     onAdjustPoints={() => setAdjustSheetOpen(true)}
+                    players={participantsList
+                      .filter((p) => !p.is_kicked)
+                      .map((p) => ({
+                        id: p.id,
+                        pseudo: p.pseudo,
+                        score: cumulative.find((c) => c.id === p.id)?.total_points ?? 0,
+                      }))}
+                    onQuickAdjust={(pid, delta) =>
+                      void handleMasterAdjust({ target_participant_id: pid, delta })
+                    }
                   />
                 </div>
               )}
@@ -860,6 +918,9 @@ export function PlayPage(): JSX.Element {
           token={identity.token}
           onClose={() => setMasterPickerOpen(false)}
           onPick={(pid) => void handleMasterPickPlaylist(pid)}
+          onPickOfficial={(pid, provider, difficulty) =>
+            void handleMasterPickOfficial(pid, provider, difficulty)
+          }
         />
       )}
 

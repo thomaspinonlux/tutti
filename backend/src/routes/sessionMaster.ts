@@ -54,6 +54,14 @@ import {
   scheduleAutoReveal,
 } from '../lib/gameplayQuizzCore.js';
 import type { QuestionType } from '@tutti/shared';
+import {
+  listVisiblePlaylistsForWorkspace,
+  getVisiblePlaylistDetailForWorkspace,
+} from '../lib/officialLibraryQueries.js';
+import {
+  launchOfficialPlaylistForSession,
+  NoPlayableTrackError,
+} from '../lib/officialPlaylistLaunch.js';
 
 const router: Router = Router({ mergeParams: true });
 
@@ -170,6 +178,166 @@ router.post('/playlists', async (req: Request<{ id: string }>, res: Response): P
     })),
   });
 });
+
+// ── POST /library/playlists ───────────────────────────────────────────────
+// feat/animator-full-control — le master (animateur désigné) parcourt la
+// bibliothèque OFFICIELLE Tutti (comme le host), depuis son tel. Auth = master
+// participant (pas de userId/workspaceId) → on dérive le workspace depuis
+// l'établissement de la session, et on réutilise listVisiblePlaylistsForWorkspace
+// pour le calcul premium/visibilité. Sortie = même LibraryPlaylistSummary[]
+// que la route host GET /api/library/playlists.
+
+const libraryListSchema = z.object({
+  token: z.string(),
+  provider: z.enum(['youtube', 'spotify']).optional(),
+});
+
+router.post(
+  '/library/playlists',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = libraryListSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    const session = await prisma.session.findUnique({
+      where: { id: req.params.id },
+      select: { establishment_id: true },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    const establishment = await prisma.establishment.findUnique({
+      where: { id: session.establishment_id },
+      select: { workspace_id: true },
+    });
+    if (!establishment) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Établissement introuvable' } });
+      return;
+    }
+    // provider n'est pas un filtre serveur : la LibraryPlaylistSummary porte
+    // déjà spotify_count/youtube_count/difficulty_counts, le frontend filtre.
+    const playlists = await listVisiblePlaylistsForWorkspace(establishment.workspace_id, {});
+    res.json({ playlists });
+  },
+);
+
+// ── POST /library/playlists/:playlistId/launch ────────────────────────────
+// feat/animator-full-control — le master lance une playlist officielle dans la
+// session (clone official → Playlist user + SessionRound). Réutilise EXACTEMENT
+// la logique host (launchOfficialPlaylistForSession). Auth master → workspace
+// dérivé de l'établissement, visibilité via getVisiblePlaylistDetailForWorkspace.
+// Réponse { round, state } alignée sur POST /pick-round (le frontend traite les
+// deux identiquement). state est null ici (round créé PENDING, pas encore lancé).
+
+const libraryLaunchSchema = z.object({
+  token: z.string(),
+  preferProvider: z.enum(['youtube', 'spotify']).default('youtube'),
+  difficulty: z.enum(['EASY', 'MEDIUM', 'EXPERT']).optional(),
+});
+
+router.post(
+  '/library/playlists/:playlistId/launch',
+  async (req: Request<{ id: string; playlistId: string }>, res: Response): Promise<void> => {
+    const parsed = libraryLaunchSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    const session = await prisma.session.findUnique({
+      where: { id: req.params.id },
+      select: { establishment_id: true, status: true },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    if (session.status === 'ENDED') {
+      res.status(409).json({ error: { code: 'INVALID_STATUS', message: 'Session terminée' } });
+      return;
+    }
+    const establishment = await prisma.establishment.findUnique({
+      where: { id: session.establishment_id },
+      select: { workspace_id: true },
+    });
+    if (!establishment) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Établissement introuvable' } });
+      return;
+    }
+    const detail = await getVisiblePlaylistDetailForWorkspace(
+      establishment.workspace_id,
+      req.params.playlistId,
+    );
+    if (!detail) {
+      res
+        .status(403)
+        .json({ error: { code: 'FORBIDDEN', message: 'Playlist introuvable ou inaccessible' } });
+      return;
+    }
+
+    try {
+      // 1) Clone official → Playlist + SessionRound PENDING (broadcast round:created).
+      const result = await launchOfficialPlaylistForSession(
+        detail,
+        req.params.id,
+        session.establishment_id,
+        { preferProvider: parsed.data.preferProvider, difficulty: parsed.data.difficulty },
+      );
+      const roundId = result.round.id;
+
+      // 2) Démarre RÉELLEMENT la manche (comme /pick-round : le master lance pour
+      //    JOUER, pas juste préparer). WAITING → PLAYING.
+      if (session.status === 'WAITING') {
+        const updated = await prisma.session.update({
+          where: { id: req.params.id },
+          data: { status: 'PLAYING', started_at: new Date() },
+        });
+        broadcastToSession(req.params.id, 'session:started', { session: updated });
+      }
+
+      // 3) Termine les autres rounds PLAYING (le nouveau est PENDING → non touché).
+      const otherPlaying = await prisma.sessionRound.findMany({
+        where: { session_id: req.params.id, status: 'PLAYING' },
+        select: { id: true },
+      });
+      for (const r of otherPlaying) clearActiveTrack(r.id);
+      await prisma.sessionRound.updateMany({
+        where: { session_id: req.params.id, status: 'PLAYING' },
+        data: { status: 'ENDED', ended_at: new Date() },
+      });
+
+      // 4) Démarre le round (PENDING → PLAYING) + broadcast round:started.
+      const started = await prisma.sessionRound.update({
+        where: { id: roundId },
+        data: { status: 'PLAYING' as RoundStatus, started_at: new Date() },
+        include: { playlist: { select: PLAYLIST_LIGHT } },
+      });
+      const enrichedStarted = enrichRound(started);
+      broadcastToSession(req.params.id, 'round:started', { round: enrichedStarted });
+
+      // 5) Lance le 1ᵉʳ track (broadcast track:start) → la CONSOLE joue le son.
+      const fullRound = await findRoundForSession(roundId, req.params.id);
+      if (!fullRound) {
+        res
+          .status(500)
+          .json({ error: { code: 'INTERNAL_ERROR', message: 'Round créé introuvable' } });
+        return;
+      }
+      const state = await buildAndBroadcastTrack(req.params.id, fullRound, 0);
+      res.json({ round: enrichedStarted, state });
+    } catch (err: unknown) {
+      if (err instanceof NoPlayableTrackError) {
+        res.status(400).json({ error: { code: err.code, message: err.message } });
+        return;
+      }
+      console.error('[POST master/library/launch] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur lancement de la manche' } });
+    }
+  },
+);
 
 // ── POST /next-track ──────────────────────────────────────────────────────
 

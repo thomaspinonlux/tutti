@@ -53,6 +53,9 @@ export interface MasterMenuProps {
   onEndSession: () => Promise<void>;
   onPickRound: () => void;
   onAdjustPoints: () => void;
+  /** feat/animator-full-control — score rapide (−5/+5/+10 par joueur), comme la console. */
+  players?: { id: string; pseudo: string; score: number }[];
+  onQuickAdjust?: (participantId: string, delta: number) => void;
 }
 
 function fmtTime(ms: number): string {
@@ -64,6 +67,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
   const { t } = useTranslation();
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [confirmEndRound, setConfirmEndRound] = useState(false);
+  const [showScores, setShowScores] = useState(false);
   const phase = props.currentTrack?.phase ?? null;
   const track = props.currentTrack;
 
@@ -288,6 +292,45 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         >
           ⚖ {t('play.masterAdjust')}
         </Button>
+
+        {/* feat/animator-full-control — score rapide −5/+5/+10 par joueur (console-like). */}
+        {props.players && props.players.length > 0 && props.onQuickAdjust && (
+          <div className="col-span-2">
+            <button
+              type="button"
+              onClick={() => setShowScores((s) => !s)}
+              className="w-full text-xs font-mono text-ink-soft hover:text-ink py-1"
+            >
+              🏆 Scores {showScores ? '▲' : '▼'}
+            </button>
+            {showScores && (
+              <ul className="space-y-1 mt-1 max-h-52 overflow-y-auto">
+                {props.players.map((pl) => (
+                  <li
+                    key={pl.id}
+                    className="flex items-center gap-1.5 bg-white/70 border border-ink/10 rounded px-2 py-1"
+                  >
+                    <span className="flex-1 min-w-0 truncate text-sm">{pl.pseudo}</span>
+                    <span className="font-mono text-xs tabular-nums text-ink-soft w-8 text-right">
+                      {pl.score}
+                    </span>
+                    {[-5, 5, 10].map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        disabled={props.busy}
+                        onClick={() => props.onQuickAdjust!(pl.id, d)}
+                        className="px-1.5 py-0.5 text-xs font-mono border-2 border-ink/20 rounded hover:bg-cream-2 disabled:opacity-50"
+                      >
+                        {d > 0 ? `+${d}` : d}
+                      </button>
+                    ))}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {props.hasActiveRound && props.onEndRound && (
           <>
