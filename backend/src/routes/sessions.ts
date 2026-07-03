@@ -1264,79 +1264,10 @@ router.post(
   },
 );
 
-// ── POST /:id/participants/claim-master (public, self-claim télécommande) ──
-// feat/sans-animateur — un participant se désigne LUI-MÊME comme master
-// (télécommande, mode B sans animateur). Auth = token participant (pas admin).
-// Autorisé si AUCUN master actuel, OU avec takeover=true (reprise explicite).
-// Un seul master à la fois (atomique). Broadcast participant:master_changed →
-// le PlayPage du claimeur affiche la télécommande.
-router.post(
-  '/:id/participants/claim-master',
-  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-    const parsed = z
-      .object({ token: z.string(), takeover: z.boolean().optional() })
-      .safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'token requis' } });
-      return;
-    }
-    const { verifyParticipantToken } = await import('../lib/participantToken.js');
-    let payload: { participant_id: string; session_id: string };
-    try {
-      payload = verifyParticipantToken(parsed.data.token);
-    } catch {
-      res.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Token invalide' } });
-      return;
-    }
-    if (payload.session_id !== req.params.id) {
-      res
-        .status(403)
-        .json({ error: { code: 'WRONG_SESSION', message: 'Session ne correspond pas' } });
-      return;
-    }
-    try {
-      const result = await prisma.$transaction(async (tx) => {
-        const me = await tx.participant.findUnique({
-          where: { id: payload.participant_id },
-          select: { id: true, is_kicked: true, session_id: true },
-        });
-        if (!me || me.is_kicked || me.session_id !== req.params.id) {
-          return { error: 'PARTICIPANT_INVALID' as const };
-        }
-        const existing = await tx.participant.findFirst({
-          where: { session_id: req.params.id, is_master: true, is_kicked: false },
-          select: { id: true },
-        });
-        if (existing && existing.id !== me.id && !parsed.data.takeover) {
-          return { error: 'MASTER_TAKEN' as const };
-        }
-        await tx.participant.updateMany({
-          where: { session_id: req.params.id, is_master: true, NOT: { id: me.id } },
-          data: { is_master: false },
-        });
-        const updated = await tx.participant.update({
-          where: { id: me.id },
-          data: { is_master: true },
-        });
-        return { participant: updated };
-      });
-      if ('error' in result) {
-        res
-          .status(result.error === 'MASTER_TAKEN' ? 409 : 403)
-          .json({ error: { code: result.error, message: result.error } });
-        return;
-      }
-      broadcastToSession(req.params.id, 'participant:master_changed', {
-        participant: result.participant,
-        is_master: true,
-      });
-      res.json({ participant: result.participant });
-    } catch (err: unknown) {
-      console.error('[POST /sessions/:id/participants/claim-master] error:', err);
-      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur claim master' } });
-    }
-  },
-);
+// feat/manette-console-master — le self-claim télécommande a été RETIRÉ.
+// L'animateur (master) est désormais désigné exclusivement DEPUIS LA CONSOLE
+// via POST /:id/participants/:pid/master (host, plus haut). Un joueur ne peut
+// plus se donner la manette depuis son tel.
 
 router.delete(
   '/:id/participants/:pid',
