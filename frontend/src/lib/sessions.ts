@@ -20,6 +20,7 @@ import type {
   Team,
 } from '@tutti/shared';
 import { api } from './api.js';
+import type { LibraryPlaylistSummary } from './library.js';
 
 export interface CreateSessionInput {
   name?: string;
@@ -537,6 +538,44 @@ export async function masterPickRound(
     body: { token, playlist_id: playlistId },
     anonymous: true,
   });
+}
+
+/**
+ * feat/animator-full-control — l'animateur (master) liste la BIBLIOTHÈQUE
+ * OFFICIELLE (visibilité déterminée par le workspace de la session, pas un user).
+ */
+export async function masterListOfficialPlaylists(
+  sessionId: string,
+  token: string,
+  provider?: 'youtube' | 'spotify',
+): Promise<LibraryPlaylistSummary[]> {
+  const data = await api<{ playlists: LibraryPlaylistSummary[] }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/master/library/playlists`,
+    { method: 'POST', body: { token, ...(provider ? { provider } : {}) }, anonymous: true },
+  );
+  return data.playlists;
+}
+
+/**
+ * feat/animator-full-control — l'animateur clone + lance une playlist officielle
+ * (source + niveau) → même effet que le launch host. Réponse identique à
+ * masterPickRound ({round, state}) → le front traite les 2 pareil.
+ */
+export async function masterLaunchOfficial(
+  sessionId: string,
+  playlistId: string,
+  token: string,
+  preferProvider: 'youtube' | 'spotify' = 'youtube',
+  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+): Promise<{ round: SessionRoundWithPlaylist; state: CurrentTrackState | null }> {
+  return api(
+    `/api/sessions/${encodeURIComponent(sessionId)}/master/library/playlists/${encodeURIComponent(playlistId)}/launch`,
+    {
+      method: 'POST',
+      body: { token, preferProvider, ...(difficulty ? { difficulty } : {}) },
+      anonymous: true,
+    },
+  );
 }
 
 export async function masterAdjustPoints(
