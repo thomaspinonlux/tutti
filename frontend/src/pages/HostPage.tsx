@@ -737,7 +737,58 @@ function HostPageInner(): JSX.Element {
     if (!pendingSeek) return;
     if (isYouTubeTrack) youtube.seek(pendingSeek.ms);
     else void spotify.seek(pendingSeek.ms);
+    // ONE-SHOT : sans ce reset, `youtube`/`spotify` changent d'identité à chaque
+    // poll de position → l'effet rejoue → ré-applique le MÊME seek ~1×/s → la
+    // musique boucle sur ~1s et n'avance jamais (bug −10/+10s). On consomme le
+    // seek une seule fois. started_at (ancre buzz/scoring) n'est jamais touché.
+    setPendingSeek(null);
   }, [pendingSeek, isYouTubeTrack, youtube, spotify]);
+
+  // feat/manette-console-master — la CONSOLE diffuse sa position de lecture à la
+  // room (~1/s) pour que la télécommande affiche une timeline EXACTE + un scrub
+  // tactile. Pur métadonnée (aucun son routé). Ref pour lire les valeurs
+  // courantes sans recréer l'interval à chaque poll de position des lecteurs.
+  const progressRef = useRef<{
+    isYouTubeTrack: boolean;
+    youtube: typeof youtube;
+    spotify: typeof spotify;
+    sessionId: string | null;
+    isPaused: boolean;
+    hasTrack: boolean;
+  }>({
+    isYouTubeTrack,
+    youtube,
+    spotify,
+    sessionId: session?.id ?? null,
+    isPaused: session?.is_paused ?? false,
+    hasTrack: !!currentTrack,
+  });
+  progressRef.current = {
+    isYouTubeTrack,
+    youtube,
+    spotify,
+    sessionId: session?.id ?? null,
+    isPaused: session?.is_paused ?? false,
+    hasTrack: !!currentTrack,
+  };
+  useEffect(() => {
+    if (!hostSocket) return;
+    const emit = (): void => {
+      const p = progressRef.current;
+      if (!p.sessionId || !p.hasTrack) return;
+      const position_ms = p.isYouTubeTrack ? p.youtube.positionMs : p.spotify.positionMs;
+      const duration_ms = (p.isYouTubeTrack ? p.youtube.durationMs : p.spotify.durationMs) || null;
+      hostSocket.emit('console:progress', {
+        session_id: p.sessionId,
+        position_ms,
+        duration_ms,
+        is_paused: p.isPaused,
+      });
+    };
+    emit();
+    const id = window.setInterval(emit, 1000);
+    return () => window.clearInterval(id);
+  }, [hostSocket]);
 
   // ── Actions ────────────────────────────────────────────────────────────
   const refreshCumulative = async (sid: string): Promise<void> => {

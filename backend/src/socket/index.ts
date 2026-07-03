@@ -310,6 +310,33 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
       },
     );
 
+    // ── feat/manette-console-master — la CONSOLE diffuse sa position de
+    // lecture (position/durée) à la room pour que la télécommande affiche une
+    // timeline EXACTE + un scrub tactile. Pur métadonnée : AUCUN son n'est
+    // routé. Émis ~1×/s par le host. On n'accepte que si l'émetteur est déjà
+    // dans la room (pas de spoof cross-session).
+    socket.on(
+      'console:progress',
+      (payload: {
+        session_id?: string;
+        position_ms?: number;
+        duration_ms?: number | null;
+        is_paused?: boolean;
+      }) => {
+        const sessionId = String(payload?.session_id ?? '');
+        if (!sessionId || !socket.rooms.has(roomName(sessionId))) return;
+        const dur =
+          payload?.duration_ms == null
+            ? null
+            : Math.max(0, Math.round(Number(payload.duration_ms) || 0)) || null;
+        broadcastToSession(sessionId, 'track:progress', {
+          position_ms: Math.max(0, Math.round(Number(payload?.position_ms) || 0)),
+          duration_ms: dur,
+          is_paused: !!payload?.is_paused,
+        });
+      },
+    );
+
     socket.on('disconnect', () => {
       // Note V1 : on ne déclenche PAS de "participant:left" automatique sur
       // disconnect, pour tolérer les reconnexions (changement de réseau, écran

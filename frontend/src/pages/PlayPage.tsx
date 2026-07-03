@@ -40,7 +40,6 @@ import {
   masterResume,
   masterSeek,
   masterSkipTrack,
-  claimMaster,
   postBuzz,
 } from '../lib/sessions.js';
 import type { CorrectAnswerEntry, CumulativeScore } from '@tutti/shared';
@@ -140,6 +139,14 @@ export function PlayPage(): JSX.Element {
   const [busy, setBusy] = useState(false);
   // Master mode (mode B uniquement) : flag is_master + état de pause
   const [isMaster, setIsMaster] = useState(false);
+  // feat/manette-console-master — position/durée diffusées par la console
+  // (broadcast track:progress) pour la timeline + le scrub de la télécommande.
+  const [masterProgress, setMasterProgress] = useState<{
+    position_ms: number;
+    duration_ms: number | null;
+    is_paused: boolean;
+    at: number;
+  } | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [masterPickerOpen, setMasterPickerOpen] = useState(false);
   const [adjustSheetOpen, setAdjustSheetOpen] = useState(false);
@@ -332,13 +339,23 @@ export function PlayPage(): JSX.Element {
       setCorrectAnswers([]);
       setLastReveal(null);
       setPhase2StartedAt(null);
+      setMasterProgress(null);
     });
     sock.on('track:start', ({ state }: { state: CurrentTrackState }) => {
       setCurrentTrack(state);
       setCorrectAnswers([]);
       setLastReveal(null);
       setPhase2StartedAt(null);
+      setMasterProgress(null);
     });
+    // feat/manette-console-master — la console diffuse sa position → timeline
+    // exacte + scrub côté télécommande (corrige aussi le désync post-seek).
+    sock.on(
+      'track:progress',
+      (p: { position_ms: number; duration_ms: number | null; is_paused: boolean }) => {
+        setMasterProgress({ ...p, at: Date.now() });
+      },
+    );
     sock.on(
       'buzz:received',
       (_payload: { round_id: string; participant_id: string; participant_pseudo: string }) => {
@@ -517,22 +534,38 @@ export function PlayPage(): JSX.Element {
       if (!identity || !currentRound) return;
       await masterRestartTrack(identity.sessionId, currentRound.id, identity.token);
     });
-  // feat/sans-animateur — recul/avance ±10s. Position estimée depuis l'horloge
-  // serveur (started_at) ; la console applique + re-synchronise sa vraie position.
+  // feat/manette-console-master — position de lecture RÉELLE : la console diffuse
+  // sa position (track:progress). On l'interpole avec l'horloge locale. Fallback
+  // sur started_at si pas encore de progress. C'est cette position réelle (et
+  // non started_at, faux après un seek) qui sert de base au ±10s et au scrub.
+  const currentPlaybackMs = (): number => {
+    if (masterProgress) {
+      const drift = masterProgress.is_paused ? 0 : Date.now() - masterProgress.at;
+      return Math.max(0, masterProgress.position_ms + drift);
+    }
+    if (currentTrack?.started_at) {
+      return Math.max(0, Date.now() - new Date(currentTrack.started_at).getTime());
+    }
+    return 0;
+  };
+  // ±10s relatifs à la position réelle. La console applique + rediffuse.
   const handleMasterSeek = (deltaMs: number): void => {
     void masterCall(async () => {
-      if (!identity || !currentTrack?.started_at) return;
-      const elapsed = Math.max(0, Date.now() - new Date(currentTrack.started_at).getTime());
-      await masterSeek(identity.sessionId, identity.token, Math.max(0, elapsed + deltaMs));
+      if (!identity) return;
+      await masterSeek(
+        identity.sessionId,
+        identity.token,
+        Math.max(0, currentPlaybackMs() + deltaMs),
+      );
     });
   };
-  // feat/sans-animateur — se désigner soi-même télécommande (mode B sans
-  // animateur). Le broadcast participant:master_changed fera apparaître le menu.
-  const handleClaimMaster = (): Promise<void> =>
-    masterCall(async () => {
+  // Scrub tactile : position absolue (ms) depuis la barre de la télécommande.
+  const handleMasterSeekTo = (ms: number): void => {
+    void masterCall(async () => {
       if (!identity) return;
-      await claimMaster(identity.sessionId, identity.token);
+      await masterSeek(identity.sessionId, identity.token, Math.max(0, Math.round(ms)));
     });
+  };
   const handleMasterEndSession = (): Promise<void> =>
     masterCall(async () => {
       if (!identity) return;
@@ -777,25 +810,10 @@ export function PlayPage(): JSX.Element {
                 onMasterPause={isMaster ? handleMasterPause : undefined}
               />
 
-              {/* feat/sans-animateur — self-claim télécommande : visible tant qu'on
-                  n'est pas déjà master. Le 1er qui clique tient la manette (les
-                  autres reçoivent 409). Devient master → le MasterMenu remplace ce bouton. */}
-              {!isMaster && identity && (
-                <div className="mt-4">
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    className="w-full"
-                    onClick={() => void handleClaimMaster()}
-                    disabled={busy}
-                  >
-                    🎮 Piloter la musique (télécommande)
-                  </Button>
-                  <p className="mt-1 text-center font-mono text-[11px] text-ink-soft">
-                    Play/pause, ±10s, morceau suivant. Le son reste sur la console.
-                  </p>
-                </div>
-              )}
+              {/* feat/manette-console-master — plus de self-claim depuis le tel.
+                  L'animateur est désigné DEPUIS LA CONSOLE (bouton « Nommer
+                  animateur » à côté de chaque joueur). Un joueur désigné voit
+                  le MasterMenu (télécommande) apparaître ci-dessous. */}
 
               {isMaster && (
                 <div className="mt-4">
@@ -812,6 +830,8 @@ export function PlayPage(): JSX.Element {
                     onRestartTrack={handleMasterRestart}
                     onSeekBack={() => handleMasterSeek(-10_000)}
                     onSeekForward={() => handleMasterSeek(10_000)}
+                    onSeekTo={handleMasterSeekTo}
+                    progress={masterProgress}
                     onEndRound={handleMasterEndRound}
                     onEndSession={handleMasterEndSession}
                     onPickRound={() => setMasterPickerOpen(true)}
