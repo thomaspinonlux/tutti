@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CumulativeScore, Participant } from '@tutti/shared';
-import { hostAdjustPoints } from '../../lib/sessions.js';
+import { hostAdjustPoints, toggleParticipantMaster } from '../../lib/sessions.js';
 import { Button, Card } from '../ui/index.js';
 
 interface Props {
@@ -42,6 +42,22 @@ export function PlayersPanel({
     setError(null);
     try {
       await hostAdjustPoints(sessionId, pid, delta);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  // fix/provider-master-manette (BUG 2) — désigne CE joueur comme animateur
+  // (manette sur son tel). Toggle atomique côté serveur (1 seul master) ; le
+  // broadcast participant:master_changed rafraîchit `participants` → l'état
+  // actif (p.is_master) se met à jour + la manette s'active sur le tel du joueur.
+  const handleToggleMaster = async (pid: string): Promise<void> => {
+    setBusy(pid);
+    setError(null);
+    try {
+      await toggleParticipantMaster(sessionId, pid);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -84,7 +100,24 @@ export function PlayersPanel({
                   {score} {t('host.playersPts')}
                 </p>
               </div>
-              <div className="flex gap-1 shrink-0">
+              <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                {/* BUG 2 — désigner l'animateur (manette) depuis la ligne joueur,
+                    à côté des boutons de score. Toggle : actif = ce joueur pilote. */}
+                <button
+                  type="button"
+                  onClick={() => void handleToggleMaster(p.id)}
+                  disabled={isBusy}
+                  aria-pressed={p.is_master}
+                  title={p.is_master ? t('host.masterRevoke') : t('host.masterAssign')}
+                  className={[
+                    '!px-2 !py-1 text-xs font-mono rounded border-2 transition-colors',
+                    p.is_master
+                      ? 'border-basil bg-basil/15 text-basil-deep'
+                      : 'border-ink/25 text-ink-soft hover:bg-cream-2',
+                  ].join(' ')}
+                >
+                  🎙️{p.is_master ? ' ✓' : ''}
+                </button>
                 <Button
                   variant="ghost"
                   size="sm"
