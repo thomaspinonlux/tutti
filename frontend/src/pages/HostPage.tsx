@@ -2217,7 +2217,7 @@ function WaitingPhase({
             teams={teams}
             participants={participants}
             currentMasterId={currentMasterId}
-            showMasterToggle={!hasAnimator}
+            showMasterToggle={true}
             onMove={onMove}
             onKick={onKick}
             onToggleMaster={onToggleMaster}
@@ -2226,7 +2226,7 @@ function WaitingPhase({
           <ParticipantsList
             participants={participants}
             currentMasterId={currentMasterId}
-            showMasterToggle={!hasAnimator}
+            showMasterToggle={true}
             onKick={onKick}
             onToggleMaster={onToggleMaster}
           />
@@ -2794,7 +2794,7 @@ function ParticipantsList({
                     ].join(' ')}
                     aria-pressed={isMaster}
                   >
-                    {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
+                    🎙️ {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
                   </button>
                 )}
                 <button
