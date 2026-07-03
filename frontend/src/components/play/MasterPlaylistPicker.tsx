@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import {
   masterListOfficialPlaylists,
   masterListPlaylists,
+  masterSetScreenFocus,
   type MasterPlaylistEntry,
 } from '../../lib/sessions.js';
 import type { LibraryPlaylistSummary } from '../../lib/library.js';
@@ -110,6 +111,26 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
     const nq = norm(q.trim());
     return nq ? perso.filter((p) => norm(p.name).includes(nq)) : perso;
   }, [perso, q]);
+
+  // feat/animator-tv-library — pousse vers la TV la playlist officielle regardée
+  // (celle sélectionnée pour le niveau, sinon la 1ʳᵉ de la liste filtrée) → la TV
+  // affiche la grille catalogue + la surligne. Heartbeat 15s (TTL store = 30s).
+  // Fermeture → sort de la sélection (playlist_id null).
+  const tvFocusId = tab === 'official' ? (selected?.id ?? filteredOfficial?.[0]?.id ?? null) : null;
+  useEffect(() => {
+    if (!props.open) {
+      void masterSetScreenFocus(props.sessionId, props.token, null).catch(() => {});
+      return;
+    }
+    const push = (): void => {
+      void masterSetScreenFocus(props.sessionId, props.token, tvFocusId).catch(() => {});
+    };
+    push();
+    const id = tvFocusId ? window.setInterval(push, 15000) : undefined;
+    return () => {
+      if (id) window.clearInterval(id);
+    };
+  }, [props.open, props.sessionId, props.token, tvFocusId]);
 
   if (!props.open) return null;
 
