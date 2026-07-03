@@ -627,6 +627,13 @@ function HostPageInner(): JSX.Element {
   // NotFoundError cascade DOM cleanup en transition end-round/end-session
   // pour les users normaux + élimine bruit console [Spotify SDK].
   const [spotifyAllowlisted, setSpotifyAllowlisted] = useState(false);
+  // fix/provider-master-manette (BUG 1) — SOURCE audio ACTIVE de la session.
+  // Défaut = YouTube (pivot). Le SDK Spotify, sa synchro ET l'indicateur
+  // « Spotify: ready » sont gatés STRICTEMENT dessus : en mode YouTube, Spotify
+  // n'est JAMAIS initialisé. Positionné au launch (source choisie) puis
+  // re-synchronisé sur le provider RÉEL du morceau courant (autoritatif serveur,
+  // clone étanche) — cf. effet plus bas.
+  const [audioProvider, setAudioProvider] = useState<'youtube' | 'spotify'>('youtube');
   // feat/quiz-launch-host-ui — flag pour afficher le sub-onglet "Quizz"
   // dans la bibliothèque officielle. Reflète WorkspaceMember.can_use_quizz.
   //
@@ -684,7 +691,9 @@ function HostPageInner(): JSX.Element {
   const playerAlive =
     phase === 'roundPlaying' || phase === 'intermission' || phase === 'roundSelection';
   const spotify = useSpotifyPlayer({
-    enabled: spotifyAllowlisted && playerAlive,
+    // BUG 1 — Spotify n'est initialisé QUE si la source active est Spotify
+    // (+ allowlist). Mode YouTube → SDK jamais chargé → pas d'« Spotify: ready ».
+    enabled: spotifyAllowlisted && playerAlive && audioProvider === 'spotify',
   });
   const youtube = useYouTubePlayer({ enabled: playerAlive });
   // feat/detect-content-blocker-youtube — lit isStandalone pour adapter
@@ -702,7 +711,7 @@ function HostPageInner(): JSX.Element {
     spotify,
     currentTrack,
     isPaused: session?.is_paused ?? false,
-    enabled: spotifyAllowlisted && phase === 'roundPlaying',
+    enabled: spotifyAllowlisted && audioProvider === 'spotify' && phase === 'roundPlaying',
   });
   useYouTubeAudioSync({
     youtube,
@@ -710,6 +719,14 @@ function HostPageInner(): JSX.Element {
     isPaused: session?.is_paused ?? false,
     enabled: phase === 'roundPlaying',
   });
+
+  // BUG 1 — le provider RÉEL du morceau courant (décidé serveur au clone, étanche)
+  // fait AUTORITÉ : re-synchronise `audioProvider` dessus. Corrige aussi la
+  // reprise (reload en cours de session) où le choix initial est perdu.
+  useEffect(() => {
+    const p = currentTrack?.provider;
+    if (p === 'spotify' || p === 'youtube') setAudioProvider(p);
+  }, [currentTrack?.provider]);
 
   // fix/ipad-pwa-audio-persistent-player — le player survit à l'intermission
   // (plus de destroy entre manches) : pause explicite en quittant roundPlaying,
@@ -892,6 +909,9 @@ function HostPageInner(): JSX.Element {
 
   const handlePickPlaylist = (playlist: Playlist): void => {
     if (!session) return;
+    // BUG 1 — perso : legacy Spotify pour les allowlistés (sinon YouTube). Le
+    // provider réel du morceau courant corrige ensuite (effet de synchro).
+    setAudioProvider(spotifyAllowlisted ? 'spotify' : 'youtube');
     setPendingFirstPlay({
       source: 'perso',
       playlistId: playlist.id,
@@ -906,6 +926,7 @@ function HostPageInner(): JSX.Element {
 
   const handlePickExpress = (info: { id: string; name: string; tracks_count: number }): void => {
     if (!session) return;
+    setAudioProvider(spotifyAllowlisted ? 'spotify' : 'youtube'); // BUG 1 (perso legacy)
     setPendingFirstPlay({
       source: 'perso',
       playlistId: info.id,
@@ -954,6 +975,7 @@ function HostPageInner(): JSX.Element {
     if (!session) return;
     if (summary.locked) return; // ne devrait pas arriver — card disabled
     pickedProviderRef.current = provider; // onglet choisi → relu au launch
+    setAudioProvider(provider); // BUG 1 — la source choisie gate le SDK Spotify
     pickedDifficultyRef.current = difficulty; // niveau choisi → relu au launch
 
     // 1. Charge providers connectés
@@ -994,6 +1016,7 @@ function HostPageInner(): JSX.Element {
     try {
       // Proposition joueur → source YouTube (défaut du pivot). Relu au launch.
       pickedProviderRef.current = 'youtube';
+      setAudioProvider('youtube'); // BUG 1
       pickedDifficultyRef.current = undefined;
       const detail = await getLibraryPlaylist(officialPlaylistId);
       const report = computePlayability(detail.tracks, providers, 'youtube');
@@ -1998,8 +2021,8 @@ function HostPageInner(): JSX.Element {
           Le nœud persiste tant que le player est `enabled` → l'iframe survit
           aux manches (persistance audio iPad PWA #80). */}
 
-      {/* Debug Spotify (visible uniquement quand SDK actif) */}
-      {spotify.status !== 'idle' && (
+      {/* Debug Spotify (visible uniquement en mode Spotify + SDK actif) */}
+      {spotify.status !== 'idle' && audioProvider === 'spotify' && (
         <div className="fixed bottom-2 left-2 z-50 max-w-[280px] px-2 py-1 bg-ink/90 text-cream font-mono text-[10px] rounded border border-cream/30 leading-tight">
           <div>
             🎵 Spotify: <strong>{spotify.status}</strong>
