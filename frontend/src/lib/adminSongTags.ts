@@ -30,6 +30,9 @@ export interface SongTagRow {
   work_title: string | null;
   work_kind: WorkKind | null;
   tags_reviewed: boolean;
+  /** P3 — présence d'une source (badge). L'id réel n'est pas exposé. */
+  has_youtube: boolean;
+  has_spotify: boolean;
 }
 
 export type TagStatus = 'all' | 'reviewed' | 'unreviewed';
@@ -76,6 +79,17 @@ export function listSongTags(
 
 export function patchSongTags(id: string, patch: SongTagPatch): Promise<{ song: SongTagRow }> {
   return api(`/api/admin/song-tags/${id}`, { method: 'PATCH', body: patch });
+}
+
+/** Un item de bulk-apply : le patch + l'id de la song. */
+export type SongTagBulkItem = SongTagPatch & { id: string };
+
+/** Écrit les tags de plusieurs songs en une transaction (bouton « Tout enregistrer »).
+ *  Max 200 items/appel côté serveur ; l'appelant découpe au besoin. */
+export function bulkApplySongTags(
+  items: SongTagBulkItem[],
+): Promise<{ count: number; songs: SongTagRow[] }> {
+  return api('/api/admin/song-tags/bulk-apply', { method: 'POST', body: { items } });
 }
 
 export function bulkValidateSongTags(filter: SongTagFilter): Promise<{ count: number }> {
