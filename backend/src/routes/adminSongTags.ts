@@ -7,6 +7,7 @@
  *   GET  /meta                 vocabulaire (52 thèmes + work_kinds)
  *   GET  /                     liste PAGINÉE + filtres (thème GIN / statut / q)
  *   PATCH /:id                 écrit les tags d'une song + tags_reviewed=true
+ *   POST /bulk-apply           écrit les tags de PLUSIEURS songs (transaction)
  *   POST /bulk-validate        tags_reviewed=true sur le filtre courant (count)
  *
  * Aucune dérivation ici : on lit/écrit ce que l'humain décide. La passe auto
@@ -65,6 +66,8 @@ interface SongRow {
   work_title: string | null;
   work_kind: string | null;
   tags_reviewed: boolean;
+  youtube_id: string | null;
+  spotify_id: string | null;
   artist: { canonical_name: string };
   catalog_tracks: { year: number | null }[];
 }
@@ -82,6 +85,9 @@ function serialize(s: SongRow): Record<string, unknown> {
     work_title: s.work_title,
     work_kind: s.work_kind,
     tags_reviewed: s.tags_reviewed,
+    // P3 — badge de source dans la gestion des titres (présence seule, pas l'id).
+    has_youtube: !!s.youtube_id,
+    has_spotify: !!s.spotify_id,
   };
 }
 
@@ -95,6 +101,8 @@ const SONG_SELECT = {
   work_title: true,
   work_kind: true,
   tags_reviewed: true,
+  youtube_id: true,
+  spotify_id: true,
   artist: { select: { canonical_name: true } },
   catalog_tracks: { where: { year: { not: null } }, select: { year: true }, take: 1 },
 } as const;
@@ -128,17 +136,36 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   res.json({ songs: (songs as SongRow[]).map(serialize), total, page, limit });
 });
 
-// ── PATCH /:id (écrit les tags + tags_reviewed=true) ───────────────────────
-const patchSchema = z
-  .object({
-    themes: z.array(z.string()).optional(),
-    is_francophone: z.boolean().optional(),
-    is_international: z.boolean().optional(),
-    level: z.number().int().min(1).max(3).nullable().optional(),
-    work_title: z.string().trim().max(200).nullable().optional(),
-    work_kind: z.enum(WORK_KINDS).nullable().optional(),
-  })
-  .strict();
+// ── Champs de tag partagés (PATCH unitaire + bulk-apply) ───────────────────
+const tagFieldsSchema = z.object({
+  themes: z.array(z.string()).optional(),
+  is_francophone: z.boolean().optional(),
+  is_international: z.boolean().optional(),
+  level: z.number().int().min(1).max(3).nullable().optional(),
+  work_title: z.string().trim().max(200).nullable().optional(),
+  work_kind: z.enum(WORK_KINDS).nullable().optional(),
+});
+type TagFields = z.infer<typeof tagFieldsSchema>;
+
+/** Thèmes hors vocabulaire présents dans le patch (vide = OK). */
+function unknownThemes(themes: string[] | undefined): string[] {
+  return themes ? themes.filter((t) => !SONG_THEME_SLUGS.has(t)) : [];
+}
+
+/** Patch Prisma : tout champ fourni est écrit, tags_reviewed passe true. */
+function buildTagData(b: TagFields): Prisma.SongUpdateInput {
+  const data: Prisma.SongUpdateInput = { tags_reviewed: true };
+  if (b.themes) data.themes = { set: Array.from(new Set(b.themes)) };
+  if (b.is_francophone !== undefined) data.is_francophone = b.is_francophone;
+  if (b.is_international !== undefined) data.is_international = b.is_international;
+  if (b.level !== undefined) data.level = b.level;
+  if (b.work_title !== undefined) data.work_title = b.work_title === '' ? null : b.work_title;
+  if (b.work_kind !== undefined) data.work_kind = b.work_kind;
+  return data;
+}
+
+// ── PATCH /:id (écrit les tags d'une song + tags_reviewed=true) ────────────
+const patchSchema = tagFieldsSchema.strict();
 
 router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   if (!z.string().uuid().safeParse(req.params.id).success) {
@@ -152,34 +179,65 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promis
   }
   const b = parsed.data;
 
-  if (b.themes) {
-    const bad = b.themes.filter((t) => !SONG_THEME_SLUGS.has(t));
-    if (bad.length > 0) {
-      res
-        .status(400)
-        .json({ error: { code: 'UNKNOWN_THEME', message: `Thèmes inconnus: ${bad.join(', ')}` } });
-      return;
-    }
+  const bad = unknownThemes(b.themes);
+  if (bad.length > 0) {
+    res
+      .status(400)
+      .json({ error: { code: 'UNKNOWN_THEME', message: `Thèmes inconnus: ${bad.join(', ')}` } });
+    return;
   }
-
-  const data: Prisma.SongUpdateInput = { tags_reviewed: true };
-  if (b.themes) data.themes = { set: Array.from(new Set(b.themes)) };
-  if (b.is_francophone !== undefined) data.is_francophone = b.is_francophone;
-  if (b.is_international !== undefined) data.is_international = b.is_international;
-  if (b.level !== undefined) data.level = b.level;
-  if (b.work_title !== undefined) data.work_title = b.work_title === '' ? null : b.work_title;
-  if (b.work_kind !== undefined) data.work_kind = b.work_kind;
 
   try {
     const song = await prisma.song.update({
       where: { id: req.params.id },
-      data,
+      data: buildTagData(b),
       select: SONG_SELECT,
     });
     res.json({ song: serialize(song as SongRow) });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Song introuvable' } });
+      return;
+    }
+    throw err;
+  }
+});
+
+// ── POST /bulk-apply (écrit les tags de plusieurs songs, une transaction) ───
+// Sert le bouton « Tout enregistrer » : la manette d'édition envoie tous les
+// brouillons modifiés d'un coup. Max 200 items/appel (le front découpe). Tout
+// ou rien : un id introuvable annule toute la transaction (404).
+const bulkItemSchema = tagFieldsSchema.extend({ id: z.string().uuid() }).strict();
+const bulkApplySchema = z.object({ items: z.array(bulkItemSchema).min(1).max(200) }).strict();
+
+router.post('/bulk-apply', async (req: Request, res: Response): Promise<void> => {
+  const parsed = bulkApplySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: parsed.error.message } });
+    return;
+  }
+  const { items } = parsed.data;
+
+  const bad = Array.from(new Set(items.flatMap((it) => unknownThemes(it.themes))));
+  if (bad.length > 0) {
+    res
+      .status(400)
+      .json({ error: { code: 'UNKNOWN_THEME', message: `Thèmes inconnus: ${bad.join(', ')}` } });
+    return;
+  }
+
+  try {
+    const songs = await prisma.$transaction(
+      items.map((it) =>
+        prisma.song.update({ where: { id: it.id }, data: buildTagData(it), select: SONG_SELECT }),
+      ),
+    );
+    res.json({ count: songs.length, songs: songs.map((s) => serialize(s as SongRow)) });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      res
+        .status(404)
+        .json({ error: { code: 'NOT_FOUND', message: 'Une des songs est introuvable' } });
       return;
     }
     throw err;
