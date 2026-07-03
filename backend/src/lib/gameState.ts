@@ -75,7 +75,7 @@ export interface ActiveTrackState {
 const activeTracks = new Map<string /* round_id */, ActiveTrackState>();
 
 const PER_PARTICIPANT_BUZZ_COOLDOWN_MS = 1000;
-const PHASE_2_DURATION_MS = 15_000;
+const PHASE_2_DURATION_MS = 10_000;
 
 export function getActiveTrack(roundId: string): ActiveTrackState | null {
   return activeTracks.get(roundId) ?? null;
