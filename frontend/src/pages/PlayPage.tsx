@@ -1741,7 +1741,7 @@ function LateBanner({
     const id = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(id);
   }, []);
-  const remaining = Math.max(0, 15_000 - (now - new Date(phase2StartedAt).getTime()));
+  const remaining = Math.max(0, 10_000 - (now - new Date(phase2StartedAt).getTime()));
   const seconds = Math.ceil(remaining / 1000);
   return (
     <div className="bg-lemon border-3 border-ink rounded-xl p-3 flex items-center justify-between shadow-pop">

@@ -288,7 +288,7 @@ function Phase2YellowTimer({
   isPaused: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
-  const remaining = useTimeRemaining(phase2StartedAt, 15_000, isPaused);
+  const remaining = useTimeRemaining(phase2StartedAt, 10_000, isPaused);
   const seconds = Math.max(0, Math.ceil(remaining / 1000));
   return (
     <div
