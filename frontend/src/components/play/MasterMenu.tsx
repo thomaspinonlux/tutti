@@ -258,18 +258,22 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           </>
         )}
 
-        {phase === 'phase3' ||
-          (phase === 'phase3-revealed' && !props.isPaused && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => void props.onNextTrack()}
-              disabled={props.busy}
-              className="col-span-2"
-            >
-              ▶ {t('play.masterNext')} →
-            </Button>
-          ))}
+        {/* ── Morceau suivant (cooldown / après reveal) ─────────────────────
+            BUG FIX : l'ancienne condition `phase3 || (phase3-revealed && !paused
+            && <Button/>)` rendait `true` (donc RIEN) en phase3, et cachait le
+            bouton en pause. On l'affiche dès qu'on est en phase3/phase3-revealed,
+            même en pause (avancer reprend la lecture sur le morceau suivant). */}
+        {props.hasActiveRound && track && (phase === 'phase3' || phase === 'phase3-revealed') && (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => void props.onNextTrack()}
+            disabled={props.busy}
+            className="col-span-2"
+          >
+            ▶ {t('play.masterNext')} →
+          </Button>
+        )}
 
         {!props.hasActiveRound && (
           <Button
