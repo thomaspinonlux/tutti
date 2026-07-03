@@ -578,6 +578,23 @@ export async function masterLaunchOfficial(
   );
 }
 
+/**
+ * feat/animator-tv-library — l'animateur pousse la playlist qu'il regarde dans
+ * la biblio → la TV (/screen) affiche la grille catalogue + surligne cette
+ * playlist (même canal que le host). `null` = sort de la sélection.
+ */
+export async function masterSetScreenFocus(
+  sessionId: string,
+  token: string,
+  playlistId: string | null,
+): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/screen/focus`, {
+    method: 'POST',
+    body: { token, playlist_id: playlistId },
+    anonymous: true,
+  });
+}
+
 export async function masterAdjustPoints(
   sessionId: string,
   token: string,

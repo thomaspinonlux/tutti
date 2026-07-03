@@ -62,6 +62,7 @@ import {
   launchOfficialPlaylistForSession,
   NoPlayableTrackError,
 } from '../lib/officialPlaylistLaunch.js';
+import { setFocusedPlaylist } from '../lib/playlistSelectionStore.js';
 
 const router: Router = Router({ mergeParams: true });
 
@@ -338,6 +339,45 @@ router.post(
     }
   },
 );
+
+// ── POST /screen/focus ─────────────────────────────────────────────────────
+// feat/animator-tv-library — quand l'animateur parcourt la bibliothèque sur son
+// tel, on alimente le MÊME store que le host (setFocusedPlaylist) → la TV
+// (/screen) passe en PLAYLIST_SELECTION et affiche la grille catalogue +
+// surligne la playlist focus. playlist_id=null → sort de la sélection.
+const screenFocusSchema = z.object({
+  token: z.string(),
+  playlist_id: z.string().uuid().nullable(),
+});
+
+router.post('/screen/focus', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const parsed = screenFocusSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+    return;
+  }
+  const session = await prisma.session.findUnique({
+    where: { id: req.params.id },
+    select: { establishment_id: true },
+  });
+  if (!session) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+    return;
+  }
+  const establishment = await prisma.establishment.findUnique({
+    where: { id: session.establishment_id },
+    select: { workspace_id: true },
+  });
+  if (!establishment) {
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Établissement introuvable' } });
+    return;
+  }
+  setFocusedPlaylist(establishment.workspace_id, parsed.data.playlist_id, 0, undefined, null);
+  broadcastToSession(req.params.id, 'screen-state:focus-changed', {
+    playlist_id: parsed.data.playlist_id,
+  });
+  res.json({ ok: true });
+});
 
 // ── POST /next-track ──────────────────────────────────────────────────────
 
