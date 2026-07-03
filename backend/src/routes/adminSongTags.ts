@@ -66,10 +66,10 @@ interface SongRow {
   work_title: string | null;
   work_kind: string | null;
   tags_reviewed: boolean;
-  youtube_id: string | null;
-  spotify_id: string | null;
   artist: { canonical_name: string };
-  catalog_tracks: { year: number | null }[];
+  // youtube_id/spotify_id vivent sur OfficialPlaylistTrack (pas sur Song) : la
+  // présence d'une source se dérive des catalog_tracks liés à la song.
+  catalog_tracks: { year: number | null; youtube_id: string | null; spotify_id: string | null }[];
 }
 
 function serialize(s: SongRow): Record<string, unknown> {
@@ -77,7 +77,7 @@ function serialize(s: SongRow): Record<string, unknown> {
     id: s.id,
     title: s.canonical_title,
     artist: s.artist.canonical_name,
-    year: s.catalog_tracks[0]?.year ?? null,
+    year: s.catalog_tracks.find((t) => t.year != null)?.year ?? null,
     themes: s.themes,
     is_francophone: s.is_francophone,
     is_international: s.is_international,
@@ -85,9 +85,9 @@ function serialize(s: SongRow): Record<string, unknown> {
     work_title: s.work_title,
     work_kind: s.work_kind,
     tags_reviewed: s.tags_reviewed,
-    // P3 — badge de source dans la gestion des titres (présence seule, pas l'id).
-    has_youtube: !!s.youtube_id,
-    has_spotify: !!s.spotify_id,
+    // P3 — badge de source (présence seule, l'id réel n'est pas exposé).
+    has_youtube: s.catalog_tracks.some((t) => !!t.youtube_id),
+    has_spotify: s.catalog_tracks.some((t) => !!t.spotify_id),
   };
 }
 
@@ -101,10 +101,8 @@ const SONG_SELECT = {
   work_title: true,
   work_kind: true,
   tags_reviewed: true,
-  youtube_id: true,
-  spotify_id: true,
   artist: { select: { canonical_name: true } },
-  catalog_tracks: { where: { year: { not: null } }, select: { year: true }, take: 1 },
+  catalog_tracks: { select: { year: true, youtube_id: true, spotify_id: true } },
 } as const;
 
 // ── GET / (liste paginée) ──────────────────────────────────────────────────
