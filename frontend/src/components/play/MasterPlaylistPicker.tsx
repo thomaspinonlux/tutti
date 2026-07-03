@@ -52,7 +52,9 @@ function norm(s: string): string {
 
 export function MasterPlaylistPicker(props: Props): JSX.Element | null {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<Tab>('perso');
+  // feat/animator-tv-library — ouvre sur la Bibliothèque (Tutti est library-first)
+  // → la grille + le miroir TV s'activent dès l'ouverture du picker.
+  const [tab, setTab] = useState<Tab>('official');
 
   // Perso
   const [perso, setPerso] = useState<MasterPlaylistEntry[] | null>(null);
@@ -92,7 +94,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
   // Reset à la fermeture.
   useEffect(() => {
     if (!props.open) {
-      setTab('perso');
+      setTab('official');
       setSelected(null);
       setQ('');
     }
