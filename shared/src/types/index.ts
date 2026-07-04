@@ -446,12 +446,23 @@ export interface CumulativeScore {
   total_points: number;
 }
 
+/** feat/multi-animator-roles — rôle d'un participant (voir schema.prisma). */
+export type ParticipantRole = 'PLAYER' | 'ANIMATOR_FULL' | 'ANIMATOR_PLAYING';
+
+/** Un rôle est-il un rôle d'animateur (pilotage) ? */
+export function isAnimatorRole(role: ParticipantRole): boolean {
+  return role === 'ANIMATOR_FULL' || role === 'ANIMATOR_PLAYING';
+}
+
 export interface Participant {
   id: string;
   session_id: string;
   pseudo: string;
   team_id: string | null;
+  /** Rétro-compat : true dès qu'un rôle animateur (role != PLAYER). */
   is_master: boolean;
+  /** feat/multi-animator-roles — source de vérité du rôle. */
+  role: ParticipantRole;
   is_kicked: boolean;
   joined_at: string;
 }

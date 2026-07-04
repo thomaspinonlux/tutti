@@ -23,6 +23,7 @@ declare global {
         sessionId: string;
         pseudo: string;
         teamId: string | null;
+        role: import('@tutti/shared').ParticipantRole;
       };
     }
   }

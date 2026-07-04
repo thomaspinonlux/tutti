@@ -45,6 +45,7 @@ import {
   pickRandomTrackIdsForRound,
   restartCurrentTrackAndBroadcast,
   revealCurrentTrack,
+  trackStateForRole,
 } from '../lib/gameplayCore.js';
 import {
   buildAndBroadcastQuestion,
@@ -326,7 +327,11 @@ router.post(
         return;
       }
       const state = await buildAndBroadcastTrack(req.params.id, fullRound, 0);
-      res.json({ round: enrichedStarted, state });
+      // ANTI-TRICHE — un master ANIMATOR_PLAYING ne reçoit pas la réponse en HTTP.
+      res.json({
+        round: enrichedStarted,
+        state: state ? trackStateForRole(state, req.master!.role) : null,
+      });
     } catch (err: unknown) {
       if (err instanceof NoPlayableTrackError) {
         res.status(400).json({ error: { code: err.code, message: err.message } });
@@ -393,7 +398,10 @@ router.post('/next-track', async (req: Request<{ id: string }>, res: Response): 
     return;
   }
   const result = await advanceToNextOrEndRound(req.params.id, round);
-  res.json(result);
+  // ANTI-TRICHE — caviarde le nouveau state pour un master ANIMATOR_PLAYING.
+  res.json(
+    result.ended ? result : { ...result, state: trackStateForRole(result.state, req.master!.role) },
+  );
 });
 
 // ── POST /skip-track ──────────────────────────────────────────────────────
@@ -420,7 +428,10 @@ router.post('/skip-track', async (req: Request<{ id: string }>, res: Response): 
     phase: 'phase3-skipped',
   });
   const result = await advanceToNextOrEndRound(req.params.id, round);
-  res.json(result);
+  // ANTI-TRICHE — caviarde le nouveau state pour un master ANIMATOR_PLAYING.
+  res.json(
+    result.ended ? result : { ...result, state: trackStateForRole(result.state, req.master!.role) },
+  );
 });
 
 // ── POST /give-answer ─────────────────────────────────────────────────────
@@ -526,7 +537,8 @@ router.post(
     // Reset gameState + re-broadcast track:start (cf. gameplay.ts).
     restartActiveTrack(parsed.data.round_id);
     const state = await restartCurrentTrackAndBroadcast(req.params.id, round);
-    res.json({ ok: true, state });
+    // ANTI-TRICHE — caviarde pour un master ANIMATOR_PLAYING.
+    res.json({ ok: true, state: state ? trackStateForRole(state, req.master!.role) : null });
   },
 );
 

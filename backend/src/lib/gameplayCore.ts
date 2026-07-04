@@ -10,11 +10,11 @@
  *   - la révélation manuelle (master "Réponse") sans buzz ni score
  */
 
-import type { CurrentTrackState } from '@tutti/shared';
+import type { CurrentTrackState, GameTrackPhase, ParticipantRole } from '@tutti/shared';
 import { DEFAULT_SESSION_SIZE } from '@tutti/shared';
 import { prisma } from './prisma.js';
 import type { Tier } from '../config/levelWeights.js';
-import { broadcastToSession } from '../socket/index.js';
+import { broadcastToSession, emitTrackAnswer } from '../socket/index.js';
 import {
   clearActiveTrack,
   setActiveTrack,
@@ -23,6 +23,69 @@ import {
 } from './gameState.js';
 
 export const LISTEN_DURATION_MS = 30_000; // 30s par défaut V1
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  feat/multi-animator-roles — ANTI-TRICHE SERVEUR (garde-fou clé)
+//
+//  La réponse (artist/title/album/year/cover_url) ne doit JAMAIS transiter dans
+//  un payload reçu par un joueur ou un animateur-joueur (ANIMATOR_PLAYING) avant
+//  le reveal. Elle ne circule que :
+//    - dans le broadcast public une fois la phase publique (phase3*),
+//    - sinon exclusivement via le canal privilégié `track:answer`
+//      (room answers:{sessionId} = host + ANIMATOR_FULL uniquement).
+//  Le filtrage se fait sur le PAYLOAD (serveur), pas seulement à l'affichage.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** La réponse est-elle publique à cette phase ? (révélée à tout le monde) */
+export function isTrackAnswerPublic(phase: GameTrackPhase): boolean {
+  // Publique seulement au reveal. phase3-skipped = piste sautée, réponse tue.
+  return phase === 'phase3' || phase === 'phase3-revealed';
+}
+
+/** Copie d'un state SANS les métadonnées-réponse (broadcast public / joueur). */
+export function stripTrackAnswer(state: CurrentTrackState): CurrentTrackState {
+  return { ...state, artist: '', title: '', album: null, year: null, cover_url: null };
+}
+
+/**
+ * State à renvoyer à un rôle donné. Seuls host (traité à part) et ANIMATOR_FULL
+ * voient la réponse avant le reveal ; PLAYER et ANIMATOR_PLAYING la reçoivent
+ * caviardée tant que la phase n'est pas publique.
+ */
+export function trackStateForRole(
+  state: CurrentTrackState,
+  role: ParticipantRole,
+): CurrentTrackState {
+  if (role === 'ANIMATOR_FULL') return state;
+  if (isTrackAnswerPublic(state.phase)) return state;
+  return stripTrackAnswer(state);
+}
+
+/** Payload du canal privilégié `track:answer`. */
+export interface TrackAnswerPayload {
+  round_id: string;
+  track_index: number;
+  phase: GameTrackPhase;
+  artist: string;
+  title: string;
+  album: string | null;
+  year: number | null;
+  cover_url: string | null;
+}
+
+/** Extrait la réponse d'un state complet pour le canal privilégié. */
+export function trackAnswerFromState(state: CurrentTrackState): TrackAnswerPayload {
+  return {
+    round_id: state.round_id,
+    track_index: state.track_index,
+    phase: state.phase,
+    artist: state.artist,
+    title: state.title,
+    album: state.album,
+    year: state.year,
+    cover_url: state.cover_url,
+  };
+}
 
 // Inclut la playlist avec ses morceaux ordonnés. Track relie maintenant un
 // Artist (catalogue partagé), donc on l'inclut aussi pour avoir artist.canonical_name.
@@ -175,7 +238,12 @@ export async function buildAndBroadcastTrack(
     })
     .catch((err) => console.warn('[gameplayCore] SessionPlayedTrack upsert error:', err));
 
-  broadcastToSession(sessionId, 'track:start', { state });
+  // ANTI-TRICHE — le broadcast public ne porte JAMAIS la réponse en phase1.
+  // La réponse part uniquement sur le canal privilégié (host + ANIMATOR_FULL).
+  broadcastToSession(sessionId, 'track:start', { state: stripTrackAnswer(state) });
+  emitTrackAnswer(sessionId, trackAnswerFromState(state));
+  // NB : on retourne le state COMPLET. Les routes mode B (sessionMaster) qui le
+  // renvoient en HTTP doivent le filtrer via trackStateForRole(req.master.role).
   return state;
 }
 
