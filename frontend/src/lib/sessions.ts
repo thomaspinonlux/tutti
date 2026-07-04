@@ -12,6 +12,7 @@ import type {
   GameType,
   JoinResponse,
   Participant,
+  ParticipantRole,
   PublicSessionView,
   RoundProgramResponse,
   Session,
@@ -198,6 +199,24 @@ export async function toggleParticipantMaster(
   const data = await api<{ participant: Participant }>(
     `/api/sessions/${encodeURIComponent(sessionId)}/participants/${encodeURIComponent(participantId)}/master`,
     { method: 'POST' },
+  );
+  return data.participant;
+}
+
+/**
+ * feat/multi-animator-roles — attribue un rôle EXPLICITE à un participant.
+ * Multi-animateurs (n'affecte pas les autres) et révocable (role='PLAYER').
+ *   - ANIMATOR_FULL    : pilote + voit les réponses en avance
+ *   - ANIMATOR_PLAYING : pilote MAIS ne voit pas les réponses avant reveal (joue)
+ */
+export async function setParticipantRole(
+  sessionId: string,
+  participantId: string,
+  role: ParticipantRole,
+): Promise<Participant> {
+  const data = await api<{ participant: Participant }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/participants/${encodeURIComponent(participantId)}/role`,
+    { method: 'POST', body: { role } },
   );
   return data.participant;
 }

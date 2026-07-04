@@ -20,6 +20,7 @@ import type {
   CurrentTrackState,
   JoinResponse,
   Participant,
+  ParticipantRole,
   PublicSessionView,
   SessionRoundWithPlaylist,
   SessionWithParticipants,
@@ -140,6 +141,10 @@ export function PlayPage(): JSX.Element {
   const [busy, setBusy] = useState(false);
   // Master mode (mode B uniquement) : flag is_master + état de pause
   const [isMaster, setIsMaster] = useState(false);
+  // feat/multi-animator-roles — rôle du participant. is_master = isAnimatorRole(role)
+  // (les deux profils animateur pilotent). role distingue qui VOIT la réponse :
+  // ANIMATOR_FULL reçoit track:answer, ANIMATOR_PLAYING non (il joue).
+  const [myRole, setMyRole] = useState<ParticipantRole>('PLAYER');
   // feat/manette-console-master — position/durée diffusées par la console
   // (broadcast track:progress) pour la timeline + le scrub de la télécommande.
   const [masterProgress, setMasterProgress] = useState<{
@@ -251,6 +256,11 @@ export function PlayPage(): JSX.Element {
             // Récupère mon flag is_master courant (mode B) + état pause
             const me = resp.session.participants.find((p) => p.id === identity.participantId);
             setIsMaster(me?.is_master ?? false);
+            const role = me?.role ?? 'PLAYER';
+            setMyRole(role);
+            // feat/multi-animator-roles — seul ANIMATOR_FULL s'abonne au canal
+            // réponses (le backend revérifie le rôle en base avant d'ouvrir).
+            if (role === 'ANIMATOR_FULL') sock.emit('answers:subscribe');
             setIsPaused(resp.session.is_paused ?? false);
             if (resp.session.status === 'PLAYING') setStep('playing');
             else if (resp.session.status === 'ENDED') {
@@ -314,18 +324,40 @@ export function PlayPage(): JSX.Element {
         // Backend démasterise tous les autres en transaction.
         setParticipantsList((prev) =>
           prev.map((p) =>
-            p.id === participant.id ? { ...p, is_master } : { ...p, is_master: false },
+            p.id === participant.id
+              ? { ...p, is_master, role: participant.role }
+              : { ...p, is_master: false, role: 'PLAYER' },
           ),
         );
         // Maj de mon propre flag
         if (participant.id === identity.participantId) {
           setIsMaster(is_master);
+          setMyRole(participant.role);
+          if (participant.role === 'ANIMATOR_FULL') sock.emit('answers:subscribe');
         } else if (is_master) {
           // Quelqu'un d'autre vient d'être nommé master → je perds le statut
           setIsMaster(false);
+          setMyRole('PLAYER');
         }
       },
     );
+    // feat/multi-animator-roles — attribution multi-animateurs (n'affecte que
+    // la cible). Le concerné (re)synchronise son canal réponses sans reco.
+    sock.on('participant:role_changed', ({ participant }: { participant: Participant }) => {
+      setParticipantsList((prev) =>
+        prev.map((p) =>
+          p.id === participant.id
+            ? { ...p, role: participant.role, is_master: participant.is_master }
+            : p,
+        ),
+      );
+      if (participant.id === identity.participantId) {
+        setIsMaster(participant.is_master);
+        setMyRole(participant.role);
+        // Rejoint OU quitte answers:{id} selon le nouveau rôle (backend arbitre).
+        sock.emit('answers:subscribe');
+      }
+    });
     sock.on('session:started', () => setStep('playing'));
     sock.on('session:ended', () => {
       clearParticipantContext(shortCode);
@@ -349,6 +381,35 @@ export function PlayPage(): JSX.Element {
       setPhase2StartedAt(null);
       setMasterProgress(null);
     });
+    // feat/multi-animator-roles — canal PRIVILÉGIÉ (reçu uniquement si
+    // ANIMATOR_FULL). Fusionne la réponse dans currentTrack. Un ANIMATOR_PLAYING
+    // n'est jamais dans la room answers → n'entre jamais ici (anti-triche).
+    sock.on(
+      'track:answer',
+      (a: {
+        round_id: string;
+        track_index: number;
+        phase: CurrentTrackState['phase'];
+        artist: string;
+        title: string;
+        album: string | null;
+        year: number | null;
+        cover_url: string | null;
+      }) => {
+        setCurrentTrack((prev) =>
+          prev && prev.round_id === a.round_id && prev.track_index === a.track_index
+            ? {
+                ...prev,
+                artist: a.artist,
+                title: a.title,
+                album: a.album,
+                year: a.year,
+                cover_url: a.cover_url,
+              }
+            : prev,
+        );
+      },
+    );
     // feat/manette-console-master — la console diffuse sa position → timeline
     // exacte + scrub côté télécommande (corrige aussi le désync post-seek).
     sock.on(
@@ -798,6 +859,13 @@ export function PlayPage(): JSX.Element {
                     </span>
                     <p className="font-display text-base">{t('play.masterMenuTitle')}</p>
                   </div>
+                  {/* feat/multi-animator-roles — profil animateur : FULL voit les
+                      réponses en avance, PLAYING non (il peut jouer). */}
+                  <p className="font-mono text-[11px] uppercase tracking-wide text-ink-soft mb-1">
+                    {myRole === 'ANIMATOR_FULL'
+                      ? t('host.roleAnimatorFull')
+                      : t('host.roleAnimatorPlaying')}
+                  </p>
                   <p className="font-editorial italic text-ink-2 text-sm mb-3">
                     Tu pilotes la partie — choisis une playlist et lance le blind test.
                   </p>

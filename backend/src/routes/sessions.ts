@@ -29,7 +29,8 @@ import {
   Prisma,
   ScoreEventType,
 } from '@prisma/client';
-import type { Team, GameMode as GameModeType } from '@tutti/shared';
+import type { Team, GameMode as GameModeType, ParticipantRole } from '@tutti/shared';
+import { isAnimatorRole } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
@@ -1238,14 +1239,19 @@ router.post(
       }
       const willBeMaster = !target.is_master;
       // Atomic : démasterise tous les autres puis (dé)masterise la cible.
+      // feat/multi-animator-roles — on garde `role` synchronisé avec is_master
+      // (invariant is_master === isAnimatorRole(role)). Ce bouton "console"
+      // reste single-master ; l'attribution multi-animateurs passe par /role.
       const [, updatedTarget] = await prisma.$transaction([
         prisma.participant.updateMany({
           where: { session_id: req.params.id, is_master: true, NOT: { id: req.params.pid } },
-          data: { is_master: false },
+          data: { is_master: false, role: 'PLAYER' },
         }),
         prisma.participant.update({
           where: { id: req.params.pid },
-          data: { is_master: willBeMaster },
+          // Profil animateur par défaut = ANIMATOR_PLAYING (comportement
+          // historique du master : il pilote ET peut jouer).
+          data: { is_master: willBeMaster, role: willBeMaster ? 'ANIMATOR_PLAYING' : 'PLAYER' },
         }),
       ]);
       broadcastToSession(own.id, 'participant:master_changed', {
@@ -1260,6 +1266,69 @@ router.post(
       res
         .status(500)
         .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur désignation master' } });
+    }
+  },
+);
+
+// ── POST /:id/participants/:pid/role (host) ──────────────────────────────
+// feat/multi-animator-roles — attribue un rôle EXPLICITE à un participant.
+// Contrairement à /master (single-master, toggle), cette route est
+// MULTI-ANIMATEURS (n'affecte pas les autres) et RÉVOCABLE (role=PLAYER).
+//   - PLAYER            : joueur simple
+//   - ANIMATOR_FULL     : pilote + voit les réponses en avance (canal privilégié)
+//   - ANIMATOR_PLAYING  : pilote MAIS ne voit pas les réponses avant reveal (joue)
+// is_master reste synchronisé (true dès qu'un rôle animateur) pour l'ancien code.
+const roleSchema = z.object({
+  role: z.enum(['PLAYER', 'ANIMATOR_FULL', 'ANIMATOR_PLAYING']),
+});
+router.post(
+  '/:id/participants/:pid/role',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string; pid: string }>, res: Response): Promise<void> => {
+    const workspaceId = req.workspaceId!;
+    const parsed = roleSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'role invalide (PLAYER|ANIMATOR_FULL|ANIMATOR_PLAYING)',
+        },
+      });
+      return;
+    }
+    const own = await ensureOwnSession(req.params.id, workspaceId);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    const role = parsed.data.role as ParticipantRole;
+    try {
+      const target = await prisma.participant.findFirst({
+        where: { id: req.params.pid, session_id: req.params.id, is_kicked: false },
+      });
+      if (!target) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Participant introuvable' } });
+        return;
+      }
+      const updated = await prisma.participant.update({
+        where: { id: req.params.pid },
+        // Invariant : is_master = isAnimatorRole(role).
+        data: { role, is_master: isAnimatorRole(role) },
+      });
+      // Diffuse à toute la session : les clients rafraîchissent le sélecteur de
+      // rôle + le concerné (re)synchronise son canal réponses via answers:subscribe.
+      broadcastToSession(own.id, 'participant:role_changed', {
+        participant: updated,
+        participant_id: updated.id,
+        role: updated.role,
+      });
+      res.json({ participant: updated });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/participants/:pid/role] error:', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur attribution de rôle' } });
     }
   },
 );

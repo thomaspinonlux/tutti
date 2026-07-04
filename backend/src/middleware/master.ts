@@ -8,6 +8,8 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
+import type { ParticipantRole } from '@tutti/shared';
+import { isAnimatorRole } from '@tutti/shared';
 import { verifyParticipantToken } from '../lib/participantToken.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -16,6 +18,8 @@ export interface MasterContext {
   sessionId: string;
   pseudo: string;
   teamId: string | null;
+  /** feat/multi-animator-roles — rôle animateur du pilote (FULL ou PLAYING). */
+  role: ParticipantRole;
 }
 
 // L'augmentation de Express.Request est faite globalement dans
@@ -57,6 +61,7 @@ export async function requireMasterParticipant(
       session_id: true,
       is_kicked: true,
       is_master: true,
+      role: true,
     },
   });
   if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
@@ -65,7 +70,10 @@ export async function requireMasterParticipant(
       .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
     return;
   }
-  if (!participant.is_master) {
+  // feat/multi-animator-roles — ouvert à tout rôle animateur (FULL ou PLAYING),
+  // plus is_master pour rétro-compat (masters promus avant la migration rôle).
+  const isAnimator = isAnimatorRole(participant.role) || participant.is_master;
+  if (!isAnimator) {
     res.status(403).json({
       error: { code: 'NOT_MASTER', message: "Tu n'es pas l'animateur de cette session" },
     });
@@ -76,6 +84,9 @@ export async function requireMasterParticipant(
     sessionId: req.params.id,
     pseudo: participant.pseudo,
     teamId: participant.team_id,
+    // Si is_master sans rôle animateur (legacy), on le traite en ANIMATOR_PLAYING
+    // (comportement historique = pilote qui joue). role reste la source de vérité.
+    role: isAnimatorRole(participant.role) ? participant.role : 'ANIMATOR_PLAYING',
   };
   next();
 }

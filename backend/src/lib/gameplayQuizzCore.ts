@@ -41,6 +41,18 @@ export async function findQuestionAtIndex(
  *
  * Pour les questions ESTIMATION, parse answer_lang1 en JSON pour exposer
  * estimation_min/max/unit aux clients (sans révéler target).
+ *
+ * TODO(feat/multi-animator-roles — mode QUIZZ) : CAVIARDER LES RÉPONSES QUIZ.
+ * Le garde-fou anti-triche multi-animateurs n'est PAS encore appliqué au quiz.
+ * Aujourd'hui l'état question ne porte pas la bonne réponse (choix sans flag
+ * correct, estimation target exclu), donc pas de fuite dans quizz:question_start.
+ * MAIS quand on ajoutera un canal "réponse" pour l'animateur (équivalent
+ * `track:answer` du blind test, pour valider), il devra être PRIVILÉGIÉ :
+ * seul ANIMATOR_FULL le reçoit ; ANIMATOR_PLAYING jamais avant le reveal.
+ * Réutiliser la room `answers:{sessionId}` + un helper `emitQuestionAnswer`
+ * calqué sur `emitTrackAnswer`, et caviarder les réponses HTTP master quizz
+ * (sessionMaster next-question/reveal) via le rôle req.master.role.
+ * Voir gameplayCore.ts (isTrackAnswerPublic / trackStateForRole) pour le modèle.
  */
 export function buildAndBroadcastQuestion(
   sessionId: string,

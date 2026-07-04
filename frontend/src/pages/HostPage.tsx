@@ -19,13 +19,14 @@ import type {
   CumulativeScore,
   CurrentTrackState,
   Participant,
+  ParticipantRole,
   Playlist,
   Session,
   SessionRoundWithPlaylist,
   SessionWithParticipants,
   Team,
 } from '@tutti/shared';
-import { DEFAULT_SESSION_SIZE } from '@tutti/shared';
+import { DEFAULT_SESSION_SIZE, isAnimatorRole } from '@tutti/shared';
 import {
   createRound,
   endRound,
@@ -40,6 +41,7 @@ import {
   moveParticipantTeam,
   nextTrack,
   playTrack,
+  setParticipantRole,
   skipTrack,
   startRound,
   startSession,
@@ -352,13 +354,31 @@ function HostPageInner(): JSX.Element {
                 ? {
                     ...s,
                     participants: s.participants.map((p) =>
-                      p.id === participant.id ? { ...p, is_master } : { ...p, is_master: false },
+                      p.id === participant.id
+                        ? { ...p, is_master, role: participant.role }
+                        : { ...p, is_master: false, role: 'PLAYER' },
                     ),
                   }
                 : s,
             );
           },
         );
+        // feat/multi-animator-roles — attribution MULTI-animateurs (n'affecte
+        // que la cible, contrairement au master toggle single-master ci-dessus).
+        socket.on('participant:role_changed', ({ participant }: { participant: Participant }) => {
+          setSession((s) =>
+            s
+              ? {
+                  ...s,
+                  participants: s.participants.map((p) =>
+                    p.id === participant.id
+                      ? { ...p, role: participant.role, is_master: participant.is_master }
+                      : p,
+                  ),
+                }
+              : s,
+          );
+        });
         socket.on('session:started', ({ session: s }: { session: Session }) => {
           setSession((prev) => (prev ? { ...prev, ...s } : prev));
           pushToast(setToasts, t('host.toastStarted'), 'basil');
@@ -416,6 +436,35 @@ function HostPageInner(): JSX.Element {
           setLastReveal(null);
           setActiveBuzzers(new Set());
         });
+        // feat/multi-animator-roles — canal PRIVILÉGIÉ. Le host (toujours dans
+        // la room answers:{id}) reçoit ici la réponse caviardée du track:start
+        // et la fusionne dans currentTrack pour l'afficher sur la console.
+        socket.on(
+          'track:answer',
+          (a: {
+            round_id: string;
+            track_index: number;
+            phase: CurrentTrackState['phase'];
+            artist: string;
+            title: string;
+            album: string | null;
+            year: number | null;
+            cover_url: string | null;
+          }) => {
+            setCurrentTrack((prev) =>
+              prev && prev.round_id === a.round_id && prev.track_index === a.track_index
+                ? {
+                    ...prev,
+                    artist: a.artist,
+                    title: a.title,
+                    album: a.album,
+                    year: a.year,
+                    cover_url: a.cover_url,
+                  }
+                : prev,
+            );
+          },
+        );
         socket.on(
           'buzz:received',
           (payload: {
@@ -1298,6 +1347,17 @@ function HostPageInner(): JSX.Element {
     }
   };
 
+  // feat/multi-animator-roles — attribue un rôle explicite (multi-animateurs).
+  // L'event socket participant:role_changed rafraîchit l'UI.
+  const handleSetRole = async (participantId: string, role: ParticipantRole): Promise<void> => {
+    if (!session) return;
+    try {
+      await setParticipantRole(session.id, participantId, role);
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    }
+  };
+
   const handleEndSession = async (): Promise<void> => {
     if (!session) return;
     if (!window.confirm(t('host.endBlindTestConfirm'))) return;
@@ -1800,6 +1860,7 @@ function HostPageInner(): JSX.Element {
                     }
                   }}
                   onToggleMaster={handleToggleMaster}
+                  onSetRole={handleSetRole}
                 />
               </>
             )}
@@ -2141,6 +2202,7 @@ function WaitingPhase({
   onMove,
   onKick,
   onToggleMaster,
+  onSetRole,
 }: {
   shortCode: string;
   playUrl: string;
@@ -2155,6 +2217,7 @@ function WaitingPhase({
   onMove: (participantId: string, teamId: string | null) => Promise<void>;
   onKick: (participantId: string) => Promise<void>;
   onToggleMaster: (participantId: string) => Promise<void>;
+  onSetRole: (participantId: string, role: ParticipantRole) => Promise<void>;
 }): JSX.Element {
   const { t } = useTranslation();
   // F2 (feat/playlist-search-and-host-improvements) — autoriser démarrage
@@ -2224,19 +2287,19 @@ function WaitingPhase({
           <TeamsView
             teams={teams}
             participants={participants}
-            currentMasterId={currentMasterId}
             showMasterToggle={true}
             onMove={onMove}
             onKick={onKick}
             onToggleMaster={onToggleMaster}
+            onSetRole={onSetRole}
           />
         ) : (
           <ParticipantsList
             participants={participants}
-            currentMasterId={currentMasterId}
             showMasterToggle={true}
             onKick={onKick}
             onToggleMaster={onToggleMaster}
+            onSetRole={onSetRole}
           />
         )}
       </div>
@@ -2749,18 +2812,74 @@ function EndedScreen({ cumulative }: { cumulative: CumulativeScore[] }): JSX.Ele
   );
 }
 
+// feat/multi-animator-roles — sélecteur 3 rôles (segmented control). Multi-
+// animateurs : chaque joueur peut être basculé indépendamment.
+function RoleSelector({
+  role,
+  onSetRole,
+  compact,
+}: {
+  role: ParticipantRole;
+  onSetRole: (role: ParticipantRole) => void;
+  compact?: boolean;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const opts: { value: ParticipantRole; label: string; title: string }[] = [
+    { value: 'PLAYER', label: t('host.rolePlayer'), title: t('host.rolePlayerHint') },
+    {
+      value: 'ANIMATOR_PLAYING',
+      label: t('host.roleAnimatorPlaying'),
+      title: t('host.roleAnimatorPlayingHint'),
+    },
+    {
+      value: 'ANIMATOR_FULL',
+      label: t('host.roleAnimatorFull'),
+      title: t('host.roleAnimatorFullHint'),
+    },
+  ];
+  return (
+    <div
+      role="group"
+      aria-label={t('host.roleLabel')}
+      className="inline-flex border-2 border-ink rounded overflow-hidden shrink-0"
+    >
+      {opts.map((o) => {
+        const active = o.value === role;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            title={o.title}
+            aria-pressed={active}
+            onClick={() => {
+              if (!active) onSetRole(o.value);
+            }}
+            className={[
+              compact ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-1',
+              'font-mono transition-colors border-r-2 border-ink last:border-r-0',
+              active ? 'bg-basil text-white' : 'bg-cream text-ink-soft hover:bg-cream-2',
+            ].join(' ')}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function ParticipantsList({
   participants,
-  currentMasterId,
   showMasterToggle,
   onKick,
   onToggleMaster,
+  onSetRole,
 }: {
   participants: Participant[];
-  currentMasterId: string | null;
   showMasterToggle: boolean;
   onKick: (id: string) => Promise<void>;
   onToggleMaster: (id: string) => Promise<void>;
+  onSetRole?: (id: string, role: ParticipantRole) => Promise<void>;
 }): JSX.Element {
   const { t } = useTranslation();
   if (participants.length === 0) {
@@ -2776,7 +2895,7 @@ function ParticipantsList({
     <Card>
       <ul className="space-y-2">
         {participants.map((p) => {
-          const isMaster = p.id === currentMasterId;
+          const isMaster = isAnimatorRole(p.role);
           return (
             <li
               key={p.id}
@@ -2790,20 +2909,24 @@ function ParticipantsList({
                 {p.pseudo}
               </span>
               <div className="flex items-center gap-2 shrink-0">
-                {showMasterToggle && (
-                  <button
-                    type="button"
-                    onClick={() => void onToggleMaster(p.id)}
-                    className={[
-                      'text-xs font-mono px-2 py-1 border-2 rounded transition-colors',
-                      isMaster
-                        ? 'border-basil text-basil-deep bg-white hover:bg-basil/20'
-                        : 'border-ink text-ink-soft hover:bg-cream',
-                    ].join(' ')}
-                    aria-pressed={isMaster}
-                  >
-                    🎙️ {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
-                  </button>
+                {onSetRole ? (
+                  <RoleSelector role={p.role} onSetRole={(r) => void onSetRole(p.id, r)} />
+                ) : (
+                  showMasterToggle && (
+                    <button
+                      type="button"
+                      onClick={() => void onToggleMaster(p.id)}
+                      className={[
+                        'text-xs font-mono px-2 py-1 border-2 rounded transition-colors',
+                        isMaster
+                          ? 'border-basil text-basil-deep bg-white hover:bg-basil/20'
+                          : 'border-ink text-ink-soft hover:bg-cream',
+                      ].join(' ')}
+                      aria-pressed={isMaster}
+                    >
+                      🎙️ {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
+                    </button>
+                  )
                 )}
                 <button
                   type="button"
@@ -2824,19 +2947,19 @@ function ParticipantsList({
 function TeamsView({
   teams,
   participants,
-  currentMasterId,
   showMasterToggle,
   onMove,
   onKick,
   onToggleMaster,
+  onSetRole,
 }: {
   teams: Team[];
   participants: Participant[];
-  currentMasterId: string | null;
   showMasterToggle: boolean;
   onMove: (participantId: string, teamId: string | null) => Promise<void>;
   onKick: (id: string) => Promise<void>;
   onToggleMaster: (id: string) => Promise<void>;
+  onSetRole?: (id: string, role: ParticipantRole) => Promise<void>;
 }): JSX.Element {
   const { t } = useTranslation();
   return (
@@ -2858,7 +2981,7 @@ function TeamsView({
             ) : (
               <ul className="space-y-1">
                 {members.map((p) => {
-                  const isMaster = p.id === currentMasterId;
+                  const isMaster = isAnimatorRole(p.role);
                   return (
                     <li key={p.id} className="flex items-center justify-between gap-2 text-sm">
                       <span className="truncate flex items-center gap-1">
@@ -2866,21 +2989,31 @@ function TeamsView({
                         {p.pseudo}
                       </span>
                       <div className="flex items-center gap-1 shrink-0">
-                        {showMasterToggle && (
-                          <button
-                            type="button"
-                            onClick={() => void onToggleMaster(p.id)}
-                            className={[
-                              'text-[10px] font-mono px-1.5 py-0.5 border rounded',
-                              isMaster
-                                ? 'border-basil text-basil-deep bg-basil/10'
-                                : 'border-ink-soft text-ink-soft hover:bg-cream',
-                            ].join(' ')}
-                            aria-pressed={isMaster}
-                            aria-label={isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
-                          >
-                            👤
-                          </button>
+                        {onSetRole ? (
+                          <RoleSelector
+                            role={p.role}
+                            onSetRole={(r) => void onSetRole(p.id, r)}
+                            compact
+                          />
+                        ) : (
+                          showMasterToggle && (
+                            <button
+                              type="button"
+                              onClick={() => void onToggleMaster(p.id)}
+                              className={[
+                                'text-[10px] font-mono px-1.5 py-0.5 border rounded',
+                                isMaster
+                                  ? 'border-basil text-basil-deep bg-basil/10'
+                                  : 'border-ink-soft text-ink-soft hover:bg-cream',
+                              ].join(' ')}
+                              aria-pressed={isMaster}
+                              aria-label={
+                                isMaster ? t('host.masterRevoke') : t('host.masterAssign')
+                              }
+                            >
+                              👤
+                            </button>
+                          )
                         )}
                         <select
                           aria-label={t('host.moveToTeam')}

@@ -703,15 +703,31 @@ enum SessionStatus {
 //  PARTICIPANTS (joueurs anonymes connectés à une session)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/// feat/multi-animator-roles — rôle d'un participant. PLAYER = joueur.
+/// ANIMATOR_FULL = pilote la partie ET voit les réponses en avance.
+/// ANIMATOR_PLAYING = pilote MAIS ne voit pas les réponses avant le reveal
+/// (peut jouer). Plusieurs animateurs simultanés. is_master reste synchronisé
+/// (rétro-compat : is_master = role != PLAYER).
+enum ParticipantRole {
+  PLAYER
+  ANIMATOR_FULL
+  ANIMATOR_PLAYING
+
+  @@map("participant_role")
+}
+
 model Participant {
-  id          String   @id @default(uuid()) @db.Uuid
-  session_id  String   @db.Uuid
-  pseudo      String   @db.VarChar(64)
-  team_id     String?  @db.Uuid // référence à teams_config[].id (côté Json)
-  is_master   Boolean  @default(false)
-  is_kicked   Boolean  @default(false)
+  id          String          @id @default(uuid()) @db.Uuid
+  session_id  String          @db.Uuid
+  pseudo      String          @db.VarChar(64)
+  team_id     String?         @db.Uuid // référence à teams_config[].id (côté Json)
+  is_master   Boolean         @default(false)
+  /// feat/multi-animator-roles — source de vérité du rôle ; is_master reste
+  /// synchronisé (true dès qu'un rôle animateur) pour l'ancien code.
+  role        ParticipantRole @default(PLAYER)
+  is_kicked   Boolean         @default(false)
   fingerprint String? // empreinte navigateur pour anti-spam
-  joined_at   DateTime @default(now()) @db.Timestamptz(6)
+  joined_at   DateTime        @default(now()) @db.Timestamptz(6)
 
   session            Session            @relation(fields: [session_id], references: [id], onDelete: Cascade)
   score_events       ScoreEvent[]

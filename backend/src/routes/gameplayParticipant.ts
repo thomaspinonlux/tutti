@@ -389,9 +389,9 @@ router.post(
       broadcastToSession(req.params.id, 'track:phase_changed', {
         round_id: req.params.roundId,
         phase: 'phase2',
+        // ANTI-TRICHE — pas d'artist/title dans le broadcast public : la réponse
+        // reste caviardée avant reveal (les privilégiés l'ont via track:answer).
         phase2_started_at: new Date().toISOString(),
-        artist: track.artist.canonical_name,
-        title: track.canonical_title,
       });
       schedulePhase3Transition(req.params.id, req.params.roundId);
     }
@@ -572,9 +572,9 @@ router.post(
       broadcastToSession(req.params.id, 'track:phase_changed', {
         round_id: req.params.roundId,
         phase: 'phase2',
+        // ANTI-TRICHE — pas d'artist/title dans le broadcast public : la réponse
+        // reste caviardée avant reveal (les privilégiés l'ont via track:answer).
         phase2_started_at: new Date().toISOString(),
-        artist: track.artist.canonical_name,
-        title: track.canonical_title,
       });
       schedulePhase3Transition(req.params.id, req.params.roundId);
     }
@@ -913,12 +913,11 @@ async function runMatchAndCommit(
   });
 
   if (registered.isFirst) {
+    // ANTI-TRICHE — pas d'artist/title dans le broadcast public (cf. supra).
     broadcastToSession(args.sessionId, 'track:phase_changed', {
       round_id: args.roundId,
       phase: 'phase2',
       phase2_started_at: new Date().toISOString(),
-      artist: track.artist.canonical_name,
-      title: track.canonical_title,
     });
     schedulePhase3Transition(args.sessionId, args.roundId);
   }

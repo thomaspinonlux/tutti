@@ -31,6 +31,8 @@ import { prisma } from '../lib/prisma.js';
 import {
   buildCurrentTrackStateSnapshot,
   getEffectiveRoundTrackCount,
+  trackStateForRole,
+  type TrackAnswerPayload,
 } from '../lib/gameplayCore.js';
 import { getCumulativeScores } from '../lib/scores.js';
 
@@ -243,6 +245,8 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
             });
             if (!session) throw new Error('Session introuvable ou non autorisée');
             await socket.join(roomName(sessionId));
+            // Host = toujours privilégié → reçoit le canal réponses.
+            await socket.join(answersRoomName(sessionId));
             const active_track = await buildSessionSnapshot(session);
             const cumulative = await buildCumulativeSnapshot(session);
             ack?.({
@@ -254,6 +258,10 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
             return;
           }
 
+          // Un spectateur (TV read-only) ne peut pas rejoindre en joueur.
+          if (identity.kind !== 'participant') {
+            throw new Error('Rôle non autorisé pour session:join');
+          }
           if (identity.sessionId !== sessionId) {
             throw new Error('Session ID ne correspond pas au token');
           }
@@ -263,7 +271,20 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
           });
           if (!session) throw new Error('Session introuvable');
           await socket.join(roomName(sessionId));
-          const active_track = await buildSessionSnapshot(session);
+          await socket.join(participantRoomName(identity.participantId));
+          // feat/multi-animator-roles — seul ANIMATOR_FULL rejoint le canal
+          // réponses. ANTI-TRICHE : le snapshot renvoyé au participant est
+          // caviardé selon son rôle tant que la réponse n'est pas publique.
+          const me = await prisma.participant.findUnique({
+            where: { id: identity.participantId },
+            select: { role: true },
+          });
+          const myRole = me?.role ?? 'PLAYER';
+          if (myRole === 'ANIMATOR_FULL') {
+            await socket.join(answersRoomName(sessionId));
+          }
+          const rawSnapshot = await buildSessionSnapshot(session);
+          const active_track = rawSnapshot ? trackStateForRole(rawSnapshot, myRole) : null;
           const cumulative = await buildCumulativeSnapshot(session);
           ack?.({
             ok: true,
@@ -296,6 +317,7 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
           });
           if (!session) throw new Error('Session introuvable ou non autorisée');
           await socket.join(roomName(session.id));
+          await socket.join(answersRoomName(session.id)); // host privilégié
           const active_track = await buildSessionSnapshot(session);
           const cumulative = await buildCumulativeSnapshot(session);
           ack?.({
@@ -309,6 +331,30 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
         }
       },
     );
+
+    // ── feat/multi-animator-roles — (re)synchronise l'appartenance au canal
+    // réponses après un changement de rôle sans reconnexion. Le participant
+    // émet cet event ; le serveur relit le rôle EN BASE (source de vérité) et
+    // le (dé)rattache à answers:{sessionId}. Un joueur ne peut pas s'y auto-
+    // ajouter : seul un rôle ANIMATOR_FULL en base ouvre la room.
+    socket.on('answers:subscribe', async (_payload, ack?: (...args: unknown[]) => void) => {
+      try {
+        if (identity.kind !== 'participant') {
+          ack?.({ ok: true, subscribed: identity.kind === 'host' });
+          return;
+        }
+        const me = await prisma.participant.findUnique({
+          where: { id: identity.participantId },
+          select: { role: true, is_kicked: true },
+        });
+        const subscribed = !!me && !me.is_kicked && me.role === 'ANIMATOR_FULL';
+        if (subscribed) await socket.join(answersRoomName(identity.sessionId));
+        else await socket.leave(answersRoomName(identity.sessionId));
+        ack?.({ ok: true, subscribed });
+      } catch (err) {
+        ack?.({ ok: false, error: (err as Error).message });
+      }
+    });
 
     // ── feat/manette-console-master — la CONSOLE diffuse sa position de
     // lecture (position/durée) à la room pour que la télécommande affiche une
@@ -356,8 +402,32 @@ export function roomName(sessionId: string): string {
   return `session:${sessionId}`;
 }
 
+/**
+ * feat/multi-animator-roles — room privilégiée "réponses". Seuls le host et les
+ * ANIMATOR_FULL y sont rattachés. Reçoit `track:answer` (artist/title avant
+ * reveal). Un ANIMATOR_PLAYING n'y entre JAMAIS (il joue → anti-triche).
+ */
+export function answersRoomName(sessionId: string): string {
+  return `answers:${sessionId}`;
+}
+
+/** Room individuelle d'un participant (events ciblés : changement de rôle…). */
+export function participantRoomName(participantId: string): string {
+  return `participant:${participantId}`;
+}
+
 /** Helper : broadcast à tous les sockets d'une session (host + joueurs). */
 export function broadcastToSession(sessionId: string, event: string, payload: unknown): void {
   if (!io) return;
   io.to(roomName(sessionId)).emit(event, payload);
+}
+
+/**
+ * Émet la réponse (artist/title…) sur le canal PRIVILÉGIÉ uniquement. Reçu par
+ * le host et les ANIMATOR_FULL. Les joueurs et animateurs-joueurs ne sont pas
+ * dans cette room → ils ne reçoivent jamais ce payload avant le reveal.
+ */
+export function emitTrackAnswer(sessionId: string, payload: TrackAnswerPayload): void {
+  if (!io) return;
+  io.to(answersRoomName(sessionId)).emit('track:answer', payload);
 }

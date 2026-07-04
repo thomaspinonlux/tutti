@@ -505,7 +505,14 @@
     "masterRevoke": "Remove animator",
     "masterIs": "Animator:",
     "masterNone": "No animator picked",
-    "masterChange": "Change animator"
+    "masterChange": "Change animator",
+    "roleLabel": "Role",
+    "rolePlayer": "Player",
+    "roleAnimatorFull": "Animator +",
+    "roleAnimatorPlaying": "Playing animator",
+    "rolePlayerHint": "Plays, does not host",
+    "roleAnimatorFullHint": "Hosts and sees answers in advance",
+    "roleAnimatorPlayingHint": "Hosts but doesn't see answers before reveal (can play)"
   },
   "tv": {
     "title": "Join the TV screen",

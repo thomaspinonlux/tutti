@@ -505,7 +505,14 @@
     "masterRevoke": "Retirer animateur",
     "masterIs": "Animateur :",
     "masterNone": "Pas d'animateur désigné",
-    "masterChange": "Changer d'animateur"
+    "masterChange": "Changer d'animateur",
+    "roleLabel": "Rôle",
+    "rolePlayer": "Joueur",
+    "roleAnimatorFull": "Animateur +",
+    "roleAnimatorPlaying": "Animateur joueur",
+    "rolePlayerHint": "Joue, ne pilote pas",
+    "roleAnimatorFullHint": "Pilote et voit les réponses en avance",
+    "roleAnimatorPlayingHint": "Pilote mais ne voit pas les réponses avant le reveal (peut jouer)"
   },
   "tv": {
     "title": "Rejoindre l'écran TV",

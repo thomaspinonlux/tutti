@@ -241,6 +241,7 @@ function serializeSession(
       pseudo: p.pseudo,
       team_id: p.team_id,
       is_master: p.is_master,
+      role: p.role,
       is_kicked: p.is_kicked,
       joined_at: p.joined_at.toISOString(),
     })),
