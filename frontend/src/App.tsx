@@ -67,10 +67,6 @@ const ScreenPage = lazy(() =>
 const TvJoinPage = lazy(() =>
   import('./pages/TvJoinPage.js').then((m) => ({ default: m.TvJoinPage })),
 );
-// TEMP — preview nettoyage contrôles console (à supprimer après validation).
-const ConsolePreview = lazy(() =>
-  import('./pages/host/ConsolePreview.js').then((m) => ({ default: m.ConsolePreview })),
-);
 
 function App(): JSX.Element {
   useEffect(() => {
@@ -185,15 +181,6 @@ function App(): JSX.Element {
           element={
             <Suspense fallback={null}>
               <ScreenPage />
-            </Suspense>
-          }
-        />
-        {/* TEMP — preview nettoyage contrôles console (à supprimer après validation). */}
-        <Route
-          path="/console-preview"
-          element={
-            <Suspense fallback={null}>
-              <ConsolePreview />
             </Suspense>
           }
         />
