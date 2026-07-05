@@ -42,7 +42,7 @@ import { getScreenState, type ScreenState } from '../lib/screenState.js';
 import type { RoundRankingEntry, FastestPlayer } from '../lib/sessions.js';
 import { getMe } from '../lib/me.js';
 import { connectAsSpectator } from '../lib/socket.js';
-import { MainScreenView } from './screen/MainScreenView.js';
+import { TvScreenView } from './screen/TvScreenView.js';
 import { screenStateToMainScreenProps } from './screen/adapters/screenStateToMainScreenProps.js';
 import { getPublicCatalog, type LibraryCategoryWithPlaylists } from '../lib/library.js';
 import { OfficialCatalogSections } from '../components/host/library/OfficialCatalogSections.js';
@@ -193,17 +193,17 @@ export function ScreenPage(): JSX.Element {
       setParams({ session: v.toUpperCase() });
     };
     return (
-      <div className="min-h-screen flex flex-col bg-cream relative overflow-hidden">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white relative overflow-hidden">
         <MultiColorBar height="md" />
         <main className="flex-1 flex items-center justify-center p-8 relative z-10">
           <div className="max-w-2xl w-full text-center">
-            <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-4">
+            <p className="font-mono text-sm uppercase tracking-[0.3em] mb-4 text-[#FF5C4D]">
               {t('common.brand')}
             </p>
-            <TitleHandwritten as="h1" className="mb-4 text-7xl">
-              <Underline>{t('screen.castTitle')}</Underline>
-            </TitleHandwritten>
-            <p className="font-editorial italic text-2xl text-ink-2 mb-12">
+            <h1 className="font-display text-7xl lg:text-8xl leading-none mb-4 text-white">
+              {t('screen.castTitle')}
+            </h1>
+            <p className="font-editorial italic text-2xl text-[#B8B8C4] mb-12">
               {t('screen.taglineWaiting')}
             </p>
             <Card size="md" tone="cream" className="max-w-md mx-auto">
@@ -269,13 +269,13 @@ export function ScreenPage(): JSX.Element {
       // feat/tv-join-qr-codes (D) — overlay QR géant si l'animateur l'a toggle.
       return (
         <ScreenWithQrOverlay joinCode={screenState.joinCode} show={screenState.qr_overlay}>
-          <MainScreenView {...screenStateToMainScreenProps(screenState)} />
+          <TvScreenView {...screenStateToMainScreenProps(screenState)} />
         </ScreenWithQrOverlay>
       );
     case 'PAUSED':
       return (
         <ScreenWithQrOverlay joinCode={screenState.joinCode} show={screenState.qr_overlay}>
-          <MainScreenView {...screenStateToMainScreenProps(screenState)} />
+          <TvScreenView {...screenStateToMainScreenProps(screenState)} />
         </ScreenWithQrOverlay>
       );
     case 'ROUND_PODIUM':
@@ -315,9 +315,9 @@ export function ScreenPage(): JSX.Element {
 function ScreenIdleView(): JSX.Element {
   const { t } = useTranslation();
   return (
-    <div className="min-h-screen flex flex-col bg-cream relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white relative overflow-hidden">
       <MultiColorBar height="md" />
-      <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden opacity-70">
         <FloatingVinyl size={140} top="12%" left="8%" delay="0s" />
         <FloatingVinyl size={100} top="65%" left="6%" delay="2s" />
         <FloatingVinyl size={120} top="20%" right="10%" delay="1s" />
@@ -334,13 +334,15 @@ function ScreenIdleView(): JSX.Element {
       </div>
       <main className="flex-1 flex items-center justify-center p-8 relative z-10">
         <div className="max-w-2xl w-full text-center">
-          <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-4">
+          <p className="font-mono text-sm uppercase tracking-[0.3em] mb-4 text-[#FF5C4D]">
             {t('common.brand')}
           </p>
-          <TitleHandwritten as="h1" className="mb-4 text-7xl">
-            <Underline>{t('screen.castTitle')}</Underline>
-          </TitleHandwritten>
-          <p className="font-editorial italic text-2xl text-ink-2">{t('screen.taglineWaiting')}</p>
+          <h1 className="font-display text-7xl lg:text-8xl leading-none mb-5 text-white">
+            {t('screen.castTitle')}
+          </h1>
+          <p className="font-editorial italic text-2xl text-[#B8B8C4]">
+            {t('screen.taglineWaiting')}
+          </p>
         </div>
       </main>
       <MultiColorBar height="md" />
@@ -360,43 +362,47 @@ function ScreenLobbyView({
   const { t } = useTranslation();
   const url = `${window.location.origin}/play?session=${joinCode}`;
   return (
-    <div className="min-h-screen flex flex-col bg-cream">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
       <MultiColorBar height="md" />
-      <main className="flex-1 grid lg:grid-cols-2 gap-8 p-8 items-center max-w-7xl mx-auto w-full">
+      <main className="flex-1 grid lg:grid-cols-2 gap-10 p-10 items-center max-w-7xl mx-auto w-full">
         <div className="text-center">
-          <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-3">
+          <p className="font-mono text-sm uppercase tracking-[0.3em] mb-3 text-[#FF5C4D]">
             {t('screen.lobbyEyebrow')}
           </p>
-          <TitleHandwritten as="h1" className="mb-6 text-6xl">
-            <Underline>{sessionName ?? t('common.brand')}</Underline>
-          </TitleHandwritten>
-          <div className="inline-block bg-cream-2 border-4 border-ink rounded-2xl p-6 shadow-pop-lg">
-            <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
+          <h1 className="font-display text-6xl lg:text-7xl leading-none mb-8 text-white">
+            {sessionName ?? t('common.brand')}
+          </h1>
+          <div className="inline-block rounded-3xl bg-[#1C1C26] border border-white/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+            <p className="font-mono text-xs uppercase tracking-[0.25em] text-[#B8B8C4] mb-3">
               {t('screen.scanToJoin')}
             </p>
-            <QRCode value={url} size={260} />
-            <p className="font-mono text-3xl font-bold tracking-[0.3em] text-ink mt-4">
+            <div className="rounded-2xl bg-white p-3 inline-block">
+              <QRCode value={url} size={240} />
+            </div>
+            <p className="font-mono text-4xl font-bold tracking-[0.3em] text-white mt-4">
               {joinCode}
             </p>
-            <p className="font-editorial italic text-sm text-ink-soft mt-2">{url}</p>
           </div>
         </div>
         <div className="text-center">
-          <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
+          <p className="font-mono text-sm uppercase tracking-[0.25em] text-[#B8B8C4] mb-4">
             {t('screen.playersConnected', { count: players.length })}
           </p>
           {players.length === 0 ? (
-            <p className="font-editorial italic text-2xl text-ink-2">{t('screen.lobbyWaiting')}</p>
+            <p className="font-editorial italic text-2xl text-[#B8B8C4]/80">
+              {t('screen.lobbyWaiting')}
+            </p>
           ) : (
-            <ul className="grid grid-cols-2 gap-3 max-w-lg mx-auto">
+            <ul className="grid grid-cols-2 gap-3 max-w-xl mx-auto">
               {players.map((p) => (
                 <li
                   key={p.id}
-                  className="px-3 py-2 border-2 border-ink rounded bg-white font-medium animate-pop-in flex items-center gap-2"
+                  className="px-4 py-3 rounded-2xl bg-white/[0.06] border border-white/10 font-bold text-xl lg:text-2xl text-white animate-pop-in flex items-center gap-3"
                 >
                   <span
                     aria-hidden
-                    className="w-7 h-7 rounded-full border-2 border-ink bg-spritz flex items-center justify-center font-display text-sm shrink-0"
+                    className="w-9 h-9 rounded-full flex items-center justify-center font-display text-base shrink-0 text-[#0B0B0F]"
+                    style={{ backgroundColor: '#FF5C4D' }}
                   >
                     {p.pseudo.charAt(0).toUpperCase()}
                   </span>
@@ -654,24 +660,24 @@ function ScreenRoundPodiumView({
       ? (fastest.avg_buzz_ms / 1000).toFixed(2)
       : '—';
   return (
-    <div className="min-h-screen flex flex-col bg-cream">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
       <MultiColorBar height="md" />
       <main className="flex-1 flex flex-col items-center px-8 py-6 overflow-hidden">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-spritz-deep mb-1">
+        <p className="font-mono text-xs uppercase tracking-[0.3em] mb-1 text-[#FF5C4D]">
           {t('screen.roundPodiumEyebrow', { n: roundPosition })}
         </p>
-        <TitleHandwritten as="h1" className="text-5xl mb-5">
-          <Underline>{t('screen.roundPodiumTitle')}</Underline>
-        </TitleHandwritten>
+        <h1 className="font-display text-5xl lg:text-6xl mb-5 text-white">
+          {t('screen.roundPodiumTitle')}
+        </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 w-full max-w-6xl flex-1 min-h-0">
           {/* Classement COMPLET de la manche — auto-scroll si débordement */}
           <section className="flex flex-col min-h-0">
-            <p className="font-mono text-xs uppercase tracking-wider text-spritz-deep mb-3">
+            <p className="font-mono text-xs uppercase tracking-[0.25em] mb-3 text-[#FF5C4D]">
               🏆 {t('screen.roundRankingTitle')}
             </p>
             {roundRanking.length === 0 ? (
-              <p className="font-editorial italic text-ink-soft">
+              <p className="font-editorial italic text-[#B8B8C4]/70">
                 {t('host.intermission.noPoints')}
               </p>
             ) : (
@@ -680,23 +686,23 @@ function ScreenRoundPodiumView({
                   {roundRanking.map((e, idx) => (
                     <li
                       key={e.participant_id}
-                      className={`flex items-center gap-4 px-4 py-3 border-2 border-ink rounded-xl ${
-                        idx === 0
-                          ? 'bg-lemon'
-                          : idx === 1
-                            ? 'bg-cream-2'
-                            : idx === 2
-                              ? 'bg-spritz/20'
-                              : 'bg-white'
-                      }`}
+                      className="flex items-center gap-4 px-4 py-3 rounded-2xl"
+                      style={{
+                        backgroundColor: idx === 0 ? '#FF5C4D1f' : '#ffffff08',
+                        border: `1px solid ${idx === 0 ? '#FF5C4D66' : '#ffffff12'}`,
+                      }}
                     >
                       <span aria-hidden className="text-2xl w-9 text-center">
                         {['🥇', '🥈', '🥉'][idx] ?? (
-                          <span className="font-mono text-lg text-ink-soft">{idx + 1}</span>
+                          <span className="font-mono text-lg text-[#B8B8C4]">{idx + 1}</span>
                         )}
                       </span>
-                      <span className="font-display text-2xl flex-1 truncate">{e.pseudo}</span>
-                      <span className="font-mono text-2xl font-bold">+{e.points}</span>
+                      <span className="font-display text-2xl lg:text-3xl flex-1 truncate text-white">
+                        {e.pseudo}
+                      </span>
+                      <span className="font-mono text-2xl font-bold tabular-nums text-white">
+                        +{e.points}
+                      </span>
                     </li>
                   ))}
                 </ol>
@@ -706,25 +712,31 @@ function ScreenRoundPodiumView({
 
           {/* Plus rapide + classement général (cumul) */}
           <section className="flex flex-col min-h-0 gap-4">
-            <div className="border-2 border-raspberry rounded-xl bg-white px-4 py-4 text-center shrink-0">
-              <p className="font-mono text-xs uppercase tracking-wider text-raspberry-deep mb-2">
+            <div
+              className="rounded-2xl px-4 py-4 text-center shrink-0"
+              style={{ backgroundColor: '#FF5C4D14', border: '1px solid #FF5C4D55' }}
+            >
+              <p
+                className="font-mono text-xs uppercase tracking-[0.2em] mb-2"
+                style={{ color: '#FF5C4D' }}
+              >
                 ⚡ {t('host.intermission.fastest')}
               </p>
               {fastest ? (
                 <>
-                  <p className="font-display text-3xl mb-1">{fastest.pseudo}</p>
-                  <p className="font-mono text-sm text-ink-soft">
+                  <p className="font-display text-3xl mb-1 text-white">{fastest.pseudo}</p>
+                  <p className="font-mono text-sm text-[#B8B8C4]">
                     {t('host.intermission.avgBuzz', { ms: fastestAvgSec })}
                   </p>
                 </>
               ) : (
-                <p className="font-editorial italic text-ink-soft">
+                <p className="font-editorial italic text-[#B8B8C4]/70">
                   {t('host.intermission.noBuzz')}
                 </p>
               )}
             </div>
             <div className="flex flex-col min-h-0">
-              <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B8B8C4] mb-3">
                 📊 {t('screen.generalRankingTitle')}
               </p>
               <AutoScrollList className="flex-1 min-h-0">
@@ -732,13 +744,19 @@ function ScreenRoundPodiumView({
                   {cumulTop.map((e, idx) => (
                     <li
                       key={e.id}
-                      className={`flex items-center gap-3 px-3 py-2 border rounded-lg ${
-                        idx === 0 ? 'border-spritz bg-spritz/10' : 'border-ink/20 bg-white'
-                      }`}
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                      style={{
+                        backgroundColor: idx === 0 ? '#FF5C4D1a' : '#ffffff08',
+                        border: `1px solid ${idx === 0 ? '#FF5C4D55' : '#ffffff10'}`,
+                      }}
                     >
-                      <span className="font-mono text-sm w-6 text-ink-soft">{idx + 1}.</span>
-                      <span className="font-display text-xl flex-1 truncate">{e.label}</span>
-                      <span className="font-mono text-xl font-bold">{e.total_points}</span>
+                      <span className="font-mono text-sm w-6 text-[#B8B8C4]">{idx + 1}.</span>
+                      <span className="font-display text-xl flex-1 truncate text-white">
+                        {e.label}
+                      </span>
+                      <span className="font-mono text-xl font-bold tabular-nums text-white">
+                        {e.total_points}
+                      </span>
                     </li>
                   ))}
                 </ol>
@@ -747,7 +765,9 @@ function ScreenRoundPodiumView({
           </section>
         </div>
 
-        <p className="font-mono text-sm tracking-[0.3em] text-ink-soft mt-4 shrink-0">{joinCode}</p>
+        <p className="font-mono text-sm tracking-[0.3em] text-[#B8B8C4] mt-4 shrink-0">
+          {joinCode}
+        </p>
       </main>
       <MultiColorBar height="md" />
     </div>
@@ -766,15 +786,17 @@ function ScreenFinalPodiumView({
   const winnerName = first?.label ?? '';
   const url = `${window.location.origin}/play?session=${joinCode}`;
   return (
-    <div className="min-h-screen flex flex-col bg-cream">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
       <MultiColorBar height="md" />
       <main className="flex-1 flex flex-col items-center justify-center p-8">
-        <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-3">
+        <p className="font-mono text-sm uppercase tracking-[0.3em] mb-3 text-[#FF5C4D]">
           {t('screen.endedEyebrow')}
         </p>
-        <h1 className="font-display text-7xl mb-2 text-center">{t('screen.endedTitle')}</h1>
+        <h1 className="font-display text-7xl lg:text-8xl mb-2 text-center text-white">
+          {t('screen.endedTitle')}
+        </h1>
         {winnerName && (
-          <p className="font-editorial italic text-3xl text-raspberry mb-8">
+          <p className="font-editorial italic text-3xl mb-8" style={{ color: '#FF5C4D' }}>
             {t('screen.endedWinner', { name: winnerName })}
           </p>
         )}
@@ -783,22 +805,30 @@ function ScreenFinalPodiumView({
             {[first, second, third].filter(Boolean).map((entry, idx) => (
               <li
                 key={entry!.id}
-                className="flex items-center gap-4 px-5 py-4 border-4 border-ink rounded-xl bg-white shadow-pop-lg"
+                className="flex items-center gap-4 px-5 py-4 rounded-2xl"
+                style={{
+                  backgroundColor: idx === 0 ? '#FF5C4D1f' : '#ffffff08',
+                  border: `1px solid ${idx === 0 ? '#FF5C4D66' : '#ffffff12'}`,
+                }}
               >
                 <span aria-hidden className="text-4xl">
                   {['🥇', '🥈', '🥉'][idx]}
                 </span>
-                <span className="font-display text-3xl flex-1 truncate">{entry!.label}</span>
-                <span className="font-mono text-2xl font-bold">{entry!.total_points}</span>
+                <span className="font-display text-3xl lg:text-4xl flex-1 truncate text-white">
+                  {entry!.label}
+                </span>
+                <span className="font-mono text-2xl font-bold tabular-nums text-white">
+                  {entry!.total_points}
+                </span>
               </li>
             ))}
             {rest.length > 0 && (
-              <li className="px-5 py-3 border-2 border-ink/30 rounded bg-cream-2/40">
+              <li className="px-5 py-3 rounded-2xl bg-white/[0.04] border border-white/10">
                 <ul className="space-y-1">
                   {rest.map((entry, idx) => (
                     <li
                       key={entry.id}
-                      className="flex items-center gap-3 font-mono text-sm text-ink-soft"
+                      className="flex items-center gap-3 font-mono text-sm text-[#B8B8C4]"
                     >
                       <span className="w-6 text-right">{idx + 4}.</span>
                       <span className="flex-1 truncate">{entry.label}</span>
@@ -811,11 +841,13 @@ function ScreenFinalPodiumView({
           </ol>
         )}
         <div className="text-center">
-          <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B8B8C4] mb-2">
             {t('screen.endedRematch')}
           </p>
-          <QRCode value={url} size={140} />
-          <p className="font-mono text-lg font-bold tracking-[0.2em] text-ink mt-2">{joinCode}</p>
+          <div className="inline-block rounded-2xl bg-white p-2.5">
+            <QRCode value={url} size={132} />
+          </div>
+          <p className="font-mono text-lg font-bold tracking-[0.2em] text-white mt-2">{joinCode}</p>
         </div>
       </main>
       <MultiColorBar height="md" />
@@ -966,15 +998,18 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
   const current = playlists[idx]!;
 
   return (
-    <section className="border-t-2 border-ink bg-cream-2 py-6 px-8">
-      <p className="font-mono text-xs uppercase tracking-[0.3em] text-spritz-deep text-center mb-4">
+    <section className="border-t border-white/10 bg-[#101018] py-6 px-8">
+      <p
+        className="font-mono text-xs uppercase tracking-[0.3em] text-center mb-4"
+        style={{ color: '#FF5C4D' }}
+      >
         🎶 Playlists disponibles
       </p>
       <div className="max-w-4xl mx-auto flex items-center gap-6 animate-fade-in" key={current.id}>
         {/* feat/tv-carousel-polish — cover mosaïque 2×2 si dispo, sinon
             fallback texte uniquement (cf. plus bas). */}
         {current.cover_url && (
-          <div className="w-32 h-32 lg:w-40 lg:h-40 shrink-0 border-2 border-ink rounded-lg overflow-hidden shadow-pop-sm">
+          <div className="w-32 h-32 lg:w-40 lg:h-40 shrink-0 border border-white/10 rounded-lg overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
             <img
               src={current.cover_url}
               alt=""
@@ -989,13 +1024,13 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="font-display text-3xl mb-2">{current.name}</p>
+          <p className="font-display text-3xl mb-2 text-white">{current.name}</p>
           {current.description && (
-            <p className="font-editorial italic text-ink-2 text-base line-clamp-2">
+            <p className="font-editorial italic text-[#B8B8C4] text-base line-clamp-2">
               {current.description}
             </p>
           )}
-          <p className="font-mono text-xs text-ink-soft mt-2">
+          <p className="font-mono text-xs text-[#B8B8C4]/70 mt-2">
             {current.theme && <span>{current.theme} · </span>}
             {current.track_count} morceaux
           </p>
@@ -1006,9 +1041,11 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
         {playlists.map((_, i) => (
           <span
             key={i}
-            className={`h-1.5 rounded transition-all ${
-              i === idx ? 'w-6 bg-spritz' : 'w-1.5 bg-ink/20'
-            }`}
+            className="h-1.5 rounded transition-all"
+            style={{
+              width: i === idx ? '1.5rem' : '0.375rem',
+              backgroundColor: i === idx ? '#FF5C4D' : '#ffffff30',
+            }}
           />
         ))}
       </div>

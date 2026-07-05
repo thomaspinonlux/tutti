@@ -49,7 +49,11 @@ import { QRCode } from '../../components/host/QRCode.js';
  * UNIQUEMENT quand !isPaused. Pendant pause, on rafraîchit la ref de
  * dernier tick mais on ne décrémente pas, donc le timer fige.
  */
-function useTimeRemaining(startedAtIso: string, durationMs: number, isPaused = false): number {
+export function useTimeRemaining(
+  startedAtIso: string,
+  durationMs: number,
+  isPaused = false,
+): number {
   const [remaining, setRemaining] = useState(durationMs);
   const lastTickRef = useRef<number>(Date.now());
 
@@ -82,7 +86,7 @@ function useTimeRemaining(startedAtIso: string, durationMs: number, isPaused = f
  * Compteur "temps écoulé" pause-aware. Démarre à 0 quand startedAtIso change,
  * incrémente par delta de tick si !isPaused, fige sinon.
  */
-function useTimeElapsed(startedAtIso: string | null, isPaused = false): number {
+export function useTimeElapsed(startedAtIso: string | null, isPaused = false): number {
   // Amorce depuis l'horloge serveur (now - started_at), PAS depuis 0 : sinon la barre
   // repart à 0 à chaque (re)montage — très visible quand le son est sur la TV
   // (positionMs undefined → on tombe sur ce fallback) → barre figée / en retard.
@@ -116,7 +120,7 @@ function useTimeElapsed(startedAtIso: string | null, isPaused = false): number {
   return elapsed;
 }
 
-function formatTime(ms: number): string {
+export function formatTime(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));
   const m = Math.floor(total / 60);
   const s = total % 60;

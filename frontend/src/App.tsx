@@ -67,6 +67,10 @@ const ScreenPage = lazy(() =>
 const TvJoinPage = lazy(() =>
   import('./pages/TvJoinPage.js').then((m) => ({ default: m.TvJoinPage })),
 );
+// TEMP — preview restyle écran TV (à supprimer après validation).
+const TvPreview = lazy(() =>
+  import('./pages/screen/TvPreview.js').then((m) => ({ default: m.TvPreview })),
+);
 
 function App(): JSX.Element {
   useEffect(() => {
@@ -181,6 +185,15 @@ function App(): JSX.Element {
           element={
             <Suspense fallback={null}>
               <ScreenPage />
+            </Suspense>
+          }
+        />
+        {/* TEMP — preview restyle sombre écran TV (à supprimer après validation). */}
+        <Route
+          path="/tv-preview"
+          element={
+            <Suspense fallback={null}>
+              <TvPreview />
             </Suspense>
           }
         />
