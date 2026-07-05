@@ -2408,153 +2408,172 @@ function RoundPlayingScreen({
     currentTrack?.provider === 'spotify' || (currentTrack === null && spotifyStatus !== 'idle');
   const isDemoProvider = currentTrack?.provider === 'demo';
 
+  const CORAL = '#FF5C4D';
+  const chip = 'rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.2em]';
+  const darkPanel =
+    'rounded-[20px] border border-white/[0.07] bg-[#15151d]/80 p-5 backdrop-blur-xl';
   return (
-    <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-      {/* ── Colonne gauche : track en cours ──────────────────────────── */}
-      <Card tone="spritz" size="lg" className="text-center">
-        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-          <Badge tone="cream" tilt={-1}>
-            {t('host.currentRound', { n: round.position })}
-          </Badge>
-          {totalTracks > 0 && (
-            <Badge tone="ink" tilt={1}>
-              {t('host.trackPosition', { current: trackPosition, total: totalTracks })}
-            </Badge>
+    // feat/console-dark — stage sombre premium (cohérent écran TV). Bleed sur le
+    // padding du <main> via marges négatives pour couvrir toute la zone de jeu.
+    <div className="relative -mx-4 -my-4 min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] px-4 py-8 text-white sm:-mx-6 sm:-my-8 sm:px-6 lg:-mx-10 lg:px-10">
+      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        {/* ── Colonne gauche : track en cours ──────────────────────────── */}
+        <div className="rounded-[24px] border border-white/[0.07] bg-[#15151d]/80 p-6 text-center backdrop-blur-xl lg:p-8">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <span className={`${chip} text-[#0B0B0F]`} style={{ backgroundColor: CORAL }}>
+              {t('host.currentRound', { n: round.position })}
+            </span>
+            {totalTracks > 0 && (
+              <span className={`${chip} border border-white/15 text-white/80`}>
+                {t('host.trackPosition', { current: trackPosition, total: totalTracks })}
+              </span>
+            )}
+          </div>
+          <h2 className="mb-4 font-display text-4xl leading-tight text-white">
+            {round.playlist.name}
+          </h2>
+
+          {showSpotifyStatus && (
+            <SpotifyStatusBanner
+              status={spotifyStatus}
+              error={spotifyError}
+              errorCode={spotifyErrorCode}
+            />
           )}
+          {showSpotifyStatus && spotifyStatus === 'ready' && currentTrack && (
+            <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
+              🔊 {t('host.forceAudioOnDevice')}
+            </Button>
+          )}
+          {currentTrack?.provider === 'youtube' && (
+            <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
+              🔊 {t('host.forceAudioOnDevice')}
+            </Button>
+          )}
+          {isDemoProvider && (
+            <p className="my-3 font-mono text-xs text-white/45">{t('host.demoProviderHint')}</p>
+          )}
+
+          {!currentTrack ? (
+            <p className="my-8 font-editorial italic text-white/55">{t('host.noTrackYet')}</p>
+          ) : (
+            <AnimatorTrackInfo
+              track={currentTrack}
+              positionMs={effPositionMs}
+              durationMs={effDurationMs}
+              onSeek={onSeek}
+              dark
+            />
+          )}
+
+          <PlayerControls
+            currentTrack={currentTrack}
+            isPaused={isPaused}
+            busy={busy}
+            totalTracks={totalTracks}
+            onNextTrack={() => void onNextTrack()}
+            onEndRound={() => void onEndRound()}
+            onPauseAudio={onPauseAudio}
+            onResumeAudio={onResumeAudio}
+            onRestartTrack={onRestartTrack}
+            onRevealAnswer={onRevealAnswer}
+            dark
+          />
         </div>
-        <TitleHandwritten as="h2" className="mb-4">
-          <Underline>{round.playlist.name}</Underline>
-        </TitleHandwritten>
 
-        {showSpotifyStatus && (
-          <SpotifyStatusBanner
-            status={spotifyStatus}
-            error={spotifyError}
-            errorCode={spotifyErrorCode}
+        {/* ── Colonne droite : programme + joueurs + classement + buzz ── */}
+        <div className="space-y-4">
+          <RoundProgramPanel
+            sessionId={sessionId}
+            roundId={round.id}
+            refetchKey={`${currentTrack?.track_index ?? -1}-${currentTrack?.started_at ?? ''}`}
+            dark
           />
-        )}
-        {showSpotifyStatus && spotifyStatus === 'ready' && currentTrack && (
-          <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
-            🔊 {t('host.forceAudioOnDevice')}
-          </Button>
-        )}
-        {/* Bug 4 — bouton "Forcer audio" identique pour les morceaux YouTube,
-            au cas où Chrome/Safari bloquent l'autoplay de l'iframe YT. */}
-        {currentTrack?.provider === 'youtube' && (
-          <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
-            🔊 {t('host.forceAudioOnDevice')}
-          </Button>
-        )}
-        {isDemoProvider && (
-          <p className="font-mono text-xs text-ink-soft my-3">{t('host.demoProviderHint')}</p>
-        )}
-
-        {/* Bug 5 — suppression du gros carré central "EN COURS ♪?????".
-            Le morceau en cours est déjà mis en évidence dans le panneau
-            "Programme de la manche" à droite (highlight spritz + badge
-            "En cours"). Plus besoin de duplicate ici.
-            On garde juste le placeholder quand !currentTrack pour donner
-            un signal visible que le morceau n'a pas encore démarré. */}
-        {!currentTrack ? (
-          <p className="font-editorial italic text-ink-2 my-8">{t('host.noTrackYet')}</p>
-        ) : (
-          // Position progress mini-bar (info utile à l'animateur sans
-          // dupliquer cover/titre/artiste — déjà dans Programme manche).
-          <AnimatorTrackInfo
-            track={currentTrack}
-            positionMs={effPositionMs}
-            durationMs={effDurationMs}
-            onSeek={onSeek}
+          <PlayersPanel
+            sessionId={sessionId}
+            participants={participants}
+            cumulative={cumulative}
+            dark
           />
-        )}
 
-        {/* feat/console-controls-cleanup — barre de contrôle hiérarchisée à
-            l'affordance claire (boutons bordés) en remplacement des anciens
-            liens ghost empilés. */}
-        <PlayerControls
-          currentTrack={currentTrack}
-          isPaused={isPaused}
-          busy={busy}
-          totalTracks={totalTracks}
-          onNextTrack={() => void onNextTrack()}
-          onEndRound={() => void onEndRound()}
-          onPauseAudio={onPauseAudio}
-          onResumeAudio={onResumeAudio}
-          onRestartTrack={onRestartTrack}
-          onRevealAnswer={onRevealAnswer}
-        />
-      </Card>
-
-      {/* ── Colonne droite : classement + programme + joueurs + buzz feed ── */}
-      <div className="space-y-4">
-        <RoundProgramPanel
-          sessionId={sessionId}
-          roundId={round.id}
-          refetchKey={`${currentTrack?.track_index ?? -1}-${currentTrack?.started_at ?? ''}`}
-        />
-        {/* Feature 3 — liste joueurs + édition manuelle des points */}
-        <PlayersPanel sessionId={sessionId} participants={participants} cumulative={cumulative} />
-
-        <Card size="md">
-          <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
-            {t('host.cumulativeScores')}
-          </p>
-          {top5.length === 0 ? (
-            <p className="font-editorial italic text-sm text-ink-soft">{t('host.noScoresYet')}</p>
-          ) : (
-            <ol className="space-y-2">
-              {top5.map((entry, idx) => (
-                <li
-                  key={entry.id}
-                  className="flex items-center gap-3 px-3 py-2 border-2 border-ink rounded bg-white"
-                >
-                  <span className="font-display text-xl w-6 text-center text-spritz-deep">
-                    {idx + 1}
-                  </span>
-                  {entry.color && (
+          <div className={darkPanel}>
+            <p className="mb-3 font-mono text-xs uppercase tracking-wider text-white/50">
+              {t('host.cumulativeScores')}
+            </p>
+            {top5.length === 0 ? (
+              <p className="font-editorial text-sm italic text-white/45">{t('host.noScoresYet')}</p>
+            ) : (
+              <ol className="space-y-2">
+                {top5.map((entry, idx) => (
+                  <li
+                    key={entry.id}
+                    className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2"
+                  >
                     <span
-                      aria-hidden
-                      className="w-3 h-3 rounded-full border-2 border-ink shrink-0"
-                      style={{ backgroundColor: entry.color }}
-                    />
-                  )}
-                  <span className="font-medium flex-1 truncate text-sm">{entry.label}</span>
-                  <Badge tone="ink">{entry.total_points}</Badge>
-                </li>
-              ))}
-            </ol>
-          )}
-        </Card>
+                      className="w-6 text-center font-display text-xl"
+                      style={{ color: idx === 0 ? CORAL : '#ffffff' }}
+                    >
+                      {idx + 1}
+                    </span>
+                    {entry.color && (
+                      <span
+                        aria-hidden
+                        className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/30"
+                        style={{ backgroundColor: entry.color }}
+                      />
+                    )}
+                    <span className="flex-1 truncate text-sm font-medium text-white">
+                      {entry.label}
+                    </span>
+                    <span className="font-mono text-sm font-bold tabular-nums text-white">
+                      {entry.total_points}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
 
-        <Card size="md">
-          <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
-            {t('host.buzzFeed')}
-          </p>
-          {recentBuzzes.length === 0 ? (
-            <p className="font-editorial italic text-sm text-ink-soft">{t('host.buzzFeedEmpty')}</p>
-          ) : (
-            <ul className="space-y-2">
-              {recentBuzzes.map((buzz, idx) => (
-                <li
-                  key={`${buzz.round_id}-${buzz.track_index}-${idx}`}
-                  className="flex items-center gap-2 text-xs"
-                >
-                  <span className="font-medium truncate">{buzz.participant_pseudo}</span>
-                  <span className="text-ink-soft truncate flex-1">
-                    {buzz.matched_artist
-                      ? buzz.matched_title
-                        ? `${buzz.reveal.artist} — ${buzz.reveal.title}`
-                        : buzz.reveal.artist
-                      : t('host.notFound')}
-                  </span>
-                  <Badge tone={buzz.total_points > 0 ? 'basil' : 'plum'}>
-                    {buzz.total_points > 0 ? `+${buzz.total_points}` : '0'}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+          <div className={darkPanel}>
+            <p className="mb-3 font-mono text-xs uppercase tracking-wider text-white/50">
+              {t('host.buzzFeed')}
+            </p>
+            {recentBuzzes.length === 0 ? (
+              <p className="font-editorial text-sm italic text-white/45">
+                {t('host.buzzFeedEmpty')}
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {recentBuzzes.map((buzz, idx) => (
+                  <li
+                    key={`${buzz.round_id}-${buzz.track_index}-${idx}`}
+                    className="flex items-center gap-2 text-xs"
+                  >
+                    <span className="truncate font-medium text-white">
+                      {buzz.participant_pseudo}
+                    </span>
+                    <span className="flex-1 truncate text-white/50">
+                      {buzz.matched_artist
+                        ? buzz.matched_title
+                          ? `${buzz.reveal.artist} — ${buzz.reveal.title}`
+                          : buzz.reveal.artist
+                        : t('host.notFound')}
+                    </span>
+                    <span
+                      className="rounded-full px-2 py-0.5 font-mono text-[11px] font-bold"
+                      style={{
+                        backgroundColor: buzz.total_points > 0 ? '#4ade8033' : '#ffffff12',
+                        color: buzz.total_points > 0 ? '#4ade80' : '#ffffff99',
+                      }}
+                    >
+                      {buzz.total_points > 0 ? `+${buzz.total_points}` : '0'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -2572,11 +2591,13 @@ function AnimatorTrackInfo({
   positionMs,
   durationMs,
   onSeek,
+  dark = false,
 }: {
   track: CurrentTrackState;
   positionMs: number;
   durationMs: number;
   onSeek: (ms: number) => void;
+  dark?: boolean;
 }): JSX.Element {
   const total = durationMs || track.duration_ms || 0;
   return (
@@ -2587,25 +2608,33 @@ function AnimatorTrackInfo({
           <img
             src={track.cover_url}
             alt=""
-            className="w-24 h-24 rounded border-2 border-ink object-cover shadow-pop-sm"
+            className={`w-24 h-24 rounded object-cover ${dark ? 'ring-1 ring-white/15 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : 'border-2 border-ink shadow-pop-sm'}`}
           />
         ) : (
-          <div className="w-24 h-24 rounded border-2 border-ink bg-cream-2 flex items-center justify-center font-display text-3xl text-ink-soft">
+          <div
+            className={`w-24 h-24 rounded flex items-center justify-center font-display text-3xl ${dark ? 'bg-white/[0.06] ring-1 ring-white/10 text-white/60' : 'border-2 border-ink bg-cream-2 text-ink-soft'}`}
+          >
             ♪
           </div>
         )}
-        {/* feat/selection-ui-mirroring (item 3) — bloc "morceau en cours" :
-            largeur responsive (flex-1, plus de cap dur 260px) + word-wrap au
-            lieu de truncate → les titres longs s'affichent en entier sans coupe
-            ni débordement. */}
         <div className="text-left min-w-0 flex-1">
-          <p className="font-display text-2xl text-ink break-words">{track.title}</p>
-          <p className="font-editorial italic text-ink-2 break-words">{track.artist}</p>
-          {track.year && <p className="font-mono text-xs text-ink-soft">{track.year}</p>}
+          <p className={`font-display text-2xl break-words ${dark ? 'text-white' : 'text-ink'}`}>
+            {track.title}
+          </p>
+          <p
+            className={`font-editorial italic break-words ${dark ? 'text-white/55' : 'text-ink-2'}`}
+          >
+            {track.artist}
+          </p>
+          {track.year && (
+            <p className={`font-mono text-xs ${dark ? 'text-white/40' : 'text-ink-soft'}`}>
+              {track.year}
+            </p>
+          )}
         </div>
       </div>
       {/* Barre de temps SEEKABLE (host-only) — extraite dans <SeekBar>. */}
-      <SeekBar positionMs={positionMs} durationMs={total} onSeek={onSeek} />
+      <SeekBar positionMs={positionMs} durationMs={total} onSeek={onSeek} dark={dark} />
     </div>
   );
 }
