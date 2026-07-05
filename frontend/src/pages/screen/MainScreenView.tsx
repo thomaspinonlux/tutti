@@ -476,20 +476,18 @@ function IPadFooter({
 
       <div className="flex items-center gap-3">
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           onClick={onSkipTrack}
           disabled={busy || !canSkip || !currentTrack || !onSkipTrack}
-          className="!bg-cream !text-ink !border-cream hover:!bg-cream-2"
         >
           ⏭ {t('screen.btnSkip')}
         </Button>
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           onClick={onGiveAnswer}
           disabled={busy || !canGiveAnswer || !currentTrack || !onGiveAnswer}
-          className="!bg-cream !text-ink !border-cream hover:!bg-cream-2"
         >
           💡 {t('screen.btnGiveAnswer')}
         </Button>

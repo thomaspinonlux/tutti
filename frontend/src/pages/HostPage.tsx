@@ -102,6 +102,7 @@ import { RoundProgramPanel } from '../components/host/RoundProgramPanel.js';
 // technique qui ne les concerne pas.
 import { SafariMediaBanner } from '../components/admin/SafariMediaBanner.js';
 import { PlayersPanel } from '../components/host/PlayersPanel.js';
+import { PlayerControls } from '../components/host/PlayerControls.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
@@ -2432,14 +2433,14 @@ function RoundPlayingScreen({
           />
         )}
         {showSpotifyStatus && spotifyStatus === 'ready' && currentTrack && (
-          <Button variant="ghost" size="sm" onClick={onForceAudio} className="mt-2">
+          <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
             🔊 {t('host.forceAudioOnDevice')}
           </Button>
         )}
         {/* Bug 4 — bouton "Forcer audio" identique pour les morceaux YouTube,
             au cas où Chrome/Safari bloquent l'autoplay de l'iframe YT. */}
         {currentTrack?.provider === 'youtube' && (
-          <Button variant="ghost" size="sm" onClick={onForceAudio} className="mt-2">
+          <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
             🔊 {t('host.forceAudioOnDevice')}
           </Button>
         )}
@@ -2466,50 +2467,21 @@ function RoundPlayingScreen({
           />
         )}
 
-        <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => void onNextTrack()}
-            disabled={busy || !currentTrack}
-          >
-            {/* feat/round-end-rankings — label dynamique sur le DERNIER
-                morceau pour signaler que ce clic mènera à l'écran de fin
-                de manche (RoundIntermissionScreen avec classements), pas à
-                un morceau suivant inexistant qui menait à une page vide. */}
-            {currentTrack && currentTrack.track_index >= totalTracks - 1
-              ? t('host.viewRanking')
-              : t('host.nextTrack')}{' '}
-            →
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => void onEndRound()} disabled={busy}>
-            {t('host.endRound')}
-          </Button>
-        </div>
-
-        {/* ── Contrôles audio (pause / reprendre / recommencer / révéler) ── */}
-        {currentTrack && (
-          <div className="mt-3 pt-3 border-t-2 border-ink/10 flex items-center justify-center gap-2 flex-wrap">
-            {!isPaused ? (
-              <Button variant="ghost" size="sm" onClick={onPauseAudio} disabled={busy}>
-                ⏸️ {t('host.pauseAudio')}
-              </Button>
-            ) : (
-              <Button variant="primary" size="sm" onClick={onResumeAudio} disabled={busy}>
-                ▶️ {t('host.resumeAudio')}
-              </Button>
-            )}
-            <Button variant="ghost" size="sm" onClick={onRestartTrack} disabled={busy}>
-              🔄 {t('host.restartTrack')}
-            </Button>
-            {/* Refonte #1 — Révéler la réponse : phase 1 + phase 2 */}
-            {(currentTrack.phase === 'phase1' || currentTrack.phase === 'phase2') && (
-              <Button variant="ghost" size="sm" onClick={onRevealAnswer} disabled={busy}>
-                💡 {t('host.revealAnswer')}
-              </Button>
-            )}
-          </div>
-        )}
+        {/* feat/console-controls-cleanup — barre de contrôle hiérarchisée à
+            l'affordance claire (boutons bordés) en remplacement des anciens
+            liens ghost empilés. */}
+        <PlayerControls
+          currentTrack={currentTrack}
+          isPaused={isPaused}
+          busy={busy}
+          totalTracks={totalTracks}
+          onNextTrack={() => void onNextTrack()}
+          onEndRound={() => void onEndRound()}
+          onPauseAudio={onPauseAudio}
+          onResumeAudio={onResumeAudio}
+          onRestartTrack={onRestartTrack}
+          onRevealAnswer={onRevealAnswer}
+        />
       </Card>
 
       {/* ── Colonne droite : classement + programme + joueurs + buzz feed ── */}
