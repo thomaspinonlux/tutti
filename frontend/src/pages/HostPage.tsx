@@ -1635,7 +1635,7 @@ function HostPageInner(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
       <MultiColorBar height="md" />
 
       {/* fix/restrict-banners-to-host-pages — Safari content-blocker hint.
@@ -1725,31 +1725,29 @@ function HostPageInner(): JSX.Element {
       <main role="application" className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-8">
         <header className="max-w-7xl mx-auto mb-4 sm:mb-8 flex items-center justify-between flex-wrap gap-3">
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-1">
+            <p
+              className="font-mono text-xs uppercase tracking-[0.2em] mb-1"
+              style={{ color: '#FF5C4D' }}
+            >
               {effectivePhase === 'waiting'
                 ? t('host.eyebrow')
                 : effectivePhase === 'ended'
                   ? t('host.eyebrowEnded')
                   : t('host.eyebrowPlaying', { round: playingRoundsCount })}
             </p>
-            <TitleHandwritten as="h1">
-              {/* Bug 2 — titre dynamique selon l'état de la partie. Si la
-                  session a un nom custom on le garde toujours, sinon
-                  fallback contextuel. */}
-              {session.name ? (
-                <Underline>{session.name}</Underline>
-              ) : effectivePhase === 'waiting' ? (
-                t('host.titleWaiting')
-              ) : effectivePhase === 'roundPlaying' ? (
-                t('host.titleRoundPlaying')
-              ) : effectivePhase === 'intermission' ? (
-                t('host.titleIntermission')
-              ) : effectivePhase === 'ended' ? (
-                t('host.titleEnded')
-              ) : (
-                t('host.title')
-              )}
-            </TitleHandwritten>
+            <h1 className="font-display text-4xl leading-tight text-white">
+              {session.name
+                ? session.name
+                : effectivePhase === 'waiting'
+                  ? t('host.titleWaiting')
+                  : effectivePhase === 'roundPlaying'
+                    ? t('host.titleRoundPlaying')
+                    : effectivePhase === 'intermission'
+                      ? t('host.titleIntermission')
+                      : effectivePhase === 'ended'
+                        ? t('host.titleEnded')
+                        : t('host.title')}
+            </h1>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {/* Issue 5 (6 mai) — bouton "Retour dashboard" visible uniquement
@@ -2232,7 +2230,7 @@ function WaitingPhase({
   const CORAL = '#FF5C4D';
   return (
     // feat/console-dark — stage sombre premium (cohérent écran TV + console jeu).
-    <div className="relative -mx-4 -my-4 min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] px-4 py-8 text-white sm:-mx-6 sm:-my-8 sm:px-6 lg:-mx-10 lg:px-10">
+    <div className="relative">
       <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-[auto_1fr]">
         <div className="rounded-[24px] border border-white/[0.07] bg-[#15151d]/80 p-8 text-center backdrop-blur-xl">
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.25em] text-white/50">
@@ -2434,7 +2432,7 @@ function RoundPlayingScreen({
   return (
     // feat/console-dark — stage sombre premium (cohérent écran TV). Bleed sur le
     // padding du <main> via marges négatives pour couvrir toute la zone de jeu.
-    <div className="relative -mx-4 -my-4 min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] px-4 py-8 text-white sm:-mx-6 sm:-my-8 sm:px-6 lg:-mx-10 lg:px-10">
+    <div className="relative">
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         {/* ── Colonne gauche : track en cours ──────────────────────────── */}
         <div className="rounded-[24px] border border-white/[0.07] bg-[#15151d]/80 p-6 text-center backdrop-blur-xl lg:p-8">
