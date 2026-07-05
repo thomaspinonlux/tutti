@@ -21,7 +21,7 @@ import {
   type LibraryPlaylistSummary,
   type LibraryQuizPackSummary,
 } from '../../lib/library.js';
-import { Badge, Button, Card, Input, TitleHandwritten, Underline } from '../ui/index.js';
+import { Badge, Button, Card, Input } from '../ui/index.js';
 import { OfficialQuizPackCard } from './library/OfficialQuizPackCard.js';
 import { OfficialCatalogSections } from './library/OfficialCatalogSections.js';
 import { ThemeLevelCards } from './library/ThemeLevelCards.js';
@@ -234,9 +234,9 @@ export function RoundSelectionScreen({
           qu'on choisit la playlist. Mirroré sur la TV via ScreenPlaylistGridView. */}
       {joinCode && <JoinQrCorner joinCode={joinCode} />}
       <header className="mb-6 flex items-center justify-between flex-wrap gap-3">
-        <TitleHandwritten as="h2">
-          <Underline>{isFirstRound ? t('host.pickFirstRound') : t('host.pickNextRound')}</Underline>
-        </TitleHandwritten>
+        <h2 className="font-display text-3xl text-white">
+          {isFirstRound ? t('host.pickFirstRound') : t('host.pickNextRound')}
+        </h2>
         {!isFirstRound && (
           <Button variant="ghost" size="sm" onClick={() => void onEndSession()} disabled={loading}>
             {t('host.endBlindTest')}
@@ -257,14 +257,14 @@ export function RoundSelectionScreen({
       </div>
 
       {/* Onglets Mes playlists | Bibliothèque officielle */}
-      <div className="flex gap-2 border-b-2 border-ink mb-4">
+      <div className="flex gap-2 border-b border-white/10 mb-4">
         <button
           type="button"
           onClick={() => setTab('mine')}
-          className={`px-3 py-1.5 font-display text-base border-2 border-ink border-b-0 rounded-t-md transition-colors ${
+          className={`px-4 py-2 font-display text-base rounded-t-lg transition-colors ${
             tab === 'mine'
-              ? 'bg-cream text-ink shadow-pop-sm'
-              : 'bg-cream-2 text-ink-soft hover:bg-cream'
+              ? 'bg-[#FF5C4D] text-[#0B0B0F]'
+              : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
           }`}
         >
           📁 {t('host.session.tabs.myPlaylists')}
@@ -272,10 +272,10 @@ export function RoundSelectionScreen({
         <button
           type="button"
           onClick={() => setTab('library')}
-          className={`px-3 py-1.5 font-display text-base border-2 border-ink border-b-0 rounded-t-md transition-colors ${
+          className={`px-4 py-2 font-display text-base rounded-t-lg transition-colors ${
             tab === 'library'
-              ? 'bg-cream text-ink shadow-pop-sm'
-              : 'bg-cream-2 text-ink-soft hover:bg-cream'
+              ? 'bg-[#FF5C4D] text-[#0B0B0F]'
+              : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
           }`}
         >
           ⭐ {t('host.session.tabs.officialLibrary')}
@@ -292,17 +292,18 @@ export function RoundSelectionScreen({
             disabled={loading}
             className="group text-left disabled:opacity-50"
           >
-            <Card
-              tone="lemon"
-              size="sm"
-              className="h-full transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg border-dashed"
-            >
-              <Badge tone="ink" tilt={-2}>
+            <div className="h-full rounded-2xl border border-dashed border-white/20 bg-white/[0.05] p-4 transition-transform group-hover:-translate-y-0.5">
+              <span
+                className="inline-block rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#0B0B0F]"
+                style={{ backgroundColor: '#FF5C4D' }}
+              >
                 {t('host.expressBadge')}
-              </Badge>
-              <p className="font-display text-xl mt-3 mb-1">+ {t('host.createExpress')}</p>
-              <p className="font-editorial italic text-xs text-ink-soft">{t('host.expressHint')}</p>
-            </Card>
+              </span>
+              <p className="font-display text-xl mt-3 mb-1 text-white">
+                + {t('host.createExpress')}
+              </p>
+              <p className="font-editorial italic text-xs text-white/50">{t('host.expressHint')}</p>
+            </div>
           </button>
 
           {/* Cards des playlists existantes — filtrées par recherche */}
@@ -314,10 +315,7 @@ export function RoundSelectionScreen({
               disabled={loading}
               className="group text-left disabled:opacity-50"
             >
-              <Card
-                size="sm"
-                className="h-full transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg"
-              >
+              <div className="h-full rounded-2xl border border-white/10 bg-white/[0.05] p-4 transition-transform group-hover:-translate-y-0.5 group-hover:bg-white/[0.09]">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <Badge
                     tone={p.level === 'EASY' ? 'basil' : p.level === 'MEDIUM' ? 'lemon' : 'plum'}
@@ -326,16 +324,16 @@ export function RoundSelectionScreen({
                     {p.level}
                   </Badge>
                   {p.is_express && (
-                    <Badge tone="cream" tilt={1}>
+                    <span className="rounded-full border border-white/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-white/60">
                       Express
-                    </Badge>
+                    </span>
                   )}
                 </div>
-                <p className="font-display text-lg mb-1 truncate">{p.name}</p>
-                <p className="font-mono text-xs text-ink-soft">
+                <p className="font-display text-lg mb-1 truncate text-white">{p.name}</p>
+                <p className="font-mono text-xs text-white/50">
                   {p.tracks_count ?? 0} {t('playlists.tracksCount')} · {p.language.toUpperCase()}
                 </p>
-              </Card>
+              </div>
             </button>
           ))}
         </div>
@@ -352,10 +350,10 @@ export function RoundSelectionScreen({
                 role="tab"
                 aria-selected={librarySubTab === 'tracks'}
                 onClick={() => setLibrarySubTab('tracks')}
-                className={`px-3 py-1 font-mono text-xs uppercase tracking-wider border-2 border-ink rounded-full transition-colors ${
+                className={`px-3 py-1 font-mono text-xs uppercase tracking-wider rounded-full transition-colors ${
                   librarySubTab === 'tracks'
                     ? 'bg-spritz text-ink shadow-pop-sm'
-                    : 'bg-cream text-ink-soft hover:bg-cream-2'
+                    : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
                 }`}
               >
                 🎵 {t('host.session.subTabTracks')}
@@ -365,10 +363,10 @@ export function RoundSelectionScreen({
                 role="tab"
                 aria-selected={librarySubTab === 'quizz'}
                 onClick={() => setLibrarySubTab('quizz')}
-                className={`px-3 py-1 font-mono text-xs uppercase tracking-wider border-2 border-ink rounded-full transition-colors ${
+                className={`px-3 py-1 font-mono text-xs uppercase tracking-wider rounded-full transition-colors ${
                   librarySubTab === 'quizz'
                     ? 'bg-raspberry text-cream shadow-pop-sm'
-                    : 'bg-cream text-ink-soft hover:bg-cream-2'
+                    : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
                 }`}
               >
                 🎯 {t('host.session.subTabQuizz')}
@@ -383,11 +381,11 @@ export function RoundSelectionScreen({
               100% mono-provider côté backend — jamais de mix). */}
           {librarySubTab === 'tracks' && (
             <div className="mb-3">
-              <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-soft mb-1">
+              <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-white/50 mb-1">
                 {t('host.session.sourceLabel')}
               </p>
               <div
-                className="inline-flex border-2 border-ink rounded-full overflow-hidden shadow-pop-sm"
+                className="inline-flex border border-white/15 rounded-full overflow-hidden"
                 role="tablist"
                 aria-label={t('host.session.sourceLabel')}
               >
@@ -409,8 +407,8 @@ export function RoundSelectionScreen({
                             ? 'bg-basil text-cream'
                             : 'bg-spritz text-cream'
                           : locked
-                            ? 'bg-cream-2 text-ink-soft/40 cursor-not-allowed'
-                            : 'bg-cream text-ink-soft hover:bg-cream-2'
+                            ? 'bg-white/[0.04] text-white/25 cursor-not-allowed'
+                            : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
                       }`}
                     >
                       {pv === 'spotify' ? '🟢 Spotify' : '▶️ YouTube'}
@@ -424,16 +422,16 @@ export function RoundSelectionScreen({
 
           {librarySubTab === 'tracks' ? (
             categorized === null ? (
-              <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>
+              <p className="font-mono text-white/50 animate-fade-in">{t('common.loading')}</p>
             ) : totalOfficialCount === 0 ? (
-              <Card tone="cream" size="md" className="text-center">
-                <p className="font-editorial italic text-ink-soft">
+              <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+                <p className="font-editorial italic text-white/50">
                   {t('host.session.empty.officialLibrary')}
                 </p>
               </Card>
             ) : filteredCategorized.length === 0 ? (
-              <Card tone="cream" size="md" className="text-center">
-                <p className="font-editorial italic text-ink-soft">
+              <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+                <p className="font-editorial italic text-white/50">
                   {t('host.session.searchNoResults', { query: searchQuery })}
                 </p>
               </Card>
@@ -463,16 +461,16 @@ export function RoundSelectionScreen({
               />
             )
           ) : quizPacks === null ? (
-            <p className="font-mono text-ink-soft animate-fade-in">{t('common.loading')}</p>
+            <p className="font-mono text-white/50 animate-fade-in">{t('common.loading')}</p>
           ) : quizPacks.length === 0 ? (
-            <Card tone="cream" size="md" className="text-center">
-              <p className="font-editorial italic text-ink-soft">
+            <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+              <p className="font-editorial italic text-white/50">
                 {t('host.session.empty.officialQuizLibrary')}
               </p>
             </Card>
           ) : filteredQuizPacks.length === 0 ? (
-            <Card tone="cream" size="md" className="text-center">
-              <p className="font-editorial italic text-ink-soft">
+            <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+              <p className="font-editorial italic text-white/50">
                 {t('host.session.searchNoResults', { query: searchQuery })}
               </p>
             </Card>
@@ -499,8 +497,8 @@ export function RoundSelectionScreen({
         usable.length > 0 &&
         filteredUsable.length === 0 &&
         searchQuery.trim() !== '' && (
-          <Card tone="cream" size="md" className="text-center">
-            <p className="font-editorial italic text-ink-soft">
+          <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+            <p className="font-editorial italic text-white/50">
               {t('host.session.searchNoResults', { query: searchQuery })}
             </p>
           </Card>
@@ -512,7 +510,7 @@ export function RoundSelectionScreen({
         </p>
       )}
       {tab === 'mine' && playlists !== null && usable.length === 0 && (
-        <p className="font-editorial italic text-sm text-ink-soft">{t('host.noPlaylistsHint')}</p>
+        <p className="font-editorial italic text-sm text-white/50">{t('host.noPlaylistsHint')}</p>
       )}
     </div>
   );
