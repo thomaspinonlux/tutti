@@ -7,6 +7,7 @@ import { useState } from 'react';
 import type { CurrentTrackState } from '@tutti/shared';
 import { Button, Card, MultiColorBar } from '../../components/ui/index.js';
 import { PlayerControls } from '../../components/host/PlayerControls.js';
+import { SeekBar } from '../../components/host/SeekBar.js';
 
 function track(phase: string, index = 3): CurrentTrackState {
   return {
@@ -62,7 +63,9 @@ export function ConsolePreview(): JSX.Element {
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft mb-2">
             Console animateur — contrôles
           </p>
-          <p className="font-editorial italic text-ink-2 mb-2">Totally 2000 · morceau en cours</p>
+          <p className="font-editorial italic text-ink-2 mb-4">Totally 2000 · morceau en cours</p>
+          {/* Barre de temps (seek) */}
+          <SeekBar positionMs={11_000} durationMs={30_000} onSeek={noop} />
           <PlayerControls
             currentTrack={s.ct}
             isPaused={s.isPaused}
