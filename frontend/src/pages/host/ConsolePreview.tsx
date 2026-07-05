@@ -1,13 +1,15 @@
 /**
- * TEMPORAIRE — harnais de preview pour valider le nettoyage des contrôles de la
- * console animateur. À SUPPRIMER après validation (route + fichier). Aucune
- * logique produit : handlers no-op, données mock.
+ * TEMPORAIRE — harnais de preview : console animateur en thème SOMBRE premium
+ * (cohérent avec l'écran TV). À SUPPRIMER après validation. Handlers no-op.
  */
 import { useState } from 'react';
 import type { CurrentTrackState } from '@tutti/shared';
-import { Button, Card, MultiColorBar } from '../../components/ui/index.js';
 import { PlayerControls } from '../../components/host/PlayerControls.js';
 import { SeekBar } from '../../components/host/SeekBar.js';
+
+const CORAL = '#FF5C4D';
+const PANEL =
+  'rounded-[24px] bg-[#15151d]/80 backdrop-blur-xl border border-white/[0.07] shadow-[0_24px_70px_rgba(0,0,0,0.55)]';
 
 function track(phase: string, index = 3): CurrentTrackState {
   return {
@@ -42,30 +44,54 @@ export function ConsolePreview(): JSX.Element {
   const [key, setKey] = useState<keyof typeof SCENARIOS>('en cours');
   const s = SCENARIOS[key]!;
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <MultiColorBar height="md" />
-      <div className="mx-auto w-full max-w-3xl p-6">
-        <div className="mb-5 flex flex-wrap gap-2">
+    <div className="min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
+      <div className="mx-auto w-full max-w-3xl p-8">
+        <div className="mb-6 flex flex-wrap gap-2">
           {Object.keys(SCENARIOS).map((k) => (
             <button
               key={k}
               data-scenario={k}
               onClick={() => setKey(k as keyof typeof SCENARIOS)}
-              className={`rounded-full border-2 border-ink px-3 py-1 text-xs font-mono uppercase ${k === key ? 'bg-ink text-cream' : 'bg-cream text-ink'}`}
+              className={`rounded-full px-3 py-1 text-xs font-mono uppercase ${
+                k === key ? 'text-[#0B0B0F]' : 'bg-white/10 text-white'
+              }`}
+              style={k === key ? { backgroundColor: CORAL } : undefined}
             >
               {k}
             </button>
           ))}
         </div>
 
-        {/* Contexte console mode A (carte spritz comme RoundPlayingScreen). */}
-        <Card tone="spritz" size="lg" className="text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft mb-2">
-            Console animateur — contrôles
-          </p>
-          <p className="font-editorial italic text-ink-2 mb-4">Totally 2000 · morceau en cours</p>
-          {/* Barre de temps (seek) */}
-          <SeekBar positionMs={11_000} durationMs={30_000} onSeek={noop} />
+        {/* Carte console (panneau premium sombre). */}
+        <div className={`${PANEL} p-8`}>
+          <div className="mb-6 flex items-center justify-between">
+            <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/50">
+              Console animateur
+            </span>
+            <span
+              className="rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-[#0B0B0F]"
+              style={{ backgroundColor: CORAL }}
+            >
+              Manche 1
+            </span>
+          </div>
+
+          {/* Bloc morceau (privé animateur). */}
+          <div className="mb-6 flex items-center gap-4">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white/[0.06] ring-1 ring-white/10 font-display text-3xl text-white/70">
+              ♪
+            </div>
+            <div className="min-w-0">
+              <p className="font-display text-3xl leading-tight text-white">One More Time</p>
+              <p className="font-editorial text-lg italic text-white/55">Daft Punk</p>
+              <p className="font-mono text-xs text-white/40">Discovery · 2001</p>
+            </div>
+          </div>
+
+          {/* Barre de temps (seek) sombre. */}
+          <SeekBar positionMs={11_000} durationMs={30_000} onSeek={noop} dark />
+
+          {/* Contrôles sombres. */}
           <PlayerControls
             currentTrack={s.ct}
             isPaused={s.isPaused}
@@ -77,29 +103,10 @@ export function ConsolePreview(): JSX.Element {
             onResumeAudio={noop}
             onRestartTrack={noop}
             onRevealAnswer={noop}
+            dark
           />
-        </Card>
-
-        {/* Footer mode B (sur fond ink) — boutons secondary bordés. */}
-        <div className="mt-8">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft mb-2">
-            Mode B — footer (sur fond sombre)
-          </p>
-          <div className="flex items-center gap-3 rounded-2xl bg-ink px-6 py-4">
-            <span className="flex-1 text-cream font-mono text-xs">♪ progression…</span>
-            <Button variant="secondary" size="sm" onClick={noop}>
-              ⏭ Sauter
-            </Button>
-            <Button variant="secondary" size="sm" onClick={noop}>
-              💡 Réponse
-            </Button>
-            <Button variant="primary" size="sm" onClick={noop}>
-              Suivant →
-            </Button>
-          </div>
         </div>
       </div>
-      <MultiColorBar height="md" />
     </div>
   );
 }

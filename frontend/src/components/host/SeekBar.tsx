@@ -14,7 +14,11 @@ export interface SeekBarProps {
   positionMs: number;
   durationMs: number;
   onSeek: (ms: number) => void;
+  /** Thème sombre (console premium) — défaut clair (identité crème). */
+  dark?: boolean;
 }
+
+const CORAL = '#FF5C4D';
 
 function fmt(ms: number): string {
   const m = Math.floor(ms / 60_000);
@@ -24,7 +28,12 @@ function fmt(ms: number): string {
   return `${m}:${s}`;
 }
 
-export function SeekBar({ positionMs, durationMs, onSeek }: SeekBarProps): JSX.Element {
+export function SeekBar({
+  positionMs,
+  durationMs,
+  onSeek,
+  dark = false,
+}: SeekBarProps): JSX.Element {
   const { t } = useTranslation();
   const total = durationMs || 0;
   const [dragMs, setDragMs] = useState<number | null>(null);
@@ -74,12 +83,17 @@ export function SeekBar({ positionMs, durationMs, onSeek }: SeekBarProps): JSX.E
         className={`group relative flex h-6 items-center ${seekable ? 'cursor-pointer touch-none' : ''}`}
       >
         {/* Rail */}
-        <div className="relative h-2.5 w-full overflow-visible rounded-full border-2 border-ink bg-cream-2">
+        <div
+          className={`relative h-2.5 w-full overflow-visible rounded-full ${
+            dark ? 'bg-white/15' : 'border-2 border-ink bg-cream-2'
+          }`}
+        >
           {/* Remplissage */}
           <div
-            className="h-full rounded-full bg-spritz-deep"
+            className={`h-full rounded-full ${dark ? '' : 'bg-spritz-deep'}`}
             style={{
               width: `${Math.round(progress * 100)}%`,
+              backgroundColor: dark ? CORAL : undefined,
               transition: dragging ? 'none' : 'width 150ms linear',
             }}
           />
@@ -87,18 +101,23 @@ export function SeekBar({ positionMs, durationMs, onSeek }: SeekBarProps): JSX.E
           {seekable && (
             <span
               aria-hidden
-              className={`absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink bg-cream shadow-pop-sm transition-transform ${
-                dragging ? 'scale-110' : 'group-hover:scale-110'
-              }`}
+              className={`absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full transition-transform ${
+                dark
+                  ? 'bg-white shadow-[0_2px_10px_rgba(0,0,0,0.5)]'
+                  : 'border-2 border-ink bg-cream shadow-pop-sm'
+              } ${dragging ? 'scale-110' : 'group-hover:scale-110'}`}
               style={{
                 left: `${Math.round(progress * 100)}%`,
+                boxShadow: dark ? `0 0 0 4px ${CORAL}44` : undefined,
                 transition: dragging ? 'none' : 'left 150ms linear, transform 120ms ease-out',
               }}
             />
           )}
         </div>
       </div>
-      <div className="mt-1.5 flex justify-between font-mono text-xs tabular-nums text-ink-soft">
+      <div
+        className={`mt-1.5 flex justify-between font-mono text-xs tabular-nums ${dark ? 'text-white/55' : 'text-ink-soft'}`}
+      >
         <span>{fmt(elapsed)}</span>
         <span>-{fmt(remaining)}</span>
       </div>
