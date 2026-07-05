@@ -2229,81 +2229,100 @@ function WaitingPhase({
   const needsMaster = !hasAnimator && !currentMasterId;
   const noPlayers = participants.length === 0;
   const canStart = !busy && !needsMaster;
+  const CORAL = '#FF5C4D';
   return (
-    <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-[auto_1fr]">
-      <Card size="lg" tone="cream" className="text-center">
-        <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
-          {t('host.scanToJoin')}
-        </p>
-        <QRCode value={playUrl} size={280} className="mx-auto mb-4" />
-        <p className="font-mono text-3xl tracking-[0.2em] text-ink mb-1">{shortCode}</p>
-        <p className="font-editorial italic text-sm text-ink-soft">{playUrl}</p>
-      </Card>
-
-      <div className="space-y-4">
-        {/* Feature 3 — rappel ouverture écran TV pour afficher le QR aux joueurs */}
-        <Card tone="lemon" size="sm">
-          <p className="font-mono text-xs uppercase tracking-wider text-ink mb-1">
-            💡 {t('host.tvHintTitle')}
+    // feat/console-dark — stage sombre premium (cohérent écran TV + console jeu).
+    <div className="relative -mx-4 -my-4 min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] px-4 py-8 text-white sm:-mx-6 sm:-my-8 sm:px-6 lg:-mx-10 lg:px-10">
+      <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-[auto_1fr]">
+        <div className="rounded-[24px] border border-white/[0.07] bg-[#15151d]/80 p-8 text-center backdrop-blur-xl">
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.25em] text-white/50">
+            {t('host.scanToJoin')}
           </p>
-          <p className="font-editorial italic text-sm text-ink-2">{t('host.tvHintBody')}</p>
-        </Card>
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <p className="font-display text-2xl">
-            {t('host.participants')} <span className="text-ink-soft">({participants.length})</span>
+          <div className="mx-auto mb-4 inline-block rounded-2xl bg-white p-3">
+            <QRCode value={playUrl} size={260} />
+          </div>
+          <p className="mb-1 font-mono text-3xl font-bold tracking-[0.2em] text-white">
+            {shortCode}
           </p>
-          <Button
-            onClick={() => {
-              if (noPlayers && !window.confirm(t('host.startWithZeroPlayersConfirm'))) {
-                return;
-              }
-              void onStart();
-            }}
-            disabled={!canStart}
-            size="lg"
-          >
-            {busy
-              ? t('host.starting')
-              : hasPendingRound
-                ? t('host.startBlindTestWithFirstRound')
-                : t('host.startBlindTest')}
-          </Button>
+          <p className="font-editorial text-sm italic text-white/40">{playUrl}</p>
         </div>
 
-        {!hasAnimator && (
-          <Card tone={currentMasterId ? 'basil' : 'cream'} size="md">
-            <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-1">
-              {t('host.masterSectionLabel')}
+        <div className="space-y-4">
+          <div
+            className="rounded-2xl border p-4"
+            style={{ backgroundColor: '#FF5C4D14', borderColor: '#FF5C4D55' }}
+          >
+            <p className="mb-1 font-mono text-xs uppercase tracking-wider" style={{ color: CORAL }}>
+              💡 {t('host.tvHintTitle')}
             </p>
-            <p className="font-editorial italic text-sm text-ink-2">
-              {currentMasterId
-                ? t('host.masterPickedHint', {
-                    pseudo: participants.find((p) => p.id === currentMasterId)?.pseudo ?? '',
-                  })
-                : t('host.masterPickHint')}
+            <p className="font-editorial text-sm italic text-white/60">{t('host.tvHintBody')}</p>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="font-display text-2xl text-white">
+              {t('host.participants')}{' '}
+              <span className="text-white/40">({participants.length})</span>
             </p>
-          </Card>
-        )}
+            <Button
+              onClick={() => {
+                if (noPlayers && !window.confirm(t('host.startWithZeroPlayersConfirm'))) {
+                  return;
+                }
+                void onStart();
+              }}
+              disabled={!canStart}
+              size="lg"
+            >
+              {busy
+                ? t('host.starting')
+                : hasPendingRound
+                  ? t('host.startBlindTestWithFirstRound')
+                  : t('host.startBlindTest')}
+            </Button>
+          </div>
 
-        {mode === 'TEAMS' ? (
-          <TeamsView
-            teams={teams}
-            participants={participants}
-            showMasterToggle={true}
-            onMove={onMove}
-            onKick={onKick}
-            onToggleMaster={onToggleMaster}
-            onSetRole={onSetRole}
-          />
-        ) : (
-          <ParticipantsList
-            participants={participants}
-            showMasterToggle={true}
-            onKick={onKick}
-            onToggleMaster={onToggleMaster}
-            onSetRole={onSetRole}
-          />
-        )}
+          {!hasAnimator && (
+            <div
+              className="rounded-2xl border p-4"
+              style={{
+                backgroundColor: currentMasterId ? '#4ade8014' : '#ffffff08',
+                borderColor: currentMasterId ? '#4ade8055' : '#ffffff14',
+              }}
+            >
+              <p className="mb-1 font-mono text-xs uppercase tracking-wider text-white/50">
+                {t('host.masterSectionLabel')}
+              </p>
+              <p className="font-editorial text-sm italic text-white/60">
+                {currentMasterId
+                  ? t('host.masterPickedHint', {
+                      pseudo: participants.find((p) => p.id === currentMasterId)?.pseudo ?? '',
+                    })
+                  : t('host.masterPickHint')}
+              </p>
+            </div>
+          )}
+
+          {mode === 'TEAMS' ? (
+            <TeamsView
+              teams={teams}
+              participants={participants}
+              showMasterToggle={true}
+              onMove={onMove}
+              onKick={onKick}
+              onToggleMaster={onToggleMaster}
+              onSetRole={onSetRole}
+              dark
+            />
+          ) : (
+            <ParticipantsList
+              participants={participants}
+              showMasterToggle={true}
+              onKick={onKick}
+              onToggleMaster={onToggleMaster}
+              onSetRole={onSetRole}
+              dark
+            />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -2751,10 +2770,12 @@ function RoleSelector({
   role,
   onSetRole,
   compact,
+  dark = false,
 }: {
   role: ParticipantRole;
   onSetRole: (role: ParticipantRole) => void;
   compact?: boolean;
+  dark?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
   const opts: { value: ParticipantRole; label: string; title: string }[] = [
@@ -2774,7 +2795,7 @@ function RoleSelector({
     <div
       role="group"
       aria-label={t('host.roleLabel')}
-      className="inline-flex border-2 border-ink rounded overflow-hidden shrink-0"
+      className={`inline-flex rounded-lg overflow-hidden shrink-0 border-2 ${dark ? 'border-white/15' : 'border-ink'}`}
     >
       {opts.map((o) => {
         const active = o.value === role;
@@ -2789,8 +2810,13 @@ function RoleSelector({
             }}
             className={[
               compact ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-1',
-              'font-mono transition-colors border-r-2 border-ink last:border-r-0',
-              active ? 'bg-basil text-white' : 'bg-cream text-ink-soft hover:bg-cream-2',
+              'font-mono transition-colors border-r-2 last:border-r-0',
+              dark ? 'border-white/15' : 'border-ink',
+              active
+                ? 'bg-basil text-white'
+                : dark
+                  ? 'bg-white/[0.06] text-white/60 hover:bg-white/[0.14]'
+                  : 'bg-cream text-ink-soft hover:bg-cream-2',
             ].join(' ')}
           >
             {o.label}
@@ -2807,73 +2833,91 @@ function ParticipantsList({
   onKick,
   onToggleMaster,
   onSetRole,
+  dark = false,
 }: {
   participants: Participant[];
   showMasterToggle: boolean;
   onKick: (id: string) => Promise<void>;
   onToggleMaster: (id: string) => Promise<void>;
   onSetRole?: (id: string, role: ParticipantRole) => Promise<void>;
+  dark?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
+  const wrap = (children: React.ReactNode): JSX.Element =>
+    dark ? (
+      <div className="rounded-[20px] border border-white/[0.07] bg-[#15151d]/80 p-4 backdrop-blur-xl">
+        {children}
+      </div>
+    ) : (
+      <Card>{children}</Card>
+    );
   if (participants.length === 0) {
-    return (
-      <Card>
-        <p className="font-editorial italic text-ink-soft text-center py-6">
-          {t('host.waitingForPlayers')}
-        </p>
-      </Card>
+    return wrap(
+      <p
+        className={`font-editorial italic text-center py-6 ${dark ? 'text-white/45' : 'text-ink-soft'}`}
+      >
+        {t('host.waitingForPlayers')}
+      </p>,
     );
   }
-  return (
-    <Card>
-      <ul className="space-y-2">
-        {participants.map((p) => {
-          const isMaster = isAnimatorRole(p.role);
-          return (
-            <li
-              key={p.id}
-              className={[
-                'flex items-center justify-between gap-3 px-3 py-2 border-2 rounded group',
-                isMaster ? 'border-basil bg-basil/10' : 'border-ink bg-cream-2',
-              ].join(' ')}
-            >
-              <span className="font-medium flex items-center gap-2">
-                {isMaster && <span aria-hidden>👑</span>}
-                {p.pseudo}
-              </span>
-              <div className="flex items-center gap-2 shrink-0">
-                {onSetRole ? (
-                  <RoleSelector role={p.role} onSetRole={(r) => void onSetRole(p.id, r)} />
-                ) : (
-                  showMasterToggle && (
-                    <button
-                      type="button"
-                      onClick={() => void onToggleMaster(p.id)}
-                      className={[
-                        'text-xs font-mono px-2 py-1 border-2 rounded transition-colors',
-                        isMaster
-                          ? 'border-basil text-basil-deep bg-white hover:bg-basil/20'
+  return wrap(
+    <ul className="space-y-2">
+      {participants.map((p) => {
+        const isMaster = isAnimatorRole(p.role);
+        return (
+          <li
+            key={p.id}
+            className={[
+              'flex items-center justify-between gap-3 px-3 py-2 border-2 rounded-xl group',
+              isMaster
+                ? 'border-basil bg-basil/15'
+                : dark
+                  ? 'border-white/10 bg-white/[0.05]'
+                  : 'border-ink bg-cream-2',
+            ].join(' ')}
+          >
+            <span className={`font-medium flex items-center gap-2 ${dark ? 'text-white' : ''}`}>
+              {isMaster && <span aria-hidden>👑</span>}
+              {p.pseudo}
+            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              {onSetRole ? (
+                <RoleSelector
+                  role={p.role}
+                  onSetRole={(r) => void onSetRole(p.id, r)}
+                  dark={dark}
+                />
+              ) : (
+                showMasterToggle && (
+                  <button
+                    type="button"
+                    onClick={() => void onToggleMaster(p.id)}
+                    className={[
+                      'text-xs font-mono px-2 py-1 border-2 rounded transition-colors',
+                      isMaster
+                        ? 'border-basil text-basil bg-basil/10 hover:bg-basil/20'
+                        : dark
+                          ? 'border-white/15 text-white/60 hover:bg-white/10'
                           : 'border-ink text-ink-soft hover:bg-cream',
-                      ].join(' ')}
-                      aria-pressed={isMaster}
-                    >
-                      🎙️ {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
-                    </button>
-                  )
-                )}
-                <button
-                  type="button"
-                  onClick={() => void onKick(p.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-raspberry hover:underline"
-                >
-                  {t('host.kick')}
-                </button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </Card>
+                    ].join(' ')}
+                    aria-pressed={isMaster}
+                  >
+                    🎙️ {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
+                  </button>
+                )
+              )}
+              <button
+                type="button"
+                onClick={() => void onKick(p.id)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-raspberry hover:underline"
+              >
+                {t('host.kick')}
+              </button>
+            </div>
+          </li>
+        );
+      })}
+    </ul>,
   );
 }
 
@@ -2885,6 +2929,7 @@ function TeamsView({
   onKick,
   onToggleMaster,
   onSetRole,
+  dark = false,
 }: {
   teams: Team[];
   participants: Participant[];
@@ -2893,22 +2938,30 @@ function TeamsView({
   onKick: (id: string) => Promise<void>;
   onToggleMaster: (id: string) => Promise<void>;
   onSetRole?: (id: string, role: ParticipantRole) => Promise<void>;
+  dark?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {teams.map((team) => {
         const members = participants.filter((p) => p.team_id === team.id);
-        return (
-          <Card key={team.id} className="!border-3" style={{ borderColor: team.color }}>
+        const card = (
+          <>
             <div className="flex items-center justify-between gap-2 mb-3">
-              <Badge tone="ink" tilt={-1}>
+              <span
+                className={`inline-block rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wider ${dark ? 'text-white' : 'bg-ink text-cream'}`}
+                style={dark ? { backgroundColor: '#ffffff14' } : undefined}
+              >
                 {team.name}
-              </Badge>
-              <span className="font-mono text-xs text-ink-soft">{members.length}</span>
+              </span>
+              <span className={`font-mono text-xs ${dark ? 'text-white/45' : 'text-ink-soft'}`}>
+                {members.length}
+              </span>
             </div>
             {members.length === 0 ? (
-              <p className="font-editorial italic text-xs text-ink-soft py-2">
+              <p
+                className={`font-editorial italic text-xs py-2 ${dark ? 'text-white/40' : 'text-ink-soft'}`}
+              >
                 {t('host.teamEmpty')}
               </p>
             ) : (
@@ -2916,7 +2969,10 @@ function TeamsView({
                 {members.map((p) => {
                   const isMaster = isAnimatorRole(p.role);
                   return (
-                    <li key={p.id} className="flex items-center justify-between gap-2 text-sm">
+                    <li
+                      key={p.id}
+                      className={`flex items-center justify-between gap-2 text-sm ${dark ? 'text-white' : ''}`}
+                    >
                       <span className="truncate flex items-center gap-1">
                         {isMaster && <span aria-hidden>👑</span>}
                         {p.pseudo}
@@ -2927,6 +2983,7 @@ function TeamsView({
                             role={p.role}
                             onSetRole={(r) => void onSetRole(p.id, r)}
                             compact
+                            dark={dark}
                           />
                         ) : (
                           showMasterToggle && (
@@ -2952,10 +3009,14 @@ function TeamsView({
                           aria-label={t('host.moveToTeam')}
                           value={p.team_id ?? ''}
                           onChange={(e) => void onMove(p.id, e.target.value || null)}
-                          className="text-xs border border-ink rounded px-1 py-0.5 bg-cream"
+                          className={`text-xs rounded px-1 py-0.5 border ${dark ? 'border-white/20 bg-white/10 text-white' : 'border-ink bg-cream'}`}
                         >
                           {teams.map((t2) => (
-                            <option key={t2.id} value={t2.id}>
+                            <option
+                              key={t2.id}
+                              value={t2.id}
+                              className={dark ? 'text-ink' : undefined}
+                            >
                               {t2.name}
                             </option>
                           ))}
@@ -2973,6 +3034,19 @@ function TeamsView({
                 })}
               </ul>
             )}
+          </>
+        );
+        return dark ? (
+          <div
+            key={team.id}
+            className="rounded-2xl border-[3px] bg-[#15151d]/80 p-4 backdrop-blur-xl"
+            style={{ borderColor: team.color }}
+          >
+            {card}
+          </div>
+        ) : (
+          <Card key={team.id} className="!border-3" style={{ borderColor: team.color }}>
+            {card}
           </Card>
         );
       })}
