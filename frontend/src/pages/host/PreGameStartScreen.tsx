@@ -178,7 +178,7 @@ export function PreGameStartScreen({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#7a8a9a] relative">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white relative">
       <MultiColorBar height="md" />
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="text-center max-w-2xl">
@@ -247,12 +247,14 @@ export function PreGameStartScreen({
       {/* Fallback overlay si autoplay bloqué par browser/content blocker. */}
       {unlockFailed && (
         <div className="fixed inset-0 z-50 bg-ink/80 flex items-center justify-center px-6">
-          <div className="max-w-md text-center bg-cream border-4 border-ink rounded-3xl p-8 shadow-pop-lg">
+          <div className="max-w-md text-center rounded-3xl border border-white/10 bg-[#15151d]/90 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.6)]">
             <p className="text-4xl mb-3" aria-hidden>
               ⚠️
             </p>
-            <p className="font-display text-xl mb-2">{t('preGame.autoplayBlockedTitle')}</p>
-            <p className="font-editorial italic text-ink-2 mb-6">
+            <p className="font-display text-xl mb-2 text-white">
+              {t('preGame.autoplayBlockedTitle')}
+            </p>
+            <p className="font-editorial italic text-white/60 mb-6">
               {t('preGame.autoplayBlockedHint')}
             </p>
             <Button

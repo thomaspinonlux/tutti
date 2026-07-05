@@ -17,7 +17,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CumulativeScore, SessionRoundWithPlaylist } from '@tutti/shared';
-import { Badge, Button, Card, TitleHandwritten, Underline } from '../ui/index.js';
+import { Button, Card } from '../ui/index.js';
 import { getRoundResults, type RoundResults } from '../../lib/sessions.js';
 
 interface Props {
@@ -112,15 +112,13 @@ export function RoundIntermissionScreen({
     return (
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-8">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#FF5C4D] mb-2">
             {t('host.roundEnded', { n: roundPosition })}
           </p>
-          <TitleHandwritten as="h2">
-            <Underline>{playlistName}</Underline>
-          </TitleHandwritten>
+          <h2 className="font-display text-4xl text-white">{playlistName}</h2>
         </header>
-        <Card tone="cream" size="lg" className="text-center mb-6">
-          <p className="font-mono text-sm text-ink-soft animate-fade-in">
+        <Card size="lg" className="!bg-[#15151d]/80 !border !border-white/10 text-center mb-6">
+          <p className="font-mono text-sm text-white/50 animate-fade-in">
             ⏳ {t('host.intermission.loading')}
           </p>
         </Card>
@@ -139,16 +137,14 @@ export function RoundIntermissionScreen({
   return (
     <div className="max-w-4xl mx-auto">
       <header className="text-center mb-8">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#FF5C4D] mb-2">
           {t('host.roundEnded', { n: roundPosition })}
         </p>
-        <TitleHandwritten as="h2">
-          <Underline>{playlistName}</Underline>
-        </TitleHandwritten>
+        <h2 className="font-display text-4xl text-white">{playlistName}</h2>
       </header>
 
       {fetchErr && (
-        <Card tone="cream" size="sm" className="border-raspberry mb-4">
+        <Card size="sm" className="!bg-[#15151d]/80 !border !border-white/10 border-raspberry mb-4">
           <p role="alert" className="text-raspberry text-sm">
             {t('host.intermission.fetchError')}: {fetchErr}
           </p>
@@ -156,12 +152,15 @@ export function RoundIntermissionScreen({
       )}
 
       {/* ─── Section 1 — Podium de la manche ─────────────────────────── */}
-      <Card tone="cream" size="lg" className="mb-6 border-2 border-spritz">
-        <p className="text-xs font-mono uppercase tracking-wider text-spritz-deep mb-4 text-center">
+      <Card
+        size="lg"
+        className="!bg-[#15151d]/80 !border !border-white/10 mb-6 border-2 border-spritz"
+      >
+        <p className="text-xs font-mono uppercase tracking-wider text-[#FF5C4D] mb-4 text-center">
           🏆 {t('host.intermission.roundPodium')}
         </p>
         {roundPodium.length === 0 ? (
-          <p className="font-editorial italic text-ink-soft text-center">
+          <p className="font-editorial italic text-white/50 text-center">
             {t('host.intermission.noPoints')}
           </p>
         ) : (
@@ -172,19 +171,25 @@ export function RoundIntermissionScreen({
               if (!entry) return <div key={idx} aria-hidden />;
               const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
               const height = idx === 0 ? 'pt-4 pb-6' : idx === 1 ? 'pt-3 pb-4' : 'pt-2 pb-3';
-              const tone = idx === 0 ? 'bg-lemon' : idx === 1 ? 'bg-cream-2' : 'bg-spritz/30';
               return (
                 <li
                   key={entry.participant_id ?? `podium-${idx}`}
-                  className={`text-center border-2 border-ink rounded-lg ${tone} ${height}`}
+                  className={`text-center rounded-xl ${height}`}
+                  style={{
+                    backgroundColor: idx === 0 ? '#FF5C4D22' : '#ffffff08',
+                    border: `1px solid ${idx === 0 ? '#FF5C4D66' : '#ffffff14'}`,
+                  }}
                 >
                   <p className="text-3xl mb-1">{medal}</p>
-                  <p className="font-display text-lg leading-tight px-2 break-words">
+                  <p className="font-display text-lg leading-tight px-2 break-words text-white">
                     {entry.pseudo ?? '?'}
                   </p>
-                  <Badge tone="ink" className="mt-2">
+                  <span
+                    className="mt-2 inline-block rounded-full px-2.5 py-0.5 font-mono text-xs font-bold text-[#0B0B0F]"
+                    style={{ backgroundColor: '#FF5C4D' }}
+                  >
                     +{entry.points ?? 0} pts
-                  </Badge>
+                  </span>
                 </li>
               );
             })}
@@ -194,24 +199,30 @@ export function RoundIntermissionScreen({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* ─── Section 2 — Classement général cumulé ─────────────────── */}
-        <Card tone="cream" size="md">
-          <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
+        <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10">
+          <p className="text-xs font-mono uppercase tracking-wider text-white/50 mb-3">
             📊 {t('host.intermission.cumulative')}
           </p>
           {cumulTop.length === 0 ? (
-            <p className="font-editorial italic text-ink-soft">{t('host.noScoresYet')}</p>
+            <p className="font-editorial italic text-white/50">{t('host.noScoresYet')}</p>
           ) : (
             <ol className="space-y-1.5">
               {cumulTop.map((entry, idx) => (
                 <li
                   key={entry.participant_id ?? `cumul-${idx}`}
-                  className={`flex items-center gap-2 px-2 py-1.5 border rounded text-sm ${
-                    idx === 0 ? 'border-spritz bg-spritz/10' : 'border-ink/20 bg-white'
-                  }`}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm"
+                  style={{
+                    backgroundColor: idx === 0 ? '#FF5C4D1a' : '#ffffff08',
+                    border: `1px solid ${idx === 0 ? '#FF5C4D55' : '#ffffff12'}`,
+                  }}
                 >
-                  <span className="font-mono text-xs w-5 text-ink-soft">{idx + 1}.</span>
-                  <span className="flex-1 truncate font-medium">{entry.pseudo ?? '?'}</span>
-                  <Badge tone={idx === 0 ? 'spritz' : 'ink'}>{entry.total_points ?? 0}</Badge>
+                  <span className="font-mono text-xs w-5 text-white/50">{idx + 1}.</span>
+                  <span className="flex-1 truncate font-medium text-white">
+                    {entry.pseudo ?? '?'}
+                  </span>
+                  <span className="font-mono text-sm font-bold tabular-nums text-white">
+                    {entry.total_points ?? 0}
+                  </span>
                 </li>
               ))}
             </ol>
@@ -219,25 +230,28 @@ export function RoundIntermissionScreen({
         </Card>
 
         {/* ─── Section 3 — Joueur le plus rapide ─────────────────────── */}
-        <Card tone="cream" size="md" className="border-2 border-raspberry">
+        <Card
+          size="md"
+          className="!bg-[#15151d]/80 !border !border-white/10 border-2 border-raspberry"
+        >
           <p className="text-xs font-mono uppercase tracking-wider text-raspberry-deep mb-3">
             ⚡ {t('host.intermission.fastest')}
           </p>
           {fastest ? (
             <div className="text-center py-2">
-              <p className="font-display text-2xl mb-1">{fastest.pseudo ?? '?'}</p>
-              <p className="font-mono text-xs text-ink-soft">
+              <p className="font-display text-2xl mb-1 text-white">{fastest.pseudo ?? '?'}</p>
+              <p className="font-mono text-xs text-white/50">
                 {t('host.intermission.avgBuzz', { ms: fastestAvgSec })}
               </p>
               {fastestFirstCount > 0 && (
-                <p className="font-mono text-xs text-ink-soft mt-1">
+                <p className="font-mono text-xs text-white/50 mt-1">
                   🥇 {fastestFirstCount}{' '}
                   {t('host.intermission.firstBuzzCount', { count: fastestFirstCount })}
                 </p>
               )}
             </div>
           ) : (
-            <p className="font-editorial italic text-ink-soft text-center py-2">
+            <p className="font-editorial italic text-white/50 text-center py-2">
               {t('host.intermission.noBuzz')}
             </p>
           )}

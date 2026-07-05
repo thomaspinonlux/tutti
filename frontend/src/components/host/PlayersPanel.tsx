@@ -12,11 +12,15 @@ import type { CumulativeScore, Participant } from '@tutti/shared';
 import { hostAdjustPoints, toggleParticipantMaster } from '../../lib/sessions.js';
 import { Button, Card } from '../ui/index.js';
 
+const CORAL = '#FF5C4D';
+
 interface Props {
   sessionId: string;
   participants: Participant[];
   cumulative: CumulativeScore[];
   className?: string;
+  /** Thème sombre (console premium) — défaut clair. */
+  dark?: boolean;
 }
 
 export function PlayersPanel({
@@ -24,6 +28,7 @@ export function PlayersPanel({
   participants,
   cumulative,
   className,
+  dark = false,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   const [busy, setBusy] = useState<string | null>(null);
@@ -65,13 +70,22 @@ export function PlayersPanel({
     }
   };
 
-  return (
-    <Card tone="cream" size="sm" className={className}>
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-3">
+  const adjustClass = dark
+    ? '!px-2 !py-1 text-xs font-mono rounded-lg border border-white/15 bg-white/[0.06] text-white hover:bg-white/[0.14] transition-colors disabled:opacity-40'
+    : '!px-2 !py-1 !text-xs';
+
+  const body = (
+    <>
+      <p
+        className={`font-mono text-xs uppercase tracking-[0.2em] mb-3 ${dark ? '' : 'text-spritz-deep'}`}
+        style={dark ? { color: CORAL } : undefined}
+      >
         {t('host.playersTitle')}
       </p>
       {participants.length === 0 && (
-        <p className="font-editorial italic text-ink-soft text-sm">{t('host.playersEmpty')}</p>
+        <p className={`font-editorial italic text-sm ${dark ? 'text-white/50' : 'text-ink-soft'}`}>
+          {t('host.playersEmpty')}
+        </p>
       )}
       {error && (
         <p role="alert" className="text-sm text-raspberry mb-2">
@@ -86,23 +100,26 @@ export function PlayersPanel({
           return (
             <li
               key={p.id}
-              className="flex items-center gap-2 px-2 py-1.5 border-2 border-ink rounded bg-white flex-wrap"
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-xl flex-wrap ${dark ? 'border border-white/10 bg-white/[0.05]' : 'border-2 border-ink bg-white'}`}
             >
               <span
                 aria-hidden
-                className="w-7 h-7 rounded-full border-2 border-ink bg-spritz flex items-center justify-center font-display text-sm shrink-0"
+                className={`w-7 h-7 rounded-full flex items-center justify-center font-display text-sm shrink-0 ${dark ? 'text-[#0B0B0F]' : 'border-2 border-ink bg-spritz'}`}
+                style={dark ? { backgroundColor: CORAL } : undefined}
               >
                 {initial}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{p.pseudo}</p>
-                <p className="font-mono text-[10px] text-ink-soft tabular-nums">
+                <p className={`font-medium text-sm truncate ${dark ? 'text-white' : ''}`}>
+                  {p.pseudo}
+                </p>
+                <p
+                  className={`font-mono text-[10px] tabular-nums ${dark ? 'text-white/45' : 'text-ink-soft'}`}
+                >
                   {score} {t('host.playersPts')}
                 </p>
               </div>
               <div className="flex gap-1 shrink-0 flex-wrap justify-end">
-                {/* BUG 2 — désigner l'animateur (manette) depuis la ligne joueur,
-                    à côté des boutons de score. Toggle : actif = ce joueur pilote. */}
                 <button
                   type="button"
                   onClick={() => void handleToggleMaster(p.id)}
@@ -110,46 +127,94 @@ export function PlayersPanel({
                   aria-pressed={p.is_master}
                   title={p.is_master ? t('host.masterRevoke') : t('host.masterAssign')}
                   className={[
-                    '!px-2 !py-1 text-xs font-mono rounded border-2 transition-colors',
+                    '!px-2 !py-1 text-xs font-mono rounded-lg border transition-colors',
                     p.is_master
-                      ? 'border-basil bg-basil/15 text-basil-deep'
-                      : 'border-ink/25 text-ink-soft hover:bg-cream-2',
+                      ? 'border-basil bg-basil/20 text-basil'
+                      : dark
+                        ? 'border-white/15 text-white/60 hover:bg-white/10'
+                        : 'border-ink/25 text-ink-soft hover:bg-cream-2',
                   ].join(' ')}
                 >
                   🎙️{p.is_master ? ' ✓' : ''}
                 </button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => void handleAdjust(p.id, -5)}
-                  disabled={isBusy}
-                  className="!px-2 !py-1 !text-xs"
-                >
-                  -5
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => void handleAdjust(p.id, +5)}
-                  disabled={isBusy}
-                  className="!px-2 !py-1 !text-xs"
-                >
-                  +5
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => void handleAdjust(p.id, +10)}
-                  disabled={isBusy}
-                  className="!px-2 !py-1 !text-xs"
-                >
-                  +10
-                </Button>
+                {dark ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => void handleAdjust(p.id, -5)}
+                      disabled={isBusy}
+                      className={adjustClass}
+                    >
+                      -5
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleAdjust(p.id, +5)}
+                      disabled={isBusy}
+                      className={adjustClass}
+                    >
+                      +5
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleAdjust(p.id, +10)}
+                      disabled={isBusy}
+                      className={adjustClass}
+                    >
+                      +10
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void handleAdjust(p.id, -5)}
+                      disabled={isBusy}
+                      className={adjustClass}
+                    >
+                      -5
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void handleAdjust(p.id, +5)}
+                      disabled={isBusy}
+                      className={adjustClass}
+                    >
+                      +5
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void handleAdjust(p.id, +10)}
+                      disabled={isBusy}
+                      className={adjustClass}
+                    >
+                      +10
+                    </Button>
+                  </>
+                )}
               </div>
             </li>
           );
         })}
       </ul>
+    </>
+  );
+
+  if (dark) {
+    return (
+      <div
+        className={`rounded-[20px] border border-white/[0.07] bg-[#15151d]/80 p-4 backdrop-blur-xl ${className ?? ''}`}
+      >
+        {body}
+      </div>
+    );
+  }
+  return (
+    <Card tone="cream" size="sm" className={className}>
+      {body}
     </Card>
   );
 }

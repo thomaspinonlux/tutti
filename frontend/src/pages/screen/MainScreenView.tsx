@@ -35,7 +35,7 @@ import type {
   SessionRoundWithPlaylist,
   SessionWithParticipants,
 } from '@tutti/shared';
-import { Badge, Button, Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
+import { Button, Card } from '../../components/ui/index.js';
 import { fireConfetti } from '../../components/ui/Confetti.js';
 import { QRCode } from '../../components/host/QRCode.js';
 
@@ -132,7 +132,12 @@ export function formatTime(ms: number): string {
 function FestiveBackground({ confettiActive }: { confettiActive: boolean }): JSX.Element {
   return (
     <div aria-hidden className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-      <div className="absolute inset-0 animate-color-pulse" />
+      {/* feat/console-dark — fond sombre premium (cohérent TV + console mode A). */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0F] to-[#14141C]" />
+      <div
+        className="absolute left-1/2 top-[-10%] h-[55vh] w-[55vh] -translate-x-1/2 rounded-full blur-[130px] opacity-15"
+        style={{ backgroundColor: '#FF5C4D' }}
+      />
       {confettiActive && <ConfettiBurst />}
     </div>
   );
@@ -194,7 +199,7 @@ function MysteryCover({
     return (
       <div className="relative w-72 h-72 sm:w-[360px] sm:h-[360px] mx-auto">
         <div
-          className="w-full h-full border-[6px] border-ink rounded-2xl shadow-pop-xl overflow-hidden bg-gradient-to-br from-plum to-raspberry"
+          className="w-full h-full ring-1 ring-white/15 rounded-[26px] shadow-[0_30px_80px_rgba(0,0,0,0.6)] overflow-hidden bg-gradient-to-br from-plum to-raspberry"
           style={{
             backgroundImage: cover ? `url(${cover})` : undefined,
             backgroundSize: 'cover',
@@ -218,7 +223,7 @@ function MysteryCover({
   return (
     <div className="relative w-72 h-72 sm:w-[360px] sm:h-[360px] mx-auto animate-reveal-pop">
       <div
-        className="w-full h-full border-[6px] border-ink rounded-2xl shadow-pop-xl overflow-hidden"
+        className="w-full h-full ring-1 ring-white/15 rounded-[26px] shadow-[0_30px_80px_rgba(0,0,0,0.6)] overflow-hidden"
         style={{
           backgroundImage: cover ? `url(${cover})` : undefined,
           backgroundSize: 'cover',
@@ -476,20 +481,18 @@ function IPadFooter({
 
       <div className="flex items-center gap-3">
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           onClick={onSkipTrack}
           disabled={busy || !canSkip || !currentTrack || !onSkipTrack}
-          className="!bg-cream !text-ink !border-cream hover:!bg-cream-2"
         >
           ⏭ {t('screen.btnSkip')}
         </Button>
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           onClick={onGiveAnswer}
           disabled={busy || !canGiveAnswer || !currentTrack || !onGiveAnswer}
-          className="!bg-cream !text-ink !border-cream hover:!bg-cream-2"
         >
           💡 {t('screen.btnGiveAnswer')}
         </Button>
@@ -522,7 +525,7 @@ function LiveLeaderboard({ cumulative }: { cumulative: CumulativeScore[] }): JSX
   const { t } = useTranslation();
   const top = cumulative.slice(0, 5);
   return (
-    <Card size="md" className="!border-4">
+    <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 rounded-[20px]">
       <div className="flex items-center gap-2 mb-3">
         <span
           aria-hidden
@@ -530,35 +533,37 @@ function LiveLeaderboard({ cumulative }: { cumulative: CumulativeScore[] }): JSX
         >
           🏆
         </span>
-        <p className="font-display text-2xl">{t('screen.leaderboardLabel')}</p>
+        <p className="font-display text-2xl text-white">{t('screen.leaderboardLabel')}</p>
       </div>
       {top.length === 0 ? (
-        <p className="font-editorial italic text-ink-soft text-sm py-6 text-center">
+        <p className="font-editorial italic text-white/50 text-sm py-6 text-center">
           {t('host.noScoresYet')}
         </p>
       ) : (
         <ul className="space-y-2">
           {top.map((entry, idx) => {
-            const tone =
-              idx === 0
-                ? 'bg-lemon'
-                : idx === 1
-                  ? 'bg-cream-2'
-                  : idx === 2
-                    ? 'bg-cream-3'
-                    : 'bg-cream-2';
+            const isLeader = idx === 0;
             return (
               <li
                 key={entry.id}
-                className={`grid grid-cols-[32px_1fr_auto] gap-3 items-center px-3 py-2.5 border-2 border-ink rounded-xl ${tone} font-bold`}
+                className="grid grid-cols-[32px_1fr_auto] gap-3 items-center px-3 py-2.5 rounded-xl font-bold text-white"
+                style={{
+                  backgroundColor: isLeader ? '#FF5C4D22' : '#ffffff08',
+                  border: `1px solid ${isLeader ? '#FF5C4D66' : '#ffffff12'}`,
+                }}
               >
-                <span className="font-display text-2xl text-center">{idx + 1}</span>
+                <span
+                  className="font-display text-2xl text-center"
+                  style={{ color: isLeader ? '#FF5C4D' : '#fff' }}
+                >
+                  {idx + 1}
+                </span>
                 <div className="min-w-0">
                   <div className="text-sm truncate">{entry.label}</div>
                   {entry.color && (
                     <span
                       aria-hidden
-                      className="inline-block w-2.5 h-2.5 rounded-full border border-ink mt-0.5"
+                      className="inline-block w-2.5 h-2.5 rounded-full ring-1 ring-white/30 mt-0.5"
                       style={{ backgroundColor: entry.color }}
                     />
                   )}
@@ -583,15 +588,18 @@ function JoinQrPanel({ shortCode }: { shortCode: string }): JSX.Element {
   const { t } = useTranslation();
   const url = `${window.location.origin}/play?session=${shortCode}`;
   return (
-    <Card size="sm" tone="cream" className="text-center">
+    <Card
+      size="sm"
+      className="!bg-[#15151d]/80 !border !border-white/10 rounded-[20px] text-center"
+    >
       <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-spritz-deep mb-2">
         {t('screen.joinTitle')}
       </p>
       <div className="flex justify-center mb-2">
         <QRCode value={url} size={140} />
       </div>
-      <p className="font-mono text-lg font-bold tracking-[0.2em] text-ink">{shortCode}</p>
-      <p className="font-editorial italic text-[10px] text-ink-soft mt-1">{t('screen.joinHint')}</p>
+      <p className="font-mono text-lg font-bold tracking-[0.2em] text-white">{shortCode}</p>
+      <p className="font-editorial italic text-[10px] text-white/50 mt-1">{t('screen.joinHint')}</p>
     </Card>
   );
 }
@@ -601,7 +609,10 @@ function FindersRecap({ correctAnswers }: { correctAnswers: CorrectAnswerEntry[]
   if (correctAnswers.length === 0) return <></>;
   const medals = ['🥇', '🥈', '🥉'];
   return (
-    <Card size="md" className="!border-4 animate-slide-up">
+    <Card
+      size="md"
+      className="!bg-[#15151d]/80 !border !border-white/10 rounded-[20px] animate-slide-up"
+    >
       <div className="flex items-center gap-2 mb-3">
         <span
           aria-hidden
@@ -609,18 +620,18 @@ function FindersRecap({ correctAnswers }: { correctAnswers: CorrectAnswerEntry[]
         >
           🎯
         </span>
-        <p className="font-display text-2xl">{t('screen.thisTrack')}</p>
+        <p className="font-display text-2xl text-white">{t('screen.thisTrack')}</p>
       </div>
       <ul className="space-y-2">
         {correctAnswers.map((entry, idx) => (
           <li
             key={entry.participant_id}
-            className="grid grid-cols-[auto_1fr_auto] gap-3 items-center px-3 py-2.5 bg-cream border-2 border-ink rounded-xl"
+            className="grid grid-cols-[auto_1fr_auto] gap-3 items-center px-3 py-2.5 rounded-xl border border-white/10 bg-white/[0.05]"
           >
             <span aria-hidden className="text-2xl">
               {medals[idx] ?? '🎯'}
             </span>
-            <div className="font-bold">
+            <div className="font-bold text-white">
               {entry.pseudo}
               <small className="block font-editorial italic font-normal text-xs opacity-70">
                 {(entry.score_title_bonus ?? 0) > 0
@@ -652,7 +663,7 @@ function RevealCover({ track, title }: { track: CurrentTrackState; title: string
   return (
     <div className="relative aspect-square w-full max-w-[min(48vh,540px)] animate-reveal-pop">
       <div
-        className="w-full h-full border-[6px] border-ink rounded-2xl shadow-pop-xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-plum to-raspberry"
+        className="w-full h-full ring-1 ring-white/15 rounded-[26px] shadow-[0_30px_80px_rgba(0,0,0,0.6)] overflow-hidden flex items-center justify-center bg-gradient-to-br from-plum to-raspberry"
         style={
           cover
             ? {
@@ -709,7 +720,10 @@ function RevealLeaderboard({
   const rows = cumulative.slice(0, 8);
   const medals = ['🥇', '🥈', '🥉'];
   return (
-    <Card size="md" className="!border-4 flex-1 flex flex-col min-h-0">
+    <Card
+      size="md"
+      className="!bg-[#15151d]/80 !border !border-white/10 rounded-[20px] flex-1 flex flex-col min-h-0"
+    >
       <div className="flex items-center gap-2 mb-4 shrink-0">
         <span
           aria-hidden
@@ -717,10 +731,12 @@ function RevealLeaderboard({
         >
           🏆
         </span>
-        <p className="font-display text-2xl lg:text-3xl">{t('screen.leaderboardLabel')}</p>
+        <p className="font-display text-2xl lg:text-3xl text-white">
+          {t('screen.leaderboardLabel')}
+        </p>
       </div>
       {rows.length === 0 ? (
-        <p className="font-editorial italic text-ink-soft text-center py-12 text-lg">
+        <p className="font-editorial italic text-white/50 text-center py-12 text-lg">
           {t('host.noScoresYet')}
         </p>
       ) : (
@@ -731,18 +747,23 @@ function RevealLeaderboard({
             return (
               <li
                 key={entry.id}
-                className={`grid grid-cols-[auto_1fr_auto] gap-3 items-center px-4 py-3 border-2 border-ink rounded-xl ${
-                  isLeader ? 'bg-lemon shadow-pop' : 'bg-cream'
-                }`}
+                className="grid grid-cols-[auto_1fr_auto] gap-3 items-center px-4 py-3 rounded-xl text-white"
+                style={{
+                  backgroundColor: isLeader ? '#FF5C4D22' : '#ffffff08',
+                  border: `1px solid ${isLeader ? '#FF5C4D66' : '#ffffff12'}`,
+                }}
               >
-                <span className="font-display text-2xl lg:text-3xl w-10 text-center">
+                <span
+                  className="font-display text-2xl lg:text-3xl w-10 text-center"
+                  style={{ color: isLeader ? '#FF5C4D' : '#fff' }}
+                >
                   {medals[idx] ?? idx + 1}
                 </span>
                 <div className="min-w-0 flex items-center gap-2">
                   {entry.color && (
                     <span
                       aria-hidden
-                      className="inline-block w-3 h-3 rounded-full border border-ink shrink-0"
+                      className="inline-block w-3 h-3 rounded-full ring-1 ring-white/30 shrink-0"
                       style={{ backgroundColor: entry.color }}
                     />
                   )}
@@ -753,10 +774,10 @@ function RevealLeaderboard({
                   </span>
                 </div>
                 <div className="text-right whitespace-nowrap">
-                  <span className="font-mono font-bold tabular-nums text-ink text-xl lg:text-2xl">
+                  <span className="font-mono font-bold tabular-nums text-white text-xl lg:text-2xl">
                     {entry.total_points}
                   </span>
-                  <span className="font-mono text-xs lg:text-sm text-ink-soft"> pts</span>
+                  <span className="font-mono text-xs lg:text-sm text-white/50"> pts</span>
                   {delta && delta.gain > 0 && (
                     <span className="ml-2 font-mono text-sm lg:text-base font-bold text-basil-deep">
                       +{delta.gain}
@@ -802,16 +823,16 @@ function RevealResultMain({
   return (
     <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-6 p-6 relative z-10">
       {/* Gauche — pochette dominante + infos */}
-      <section className="relative bg-cream-2 border-4 border-ink rounded-3xl shadow-pop-lg flex flex-col p-6 lg:p-8 overflow-hidden min-h-[500px]">
+      <section className="relative bg-[#15151d]/80 border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl flex flex-col p-6 lg:p-8 overflow-hidden min-h-[500px]">
         {/* Haut : chip playlist (gauche) + MINI QR rejoindre en coin (droite) */}
         <div className="shrink-0 flex items-start justify-between gap-3">
-          <span className="inline-flex items-center gap-2 font-mono text-xs sm:text-sm uppercase tracking-[0.2em] text-spritz-deep bg-cream border-2 border-ink rounded-full px-4 py-1.5 shadow-pop-sm">
+          <span className="inline-flex items-center gap-2 font-mono text-xs sm:text-sm uppercase tracking-[0.2em] text-[#FF5C4D] bg-white/[0.06] border border-white/15 rounded-full px-4 py-1.5">
             <span aria-hidden>♪</span>
             <span className="truncate max-w-[50vw] lg:max-w-sm">{playlistName}</span>
           </span>
           <div className="flex flex-col items-center shrink-0">
             <QRCode value={joinUrl} size={72} className="!p-1.5 !shadow-pop !border-2" />
-            <span className="font-mono text-[9px] uppercase tracking-wider text-ink-soft mt-0.5">
+            <span className="font-mono text-[9px] uppercase tracking-wider text-white/50 mt-0.5">
               {joinCode}
             </span>
           </div>
@@ -823,7 +844,7 @@ function RevealResultMain({
         {/* Titre très grand (serif) > artiste grand dessous */}
         <div className="shrink-0">
           <div
-            className="font-display text-ink leading-[0.92] text-5xl sm:text-6xl lg:text-7xl xl:text-8xl mb-2 animate-slide-up"
+            className="font-display text-white leading-[0.92] text-5xl sm:text-6xl lg:text-7xl xl:text-8xl mb-2 animate-slide-up"
             title={title}
           >
             {title}
@@ -966,7 +987,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
       ) : (
         <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 p-6 relative z-10">
           {/* Center stage */}
-          <section className="relative bg-cream-2 border-4 border-ink rounded-3xl shadow-pop-lg flex flex-col items-center justify-center p-8 overflow-hidden min-h-[500px]">
+          <section className="relative bg-[#15151d]/80 border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl flex flex-col items-center justify-center p-8 overflow-hidden min-h-[500px]">
             {!playingRound ? (
               <BetweenRoundsContent lastEnded={lastEnded} master={master} />
             ) : !currentTrack ? (
@@ -996,7 +1017,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
                 {isRevealed && (
                   <div className="text-center mt-6">
                     <div
-                      className="font-display text-5xl text-ink leading-none mb-1 animate-slide-up"
+                      className="font-display text-5xl text-white leading-none mb-1 animate-slide-up"
                       style={{ animationDelay: '200ms' }}
                     >
                       {lastReveal?.artist ?? currentTrack.artist}
@@ -1013,8 +1034,8 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
                 {/* Phase 3-skipped : message neutre, pas de reveal */}
                 {phase === 'phase3-skipped' && (
                   <div className="text-center mt-6">
-                    <p className="font-display text-3xl text-ink-soft mb-1">⏭</p>
-                    <p className="font-editorial italic text-ink-2 text-lg">
+                    <p className="font-display text-3xl text-white/50 mb-1">⏭</p>
+                    <p className="font-editorial italic text-white/60 text-lg">
                       {t('screen.trackSkipped')}
                     </p>
                   </div>
@@ -1022,7 +1043,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
 
                 {/* Phase 1 hint — "écoute et buzze" */}
                 {isPhase1 && (
-                  <p className="font-editorial italic text-ink-2 text-lg mt-6">
+                  <p className="font-editorial italic text-white/60 text-lg mt-6">
                     {t('screen.listenAndBuzz')}
                   </p>
                 )}
@@ -1073,13 +1094,13 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
 
       {/* Overlay PAUSE master */}
       {session.is_paused && (
-        <div className="fixed inset-0 z-30 bg-ink/40 flex items-center justify-center animate-fade-in">
-          <div className="bg-cream border-4 border-ink rounded-lg shadow-pop-xl px-12 py-10 text-center">
+        <div className="fixed inset-0 z-30 bg-black/70 backdrop-blur-md flex items-center justify-center animate-fade-in">
+          <div className="rounded-[24px] border border-white/10 bg-[#15151d]/90 shadow-[0_24px_70px_rgba(0,0,0,0.6)] px-16 py-12 text-center">
             <p className="text-7xl mb-2">⏸</p>
-            <TitleHandwritten as="h2" className="text-4xl">
-              {t('screen.pauseTitle')}
-            </TitleHandwritten>
-            <p className="font-editorial italic text-ink-2 mt-2 text-lg">{t('screen.pauseHint')}</p>
+            <h2 className="font-display text-4xl text-white">{t('screen.pauseTitle')}</h2>
+            <p className="font-editorial italic text-white/60 mt-2 text-lg">
+              {t('screen.pauseHint')}
+            </p>
           </div>
         </div>
       )}
@@ -1093,11 +1114,9 @@ function WaitingTrackContent({ round }: { round: SessionRoundWithPlaylist }): JS
   const { t } = useTranslation();
   return (
     <div className="text-center">
-      <TitleHandwritten as="h2" className="mb-3">
-        <Underline>{round.playlist.name}</Underline>
-      </TitleHandwritten>
-      <p className="font-editorial italic text-ink-2 text-xl">{t('screen.waitingTrack')}</p>
-      <p className="font-mono text-sm text-ink-soft mt-3">{t('screen.waitingTrackHint')}</p>
+      <h2 className="font-display text-4xl text-white mb-3">{round.playlist.name}</h2>
+      <p className="font-editorial italic text-white/60 text-xl">{t('screen.waitingTrack')}</p>
+      <p className="font-mono text-sm text-white/50 mt-3">{t('screen.waitingTrackHint')}</p>
     </div>
   );
 }
@@ -1114,24 +1133,20 @@ function BetweenRoundsContent({
     <div className="text-center">
       {lastEnded ? (
         <>
-          <Badge tone="cream" tilt={-1} className="mb-3">
+          <span className="mb-3 inline-block rounded-full bg-white/[0.08] px-3 py-1 font-mono text-xs uppercase tracking-wider text-white/70">
             {t('host.roundEnded', { n: lastEnded.position })}
-          </Badge>
-          <TitleHandwritten as="h2" className="mb-4">
-            <Underline>{lastEnded.playlist.name}</Underline>
-          </TitleHandwritten>
+          </span>
+          <h2 className="font-display text-4xl text-white mb-4">{lastEnded.playlist.name}</h2>
         </>
       ) : (
-        <TitleHandwritten as="h2" className="mb-4">
-          <Underline>{t('screen.firstRoundComing')}</Underline>
-        </TitleHandwritten>
+        <h2 className="font-display text-4xl text-white mb-4">{t('screen.firstRoundComing')}</h2>
       )}
-      <p className="font-editorial italic text-ink-2 text-xl">
+      <p className="font-editorial italic text-white/60 text-xl">
         {master
           ? t('screen.waitingMasterPick', { pseudo: master.pseudo })
           : t('screen.waitingAnyPick')}
       </p>
-      <p className="font-mono text-sm text-ink-soft mt-3">{t('screen.takeABreak')}</p>
+      <p className="font-mono text-sm text-white/50 mt-3">{t('screen.takeABreak')}</p>
     </div>
   );
 }

@@ -102,6 +102,8 @@ import { RoundProgramPanel } from '../components/host/RoundProgramPanel.js';
 // technique qui ne les concerne pas.
 import { SafariMediaBanner } from '../components/admin/SafariMediaBanner.js';
 import { PlayersPanel } from '../components/host/PlayersPanel.js';
+import { PlayerControls } from '../components/host/PlayerControls.js';
+import { SeekBar } from '../components/host/SeekBar.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
@@ -1633,7 +1635,7 @@ function HostPageInner(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
       <MultiColorBar height="md" />
 
       {/* fix/restrict-banners-to-host-pages — Safari content-blocker hint.
@@ -1723,31 +1725,29 @@ function HostPageInner(): JSX.Element {
       <main role="application" className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-8">
         <header className="max-w-7xl mx-auto mb-4 sm:mb-8 flex items-center justify-between flex-wrap gap-3">
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-1">
+            <p
+              className="font-mono text-xs uppercase tracking-[0.2em] mb-1"
+              style={{ color: '#FF5C4D' }}
+            >
               {effectivePhase === 'waiting'
                 ? t('host.eyebrow')
                 : effectivePhase === 'ended'
                   ? t('host.eyebrowEnded')
                   : t('host.eyebrowPlaying', { round: playingRoundsCount })}
             </p>
-            <TitleHandwritten as="h1">
-              {/* Bug 2 — titre dynamique selon l'état de la partie. Si la
-                  session a un nom custom on le garde toujours, sinon
-                  fallback contextuel. */}
-              {session.name ? (
-                <Underline>{session.name}</Underline>
-              ) : effectivePhase === 'waiting' ? (
-                t('host.titleWaiting')
-              ) : effectivePhase === 'roundPlaying' ? (
-                t('host.titleRoundPlaying')
-              ) : effectivePhase === 'intermission' ? (
-                t('host.titleIntermission')
-              ) : effectivePhase === 'ended' ? (
-                t('host.titleEnded')
-              ) : (
-                t('host.title')
-              )}
-            </TitleHandwritten>
+            <h1 className="font-display text-4xl leading-tight text-white">
+              {session.name
+                ? session.name
+                : effectivePhase === 'waiting'
+                  ? t('host.titleWaiting')
+                  : effectivePhase === 'roundPlaying'
+                    ? t('host.titleRoundPlaying')
+                    : effectivePhase === 'intermission'
+                      ? t('host.titleIntermission')
+                      : effectivePhase === 'ended'
+                        ? t('host.titleEnded')
+                        : t('host.title')}
+            </h1>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {/* Issue 5 (6 mai) — bouton "Retour dashboard" visible uniquement
@@ -2227,81 +2227,100 @@ function WaitingPhase({
   const needsMaster = !hasAnimator && !currentMasterId;
   const noPlayers = participants.length === 0;
   const canStart = !busy && !needsMaster;
+  const CORAL = '#FF5C4D';
   return (
-    <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-[auto_1fr]">
-      <Card size="lg" tone="cream" className="text-center">
-        <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
-          {t('host.scanToJoin')}
-        </p>
-        <QRCode value={playUrl} size={280} className="mx-auto mb-4" />
-        <p className="font-mono text-3xl tracking-[0.2em] text-ink mb-1">{shortCode}</p>
-        <p className="font-editorial italic text-sm text-ink-soft">{playUrl}</p>
-      </Card>
-
-      <div className="space-y-4">
-        {/* Feature 3 — rappel ouverture écran TV pour afficher le QR aux joueurs */}
-        <Card tone="lemon" size="sm">
-          <p className="font-mono text-xs uppercase tracking-wider text-ink mb-1">
-            💡 {t('host.tvHintTitle')}
+    // feat/console-dark — stage sombre premium (cohérent écran TV + console jeu).
+    <div className="relative">
+      <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-[auto_1fr]">
+        <div className="rounded-[24px] border border-white/[0.07] bg-[#15151d]/80 p-8 text-center backdrop-blur-xl">
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.25em] text-white/50">
+            {t('host.scanToJoin')}
           </p>
-          <p className="font-editorial italic text-sm text-ink-2">{t('host.tvHintBody')}</p>
-        </Card>
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <p className="font-display text-2xl">
-            {t('host.participants')} <span className="text-ink-soft">({participants.length})</span>
+          <div className="mx-auto mb-4 inline-block rounded-2xl bg-white p-3">
+            <QRCode value={playUrl} size={260} />
+          </div>
+          <p className="mb-1 font-mono text-3xl font-bold tracking-[0.2em] text-white">
+            {shortCode}
           </p>
-          <Button
-            onClick={() => {
-              if (noPlayers && !window.confirm(t('host.startWithZeroPlayersConfirm'))) {
-                return;
-              }
-              void onStart();
-            }}
-            disabled={!canStart}
-            size="lg"
-          >
-            {busy
-              ? t('host.starting')
-              : hasPendingRound
-                ? t('host.startBlindTestWithFirstRound')
-                : t('host.startBlindTest')}
-          </Button>
+          <p className="font-editorial text-sm italic text-white/40">{playUrl}</p>
         </div>
 
-        {!hasAnimator && (
-          <Card tone={currentMasterId ? 'basil' : 'cream'} size="md">
-            <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-1">
-              {t('host.masterSectionLabel')}
+        <div className="space-y-4">
+          <div
+            className="rounded-2xl border p-4"
+            style={{ backgroundColor: '#FF5C4D14', borderColor: '#FF5C4D55' }}
+          >
+            <p className="mb-1 font-mono text-xs uppercase tracking-wider" style={{ color: CORAL }}>
+              💡 {t('host.tvHintTitle')}
             </p>
-            <p className="font-editorial italic text-sm text-ink-2">
-              {currentMasterId
-                ? t('host.masterPickedHint', {
-                    pseudo: participants.find((p) => p.id === currentMasterId)?.pseudo ?? '',
-                  })
-                : t('host.masterPickHint')}
+            <p className="font-editorial text-sm italic text-white/60">{t('host.tvHintBody')}</p>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="font-display text-2xl text-white">
+              {t('host.participants')}{' '}
+              <span className="text-white/40">({participants.length})</span>
             </p>
-          </Card>
-        )}
+            <Button
+              onClick={() => {
+                if (noPlayers && !window.confirm(t('host.startWithZeroPlayersConfirm'))) {
+                  return;
+                }
+                void onStart();
+              }}
+              disabled={!canStart}
+              size="lg"
+            >
+              {busy
+                ? t('host.starting')
+                : hasPendingRound
+                  ? t('host.startBlindTestWithFirstRound')
+                  : t('host.startBlindTest')}
+            </Button>
+          </div>
 
-        {mode === 'TEAMS' ? (
-          <TeamsView
-            teams={teams}
-            participants={participants}
-            showMasterToggle={true}
-            onMove={onMove}
-            onKick={onKick}
-            onToggleMaster={onToggleMaster}
-            onSetRole={onSetRole}
-          />
-        ) : (
-          <ParticipantsList
-            participants={participants}
-            showMasterToggle={true}
-            onKick={onKick}
-            onToggleMaster={onToggleMaster}
-            onSetRole={onSetRole}
-          />
-        )}
+          {!hasAnimator && (
+            <div
+              className="rounded-2xl border p-4"
+              style={{
+                backgroundColor: currentMasterId ? '#4ade8014' : '#ffffff08',
+                borderColor: currentMasterId ? '#4ade8055' : '#ffffff14',
+              }}
+            >
+              <p className="mb-1 font-mono text-xs uppercase tracking-wider text-white/50">
+                {t('host.masterSectionLabel')}
+              </p>
+              <p className="font-editorial text-sm italic text-white/60">
+                {currentMasterId
+                  ? t('host.masterPickedHint', {
+                      pseudo: participants.find((p) => p.id === currentMasterId)?.pseudo ?? '',
+                    })
+                  : t('host.masterPickHint')}
+              </p>
+            </div>
+          )}
+
+          {mode === 'TEAMS' ? (
+            <TeamsView
+              teams={teams}
+              participants={participants}
+              showMasterToggle={true}
+              onMove={onMove}
+              onKick={onKick}
+              onToggleMaster={onToggleMaster}
+              onSetRole={onSetRole}
+              dark
+            />
+          ) : (
+            <ParticipantsList
+              participants={participants}
+              showMasterToggle={true}
+              onKick={onKick}
+              onToggleMaster={onToggleMaster}
+              onSetRole={onSetRole}
+              dark
+            />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -2406,182 +2425,172 @@ function RoundPlayingScreen({
     currentTrack?.provider === 'spotify' || (currentTrack === null && spotifyStatus !== 'idle');
   const isDemoProvider = currentTrack?.provider === 'demo';
 
+  const CORAL = '#FF5C4D';
+  const chip = 'rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.2em]';
+  const darkPanel =
+    'rounded-[20px] border border-white/[0.07] bg-[#15151d]/80 p-5 backdrop-blur-xl';
   return (
-    <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-      {/* ── Colonne gauche : track en cours ──────────────────────────── */}
-      <Card tone="spritz" size="lg" className="text-center">
-        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-          <Badge tone="cream" tilt={-1}>
-            {t('host.currentRound', { n: round.position })}
-          </Badge>
-          {totalTracks > 0 && (
-            <Badge tone="ink" tilt={1}>
-              {t('host.trackPosition', { current: trackPosition, total: totalTracks })}
-            </Badge>
-          )}
-        </div>
-        <TitleHandwritten as="h2" className="mb-4">
-          <Underline>{round.playlist.name}</Underline>
-        </TitleHandwritten>
-
-        {showSpotifyStatus && (
-          <SpotifyStatusBanner
-            status={spotifyStatus}
-            error={spotifyError}
-            errorCode={spotifyErrorCode}
-          />
-        )}
-        {showSpotifyStatus && spotifyStatus === 'ready' && currentTrack && (
-          <Button variant="ghost" size="sm" onClick={onForceAudio} className="mt-2">
-            🔊 {t('host.forceAudioOnDevice')}
-          </Button>
-        )}
-        {/* Bug 4 — bouton "Forcer audio" identique pour les morceaux YouTube,
-            au cas où Chrome/Safari bloquent l'autoplay de l'iframe YT. */}
-        {currentTrack?.provider === 'youtube' && (
-          <Button variant="ghost" size="sm" onClick={onForceAudio} className="mt-2">
-            🔊 {t('host.forceAudioOnDevice')}
-          </Button>
-        )}
-        {isDemoProvider && (
-          <p className="font-mono text-xs text-ink-soft my-3">{t('host.demoProviderHint')}</p>
-        )}
-
-        {/* Bug 5 — suppression du gros carré central "EN COURS ♪?????".
-            Le morceau en cours est déjà mis en évidence dans le panneau
-            "Programme de la manche" à droite (highlight spritz + badge
-            "En cours"). Plus besoin de duplicate ici.
-            On garde juste le placeholder quand !currentTrack pour donner
-            un signal visible que le morceau n'a pas encore démarré. */}
-        {!currentTrack ? (
-          <p className="font-editorial italic text-ink-2 my-8">{t('host.noTrackYet')}</p>
-        ) : (
-          // Position progress mini-bar (info utile à l'animateur sans
-          // dupliquer cover/titre/artiste — déjà dans Programme manche).
-          <AnimatorTrackInfo
-            track={currentTrack}
-            positionMs={effPositionMs}
-            durationMs={effDurationMs}
-            onSeek={onSeek}
-          />
-        )}
-
-        <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => void onNextTrack()}
-            disabled={busy || !currentTrack}
-          >
-            {/* feat/round-end-rankings — label dynamique sur le DERNIER
-                morceau pour signaler que ce clic mènera à l'écran de fin
-                de manche (RoundIntermissionScreen avec classements), pas à
-                un morceau suivant inexistant qui menait à une page vide. */}
-            {currentTrack && currentTrack.track_index >= totalTracks - 1
-              ? t('host.viewRanking')
-              : t('host.nextTrack')}{' '}
-            →
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => void onEndRound()} disabled={busy}>
-            {t('host.endRound')}
-          </Button>
-        </div>
-
-        {/* ── Contrôles audio (pause / reprendre / recommencer / révéler) ── */}
-        {currentTrack && (
-          <div className="mt-3 pt-3 border-t-2 border-ink/10 flex items-center justify-center gap-2 flex-wrap">
-            {!isPaused ? (
-              <Button variant="ghost" size="sm" onClick={onPauseAudio} disabled={busy}>
-                ⏸️ {t('host.pauseAudio')}
-              </Button>
-            ) : (
-              <Button variant="primary" size="sm" onClick={onResumeAudio} disabled={busy}>
-                ▶️ {t('host.resumeAudio')}
-              </Button>
-            )}
-            <Button variant="ghost" size="sm" onClick={onRestartTrack} disabled={busy}>
-              🔄 {t('host.restartTrack')}
-            </Button>
-            {/* Refonte #1 — Révéler la réponse : phase 1 + phase 2 */}
-            {(currentTrack.phase === 'phase1' || currentTrack.phase === 'phase2') && (
-              <Button variant="ghost" size="sm" onClick={onRevealAnswer} disabled={busy}>
-                💡 {t('host.revealAnswer')}
-              </Button>
+    // feat/console-dark — stage sombre premium (cohérent écran TV). Bleed sur le
+    // padding du <main> via marges négatives pour couvrir toute la zone de jeu.
+    <div className="relative">
+      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        {/* ── Colonne gauche : track en cours ──────────────────────────── */}
+        <div className="rounded-[24px] border border-white/[0.07] bg-[#15151d]/80 p-6 text-center backdrop-blur-xl lg:p-8">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <span className={`${chip} text-[#0B0B0F]`} style={{ backgroundColor: CORAL }}>
+              {t('host.currentRound', { n: round.position })}
+            </span>
+            {totalTracks > 0 && (
+              <span className={`${chip} border border-white/15 text-white/80`}>
+                {t('host.trackPosition', { current: trackPosition, total: totalTracks })}
+              </span>
             )}
           </div>
-        )}
-      </Card>
+          <h2 className="mb-4 font-display text-4xl leading-tight text-white">
+            {round.playlist.name}
+          </h2>
 
-      {/* ── Colonne droite : classement + programme + joueurs + buzz feed ── */}
-      <div className="space-y-4">
-        <RoundProgramPanel
-          sessionId={sessionId}
-          roundId={round.id}
-          refetchKey={`${currentTrack?.track_index ?? -1}-${currentTrack?.started_at ?? ''}`}
-        />
-        {/* Feature 3 — liste joueurs + édition manuelle des points */}
-        <PlayersPanel sessionId={sessionId} participants={participants} cumulative={cumulative} />
+          {showSpotifyStatus && (
+            <SpotifyStatusBanner
+              status={spotifyStatus}
+              error={spotifyError}
+              errorCode={spotifyErrorCode}
+            />
+          )}
+          {showSpotifyStatus && spotifyStatus === 'ready' && currentTrack && (
+            <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
+              🔊 {t('host.forceAudioOnDevice')}
+            </Button>
+          )}
+          {currentTrack?.provider === 'youtube' && (
+            <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
+              🔊 {t('host.forceAudioOnDevice')}
+            </Button>
+          )}
+          {isDemoProvider && (
+            <p className="my-3 font-mono text-xs text-white/45">{t('host.demoProviderHint')}</p>
+          )}
 
-        <Card size="md">
-          <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
-            {t('host.cumulativeScores')}
-          </p>
-          {top5.length === 0 ? (
-            <p className="font-editorial italic text-sm text-ink-soft">{t('host.noScoresYet')}</p>
+          {!currentTrack ? (
+            <p className="my-8 font-editorial italic text-white/55">{t('host.noTrackYet')}</p>
           ) : (
-            <ol className="space-y-2">
-              {top5.map((entry, idx) => (
-                <li
-                  key={entry.id}
-                  className="flex items-center gap-3 px-3 py-2 border-2 border-ink rounded bg-white"
-                >
-                  <span className="font-display text-xl w-6 text-center text-spritz-deep">
-                    {idx + 1}
-                  </span>
-                  {entry.color && (
+            <AnimatorTrackInfo
+              track={currentTrack}
+              positionMs={effPositionMs}
+              durationMs={effDurationMs}
+              onSeek={onSeek}
+              dark
+            />
+          )}
+
+          <PlayerControls
+            currentTrack={currentTrack}
+            isPaused={isPaused}
+            busy={busy}
+            totalTracks={totalTracks}
+            onNextTrack={() => void onNextTrack()}
+            onEndRound={() => void onEndRound()}
+            onPauseAudio={onPauseAudio}
+            onResumeAudio={onResumeAudio}
+            onRestartTrack={onRestartTrack}
+            onRevealAnswer={onRevealAnswer}
+            dark
+          />
+        </div>
+
+        {/* ── Colonne droite : programme + joueurs + classement + buzz ── */}
+        <div className="space-y-4">
+          <RoundProgramPanel
+            sessionId={sessionId}
+            roundId={round.id}
+            refetchKey={`${currentTrack?.track_index ?? -1}-${currentTrack?.started_at ?? ''}`}
+            dark
+          />
+          <PlayersPanel
+            sessionId={sessionId}
+            participants={participants}
+            cumulative={cumulative}
+            dark
+          />
+
+          <div className={darkPanel}>
+            <p className="mb-3 font-mono text-xs uppercase tracking-wider text-white/50">
+              {t('host.cumulativeScores')}
+            </p>
+            {top5.length === 0 ? (
+              <p className="font-editorial text-sm italic text-white/45">{t('host.noScoresYet')}</p>
+            ) : (
+              <ol className="space-y-2">
+                {top5.map((entry, idx) => (
+                  <li
+                    key={entry.id}
+                    className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2"
+                  >
                     <span
-                      aria-hidden
-                      className="w-3 h-3 rounded-full border-2 border-ink shrink-0"
-                      style={{ backgroundColor: entry.color }}
-                    />
-                  )}
-                  <span className="font-medium flex-1 truncate text-sm">{entry.label}</span>
-                  <Badge tone="ink">{entry.total_points}</Badge>
-                </li>
-              ))}
-            </ol>
-          )}
-        </Card>
+                      className="w-6 text-center font-display text-xl"
+                      style={{ color: idx === 0 ? CORAL : '#ffffff' }}
+                    >
+                      {idx + 1}
+                    </span>
+                    {entry.color && (
+                      <span
+                        aria-hidden
+                        className="h-3 w-3 shrink-0 rounded-full ring-1 ring-white/30"
+                        style={{ backgroundColor: entry.color }}
+                      />
+                    )}
+                    <span className="flex-1 truncate text-sm font-medium text-white">
+                      {entry.label}
+                    </span>
+                    <span className="font-mono text-sm font-bold tabular-nums text-white">
+                      {entry.total_points}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
 
-        <Card size="md">
-          <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">
-            {t('host.buzzFeed')}
-          </p>
-          {recentBuzzes.length === 0 ? (
-            <p className="font-editorial italic text-sm text-ink-soft">{t('host.buzzFeedEmpty')}</p>
-          ) : (
-            <ul className="space-y-2">
-              {recentBuzzes.map((buzz, idx) => (
-                <li
-                  key={`${buzz.round_id}-${buzz.track_index}-${idx}`}
-                  className="flex items-center gap-2 text-xs"
-                >
-                  <span className="font-medium truncate">{buzz.participant_pseudo}</span>
-                  <span className="text-ink-soft truncate flex-1">
-                    {buzz.matched_artist
-                      ? buzz.matched_title
-                        ? `${buzz.reveal.artist} — ${buzz.reveal.title}`
-                        : buzz.reveal.artist
-                      : t('host.notFound')}
-                  </span>
-                  <Badge tone={buzz.total_points > 0 ? 'basil' : 'plum'}>
-                    {buzz.total_points > 0 ? `+${buzz.total_points}` : '0'}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+          <div className={darkPanel}>
+            <p className="mb-3 font-mono text-xs uppercase tracking-wider text-white/50">
+              {t('host.buzzFeed')}
+            </p>
+            {recentBuzzes.length === 0 ? (
+              <p className="font-editorial text-sm italic text-white/45">
+                {t('host.buzzFeedEmpty')}
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {recentBuzzes.map((buzz, idx) => (
+                  <li
+                    key={`${buzz.round_id}-${buzz.track_index}-${idx}`}
+                    className="flex items-center gap-2 text-xs"
+                  >
+                    <span className="truncate font-medium text-white">
+                      {buzz.participant_pseudo}
+                    </span>
+                    <span className="flex-1 truncate text-white/50">
+                      {buzz.matched_artist
+                        ? buzz.matched_title
+                          ? `${buzz.reveal.artist} — ${buzz.reveal.title}`
+                          : buzz.reveal.artist
+                        : t('host.notFound')}
+                    </span>
+                    <span
+                      className="rounded-full px-2 py-0.5 font-mono text-[11px] font-bold"
+                      style={{
+                        backgroundColor: buzz.total_points > 0 ? '#4ade8033' : '#ffffff12',
+                        color: buzz.total_points > 0 ? '#4ade80' : '#ffffff99',
+                      }}
+                    >
+                      {buzz.total_points > 0 ? `+${buzz.total_points}` : '0'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -2599,48 +2608,15 @@ function AnimatorTrackInfo({
   positionMs,
   durationMs,
   onSeek,
+  dark = false,
 }: {
   track: CurrentTrackState;
   positionMs: number;
   durationMs: number;
   onSeek: (ms: number) => void;
+  dark?: boolean;
 }): JSX.Element {
-  const { t } = useTranslation();
   const total = durationMs || track.duration_ms || 0;
-  // feat/seek-bar — pendant le drag on affiche la valeur draggée (dragMs) au
-  // lieu du tick 250ms, et on commit onSeek au relâcher (pas de bataille).
-  const [dragMs, setDragMs] = useState<number | null>(null);
-  const barRef = useRef<HTMLDivElement>(null);
-  const seekable = total > 0;
-  const msFromClientX = (clientX: number): number => {
-    const el = barRef.current;
-    if (!el) return 0;
-    const r = el.getBoundingClientRect();
-    const ratio = r.width > 0 ? (clientX - r.left) / r.width : 0;
-    return Math.min(total, Math.max(0, ratio * total));
-  };
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>): void => {
-    if (!seekable) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    setDragMs(msFromClientX(e.clientX));
-  };
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>): void => {
-    if (dragMs === null) return;
-    setDragMs(msFromClientX(e.clientX));
-  };
-  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>): void => {
-    if (dragMs === null) return;
-    const target = msFromClientX(e.clientX);
-    setDragMs(null);
-    onSeek(target);
-  };
-  const elapsed = Math.min(dragMs ?? positionMs, total);
-  const remaining = Math.max(0, total - elapsed);
-  const progress = total > 0 ? elapsed / total : 0;
-  const remainingMin = Math.floor(remaining / 60_000);
-  const remainingSec = Math.floor((remaining % 60_000) / 1000)
-    .toString()
-    .padStart(2, '0');
   return (
     <div className="py-4">
       {/* Pochette + titre + artiste — affichage privé animateur */}
@@ -2649,59 +2625,33 @@ function AnimatorTrackInfo({
           <img
             src={track.cover_url}
             alt=""
-            className="w-24 h-24 rounded border-2 border-ink object-cover shadow-pop-sm"
+            className={`w-24 h-24 rounded object-cover ${dark ? 'ring-1 ring-white/15 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : 'border-2 border-ink shadow-pop-sm'}`}
           />
         ) : (
-          <div className="w-24 h-24 rounded border-2 border-ink bg-cream-2 flex items-center justify-center font-display text-3xl text-ink-soft">
+          <div
+            className={`w-24 h-24 rounded flex items-center justify-center font-display text-3xl ${dark ? 'bg-white/[0.06] ring-1 ring-white/10 text-white/60' : 'border-2 border-ink bg-cream-2 text-ink-soft'}`}
+          >
             ♪
           </div>
         )}
-        {/* feat/selection-ui-mirroring (item 3) — bloc "morceau en cours" :
-            largeur responsive (flex-1, plus de cap dur 260px) + word-wrap au
-            lieu de truncate → les titres longs s'affichent en entier sans coupe
-            ni débordement. */}
         <div className="text-left min-w-0 flex-1">
-          <p className="font-display text-2xl text-ink break-words">{track.title}</p>
-          <p className="font-editorial italic text-ink-2 break-words">{track.artist}</p>
-          {track.year && <p className="font-mono text-xs text-ink-soft">{track.year}</p>}
+          <p className={`font-display text-2xl break-words ${dark ? 'text-white' : 'text-ink'}`}>
+            {track.title}
+          </p>
+          <p
+            className={`font-editorial italic break-words ${dark ? 'text-white/55' : 'text-ink-2'}`}
+          >
+            {track.artist}
+          </p>
+          {track.year && (
+            <p className={`font-mono text-xs ${dark ? 'text-white/40' : 'text-ink-soft'}`}>
+              {track.year}
+            </p>
+          )}
         </div>
       </div>
-      {/* Barre de progression SEEKABLE (host-only) + temps restant */}
-      <div className="max-w-md mx-auto">
-        <div
-          ref={barRef}
-          role="slider"
-          aria-label={t('host.seekBar')}
-          aria-valuemin={0}
-          aria-valuemax={Math.round(total)}
-          aria-valuenow={Math.round(elapsed)}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          className={`relative h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden ${
-            seekable ? 'cursor-pointer touch-none' : ''
-          } ${dragMs !== null ? 'ring-2 ring-spritz ring-offset-1' : ''}`}
-        >
-          <div
-            className="h-full bg-spritz-deep ease-linear"
-            style={{
-              width: `${Math.round(progress * 100)}%`,
-              transition: dragMs === null ? 'width 150ms linear' : 'none',
-            }}
-          />
-        </div>
-        <div className="flex justify-between mt-1 font-mono text-xs text-ink-soft tabular-nums">
-          <span>
-            {Math.floor(elapsed / 60_000)}:
-            {Math.floor((elapsed % 60_000) / 1000)
-              .toString()
-              .padStart(2, '0')}
-          </span>
-          <span>
-            -{remainingMin}:{remainingSec}
-          </span>
-        </div>
-      </div>
+      {/* Barre de temps SEEKABLE (host-only) — extraite dans <SeekBar>. */}
+      <SeekBar positionMs={positionMs} durationMs={total} onSeek={onSeek} dark={dark} />
     </div>
   );
 }
@@ -2818,10 +2768,12 @@ function RoleSelector({
   role,
   onSetRole,
   compact,
+  dark = false,
 }: {
   role: ParticipantRole;
   onSetRole: (role: ParticipantRole) => void;
   compact?: boolean;
+  dark?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
   const opts: { value: ParticipantRole; label: string; title: string }[] = [
@@ -2841,7 +2793,7 @@ function RoleSelector({
     <div
       role="group"
       aria-label={t('host.roleLabel')}
-      className="inline-flex border-2 border-ink rounded overflow-hidden shrink-0"
+      className={`inline-flex rounded-lg overflow-hidden shrink-0 border-2 ${dark ? 'border-white/15' : 'border-ink'}`}
     >
       {opts.map((o) => {
         const active = o.value === role;
@@ -2856,8 +2808,13 @@ function RoleSelector({
             }}
             className={[
               compact ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-1',
-              'font-mono transition-colors border-r-2 border-ink last:border-r-0',
-              active ? 'bg-basil text-white' : 'bg-cream text-ink-soft hover:bg-cream-2',
+              'font-mono transition-colors border-r-2 last:border-r-0',
+              dark ? 'border-white/15' : 'border-ink',
+              active
+                ? 'bg-basil text-white'
+                : dark
+                  ? 'bg-white/[0.06] text-white/60 hover:bg-white/[0.14]'
+                  : 'bg-cream text-ink-soft hover:bg-cream-2',
             ].join(' ')}
           >
             {o.label}
@@ -2874,73 +2831,91 @@ function ParticipantsList({
   onKick,
   onToggleMaster,
   onSetRole,
+  dark = false,
 }: {
   participants: Participant[];
   showMasterToggle: boolean;
   onKick: (id: string) => Promise<void>;
   onToggleMaster: (id: string) => Promise<void>;
   onSetRole?: (id: string, role: ParticipantRole) => Promise<void>;
+  dark?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
+  const wrap = (children: React.ReactNode): JSX.Element =>
+    dark ? (
+      <div className="rounded-[20px] border border-white/[0.07] bg-[#15151d]/80 p-4 backdrop-blur-xl">
+        {children}
+      </div>
+    ) : (
+      <Card>{children}</Card>
+    );
   if (participants.length === 0) {
-    return (
-      <Card>
-        <p className="font-editorial italic text-ink-soft text-center py-6">
-          {t('host.waitingForPlayers')}
-        </p>
-      </Card>
+    return wrap(
+      <p
+        className={`font-editorial italic text-center py-6 ${dark ? 'text-white/45' : 'text-ink-soft'}`}
+      >
+        {t('host.waitingForPlayers')}
+      </p>,
     );
   }
-  return (
-    <Card>
-      <ul className="space-y-2">
-        {participants.map((p) => {
-          const isMaster = isAnimatorRole(p.role);
-          return (
-            <li
-              key={p.id}
-              className={[
-                'flex items-center justify-between gap-3 px-3 py-2 border-2 rounded group',
-                isMaster ? 'border-basil bg-basil/10' : 'border-ink bg-cream-2',
-              ].join(' ')}
-            >
-              <span className="font-medium flex items-center gap-2">
-                {isMaster && <span aria-hidden>👑</span>}
-                {p.pseudo}
-              </span>
-              <div className="flex items-center gap-2 shrink-0">
-                {onSetRole ? (
-                  <RoleSelector role={p.role} onSetRole={(r) => void onSetRole(p.id, r)} />
-                ) : (
-                  showMasterToggle && (
-                    <button
-                      type="button"
-                      onClick={() => void onToggleMaster(p.id)}
-                      className={[
-                        'text-xs font-mono px-2 py-1 border-2 rounded transition-colors',
-                        isMaster
-                          ? 'border-basil text-basil-deep bg-white hover:bg-basil/20'
+  return wrap(
+    <ul className="space-y-2">
+      {participants.map((p) => {
+        const isMaster = isAnimatorRole(p.role);
+        return (
+          <li
+            key={p.id}
+            className={[
+              'flex items-center justify-between gap-3 px-3 py-2 border-2 rounded-xl group',
+              isMaster
+                ? 'border-basil bg-basil/15'
+                : dark
+                  ? 'border-white/10 bg-white/[0.05]'
+                  : 'border-ink bg-cream-2',
+            ].join(' ')}
+          >
+            <span className={`font-medium flex items-center gap-2 ${dark ? 'text-white' : ''}`}>
+              {isMaster && <span aria-hidden>👑</span>}
+              {p.pseudo}
+            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              {onSetRole ? (
+                <RoleSelector
+                  role={p.role}
+                  onSetRole={(r) => void onSetRole(p.id, r)}
+                  dark={dark}
+                />
+              ) : (
+                showMasterToggle && (
+                  <button
+                    type="button"
+                    onClick={() => void onToggleMaster(p.id)}
+                    className={[
+                      'text-xs font-mono px-2 py-1 border-2 rounded transition-colors',
+                      isMaster
+                        ? 'border-basil text-basil bg-basil/10 hover:bg-basil/20'
+                        : dark
+                          ? 'border-white/15 text-white/60 hover:bg-white/10'
                           : 'border-ink text-ink-soft hover:bg-cream',
-                      ].join(' ')}
-                      aria-pressed={isMaster}
-                    >
-                      🎙️ {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
-                    </button>
-                  )
-                )}
-                <button
-                  type="button"
-                  onClick={() => void onKick(p.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-raspberry hover:underline"
-                >
-                  {t('host.kick')}
-                </button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </Card>
+                    ].join(' ')}
+                    aria-pressed={isMaster}
+                  >
+                    🎙️ {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
+                  </button>
+                )
+              )}
+              <button
+                type="button"
+                onClick={() => void onKick(p.id)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-raspberry hover:underline"
+              >
+                {t('host.kick')}
+              </button>
+            </div>
+          </li>
+        );
+      })}
+    </ul>,
   );
 }
 
@@ -2952,6 +2927,7 @@ function TeamsView({
   onKick,
   onToggleMaster,
   onSetRole,
+  dark = false,
 }: {
   teams: Team[];
   participants: Participant[];
@@ -2960,22 +2936,30 @@ function TeamsView({
   onKick: (id: string) => Promise<void>;
   onToggleMaster: (id: string) => Promise<void>;
   onSetRole?: (id: string, role: ParticipantRole) => Promise<void>;
+  dark?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {teams.map((team) => {
         const members = participants.filter((p) => p.team_id === team.id);
-        return (
-          <Card key={team.id} className="!border-3" style={{ borderColor: team.color }}>
+        const card = (
+          <>
             <div className="flex items-center justify-between gap-2 mb-3">
-              <Badge tone="ink" tilt={-1}>
+              <span
+                className={`inline-block rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wider ${dark ? 'text-white' : 'bg-ink text-cream'}`}
+                style={dark ? { backgroundColor: '#ffffff14' } : undefined}
+              >
                 {team.name}
-              </Badge>
-              <span className="font-mono text-xs text-ink-soft">{members.length}</span>
+              </span>
+              <span className={`font-mono text-xs ${dark ? 'text-white/45' : 'text-ink-soft'}`}>
+                {members.length}
+              </span>
             </div>
             {members.length === 0 ? (
-              <p className="font-editorial italic text-xs text-ink-soft py-2">
+              <p
+                className={`font-editorial italic text-xs py-2 ${dark ? 'text-white/40' : 'text-ink-soft'}`}
+              >
                 {t('host.teamEmpty')}
               </p>
             ) : (
@@ -2983,7 +2967,10 @@ function TeamsView({
                 {members.map((p) => {
                   const isMaster = isAnimatorRole(p.role);
                   return (
-                    <li key={p.id} className="flex items-center justify-between gap-2 text-sm">
+                    <li
+                      key={p.id}
+                      className={`flex items-center justify-between gap-2 text-sm ${dark ? 'text-white' : ''}`}
+                    >
                       <span className="truncate flex items-center gap-1">
                         {isMaster && <span aria-hidden>👑</span>}
                         {p.pseudo}
@@ -2994,6 +2981,7 @@ function TeamsView({
                             role={p.role}
                             onSetRole={(r) => void onSetRole(p.id, r)}
                             compact
+                            dark={dark}
                           />
                         ) : (
                           showMasterToggle && (
@@ -3019,10 +3007,14 @@ function TeamsView({
                           aria-label={t('host.moveToTeam')}
                           value={p.team_id ?? ''}
                           onChange={(e) => void onMove(p.id, e.target.value || null)}
-                          className="text-xs border border-ink rounded px-1 py-0.5 bg-cream"
+                          className={`text-xs rounded px-1 py-0.5 border ${dark ? 'border-white/20 bg-white/10 text-white' : 'border-ink bg-cream'}`}
                         >
                           {teams.map((t2) => (
-                            <option key={t2.id} value={t2.id}>
+                            <option
+                              key={t2.id}
+                              value={t2.id}
+                              className={dark ? 'text-ink' : undefined}
+                            >
                               {t2.name}
                             </option>
                           ))}
@@ -3040,6 +3032,19 @@ function TeamsView({
                 })}
               </ul>
             )}
+          </>
+        );
+        return dark ? (
+          <div
+            key={team.id}
+            className="rounded-2xl border-[3px] bg-[#15151d]/80 p-4 backdrop-blur-xl"
+            style={{ borderColor: team.color }}
+          >
+            {card}
+          </div>
+        ) : (
+          <Card key={team.id} className="!border-3" style={{ borderColor: team.color }}>
+            {card}
           </Card>
         );
       })}
