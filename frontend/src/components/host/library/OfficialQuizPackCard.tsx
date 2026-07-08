@@ -17,6 +17,8 @@ interface Props {
   onPick: () => void;
   onLockedClick?: () => void;
   disabled?: boolean;
+  /** Variante sombre (console iPad) — défaut clair Pop Cocktail. */
+  dark?: boolean;
 }
 
 export function OfficialQuizPackCard({
@@ -24,6 +26,7 @@ export function OfficialQuizPackCard({
   onPick,
   onLockedClick,
   disabled,
+  dark,
 }: Props): JSX.Element {
   const { i18n, t } = useTranslation();
   const lang = i18n.language?.startsWith('en') ? 'en' : 'fr';
@@ -48,11 +51,15 @@ export function OfficialQuizPackCard({
         size="sm"
         className={`h-full transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg relative ${
           pack.locked ? 'opacity-60' : ''
-        }`}
+        } ${dark ? '!bg-[#15151d]/80 !border !border-white/10' : ''}`}
       >
         {/* Badge "Officiel Tutti" en haut-droite */}
         <span
-          className="absolute top-2 right-2 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider bg-spritz/20 border border-spritz text-spritz-deep rounded-full"
+          className={`absolute top-2 right-2 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-full ${
+            dark
+              ? 'bg-white/10 border border-white/15 text-white/70'
+              : 'bg-spritz/20 border border-spritz text-spritz-deep'
+          }`}
           aria-label={t('host.session.officialBadge')}
         >
           ⭐ {t('host.session.officialBadge')}
@@ -69,9 +76,9 @@ export function OfficialQuizPackCard({
           </Badge>
         </div>
 
-        <p className="font-display text-lg mb-1 truncate">{name}</p>
+        <p className={`font-display text-lg mb-1 truncate ${dark ? 'text-white' : ''}`}>{name}</p>
 
-        <p className="font-mono text-xs text-ink-soft mb-2">
+        <p className={`font-mono text-xs mb-2 ${dark ? 'text-white/50' : 'text-ink-soft'}`}>
           {pack.question_count} {t('host.session.quizPackQuestionCount')} · {pack.locale_primary}
           {pack.category ? ` · ${pack.category}` : ''}
         </p>
@@ -79,7 +86,13 @@ export function OfficialQuizPackCard({
         {/* Cadenas overlay si locked */}
         {pack.locked && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="bg-cream/90 border-2 border-ink rounded-lg px-3 py-2 text-center shadow-pop">
+            <div
+              className={`rounded-lg px-3 py-2 text-center shadow-pop ${
+                dark
+                  ? 'bg-[#0B0B0F]/85 border border-white/15 text-white'
+                  : 'bg-cream/90 border-2 border-ink'
+              }`}
+            >
               <span className="text-3xl block mb-1" aria-hidden>
                 🔒
               </span>

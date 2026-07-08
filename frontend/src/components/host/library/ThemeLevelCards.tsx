@@ -23,6 +23,8 @@ interface Props {
   /** TV : non-interactif. */
   readOnly?: boolean;
   disabled?: boolean;
+  /** Variante sombre (console iPad / TV) — défaut clair. */
+  dark?: boolean;
   /** Host : retour à l'étape thèmes. */
   onBack?: () => void;
   /**
@@ -41,6 +43,7 @@ export function ThemeLevelCards({
   highlightId,
   readOnly,
   disabled,
+  dark,
   onBack,
   onPickLevel,
 }: Props): JSX.Element {
@@ -52,13 +55,19 @@ export function ThemeLevelCards({
         <button
           type="button"
           onClick={onBack}
-          className="font-mono text-xs uppercase tracking-wider text-ink-soft hover:text-ink mb-3 inline-flex items-center gap-1"
+          className={`font-mono text-xs uppercase tracking-wider mb-3 inline-flex items-center gap-1 ${
+            dark ? 'text-white/50 hover:text-white' : 'text-ink-soft hover:text-ink'
+          }`}
         >
           ← {t('host.session.backToThemes')}
         </button>
       )}
-      <p className="font-display text-3xl">{theme.name}</p>
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-4">
+      <p className={`font-display text-3xl ${dark ? 'text-white' : ''}`}>{theme.name}</p>
+      <p
+        className={`font-mono text-xs uppercase tracking-[0.2em] mb-4 ${
+          dark ? 'text-white/55' : 'text-spritz-deep'
+        }`}
+      >
         {t('host.session.chooseLevel')}
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -88,7 +97,9 @@ export function ThemeLevelCards({
                   readOnly ? '' : 'hover:-translate-y-0.5 hover:shadow-pop-lg'
                 } disabled:opacity-100 ${tone} ${
                   highlighted
-                    ? 'ring-4 ring-raspberry ring-offset-2 ring-offset-cream scale-[1.03]'
+                    ? `ring-4 ring-raspberry ring-offset-2 scale-[1.03] ${
+                        dark ? 'ring-offset-[#0B0B0F]' : 'ring-offset-cream'
+                      }`
                     : ''
                 }`}
               >

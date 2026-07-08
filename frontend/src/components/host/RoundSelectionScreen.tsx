@@ -247,6 +247,7 @@ export function RoundSelectionScreen({
       {/* F1 — search input partagé entre les 2 onglets */}
       <div className="mb-3">
         <Input
+          dark
           type="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -441,6 +442,7 @@ export function RoundSelectionScreen({
               // (OfficialCatalogSections) → parité de structure garantie.
               <div className="mb-4">
                 <OfficialCatalogSections
+                  dark
                   sections={themeSections}
                   disabled={loading}
                   onPickTheme={(th) => {
@@ -454,6 +456,7 @@ export function RoundSelectionScreen({
               // feat/host-tv-level-mirror — ÉTAPE NIVEAU : composant PARTAGÉ avec
               // le mirror TV (ThemeLevelCards) → parité de structure garantie.
               <ThemeLevelCards
+                dark
                 theme={selectedTheme}
                 disabled={loading}
                 onBack={() => setSelectedThemeKey(null)}
@@ -479,6 +482,7 @@ export function RoundSelectionScreen({
               {filteredQuizPacks.map((p) => (
                 <OfficialQuizPackCard
                   key={p.id}
+                  dark
                   pack={p}
                   onPick={() => void onPickQuizOfficial?.(p)}
                   onLockedClick={() => alert(t('host.session.premiumRequired'))}

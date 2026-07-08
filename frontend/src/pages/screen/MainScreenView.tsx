@@ -301,7 +301,7 @@ function Phase2YellowTimer({
   const seconds = Math.max(0, Math.ceil(remaining / 1000));
   return (
     <div
-      className="absolute top-1/2 right-6 -translate-y-1/2 bg-lemon border-4 border-ink rounded-2xl px-7 py-5 shadow-pop-lg text-center animate-timer-enter"
+      className="absolute top-1/2 right-6 -translate-y-1/2 bg-[#FF5C4D] border-4 border-[#0B0B0F] text-[#0B0B0F] rounded-2xl px-7 py-5 shadow-pop-lg text-center animate-timer-enter"
       style={{ transform: 'translateY(-50%) rotate(-3deg)' }}
     >
       <div className="font-bold text-[11px] uppercase tracking-widest mb-1">

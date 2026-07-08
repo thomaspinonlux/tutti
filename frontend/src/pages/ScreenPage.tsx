@@ -544,9 +544,9 @@ function ScreenPlaylistGridView({
         {categories === null ? (
           <p className="font-mono text-ink-soft animate-pulse">{t('common.loading')}</p>
         ) : selectedTheme ? (
-          <ThemeLevelCards theme={selectedTheme} highlightId={focusedId} readOnly />
+          <ThemeLevelCards dark theme={selectedTheme} highlightId={focusedId} readOnly />
         ) : (
-          <OfficialCatalogSections sections={sections} highlightId={focusedId} readOnly />
+          <OfficialCatalogSections dark sections={sections} highlightId={focusedId} readOnly />
         )}
       </div>
       <MultiColorBar height="md" />
