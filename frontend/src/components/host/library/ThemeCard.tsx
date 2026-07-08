@@ -22,6 +22,8 @@ interface Props {
   disabled?: boolean;
   /** Carte centrée côté host → surbrillance (mirror TV). */
   highlighted?: boolean;
+  /** Variante sombre — décale le ring-offset du highlight sur fond sombre. */
+  dark?: boolean;
 }
 
 function slugToHue(slug: string): number {
@@ -37,6 +39,7 @@ export function ThemeCard({
   onClick,
   disabled,
   highlighted,
+  dark,
 }: Props): JSX.Element {
   // Chaîne de fallback : mosaïque → spotify → yt → gradient.
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
@@ -60,7 +63,11 @@ export function ThemeCard({
       onClick={onClick}
       disabled={disabled}
       className={`group relative shrink-0 text-left rounded-lg overflow-hidden border-2 border-ink shadow-pop disabled:opacity-50 w-full transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98] ${
-        highlighted ? 'ring-4 ring-raspberry ring-offset-2 ring-offset-cream z-10 scale-[1.04]' : ''
+        highlighted
+          ? `ring-4 ring-raspberry ring-offset-2 z-10 scale-[1.04] ${
+              dark ? 'ring-offset-[#0B0B0F]' : 'ring-offset-cream'
+            }`
+          : ''
       }`}
       style={{ height: 180, background: gradient }}
       aria-label={title}

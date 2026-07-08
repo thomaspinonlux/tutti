@@ -1108,8 +1108,6 @@ router.post(
           status: true,
           mode: true,
           teams_config: true,
-          max_participants: true,
-          _count: { select: { participants: { where: { is_kicked: false } } } },
         },
       });
       if (!session) {
@@ -1124,16 +1122,10 @@ router.post(
           .json({ error: { code: 'NOT_ACCEPTING_PLAYERS', message: 'Session terminée' } });
         return;
       }
-      // Cap V1 = 15 participants (cf. Session.max_participants, défaut 15).
-      if (session._count.participants >= session.max_participants) {
-        res.status(409).json({
-          error: {
-            code: 'SESSION_FULL',
-            message: `Cette session est complète (${session.max_participants} participants maximum). Reviens plus tard ou demande à l'organisateur de créer une autre session.`,
-          },
-        });
-        return;
-      }
+      // Pas de cap sur le nombre de joueurs par session : le champ
+      // Session.max_participants reste informatif (exposé dans screenState)
+      // mais n'est plus appliqué au join — les sessions acceptent un nombre
+      // illimité de participants.
 
       let teamId: string | null = null;
       if (session.mode === 'TEAMS') {

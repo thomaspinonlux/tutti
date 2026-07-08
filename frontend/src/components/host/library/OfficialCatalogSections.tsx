@@ -29,6 +29,8 @@ interface Props {
   /** TV : non-interactif. */
   readOnly?: boolean;
   disabled?: boolean;
+  /** Variante sombre (console iPad / TV) — défaut clair. */
+  dark?: boolean;
 }
 
 export function OfficialCatalogSections({
@@ -37,6 +39,7 @@ export function OfficialCatalogSections({
   onPickTheme,
   readOnly,
   disabled,
+  dark,
 }: Props): JSX.Element {
   const { t, i18n } = useTranslation();
   const isFr = (i18n.language ?? 'fr').toLowerCase().startsWith('fr');
@@ -45,7 +48,11 @@ export function OfficialCatalogSections({
     <div className={`space-y-6${readOnly ? ' pointer-events-none select-none' : ''}`}>
       {sections.map((section) => (
         <section key={section.slug}>
-          <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2 px-0.5">
+          <h3
+            className={`font-mono text-xs uppercase tracking-[0.2em] mb-2 px-0.5 ${
+              dark ? 'text-white/55' : 'text-spritz-deep'
+            }`}
+          >
             {isFr ? section.label_fr : section.label_en}
           </h3>
           {/* Rangée horizontale — ancre H-sync. Scrollbar fine, snap doux. */}
@@ -71,6 +78,7 @@ export function OfficialCatalogSections({
                     subtitle={subtitle}
                     highlighted={!!highlightId && highlightId === th.cover.id}
                     disabled={disabled}
+                    dark={dark}
                     onClick={() => {
                       if (readOnly) return;
                       onPickTheme?.(th);
