@@ -85,6 +85,8 @@ export interface UseSpotifyPlayerResult {
   restartCurrentTrack: () => Promise<boolean>;
   /** feat/seek-bar — seek absolu (ms) via le SDK (player.seek). Host-only. */
   seek: (ms: number) => Promise<void>;
+  /** feat/master-volume — règle le volume de lecture (0..1) via le SDK. */
+  setVolume: (v: number) => Promise<void>;
   /** Bug 2 — true si Chrome/Safari ont bloqué la lecture audio. UI doit
    * afficher un bouton "🔊 Forcer audio" qui appelle unblockAudio(). */
   audioBlocked: boolean;
@@ -630,6 +632,21 @@ export function useSpotifyPlayer({
     }
   };
 
+  /**
+   * feat/master-volume — règle le volume du player Web Playback (0..1).
+   * No-op si le player n'est pas encore instancié.
+   */
+  const setVolume = async (v: number): Promise<void> => {
+    const p = playerRef.current;
+    if (!p) return;
+    const clamped = Math.min(1, Math.max(0, v));
+    try {
+      await p.setVolume(clamped);
+    } catch (err) {
+      console.warn('[Spotify Play] setVolume failed:', err);
+    }
+  };
+
   /** Vérifie le state du player après play() — détecte si Chrome a bloqué. */
   const verifyPlayback = (uri: string): void => {
     const p = playerRef.current;
@@ -792,6 +809,7 @@ export function useSpotifyPlayer({
     activate,
     restartCurrentTrack,
     seek,
+    setVolume,
     audioBlocked,
     unblockAudio,
   };
