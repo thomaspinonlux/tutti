@@ -41,6 +41,7 @@ import {
   masterRestartTrack,
   masterResume,
   masterSeek,
+  masterSetVolume,
   masterSkipTrack,
   postBuzz,
 } from '../lib/sessions.js';
@@ -628,6 +629,13 @@ export function PlayPage(): JSX.Element {
       await masterSeek(identity.sessionId, identity.token, Math.max(0, Math.round(ms)));
     });
   };
+  // feat/master-volume — volume 0..1 depuis le slider de la manette → commande
+  // serveur → la console applique sur son lecteur. Pas de masterCall (pas de
+  // busy/erreur bloquante pour un réglage continu) : fire-and-forget silencieux.
+  const handleMasterSetVolume = (v: number): void => {
+    if (!identity) return;
+    void masterSetVolume(identity.sessionId, identity.token, v).catch(() => {});
+  };
   const handleMasterEndSession = (): Promise<void> =>
     masterCall(async () => {
       if (!identity) return;
@@ -947,6 +955,7 @@ export function PlayPage(): JSX.Element {
                     onSeekBack={() => handleMasterSeek(-10_000)}
                     onSeekForward={() => handleMasterSeek(10_000)}
                     onSeekTo={handleMasterSeekTo}
+                    onSetVolume={handleMasterSetVolume}
                     progress={masterProgress}
                     onEndRound={handleMasterEndRound}
                     onEndSession={handleMasterEndSession}

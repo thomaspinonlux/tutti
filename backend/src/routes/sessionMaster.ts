@@ -516,6 +516,26 @@ router.post('/seek', async (req: Request<{ id: string }>, res: Response): Promis
   res.json({ ok: true });
 });
 
+// ── POST /set-volume ────────────────────────────────────────────────────────
+// feat/master-volume — la manette animateur règle le VOLUME de lecture (0..1).
+// On broadcast track:volume et la CONSOLE applique sur SON lecteur (Spotify SDK
+// setVolume / YouTube setVolume). La télécommande n'émet aucun son : comme le
+// seek, c'est une commande sans état serveur (pas de persistance en base).
+router.post('/set-volume', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const volume = Number((req.body as { volume?: unknown } | undefined)?.volume);
+  if (!Number.isFinite(volume) || volume < 0 || volume > 1) {
+    res
+      .status(400)
+      .json({ error: { code: 'VALIDATION_ERROR', message: 'volume invalide (attendu 0..1)' } });
+    return;
+  }
+  broadcastToSession(req.params.id, 'track:volume', {
+    session_id: req.params.id,
+    volume,
+  });
+  res.json({ ok: true });
+});
+
 // ── POST /restart-track ──────────────────────────────────────────────────
 // "Recommencer le morceau" : broadcast track:restart aux clients pour qu'ils
 // relancent l'audio Spotify à position_ms=0. Ne change pas la phase ni le

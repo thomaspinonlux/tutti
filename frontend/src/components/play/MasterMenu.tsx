@@ -47,6 +47,8 @@ export interface MasterMenuProps {
   onSeekForward?: () => void;
   /** Scrub tactile → seek serveur absolu (ms). */
   onSeekTo?: (ms: number) => void;
+  /** feat/master-volume — volume 0..1 → commande serveur, la console applique. */
+  onSetVolume?: (v: number) => void;
   /** Position/durée diffusées par la console (track:progress). */
   progress?: MasterProgress | null;
   onEndRound?: () => Promise<void>;
@@ -68,6 +70,10 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [confirmEndRound, setConfirmEndRound] = useState(false);
   const [showScores, setShowScores] = useState(false);
+  // feat/master-volume — volume local de la manette (0..1, défaut plein).
+  // Fire-and-forget : chaque changement pousse une commande serveur ; la console
+  // est seule à émettre du son. Pas de lecture inverse (la manette est muette).
+  const [volume, setVolume] = useState(1);
   const phase = props.currentTrack?.phase ?? null;
   const track = props.currentTrack;
 
@@ -186,6 +192,32 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* feat/master-volume — réglage du volume de la console depuis la manette. */}
+      {props.hasActiveRound && track && props.onSetVolume && (
+        <div className="mb-3 flex items-center gap-2">
+          <span aria-hidden className="text-base">
+            🔊
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={Math.round(volume * 100)}
+            onChange={(e) => {
+              const v = Number(e.target.value) / 100;
+              setVolume(v);
+              props.onSetVolume!(v);
+            }}
+            aria-label={t('play.masterVolume')}
+            className="flex-1 accent-spritz-deep touch-none"
+          />
+          <span className="font-mono text-xs text-ink-soft tabular-nums w-9 text-right">
+            {Math.round(volume * 100)}%
+          </span>
         </div>
       )}
 

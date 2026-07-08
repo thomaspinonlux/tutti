@@ -80,6 +80,8 @@ export interface UseYouTubePlayerResult {
   restart: () => void;
   /** feat/seek-bar — seek absolu (ms). Host-only, barre de lecture seekable. */
   seek: (ms: number) => void;
+  /** feat/master-volume — règle le volume (0..1, converti en 0..100 pour l'API YT). */
+  setVolume: (v: number) => void;
   /** Bug 4 — débloque audio YouTube depuis un clic user direct. */
   unblockAudio: () => void;
   /**
@@ -816,6 +818,20 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
   }, []);
 
   /**
+   * feat/master-volume — règle le volume du player YouTube. L'API IFrame attend
+   * un entier 0..100 ; on reçoit un 0..1. No-op si le player n'est pas prêt.
+   */
+  const setVolume = useCallback((v: number): void => {
+    const p = playerRef.current;
+    if (!p?.setVolume) return;
+    try {
+      p.setVolume(Math.round(Math.min(1, Math.max(0, v)) * 100));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  /**
    * Bug 4 — fallback audio bloqué côté YouTube. À appeler depuis un clic
    * user direct (button onClick). Re-tape playVideo() pour débloquer la
    * pipeline iframe iOS/Chrome.
@@ -1087,6 +1103,7 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     resume,
     restart,
     seek,
+    setVolume,
     unblockAudio,
     warmupSync,
     getPlayerState,

@@ -512,6 +512,23 @@ export async function masterSeek(
   });
 }
 
+/**
+ * feat/master-volume — la manette règle le volume de lecture (0..1). Broadcast
+ * track:volume → la console applique sur SON lecteur. La télécommande n'émet
+ * aucun son.
+ */
+export async function masterSetVolume(
+  sessionId: string,
+  token: string,
+  volume: number,
+): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/set-volume`, {
+    method: 'POST',
+    body: { token, volume: Math.min(1, Math.max(0, volume)) },
+    anonymous: true,
+  });
+}
+
 export async function masterRestartTrack(
   sessionId: string,
   roundId: string,

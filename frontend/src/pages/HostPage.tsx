@@ -569,6 +569,13 @@ function HostPageInner(): JSX.Element {
           console.info('[Socket] track:seek received →', position_ms, 'ms');
           setPendingSeek({ ms: position_ms, at: Date.now() });
         });
+        // feat/master-volume — la manette a réglé le volume → la CONSOLE applique
+        // sur SON lecteur (cf. effet pendingVolume plus bas). Même logique que le
+        // seek : state + effet pour lire le lecteur courant (pas de closure périmée).
+        socket.on('track:volume', ({ volume }: { volume: number }) => {
+          console.info('[Socket] track:volume received →', Math.round(volume * 100), '%');
+          setPendingVolume({ v: volume, at: Date.now() });
+        });
         socket.on('scores:invalidated', () => {
           const sid = sessionIdRef.current;
           if (sid) {
@@ -811,6 +818,18 @@ function HostPageInner(): JSX.Element {
     // seek une seule fois. started_at (ancre buzz/scoring) n'est jamais touché.
     setPendingSeek(null);
   }, [pendingSeek, isYouTubeTrack, youtube, spotify]);
+
+  // feat/master-volume — volume réglé par la manette (broadcast track:volume).
+  // Appliqué sur les DEUX lecteurs de la console : l'inactif l'ignore sans effet
+  // de bord, et le volume persiste si on change de provider en cours de session.
+  // One-shot (même raison que pendingSeek : évite les ré-applications au poll).
+  const [pendingVolume, setPendingVolume] = useState<{ v: number; at: number } | null>(null);
+  useEffect(() => {
+    if (!pendingVolume) return;
+    youtube.setVolume(pendingVolume.v);
+    void spotify.setVolume(pendingVolume.v);
+    setPendingVolume(null);
+  }, [pendingVolume, youtube, spotify]);
 
   // feat/manette-console-master — la CONSOLE diffuse sa position de lecture à la
   // room (~1/s) pour que la télécommande affiche une timeline EXACTE + un scrub
