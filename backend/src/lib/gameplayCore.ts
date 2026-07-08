@@ -333,7 +333,19 @@ export async function pickRandomTrackIdsForRound(
       return new Set<string>();
     });
 
-  const candidates = poolTracks.map((pt) => pt.track_id).filter((tid) => !playedTrackIds.has(tid));
+  let candidates = poolTracks.map((pt) => pt.track_id).filter((tid) => !playedTrackIds.has(tid));
+
+  // feat/no-session-play-limit — quand TOUS les morceaux de la playlist ont
+  // déjà été joués dans la session, on RECYCLE le pool complet (répétitions
+  // autorisées) au lieu de renvoyer eligibleSize=0 (→ ex-EXHAUSTED_POOL qui
+  // bloquait le lancement d'une nouvelle manche). Objectif : jouer sans limite.
+  // L'anti-répétition reste actif TANT QU'il reste des morceaux inédits.
+  if (candidates.length === 0 && poolTracks.length > 0) {
+    candidates = poolTracks.map((pt) => pt.track_id);
+    console.info(
+      `[pickRandomTrackIdsForRound] pool épuisé (playlist=${playlistId} session=${sessionId}) → recyclage du pool complet (${candidates.length} morceaux, répétitions autorisées)`,
+    );
+  }
 
   const eligibleSize = candidates.length;
   if (eligibleSize === 0) {
@@ -405,7 +417,18 @@ export async function pickWeightedTrackIdsForRound(
       return new Set<string>();
     });
 
-  const candidates = poolTracks.map((pt) => pt.track_id).filter((tid) => !playedTrackIds.has(tid));
+  let candidates = poolTracks.map((pt) => pt.track_id).filter((tid) => !playedTrackIds.has(tid));
+
+  // feat/no-session-play-limit — recyclage du pool complet quand tout a été
+  // joué (cf. pickRandomTrackIdsForRound) : jeu sans limite, répétitions
+  // autorisées seulement une fois les inédits épuisés.
+  if (candidates.length === 0 && poolTracks.length > 0) {
+    candidates = poolTracks.map((pt) => pt.track_id);
+    console.info(
+      `[pickWeightedTrackIdsForRound] pool épuisé (playlist=${playlistId} session=${sessionId}) → recyclage du pool complet (${candidates.length} morceaux, répétitions autorisées)`,
+    );
+  }
+
   const eligibleSize = candidates.length;
   if (eligibleSize === 0) {
     return {
