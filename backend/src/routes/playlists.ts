@@ -399,7 +399,16 @@ router.delete('/:id', async (req: Request<{ id: string }>, res: Response): Promi
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Playlist introuvable' } });
       return;
     }
-    await prisma.playlist.delete({ where: { id } });
+    // feat/delete-playlist-robust — la relation SessionRound→Playlist est en
+    // Restrict (pas de cascade DB), donc une playlist déjà utilisée dans une
+    // partie ne peut pas être supprimée directement (FK). On supprime d'abord
+    // ses manches dans une transaction (leurs ScoreEvent cascadent, cf. schéma
+    // onDelete: Cascade sur ScoreEvent.session_round_id), puis la playlist
+    // (playlist_tracks cascadent). Rend « Supprimer » fiable même après usage.
+    await prisma.$transaction([
+      prisma.sessionRound.deleteMany({ where: { playlist_id: id } }),
+      prisma.playlist.delete({ where: { id } }),
+    ]);
     res.json({ ok: true });
   } catch (err: unknown) {
     console.error('[DELETE /playlists/:id] error:', err);
