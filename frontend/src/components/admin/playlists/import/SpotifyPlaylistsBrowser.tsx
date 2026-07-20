@@ -31,8 +31,47 @@ interface Props {
 const PAGE_SIZE = 10;
 const TRACKS_PAGE_SIZE = 10;
 
+/**
+ * feat/spotify-import-by-url — extrait l'ID de playlist Spotify (22 chars
+ * base62) depuis un lien collé, quelle que soit la forme :
+ *   - https://open.spotify.com/playlist/<ID>?si=...
+ *   - http://open.spotify.com/intl-fr/playlist/<ID>
+ *   - spotify:playlist:<ID>
+ *   - <ID> brut
+ * Retourne null si aucun ID valide n'est trouvé.
+ */
+export function parseSpotifyPlaylistId(raw: string): string | null {
+  const s = raw.trim();
+  const m = s.match(/playlist[/:]([A-Za-z0-9]{22})/);
+  if (m) return m[1]!;
+  if (/^[A-Za-z0-9]{22}$/.test(s)) return s;
+  return null;
+}
+
+/** Résumé minimal synthétique pour ouvrir une playlist par ID collé
+ *  (nom/owner réels inconnus tant que les tracks ne sont pas chargées ;
+ *  le compte réel s'affiche via tracksTotal). */
+function summaryFromId(id: string): SpotifyPlaylistSummary {
+  return {
+    id,
+    name: 'Playlist Spotify (lien)',
+    description: null,
+    cover_url: null,
+    owner_name: 'Import par lien',
+    owner_id: '',
+    tracks_count: 0,
+    is_public: true,
+    is_collaborative: false,
+    followers_count: null,
+    is_spotify_owned: false,
+  };
+}
+
 export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props): JSX.Element {
   const [query, setQuery] = useState('');
+  // feat/spotify-import-by-url — champ « coller un lien Spotify » (onglet public).
+  const [urlInput, setUrlInput] = useState('');
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [playlists, setPlaylists] = useState<SpotifyPlaylistSummary[]>([]);
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
@@ -166,7 +205,8 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
               {selectedPlaylist.name}
             </p>
             <p className="font-mono text-xs text-ink-soft truncate">
-              {selectedPlaylist.owner_name} · {selectedPlaylist.tracks_count} morceaux
+              {selectedPlaylist.owner_name} · {tracksTotal || selectedPlaylist.tracks_count}{' '}
+              morceaux
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={closePanel}>
@@ -223,14 +263,50 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
   return (
     <div className="space-y-3">
       {mode === 'public' && (
-        <Input
-          label="Cherche une playlist"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="années 80, hits 2010, rock français…"
-          maxLength={100}
-          autoFocus
-        />
+        <>
+          <Input
+            label="Cherche une playlist"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="années 80, hits 2010, rock français…"
+            maxLength={100}
+            autoFocus
+          />
+          {/* feat/spotify-import-by-url — import direct en collant le lien Spotify. */}
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Input
+                label="… ou colle un lien Spotify"
+                value={urlInput}
+                onChange={(e) => {
+                  setUrlInput(e.target.value);
+                  setUrlError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const id = parseSpotifyPlaylistId(urlInput);
+                    if (id) void openPlaylist(summaryFromId(id));
+                    else setUrlError('Lien Spotify invalide (attendu : .../playlist/…).');
+                  }
+                }}
+                placeholder="https://open.spotify.com/playlist/…"
+                error={urlError ?? undefined}
+              />
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                const id = parseSpotifyPlaylistId(urlInput);
+                if (id) void openPlaylist(summaryFromId(id));
+                else setUrlError('Lien Spotify invalide (attendu : .../playlist/…).');
+              }}
+            >
+              Ouvrir
+            </Button>
+          </div>
+        </>
       )}
 
       {error && (
