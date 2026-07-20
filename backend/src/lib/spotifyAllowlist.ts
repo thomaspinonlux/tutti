@@ -18,6 +18,14 @@
  * éditable depuis /admin/super-admin si besoin gestion dynamique.
  */
 
+/**
+ * Allowlist intégrée au code (en plus de SPOTIFY_ALLOWLIST_EMAILS). Permet de
+ * débloquer des comptes sans dépendre d'une config Railway. Emails en
+ * minuscules (le check normalise aussi l'entrée). Match sur l'EMAIL DE LOGIN
+ * Tutti (req.userEmail), pas sur l'email du compte Spotify.
+ */
+const BUILTIN_ALLOWLIST_EMAILS = ['thomaspinon@gmail.com', 'contact@komptoir.lu'];
+
 function parseEmails(raw: string | undefined): Set<string> {
   if (!raw) return new Set();
   return new Set(
@@ -32,7 +40,11 @@ let cached: Set<string> | null = null;
 
 function getEmails(): Set<string> {
   if (cached) return cached;
-  cached = parseEmails(process.env.SPOTIFY_ALLOWLIST_EMAILS);
+  // Union de l'allowlist intégrée + celle de l'env (les deux sources cumulent).
+  cached = new Set([
+    ...BUILTIN_ALLOWLIST_EMAILS,
+    ...parseEmails(process.env.SPOTIFY_ALLOWLIST_EMAILS),
+  ]);
   return cached;
 }
 

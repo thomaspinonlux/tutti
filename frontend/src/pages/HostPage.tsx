@@ -979,9 +979,12 @@ function HostPageInner(): JSX.Element {
 
   const handlePickPlaylist = (playlist: Playlist): void => {
     if (!session) return;
-    // BUG 1 — perso : legacy Spotify pour les allowlistés (sinon YouTube). Le
-    // provider réel du morceau courant corrige ensuite (effet de synchro).
-    setAudioProvider(spotifyAllowlisted ? 'spotify' : 'youtube');
+    // feat/spotify-decouple-default — le défaut reste TOUJOURS YouTube, même
+    // pour un host allowlisté : débloquer Spotify ne doit pas basculer la source
+    // par défaut. Le provider réel du morceau corrige ensuite (effet de synchro
+    // `currentTrack.provider` plus haut, qui fait autorité) → une playlist perso
+    // Spotify passe bien en Spotify une fois le 1ᵉʳ morceau démarré.
+    setAudioProvider('youtube');
     setPendingFirstPlay({
       source: 'perso',
       playlistId: playlist.id,
@@ -996,7 +999,7 @@ function HostPageInner(): JSX.Element {
 
   const handlePickExpress = (info: { id: string; name: string; tracks_count: number }): void => {
     if (!session) return;
-    setAudioProvider(spotifyAllowlisted ? 'spotify' : 'youtube'); // BUG 1 (perso legacy)
+    setAudioProvider('youtube'); // feat/spotify-decouple-default — défaut YouTube (cf. handlePickPlaylist)
     setPendingFirstPlay({
       source: 'perso',
       playlistId: info.id,
