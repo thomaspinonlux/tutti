@@ -1040,6 +1040,23 @@ function HostPageInner(): JSX.Element {
     return providers;
   };
 
+  // fix/spotify-toggle-lock — le toggle « source Spotify » de l'écran de
+  // sélection dépend de hostProviders.spotify.connected, MAIS hostProviders
+  // n'était peuplé qu'au pick d'une playlist (fetchHostProviders appelé dans
+  // les handlers). Sur l'écran de sélection, hostProviders=null → connected
+  // effectivement false → cadenas 🔒 verrouillé même pour un host allowlisté +
+  // Spotify connecté. On charge donc le statut des providers dès que la session
+  // est prête, et on re-fetch quand spotifyAllowlisted bascule à true (à ce
+  // moment getSpotifyStatus() est enfin appelé et connected devient correct).
+  useEffect(() => {
+    if (!session) return;
+    void fetchHostProviders();
+    // fetchHostProviders est recréé à chaque render (closure sur spotifyAllowlisted) ;
+    // on ne le met pas en dép pour éviter une boucle — on veut re-fetch sur
+    // changement de session ou du flag allowlist uniquement.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id, spotifyAllowlisted]);
+
   const handlePickOfficial = async (
     summary: LibraryPlaylistSummary,
     provider: 'youtube' | 'spotify' = 'youtube',
