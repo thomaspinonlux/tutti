@@ -7,7 +7,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Playlist } from '@tutti/shared';
-import { listPlaylists, createPlaylist } from '../../lib/playlists.js';
+import { listPlaylists, createPlaylist, deletePlaylist } from '../../lib/playlists.js';
 import {
   Button,
   Card,
@@ -24,12 +24,35 @@ export function TracksPage(): JSX.Element {
   const [playlists, setPlaylists] = useState<Playlist[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     listPlaylists()
       .then(setPlaylists)
       .catch((err: unknown) => setError((err as Error).message));
   }, []);
+
+  // feat/delete-playlist — suppression d'une playlist depuis la liste, avec
+  // confirmation. Le bouton est en dehors du <Link> (pas de navigation au clic).
+  const handleDelete = async (p: Playlist): Promise<void> => {
+    if (
+      !window.confirm(
+        `Supprimer la playlist « ${p.name} » ?\nCette action est définitive (la playlist et ses morceaux seront retirés).`,
+      )
+    ) {
+      return;
+    }
+    setDeletingId(p.id);
+    setError(null);
+    try {
+      await deletePlaylist(p.id);
+      setPlaylists((prev) => (prev ? prev.filter((x) => x.id !== p.id) : prev));
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -63,7 +86,18 @@ export function TracksPage(): JSX.Element {
       {playlists && playlists.length > 0 && (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {playlists.map((p, idx) => (
-            <li key={p.id}>
+            <li key={p.id} className="relative">
+              {/* feat/delete-playlist — bouton suppression, hors du <Link>. */}
+              <button
+                type="button"
+                onClick={() => void handleDelete(p)}
+                disabled={deletingId === p.id}
+                aria-label={`Supprimer la playlist ${p.name}`}
+                title="Supprimer la playlist"
+                className="absolute bottom-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-ink text-raspberry hover:bg-raspberry hover:text-white shadow-pop transition-colors disabled:opacity-50"
+              >
+                {deletingId === p.id ? '…' : '🗑'}
+              </button>
               <Link to={`/admin/tracks/${p.id}`} className="block group">
                 <Card
                   tone={p.is_published ? 'spritz' : 'default'}
