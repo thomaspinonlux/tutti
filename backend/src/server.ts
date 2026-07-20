@@ -110,6 +110,9 @@ app.get('/api/health', async (_req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     version: '0.0.1',
+    // feat/health-commit-sha — SHA du commit déployé, pour vérifier sans auth
+    // quel code tourne réellement (Railway le fournit sur les deploys GitHub).
+    commit: process.env.RAILWAY_GIT_COMMIT_SHA ?? 'unknown',
   };
   res.json(response);
 });

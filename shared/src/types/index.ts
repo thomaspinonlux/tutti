@@ -10,6 +10,13 @@ export interface HealthResponse {
   timestamp: string;
   uptime: number;
   version: string;
+  /**
+   * SHA du commit git réellement déployé (Railway l'injecte via
+   * RAILWAY_GIT_COMMIT_SHA sur les déploiements GitHub). 'unknown' si la
+   * variable n'est pas fournie (ex. certains `railway up` locaux). Permet de
+   * vérifier sans auth quel code tourne vraiment en prod.
+   */
+  commit: string;
 }
 
 // ───── Locale ─────────────────────────────────────────────────────────────
