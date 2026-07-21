@@ -29,6 +29,7 @@ export interface LibraryPlaylistSummary {
   track_count: number;
   spotify_count: number;
   youtube_count: number;
+  apple_music_count: number;
   /**
    * feat/thematic-level-filter — répartition des tracks par difficulty
    * (EASY/MEDIUM/EXPERT) au niveau CATALOGUE. Sert au sous-picker de niveau sur
@@ -161,6 +162,7 @@ async function listVisiblePlaylistsCore(
         select: {
           spotify_id: true,
           youtube_id: true,
+          apple_music_id: true,
           cover_url: true,
           position: true,
           difficulty: true,
@@ -173,6 +175,7 @@ async function listVisiblePlaylistsCore(
   return playlists.map((p) => {
     const spotify_count = p.tracks.filter((t) => t.spotify_id !== null).length;
     const youtube_count = p.tracks.filter((t) => t.youtube_id !== null).length;
+    const apple_music_count = p.tracks.filter((t) => t.apple_music_id !== null).length;
     // 1ʳᵉ track avec cover_url OU youtube_id pour fallback frontend.
     const firstWithMedia = p.tracks.find((t) => t.cover_url || t.youtube_id) ?? null;
     return {
@@ -189,6 +192,7 @@ async function listVisiblePlaylistsCore(
       track_count: p._count.tracks,
       spotify_count,
       youtube_count,
+      apple_music_count,
       difficulty_counts: countDifficulties(p.tracks),
       locked: p.visibility === 'premium_only' && !premium,
       category: p.category,
@@ -247,6 +251,7 @@ export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
         select: {
           spotify_id: true,
           youtube_id: true,
+          apple_music_id: true,
           cover_url: true,
           position: true,
           difficulty: true,
@@ -259,6 +264,7 @@ export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
   return playlists.map((p) => {
     const spotify_count = p.tracks.filter((t) => t.spotify_id !== null).length;
     const youtube_count = p.tracks.filter((t) => t.youtube_id !== null).length;
+    const apple_music_count = p.tracks.filter((t) => t.apple_music_id !== null).length;
     const firstWithMedia = p.tracks.find((t) => t.cover_url || t.youtube_id) ?? null;
     return {
       id: p.id,
@@ -274,6 +280,7 @@ export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
       track_count: p._count.tracks,
       spotify_count,
       youtube_count,
+      apple_music_count,
       difficulty_counts: countDifficulties(p.tracks),
       // TV = vue anonyme (non-premium) → premium_only verrouillées.
       locked: p.visibility === 'premium_only',
@@ -322,6 +329,7 @@ async function getVisiblePlaylistDetailCore(
 
   const spotify_count = playlist.tracks.filter((t) => t.spotify_id !== null).length;
   const youtube_count = playlist.tracks.filter((t) => t.youtube_id !== null).length;
+  const apple_music_count = playlist.tracks.filter((t) => t.apple_music_id !== null).length;
 
   const firstWithMedia = playlist.tracks.find((t) => t.cover_url || t.youtube_id) ?? null;
 
@@ -339,6 +347,7 @@ async function getVisiblePlaylistDetailCore(
     track_count: playlist.tracks.length,
     spotify_count,
     youtube_count,
+    apple_music_count,
     difficulty_counts: countDifficulties(playlist.tracks),
     locked: false,
     category: playlist.category,

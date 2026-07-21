@@ -22,6 +22,9 @@ export interface LibraryPlaylistSummary {
   track_count: number;
   spotify_count: number;
   youtube_count: number;
+  /** feat/apple-music — nb de tracks avec apple_music_id. Optionnel (défensif :
+   *  réponse d'un vieux service worker peut l'omettre). */
+  apple_music_count?: number;
   /** feat/thematic-level-filter — répartition des tracks par difficulty au
    *  niveau catalogue. Optionnel (défensif : une réponse API servie par un
    *  vieux service worker peut l'omettre → traité comme tout-zéro, donc pas de

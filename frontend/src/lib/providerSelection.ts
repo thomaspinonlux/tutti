@@ -20,16 +20,20 @@
 export interface HostProviders {
   spotify: { connected: boolean; premium?: boolean };
   youtube: { connected: boolean; premium?: boolean };
+  // feat/apple-music — 3e source. Optionnel pour compat des appelants existants.
+  apple?: { connected: boolean; premium?: boolean };
 }
 
 export interface LibraryTrackProviderIds {
   spotify_id: string | null;
   youtube_id: string | null;
+  apple_music_id?: string | null;
 }
 
 export type ProviderChoice =
   | { provider: 'spotify'; id: string }
   | { provider: 'youtube'; id: string }
+  | { provider: 'apple_music'; id: string }
   | { provider: null; error: 'NO_PROVIDER_AVAILABLE' };
 
 export function selectProvider(
@@ -38,6 +42,9 @@ export function selectProvider(
 ): ProviderChoice {
   if (host.spotify.connected && track.spotify_id) {
     return { provider: 'spotify', id: track.spotify_id };
+  }
+  if (host.apple?.connected && track.apple_music_id) {
+    return { provider: 'apple_music', id: track.apple_music_id };
   }
   if (host.youtube.connected && track.youtube_id) {
     return { provider: 'youtube', id: track.youtube_id };
@@ -67,6 +74,7 @@ export interface PlayabilityReport {
   playable: number;
   via_spotify: number;
   via_youtube: number;
+  via_apple: number;
 }
 
 export function computePlayability(
@@ -76,17 +84,20 @@ export function computePlayability(
   // STRICTEMENT cette source (mondes étanches) : mode youtube → seuls les
   // youtube_id comptent (via_spotify = 0) ; mode spotify → inverse. Sans elle →
   // legacy (selectProvider spotify-first). L'aperçu doit refléter la source.
-  forceProvider?: 'youtube' | 'spotify',
+  forceProvider?: 'youtube' | 'spotify' | 'apple_music',
 ): PlayabilityReport {
   let playable = 0;
   let viaSpotify = 0;
   let viaYouTube = 0;
+  let viaApple = 0;
   for (const t of tracks) {
-    let provider: 'spotify' | 'youtube' | null;
+    let provider: 'spotify' | 'youtube' | 'apple_music' | null;
     if (forceProvider === 'youtube') {
       provider = host.youtube.connected && t.youtube_id ? 'youtube' : null;
     } else if (forceProvider === 'spotify') {
       provider = host.spotify.connected && t.spotify_id ? 'spotify' : null;
+    } else if (forceProvider === 'apple_music') {
+      provider = host.apple?.connected && t.apple_music_id ? 'apple_music' : null;
     } else {
       provider = selectProvider(t, host).provider;
     }
@@ -96,7 +107,16 @@ export function computePlayability(
     } else if (provider === 'youtube') {
       playable += 1;
       viaYouTube += 1;
+    } else if (provider === 'apple_music') {
+      playable += 1;
+      viaApple += 1;
     }
   }
-  return { total: tracks.length, playable, via_spotify: viaSpotify, via_youtube: viaYouTube };
+  return {
+    total: tracks.length,
+    playable,
+    via_spotify: viaSpotify,
+    via_youtube: viaYouTube,
+    via_apple: viaApple,
+  };
 }

@@ -8,6 +8,7 @@
  */
 
 import { api } from './api.js';
+import { loadMusicKitSdk } from './musickitLoader.js';
 
 export async function getAppleDeveloperToken(): Promise<{ token: string; expires_at: string }> {
   return api('/api/auth/apple/developer-token');
@@ -48,4 +49,24 @@ export interface ApplePublicTokens {
 /** feat/tv-audio-output — tokens pour la TV publique (gated session active). */
 export async function getApplePublicTokens(workspaceId: string): Promise<ApplePublicTokens> {
   return api(`/api/auth/apple/token-public/${encodeURIComponent(workspaceId)}`);
+}
+
+/**
+ * Connexion interactive Apple Music : charge MusicKit, configure avec le
+ * developer token, ouvre le popup Apple (MusicKit.authorize) où le host se
+ * logue avec son compte abonné, puis persiste le Music User Token via
+ * /connect. À appeler depuis un CLIC utilisateur (popup bloqué sinon).
+ */
+export async function authorizeAppleMusic(): Promise<{ expires_at: string }> {
+  const { token } = await getAppleDeveloperToken();
+  const MusicKit = await loadMusicKitSdk();
+  const music = await MusicKit.configure({
+    developerToken: token,
+    app: { name: 'Tutti', build: '1.0.0' },
+  });
+  const musicUserToken = await music.authorize();
+  if (!musicUserToken) {
+    throw new Error('Autorisation Apple Music annulée.');
+  }
+  return connectAppleMusic(musicUserToken);
 }
