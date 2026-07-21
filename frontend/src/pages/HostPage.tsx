@@ -55,6 +55,9 @@ import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
 import { useSpotifyAudioSync } from '../lib/useSpotifyAudioSync.js';
 import { useYouTubePlayer } from '../lib/useYouTubePlayer.js';
 import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
+import { useAppleMusicPlayer } from '../lib/useAppleMusicPlayer.js';
+import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
+import { getAppleMusicStatus } from '../lib/appleMusic.js';
 import { unlockAudioSync } from '../lib/audioUnlock.js';
 import { usePwa } from '../lib/usePwa.js';
 import { ContentBlockerWarning } from '../components/ContentBlockerWarning.js';
@@ -691,7 +694,19 @@ function HostPageInner(): JSX.Element {
   // n'est JAMAIS initialisé. Positionné au launch (source choisie) puis
   // re-synchronisé sur le provider RÉEL du morceau courant (autoritatif serveur,
   // clone étanche) — cf. effet plus bas.
-  const [audioProvider, setAudioProvider] = useState<'youtube' | 'spotify'>('youtube');
+  const [audioProvider, setAudioProvider] = useState<'youtube' | 'spotify' | 'apple_music'>(
+    'youtube',
+  );
+  // feat/apple-music — compte Apple Music connecté (gate le SDK MusicKit + le
+  // 3e onglet source). Chargé au mount + re-synchronisé par fetchHostProviders.
+  const [appleConnected, setAppleConnected] = useState(false);
+  useEffect(() => {
+    void getAppleMusicStatus()
+      .then((s) => setAppleConnected(s.connected))
+      .catch(() => {
+        /* statut non critique */
+      });
+  }, []);
   // feat/quiz-launch-host-ui — flag pour afficher le sub-onglet "Quizz"
   // dans la bibliothèque officielle. Reflète WorkspaceMember.can_use_quizz.
   //
@@ -754,6 +769,11 @@ function HostPageInner(): JSX.Element {
     enabled: spotifyAllowlisted && playerAlive && audioProvider === 'spotify',
   });
   const youtube = useYouTubePlayer({ enabled: playerAlive });
+  // feat/apple-music — MusicKit initialisé UNIQUEMENT si la source active est
+  // Apple + compte connecté (comme Spotify). Sinon SDK jamais chargé.
+  const apple = useAppleMusicPlayer({
+    enabled: appleConnected && playerAlive && audioProvider === 'apple_music',
+  });
   // feat/detect-content-blocker-youtube — lit isStandalone pour adapter
   // les instructions du ContentBlockerWarning (PWA vs Safari classique).
   const { isStandalone } = usePwa();
@@ -777,13 +797,19 @@ function HostPageInner(): JSX.Element {
     isPaused: session?.is_paused ?? false,
     enabled: phase === 'roundPlaying',
   });
+  useAppleMusicAudioSync({
+    apple,
+    currentTrack,
+    isPaused: session?.is_paused ?? false,
+    enabled: appleConnected && audioProvider === 'apple_music' && phase === 'roundPlaying',
+  });
 
   // BUG 1 — le provider RÉEL du morceau courant (décidé serveur au clone, étanche)
   // fait AUTORITÉ : re-synchronise `audioProvider` dessus. Corrige aussi la
   // reprise (reload en cours de session) où le choix initial est perdu.
   useEffect(() => {
     const p = currentTrack?.provider;
-    if (p === 'spotify' || p === 'youtube') setAudioProvider(p);
+    if (p === 'spotify' || p === 'youtube' || p === 'apple_music') setAudioProvider(p);
   }, [currentTrack?.provider]);
 
   // fix/ipad-pwa-audio-persistent-player — le player survit à l'intermission
@@ -794,6 +820,7 @@ function HostPageInner(): JSX.Element {
     if (prevPhaseRef.current === 'roundPlaying' && phase !== 'roundPlaying') {
       youtube.pause();
       void spotify.pause();
+      void apple.pause();
     }
     prevPhaseRef.current = phase;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -801,8 +828,17 @@ function HostPageInner(): JSX.Element {
 
   // Position/durée = lecteur LOCAL de la console (elle joue toujours le son).
   const isYouTubeTrack = currentTrack?.provider === 'youtube';
-  const audioPositionMs = isYouTubeTrack ? youtube.positionMs : spotify.positionMs;
-  const audioDurationMs = isYouTubeTrack ? youtube.durationMs : spotify.durationMs;
+  const isAppleTrack = currentTrack?.provider === 'apple_music';
+  const audioPositionMs = isYouTubeTrack
+    ? youtube.positionMs
+    : isAppleTrack
+      ? apple.positionMs
+      : spotify.positionMs;
+  const audioDurationMs = isYouTubeTrack
+    ? youtube.durationMs
+    : isAppleTrack
+      ? apple.durationMs
+      : spotify.durationMs;
 
   // feat/sans-animateur — seek demandé par la télécommande (broadcast track:seek).
   // Appliqué sur le lecteur LOCAL de la console (seule à émettre du son). State +
@@ -811,13 +847,14 @@ function HostPageInner(): JSX.Element {
   useEffect(() => {
     if (!pendingSeek) return;
     if (isYouTubeTrack) youtube.seek(pendingSeek.ms);
+    else if (isAppleTrack) void apple.seek(pendingSeek.ms);
     else void spotify.seek(pendingSeek.ms);
     // ONE-SHOT : sans ce reset, `youtube`/`spotify` changent d'identité à chaque
     // poll de position → l'effet rejoue → ré-applique le MÊME seek ~1×/s → la
     // musique boucle sur ~1s et n'avance jamais (bug −10/+10s). On consomme le
     // seek une seule fois. started_at (ancre buzz/scoring) n'est jamais touché.
     setPendingSeek(null);
-  }, [pendingSeek, isYouTubeTrack, youtube, spotify]);
+  }, [pendingSeek, isYouTubeTrack, isAppleTrack, youtube, spotify, apple]);
 
   // feat/master-volume — volume réglé par la manette (broadcast track:volume).
   // Appliqué sur les DEUX lecteurs de la console : l'inactif l'ignore sans effet
@@ -828,8 +865,9 @@ function HostPageInner(): JSX.Element {
     if (!pendingVolume) return;
     youtube.setVolume(pendingVolume.v);
     void spotify.setVolume(pendingVolume.v);
+    void apple.setVolume(pendingVolume.v);
     setPendingVolume(null);
-  }, [pendingVolume, youtube, spotify]);
+  }, [pendingVolume, youtube, spotify, apple]);
 
   // feat/manette-console-master — la CONSOLE diffuse sa position de lecture à la
   // room (~1/s) pour que la télécommande affiche une timeline EXACTE + un scrub
@@ -837,23 +875,29 @@ function HostPageInner(): JSX.Element {
   // courantes sans recréer l'interval à chaque poll de position des lecteurs.
   const progressRef = useRef<{
     isYouTubeTrack: boolean;
+    isAppleTrack: boolean;
     youtube: typeof youtube;
     spotify: typeof spotify;
+    apple: typeof apple;
     sessionId: string | null;
     isPaused: boolean;
     hasTrack: boolean;
   }>({
     isYouTubeTrack,
+    isAppleTrack,
     youtube,
     spotify,
+    apple,
     sessionId: session?.id ?? null,
     isPaused: session?.is_paused ?? false,
     hasTrack: !!currentTrack,
   });
   progressRef.current = {
     isYouTubeTrack,
+    isAppleTrack,
     youtube,
     spotify,
+    apple,
     sessionId: session?.id ?? null,
     isPaused: session?.is_paused ?? false,
     hasTrack: !!currentTrack,
@@ -863,8 +907,17 @@ function HostPageInner(): JSX.Element {
     const emit = (): void => {
       const p = progressRef.current;
       if (!p.sessionId || !p.hasTrack) return;
-      const position_ms = p.isYouTubeTrack ? p.youtube.positionMs : p.spotify.positionMs;
-      const duration_ms = (p.isYouTubeTrack ? p.youtube.durationMs : p.spotify.durationMs) || null;
+      const position_ms = p.isYouTubeTrack
+        ? p.youtube.positionMs
+        : p.isAppleTrack
+          ? p.apple.positionMs
+          : p.spotify.positionMs;
+      const duration_ms =
+        (p.isYouTubeTrack
+          ? p.youtube.durationMs
+          : p.isAppleTrack
+            ? p.apple.durationMs
+            : p.spotify.durationMs) || null;
       hostSocket.emit('console:progress', {
         session_id: p.sessionId,
         position_ms,
@@ -1015,7 +1068,7 @@ function HostPageInner(): JSX.Element {
   const [previewPlaylist, setPreviewPlaylist] = useState<LibraryPlaylistDetail | null>(null);
   // feat/two-provider-libraries — provider de l'onglet bibliothèque au moment du
   // pick (youtube|spotify), relu au launch. Ref : survit pick→preview→confirm.
-  const pickedProviderRef = useRef<'youtube' | 'spotify'>('youtube');
+  const pickedProviderRef = useRef<'youtube' | 'spotify' | 'apple_music'>('youtube');
   // feat/thematic-level-filter — niveau choisi sur une thématique éclatée, relu
   // au launch (clone-filtré). Ref : survit pick→preview→confirm. undefined =
   // tous niveaux (Mix / décennies / thématique non éclatée).
@@ -1032,9 +1085,13 @@ function HostPageInner(): JSX.Element {
     ]);
     const spotify = sp.status === 'fulfilled' ? sp.value : null;
     const youtube = yt.status === 'fulfilled' ? yt.value : null;
+    // feat/apple-music — statut Apple Music (best-effort, non bloquant).
+    const appleStatus = await getAppleMusicStatus().catch(() => null);
+    setAppleConnected(appleStatus?.connected ?? false);
     const providers: HostProviders = {
       spotify: { connected: spotify?.connected ?? false, premium: true },
       youtube: { connected: youtube?.connected ?? false, premium: youtube?.premium ?? false },
+      apple: { connected: appleStatus?.connected ?? false, premium: true },
     };
     setHostProviders(providers);
     return providers;
@@ -1059,7 +1116,7 @@ function HostPageInner(): JSX.Element {
 
   const handlePickOfficial = async (
     summary: LibraryPlaylistSummary,
-    provider: 'youtube' | 'spotify' = 'youtube',
+    provider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
     difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
   ): Promise<void> => {
     if (!session) return;
@@ -1070,7 +1127,8 @@ function HostPageInner(): JSX.Element {
 
     // 1. Charge providers connectés
     const providers = await fetchHostProviders();
-    const hasAny = providers.spotify.connected || providers.youtube.connected;
+    const hasAny =
+      providers.spotify.connected || providers.youtube.connected || !!providers.apple?.connected;
     if (!hasAny) {
       setNoProviderOpen(true);
       return;
@@ -1148,7 +1206,11 @@ function HostPageInner(): JSX.Element {
     // être connectée, sinon on renvoie vers l'écran "connecter un provider".
     const prefer: PreferProvider = pickedProviderRef.current;
     const connected =
-      prefer === 'spotify' ? hostProviders.spotify.connected : hostProviders.youtube.connected;
+      prefer === 'spotify'
+        ? hostProviders.spotify.connected
+        : prefer === 'apple_music'
+          ? !!hostProviders.apple?.connected
+          : hostProviders.youtube.connected;
     if (!connected) {
       setNoProviderOpen(true);
       setPreviewPlaylist(null);
@@ -1885,6 +1947,7 @@ function HostPageInner(): JSX.Element {
                 onPickPlaylist={handlePickPlaylist}
                 onPickOfficial={handlePickOfficial}
                 spotifyLibraryAvailable={spotifyAllowlisted && !!hostProviders?.spotify.connected}
+                appleLibraryAvailable={!!hostProviders?.apple?.connected}
                 onPickQuizOfficial={handlePickQuizOfficial}
                 canUseQuizz={canUseQuizz}
                 onCreateExpress={() => setExpressModalOpen(true)}

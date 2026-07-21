@@ -73,7 +73,7 @@ export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
   tracks: LibraryTrack[];
 }
 
-export type PreferProvider = 'spotify' | 'youtube';
+export type PreferProvider = 'spotify' | 'youtube' | 'apple_music';
 
 export interface LaunchResult {
   round: {
@@ -194,9 +194,9 @@ export async function launchLibraryQuizPack(
  * Groupe les playlists officielles par catégorie (ordre canonique).
  */
 export async function getPlaylistsByCategory(
-  provider: 'youtube' | 'spotify' = 'youtube',
+  provider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
 ): Promise<LibraryCategoryWithPlaylists[]> {
-  const qs = provider === 'spotify' ? '?provider=spotify' : '';
+  const qs = provider === 'youtube' ? '' : `?provider=${provider}`;
   const data = await api<{ categories: LibraryCategoryWithPlaylists[] }>(
     `/api/library/playlists-by-category${qs}`,
   );

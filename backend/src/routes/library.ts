@@ -78,15 +78,27 @@ router.get('/playlists-by-category', async (req: Request, res: Response): Promis
   try {
     const { PLAYLIST_CATEGORIES, UNCATEGORIZED_CATEGORY, getCategoryDef } =
       await import('../lib/playlistCategories.js');
-    // feat/two-provider-libraries — onglet provider. 'spotify' ne garde que les
-    // playlists ayant ≥15 tracks avec spotify_id (1 manche = 15 → jouable).
-    const provider = req.query.provider === 'spotify' ? 'spotify' : 'youtube';
-    const SPOTIFY_MIN_TRACKS = 15;
-    const all = (await listVisiblePlaylists(req.userId, {})).filter(
-      (p) =>
-        provider !== 'spotify' ||
-        ((p as unknown as { spotify_count?: number }).spotify_count ?? 0) >= SPOTIFY_MIN_TRACKS,
-    );
+    // feat/two-provider-libraries — onglet provider. 'spotify' / 'apple_music'
+    // ne gardent que les playlists ayant ≥15 tracks avec l'id de la source
+    // (1 manche = 15 → jouable). 'youtube' = tout (défaut).
+    const provider =
+      req.query.provider === 'spotify'
+        ? 'spotify'
+        : req.query.provider === 'apple_music'
+          ? 'apple_music'
+          : 'youtube';
+    const MIN_TRACKS = 15;
+    const all = (await listVisiblePlaylists(req.userId, {})).filter((p) => {
+      if (provider === 'spotify') {
+        return ((p as unknown as { spotify_count?: number }).spotify_count ?? 0) >= MIN_TRACKS;
+      }
+      if (provider === 'apple_music') {
+        return (
+          ((p as unknown as { apple_music_count?: number }).apple_music_count ?? 0) >= MIN_TRACKS
+        );
+      }
+      return true;
+    });
 
     // Group by category slug. Garde l'ordre de tri retourné par
     // listVisiblePlaylists (déjà sorted par updated_at desc) puis ré-trie

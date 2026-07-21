@@ -61,11 +61,13 @@ interface Props {
    *  thématique éclatée → clone-filtré au launch. undefined = tous niveaux. */
   onPickOfficial: (
     playlist: LibraryPlaylistSummary,
-    provider: 'youtube' | 'spotify',
+    provider: 'youtube' | 'spotify' | 'apple_music',
     difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
   ) => void | Promise<void>;
   /** feat/two-provider-libraries — onglet Spotify dispo (host allowlisté + Spotify connecté). */
   spotifyLibraryAvailable?: boolean;
+  /** feat/apple-music — onglet Apple Music dispo (compte Apple Music connecté). */
+  appleLibraryAvailable?: boolean;
   /** Pick pack quizz officiel Tutti — clone + crée session game_type=QUIZZ
    *  + redirige vers /host?session=<short_code>. Optionnel : visible seulement
    *  si user.can_use_quizz === true (gating WorkspaceMember). */
@@ -91,13 +93,14 @@ export function RoundSelectionScreen({
   loading,
   joinCode,
   spotifyLibraryAvailable,
+  appleLibraryAvailable,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('mine');
   const [librarySubTab, setLibrarySubTab] = useState<LibrarySubTab>('tracks');
   // feat/two-provider-libraries — provider de la bibliothèque officielle.
-  // youtube (défaut, tous) | spotify (host allowlisté+connecté, playlists couvertes).
-  const [provider, setProvider] = useState<'youtube' | 'spotify'>('youtube');
+  // youtube (défaut, tous) | spotify | apple_music (host connecté, playlists couvertes).
+  const [provider, setProvider] = useState<'youtube' | 'spotify' | 'apple_music'>('youtube');
   // feat/theme-level-picker — null = étape THÈME (grille) ; sinon = étape NIVEAU
   // du thème sélectionné (cartes Facile/Moyen/Difficile/Mix).
   const [selectedThemeKey, setSelectedThemeKey] = useState<string | null>(null);
@@ -390,9 +393,20 @@ export function RoundSelectionScreen({
                 role="tablist"
                 aria-label={t('host.session.sourceLabel')}
               >
-                {(['youtube', 'spotify'] as const).map((pv) => {
+                {(appleLibraryAvailable
+                  ? (['youtube', 'spotify', 'apple_music'] as const)
+                  : (['youtube', 'spotify'] as const)
+                ).map((pv) => {
                   const active = provider === pv;
-                  const locked = pv === 'spotify' && !spotifyLibraryAvailable;
+                  const locked =
+                    (pv === 'spotify' && !spotifyLibraryAvailable) ||
+                    (pv === 'apple_music' && !appleLibraryAvailable);
+                  const activeColor =
+                    pv === 'spotify'
+                      ? 'bg-basil text-cream'
+                      : pv === 'apple_music'
+                        ? 'bg-raspberry text-cream'
+                        : 'bg-spritz text-cream';
                   return (
                     <button
                       key={pv}
@@ -404,15 +418,17 @@ export function RoundSelectionScreen({
                       title={locked ? t('host.session.sourceSpotifyLocked') : undefined}
                       className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
                         active
-                          ? pv === 'spotify'
-                            ? 'bg-basil text-cream'
-                            : 'bg-spritz text-cream'
+                          ? activeColor
                           : locked
                             ? 'bg-white/[0.04] text-white/25 cursor-not-allowed'
                             : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
                       }`}
                     >
-                      {pv === 'spotify' ? '🟢 Spotify' : '▶️ YouTube'}
+                      {pv === 'spotify'
+                        ? '🟢 Spotify'
+                        : pv === 'apple_music'
+                          ? '🍎 Apple'
+                          : '▶️ YouTube'}
                       {locked ? ' 🔒' : ''}
                     </button>
                   );
