@@ -1,14 +1,20 @@
 /**
  * <BulkPasteImport /> — Tab « Coller une liste ».
  *
- * L'utilisateur colle une liste de titres (un par ligne, ex. « Stromae - Alors
- * on danse »). On cherche chaque ligne via /api/music/search (Spotify OU
- * YouTube) et on récupère la meilleure correspondance, puis on importe tout
- * d'un coup dans la playlist.
+ * On colle (ou on importe un fichier Excel/CSV/PDF) une liste de titres, un par
+ * ligne. Chaque ligne est cherchée (Spotify OU YouTube), la meilleure
+ * correspondance est proposée, puis on importe tout d'un coup.
  *
- * Contourne totalement la restriction Spotify sur la LECTURE des playlists
- * d'autres utilisateurs (403) : ici on ne lit aucune playlist, on fait des
- * RECHERCHES de titres (autorisées en Development Mode).
+ * Contourne la restriction Spotify sur la LECTURE des playlists d'autres
+ * utilisateurs (403) : ici on ne lit aucune playlist, on fait des RECHERCHES.
+ *
+ * Économie de quota (les providers ont des limites strictes) :
+ *   - Résultats CACHÉS par ligne : relancer « Chercher » ne re-cherche que les
+ *     lignes pas encore résolues (aucune requête gaspillée).
+ *   - Débit limité (concurrence 2 + pause) pour ne pas déclencher le 429.
+ *   - Détection explicite des limites : Spotify 429 (rate limit, temporaire) et
+ *     YouTube quota épuisé → message clair + arrêt propre (au lieu d'un faux
+ *     « non trouvé » silencieux).
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -24,17 +30,45 @@ interface Props {
   onImported: (count: number) => void;
 }
 
-const PROVIDER_LABELS: Record<string, string> = {
-  spotify: 'Spotify',
-  youtube: 'YouTube',
-};
-
+const PROVIDER_LABELS: Record<string, string> = { spotify: 'Spotify', youtube: 'YouTube' };
 const MAX_LINES = 300;
-const CONCURRENCY = 4; // recherches en parallèle par lot (gentil pour l'API)
+const CONCURRENCY = 2; // doux pour ne pas déclencher les rate limits
+const PACE_MS = 200; // petite pause entre requêtes d'un même worker
 
-interface LineResult {
-  query: string;
-  track: TrackResult | null;
+const sleep = (ms: number): Promise<void> => new Promise((r) => window.setTimeout(r, ms));
+
+/** Détecte une erreur de LIMITE (quota/rate) et renvoie un message clair, ou
+ *  null si c'est une erreur ponctuelle (à traiter comme « non trouvé »). */
+function classifyLimit(provider: MusicProviderId, rawMsg: string): string | null {
+  const m = rawMsg.toLowerCase();
+  if (m.includes('429') || m.includes('rate limit') || m.includes('too many')) {
+    return "Spotify t'a temporairement limité (trop de recherches d'affilée). La limite se lève toute seule en ~15 min — relance ensuite par petits lots (20-30 titres).";
+  }
+  if (
+    provider === 'youtube' &&
+    (m.includes('quota') ||
+      m.includes('requête music') ||
+      m.includes('403') ||
+      m.includes('indisponible'))
+  ) {
+    return 'YouTube indisponible — quota du jour probablement épuisé (≈100 recherches/jour). Il se réinitialise chaque nuit (~9h, heure FR). Utilise Spotify en attendant.';
+  }
+  return null;
+}
+
+function parseLines(raw: string): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const line of raw.split('\n')) {
+    const q = line.trim().replace(/\s+/g, ' ');
+    if (!q) continue;
+    const key = q.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(q);
+    if (out.length >= MAX_LINES) break;
+  }
+  return out;
 }
 
 export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element {
@@ -51,10 +85,13 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
   }, [availableProviders, provider]);
 
   const [text, setText] = useState('');
-  const [results, setResults] = useState<LineResult[] | null>(null);
-  const [included, setIncluded] = useState<Set<number>>(new Set());
+  // Cache des résultats par ligne (clé = requête). null = cherché, sans match.
+  const [resultMap, setResultMap] = useState<Record<string, TrackResult | null>>({});
+  // Lignes matchées que l'utilisateur a décochées (clé = requête).
+  const [excluded, setExcluded] = useState<Set<string>>(new Set());
   const [matching, setMatching] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [limitHit, setLimitHit] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importedCount, setImportedCount] = useState<number | null>(null);
@@ -62,26 +99,39 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
   const [fileNote, setFileNote] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Changer de provider invalide le cache (résultats spécifiques au provider).
+  useEffect(() => {
+    setResultMap({});
+    setExcluded(new Set());
+    setLimitHit(null);
+    setImportedCount(null);
+  }, [provider]);
+
+  const lines = useMemo(() => parseLines(text), [text]);
+  const attempted = (q: string): boolean => Object.prototype.hasOwnProperty.call(resultMap, q);
+  const pending = lines.filter((l) => !attempted(l));
+  const matchedLines = lines.filter((l) => resultMap[l]);
+  const notFoundLines = lines.filter((l) => attempted(l) && resultMap[l] === null);
+  const selectedCount = matchedLines.filter((l) => !excluded.has(l)).length;
+
   const handleFile = async (file: File | undefined | null): Promise<void> => {
     if (!file) return;
     setError(null);
     setFileNote(null);
     setFileLoading(true);
     try {
-      const lines = await parseTrackListFile(file);
-      if (lines.length === 0) {
+      const parsed = await parseTrackListFile(file);
+      if (parsed.length === 0) {
         setFileNote(`Aucune ligne exploitable trouvée dans « ${file.name} ».`);
         return;
       }
-      // Fusionne avec le texte déjà présent (au cas où on cumule plusieurs sources).
       setText((prev) => {
         const base = prev.trim();
-        return base ? `${base}\n${lines.join('\n')}` : lines.join('\n');
+        return base ? `${base}\n${parsed.join('\n')}` : parsed.join('\n');
       });
-      setResults(null);
       setFileNote(
-        `${lines.length} ligne${lines.length > 1 ? 's' : ''} importée${
-          lines.length > 1 ? 's' : ''
+        `${parsed.length} ligne${parsed.length > 1 ? 's' : ''} importée${
+          parsed.length > 1 ? 's' : ''
         } depuis « ${file.name} ». Vérifie puis lance la recherche.`,
       );
     } catch (err: unknown) {
@@ -92,82 +142,73 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
     }
   };
 
-  const parseLines = (raw: string): string[] => {
-    const seen = new Set<string>();
-    const out: string[] = [];
-    for (const line of raw.split('\n')) {
-      const q = line.trim().replace(/\s+/g, ' ');
-      if (!q) continue;
-      const key = q.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(q);
-      if (out.length >= MAX_LINES) break;
-    }
-    return out;
+  const searchOne = async (query: string): Promise<TrackResult | null> => {
+    const found =
+      provider === 'spotify'
+        ? (await searchSpotify({ track: query, market: 'FR', limit: 3 })).items
+        : (await searchGeneric(query, { provider: 'youtube', limit: 3 })).results;
+    return found[0] ?? null;
   };
 
   const runMatching = async (): Promise<void> => {
-    const lines = parseLines(text);
+    const todo = pending;
     if (lines.length === 0) {
       setError('Colle au moins un titre (un par ligne).');
       return;
     }
+    if (todo.length === 0) return; // tout est déjà cherché
     setError(null);
+    setLimitHit(null);
     setImportedCount(null);
     setMatching(true);
-    setResults(null);
-    setProgress({ done: 0, total: lines.length });
+    setProgress({ done: 0, total: todo.length });
 
-    const out: LineResult[] = new Array(lines.length);
+    const local: Record<string, TrackResult | null> = {};
     let done = 0;
-    // Traite par lots de CONCURRENCY pour aller vite sans marteler l'API.
-    for (let i = 0; i < lines.length; i += CONCURRENCY) {
-      const batch = lines.slice(i, i + CONCURRENCY);
-      await Promise.all(
-        batch.map(async (query, j) => {
-          const idx = i + j;
-          try {
-            // Spotify : même chemin que l'onglet « Recherche » qui marche
-            // (/api/spotify/search-tracks avec market=FR). La recherche
-            // générique sans market renvoie 0 sur ce compte Spotify.
-            // YouTube : endpoint générique (recherche libre).
-            const found =
-              provider === 'spotify'
-                ? (await searchSpotify({ track: query, market: 'FR', limit: 3 })).items
-                : (await searchGeneric(query, { provider: 'youtube', limit: 3 })).results;
-            out[idx] = { query, track: found[0] ?? null };
-          } catch {
-            out[idx] = { query, track: null };
-          } finally {
-            done += 1;
-            setProgress({ done, total: lines.length });
+    let aborted = false;
+    let idx = 0;
+    const worker = async (): Promise<void> => {
+      while (idx < todo.length && !aborted) {
+        const query = todo[idx++]!;
+        try {
+          local[query] = await searchOne(query);
+        } catch (err: unknown) {
+          const limitMsg = classifyLimit(provider, (err as Error).message ?? '');
+          if (limitMsg) {
+            aborted = true;
+            setLimitHit(limitMsg);
+            break;
           }
-        }),
-      );
-    }
-    setResults(out);
-    // Par défaut : tout ce qui a matché est coché.
-    setIncluded(new Set(out.map((r, i) => (r.track ? i : -1)).filter((i) => i >= 0)));
+          local[query] = null; // erreur ponctuelle → non trouvé
+        } finally {
+          done += 1;
+          setProgress({ done, total: todo.length });
+        }
+        await sleep(PACE_MS);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, todo.length) }, worker));
+    setResultMap((prev) => ({ ...prev, ...local }));
     setMatching(false);
+    setProgress(null);
   };
 
-  const toggle = (i: number): void => {
-    setIncluded((prev) => {
+  const toggle = (query: string): void => {
+    setExcluded((prev) => {
       const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
+      if (next.has(query)) next.delete(query);
+      else next.add(query);
       return next;
     });
   };
 
   const runImport = async (): Promise<void> => {
-    if (!results) return;
     const ids = Array.from(
       new Set(
-        results
-          .map((r, i) => (r.track && included.has(i) ? r.track.provider_track_id : null))
-          .filter((id): id is string => id !== null),
+        matchedLines
+          .filter((l) => !excluded.has(l))
+          .map((l) => resultMap[l]?.provider_track_id)
+          .filter((id): id is string => !!id),
       ),
     );
     if (ids.length === 0) {
@@ -177,14 +218,14 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
     setError(null);
     setImporting(true);
     try {
-      // provider est toujours 'spotify' | 'youtube' (availableProviders filtre).
       const res = await importTracks(playlistId, provider as 'spotify' | 'youtube', ids);
       setImportedCount(res.imported);
       onImported(res.imported);
-      // On garde la liste affichée mais on vide la sélection importée.
-      setResults(null);
-      setIncluded(new Set());
+      // Reset complet après import réussi.
       setText('');
+      setResultMap({});
+      setExcluded(new Set());
+      setLimitHit(null);
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {
@@ -192,9 +233,11 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
     }
   };
 
-  const matchedCount = results ? results.filter((r) => r.track).length : 0;
-  const noMatch = results ? results.filter((r) => !r.track) : [];
-  const selectedCount = results ? results.filter((r, i) => r.track && included.has(i)).length : 0;
+  const resetSearch = (): void => {
+    setResultMap({});
+    setExcluded(new Set());
+    setLimitHit(null);
+  };
 
   return (
     <div className="space-y-3">
@@ -258,7 +301,8 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
         />
         <p className="font-mono text-[11px] text-ink-soft mt-1">
           Format libre : « Artiste - Titre » marche le mieux. Max {MAX_LINES} lignes · doublons
-          ignorés.
+          ignorés. Astuce : pour les grosses listes, préfère Spotify (petits lots) — le quota
+          YouTube est limité à ~100 recherches/jour.
         </p>
       </div>
 
@@ -267,16 +311,26 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
           variant="secondary"
           size="sm"
           onClick={() => void runMatching()}
-          disabled={matching || importing || !text.trim()}
+          disabled={matching || importing || pending.length === 0}
         >
-          {matching ? '⏳ Recherche…' : '🔎 Chercher les correspondances'}
+          {matching && progress
+            ? `⏳ Recherche… ${progress.done}/${progress.total}`
+            : pending.length > 0
+              ? `🔎 Chercher les correspondances (${pending.length})`
+              : '🔎 Tout est cherché'}
         </Button>
-        {matching && progress && (
-          <span className="font-mono text-xs text-ink-soft tabular-nums">
-            {progress.done} / {progress.total}
-          </span>
+        {Object.keys(resultMap).length > 0 && !matching && (
+          <Button variant="ghost" size="sm" onClick={resetSearch}>
+            ↺ Tout re-chercher
+          </Button>
         )}
       </div>
+
+      {limitHit && (
+        <div className="p-2.5 border-2 border-raspberry rounded bg-raspberry/10">
+          <p className="text-sm font-medium text-raspberry-deep">⛔ {limitHit}</p>
+        </div>
+      )}
 
       {error && (
         <p role="alert" className="text-raspberry text-sm">
@@ -291,12 +345,13 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
         </p>
       )}
 
-      {results && (
+      {(matchedLines.length > 0 || notFoundLines.length > 0) && (
         <div className="space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <p className="font-mono text-xs text-ink-soft">
-              {matchedCount} trouvé{matchedCount > 1 ? 's' : ''} sur {results.length} ·{' '}
-              {noMatch.length} sans correspondance
+              {matchedLines.length} trouvé{matchedLines.length > 1 ? 's' : ''} ·{' '}
+              {notFoundLines.length} sans correspondance
+              {pending.length > 0 ? ` · ${pending.length} à chercher` : ''}
             </p>
             <Button
               variant="primary"
@@ -310,21 +365,22 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
             </Button>
           </div>
 
-          {matchedCount > 0 && (
+          {matchedLines.length > 0 && (
             <ul className="space-y-1.5 max-h-[45vh] overflow-y-auto pr-1">
-              {results.map((r, i) =>
-                r.track ? (
-                  <li key={i}>
+              {matchedLines.map((l) => {
+                const track = resultMap[l]!;
+                return (
+                  <li key={l}>
                     <label className="flex items-center gap-2 p-2 border-2 border-ink/15 rounded bg-cream cursor-pointer hover:bg-cream-2">
                       <input
                         type="checkbox"
-                        checked={included.has(i)}
-                        onChange={() => toggle(i)}
+                        checked={!excluded.has(l)}
+                        onChange={() => toggle(l)}
                         className="w-4 h-4 accent-ink shrink-0"
                       />
-                      {r.track.cover_url ? (
+                      {track.cover_url ? (
                         <img
-                          src={r.track.cover_url}
+                          src={track.cover_url}
                           alt=""
                           loading="lazy"
                           className="w-9 h-9 rounded border border-ink/20 object-cover shrink-0"
@@ -333,40 +389,41 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
                         <div className="w-9 h-9 rounded border border-ink/20 bg-cream-2 shrink-0" />
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{r.track.title}</p>
+                        <p className="text-sm font-medium truncate">{track.title}</p>
                         <p className="font-mono text-[11px] text-ink-soft truncate">
-                          {r.track.artist}
-                          {r.track.year ? ` · ${r.track.year}` : ''}
+                          {track.artist}
+                          {track.year ? ` · ${track.year}` : ''}
                         </p>
                       </div>
                       <span
                         className="font-mono text-[10px] text-ink-faded truncate max-w-[35%] hidden sm:block"
-                        title={`recherché : ${r.query}`}
+                        title={`recherché : ${l}`}
                       >
-                        ↩ {r.query}
+                        ↩ {l}
                       </span>
                     </label>
                   </li>
-                ) : null,
-              )}
+                );
+              })}
             </ul>
           )}
 
-          {noMatch.length > 0 && (
+          {notFoundLines.length > 0 && (
             <details className="text-sm">
               <summary className="cursor-pointer font-mono text-xs text-raspberry-deep">
-                ⚠ {noMatch.length} titre{noMatch.length > 1 ? 's' : ''} non trouvé
-                {noMatch.length > 1 ? 's' : ''} (clique pour voir)
+                ⚠ {notFoundLines.length} titre{notFoundLines.length > 1 ? 's' : ''} non trouvé
+                {notFoundLines.length > 1 ? 's' : ''} (clique pour voir)
               </summary>
               <ul className="mt-2 space-y-0.5 font-mono text-[11px] text-ink-soft">
-                {noMatch.map((r, i) => (
-                  <li key={i} className="truncate">
-                    · {r.query}
+                {notFoundLines.map((l) => (
+                  <li key={l} className="truncate">
+                    · {l}
                   </li>
                 ))}
               </ul>
               <p className="font-mono text-[11px] text-ink-faded mt-1">
-                Astuce : reformule ces lignes (« Artiste - Titre ») et relance la recherche.
+                Astuce : reformule ces lignes (« Artiste - Titre »), ou essaie l'autre source
+                (Spotify / YouTube).
               </p>
             </details>
           )}
