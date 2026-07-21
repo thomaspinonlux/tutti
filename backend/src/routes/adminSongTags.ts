@@ -20,6 +20,7 @@ import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireSuperAdmin } from '../middleware/tenant.js';
 import { SONG_THEMES, SONG_THEME_SLUGS } from '../lib/songThemes.js';
+import { generateAliases, generateArtistAliases } from '../lib/aliasGeneration.js';
 
 const router: Router = Router();
 router.use(requireAuth, requireSuperAdmin);
@@ -66,7 +67,10 @@ interface SongRow {
   work_title: string | null;
   work_kind: string | null;
   tags_reviewed: boolean;
-  artist: { canonical_name: string };
+  // Alias de prononciation du TITRE (portés par la Song canonique).
+  title_aliases: string[];
+  // Alias de l'ARTISTE (portés par l'Artist, partagés par toutes ses songs).
+  artist: { canonical_name: string; aliases: string[] };
   // youtube_id/spotify_id vivent sur OfficialPlaylistTrack (pas sur Song) : la
   // présence d'une source se dérive des catalog_tracks liés à la song.
   catalog_tracks: { year: number | null; youtube_id: string | null; spotify_id: string | null }[];
@@ -85,6 +89,10 @@ function serialize(s: SongRow): Record<string, unknown> {
     work_title: s.work_title,
     work_kind: s.work_kind,
     tags_reviewed: s.tags_reviewed,
+    // Alias de prononciation (lecture seule ici — édition via les pages détail
+    // playlist). title_aliases = Song ; artist_aliases = Artist.
+    title_aliases: s.title_aliases,
+    artist_aliases: s.artist.aliases,
     // P3 — badge de source (présence seule, l'id réel n'est pas exposé).
     has_youtube: s.catalog_tracks.some((t) => !!t.youtube_id),
     has_spotify: s.catalog_tracks.some((t) => !!t.spotify_id),
@@ -101,7 +109,8 @@ const SONG_SELECT = {
   work_title: true,
   work_kind: true,
   tags_reviewed: true,
-  artist: { select: { canonical_name: true } },
+  title_aliases: true,
+  artist: { select: { canonical_name: true, aliases: true } },
   catalog_tracks: { select: { year: true, youtube_id: true, spotify_id: true } },
 } as const;
 
@@ -254,6 +263,119 @@ router.post('/bulk-validate', async (req: Request, res: Response): Promise<void>
   // QUE tags_reviewed — aucun tag modifié.
   const { count } = await prisma.song.updateMany({ where, data: { tags_reviewed: true } });
   res.json({ count });
+});
+
+// ── POST /generate-aliases (génère les alias IA pour un lot de songs) ───────
+// Génère/étend via Claude les alias de prononciation :
+//   - TITRE  → Song.title_aliases (union avec l'existant → « étend »)
+//   - ARTISTE → Artist.aliases (généré une fois par artiste sans alias)
+// Le front envoie le sous-ensemble filtré, découpé en lots (max 30/appel pour
+// tenir dans le timeout). Idempotent : relançable pour continuer / étendre.
+const generateAliasesSchema = z.object({ ids: z.array(z.string().uuid()).min(1).max(30) }).strict();
+
+/** Union dédupliquée + normalisée (lowercase/trim) de deux listes d'alias. */
+function unionAliases(a: string[], b: string[]): string[] {
+  return Array.from(
+    new Set([...a, ...b].map((x) => x.trim().toLowerCase()).filter((x) => x.length > 0)),
+  );
+}
+
+/** Petit pool de concurrence (évite une dépendance p-limit dans le runtime). */
+async function runPool<T>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T) => Promise<void>,
+): Promise<void> {
+  let idx = 0;
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (idx < items.length) {
+      const i = idx++;
+      await fn(items[i]!);
+    }
+  });
+  await Promise.all(workers);
+}
+
+router.post('/generate-aliases', async (req: Request, res: Response): Promise<void> => {
+  const parsed = generateAliasesSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: parsed.error.message } });
+    return;
+  }
+  if (!process.env.ANTHROPIC_API_KEY) {
+    res.status(503).json({
+      error: {
+        code: 'ANTHROPIC_KEY_MISSING',
+        message: 'Génération IA indisponible (ANTHROPIC_API_KEY non configurée sur le backend).',
+      },
+    });
+    return;
+  }
+
+  const songs = await prisma.song.findMany({
+    where: { id: { in: parsed.data.ids } },
+    select: {
+      id: true,
+      canonical_title: true,
+      title_aliases: true,
+      is_francophone: true,
+      artist: { select: { id: true, canonical_name: true, aliases: true } },
+    },
+  });
+
+  // Phase 1 — artistes sans alias (une génération par artiste, dédupliquée).
+  const artistsToGen = Array.from(
+    new Map(
+      songs
+        .filter((s) => s.artist.aliases.length === 0)
+        .map((s) => [s.artist.id, s.artist] as const),
+    ).values(),
+  );
+  await runPool(artistsToGen, 4, async (a) => {
+    const r = await generateArtistAliases(a.canonical_name, 'fr');
+    if (r.aliases.length > 0) {
+      await prisma.artist.update({
+        where: { id: a.id },
+        data: {
+          aliases: unionAliases(a.aliases, r.aliases),
+          aliases_generated_at: new Date(),
+          aliases_source: 'ai',
+        },
+      });
+    }
+  });
+
+  // Phase 2 — alias titre par song (union avec l'existant = fill + extend).
+  let updated = 0;
+  let failed = 0;
+  await runPool(songs, 4, async (s) => {
+    const r = await generateAliases(
+      s.canonical_title,
+      s.artist.canonical_name,
+      s.is_francophone ? 'fr' : 'fr',
+    );
+    if (r.aliases.length > 0) {
+      await prisma.song.update({
+        where: { id: s.id },
+        data: { title_aliases: unionAliases(s.title_aliases, r.aliases), aliases_source: 'ai' },
+      });
+      updated += 1;
+    } else {
+      failed += 1;
+    }
+  });
+
+  // Re-sérialise l'état frais (alias titre + artiste) pour que l'UI se mette à jour.
+  const fresh = await prisma.song.findMany({
+    where: { id: { in: parsed.data.ids } },
+    select: SONG_SELECT,
+  });
+  res.json({
+    processed: songs.length,
+    updated,
+    failed,
+    songs: fresh.map((s) => serialize(s as SongRow)),
+  });
 });
 
 export default router;

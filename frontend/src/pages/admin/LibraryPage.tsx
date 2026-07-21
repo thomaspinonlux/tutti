@@ -626,7 +626,7 @@ function PlaylistsTab(): JSX.Element {
             to="/admin/library/tags"
             className="font-mono text-sm px-3 py-2 border-2 border-ink rounded hover:bg-cream transition-colors"
           >
-            🏷️ Révision des tags
+            🎼 Chansons &amp; paramètres
           </Link>
           <Button
             type="button"

@@ -27,6 +27,7 @@ import { Link } from 'react-router-dom';
 import { Button, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import {
   bulkApplySongTags,
+  generateSongAliases,
   getSongTagsMeta,
   listSongTags,
   patchSongTags,
@@ -36,6 +37,11 @@ import {
   type TagStatus,
   type WorkKind,
 } from '../../lib/adminSongTags.js';
+
+/** Nombre total d'alias (titre + artiste) d'une song. */
+function aliasTotal(r: SongTagRow): number {
+  return (r.title_aliases?.length ?? 0) + (r.artist_aliases?.length ?? 0);
+}
 
 const PAGE_SIZE = 50;
 const FETCH_LIMIT = 100; // max serveur pour le chargement complet
@@ -106,7 +112,7 @@ function eqDraft(a: RowDraft, b: RowDraft): boolean {
 
 type LangCat = 'franco' | 'inter' | 'both' | 'none';
 type LevelCat = 'none' | '1' | '2' | '3';
-type SortKey = 'title' | 'lang' | 'level' | 'themes' | 'work' | 'status';
+type SortKey = 'title' | 'lang' | 'level' | 'themes' | 'work' | 'aliases' | 'status';
 interface SortRule {
   key: SortKey;
   dir: 'asc' | 'desc';
@@ -118,6 +124,7 @@ const SORT_LABEL: Record<SortKey, string> = {
   level: 'Niveau',
   themes: 'Thèmes',
   work: 'Œuvre',
+  aliases: 'Alias',
   status: 'Statut',
 };
 
@@ -149,6 +156,8 @@ function cmpBy(a: SongTagRow, b: SongTagRow, key: SortKey): number {
         workRank(a) - workRank(b) ||
         (a.work_title ?? '').localeCompare(b.work_title ?? '', 'fr', { sensitivity: 'base' })
       );
+    case 'aliases':
+      return aliasTotal(a) - aliasTotal(b);
     case 'status':
       return Number(a.tags_reviewed) - Number(b.tags_reviewed);
   }
@@ -204,6 +213,11 @@ export function LibraryTagsPage(): JSX.Element {
   const [levelSel, setLevelSel] = useState<Set<LevelCat>>(new Set());
   const [themeSel, setThemeSel] = useState<Set<string>>(new Set());
   const [workSel, setWorkSel] = useState<Set<string>>(new Set());
+  const [aliasSel, setAliasSel] = useState<Set<'with' | 'without'>>(new Set());
+
+  // Génération d'alias IA (bouton) : progression sur le sous-ensemble filtré.
+  const [genRunning, setGenRunning] = useState(false);
+  const [genProgress, setGenProgress] = useState<{ done: number; total: number } | null>(null);
 
   // Tri multi-colonnes (ordre = priorité).
   const [sorts, setSorts] = useState<SortRule[]>([]);
@@ -223,7 +237,7 @@ export function LibraryTagsPage(): JSX.Element {
   // Reset page quand filtre / tri change
   useEffect(() => {
     setPage(1);
-  }, [status, q, langSel, levelSel, themeSel, workSel, sorts]);
+  }, [status, q, langSel, levelSel, themeSel, workSel, aliasSel, sorts]);
 
   useEffect(() => {
     void getSongTagsMeta()
@@ -348,9 +362,15 @@ export function LibraryTagsPage(): JSX.Element {
         const matchKind = r.work_kind ? workSel.has(r.work_kind) : false;
         if (!matchNone && !matchKind) return false;
       }
+      if (aliasSel.size) {
+        const has = aliasTotal(r) > 0;
+        const matchWith = aliasSel.has('with') && has;
+        const matchWithout = aliasSel.has('without') && !has;
+        if (!matchWith && !matchWithout) return false;
+      }
       return true;
     });
-  }, [allRows, status, q, langSel, levelSel, themeSel, workSel]);
+  }, [allRows, status, q, langSel, levelSel, themeSel, workSel, aliasSel]);
 
   const sorted = useMemo(() => {
     if (!filtered) return null;
@@ -427,6 +447,41 @@ export function LibraryTagsPage(): JSX.Element {
     [edits],
   );
 
+  // Génère/étend les alias IA sur le sous-ensemble filtré, par lots de 20.
+  const GEN_CHUNK = 20;
+  const generateAliasesForFiltered = useCallback(async (): Promise<void> => {
+    const list = sorted ?? [];
+    if (list.length === 0) return;
+    const eur = (list.length * 0.006).toFixed(2);
+    if (
+      !window.confirm(
+        `Générer / étendre les alias de ${list.length} morceau${
+          list.length > 1 ? 'x' : ''
+        } filtré${list.length > 1 ? 's' : ''} via l'IA ?\n` +
+          `Coût estimé ≈ ${eur} €. Les alias existants sont conservés (complétés, pas écrasés).`,
+      )
+    )
+      return;
+    setGenRunning(true);
+    setGenProgress({ done: 0, total: list.length });
+    let updated = 0;
+    try {
+      for (let i = 0; i < list.length; i += GEN_CHUNK) {
+        const ids = list.slice(i, i + GEN_CHUNK).map((r) => r.id);
+        const res = await generateSongAliases(ids);
+        applyServerSongs(res.songs);
+        updated += res.updated;
+        setGenProgress({ done: Math.min(i + GEN_CHUNK, list.length), total: list.length });
+      }
+      notify('ok', `Alias générés pour ${updated} morceau${updated > 1 ? 'x' : ''} ✓`);
+    } catch (e: unknown) {
+      notify('err', `Génération alias : ${(e as Error).message}`);
+    } finally {
+      setGenRunning(false);
+      setGenProgress(null);
+    }
+  }, [sorted, applyServerSongs, notify]);
+
   // Toggle 3 états d'un tri : absent → asc → desc → retiré. L'ordre d'ajout = priorité.
   const toggleSort = useCallback((key: SortKey): void => {
     setSorts((prev) => {
@@ -448,7 +503,8 @@ export function LibraryTagsPage(): JSX.Element {
     langSel.size > 0 ||
     levelSel.size > 0 ||
     themeSel.size > 0 ||
-    workSel.size > 0;
+    workSel.size > 0 ||
+    aliasSel.size > 0;
 
   const resetAll = (): void => {
     setQInput('');
@@ -457,6 +513,7 @@ export function LibraryTagsPage(): JSX.Element {
     setLevelSel(new Set());
     setThemeSel(new Set());
     setWorkSel(new Set());
+    setAliasSel(new Set());
     setSorts([]);
   };
 
@@ -473,13 +530,13 @@ export function LibraryTagsPage(): JSX.Element {
       <header className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <TitleHandwritten as="h1">
-            <Underline>Révision des tags</Underline>
+            <Underline>Chansons &amp; paramètres</Underline>
           </TitleHandwritten>
           <p className="font-mono text-xs text-ink-soft mt-1">
             {globalReviewed !== null && globalTotal !== null
               ? `${globalReviewed} / ${globalTotal} révisés`
               : '…'}{' '}
-            · filtre & trie comme dans un tableur, édite puis enregistre
+            · tags, langue, niveau, thèmes, œuvre &amp; alias — filtre, trie, édite
           </p>
         </div>
         <Link to="/admin/library" className="font-mono text-xs text-spritz-deep hover:underline">
@@ -521,6 +578,17 @@ export function LibraryTagsPage(): JSX.Element {
           >
             ✓ Marquer {total} comme révisés
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void generateAliasesForFiltered()}
+            disabled={total === 0 || genRunning}
+            title="Génère (ou étend) les alias de prononciation via l'IA pour les morceaux filtrés"
+          >
+            {genRunning && genProgress
+              ? `✨ Alias… ${genProgress.done}/${genProgress.total}`
+              : `✨ Générer les alias (${total})`}
+          </Button>
         </div>
 
         <div className="flex flex-wrap gap-x-5 gap-y-3">
@@ -554,6 +622,15 @@ export function LibraryTagsPage(): JSX.Element {
             ]}
             selected={workSel}
             onToggle={(v) => setWorkSel((p) => toggleInSet(p, v))}
+          />
+          <Facet
+            label="Alias"
+            options={[
+              { value: 'without', label: 'Sans alias' },
+              { value: 'with', label: 'Avec alias' },
+            ]}
+            selected={aliasSel}
+            onToggle={(v) => setAliasSel((p) => toggleInSet(p, v))}
           />
           <Facet
             label="Thèmes"
@@ -594,12 +671,13 @@ export function LibraryTagsPage(): JSX.Element {
       )}
 
       {/* En-tête colonnes (desktop) — cliquable pour trier */}
-      <div className="hidden lg:grid grid-cols-[minmax(200px,2.2fr)_150px_120px_minmax(180px,2fr)_minmax(170px,1.6fr)_120px] gap-3 px-3 font-mono text-[11px] uppercase tracking-wider text-ink-soft">
+      <div className="hidden lg:grid grid-cols-[minmax(190px,2fr)_140px_112px_minmax(160px,1.8fr)_minmax(150px,1.4fr)_116px_120px] gap-3 px-3 font-mono text-[11px] uppercase tracking-wider text-ink-soft">
         <HeadSort label="Morceau" k="title" sorts={sorts} onToggle={toggleSort} />
         <HeadSort label="Langue" k="lang" sorts={sorts} onToggle={toggleSort} />
         <HeadSort label="Niveau" k="level" sorts={sorts} onToggle={toggleSort} />
         <HeadSort label="Thèmes" k="themes" sorts={sorts} onToggle={toggleSort} />
         <HeadSort label="Œuvre" k="work" sorts={sorts} onToggle={toggleSort} />
+        <HeadSort label="Alias" k="aliases" sorts={sorts} onToggle={toggleSort} />
         <HeadSort label="Statut" k="status" sorts={sorts} onToggle={toggleSort} align="right" />
       </div>
 
@@ -807,7 +885,7 @@ function SongRowView({
 
   return (
     <div
-      className={`bg-white border-2 border-ink/10 rounded-lg px-3 py-2.5 lg:grid lg:grid-cols-[minmax(200px,2.2fr)_150px_120px_minmax(180px,2fr)_minmax(170px,1.6fr)_120px] lg:gap-3 lg:items-center flex flex-col gap-2.5 border-l-4 ${
+      className={`bg-white border-2 border-ink/10 rounded-lg px-3 py-2.5 lg:grid lg:grid-cols-[minmax(190px,2fr)_140px_112px_minmax(160px,1.8fr)_minmax(150px,1.4fr)_116px_120px] lg:gap-3 lg:items-center flex flex-col gap-2.5 border-l-4 ${
         done ? 'border-l-basil' : 'border-l-spritz/50'
       } ${saving ? 'opacity-70' : ''}`}
     >
@@ -938,6 +1016,32 @@ function SongRowView({
             }`}
             aria-label="Nom de l'œuvre"
           />
+        )}
+      </div>
+
+      {/* Alias de prononciation (lecture seule — édition via page détail playlist) */}
+      <div className="flex flex-wrap gap-1 items-center">
+        {aliasTotal(row) === 0 ? (
+          <span className="text-[11px] font-mono text-ink-faded">sans alias</span>
+        ) : (
+          <>
+            {(row.artist_aliases?.length ?? 0) > 0 && (
+              <span
+                title={`Artiste : ${(row.artist_aliases ?? []).join(', ')}`}
+                className="inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200"
+              >
+                🎤 {row.artist_aliases?.length}
+              </span>
+            )}
+            {(row.title_aliases?.length ?? 0) > 0 && (
+              <span
+                title={`Titre : ${(row.title_aliases ?? []).join(', ')}`}
+                className="inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200"
+              >
+                🎵 {row.title_aliases?.length}
+              </span>
+            )}
+          </>
         )}
       </div>
 
