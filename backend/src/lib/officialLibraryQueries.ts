@@ -70,6 +70,7 @@ export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
     difficulty: string;
     spotify_id: string | null;
     youtube_id: string | null;
+    apple_music_id: string | null;
     cover_url: string | null;
     is_playable: boolean;
     playability_reason: string | null;
@@ -356,6 +357,7 @@ async function getVisiblePlaylistDetailCore(
       difficulty: t.difficulty,
       spotify_id: t.spotify_id,
       youtube_id: t.youtube_id,
+      apple_music_id: t.apple_music_id,
       cover_url: t.cover_url,
       is_playable: t.is_playable,
       playability_reason: t.playability_reason,

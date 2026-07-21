@@ -64,8 +64,11 @@ export interface LaunchOfficialPlaylistResult {
   state: CurrentTrackState | null;
   playable_count: number;
   total_count: number;
-  provider_used: 'spotify' | 'youtube';
+  provider_used: PlayProvider;
 }
+
+/** feat/apple-music — sources jouables « mondes étanches ». */
+export type PlayProvider = 'spotify' | 'youtube' | 'apple_music';
 
 /**
  * Clone une playlist officielle dans le workspace de la session + crée un
@@ -79,12 +82,12 @@ export async function launchOfficialPlaylistForSession(
   sessionId: string,
   establishmentId: string,
   opts: {
-    preferProvider: 'spotify' | 'youtube';
+    preferProvider: PlayProvider;
     difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT';
   },
 ): Promise<LaunchOfficialPlaylistResult> {
   const detail = playlistDetail;
-  const preferProvider: 'spotify' | 'youtube' = opts.preferProvider;
+  const preferProvider: PlayProvider = opts.preferProvider;
 
   // 3. Pour chaque track : choisir provider + provider_track_id
   type ChosenTrack = {
@@ -92,7 +95,7 @@ export async function launchOfficialPlaylistForSession(
     title: string;
     artist: string;
     year: number | null;
-    provider: 'spotify' | 'youtube';
+    provider: PlayProvider;
     provider_track_id: string;
     cover_url: string | null;
     answers_accepted: Record<string, unknown> | null;
@@ -140,16 +143,21 @@ export async function launchOfficialPlaylistForSession(
         continue;
       }
       // feat/watertight-provider — mondes ÉTANCHES : la source active impose
-      // SON id, aucun fallback croisé. YouTube → uniquement youtube_id ;
-      // Spotify → uniquement spotify_id. Une track sans l'id de la source
-      // active est SKIP → la playlist clonée est 100% mono-provider (jamais de
-      // mix qui bloquerait le son si le host n'a pas de compte Spotify).
-      let provider: 'spotify' | 'youtube' | null = null;
+      // SON id, aucun fallback croisé. Spotify → spotify_id, YouTube →
+      // youtube_id, Apple Music → apple_music_id. Une track sans l'id de la
+      // source active est SKIP → la playlist clonée est 100% mono-provider
+      // (jamais de mix qui bloquerait le son selon le compte du host).
+      let provider: PlayProvider | null = null;
       let providerId: string | null = null;
       if (preferProvider === 'spotify') {
         if (t.spotify_id) {
           provider = 'spotify';
           providerId = t.spotify_id;
+        }
+      } else if (preferProvider === 'apple_music') {
+        if (t.apple_music_id) {
+          provider = 'apple_music';
+          providerId = t.apple_music_id;
         }
       } else if (t.youtube_id) {
         provider = 'youtube';
@@ -275,7 +283,7 @@ export async function launchOfficialPlaylistForSession(
   // ── Tracks ───────────────────────────────────────────────────────────
   const trackKey = (provider: string, id: string): string => `${provider} ${id}`;
   interface TrackAgg {
-    provider: 'spotify' | 'youtube';
+    provider: PlayProvider;
     provider_track_id: string;
     title: string;
     artist: string;

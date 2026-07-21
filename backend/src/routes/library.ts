@@ -173,7 +173,8 @@ router.get('/playlists/:id', async (req: Request<{ id: string }>, res: Response)
 
 const launchBody = z.object({
   session_id: z.string().uuid(),
-  preferProvider: z.enum(['spotify', 'youtube']).default('youtube'),
+  // feat/apple-music — 3e source jouable. Défaut youtube (comportement inchangé).
+  preferProvider: z.enum(['spotify', 'youtube', 'apple_music']).default('youtube'),
   // feat/thematic-level-filter — niveau choisi sur une playlist thématique. Le
   // clone ne matérialise QUE les OfficialPlaylistTrack de ce difficulty
   // (clone-filtré, pas de migration schéma). Absent / undefined = tous niveaux
@@ -196,7 +197,7 @@ router.post(
     // youtube via le schema → comportement inchangé pour tous). 'spotify' n'est
     // envoyé que par l'onglet Spotify (host allowlisté), qui ne liste que des
     // playlists couvertes → clone 100% Spotify, aucun fallback YouTube.
-    const preferProvider: 'spotify' | 'youtube' = parsed.data.preferProvider;
+    const preferProvider: 'spotify' | 'youtube' | 'apple_music' = parsed.data.preferProvider;
 
     // 1. Vérif accès playlist (visibilité + premium)
     const detail = await getVisiblePlaylistDetail(userId, req.params.id);
