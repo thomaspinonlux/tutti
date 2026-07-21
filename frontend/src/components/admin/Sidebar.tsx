@@ -29,12 +29,15 @@ interface NavItem {
     | 'nav.account';
   icon: JSX.Element;
   superAdminOnly?: boolean;
+  // Masqué pour les super admins : ils gèrent leurs playlists/quizzes perso
+  // depuis les onglets « personnelles » de la Bibliothèque.
+  hideForSuperAdmin?: boolean;
 }
 
 const NAV: NavItem[] = [
   { to: '/admin/dashboard', i18nKey: 'nav.dashboard', icon: <DashIcon /> },
-  { to: '/admin/tracks', i18nKey: 'nav.tracks', icon: <DiscIcon /> },
-  { to: '/admin/quizz', i18nKey: 'nav.quizz', icon: <BulbIcon /> },
+  { to: '/admin/tracks', i18nKey: 'nav.tracks', icon: <DiscIcon />, hideForSuperAdmin: true },
+  { to: '/admin/quizz', i18nKey: 'nav.quizz', icon: <BulbIcon />, hideForSuperAdmin: true },
   // Bibliothèque officielle Tutti — gérée uniquement par les super admins V1.
   { to: '/admin/library', i18nKey: 'nav.library', icon: <LibraryIcon />, superAdminOnly: true },
   // fix/admin-users-integration — page super-admin gestion utilisateurs.
@@ -80,7 +83,10 @@ export function Sidebar(): JSX.Element {
           <span>▶</span>
           <span>{t('dashboard.newSession')}</span>
         </NavLink>
-        {NAV.filter((item) => !item.superAdminOnly || isSuperAdmin).map((item) => (
+        {NAV.filter(
+          (item) =>
+            (!item.superAdminOnly || isSuperAdmin) && !(item.hideForSuperAdmin && isSuperAdmin),
+        ).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
