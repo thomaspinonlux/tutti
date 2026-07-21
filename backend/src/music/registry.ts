@@ -15,6 +15,7 @@ import type { MusicProvider, ProviderContext } from './types.js';
 import { DemoProvider } from './demo/DemoProvider.js';
 import { SPOTIFY_CAPABILITIES, SpotifyProvider } from './spotify/SpotifyProvider.js';
 import { YOUTUBE_CAPABILITIES, YouTubeProvider } from './youtube/YouTubeProvider.js';
+import { APPLE_MUSIC_CAPABILITIES, AppleMusicProvider } from './apple/AppleMusicProvider.js';
 
 /**
  * Liste les providers disponibles + leurs capacités.
@@ -24,6 +25,7 @@ export const LIST_PROVIDERS: ProviderInfo[] = [
   { id: 'demo', capabilities: new DemoProvider().capabilities },
   { id: 'spotify', capabilities: SPOTIFY_CAPABILITIES },
   { id: 'youtube', capabilities: YOUTUBE_CAPABILITIES },
+  { id: 'apple_music', capabilities: APPLE_MUSIC_CAPABILITIES },
 ];
 
 /**
@@ -50,8 +52,13 @@ export function getProvider(id: MusicProviderId, ctx: ProviderContext): MusicPro
       // API key statique (process.env.YOUTUBE_API_KEY) — pas de credentials tenant.
       return new YouTubeProvider();
 
-    case 'deezer':
     case 'apple_music':
+      // Recherche catalogue via developer token app-level (env APPLE_*).
+      // Pas de credentials tenant nécessaires pour search/getTrack ; le Music
+      // User Token n'intervient que pour la lecture (MusicKit JS, étape 4).
+      return new AppleMusicProvider();
+
+    case 'deezer':
       throw new Error(`Provider ${id} prévu pour la V2`);
 
     default: {

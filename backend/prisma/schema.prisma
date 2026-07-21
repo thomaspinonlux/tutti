@@ -909,6 +909,9 @@ model OfficialPlaylistTrack {
   /// IDs canoniques résolus par le script d'import. null tant que pas matché.
   spotify_id             String?   @db.VarChar(40)
   youtube_id             String?   @db.VarChar(40)
+  /// feat/apple-music — catalog id Apple Music (storefront FR), résolu par
+  /// scripts/enrichAppleMusicIds.ts. null tant que pas matché.
+  apple_music_id         String?   @db.VarChar(64)
   /// Réponses acceptées (artist + title aliases pour la reco vocale Whisper).
   /// Format JSON : { artist: string[], title: string[], full: string[] }
   answers_accepted       Json?
@@ -960,6 +963,7 @@ model OfficialPlaylistTrack {
   @@index([playlist_id])
   @@index([spotify_id])
   @@index([youtube_id])
+  @@index([apple_music_id])
   @@index([is_playable])
   @@index([last_refreshed_at])
   @@index([song_id])
