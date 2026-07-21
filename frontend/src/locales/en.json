@@ -530,9 +530,9 @@
     "exit": "Back to home"
   },
   "tvCast": {
-    "button": "TV Screen",
-    "openHint": "Show code + QR to connect a 2nd screen",
-    "title": "Connect a TV screen",
+    "button": "Players Screen",
+    "openHint": "Show code + QR to connect the players screen (2nd screen)",
+    "title": "Connect the players screen",
     "intro": "On a 2nd device (TV, tablet, computer), scan the QR or go to the site and enter the code.",
     "codeLabel": "Room code",
     "codeAria": "Code {{code}}",

@@ -530,9 +530,9 @@
     "exit": "Retour à l'accueil"
   },
   "tvCast": {
-    "button": "Écran TV",
-    "openHint": "Afficher le code + QR pour brancher un 2e écran",
-    "title": "Brancher un écran TV",
+    "button": "Écran Joueurs",
+    "openHint": "Afficher le code + QR pour brancher l'écran joueurs (2e écran)",
+    "title": "Brancher l'écran joueurs",
     "intro": "Sur un 2e appareil (TV, tablette, ordi), scanne le QR ou va sur le site et entre le code.",
     "codeLabel": "Code de salon",
     "codeAria": "Code {{code}}",
