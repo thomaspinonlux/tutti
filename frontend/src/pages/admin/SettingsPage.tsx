@@ -427,15 +427,32 @@ export function SettingsPage(): JSX.Element {
               </p>
             </div>
             {spotify?.connected ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={spotifyBusy}
-                onClick={() => void handleSpotifyDisconnect()}
-              >
-                {t('settings.spotifyDisconnect')}
-              </Button>
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* feat/spotify-refresh-scopes — relance l'OAuth (show_dialog=true
+                    déjà activé côté backend) pour ré-accorder les scopes actuels
+                    sans avoir à déconnecter/reconnecter à la main. Utile quand le
+                    token a été accordé avant l'ajout d'un scope (ex. lecture des
+                    playlists). */}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled={spotifyBusy}
+                  onClick={() => void handleSpotifyConnect()}
+                  title="Relance l'autorisation Spotify pour mettre à jour les permissions (lecture des playlists, etc.)"
+                >
+                  {spotifyBusy ? t('common.loading') : '🔄 Mettre à jour les autorisations'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={spotifyBusy}
+                  onClick={() => void handleSpotifyDisconnect()}
+                >
+                  {t('settings.spotifyDisconnect')}
+                </Button>
+              </div>
             ) : (
               <Button
                 type="button"
