@@ -30,6 +30,10 @@ export interface SongTagRow {
   work_title: string | null;
   work_kind: WorkKind | null;
   tags_reviewed: boolean;
+  /** Alias de prononciation (lecture seule ici). Optionnels : absents tant que
+   *  le backend n'expose pas encore ces champs (déploiement). */
+  title_aliases?: string[];
+  artist_aliases?: string[];
   /** P3 — présence d'une source (badge). L'id réel n'est pas exposé. */
   has_youtube: boolean;
   has_spotify: boolean;
@@ -94,4 +98,11 @@ export function bulkApplySongTags(
 
 export function bulkValidateSongTags(filter: SongTagFilter): Promise<{ count: number }> {
   return api('/api/admin/song-tags/bulk-validate', { method: 'POST', body: filter });
+}
+
+/** Génère/étend les alias IA (titre + artiste) pour un lot de songs (max 30). */
+export function generateSongAliases(
+  ids: string[],
+): Promise<{ processed: number; updated: number; failed: number; songs: SongTagRow[] }> {
+  return api('/api/admin/song-tags/generate-aliases', { method: 'POST', body: { ids } });
 }

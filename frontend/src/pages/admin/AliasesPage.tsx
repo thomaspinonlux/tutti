@@ -148,7 +148,7 @@ export function AliasesPage(): JSX.Element {
             Aliases artistes →
           </Link>
           <Link to="/admin/library/tags" className="underline">
-            🏷️ Révision des tags →
+            🎼 Chansons &amp; paramètres →
           </Link>
         </p>
       </header>
