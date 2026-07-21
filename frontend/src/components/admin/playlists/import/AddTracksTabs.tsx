@@ -29,14 +29,16 @@ export function AddTracksTabs({ playlistId, onImported }: Props): JSX.Element {
 
   return (
     <Card size="sm" className="space-y-3">
-      <div className="flex gap-1 border-b-2 border-ink/20 -mt-1">
+      {/* Barre d'onglets : non-wrap + scroll horizontal si ça déborde (4 onglets
+          en majuscules ne tiennent pas toujours sur les cartes étroites). */}
+      <div className="flex gap-0.5 border-b-2 border-ink/20 -mt-1 overflow-x-auto">
         {TABS.map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => setActive(t.id)}
             aria-pressed={active === t.id}
-            className={`flex-1 px-3 py-2 font-mono text-xs uppercase tracking-wider border-b-4 transition-colors ${
+            className={`shrink-0 whitespace-nowrap px-2.5 py-2 font-mono text-[11px] uppercase tracking-wide border-b-4 transition-colors ${
               active === t.id
                 ? 'border-spritz text-ink font-bold'
                 : 'border-transparent text-ink-soft hover:text-ink'
