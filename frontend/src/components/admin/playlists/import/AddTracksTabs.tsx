@@ -8,16 +8,18 @@ import { useState } from 'react';
 import { Card } from '../../../ui/index.js';
 import { AdvancedTrackSearch } from './AdvancedTrackSearch.js';
 import { SpotifyPlaylistsBrowser } from './SpotifyPlaylistsBrowser.js';
+import { BulkPasteImport } from './BulkPasteImport.js';
 
 interface Props {
   playlistId: string;
   onImported: (count: number) => void;
 }
 
-type TabId = 'search' | 'my' | 'public';
+type TabId = 'search' | 'paste' | 'my' | 'public';
 
 const TABS: Array<{ id: TabId; label: string; icon: string }> = [
   { id: 'search', label: 'Recherche', icon: '🔍' },
+  { id: 'paste', label: 'Coller une liste', icon: '📋' },
   { id: 'my', label: 'Mes playlists', icon: '📁' },
   { id: 'public', label: 'Publiques', icon: '🌐' },
 ];
@@ -50,6 +52,7 @@ export function AddTracksTabs({ playlistId, onImported }: Props): JSX.Element {
         {active === 'search' && (
           <AdvancedTrackSearch playlistId={playlistId} onImported={onImported} />
         )}
+        {active === 'paste' && <BulkPasteImport playlistId={playlistId} onImported={onImported} />}
         {active === 'my' && (
           <SpotifyPlaylistsBrowser mode="my" playlistId={playlistId} onImported={onImported} />
         )}
