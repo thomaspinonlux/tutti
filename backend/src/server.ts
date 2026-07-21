@@ -28,6 +28,7 @@ import gameplayParticipantRouter from './routes/gameplayParticipant.js';
 import gameplayQuizzRouter from './routes/gameplayQuizz.js';
 import sessionMasterRouter from './routes/sessionMaster.js';
 import spotifyAuthRouter from './music/spotify/auth.js';
+import appleAuthRouter from './routes/appleAuth.js';
 import spotifyApiRouter from './routes/spotify.js';
 import adminRouter from './routes/admin.js';
 import adminAliasesRouter from './routes/adminAliases.js';
@@ -162,6 +163,7 @@ app.use('/api/sessions/:id/rounds/:roundId', gameplayParticipantRouter);
 app.use('/api/sessions/:id/quizz', gameplayQuizzRouter);
 app.use('/api/sessions/:id/master', sessionMasterRouter);
 app.use('/api/auth/spotify', spotifyAuthRouter);
+app.use('/api/auth/apple', appleAuthRouter);
 app.use('/api/spotify', spotifyApiRouter);
 // feat/tv-carousel-polish — cover mosaïque dynamique. Route publique
 // (servie aussi au /screen TV sans auth). Cache headers agressifs côté
