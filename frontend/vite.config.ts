@@ -73,6 +73,10 @@ export default defineConfig({
         // Précache : tous les assets buildés (JS/CSS) + assets statiques de
         // includeAssets (fonts, icônes…).
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        // Les gros chunks lazy (parseurs Excel/PDF de l'import « Coller une
+        // liste ») sont chargés à la demande → on les exclut du précache pour
+        // ne pas alourdir l'install PWA de ~900 Ko inutiles.
+        globIgnores: ['**/{xlsx,pdf}-*.js'],
         // 5MB cap pour éviter de précacher des fichiers énormes (vidéos
         // landing dans public/videos/).
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
