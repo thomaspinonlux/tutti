@@ -17,9 +17,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getAppleDeveloperToken } from './appleMusic.js';
-
-const SDK_SCRIPT_URL = 'https://js-cdn.music.apple.com/musickit/v3/musickit.js';
-const SDK_SCRIPT_ID = 'apple-musickit-js';
+import { loadMusicKitSdk, type MusicKitInstance } from './musickitLoader.js';
 
 export type AppleMusicPlayerStatus =
   | 'idle'
@@ -61,72 +59,6 @@ export interface UseAppleMusicPlayerResult {
   setVolume: (v: number) => Promise<void>;
   /** Débloque l'audio après une interaction user (autoplay policy). */
   activate: () => Promise<boolean>;
-}
-
-// ── Types MusicKit minimaux (le SDK n'expose pas de @types officiels ici) ────
-interface MusicKitSetQueueOptions {
-  song?: string;
-  songs?: string[];
-}
-interface MusicKitInstance {
-  isAuthorized: boolean;
-  volume: number;
-  currentPlaybackTime: number;
-  currentPlaybackDuration: number;
-  isPlaying: boolean;
-  authorize(): Promise<string>;
-  setQueue(opts: MusicKitSetQueueOptions): Promise<unknown>;
-  play(): Promise<void>;
-  pause(): Promise<void>;
-  stop(): Promise<void>;
-  seekToTime(seconds: number): Promise<void>;
-  addEventListener(name: string, cb: (e: unknown) => void): void;
-  removeEventListener(name: string, cb: (e: unknown) => void): void;
-}
-interface MusicKitNamespace {
-  configure(config: {
-    developerToken: string;
-    app: { name: string; build: string };
-  }): Promise<MusicKitInstance>;
-  getInstance(): MusicKitInstance | undefined;
-}
-declare global {
-  interface Window {
-    MusicKit?: MusicKitNamespace;
-  }
-}
-
-/** Charge le script MusicKit une seule fois. Résout quand window.MusicKit est prêt. */
-async function loadMusicKitSdk(): Promise<MusicKitNamespace> {
-  if (typeof window === 'undefined') throw new Error('SSR non supporté');
-  if (window.MusicKit) return window.MusicKit;
-
-  await new Promise<void>((resolve, reject) => {
-    const done = (): void => {
-      if (window.MusicKit) resolve();
-      else reject(new Error('MusicKit indisponible après chargement'));
-    };
-    if (document.getElementById(SDK_SCRIPT_ID)) {
-      // Script déjà inséré : attendre l'event musickitloaded ou window.MusicKit.
-      if (window.MusicKit) return resolve();
-      document.addEventListener('musickitloaded', () => done(), { once: true });
-      window.setTimeout(
-        () => (window.MusicKit ? resolve() : reject(new Error('MusicKit timeout'))),
-        10_000,
-      );
-      return;
-    }
-    const script = document.createElement('script');
-    script.id = SDK_SCRIPT_ID;
-    script.src = SDK_SCRIPT_URL;
-    script.async = true;
-    document.addEventListener('musickitloaded', () => done(), { once: true });
-    script.onerror = () => reject(new Error('Échec de chargement de MusicKit JS'));
-    document.head.appendChild(script);
-    window.setTimeout(() => (window.MusicKit ? resolve() : undefined), 10_000);
-  });
-  if (!window.MusicKit) throw new Error('MusicKit indisponible');
-  return window.MusicKit;
 }
 
 export function useAppleMusicPlayer({

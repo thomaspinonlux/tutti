@@ -25,6 +25,12 @@ import {
   type SpotifyStatus,
   type YouTubeStatus,
 } from '../../lib/music.js';
+import {
+  getAppleMusicStatus,
+  authorizeAppleMusic,
+  disconnectAppleMusic,
+  type AppleMusicStatus,
+} from '../../lib/appleMusic.js';
 import { Button, Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { WorkspaceMembersCard } from '../../components/admin/settings/WorkspaceMembersCard.js';
 
@@ -74,6 +80,13 @@ export function SettingsPage(): JSX.Element {
     kind: 'success' | 'error';
     msg: string;
   } | null>(null);
+  // Apple Music (feat/apple-music étape 5)
+  const [apple, setApple] = useState<AppleMusicStatus | null>(null);
+  const [appleBusy, setAppleBusy] = useState(false);
+  const [appleToast, setAppleToast] = useState<{
+    kind: 'success' | 'error';
+    msg: string;
+  } | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
@@ -95,6 +108,11 @@ export function SettingsPage(): JSX.Element {
       .then(setYoutube)
       .catch(() => {
         /* ignore */
+      });
+    void getAppleMusicStatus()
+      .then(setApple)
+      .catch(() => {
+        /* ignore : statut non critique */
       });
   }, []);
 
@@ -241,6 +259,33 @@ export function SettingsPage(): JSX.Element {
     }
   };
 
+  // Apple Music — connexion interactive (popup MusicKit, pas de redirect OAuth).
+  const handleAppleConnect = async (): Promise<void> => {
+    setAppleBusy(true);
+    setAppleToast(null);
+    try {
+      await authorizeAppleMusic();
+      const status = await getAppleMusicStatus();
+      setApple(status);
+      setAppleToast({ kind: 'success', msg: 'Apple Music connecté avec succès.' });
+    } catch (err: unknown) {
+      setAppleToast({ kind: 'error', msg: (err as Error).message });
+    } finally {
+      setAppleBusy(false);
+    }
+  };
+
+  const handleAppleDisconnect = async (): Promise<void> => {
+    setAppleBusy(true);
+    try {
+      await disconnectAppleMusic();
+      setApple((a) => (a ? { ...a, connected: false } : a));
+      await refetch();
+    } finally {
+      setAppleBusy(false);
+    }
+  };
+
   const handleYouTubeConnect = async (): Promise<void> => {
     setYoutubeBusy(true);
     try {
@@ -283,7 +328,7 @@ export function SettingsPage(): JSX.Element {
     { id: 'spotify', i18n: 'settings.providerSpotify', enabled: spotify?.connected ?? false },
     { id: 'youtube', i18n: 'settings.providerYoutube', enabled: true },
     { id: 'deezer', i18n: 'settings.providerDeezer', enabled: false },
-    { id: 'apple_music', i18n: 'settings.providerAppleMusic', enabled: false },
+    { id: 'apple_music', i18n: 'settings.providerAppleMusic', enabled: apple?.connected ?? false },
   ];
 
   const toggleProvider = (id: (typeof PROVIDER_IDS)[number]): void => {
@@ -479,6 +524,63 @@ export function SettingsPage(): JSX.Element {
               }`}
             >
               {spotifyToast.msg}
+            </p>
+          )}
+        </Card>
+
+        {/* ── Apple Music connect (feat/apple-music étape 5) ──────────── */}
+        <Card tone={apple?.connected ? 'basil' : 'default'}>
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+                Apple Music
+              </p>
+              <p className="font-editorial italic text-sm text-ink-2">
+                Connecte ton compte Apple Music (abonnement actif requis) pour lire les morceaux
+                depuis la console.
+              </p>
+            </div>
+            {apple?.connected ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={appleBusy}
+                onClick={() => void handleAppleDisconnect()}
+              >
+                {appleBusy ? t('common.loading') : 'Déconnecter'}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                disabled={appleBusy || (apple !== null && !apple.configured)}
+                onClick={() => void handleAppleConnect()}
+                title={
+                  apple !== null && !apple.configured
+                    ? 'Apple Music non configuré côté serveur (clé MusicKit manquante).'
+                    : undefined
+                }
+              >
+                {appleBusy ? t('common.loading') : 'Connecter Apple Music'}
+              </Button>
+            )}
+          </div>
+          {apple !== null && !apple.configured && (
+            <p className="font-mono text-xs text-ink-soft">
+              ⚠️ Apple Music n'est pas encore configuré côté serveur (clé MusicKit / env APPLE_*).
+              La connexion sera possible une fois le backend déployé.
+            </p>
+          )}
+          {appleToast && (
+            <p
+              role="alert"
+              className={`mt-3 text-sm font-medium ${
+                appleToast.kind === 'success' ? 'text-basil-deep' : 'text-raspberry'
+              }`}
+            >
+              {appleToast.msg}
             </p>
           )}
         </Card>
