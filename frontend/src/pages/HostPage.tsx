@@ -1573,22 +1573,9 @@ function HostPageInner(): JSX.Element {
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <PwaSafetyControls />
           <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
-          {/* feat/sans-animateur — ouvre l'écran TV dans un 2e onglet SUR CE MÊME
-              appareil (affichage visuel salle). Le son reste sur cette console.
-              fix/pwa-ecran-tv-trap — MASQUÉ en PWA standalone iOS : pas d'onglets,
-              window.open('/screen') piège l'host sur /screen sans retour (perte de
-              la console). En PWA → utiliser « Caster » (TvCastButton) pour ouvrir
-              l'écran TV sur un AUTRE appareil. En Safari (onglets OK) → gardé. */}
-          {!isStandalone && (
-            <button
-              type="button"
-              onClick={() => window.open('/screen', '_blank', 'noopener,noreferrer')}
-              title="Ouvre l'écran TV dans un 2e onglet — le son reste sur cette console"
-              className="px-3 py-2 text-sm font-display font-bold bg-ink text-cream border-2 border-ink rounded-xl flex items-center gap-1.5 whitespace-nowrap"
-            >
-              📺 Écran TV
-            </button>
-          )}
+          {/* feat/ecran-joueurs — bouton direct « Écran TV » retiré : tout passe
+              par TvCastButton (renommé « Écran Joueurs »), qui propose déjà QR +
+              « ouvrir ici » (desktop). Un seul bouton. */}
           {/* feat/audio-auto-routing — capsule "son sur la TV" retirée : le
               routing est désormais automatique (écran TV externe prêt → TV,
               sinon console). Plus aucun bouton de choix côté host. */}
@@ -1804,20 +1791,8 @@ function HostPageInner(): JSX.Element {
             )}
             <PwaSafetyControls />
             <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
-            {/* feat/sans-animateur — 2e onglet écran TV sur CE MÊME appareil.
-                fix/pwa-ecran-tv-trap — masqué en PWA standalone (pas d'onglets →
-                window.open piège l'host sur /screen). En PWA → « Caster » sur un
-                autre appareil (TvCastButton). En Safari → gardé. */}
-            {!isStandalone && (
-              <button
-                type="button"
-                onClick={() => window.open('/screen', '_blank', 'noopener,noreferrer')}
-                title="Ouvre l'écran TV dans un 2e onglet — le son reste sur cette console"
-                className="px-3 py-2 text-sm font-display font-bold bg-ink text-cream border-2 border-ink rounded-xl flex items-center gap-1.5 whitespace-nowrap"
-              >
-                📺 Écran TV
-              </button>
-            )}
+            {/* feat/ecran-joueurs — bouton direct « Écran TV » retiré (voir plus
+                haut) : un seul bouton « Écran Joueurs » via TvCastButton. */}
             {/* feat/audio-auto-routing — capsule son→TV retirée : routing
                 automatique (écran TV externe prêt → TV, sinon console). */}
             {!session.has_animator &&
