@@ -15,7 +15,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { Button } from '../../../ui/index.js';
 import { searchTracks as searchGeneric } from '../../../../lib/music.js';
-import { importTracks } from '../../../../lib/spotifyApi.js';
+import { importTracks, searchTracks as searchSpotify } from '../../../../lib/spotifyApi.js';
 import { parseTrackListFile } from '../../../../lib/trackListFile.js';
 import { useEstablishment } from '../../../../pages/admin/AdminLayout.js';
 
@@ -128,8 +128,15 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
         batch.map(async (query, j) => {
           const idx = i + j;
           try {
-            const res = await searchGeneric(query, { provider, limit: 3 });
-            out[idx] = { query, track: res.results[0] ?? null };
+            // Spotify : même chemin que l'onglet « Recherche » qui marche
+            // (/api/spotify/search-tracks avec market=FR). La recherche
+            // générique sans market renvoie 0 sur ce compte Spotify.
+            // YouTube : endpoint générique (recherche libre).
+            const found =
+              provider === 'spotify'
+                ? (await searchSpotify({ track: query, market: 'FR', limit: 3 })).items
+                : (await searchGeneric(query, { provider: 'youtube', limit: 3 })).results;
+            out[idx] = { query, track: found[0] ?? null };
           } catch {
             out[idx] = { query, track: null };
           } finally {
