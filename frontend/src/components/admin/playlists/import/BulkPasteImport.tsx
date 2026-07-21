@@ -11,11 +11,12 @@
  * RECHERCHES de titres (autorisées en Development Mode).
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { Button } from '../../../ui/index.js';
 import { searchTracks as searchGeneric } from '../../../../lib/music.js';
 import { importTracks } from '../../../../lib/spotifyApi.js';
+import { parseTrackListFile } from '../../../../lib/trackListFile.js';
 import { useEstablishment } from '../../../../pages/admin/AdminLayout.js';
 
 interface Props {
@@ -57,6 +58,39 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importedCount, setImportedCount] = useState<number | null>(null);
+  const [fileLoading, setFileLoading] = useState(false);
+  const [fileNote, setFileNote] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (file: File | undefined | null): Promise<void> => {
+    if (!file) return;
+    setError(null);
+    setFileNote(null);
+    setFileLoading(true);
+    try {
+      const lines = await parseTrackListFile(file);
+      if (lines.length === 0) {
+        setFileNote(`Aucune ligne exploitable trouvée dans « ${file.name} ».`);
+        return;
+      }
+      // Fusionne avec le texte déjà présent (au cas où on cumule plusieurs sources).
+      setText((prev) => {
+        const base = prev.trim();
+        return base ? `${base}\n${lines.join('\n')}` : lines.join('\n');
+      });
+      setResults(null);
+      setFileNote(
+        `${lines.length} ligne${lines.length > 1 ? 's' : ''} importée${
+          lines.length > 1 ? 's' : ''
+        } depuis « ${file.name} ». Vérifie puis lance la recherche.`,
+      );
+    } catch (err: unknown) {
+      setError(`Lecture du fichier impossible : ${(err as Error).message}`);
+    } finally {
+      setFileLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const parseLines = (raw: string): string[] => {
     const seen = new Set<string>();
@@ -178,6 +212,31 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
           })}
         </div>
       )}
+
+      {/* Upload fichier : Excel / CSV / PDF / TXT → pré-remplit la zone de texte. */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx,.xls,.csv,.tsv,.pdf,.txt"
+          onChange={(e) => void handleFile(e.target.files?.[0])}
+          className="hidden"
+          id="tracklist-file"
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={fileLoading || matching || importing}
+        >
+          {fileLoading ? '⏳ Lecture…' : '📎 Importer un fichier (Excel · CSV · PDF)'}
+        </Button>
+        <span className="font-mono text-[11px] text-ink-faded">
+          ou colle directement ci-dessous
+        </span>
+      </div>
+
+      {fileNote && <p className="text-[12px] text-spritz-deep font-medium">{fileNote}</p>}
 
       <div>
         <label className="block text-xs font-mono uppercase tracking-wider text-ink-soft mb-1">
