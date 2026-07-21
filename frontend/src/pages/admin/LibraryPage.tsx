@@ -9,10 +9,19 @@
  * Out of scope V1 : édition manuelle, ajout/suppression, drag & drop.
  */
 
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
+import type { Playlist, QuestionSet } from '@tutti/shared';
+import {
+  Badge,
+  Button,
+  Card,
+  Input,
+  Modal,
+  TitleHandwritten,
+  Underline,
+} from '../../components/ui/index.js';
 import {
   listOfficialPlaylists,
   listOfficialQuizPacks,
@@ -22,8 +31,18 @@ import {
   type OfficialQuizPackSummary,
   type Visibility,
 } from '../../lib/adminLibrary.js';
+import { listPlaylists, createPlaylist, deletePlaylist } from '../../lib/playlists.js';
+import { listQuestionSets, createQuestionSet } from '../../lib/questionSets.js';
 
-type Tab = 'playlists' | 'quizzes';
+// 4 onglets : Playlists officielles / personnelles, Quizzes officielles / personnels.
+type Tab = 'playlists' | 'my-playlists' | 'quizzes' | 'my-quizzes';
+
+const TABS = [
+  { key: 'playlists', icon: '🎵', labelKey: 'library.tabPlaylists' },
+  { key: 'my-playlists', icon: '🎧', labelKey: 'library.tabMyPlaylists' },
+  { key: 'quizzes', icon: '❓', labelKey: 'library.tabQuizzes' },
+  { key: 'my-quizzes', icon: '📝', labelKey: 'library.tabMyQuizzes' },
+] as const satisfies { key: Tab; icon: string; labelKey: string }[];
 
 export function LibraryPage(): JSX.Element {
   const { t } = useTranslation();
@@ -43,34 +62,413 @@ export function LibraryPage(): JSX.Element {
         </div>
       </header>
 
-      {/* Onglets Playlists | Quizzes */}
-      <div className="flex gap-2 border-b-2 border-ink mb-6">
-        <button
-          type="button"
-          onClick={() => setTab('playlists')}
-          className={`px-4 py-2 font-display text-lg border-2 border-ink border-b-0 rounded-t-md transition-colors ${
-            tab === 'playlists'
-              ? 'bg-cream text-ink shadow-pop-sm'
-              : 'bg-cream-2 text-ink-soft hover:bg-cream'
-          }`}
-        >
-          🎵 {t('library.tabPlaylists')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('quizzes')}
-          className={`px-4 py-2 font-display text-lg border-2 border-ink border-b-0 rounded-t-md transition-colors ${
-            tab === 'quizzes'
-              ? 'bg-cream text-ink shadow-pop-sm'
-              : 'bg-cream-2 text-ink-soft hover:bg-cream'
-          }`}
-        >
-          ❓ {t('library.tabQuizzes')}
-        </button>
+      {/* Onglets : officielles / personnelles × playlists / quizzes */}
+      <div className="flex gap-2 border-b-2 border-ink mb-6 flex-wrap">
+        {TABS.map(({ key, icon, labelKey }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={`px-4 py-2 font-display text-lg border-2 border-ink border-b-0 rounded-t-md transition-colors ${
+              tab === key
+                ? 'bg-cream text-ink shadow-pop-sm'
+                : 'bg-cream-2 text-ink-soft hover:bg-cream'
+            }`}
+          >
+            {icon} {t(labelKey)}
+          </button>
+        ))}
       </div>
 
-      {tab === 'playlists' ? <PlaylistsTab /> : <QuizzesTab />}
+      {tab === 'playlists' && <PlaylistsTab />}
+      {tab === 'my-playlists' && <MyPlaylistsTab />}
+      {tab === 'quizzes' && <QuizzesTab />}
+      {tab === 'my-quizzes' && <MyQuizzesTab />}
     </div>
+  );
+}
+
+// ───── Playlists personnelles tab (ex Tutti Tracks) ────────────────────────
+// Reprend la liste + création + bouton suppression 🗑 (déplacé depuis
+// /admin/tracks). Le bouton est hors du <Link> pour ne pas naviguer au clic.
+
+function MyPlaylistsTab(): JSX.Element {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [playlists, setPlaylists] = useState<Playlist[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    listPlaylists()
+      .then(setPlaylists)
+      .catch((err: unknown) => setError((err as Error).message));
+  }, []);
+
+  const handleDelete = async (p: Playlist): Promise<void> => {
+    if (
+      !window.confirm(
+        `Supprimer la playlist « ${p.name} » ?\nCette action est définitive (la playlist et ses morceaux seront retirés).`,
+      )
+    ) {
+      return;
+    }
+    setDeletingId(p.id);
+    setError(null);
+    try {
+      await deletePlaylist(p.id);
+      setPlaylists((prev) => (prev ? prev.filter((x) => x.id !== p.id) : prev));
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex justify-end mb-5">
+        <Button onClick={() => setModalOpen(true)}>{t('playlists.newPlaylist')}</Button>
+      </div>
+
+      {error && (
+        <Card tone="cream" className="border-raspberry mb-4">
+          <p role="alert" className="text-raspberry font-medium">
+            {error}
+          </p>
+        </Card>
+      )}
+
+      {playlists === null && <p className="font-mono text-ink-soft">{t('common.loading')}</p>}
+
+      {playlists !== null && playlists.length === 0 && (
+        <Card tone="cream" size="lg">
+          <p className="font-editorial italic text-ink-2 mb-4">{t('playlists.emptyState')}</p>
+          <Button onClick={() => setModalOpen(true)}>{t('playlists.newPlaylist')}</Button>
+        </Card>
+      )}
+
+      {playlists && playlists.length > 0 && (
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {playlists.map((p, idx) => (
+            <li key={p.id} className="relative">
+              <button
+                type="button"
+                onClick={() => void handleDelete(p)}
+                disabled={deletingId === p.id}
+                aria-label={`Supprimer la playlist ${p.name}`}
+                title="Supprimer la playlist"
+                className="absolute bottom-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-ink text-raspberry hover:bg-raspberry hover:text-white shadow-pop transition-colors disabled:opacity-50"
+              >
+                {deletingId === p.id ? '…' : '🗑'}
+              </button>
+              <Link to={`/admin/tracks/${p.id}`} className="block group">
+                <Card
+                  tone={p.is_published ? 'spritz' : 'default'}
+                  size="sm"
+                  className="h-full transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <Badge
+                      tone={p.level === 'EASY' ? 'basil' : p.level === 'MEDIUM' ? 'lemon' : 'plum'}
+                      tilt={idx % 2 === 0 ? -1 : 1}
+                    >
+                      {p.level}
+                    </Badge>
+                    {p.is_published && (
+                      <Badge tone="ink" tilt={-2}>
+                        {t('playlists.published')}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="font-display text-xl mb-1 truncate">{p.name}</p>
+                  <p className="font-mono text-xs text-ink-soft">
+                    {p.tracks_count ?? 0} {t('playlists.tracksCount')} · {p.language.toUpperCase()}
+                  </p>
+                </Card>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <NewPlaylistModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreated={(p) => navigate(`/admin/tracks/${p.id}`)}
+      />
+    </div>
+  );
+}
+
+function NewPlaylistModal({
+  open,
+  onClose,
+  onCreated,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onCreated: (p: Playlist) => void;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const [name, setName] = useState('');
+  const [language, setLanguage] = useState<'fr' | 'en'>('fr');
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const submit = async (e: FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setSubmitting(true);
+    setErr(null);
+    try {
+      const playlist = await createPlaylist({ name: name.trim(), language });
+      onCreated(playlist);
+      setName('');
+      onClose();
+    } catch (e: unknown) {
+      setErr((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title={t('playlists.newPlaylist')}>
+      <form onSubmit={(e) => void submit(e)} className="space-y-4">
+        <Input
+          label={t('playlists.fieldName')}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t('playlists.namePlaceholder')}
+          required
+          minLength={1}
+          maxLength={120}
+          autoFocus
+        />
+        <div>
+          <span className="block text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+            {t('playlists.fieldLanguage')}
+          </span>
+          <div className="flex gap-2">
+            {(['fr', 'en'] as const).map((lng) => (
+              <button
+                key={lng}
+                type="button"
+                onClick={() => setLanguage(lng)}
+                aria-pressed={language === lng}
+                className={`flex-1 px-3 py-1.5 border-2 border-ink rounded font-medium transition-colors ${
+                  language === lng ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
+                }`}
+              >
+                {lng.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+        {err && (
+          <p role="alert" className="text-sm text-raspberry">
+            {err}
+          </p>
+        )}
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={submitting}>
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" size="sm" disabled={submitting || !name.trim()}>
+            {submitting ? t('common.saving') : t('playlists.create')}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+// ───── Quizzes personnels tab (ex Tutti Quizz) ─────────────────────────────
+
+function MyQuizzesTab(): JSX.Element {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [sets, setSets] = useState<QuestionSet[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    listQuestionSets()
+      .then(setSets)
+      .catch((err: unknown) => setError((err as Error).message));
+  }, []);
+
+  return (
+    <div>
+      <div className="flex justify-end mb-5">
+        <Button onClick={() => setModalOpen(true)}>{t('quizz.newPack')}</Button>
+      </div>
+
+      {error && (
+        <Card tone="cream" className="border-raspberry mb-4">
+          <p role="alert" className="text-raspberry font-medium">
+            {error}
+          </p>
+        </Card>
+      )}
+
+      {sets === null && <p className="font-mono text-ink-soft">{t('common.loading')}</p>}
+
+      {sets !== null && sets.length === 0 && (
+        <Card tone="cream" size="lg">
+          <p className="font-editorial italic text-ink-2 mb-4">{t('quizz.emptyState')}</p>
+          <Button onClick={() => setModalOpen(true)}>{t('quizz.newPack')}</Button>
+        </Card>
+      )}
+
+      {sets && sets.length > 0 && (
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sets.map((s, idx) => (
+            <li key={s.id}>
+              <Link to={`/admin/quizz/${s.id}`} className="block group">
+                <Card
+                  tone={s.is_published ? 'spritz' : 'default'}
+                  size="sm"
+                  className="h-full transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <Badge tone={s.is_bilingual ? 'plum' : 'basil'} tilt={idx % 2 === 0 ? -1 : 1}>
+                      {s.is_bilingual
+                        ? `${s.language_1.toUpperCase()} · ${(s.language_2 ?? '').toUpperCase()}`
+                        : s.language_1.toUpperCase()}
+                    </Badge>
+                    {s.is_published && (
+                      <Badge tone="ink" tilt={-2}>
+                        {t('playlists.published')}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="font-display text-xl mb-1 truncate">{s.name}</p>
+                  <p className="font-mono text-xs text-ink-soft">
+                    {s.questions_count ?? 0} {t('quizz.questionsCount')}
+                  </p>
+                </Card>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <NewPackModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreated={(s) => navigate(`/admin/quizz/${s.id}`)}
+      />
+    </div>
+  );
+}
+
+function NewPackModal({
+  open,
+  onClose,
+  onCreated,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onCreated: (s: QuestionSet) => void;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const [name, setName] = useState('');
+  const [language1, setLanguage1] = useState<'fr' | 'en'>('fr');
+  const [bilingual, setBilingual] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const language2: 'fr' | 'en' = language1 === 'fr' ? 'en' : 'fr';
+
+  const submit = async (e: FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setSubmitting(true);
+    setErr(null);
+    try {
+      const set = await createQuestionSet({
+        name: name.trim(),
+        language_1: language1,
+        is_bilingual: bilingual,
+        language_2: bilingual ? language2 : undefined,
+      });
+      onCreated(set);
+      setName('');
+      onClose();
+    } catch (e: unknown) {
+      setErr((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title={t('quizz.newPack')}>
+      <form onSubmit={(e) => void submit(e)} className="space-y-4">
+        <Input
+          label={t('quizz.fieldName')}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t('quizz.namePlaceholder')}
+          required
+          minLength={1}
+          maxLength={120}
+          autoFocus
+        />
+        <div>
+          <span className="block text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+            {t('quizz.fieldLanguage1')}
+          </span>
+          <div className="flex gap-2">
+            {(['fr', 'en'] as const).map((lng) => (
+              <button
+                key={lng}
+                type="button"
+                onClick={() => setLanguage1(lng)}
+                aria-pressed={language1 === lng}
+                className={`flex-1 px-3 py-1.5 border-2 border-ink rounded font-medium transition-colors ${
+                  language1 === lng ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
+                }`}
+              >
+                {lng.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={bilingual}
+            onChange={(e) => setBilingual(e.target.checked)}
+            className="w-4 h-4 accent-ink"
+          />
+          <span className="text-sm">
+            {t('quizz.bilingualToggle')}{' '}
+            {bilingual && (
+              <span className="font-mono text-xs text-ink-soft">
+                ({language1.toUpperCase()} + {language2.toUpperCase()})
+              </span>
+            )}
+          </span>
+        </label>
+        {err && (
+          <p role="alert" className="text-sm text-raspberry">
+            {err}
+          </p>
+        )}
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={submitting}>
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" size="sm" disabled={submitting || !name.trim()}>
+            {submitting ? t('common.saving') : t('quizz.create')}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 
