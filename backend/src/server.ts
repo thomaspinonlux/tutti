@@ -29,6 +29,7 @@ import gameplayQuizzRouter from './routes/gameplayQuizz.js';
 import sessionMasterRouter from './routes/sessionMaster.js';
 import spotifyAuthRouter from './music/spotify/auth.js';
 import appleAuthRouter from './routes/appleAuth.js';
+import { logAppleMusicKeyStatus } from './lib/appleDeveloperToken.js';
 import spotifyApiRouter from './routes/spotify.js';
 import adminRouter from './routes/admin.js';
 import adminAliasesRouter from './routes/adminAliases.js';
@@ -225,6 +226,8 @@ httpServer.listen(PORT, () => {
   console.info(
     `[tutti-backend] providers — spotify=${spotifyOk ? 'OK' : 'MISSING'} youtube=${youtubeOk ? 'OK' : 'MISSING'}`,
   );
+  // feat/apple-music — valide le parsing de la clé MusicKit au boot (log clair).
+  logAppleMusicKeyStatus();
   // feat/youtube-compliance — démarre le cron de refresh data YouTube
   // (YouTube API Services Developer Policies III.E.4 : refresh ou suppression
   // au moins tous les 30 jours). Skip en tests / dev sans YT API key.

@@ -48,15 +48,57 @@ function b64url(input: Buffer | string): string {
     .replace(/=+$/, '');
 }
 
-/** Le .p8 peut arriver avec des `\n` échappés (env) → vrais retours ligne. */
+/** Ré-emballe un corps base64 en PEM propre (lignes de 64 chars) sous le label
+ *  donné (ex. "PRIVATE KEY"). */
+function wrapPem(label: string, base64Body: string): string {
+  const body = base64Body.replace(/\s+/g, '');
+  const lines = body.match(/.{1,64}/g)?.join('\n') ?? body;
+  return `-----BEGIN ${label}-----\n${lines}\n-----END ${label}-----\n`;
+}
+
+/**
+ * Normalise APPLE_MUSIC_PRIVATE_KEY quel que soit le format de stockage (env
+ * Railway aplatit souvent les retours ligne du .p8). Gère :
+ *   1. `\n` littéraux (échappés) → vrais retours ligne.
+ *   2. Clé aplatie sur une ligne (headers présents mais body collé) →
+ *      reconstruit le PEM avec un body wrappé à 64 chars.
+ *   3. Clé déjà bien formatée → laissée telle quelle (re-wrap idempotent).
+ *   4. Base64 complet du .p8 SANS header → décodé d'abord ; si le décodé
+ *      contient un header PEM on le prend, sinon on wrappe le body en PEM.
+ */
 function normalizePrivateKey(raw: string): string {
   let key = raw.trim();
-  if (key.includes('\\n')) key = key.replace(/\\n/g, '\n');
-  // Certains hébergeurs entourent la valeur de guillemets — on les retire.
+  // Retire des guillemets d'enrobage éventuels (certains hébergeurs).
   if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
     key = key.slice(1, -1).trim();
-    if (key.includes('\\n')) key = key.replace(/\\n/g, '\n');
   }
+  // 1. `\n` littéraux → vrais retours ligne.
+  if (key.includes('\\n')) key = key.replace(/\\n/g, '\n');
+
+  // 4. Aucun header PEM → peut être le .p8 encodé en base64 entier. On tente un
+  //    décodage : si le résultat contient un header, on l'utilise.
+  if (!key.includes('BEGIN')) {
+    try {
+      const decoded = Buffer.from(key.replace(/\s+/g, ''), 'base64').toString('utf8');
+      if (decoded.includes('BEGIN')) key = decoded.trim();
+    } catch {
+      /* pas du base64 valide → on continue avec la valeur brute */
+    }
+  }
+
+  // 2 + 3. Si un bloc PEM est présent (même aplati), on le ré-emballe proprement
+  //        (extrait le label + le body, re-wrappe à 64 chars). Idempotent.
+  const block = key.match(/-----BEGIN ([A-Z0-9 ]+?)-----([\s\S]*?)-----END \1-----/);
+  if (block) {
+    return wrapPem(block[1]!.trim(), block[2]!);
+  }
+
+  // Pas de header du tout mais une valeur non vide → on suppose que c'est le
+  // body base64 nu de la clé PKCS#8 (.p8) → on l'emballe en PEM PRIVATE KEY.
+  if (key.length > 0 && !key.includes('BEGIN')) {
+    return wrapPem('PRIVATE KEY', key);
+  }
+
   return key;
 }
 
@@ -121,4 +163,23 @@ export function isAppleMusicConfigured(): boolean {
     process.env.APPLE_MUSIC_KEY_ID &&
     process.env.APPLE_MUSIC_PRIVATE_KEY
   );
+}
+
+/**
+ * Log clair au démarrage : valide le parsing de la clé privée MusicKit sans
+ * jeter (utile pour diagnostiquer un .p8 mal formaté en env). À appeler une
+ * fois au boot du serveur.
+ */
+export function logAppleMusicKeyStatus(): void {
+  if (!isAppleMusicConfigured()) {
+    console.info('[Apple] Music non configuré (APPLE_TEAM_ID / KEY_ID / PRIVATE_KEY absents).');
+    return;
+  }
+  try {
+    getKeyObject(); // parse + met en cache la clé normalisée
+    console.info('[Apple] key format: OK');
+  } catch (err) {
+    const msg = err instanceof AppleTokenError ? err.message : (err as Error).message;
+    console.error(`[Apple] key format: ERREUR — ${msg}`);
+  }
 }
