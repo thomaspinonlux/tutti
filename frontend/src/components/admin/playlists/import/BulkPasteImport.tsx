@@ -22,6 +22,7 @@ import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { Button } from '../../../ui/index.js';
 import { searchTracks as searchGeneric } from '../../../../lib/music.js';
 import { importTracks, searchTracks as searchSpotify } from '../../../../lib/spotifyApi.js';
+import { getAppleMusicStatus } from '../../../../lib/appleMusic.js';
 import { parseTrackListFile } from '../../../../lib/trackListFile.js';
 import { useEstablishment } from '../../../../pages/admin/AdminLayout.js';
 
@@ -83,13 +84,29 @@ function parseLines(raw: string): string[] {
 
 export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element {
   const { establishment } = useEstablishment();
+  // feat/apple-music-search — Apple exposé dès que le backend est configuré
+  // (recherche = developer token seul, la connexion host n'est requise que
+  // pour la lecture), indépendamment de active_providers.
+  const [appleAvailable, setAppleAvailable] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    getAppleMusicStatus()
+      .then((s) => {
+        if (!cancelled) setAppleAvailable(s.configured || s.connected);
+      })
+      .catch(() => {
+        if (!cancelled) setAppleAvailable(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const availableProviders = useMemo<MusicProviderId[]>(() => {
     const active = (establishment?.active_providers ?? ['spotify']) as MusicProviderId[];
-    // Apple Music n'apparaît que si activé dans Réglages (compte Apple connecté).
-    return active.filter(
-      (p): p is MusicProviderId => p === 'spotify' || p === 'youtube' || p === 'apple_music',
-    );
-  }, [establishment]);
+    const list = active.filter((p): p is MusicProviderId => p === 'spotify' || p === 'youtube');
+    if (appleAvailable && !list.includes('apple_music')) list.push('apple_music');
+    return list;
+  }, [establishment, appleAvailable]);
   const [provider, setProvider] = useState<MusicProviderId>(availableProviders[0] ?? 'spotify');
   useEffect(() => {
     if (availableProviders.length > 0 && !availableProviders.includes(provider)) {

@@ -12,6 +12,7 @@ import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { Input } from '../../../ui/index.js';
 import { searchTracks as searchSpotify } from '../../../../lib/spotifyApi.js';
 import { searchTracks as searchGeneric } from '../../../../lib/music.js';
+import { getAppleMusicStatus } from '../../../../lib/appleMusic.js';
 import { TrackResultsList } from './TrackResultsList.js';
 import { useEstablishment } from '../../../../pages/admin/AdminLayout.js';
 
@@ -43,15 +44,34 @@ const PROVIDER_LABELS: Record<string, string> = {
 export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Element {
   // Phase 3 — provider toggle filtré par les sources actives du workspace
   const { establishment } = useEstablishment();
+  // feat/apple-music-search — la RECHERCHE catalogue Apple n'utilise que le
+  // developer token (app-level) : pas besoin que le host ait connecté son
+  // compte. On expose donc Apple dès que le backend est configuré (ou déjà
+  // connecté), indépendamment de active_providers.
+  const [appleAvailable, setAppleAvailable] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    getAppleMusicStatus()
+      .then((s) => {
+        if (!cancelled) setAppleAvailable(s.configured || s.connected);
+      })
+      .catch(() => {
+        if (!cancelled) setAppleAvailable(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const availableProviders = useMemo<MusicProviderId[]>(() => {
     const active = (establishment?.active_providers ?? ['spotify']) as MusicProviderId[];
-    // Sources de recherche réelles : spotify, youtube, apple_music (demo =
-    // pas une vraie recherche, deezer = à venir). Apple Music n'apparaît que
-    // si activé dans Réglages (donc compte Apple connecté).
-    return active.filter(
-      (p): p is MusicProviderId => p === 'spotify' || p === 'youtube' || p === 'apple_music',
-    );
-  }, [establishment]);
+    // Sources de recherche réelles : spotify, youtube (demo = pas une vraie
+    // recherche, deezer = à venir).
+    const list = active.filter((p): p is MusicProviderId => p === 'spotify' || p === 'youtube');
+    // Apple Music : exposé dès que le backend est configuré (recherche =
+    // developer token seul, la connexion host n'est requise que pour la lecture).
+    if (appleAvailable && !list.includes('apple_music')) list.push('apple_music');
+    return list;
+  }, [establishment, appleAvailable]);
   const [provider, setProvider] = useState<MusicProviderId>(availableProviders[0] ?? 'spotify');
 
   // Si la liste des providers actifs change (ex: l'utilisateur active YouTube
