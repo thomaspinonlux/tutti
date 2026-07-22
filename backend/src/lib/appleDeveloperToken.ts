@@ -66,21 +66,29 @@ function wrapPem(label: string, base64Body: string): string {
  *   4. Base64 complet du .p8 SANS header → décodé d'abord ; si le décodé
  *      contient un header PEM on le prend, sinon on wrappe le body en PEM.
  */
-function normalizePrivateKey(raw: string): string {
+function normalizePrivateKey(raw: string): { key: string; caseUsed: string } {
   let key = raw.trim();
+  let caseUsed = '3:pem-asis';
   // Retire des guillemets d'enrobage éventuels (certains hébergeurs).
   if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
     key = key.slice(1, -1).trim();
+    caseUsed = 'quoted';
   }
   // 1. `\n` littéraux → vrais retours ligne.
-  if (key.includes('\\n')) key = key.replace(/\\n/g, '\n');
+  if (key.includes('\\n')) {
+    key = key.replace(/\\n/g, '\n');
+    caseUsed = '1:unescaped-\\n';
+  }
 
   // 4. Aucun header PEM → peut être le .p8 encodé en base64 entier. On tente un
   //    décodage : si le résultat contient un header, on l'utilise.
   if (!key.includes('BEGIN')) {
     try {
       const decoded = Buffer.from(key.replace(/\s+/g, ''), 'base64').toString('utf8');
-      if (decoded.includes('BEGIN')) key = decoded.trim();
+      if (decoded.includes('BEGIN')) {
+        key = decoded.trim();
+        caseUsed = '4a:base64-full-p8';
+      }
     } catch {
       /* pas du base64 valide → on continue avec la valeur brute */
     }
@@ -90,16 +98,17 @@ function normalizePrivateKey(raw: string): string {
   //        (extrait le label + le body, re-wrappe à 64 chars). Idempotent.
   const block = key.match(/-----BEGIN ([A-Z0-9 ]+?)-----([\s\S]*?)-----END \1-----/);
   if (block) {
-    return wrapPem(block[1]!.trim(), block[2]!);
+    if (caseUsed === '3:pem-asis' || caseUsed === 'quoted') caseUsed = '2/3:pem-rewrap';
+    return { key: wrapPem(block[1]!.trim(), block[2]!), caseUsed };
   }
 
   // Pas de header du tout mais une valeur non vide → on suppose que c'est le
   // body base64 nu de la clé PKCS#8 (.p8) → on l'emballe en PEM PRIVATE KEY.
   if (key.length > 0 && !key.includes('BEGIN')) {
-    return wrapPem('PRIVATE KEY', key);
+    return { key: wrapPem('PRIVATE KEY', key), caseUsed: '4b:base64-body-wrap' };
   }
 
-  return key;
+  return { key, caseUsed: 'none' };
 }
 
 function getKeyObject(): KeyObject {
@@ -112,7 +121,7 @@ function getKeyObject(): KeyObject {
     );
   }
   try {
-    keyObjectCache = createPrivateKey({ key: normalizePrivateKey(rawKey) });
+    keyObjectCache = createPrivateKey({ key: normalizePrivateKey(rawKey).key });
   } catch (err) {
     throw new AppleTokenError(
       'APPLE_MUSIC_KEY_INVALID',
@@ -171,10 +180,27 @@ export function isAppleMusicConfigured(): boolean {
  * fois au boot du serveur.
  */
 export function logAppleMusicKeyStatus(): void {
-  if (!isAppleMusicConfigured()) {
-    console.info('[Apple] Music non configuré (APPLE_TEAM_ID / KEY_ID / PRIVATE_KEY absents).');
+  const teamId = process.env.APPLE_TEAM_ID;
+  const keyId = process.env.APPLE_MUSIC_KEY_ID;
+  const rawKey = process.env.APPLE_MUSIC_PRIVATE_KEY;
+  if (!teamId || !keyId || !rawKey) {
+    console.info(
+      `[Apple] non configuré — teamId=${teamId ? 'set' : 'MISSING'} keyId=${
+        keyId ? 'set' : 'MISSING'
+      } privateKey=${rawKey ? 'set' : 'MISSING'}`,
+    );
     return;
   }
+  // Diagnostic SANS jamais afficher la clé : uniquement des méta-infos.
+  const trimmed = rawKey.trim();
+  const norm = normalizePrivateKey(rawKey);
+  console.info(
+    `[Apple] key diag — rawLength=${rawKey.length} · hasBEGIN=${trimmed.includes('BEGIN')} · ` +
+      `hasLiteral\\n=${trimmed.includes('\\n')} · hasRealNewlines=${trimmed.includes('\n')} · ` +
+      `startsWithQuote=${trimmed.startsWith('"') || trimmed.startsWith("'")} · ` +
+      `caseUsed=${norm.caseUsed} · normalizedHasBEGIN=${norm.key.includes('BEGIN')} · ` +
+      `normalizedLines=${norm.key.split('\n').length}`,
+  );
   try {
     getKeyObject(); // parse + met en cache la clé normalisée
     console.info('[Apple] key format: OK');
