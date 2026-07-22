@@ -237,6 +237,25 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       orderBy: { updated_at: 'desc' },
       include: { _count: { select: { playlist_tracks: true } } },
     });
+
+    // feat/provider-badge — répartition des tracks par provider, par playlist.
+    // Le provider vit sur Track (pas sur Playlist) : on agrège les tracks des
+    // playlists listées en une seule requête, puis on compte par provider.
+    const ids = playlists.map((p) => p.id);
+    const ptRows = ids.length
+      ? await prisma.playlistTrack.findMany({
+          where: { playlist_id: { in: ids } },
+          select: { playlist_id: true, track: { select: { provider: true } } },
+        })
+      : [];
+    const countsByPlaylist = new Map<string, Record<string, number>>();
+    for (const row of ptRows) {
+      const prov = row.track.provider;
+      const m = countsByPlaylist.get(row.playlist_id) ?? {};
+      m[prov] = (m[prov] ?? 0) + 1;
+      countsByPlaylist.set(row.playlist_id, m);
+    }
+
     res.json({
       playlists: playlists.map((p) => ({
         id: p.id,
@@ -249,6 +268,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
         created_at: p.created_at,
         updated_at: p.updated_at,
         tracks_count: p._count.playlist_tracks,
+        provider_counts: countsByPlaylist.get(p.id) ?? {},
       })),
     });
   } catch (err: unknown) {

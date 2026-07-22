@@ -105,6 +105,12 @@ export interface Playlist {
   updated_at: string;
   /** Comptage léger renvoyé par l'API liste (sans inclure les tracks). */
   tracks_count?: number;
+  /**
+   * feat/provider-badge — répartition des tracks par provider (renvoyée par
+   * l'endpoint liste GET /api/playlists). Permet d'afficher un badge source
+   * (Spotify / YouTube / Apple Music) et de détecter les playlists mixtes.
+   */
+  provider_counts?: Partial<Record<MusicProviderId, number>>;
 }
 
 export interface Track {
