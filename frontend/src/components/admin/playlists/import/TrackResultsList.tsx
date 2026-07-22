@@ -132,7 +132,11 @@ export function TrackResultsList({
       let totalImported = 0;
       let totalSkipped = 0;
       for (const [provider, ids] of byProvider.entries()) {
-        const res = await importTracks(playlistId, provider as 'spotify' | 'youtube' | 'demo', ids);
+        const res = await importTracks(
+          playlistId,
+          provider as 'spotify' | 'youtube' | 'demo' | 'apple_music',
+          ids,
+        );
         totalImported += res.imported;
         totalSkipped += res.skipped;
       }
