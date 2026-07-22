@@ -18,10 +18,20 @@
          - api.anthropic.com : génération aliases IA (PR #65 feat/ai-aliases-voice-matching)
          - tuttiparty.app + wss : backend Railway + Socket.IO
          - youtube-nocookie.com : privacy-enhanced YouTube IFrame embed mode
+         - Apple Music (MusicKit JS v3) :
+           · script-src  js-cdn.music.apple.com        → chargement du SDK musickit.js
+           · connect-src *.music.apple.com             → Apple Music API + FairPlay/config
+                         *.mzstatic.com                → artwork API + assets
+                         *.apple.com                   → serveur de licences + streaming
+           · media-src   *.mzstatic.com, *.music.apple.com, *.apple.com
+                                                        → flux audio (lecture, pas juste load)
+           · frame-src   *.music.apple.com, *.apple.com → iframes internes MusicKit
+                         (l'authorize() ouvre un popup window.open, non régi par frame-src)
+           · img-src     déjà couvert par le wildcard `https:` (pochettes *.mzstatic.com)
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.youtube.com https://www.youtube-nocookie.com https://*.ytimg.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://sdk.scdn.co https://*.scdn.co https://*.spotify.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: data: https://*.googlevideo.com https://*.scdn.co https://*.youtube.com https://*.ytimg.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.deepgram.com https://api.assemblyai.com https://*.assemblyai.com https://api.anthropic.com https://api.openai.com https://api.spotify.com https://accounts.spotify.com https://*.spotify.com https://www.youtube.com https://*.youtube.com https://www.googleapis.com https://api.tuttiparty.app wss://api.tuttiparty.app wss: ws: https:; frame-src 'self' https://*.youtube.com https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://accounts.google.com https://sdk.scdn.co; worker-src 'self' blob:; manifest-src 'self'; child-src 'self' blob: https://*.youtube.com"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.youtube.com https://www.youtube-nocookie.com https://*.ytimg.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://sdk.scdn.co https://*.scdn.co https://*.spotify.com https://js-cdn.music.apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: data: https://*.googlevideo.com https://*.scdn.co https://*.youtube.com https://*.ytimg.com https://*.mzstatic.com https://*.music.apple.com https://*.apple.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.deepgram.com https://api.assemblyai.com https://*.assemblyai.com https://api.anthropic.com https://api.openai.com https://api.spotify.com https://accounts.spotify.com https://*.spotify.com https://www.youtube.com https://*.youtube.com https://www.googleapis.com https://api.tuttiparty.app wss://api.tuttiparty.app https://*.music.apple.com https://*.mzstatic.com https://*.apple.com wss: ws: https:; frame-src 'self' https://*.youtube.com https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://accounts.google.com https://sdk.scdn.co https://*.music.apple.com https://*.apple.com; worker-src 'self' blob:; manifest-src 'self'; child-src 'self' blob: https://*.youtube.com"
     />
 
     <!-- ==================== SEO/GEO META ==================== -->
