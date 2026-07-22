@@ -22,6 +22,7 @@ import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { Button } from '../../../ui/index.js';
 import { searchTracks as searchGeneric } from '../../../../lib/music.js';
 import { importTracks, searchTracks as searchSpotify } from '../../../../lib/spotifyApi.js';
+import { getAppleMusicStatus } from '../../../../lib/appleMusic.js';
 import { parseTrackListFile } from '../../../../lib/trackListFile.js';
 import { useEstablishment } from '../../../../pages/admin/AdminLayout.js';
 
@@ -30,7 +31,11 @@ interface Props {
   onImported: (count: number) => void;
 }
 
-const PROVIDER_LABELS: Record<string, string> = { spotify: 'Spotify', youtube: 'YouTube' };
+const PROVIDER_LABELS: Record<string, string> = {
+  spotify: 'Spotify',
+  youtube: 'YouTube',
+  apple_music: '🍎 Apple Music',
+};
 const MAX_LINES = 300;
 const CONCURRENCY = 2; // doux pour ne pas déclencher les rate limits
 const PACE_MS = 200; // petite pause entre requêtes d'un même worker
@@ -42,6 +47,12 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => window.setTimeou
 function classifyLimit(provider: MusicProviderId, rawMsg: string): string | null {
   const m = rawMsg.toLowerCase();
   if (m.includes('429') || m.includes('rate limit') || m.includes('too many')) {
+    if (provider === 'apple_music') {
+      return "Apple Music t'a temporairement limité (trop de recherches d'affilée). Patiente ~1 min puis relance par petits lots (20-30 titres).";
+    }
+    if (provider === 'youtube') {
+      return "YouTube t'a temporairement limité (trop de recherches d'affilée). Relance par petits lots (20-30 titres).";
+    }
     return "Spotify t'a temporairement limité (trop de recherches d'affilée). La limite se lève toute seule en ~15 min — relance ensuite par petits lots (20-30 titres).";
   }
   if (
@@ -73,10 +84,29 @@ function parseLines(raw: string): string[] {
 
 export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element {
   const { establishment } = useEstablishment();
+  // feat/apple-music-search — Apple exposé dès que le backend est configuré
+  // (recherche = developer token seul, la connexion host n'est requise que
+  // pour la lecture), indépendamment de active_providers.
+  const [appleAvailable, setAppleAvailable] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    getAppleMusicStatus()
+      .then((s) => {
+        if (!cancelled) setAppleAvailable(s.configured || s.connected);
+      })
+      .catch(() => {
+        if (!cancelled) setAppleAvailable(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const availableProviders = useMemo<MusicProviderId[]>(() => {
     const active = (establishment?.active_providers ?? ['spotify']) as MusicProviderId[];
-    return active.filter((p): p is MusicProviderId => p === 'spotify' || p === 'youtube');
-  }, [establishment]);
+    const list = active.filter((p): p is MusicProviderId => p === 'spotify' || p === 'youtube');
+    if (appleAvailable && !list.includes('apple_music')) list.push('apple_music');
+    return list;
+  }, [establishment, appleAvailable]);
   const [provider, setProvider] = useState<MusicProviderId>(availableProviders[0] ?? 'spotify');
   useEffect(() => {
     if (availableProviders.length > 0 && !availableProviders.includes(provider)) {
@@ -143,10 +173,14 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
   };
 
   const searchOne = async (query: string): Promise<TrackResult | null> => {
+    // Spotify : endpoint structuré (market FR). YouTube / Apple Music :
+    // endpoint générique — le provider est écrit tel quel sur le TrackResult,
+    // donc sur la track importée (étanchéité : import apple_music ⇒ lecture
+    // apple_music, pas de mix).
     const found =
       provider === 'spotify'
         ? (await searchSpotify({ track: query, market: 'FR', limit: 3 })).items
-        : (await searchGeneric(query, { provider: 'youtube', limit: 3 })).results;
+        : (await searchGeneric(query, { provider, limit: 3 })).results;
     return found[0] ?? null;
   };
 
@@ -218,7 +252,11 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
     setError(null);
     setImporting(true);
     try {
-      const res = await importTracks(playlistId, provider as 'spotify' | 'youtube', ids);
+      const res = await importTracks(
+        playlistId,
+        provider as 'spotify' | 'youtube' | 'apple_music',
+        ids,
+      );
       setImportedCount(res.imported);
       onImported(res.imported);
       // Reset complet après import réussi.
@@ -422,8 +460,9 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
                 ))}
               </ul>
               <p className="font-mono text-[11px] text-ink-faded mt-1">
-                Astuce : reformule ces lignes (« Artiste - Titre »), ou essaie l'autre source
-                (Spotify / YouTube).
+                Astuce : reformule ces lignes (« Artiste - Titre »), ou essaie une autre source
+                (Spotify / YouTube / Apple Music). Un titre absent du catalogue Apple sera
+                simplement listé ici — les autres s'importent quand même.
               </p>
             </details>
           )}

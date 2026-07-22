@@ -17,7 +17,7 @@
  *     la console applique. La télécommande n'émet AUCUN son.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CurrentTrackState } from '@tutti/shared';
 import { Badge, Button, Card } from '../ui/index.js';
@@ -63,6 +63,68 @@ export interface MasterMenuProps {
 function fmtTime(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+/**
+ * feat/master-touch-buttons — vrais boutons tactiles pour la console animateur.
+ * Zone tactile généreuse (≥ 56px), coins 12px, icône + label centrés, press
+ * arcade (translate + ombre écrasée). Couleurs sémantiques :
+ *   - coral    : Pause (fond spritz)
+ *   - go       : Reprendre (fond basil/vert)
+ *   - key      : action clé — Réponse / Suivant / Manche suivante (fond rose)
+ *   - neutral  : contrôles courants — bord ink sur cream
+ *   - endRound : Fin manche — bleu doux, calme, démarqué du destructif
+ *   - danger   : Fin soirée — rouge (irréversible)
+ */
+type CtrlTone = 'coral' | 'go' | 'key' | 'neutral' | 'endRound' | 'danger';
+
+const CTRL_TONES: Record<CtrlTone, string> = {
+  coral: 'bg-spritz text-cream border-ink',
+  go: 'bg-basil text-cream border-ink',
+  key: 'bg-rose text-ink border-ink',
+  neutral: 'bg-cream text-ink border-ink',
+  // Bleu doux (accent one-off) : calme, non-alarmant, distinct du danger.
+  endRound: 'bg-[#d9e8f0] text-[#2f5468] border-[#2f5468]/45',
+  danger: 'bg-raspberry text-cream border-ink',
+};
+
+interface CtrlButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  tone?: CtrlTone;
+  icon: ReactNode;
+  label: ReactNode;
+  /** Icône à côté du label (rangée) au lieu d'au-dessus (colonne). */
+  row?: boolean;
+}
+
+function CtrlButton({
+  tone = 'neutral',
+  icon,
+  label,
+  row = false,
+  className,
+  ...rest
+}: CtrlButtonProps): JSX.Element {
+  return (
+    <button
+      type="button"
+      className={[
+        'flex items-center justify-center min-h-[60px] rounded-xl border-2 px-2 text-center',
+        'font-bold text-sm leading-tight select-none touch-manipulation',
+        'shadow-arcade-sm transition-all duration-[80ms] ease-out',
+        'active:translate-x-[2px] active:translate-y-[2px] active:shadow-arcade-flat',
+        'disabled:opacity-40 disabled:active:translate-x-0 disabled:active:translate-y-0',
+        row ? 'flex-row gap-2' : 'flex-col gap-1',
+        CTRL_TONES[tone],
+        className ?? '',
+      ].join(' ')}
+      {...rest}
+    >
+      <span aria-hidden className="text-2xl leading-none">
+        {icon}
+      </span>
+      <span>{label}</span>
+    </button>
+  );
 }
 
 export function MasterMenu(props: MasterMenuProps): JSX.Element {
@@ -221,37 +283,35 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2.5">
+        {/* ── Pause ↔ Reprendre (toggle selon l'état) ─────────────────────── */}
         {props.hasActiveRound && !props.isPaused && (
-          <Button
-            variant="ghost"
-            size="sm"
+          <CtrlButton
+            tone="coral"
+            icon="⏸"
+            label={t('play.masterPause')}
             onClick={() => void props.onPause()}
             disabled={props.busy}
-          >
-            ⏸ {t('play.masterPause')}
-          </Button>
+          />
         )}
         {props.isPaused && (
-          <Button
-            variant="primary"
-            size="sm"
+          <CtrlButton
+            tone="go"
+            icon="▶"
+            label={t('play.masterResume')}
             onClick={() => void props.onResume()}
             disabled={props.busy}
-          >
-            ▶ {t('play.masterResume')}
-          </Button>
+          />
         )}
 
         {props.hasActiveRound && track && props.onRestartTrack && (
-          <Button
-            variant="ghost"
-            size="sm"
+          <CtrlButton
+            tone="neutral"
+            icon="🔄"
+            label={t('play.masterRestart')}
             onClick={() => void props.onRestartTrack!()}
             disabled={props.busy}
-          >
-            🔄 {t('play.masterRestart')}
-          </Button>
+          />
         )}
 
         {props.hasActiveRound &&
@@ -260,34 +320,45 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           props.onSeekBack &&
           props.onSeekForward && (
             <>
-              <Button variant="ghost" size="sm" onClick={props.onSeekBack} disabled={props.busy}>
-                ⏪ −10s
-              </Button>
-              <Button variant="ghost" size="sm" onClick={props.onSeekForward} disabled={props.busy}>
-                +10s ⏩
-              </Button>
+              <CtrlButton
+                tone="neutral"
+                row
+                icon="⏪"
+                label="−10s"
+                onClick={props.onSeekBack}
+                disabled={props.busy}
+              />
+              <CtrlButton
+                tone="neutral"
+                row
+                icon="⏩"
+                label="+10s"
+                onClick={props.onSeekForward}
+                disabled={props.busy}
+              />
             </>
           )}
 
+        {/* Réponse (action clé, plus large) / Sauter — phase1 */}
         {phase === 'phase1' && !props.isPaused && (
-          <>
-            <Button
-              variant="primary"
-              size="sm"
+          <div className="col-span-2 grid grid-cols-[1.4fr_1fr] gap-2.5">
+            <CtrlButton
+              tone="key"
+              row
+              icon="👁"
+              label={t('play.masterReveal')}
               onClick={() => void props.onReveal()}
               disabled={props.busy}
-            >
-              ▶ {t('play.masterReveal')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
+            />
+            <CtrlButton
+              tone="neutral"
+              row
+              icon="⏭"
+              label={t('play.masterSkip')}
               onClick={() => void props.onSkipTrack()}
               disabled={props.busy}
-            >
-              ⏭ {t('play.masterSkip')}
-            </Button>
-          </>
+            />
+          </div>
         )}
 
         {/* ── Morceau suivant (cooldown / après reveal) ─────────────────────
@@ -296,38 +367,38 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
             bouton en pause. On l'affiche dès qu'on est en phase3/phase3-revealed,
             même en pause (avancer reprend la lecture sur le morceau suivant). */}
         {props.hasActiveRound && track && (phase === 'phase3' || phase === 'phase3-revealed') && (
-          <Button
-            variant="primary"
-            size="sm"
+          <CtrlButton
+            tone="key"
+            row
+            icon="▶"
+            label={`${t('play.masterNext')} →`}
             onClick={() => void props.onNextTrack()}
             disabled={props.busy}
             className="col-span-2"
-          >
-            ▶ {t('play.masterNext')} →
-          </Button>
+          />
         )}
 
         {!props.hasActiveRound && (
-          <Button
-            variant="primary"
-            size="sm"
+          <CtrlButton
+            tone="key"
+            row
+            icon="▶"
+            label={t('play.masterPickRound')}
             onClick={props.onPickRound}
             disabled={props.busy}
             className="col-span-2"
-          >
-            ▶ {t('play.masterPickRound')}
-          </Button>
+          />
         )}
 
-        <Button
-          variant="ghost"
-          size="sm"
+        <CtrlButton
+          tone="neutral"
+          row
+          icon="⚖"
+          label={t('play.masterAdjust')}
           onClick={props.onAdjustPoints}
           disabled={props.busy}
           className="col-span-2"
-        >
-          ⚖ {t('play.masterAdjust')}
-        </Button>
+        />
 
         {/* feat/animator-full-control — score rapide −5/+5/+10 par joueur (console-like). */}
         {props.players && props.players.length > 0 && props.onQuickAdjust && (
@@ -368,54 +439,35 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           </div>
         )}
 
-        {props.hasActiveRound && props.onEndRound && (
-          <>
-            {!confirmEndRound ? (
-              <button
-                type="button"
-                onClick={() => setConfirmEndRound(true)}
+        {/* ── Zone fin : Fin manche | Fin soirée (côte à côte), confirmation
+            en pleine largeur. Fin manche = bleu doux (calme), Fin soirée =
+            rouge (irréversible). ─────────────────────────────────────────── */}
+        {confirmEndRound && props.onEndRound && (
+          <div className="col-span-2 mt-1 p-2.5 border-2 border-[#2f5468]/50 rounded-xl bg-[#d9e8f0]">
+            <p className="text-xs font-medium text-[#2f5468] mb-2">
+              {t('play.masterEndRoundConfirm')}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  setConfirmEndRound(false);
+                  void props.onEndRound!();
+                }}
                 disabled={props.busy}
-                className="col-span-2 text-xs font-mono text-ink-soft hover:text-ink hover:underline mt-1"
               >
-                ⏹ {t('play.masterEndRound')}
-              </button>
-            ) : (
-              <div className="col-span-2 mt-2 p-2 border-2 border-ink rounded bg-cream-2">
-                <p className="text-xs font-medium text-ink mb-2">
-                  {t('play.masterEndRoundConfirm')}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => {
-                      setConfirmEndRound(false);
-                      void props.onEndRound!();
-                    }}
-                    disabled={props.busy}
-                  >
-                    {t('play.masterEndRoundYes')}
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setConfirmEndRound(false)}>
-                    {t('common.cancel')}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </>
+                {t('play.masterEndRoundYes')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setConfirmEndRound(false)}>
+                {t('common.cancel')}
+              </Button>
+            </div>
+          </div>
         )}
 
-        {!confirmEnd ? (
-          <button
-            type="button"
-            onClick={() => setConfirmEnd(true)}
-            disabled={props.busy}
-            className="col-span-2 text-xs font-mono text-raspberry hover:underline mt-1"
-          >
-            🛑 {t('play.masterEndSession')}
-          </button>
-        ) : (
-          <div className="col-span-2 mt-2 p-2 border-2 border-raspberry rounded bg-cream-2">
+        {confirmEnd && (
+          <div className="col-span-2 mt-1 p-2.5 border-2 border-raspberry rounded-xl bg-cream-2">
             <p className="text-xs font-medium text-raspberry mb-2">
               {t('play.masterEndSessionConfirm')}
             </p>
@@ -432,6 +484,33 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
                 {t('common.cancel')}
               </Button>
             </div>
+          </div>
+        )}
+
+        {!confirmEndRound && !confirmEnd && (
+          <div
+            className={`col-span-2 grid gap-2.5 ${
+              props.hasActiveRound && props.onEndRound ? 'grid-cols-2' : 'grid-cols-1'
+            }`}
+          >
+            {props.hasActiveRound && props.onEndRound && (
+              <CtrlButton
+                tone="endRound"
+                row
+                icon="⏹"
+                label={t('play.masterEndRound')}
+                onClick={() => setConfirmEndRound(true)}
+                disabled={props.busy}
+              />
+            )}
+            <CtrlButton
+              tone="danger"
+              row
+              icon="🛑"
+              label={t('play.masterEndSession')}
+              onClick={() => setConfirmEnd(true)}
+              disabled={props.busy}
+            />
           </div>
         )}
       </div>

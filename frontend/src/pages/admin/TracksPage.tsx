@@ -8,6 +8,33 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Playlist } from '@tutti/shared';
 import { listPlaylists, createPlaylist, deletePlaylist } from '../../lib/playlists.js';
+
+/** feat/provider-badge — libellé + emoji couleur par source audio. */
+const PROVIDER_META: Record<string, { emoji: string; label: string }> = {
+  spotify: { emoji: '🟢', label: 'Spotify' },
+  youtube: { emoji: '🔴', label: 'YouTube' },
+  apple_music: { emoji: '🍎', label: 'Apple Music' },
+  deezer: { emoji: '🎧', label: 'Deezer' },
+  demo: { emoji: '🎵', label: 'Démo' },
+};
+
+/**
+ * Dérive la source d'une playlist perso depuis la répartition des tracks par
+ * provider : source unique → ce provider ; plusieurs providers (legacy) →
+ * provider majoritaire + drapeau `mixed`. null si la playlist est vide.
+ */
+function deriveSource(
+  counts: Partial<Record<string, number>> | undefined,
+): { emoji: string; label: string; mixed: boolean } | null {
+  const entries = Object.entries(counts ?? {}).filter(([, n]) => (n ?? 0) > 0) as Array<
+    [string, number]
+  >;
+  if (entries.length === 0) return null;
+  entries.sort((a, b) => b[1] - a[1]);
+  const [topProvider] = entries[0]!;
+  const meta = PROVIDER_META[topProvider] ?? { emoji: '🎵', label: topProvider };
+  return { emoji: meta.emoji, label: meta.label, mixed: entries.length > 1 };
+}
 import {
   Button,
   Card,
@@ -118,8 +145,28 @@ export function TracksPage(): JSX.Element {
                     )}
                   </div>
                   <p className="font-display text-xl mb-1 truncate">{p.name}</p>
-                  <p className="font-mono text-xs text-ink-soft">
-                    {p.tracks_count ?? 0} {t('playlists.tracksCount')} · {p.language.toUpperCase()}
+                  <p className="font-mono text-xs text-ink-soft flex items-center gap-1.5 flex-wrap">
+                    <span>
+                      {p.tracks_count ?? 0} {t('playlists.tracksCount')} ·{' '}
+                      {p.language.toUpperCase()}
+                    </span>
+                    {(() => {
+                      const source = deriveSource(p.provider_counts);
+                      if (!source) return null;
+                      return (
+                        <span
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-ink/20 bg-cream-2 text-ink-soft"
+                          title={
+                            source.mixed
+                              ? `Sources mixtes — majoritaire : ${source.label}`
+                              : `Source : ${source.label}`
+                          }
+                        >
+                          {source.emoji} {source.label}
+                          {source.mixed && <span className="text-ink-faded">· mixte</span>}
+                        </span>
+                      );
+                    })()}
                   </p>
                 </Card>
               </Link>

@@ -1,8 +1,10 @@
 /**
  * <AdvancedTrackSearch /> — Tab 1 : recherche track multi-source.
  * Spotify : artist + title + year range + decade chips (recherche structurée).
- * YouTube : query libre (l'API ne supporte pas les filtres structurés —
- * on bascule sur l'endpoint générique /api/music/search?provider=youtube).
+ * YouTube / Apple Music : query libre (leurs API ne supportent pas les filtres
+ * structurés → endpoint générique /api/music/search?provider=youtube|apple_music).
+ * Le provider choisi est écrit tel quel sur la track importée (étanchéité :
+ * une track importée en apple_music jouera en apple_music, pas de mix).
  */
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
@@ -10,6 +12,7 @@ import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { Input } from '../../../ui/index.js';
 import { searchTracks as searchSpotify } from '../../../../lib/spotifyApi.js';
 import { searchTracks as searchGeneric } from '../../../../lib/music.js';
+import { getAppleMusicStatus } from '../../../../lib/appleMusic.js';
 import { TrackResultsList } from './TrackResultsList.js';
 import { useEstablishment } from '../../../../pages/admin/AdminLayout.js';
 
@@ -34,18 +37,41 @@ const PAGE_SIZE = 10;
 const PROVIDER_LABELS: Record<string, string> = {
   spotify: 'Spotify',
   youtube: 'YouTube',
+  apple_music: '🍎 Apple Music',
   demo: 'Démo',
 };
 
 export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Element {
   // Phase 3 — provider toggle filtré par les sources actives du workspace
   const { establishment } = useEstablishment();
+  // feat/apple-music-search — la RECHERCHE catalogue Apple n'utilise que le
+  // developer token (app-level) : pas besoin que le host ait connecté son
+  // compte. On expose donc Apple dès que le backend est configuré (ou déjà
+  // connecté), indépendamment de active_providers.
+  const [appleAvailable, setAppleAvailable] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    getAppleMusicStatus()
+      .then((s) => {
+        if (!cancelled) setAppleAvailable(s.configured || s.connected);
+      })
+      .catch(() => {
+        if (!cancelled) setAppleAvailable(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const availableProviders = useMemo<MusicProviderId[]>(() => {
     const active = (establishment?.active_providers ?? ['spotify']) as MusicProviderId[];
-    // On ne propose que spotify et youtube dans le toggle (demo n'est pas
-    // une vraie source de recherche, deezer/apple_music = à venir)
-    return active.filter((p): p is MusicProviderId => p === 'spotify' || p === 'youtube');
-  }, [establishment]);
+    // Sources de recherche réelles : spotify, youtube (demo = pas une vraie
+    // recherche, deezer = à venir).
+    const list = active.filter((p): p is MusicProviderId => p === 'spotify' || p === 'youtube');
+    // Apple Music : exposé dès que le backend est configuré (recherche =
+    // developer token seul, la connexion host n'est requise que pour la lecture).
+    if (appleAvailable && !list.includes('apple_music')) list.push('apple_music');
+    return list;
+  }, [establishment, appleAvailable]);
   const [provider, setProvider] = useState<MusicProviderId>(availableProviders[0] ?? 'spotify');
 
   // Si la liste des providers actifs change (ex: l'utilisateur active YouTube
@@ -59,8 +85,9 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
   const [track, setTrack] = useState('');
   const [yearMin, setYearMin] = useState<number | ''>('');
   const [yearMax, setYearMax] = useState<number | ''>('');
-  // YouTube : query libre (artist + title concaténés, ou tape ce que tu veux)
-  const [youtubeQuery, setYoutubeQuery] = useState('');
+  // YouTube / Apple Music : query libre (artiste + titre concaténés, ou tape
+  // ce que tu veux) — recherche catalogue plein texte.
+  const [freeQuery, setFreeQuery] = useState('');
   const [tracks, setTracks] = useState<TrackResult[]>([]);
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
@@ -90,17 +117,19 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
     setOffset(nextOffset);
   };
 
-  const runYouTube = async (): Promise<void> => {
-    const q = youtubeQuery.trim();
+  const runFreeSearch = async (): Promise<void> => {
+    const q = freeQuery.trim();
     if (q.length < 2) {
       setTracks([]);
       setHasNext(false);
       return;
     }
-    const res = await searchGeneric(q, { provider: 'youtube', limit: 25 });
+    // provider ∈ { youtube, apple_music } → endpoint générique, provider écrit
+    // tel quel sur les TrackResult (donc sur la track importée : étanchéité).
+    const res = await searchGeneric(q, { provider, limit: 25 });
     setTracks(res.results);
     setTotal(res.results.length);
-    setHasNext(false); // YouTube : pas de pagination V1
+    setHasNext(false); // YouTube / Apple : pas de pagination V1
     setOffset(0);
   };
 
@@ -116,7 +145,7 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
         }
         await runSpotify(0, false);
       } else {
-        await runYouTube();
+        await runFreeSearch();
       }
       setHasSearched(true);
     } catch (err: unknown) {
@@ -147,7 +176,7 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
         return;
       }
     } else {
-      if (!youtubeQuery.trim()) {
+      if (!freeQuery.trim()) {
         setTracks([]);
         setHasSearched(false);
         return;
@@ -158,7 +187,7 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
     }, 500);
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [provider, artist, track, yearMin, yearMax, youtubeQuery]);
+  }, [provider, artist, track, yearMin, yearMax, freeQuery]);
 
   // Reset résultats quand on change de provider
   useEffect(() => {
@@ -255,9 +284,9 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
           </>
         ) : (
           <Input
-            label="Recherche YouTube"
-            value={youtubeQuery}
-            onChange={(e) => setYoutubeQuery(e.target.value)}
+            label={provider === 'apple_music' ? 'Recherche Apple Music' : 'Recherche YouTube'}
+            value={freeQuery}
+            onChange={(e) => setFreeQuery(e.target.value)}
             placeholder="Ex : Stromae Alors on danse"
             maxLength={200}
           />
@@ -286,7 +315,9 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
             ? 'Aucun morceau trouvé. Essaye de simplifier les critères.'
             : provider === 'spotify'
               ? 'Renseigne au moins un critère pour lancer la recherche.'
-              : 'Tape une recherche YouTube (artiste + titre).'
+              : provider === 'apple_music'
+                ? 'Tape une recherche Apple Music (artiste + titre).'
+                : 'Tape une recherche YouTube (artiste + titre).'
         }
         playlistId={playlistId}
         onImported={onImported}
