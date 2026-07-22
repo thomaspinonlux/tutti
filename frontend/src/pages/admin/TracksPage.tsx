@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Playlist } from '@tutti/shared';
 import { listPlaylists, createPlaylist, deletePlaylist } from '../../lib/playlists.js';
+import { listLibraryPlaylists, type LibraryPlaylistSummary } from '../../lib/library.js';
 
 /** feat/provider-badge — libellé + emoji couleur par source audio. */
 const PROVIDER_META: Record<string, { emoji: string; label: string }> = {
@@ -35,6 +36,19 @@ function deriveSource(
   const meta = PROVIDER_META[topProvider] ?? { emoji: '🎵', label: topProvider };
   return { emoji: meta.emoji, label: meta.label, mixed: entries.length > 1 };
 }
+
+/**
+ * Sources disponibles d'une playlist officielle. Contrairement aux perso
+ * (mono-provider), les officielles sont multi-sources : on liste tous les
+ * providers ayant au moins un track (badge par source jouable).
+ */
+function officialSources(p: LibraryPlaylistSummary): Array<{ emoji: string; label: string }> {
+  const out: Array<{ emoji: string; label: string }> = [];
+  if (p.spotify_count > 0) out.push(PROVIDER_META.spotify!);
+  if (p.youtube_count > 0) out.push(PROVIDER_META.youtube!);
+  if ((p.apple_music_count ?? 0) > 0) out.push(PROVIDER_META.apple_music!);
+  return out;
+}
 import {
   Button,
   Card,
@@ -52,6 +66,8 @@ export function TracksPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  // feat/tracks-official-tab — bascule Mes playlists ↔ Bibliothèque officielle.
+  const [tab, setTab] = useState<'mine' | 'official'>('mine');
 
   useEffect(() => {
     listPlaylists()
@@ -95,22 +111,50 @@ export function TracksPage(): JSX.Element {
         </div>
       </header>
 
+      {/* Onglets Mes playlists / Bibliothèque officielle — même système visuel
+          que la page /admin/library (#164 : boutons à bordure basse). */}
+      <div className="flex gap-2 border-b-2 border-ink mb-6 flex-wrap">
+        {(
+          [
+            { key: 'mine', icon: '🎧', label: t('library.tabMyPlaylists') },
+            { key: 'official', icon: '🎵', label: t('library.title') },
+          ] as const
+        ).map(({ key, icon, label }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={`px-4 py-2 font-display text-lg border-2 border-ink border-b-0 rounded-t-md transition-colors ${
+              tab === key
+                ? 'bg-cream text-ink shadow-pop-sm'
+                : 'bg-cream-2 text-ink-soft hover:bg-cream'
+            }`}
+          >
+            {icon} {label}
+          </button>
+        ))}
+      </div>
+
       {error && (
         <p role="alert" className="text-raspberry mb-4">
           {t('common.error')} : {error}
         </p>
       )}
 
-      {playlists === null && <p className="font-mono text-ink-soft">{t('common.loading')}</p>}
+      {tab === 'official' && <OfficialPlaylistsTab />}
 
-      {playlists !== null && playlists.length === 0 && (
+      {tab === 'mine' && playlists === null && (
+        <p className="font-mono text-ink-soft">{t('common.loading')}</p>
+      )}
+
+      {tab === 'mine' && playlists !== null && playlists.length === 0 && (
         <Card tone="cream" size="lg">
           <p className="font-editorial italic text-ink-2 mb-4">{t('playlists.emptyState')}</p>
           <Button onClick={() => setModalOpen(true)}>{t('playlists.newPlaylist')}</Button>
         </Card>
       )}
 
-      {playlists && playlists.length > 0 && (
+      {tab === 'mine' && playlists && playlists.length > 0 && (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {playlists.map((p, idx) => (
             <li key={p.id} className="relative">
@@ -181,6 +225,87 @@ export function TracksPage(): JSX.Element {
         onCreated={(p) => navigate(`/admin/tracks/${p.id}`)}
       />
     </div>
+  );
+}
+
+// ───── Bibliothèque officielle (lecture seule) ─────────────────────────────
+// Playlists officielles Tutti côté animateur (endpoint host GET /api/library/
+// playlists). LECTURE SEULE : pas de corbeille 🗑, pas de navigation vers la
+// gestion. Badge niveau + sources disponibles (multi-provider).
+//
+// NB : la GESTION de la bibliothèque (réimport, édition, visibilité, tags) reste
+// sur /admin/library — page SUPER-ADMIN distincte, ce n'est PAS un doublon :
+// audiences différentes (animateur = lecture ; super-admin = administration).
+function OfficialPlaylistsTab(): JSX.Element {
+  const { t } = useTranslation();
+  const [playlists, setPlaylists] = useState<LibraryPlaylistSummary[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    listLibraryPlaylists()
+      .then(setPlaylists)
+      .catch((err: unknown) => setError((err as Error).message));
+  }, []);
+
+  if (error) {
+    return (
+      <p role="alert" className="text-raspberry mb-4">
+        {t('common.error')} : {error}
+      </p>
+    );
+  }
+  if (playlists === null) {
+    return <p className="font-mono text-ink-soft">{t('common.loading')}</p>;
+  }
+  if (playlists.length === 0) {
+    return (
+      <Card tone="cream" size="lg" className="text-center">
+        <p className="font-editorial italic text-ink-soft">{t('library.empty')}</p>
+      </Card>
+    );
+  }
+
+  return (
+    <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {playlists.map((p, idx) => {
+        const sources = officialSources(p);
+        return (
+          <li key={p.id}>
+            <Card tone="default" size="sm" className={`h-full ${p.locked ? 'opacity-70' : ''}`}>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <Badge
+                  tone={
+                    p.difficulty === 'EASY' ? 'basil' : p.difficulty === 'MEDIUM' ? 'lemon' : 'plum'
+                  }
+                  tilt={idx % 2 === 0 ? -1 : 1}
+                >
+                  {p.difficulty}
+                </Badge>
+                {p.locked && (
+                  <Badge tone="ink" tilt={-2}>
+                    🔒 Premium
+                  </Badge>
+                )}
+              </div>
+              <p className="font-display text-xl mb-1 truncate">{p.name_fr}</p>
+              <p className="font-mono text-xs text-ink-soft flex items-center gap-1.5 flex-wrap">
+                <span>
+                  {p.track_count} {t('playlists.tracksCount')} · {p.locale_primary.toUpperCase()}
+                </span>
+                {sources.length > 0 && (
+                  <span
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-ink/20 bg-cream-2 text-ink-soft"
+                    title={`Sources disponibles : ${sources.map((s) => s.label).join(', ')}`}
+                  >
+                    {sources.map((s) => s.emoji).join(' ')}
+                  </span>
+                )}
+              </p>
+            </Card>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
