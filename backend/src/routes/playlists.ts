@@ -149,8 +149,16 @@ async function findOrCreateTrack(
       data: { song_id: lookup.songId },
     });
   } catch (err) {
-    // Pas bloquant — la track reste jouable avec ses aliases heuristiques.
-    console.warn('[Playlists] ingestTrackAliases failed:', err);
+    // Pas bloquant — la track reste jouable avec ses aliases heuristiques —
+    // mais on loggue en ERROR de façon repérable pour que ce trou (track sans
+    // song_id / sans enrichissement IA) soit détectable au lieu d'être silencieux.
+    console.error(
+      `[Playlists] ALIAS-INGEST-FAIL track=${created.id} "${fields.artist_name} - ${fields.canonical_title}" ` +
+        `→ song_id NON posé, aliases IA absents (socle heuristique conservé). ` +
+        `Rattrapage : migrate:canonical-songs + generate:aliases. Cause : ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+    );
   }
   return created;
 }

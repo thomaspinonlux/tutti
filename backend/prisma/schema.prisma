@@ -940,6 +940,14 @@ model OfficialPlaylistTrack {
   /// reconnaisse comme les playlists perso.
   artist_aliases         String[]  @default([])
   title_aliases          String[]  @default([])
+  /// fix/official-import-canonical — origine des title_aliases du cache :
+  ///   'heuristic' = socle posé à l'import (lib/aliases, non-IA),
+  ///   'catalog'   = repris de Song.title_aliases (déjà enrichi),
+  ///   'ai'        = généré par backfill:catalog-aliases,
+  ///   null        = legacy / non renseigné.
+  /// Permet à backfill:catalog-aliases de re-cibler les 'heuristic' (upgrade IA)
+  /// sans écraser un alias déjà 'ai'/'catalog'.
+  aliases_source         String?   @db.VarChar(16)
   /// feat/canonical-song-catalog — pointeur vers la chanson canonique.
   /// Source de vérité des aliases : Song.title_aliases + Artist.aliases.
   /// Les colonnes artist_aliases/title_aliases ci-dessus restent en cache
