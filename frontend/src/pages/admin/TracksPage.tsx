@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import type { Playlist } from '@tutti/shared';
 import { listPlaylists, createPlaylist, deletePlaylist } from '../../lib/playlists.js';
 import { listLibraryPlaylists, type LibraryPlaylistSummary } from '../../lib/library.js';
+import { createSession } from '../../lib/sessions.js';
 
 /** feat/provider-badge — libellé + emoji couleur par source audio. */
 const PROVIDER_META: Record<string, { emoji: string; label: string }> = {
@@ -238,14 +239,38 @@ export function TracksPage(): JSX.Element {
 // audiences différentes (animateur = lecture ; super-admin = administration).
 function OfficialPlaylistsTab(): JSX.Element {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [playlists, setPlaylists] = useState<LibraryPlaylistSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [launchingId, setLaunchingId] = useState<string | null>(null);
 
   useEffect(() => {
     listLibraryPlaylists()
       .then(setPlaylists)
       .catch((err: unknown) => setError((err as Error).message));
   }, []);
+
+  // BUG 2 — lancer une playlist officielle depuis Tutti Tracks en RÉUTILISANT le
+  // chemin "Nouvelle session" : on crée une session TRACKS puis on navigue vers
+  // /host avec ?official=<id> ; HostPage ouvre alors la même Preview → PreGame →
+  // launch (aucune logique dupliquée). La source par défaut (apple_music si
+  // connecté, sinon youtube) est décidée côté /host.
+  const handleLaunchOfficial = async (p: LibraryPlaylistSummary): Promise<void> => {
+    if (p.locked) return;
+    setLaunchingId(p.id);
+    setError(null);
+    try {
+      const session = await createSession({ game_type: 'TRACKS' });
+      navigate(
+        `/host?session=${encodeURIComponent(session.short_code)}&official=${encodeURIComponent(
+          p.id,
+        )}`,
+      );
+    } catch (err: unknown) {
+      setError((err as Error).message);
+      setLaunchingId(null);
+    }
+  };
 
   if (error) {
     return (
@@ -301,6 +326,17 @@ function OfficialPlaylistsTab(): JSX.Element {
                   </span>
                 )}
               </p>
+              {/* BUG 2 — lancement direct depuis Tutti Tracks (via le flux
+                  Nouvelle session côté /host). Désactivé pour les playlists
+                  premium verrouillées. */}
+              <Button
+                size="sm"
+                className="w-full mt-3"
+                disabled={p.locked || launchingId !== null}
+                onClick={() => void handleLaunchOfficial(p)}
+              >
+                {launchingId === p.id ? '⏳ …' : `▶ ${t('dashboard.newSession')}`}
+              </Button>
             </Card>
           </li>
         );

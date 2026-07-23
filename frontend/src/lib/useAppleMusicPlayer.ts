@@ -156,6 +156,21 @@ export function useAppleMusicPlayer({
   const play = useCallback(async (catalogId: string): Promise<boolean> => {
     const music = musicRef.current;
     if (!music || !enabledRef.current) return false;
+    // BONUS — un MusicKit NON autorisé ne joue que des extraits de 30 s
+    // (preview). On refuse la lecture et on remonte une erreur VISIBLE au lieu
+    // de dégrader silencieusement : le host doit (re)connecter son compte Apple
+    // Music (le Music User Token en base doit être ré-injecté côté client, cf.
+    // prop `musicUserToken`).
+    if (!music.isAuthorized) {
+      setIsAuthorized(false);
+      setErrorCode('APPLE_NOT_AUTHORIZED');
+      setError(
+        'Compte Apple Music non autorisé sur cet appareil — reconnectez Apple Music ' +
+          '(sinon la lecture serait limitée à des extraits de 30 s).',
+      );
+      setStatus('error');
+      return false;
+    }
     try {
       await music.setQueue({ song: catalogId });
       await music.play();

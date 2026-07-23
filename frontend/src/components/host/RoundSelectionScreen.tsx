@@ -10,7 +10,7 @@
  *   - Si ce n'est pas la 1ʳᵉ manche : bouton "Terminer le blind test"
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Playlist } from '@tutti/shared';
 import { listPlaylists } from '../../lib/playlists.js';
@@ -99,8 +99,22 @@ export function RoundSelectionScreen({
   const [tab, setTab] = useState<Tab>('mine');
   const [librarySubTab, setLibrarySubTab] = useState<LibrarySubTab>('tracks');
   // feat/two-provider-libraries — provider de la bibliothèque officielle.
-  // youtube (défaut, tous) | spotify | apple_music (host connecté, playlists couvertes).
-  const [provider, setProvider] = useState<'youtube' | 'spotify' | 'apple_music'>('youtube');
+  // youtube | spotify | apple_music. BUG 3 — défaut APPLE MUSIC quand le
+  // workspace a une connexion Apple active ; sinon YouTube (ordre de repli
+  // apple_music → youtube → spotify).
+  const [provider, setProvider] = useState<'youtube' | 'spotify' | 'apple_music'>(
+    appleLibraryAvailable ? 'apple_music' : 'youtube',
+  );
+  // true dès que le host change manuellement de source → on ne force plus le
+  // défaut Apple (respecte le choix explicite).
+  const providerTouchedRef = useRef(false);
+  // appleLibraryAvailable peut passer de false→true après le fetch du statut :
+  // aligne le défaut sur Apple tant que le host n'a pas choisi lui-même.
+  useEffect(() => {
+    if (!providerTouchedRef.current && appleLibraryAvailable && provider === 'youtube') {
+      setProvider('apple_music');
+    }
+  }, [appleLibraryAvailable, provider]);
   // feat/theme-level-picker — null = étape THÈME (grille) ; sinon = étape NIVEAU
   // du thème sélectionné (cartes Facile/Moyen/Difficile/Mix).
   const [selectedThemeKey, setSelectedThemeKey] = useState<string | null>(null);
@@ -414,7 +428,11 @@ export function RoundSelectionScreen({
                       role="tab"
                       aria-selected={active}
                       disabled={locked}
-                      onClick={() => !locked && setProvider(pv)}
+                      onClick={() => {
+                        if (locked) return;
+                        providerTouchedRef.current = true;
+                        setProvider(pv);
+                      }}
                       title={locked ? t('host.session.sourceSpotifyLocked') : undefined}
                       className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
                         active
