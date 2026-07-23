@@ -22,7 +22,14 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { Prisma } from '@prisma/client';
+import pLimit from 'p-limit';
 import { prisma } from './prisma.js';
+// fix/official-import-canonical — rattache chaque track officiel à sa chanson
+// canonique (song_id) + pose un socle d'alias dès l'import. On RÉUTILISE la
+// logique de matching (findOrCreateSong/songKey) — identique à celle de
+// migrate:canonical-songs — pour ne pas dupliquer le normalisateur.
+import { findOrCreateSong, songKey } from './songCatalog.js';
+import { generateAliases } from './aliases.js';
 
 // ───── Types JSON source ──────────────────────────────────────────────────
 
@@ -436,27 +443,115 @@ async function upsertPlaylistInDb(
     update: data,
   });
 
-  await prisma.officialPlaylistTrack.deleteMany({ where: { playlist_id: playlist.id } });
-  if (resolvedTracks.length > 0) {
-    await prisma.officialPlaylistTrack.createMany({
-      data: resolvedTracks.map((t) => ({
-        playlist_id: playlist.id,
-        position: t.position,
-        title: t.title,
-        artist: t.artist,
-        year: t.year ?? null,
-        difficulty: normalizeDifficulty(t.difficulty ?? pl.difficulty),
-        spotify_id: t.spotify_id ?? null,
-        youtube_id: t.youtube_id ?? null,
-        cover_url: t.cover_url ?? null,
-        // Prisma JSONB nullable : utiliser Prisma.JsonNull pour stocker null
-        // explicitement ; cast InputJsonValue sinon.
-        answers_accepted: t.answers_accepted
-          ? (t.answers_accepted as Prisma.InputJsonValue)
-          : Prisma.JsonNull,
-      })),
-    });
+  // fix/official-import-canonical — SNAPSHOT avant le delete+recreate destructif :
+  // les title_aliases/artist_aliases enrichis (IA/catalog) vivent dans ces
+  // colonnes et seraient perdus au réimport. On les indexe par clé canonique
+  // (songKey, position-indépendant → survit aux réordonnancements) pour les
+  // reporter et NE JAMAIS dégrader un alias IA en heuristique.
+  const priorRows = await prisma.officialPlaylistTrack.findMany({
+    where: { playlist_id: playlist.id },
+    select: {
+      title: true,
+      artist: true,
+      title_aliases: true,
+      artist_aliases: true,
+      aliases_source: true,
+      song_id: true,
+    },
+  });
+  const snapshot = new Map<string, (typeof priorRows)[number]>();
+  for (const r of priorRows) {
+    const k = songKey(r.artist, r.title);
+    if (!snapshot.has(k)) snapshot.set(k, r);
   }
+
+  await prisma.officialPlaylistTrack.deleteMany({ where: { playlist_id: playlist.id } });
+  if (resolvedTracks.length === 0) return;
+
+  // Enrichissement par track (concurrence modérée). findOrCreateSong est
+  // idempotent (clé normalized_key) → même chanson à chaque réimport, song_id
+  // stable. On NE génère PAS d'IA ici (reste au backfill) : socle heuristique.
+  const limiter = pLimit(6);
+  const rows = await Promise.all(
+    resolvedTracks.map((t) =>
+      limiter(async () => {
+        const key = songKey(t.artist, t.title);
+        const prior = snapshot.get(key);
+
+        let songId: string | null = prior?.song_id ?? null;
+        let canonTitle: string[] = [];
+        let canonArtist: string[] = [];
+        try {
+          const s = await findOrCreateSong({
+            title: t.title,
+            artist: t.artist,
+            videoId: t.youtube_id ?? null,
+          });
+          songId = s.songId;
+          canonTitle = s.titleAliases;
+          canonArtist = s.artistAliases;
+        } catch (err) {
+          // Non-bloquant : la track reste importée avec un socle heuristique.
+          console.error(
+            `[OfficialImport] findOrCreateSong ÉCHEC "${t.artist} - ${t.title}" ` +
+              `(playlist ${pl.slug}) : ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+
+        // TITRE — priorité anti-dégradation :
+        //   prior enrichi (ai/catalog) > canonique > prior autre > heuristique.
+        const priorEnriched =
+          !!prior &&
+          prior.title_aliases.length > 0 &&
+          (prior.aliases_source === 'ai' || prior.aliases_source === 'catalog');
+        let titleAliases: string[];
+        let aliasesSource: string;
+        if (priorEnriched) {
+          titleAliases = prior!.title_aliases;
+          aliasesSource = prior!.aliases_source!;
+        } else if (canonTitle.length > 0) {
+          titleAliases = canonTitle;
+          aliasesSource = 'catalog';
+        } else if (prior && prior.title_aliases.length > 0) {
+          titleAliases = prior.title_aliases;
+          aliasesSource = prior.aliases_source ?? 'heuristic';
+        } else {
+          titleAliases = generateAliases(t.title, 'title');
+          aliasesSource = 'heuristic';
+        }
+
+        // ARTISTE — Artist.aliases (canonique, jamais supprimé au réimport) fait
+        // autorité ; sinon prior ; sinon socle heuristique.
+        const artistAliases =
+          canonArtist.length > 0
+            ? canonArtist
+            : prior && prior.artist_aliases.length > 0
+              ? prior.artist_aliases
+              : generateAliases(t.artist, 'artist');
+
+        return {
+          playlist_id: playlist.id,
+          position: t.position,
+          title: t.title,
+          artist: t.artist,
+          year: t.year ?? null,
+          difficulty: normalizeDifficulty(t.difficulty ?? pl.difficulty),
+          spotify_id: t.spotify_id ?? null,
+          youtube_id: t.youtube_id ?? null,
+          cover_url: t.cover_url ?? null,
+          song_id: songId,
+          title_aliases: titleAliases,
+          artist_aliases: artistAliases,
+          aliases_source: aliasesSource,
+          // Prisma JSONB nullable : Prisma.JsonNull pour null explicite.
+          answers_accepted: t.answers_accepted
+            ? (t.answers_accepted as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+        };
+      }),
+    ),
+  );
+  await prisma.officialPlaylistTrack.createMany({ data: rows });
 }
 
 // ───── Process file ────────────────────────────────────────────────────────

@@ -105,11 +105,14 @@ async function main(): Promise<void> {
     wsTracks.map((t) => [slugKey(t.artist.canonical_name, t.canonical_title), t]),
   );
 
+  // fix/official-import-canonical — cible les title_aliases vides ET le socle
+  // 'heuristic' posé par l'import officiel (upgrade IA), sans toucher 'ai'/
+  // 'catalog' déjà enrichis.
   const catalogEmpty = await prisma.officialPlaylistTrack.findMany({
-    where: { title_aliases: { isEmpty: true } },
+    where: { OR: [{ title_aliases: { isEmpty: true } }, { aliases_source: 'heuristic' }] },
     select: { id: true, title: true, artist: true, youtube_id: true },
   });
-  console.info(`[CatalogAliases] ${catalogEmpty.length} tracks catalogue sans aliases`);
+  console.info(`[CatalogAliases] ${catalogEmpty.length} tracks catalogue à (ré)enrichir`);
 
   let migrated = 0;
   const stillEmpty: typeof catalogEmpty = [];
@@ -124,6 +127,7 @@ async function main(): Promise<void> {
           data: {
             title_aliases: ws.aliases,
             artist_aliases: ws.artist.aliases,
+            aliases_source: 'catalog',
           },
         });
       }
@@ -205,7 +209,7 @@ async function main(): Promise<void> {
           const artistAliases = knownArtistAliases.get(lower(ct.artist)) ?? [];
           await prisma.officialPlaylistTrack.update({
             where: { id: ct.id },
-            data: { title_aliases: r.aliases, artist_aliases: artistAliases },
+            data: { title_aliases: r.aliases, artist_aliases: artistAliases, aliases_source: 'ai' },
           });
           tracksGenerated += 1;
           if (cumulativeCostEur > maxCostEur) {
