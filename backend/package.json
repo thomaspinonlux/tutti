@@ -22,6 +22,7 @@
     "enrich:official-playlists": "tsx scripts/enrichOfficialPlaylists.ts",
     "enrich:spotify-ids": "tsx scripts/enrichSpotifyIds.ts",
     "enrich:apple-music-ids": "tsx scripts/enrichAppleMusicIds.ts",
+    "import:song-levels": "tsx scripts/importSongLevels.ts",
     "sync:workspace-playlists": "tsx scripts/syncWorkspacePlaylists.ts",
     "backfill:catalog-aliases": "tsx scripts/backfillCatalogAliases.ts",
     "migrate:canonical-songs": "tsx scripts/migrateCanonicalSongs.ts",
