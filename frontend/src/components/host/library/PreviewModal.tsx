@@ -17,15 +17,22 @@ interface Props {
   open: boolean;
   playlist: LibraryPlaylistDetail | null;
   report: PlayabilityReport | null;
+  /** BUG 4 — source active choisie (pour l'avertissement de couverture Apple). */
+  provider?: 'youtube' | 'spotify' | 'apple_music';
   busy: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
+/** BUG 4 — seuil de couverture en-dessous duquel on déconseille de lancer en
+ *  Apple Music (session à trous). */
+const APPLE_COVERAGE_MIN = 0.7;
+
 export function PreviewModal({
   open,
   playlist,
   report,
+  provider,
   busy,
   onCancel,
   onConfirm,
@@ -36,6 +43,9 @@ export function PreviewModal({
   const lang = i18n.language?.startsWith('en') ? 'en' : 'fr';
   const name = lang === 'en' ? playlist.name_en : playlist.name_fr;
   const ratio = report.total > 0 ? report.playable / report.total : 0;
+  // BUG 4 — couverture Apple Music insuffisante (< 70 %) → avertissement clair,
+  // bascule conseillée sur YouTube. Réutilise le report existant (via_apple).
+  const appleLowCoverage = provider === 'apple_music' && ratio < APPLE_COVERAGE_MIN;
   const tone =
     ratio < 0.5
       ? 'border-raspberry text-raspberry-deep bg-raspberry/10'
@@ -81,12 +91,30 @@ export function PreviewModal({
             {report.via_youtube > 0 && (
               <p className="text-xs font-mono">via YouTube : {report.via_youtube}</p>
             )}
-            {ratio < 0.5 && (
+            {report.via_apple > 0 && (
+              <p className="text-xs font-mono">via Apple Music : {report.via_apple}</p>
+            )}
+            {ratio < 0.5 && !appleLowCoverage && (
               <p className="text-xs font-bold mt-2">
                 ⚠️ {t('host.session.modal.preview.warningLow')}
               </p>
             )}
           </div>
+
+          {/* BUG 4 — couverture Apple Music insuffisante : avertissement dédié
+              + bascule conseillée sur YouTube (au lieu d'une session à trous). */}
+          {appleLowCoverage && (
+            <div className="px-3 py-3 border-2 rounded-lg mb-3 border-spritz text-spritz-deep bg-spritz/10">
+              <p className="text-sm font-bold">
+                ⚠️ {report.playable}/{report.total} jouables en Apple Music — bascule conseillée sur
+                YouTube.
+              </p>
+              <p className="text-xs mt-1">
+                Cette playlist n'est pas assez couverte en Apple Music : lancer maintenant créerait
+                une manche à trous. Changez la source sur « YouTube » pour une couverture complète.
+              </p>
+            </div>
+          )}
 
           {/* feat/selection-ui-mirroring — la liste numérotée des morceaux a été
               RETIRÉE : elle dévoilait les réponses (titre — artiste) avant le

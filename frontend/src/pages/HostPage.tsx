@@ -57,7 +57,7 @@ import { useYouTubePlayer } from '../lib/useYouTubePlayer.js';
 import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
 import { useAppleMusicPlayer } from '../lib/useAppleMusicPlayer.js';
 import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
-import { getAppleMusicStatus } from '../lib/appleMusic.js';
+import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
 import { unlockAudioSync } from '../lib/audioUnlock.js';
 import { usePwa } from '../lib/usePwa.js';
 import { ContentBlockerWarning } from '../components/ContentBlockerWarning.js';
@@ -700,13 +700,41 @@ function HostPageInner(): JSX.Element {
   // feat/apple-music — compte Apple Music connecté (gate le SDK MusicKit + le
   // 3e onglet source). Chargé au mount + re-synchronisé par fetchHostProviders.
   const [appleConnected, setAppleConnected] = useState(false);
+  // BONUS — Music User Token du host, injecté dans MusicKit pour AUTORISER la
+  // lecture full-track (sinon MusicKit tombe en preview 30 s). Le token vit en
+  // base (music_provider_credentials) ; on le récupère via l'endpoint public
+  // (gated session active) et on le passe au hook Apple.
+  const [appleUserToken, setAppleUserToken] = useState<string | null>(null);
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  // BUG 2/3 — true dès que le statut Apple est connu (succès OU échec), pour ne
+  // pas présélectionner YouTube par défaut avant d'avoir la réponse.
+  const [appleStatusLoaded, setAppleStatusLoaded] = useState(false);
   useEffect(() => {
     void getAppleMusicStatus()
       .then((s) => setAppleConnected(s.connected))
       .catch(() => {
         /* statut non critique */
-      });
+      })
+      .finally(() => setAppleStatusLoaded(true));
   }, []);
+  // BONUS — récupère le Music User Token dès qu'Apple est connecté + workspace
+  // connu (session active requise côté backend). Best-effort : un échec laisse
+  // le token null → le hook remontera APPLE_NOT_AUTHORIZED au lieu de jouer des
+  // extraits 30 s.
+  useEffect(() => {
+    if (!appleConnected || !workspaceId) return;
+    let cancelled = false;
+    void getApplePublicTokens(workspaceId)
+      .then((tk) => {
+        if (!cancelled) setAppleUserToken(tk.music_user_token ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setAppleUserToken(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [appleConnected, workspaceId]);
   // feat/quiz-launch-host-ui — flag pour afficher le sub-onglet "Quizz"
   // dans la bibliothèque officielle. Reflète WorkspaceMember.can_use_quizz.
   //
@@ -733,6 +761,7 @@ function HostPageInner(): JSX.Element {
         // Un vrai écran TV externe est une autre machine → localStorage vide
         // ou workspaceId différent → il arme normalement.
         if (me.workspace?.id) {
+          setWorkspaceId(me.workspace.id);
           try {
             window.localStorage.setItem('tutti-console-ws', me.workspace.id);
           } catch {
@@ -773,6 +802,9 @@ function HostPageInner(): JSX.Element {
   // Apple + compte connecté (comme Spotify). Sinon SDK jamais chargé.
   const apple = useAppleMusicPlayer({
     enabled: appleConnected && playerAlive && audioProvider === 'apple_music',
+    // BONUS — injecte le Music User Token du host → MusicKit autorisé →
+    // lecture full-track (au lieu de preview 30 s).
+    musicUserToken: appleUserToken,
   });
   // feat/detect-content-blocker-youtube — lit isStandalone pour adapter
   // les instructions du ContentBlockerWarning (PWA vs Safari classique).
@@ -1114,18 +1146,20 @@ function HostPageInner(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id, spotifyAllowlisted]);
 
-  const handlePickOfficial = async (
-    summary: LibraryPlaylistSummary,
+  // Cœur partagé du lancement officiel : charge providers + détail + playability
+  // et ouvre la PreviewModal. Réutilisé par le toggle bibliothèque (RoundSelection)
+  // ET par l'entrée "Bibliothèque officielle" de Tutti Tracks (BUG 2) via le
+  // param d'URL — AUCUNE logique dupliquée (même preview → pregame → launch).
+  const openOfficialPreview = async (
+    playlistId: string,
     provider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
     difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
   ): Promise<void> => {
     if (!session) return;
-    if (summary.locked) return; // ne devrait pas arriver — card disabled
-    pickedProviderRef.current = provider; // onglet choisi → relu au launch
-    setAudioProvider(provider); // BUG 1 — la source choisie gate le SDK Spotify
+    pickedProviderRef.current = provider; // source choisie → relue au launch
+    setAudioProvider(provider);
     pickedDifficultyRef.current = difficulty; // niveau choisi → relu au launch
 
-    // 1. Charge providers connectés
     const providers = await fetchHostProviders();
     const hasAny =
       providers.spotify.connected || providers.youtube.connected || !!providers.apple?.connected;
@@ -1133,13 +1167,10 @@ function HostPageInner(): JSX.Element {
       setNoProviderOpen(true);
       return;
     }
-
-    // 2. Charge détail playlist + calcule playability
     try {
-      const detail = await getLibraryPlaylist(summary.id);
-      // feat/watertight-provider — aperçu STRICTEMENT sur la source choisie
-      // (via YouTube: N / via Spotify: 0 en mode youtube). Cohérent avec le
-      // clone étanche côté launch.
+      const detail = await getLibraryPlaylist(playlistId);
+      if (detail.locked) return; // premium non débloqué
+      // feat/watertight-provider — aperçu STRICTEMENT sur la source choisie.
       const report = computePlayability(detail.tracks, providers, provider);
       setPreviewPlaylist(detail);
       setPreviewReport(report);
@@ -1147,6 +1178,30 @@ function HostPageInner(): JSX.Element {
       setError((err as Error).message);
     }
   };
+
+  const handlePickOfficial = async (
+    summary: LibraryPlaylistSummary,
+    provider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+  ): Promise<void> => {
+    if (summary.locked) return; // ne devrait pas arriver — card disabled
+    await openOfficialPreview(summary.id, provider, difficulty);
+  };
+
+  // BUG 2 — lancement d'une playlist officielle depuis "Tutti Tracks" : la page
+  // crée une session puis navigue vers /host?session=…&official=<id>. Ici on
+  // ouvre la même Preview qu'au flux Nouvelle session (une seule fois), avec la
+  // source par défaut BUG 3 (apple_music si connecté, sinon youtube). On attend
+  // que le statut Apple soit chargé pour ne pas figer YouTube par erreur.
+  const officialParam = params.get('official');
+  const autoOfficialDoneRef = useRef(false);
+  useEffect(() => {
+    if (!session || !officialParam || !appleStatusLoaded || autoOfficialDoneRef.current) return;
+    autoOfficialDoneRef.current = true;
+    const prov: 'youtube' | 'apple_music' = appleConnected ? 'apple_music' : 'youtube';
+    void openOfficialPreview(officialParam, prov);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, officialParam, appleStatusLoaded, appleConnected]);
 
   /**
    * feat/tv-carousel-polish — accepter directement la proposition d'un joueur.
@@ -1699,7 +1754,9 @@ function HostPageInner(): JSX.Element {
     const providerLabel = isOfficial
       ? pendingFirstPlay.prefer === 'youtube'
         ? 'YouTube'
-        : 'Spotify'
+        : pendingFirstPlay.prefer === 'apple_music'
+          ? 'Apple Music'
+          : 'Spotify'
       : null;
     return (
       <>
@@ -2132,6 +2189,7 @@ function HostPageInner(): JSX.Element {
         open={!!previewPlaylist}
         playlist={previewPlaylist}
         report={previewReport}
+        provider={pickedProviderRef.current}
         busy={busy}
         onCancel={() => {
           setPreviewPlaylist(null);
