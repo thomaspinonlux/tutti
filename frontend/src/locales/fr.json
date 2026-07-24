@@ -337,6 +337,8 @@
     "moveToTeam": "Changer d'équipe",
     "kick": "Exclure",
     "kickConfirm": "Exclure ce joueur de la session ?",
+    "kickPlayer": "Retirer ce joueur",
+    "kickConfirmPlayer": "Retirer {{pseudo}} de la partie ? Il pourra se reconnecter.",
     "startBlindTest": "Démarrer le blind test",
     "startBlindTestWithFirstRound": "Démarrer la 1ʳᵉ manche",
     "startWithZeroPlayersConfirm": "Aucun joueur connecté. Lancer quand même ?",

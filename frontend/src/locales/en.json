@@ -337,6 +337,8 @@
     "moveToTeam": "Change team",
     "kick": "Kick",
     "kickConfirm": "Kick this player out of the session?",
+    "kickPlayer": "Remove this player",
+    "kickConfirmPlayer": "Remove {{pseudo}} from the game? They can reconnect.",
     "startWithZeroPlayersConfirm": "No players connected. Start anyway?",
     "startBlindTest": "Start the blind test",
     "startBlindTestWithFirstRound": "Start round 1",
