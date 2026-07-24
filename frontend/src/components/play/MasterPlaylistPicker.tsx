@@ -31,13 +31,13 @@ interface Props {
   /** Lance une playlist OFFICIELLE (source + niveau). */
   onPickOfficial: (
     playlistId: string,
-    provider: 'youtube' | 'spotify',
+    provider: 'youtube' | 'spotify' | 'apple_music',
     difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
   ) => void | Promise<void>;
 }
 
 type Tab = 'perso' | 'official';
-type Provider = 'youtube' | 'spotify';
+type Provider = 'youtube' | 'spotify' | 'apple_music';
 
 const LEVELS: { key: string; label: string; difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' }[] = [
   { key: 'mix', label: 'Mix' },
@@ -104,7 +104,13 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
     if (!official) return null;
     const nq = norm(q.trim());
     return official
-      .filter((p) => (provider === 'youtube' ? p.youtube_count > 0 : p.spotify_count > 0))
+      .filter((p) =>
+        provider === 'youtube'
+          ? p.youtube_count > 0
+          : provider === 'spotify'
+            ? p.spotify_count > 0
+            : (p.apple_music_count ?? 0) > 0,
+      )
       .filter((p) => !nq || norm(p.name_fr).includes(nq) || norm(p.name_en).includes(nq));
   }, [official, q, provider]);
 
@@ -189,7 +195,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
         {tab === 'official' && !selected && (
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <div className="inline-flex border-2 border-ink/20 rounded-lg overflow-hidden">
-              {(['youtube', 'spotify'] as const).map((pv) => (
+              {(['youtube', 'spotify', 'apple_music'] as const).map((pv) => (
                 <button
                   key={pv}
                   type="button"
@@ -198,7 +204,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                     provider === pv ? 'bg-ink text-cream' : 'bg-transparent text-ink-soft'
                   }`}
                 >
-                  {pv === 'youtube' ? '▶ YouTube' : '♪ Spotify'}
+                  {pv === 'youtube' ? '▶ YouTube' : pv === 'spotify' ? '♪ Spotify' : ' Apple Music'}
                 </button>
               ))}
             </div>
@@ -246,7 +252,13 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
             <Card tone="cream">
               <p className="font-display text-lg">{selected.name_fr}</p>
               <p className="font-mono text-xs text-ink-soft mt-1">
-                Source : {provider === 'youtube' ? 'YouTube' : 'Spotify'} · niveau ?
+                Source :{' '}
+                {provider === 'youtube'
+                  ? 'YouTube'
+                  : provider === 'spotify'
+                    ? 'Spotify'
+                    : 'Apple Music'}{' '}
+                · niveau ?
               </p>
             </Card>
             <div className="grid grid-cols-2 gap-2">
@@ -301,7 +313,11 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                         <p className="font-display text-base truncate">{p.name_fr}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Badge tone="ink" tilt={-1}>
-                            {provider === 'youtube' ? p.youtube_count : p.spotify_count}{' '}
+                            {provider === 'youtube'
+                              ? p.youtube_count
+                              : provider === 'spotify'
+                                ? p.spotify_count
+                                : (p.apple_music_count ?? 0)}{' '}
                             {t('playlists.tracksCount')}
                           </Badge>
                           {p.locked && <Badge tone="raspberry">🔒</Badge>}
