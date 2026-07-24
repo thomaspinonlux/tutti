@@ -93,7 +93,7 @@ export async function generateAliases(
 
     const block = response.content[0];
     const text = block && block.type === 'text' ? block.text : '';
-    const aliases = parseAliasesJson(text);
+    const aliases = withCombinationAliases(parseAliasesJson(text), title, artist);
     const latency_ms = Date.now() - t0;
 
     console.info(
@@ -301,6 +301,59 @@ function parseAliasesJson(text: string): string[] {
     );
     return [];
   }
+}
+
+/**
+ * Normalise une chaîne pour construire les alias de combinaison titre/artiste :
+ *   - minuscules
+ *   - contenu entre parenthèses supprimé (ex: "Bad Romance (Remix)" → "Bad Romance")
+ *   - accents retirés (NFD + suppression des diacritiques)
+ *   - traits d'union → espaces
+ *   - toute ponctuation restante retirée (garde lettres/chiffres/espaces)
+ *   - espaces multiples réduits + trim
+ */
+function normForCombo(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, ' ') // contenu entre parenthèses (surtout pour le titre)
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // diacritiques
+    .replace(/-/g, ' ') // traits d'union
+    .replace(/[^a-z0-9\s]/g, ' ') // ponctuation restante
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Ajoute aux alias IA les 3 combinaisons titre/artiste dans l'ordre parlé
+ * naturel du français, pour tous les nouveaux titres :
+ *   - "<titre> <artiste>"      → "bad romance lady gaga"
+ *   - "<titre> de <artiste>"   → "bad romance de lady gaga"
+ *   - "<artiste> <titre>"      → "lady gaga bad romance"
+ *
+ * But : un joueur qui dit le titre ET l'artiste dans une même phrase marque les
+ * points des DEUX (voiceMatch matche titre et artiste sur des n-grams distincts,
+ * cf. lib/voiceMatch.ts). Les alias existants ne couvraient que "artiste titre".
+ *
+ * Déduplication : insensible à la casse, contre les alias déjà produits (qui
+ * sont déjà en minuscules via parseAliasesJson).
+ */
+function withCombinationAliases(aliases: string[], title: string, artist: string): string[] {
+  const t = normForCombo(title);
+  const a = normForCombo(artist);
+  // Sans titre OU sans artiste exploitable, aucune combinaison n'a de sens.
+  if (!t || !a) return aliases;
+
+  const combos = [`${t} ${a}`, `${t} de ${a}`, `${a} ${t}`];
+  const seen = new Set(aliases.map((x) => x.toLowerCase()));
+  const out = [...aliases];
+  for (const combo of combos) {
+    if (combo.length < 2) continue;
+    if (seen.has(combo)) continue;
+    seen.add(combo);
+    out.push(combo);
+  }
+  return out;
 }
 
 /**

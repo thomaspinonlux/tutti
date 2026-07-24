@@ -988,6 +988,11 @@ function HostPageInner(): JSX.Element {
     // démarrer une vraie lecture parasite (la vraie lecture viendra du
     // playTrack ci-dessous via track:start broadcast).
     youtube.warmupSync();
+    // fix/robust-autoplay-no-refresh (Apple) — déverrouille MusicKit DANS le
+    // geste du clic (authorize + claim audio). No-op sûr si Apple n'est pas la
+    // source active. L'état persiste pour toute la session (instance MusicKit
+    // non recréée entre les morceaux).
+    void apple.activate();
     setBusy(true);
     try {
       // fix/ipad-pwa-audio-persistent-player — n'active le pipeline Spotify
@@ -1304,6 +1309,10 @@ function HostPageInner(): JSX.Element {
     // neuf sans vidéo → no-op safe cf. #73, le claim passe par le flow
     // cueVideoById→CUED→playVideo de PreGameStartScreen.)
     youtube.warmupSync();
+    // fix/robust-autoplay-no-refresh (Apple) — déverrouille MusicKit dans le
+    // geste du clic « Démarrer » (authorize + claim audio), symétrique
+    // youtube.warmupSync. No-op sûr hors source Apple.
+    void apple.activate();
     setBusy(true);
     try {
       // fix/ipad-pwa-audio-persistent-player — n'active QUE le pipeline du
@@ -1686,6 +1695,23 @@ function HostPageInner(): JSX.Element {
             <span>{t('host.audioBlockedBanner')}</span>
           </button>
         )}
+        {/* fix/robust-autoplay-no-refresh (Apple) — même banner de secours en
+            mode B festif, branché sur Apple Music. */}
+        {apple.audioBlocked && (
+          <button
+            type="button"
+            onClick={() => {
+              unlockAudioSync('apple-audio-blocked-banner-modeB');
+              void apple.unblockAudio();
+            }}
+            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-ink flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
+          >
+            <span className="text-2xl" aria-hidden>
+              🔊
+            </span>
+            <span>{t('host.audioBlockedBanner')}</span>
+          </button>
+        )}
         {/* Badge master + change-master accessible discrètement en haut-droite */}
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <PwaSafetyControls />
@@ -1842,6 +1868,40 @@ function HostPageInner(): JSX.Element {
               // gesture du tap, puis appelle tapToStart() (lui-même sync).
               unlockAudioSync('tap-to-start-overlay');
               youtube.tapToStart();
+            }}
+            className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-ink shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <span className="text-5xl" aria-hidden>
+              ▶
+            </span>
+            <span className="font-display text-2xl text-center leading-tight">
+              {t('host.youtubeBlockedTitle')}
+            </span>
+            <span className="font-mono text-xs uppercase tracking-wider opacity-90">
+              {t('host.youtubeBlockedCta')}
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* fix/robust-autoplay-no-refresh (Apple) — overlay de secours IDENTIQUE
+          à YouTube, branché sur Apple Music. Affiché quand MusicKit a refusé la
+          lecture (autoplay bloqué / non autorisé). Click = geste user frais →
+          unblockAudio() (authorize + rejoue le dernier morceau). JAMAIS
+          d'alert() ni de reload. */}
+      {apple.audioBlocked && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('host.youtubeBlockedTitle')}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 backdrop-blur-sm animate-fade-in p-6"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              // Débloque l'audio SYNC dans le geste du tap, puis unblockAudio().
+              unlockAudioSync('apple-tap-to-start-overlay');
+              void apple.unblockAudio();
             }}
             className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-ink shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
           >

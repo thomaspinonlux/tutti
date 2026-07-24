@@ -59,6 +59,21 @@ export interface UseAppleMusicPlayerResult {
   setVolume: (v: number) => Promise<void>;
   /** Débloque l'audio après une interaction user (autoplay policy). */
   activate: () => Promise<boolean>;
+  /**
+   * fix/robust-autoplay-no-refresh (Apple) — true si le play() a été refusé
+   * par la politique d'autoplay du navigateur (geste user non conservé) OU si
+   * MusicKit n'est pas autorisé. L'UI affiche alors l'overlay « Démarrer la
+   * lecture » (identique YouTube/Spotify) qui appelle `unblockAudio()` depuis
+   * un geste user frais. JAMAIS d'alert() ni de reload.
+   */
+  audioBlocked: boolean;
+  /**
+   * fix/robust-autoplay-no-refresh (Apple) — relance le dernier morceau
+   * demandé depuis un geste user frais (clic sur l'overlay de secours).
+   * (Ré)autorise MusicKit si besoin puis rejoue. Reset `audioBlocked` au
+   * succès. Miroir de youtube.tapToStart / spotify.unblockAudio.
+   */
+  unblockAudio: () => Promise<boolean>;
 }
 
 export function useAppleMusicPlayer({
@@ -77,8 +92,15 @@ export function useAppleMusicPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [positionMs, setPositionMs] = useState(0);
   const [durationMs, setDurationMs] = useState(0);
+  // fix/robust-autoplay-no-refresh (Apple) — autoplay bloqué → overlay de
+  // secours (identique YouTube/Spotify), jamais d'alert().
+  const [audioBlocked, setAudioBlocked] = useState(false);
 
   const musicRef = useRef<MusicKitInstance | null>(null);
+  // Dernier morceau demandé — rejoué par unblockAudio() depuis un geste frais.
+  const lastCatalogIdRef = useRef<string | null>(null);
+  // Vérifie 1,5 s après play() que la lecture a bien démarré (sinon → bloqué).
+  const unlockCheckRef = useRef<number | null>(null);
   const enabledRef = useRef(enabled);
   useEffect(() => {
     enabledRef.current = enabled;
@@ -127,6 +149,16 @@ export function useAppleMusicPlayer({
           const m = musicRef.current;
           if (!m) return;
           setIsPlaying(m.isPlaying);
+          // La lecture a réellement démarré → autoplay OK, on lève le blocage
+          // et on annule la vérification différée (miroir YT onStateChange
+          // PLAYING → setAudioBlocked(false)).
+          if (m.isPlaying) {
+            setAudioBlocked(false);
+            if (unlockCheckRef.current !== null) {
+              window.clearTimeout(unlockCheckRef.current);
+              unlockCheckRef.current = null;
+            }
+          }
         };
         const onTime = (): void => {
           const m = musicRef.current;
@@ -153,33 +185,65 @@ export function useAppleMusicPlayer({
   }, [enabled, musicUserToken]);
 
   // ── Contrôles ──────────────────────────────────────────────────────────────
-  const play = useCallback(async (catalogId: string): Promise<boolean> => {
-    const music = musicRef.current;
-    if (!music || !enabledRef.current) return false;
-    // BONUS — un MusicKit NON autorisé ne joue que des extraits de 30 s
-    // (preview). On refuse la lecture et on remonte une erreur VISIBLE au lieu
-    // de dégrader silencieusement : le host doit (re)connecter son compte Apple
-    // Music (le Music User Token en base doit être ré-injecté côté client, cf.
-    // prop `musicUserToken`).
-    if (!music.isAuthorized) {
-      setIsAuthorized(false);
-      setErrorCode('APPLE_NOT_AUTHORIZED');
-      setError(
-        'Compte Apple Music non autorisé sur cet appareil — reconnectez Apple Music ' +
-          '(sinon la lecture serait limitée à des extraits de 30 s).',
-      );
-      setStatus('error');
-      return false;
+
+  /**
+   * fix/robust-autoplay-no-refresh (Apple) — planifie une vérification 1,5 s
+   * après play() : si MusicKit n'est pas en lecture, l'autoplay a été bloqué
+   * (le geste user du clic « Démarrer » n'a pas été conservé jusqu'ici, car le
+   * play réel est déclenché par la synchro serveur, pas par le clic). On lève
+   * `audioBlocked` → l'UI affiche l'overlay de secours. Miroir de
+   * useYouTubePlayer.scheduleAutoplayRetry (sans alert, sans reload).
+   */
+  const scheduleUnlockCheck = useCallback((): void => {
+    if (unlockCheckRef.current !== null) {
+      window.clearTimeout(unlockCheckRef.current);
+      unlockCheckRef.current = null;
     }
-    try {
-      await music.setQueue({ song: catalogId });
-      await music.play();
-      return true;
-    } catch (err: unknown) {
-      setError((err as Error).message);
-      return false;
-    }
+    unlockCheckRef.current = window.setTimeout(() => {
+      unlockCheckRef.current = null;
+      const m = musicRef.current;
+      if (!m) return;
+      if (!m.isPlaying) {
+        console.warn('[Apple] play did not start after 1.5s → audioBlocked=true (UI fallback)');
+        setAudioBlocked(true);
+      }
+    }, 1500);
   }, []);
+
+  const play = useCallback(
+    async (catalogId: string): Promise<boolean> => {
+      const music = musicRef.current;
+      if (!music || !enabledRef.current) return false;
+      lastCatalogIdRef.current = catalogId;
+      // BONUS — un MusicKit NON autorisé ne joue que des extraits de 30 s
+      // (preview). Plutôt que de dégrader silencieusement, on lève l'overlay de
+      // secours : le tap user (geste frais) déclenchera authorize()+play via
+      // unblockAudio() (le Music User Token en base est ré-injecté côté client,
+      // cf. prop `musicUserToken`).
+      if (!music.isAuthorized) {
+        setIsAuthorized(false);
+        setErrorCode('APPLE_NOT_AUTHORIZED');
+        setAudioBlocked(true);
+        return false;
+      }
+      try {
+        await music.setQueue({ song: catalogId });
+        await music.play();
+        // La lecture peut échouer silencieusement (autoplay policy) sans throw :
+        // on vérifie l'état réel 1,5 s plus tard.
+        scheduleUnlockCheck();
+        return true;
+      } catch (err: unknown) {
+        // Chrome/Edge REJETTENT play() quand l'autoplay est bloqué
+        // ("play() failed because the user didn't interact…"). On NE remonte
+        // PAS une erreur bloquante : on lève l'overlay de secours (geste frais).
+        console.warn('[Apple] play() rejected → audioBlocked=true:', (err as Error).message);
+        setAudioBlocked(true);
+        return false;
+      }
+    },
+    [scheduleUnlockCheck],
+  );
 
   const pause = useCallback(async (): Promise<void> => {
     const music = musicRef.current;
@@ -222,10 +286,65 @@ export function useAppleMusicPlayer({
   }, []);
 
   const activate = useCallback(async (): Promise<boolean> => {
-    // MusicKit démarre le pipeline audio au premier play() déclenché par un
-    // clic user — pas d'API activate() séparée. On expose la méthode pour
-    // rester symétrique avec Spotify ; elle est un no-op sûr.
+    // fix/robust-autoplay-no-refresh (Apple) — appelé DEPUIS le clic « Démarrer
+    // le blind test » (geste user frais). But : déverrouiller MusicKit une fois
+    // pour toute la session. On (ré)autorise si nécessaire — authorize() DOIT
+    // être appelé dans un geste user, ce que ce handler garantit. On NE recrée
+    // pas l'instance MusicKit (elle est persistante, clé [enabled,
+    // musicUserToken]) : le claim audio est ainsi conservé entre les morceaux.
+    const music = musicRef.current;
+    if (!music) return false;
+    if (!music.isAuthorized) {
+      try {
+        await music.authorize();
+        setIsAuthorized(music.isAuthorized);
+      } catch (err) {
+        console.warn('[Apple] activate(): authorize() échoué (best-effort):', err);
+      }
+    }
     return !!musicRef.current;
+  }, []);
+
+  const unblockAudio = useCallback(async (): Promise<boolean> => {
+    // Appelé depuis l'overlay de secours (geste user frais garanti). (Ré)auto-
+    // rise MusicKit si besoin puis rejoue le dernier morceau demandé. Le geste
+    // frais bypasse la politique d'autoplay. Miroir youtube.tapToStart.
+    const music = musicRef.current;
+    if (!music) return false;
+    if (!music.isAuthorized) {
+      try {
+        await music.authorize();
+        setIsAuthorized(music.isAuthorized);
+      } catch (err) {
+        console.warn('[Apple] unblockAudio(): authorize() échoué:', err);
+      }
+    }
+    const catalogId = lastCatalogIdRef.current;
+    if (!catalogId) {
+      // Pas de morceau connu — au moins on lève le blocage (rien à rejouer).
+      setAudioBlocked(false);
+      return !!musicRef.current;
+    }
+    try {
+      await music.setQueue({ song: catalogId });
+      await music.play();
+      setAudioBlocked(false);
+      scheduleUnlockCheck();
+      return true;
+    } catch (err: unknown) {
+      console.warn('[Apple] unblockAudio() play rejeté (reste bloqué):', (err as Error).message);
+      return false;
+    }
+  }, [scheduleUnlockCheck]);
+
+  // Cleanup du timer de vérification au unmount.
+  useEffect(() => {
+    return () => {
+      if (unlockCheckRef.current !== null) {
+        window.clearTimeout(unlockCheckRef.current);
+        unlockCheckRef.current = null;
+      }
+    };
   }, []);
 
   return {
@@ -242,5 +361,7 @@ export function useAppleMusicPlayer({
     seek,
     setVolume,
     activate,
+    audioBlocked,
+    unblockAudio,
   };
 }

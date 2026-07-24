@@ -3,7 +3,7 @@
  * désigné master EN MODE B "Sans animateur" (désigné DEPUIS LA CONSOLE).
  *
  * Boutons phase-aware :
- *   - listening  : ▶ Réponse  /  ⏭ Sauter  /  ⏸ Pause  /  🛑 Terminer
+ *   - listening  : ▶ Réponse  /  ⏭ Morceau suivant  /  ⏸ Pause  /  🛑 Terminer
  *   - buzzed     : (rien — le buzzer répond)  /  ⏸ Pause  /  🛑 Terminer
  *   - cooldown   : ▶ Suivant  /  ⏸ Pause  /  🛑 Terminer
  *   - pas de round PLAYING : ▶ Manche suivante (picker)  /  🛑 Terminer
@@ -339,7 +339,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
             </>
           )}
 
-        {/* Réponse (action clé, plus large) / Sauter — phase1 */}
+        {/* Réponse (action clé, plus large) / Morceau suivant — phase1 */}
         {phase === 'phase1' && !props.isPaused && (
           <div className="col-span-2 grid grid-cols-[1.4fr_1fr] gap-2.5">
             <CtrlButton
