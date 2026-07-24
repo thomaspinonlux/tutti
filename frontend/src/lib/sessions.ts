@@ -583,7 +583,7 @@ export async function masterPickRound(
 export async function masterListOfficialPlaylists(
   sessionId: string,
   token: string,
-  provider?: 'youtube' | 'spotify',
+  provider?: 'youtube' | 'spotify' | 'apple_music',
 ): Promise<LibraryPlaylistSummary[]> {
   const data = await api<{ playlists: LibraryPlaylistSummary[] }>(
     `/api/sessions/${encodeURIComponent(sessionId)}/master/library/playlists`,
@@ -601,7 +601,7 @@ export async function masterLaunchOfficial(
   sessionId: string,
   playlistId: string,
   token: string,
-  preferProvider: 'youtube' | 'spotify' = 'youtube',
+  preferProvider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
   difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
 ): Promise<{ round: SessionRoundWithPlaylist; state: CurrentTrackState | null }> {
   return api(

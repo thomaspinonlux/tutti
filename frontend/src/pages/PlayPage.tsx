@@ -660,7 +660,7 @@ export function PlayPage(): JSX.Element {
   // (source + niveau) depuis son tel. Même effet que le launch host, son console.
   const handleMasterPickOfficial = async (
     playlistId: string,
-    provider: 'youtube' | 'spotify',
+    provider: 'youtube' | 'spotify' | 'apple_music',
     difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
   ): Promise<void> => {
     setMasterPickerOpen(false);

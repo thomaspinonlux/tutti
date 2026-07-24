@@ -191,7 +191,7 @@ router.post('/playlists', async (req: Request<{ id: string }>, res: Response): P
 
 const libraryListSchema = z.object({
   token: z.string(),
-  provider: z.enum(['youtube', 'spotify']).optional(),
+  provider: z.enum(['youtube', 'spotify', 'apple_music']).optional(),
 });
 
 router.post(
@@ -235,7 +235,7 @@ router.post(
 
 const libraryLaunchSchema = z.object({
   token: z.string(),
-  preferProvider: z.enum(['youtube', 'spotify']).default('youtube'),
+  preferProvider: z.enum(['youtube', 'spotify', 'apple_music']).default('youtube'),
   difficulty: z.enum(['EASY', 'MEDIUM', 'EXPERT']).optional(),
 });
 
