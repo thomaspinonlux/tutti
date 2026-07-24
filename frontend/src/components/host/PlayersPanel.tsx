@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CumulativeScore, Participant } from '@tutti/shared';
-import { hostAdjustPoints, toggleParticipantMaster } from '../../lib/sessions.js';
+import { hostAdjustPoints, kickParticipant, toggleParticipantMaster } from '../../lib/sessions.js';
 import { Button, Card } from '../ui/index.js';
 
 const CORAL = '#FF5C4D';
@@ -63,6 +63,22 @@ export function PlayersPanel({
     setError(null);
     try {
       await toggleParticipantMaster(sessionId, pid);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  // feat/kick-in-game — retirer un joueur pendant la partie (mauvaise connexion
+  // / reconnexion). Serveur : is_kicked=true + broadcast participant:kicked →
+  // le joueur retombe sur l'écran pseudo et peut se reconnecter proprement.
+  const handleKick = async (pid: string, pseudo: string): Promise<void> => {
+    if (!window.confirm(t('host.kickConfirmPlayer', { pseudo }))) return;
+    setBusy(pid);
+    setError(null);
+    try {
+      await kickParticipant(sessionId, pid);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -195,6 +211,22 @@ export function PlayersPanel({
                     </Button>
                   </>
                 )}
+                {/* feat/kick-in-game — retirer le joueur (mauvaise connexion). */}
+                <button
+                  type="button"
+                  onClick={() => void handleKick(p.id, p.pseudo)}
+                  disabled={isBusy}
+                  title={t('host.kickPlayer')}
+                  aria-label={t('host.kickPlayer')}
+                  className={[
+                    '!px-2 !py-1 text-xs font-mono rounded-lg border transition-colors',
+                    dark
+                      ? 'border-raspberry/40 text-raspberry hover:bg-raspberry/15'
+                      : 'border-raspberry/40 text-raspberry hover:bg-raspberry/10',
+                  ].join(' ')}
+                >
+                  ✕
+                </button>
               </div>
             </li>
           );
