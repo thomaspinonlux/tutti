@@ -58,9 +58,15 @@ workflows:
         APPLE_TEAM_ID: 'N4QYGD595D'
 
     scripts:
-      - name: 1. Installer pnpm
+      - name: 1. Activer pnpm (via corepack)
+        # Les machines Codemagic (Mac mini M2) ont déjà pnpm/corepack préinstallés.
+        # `npm install -g pnpm` échoue donc avec EEXIST (/usr/local/bin/pnpm existe
+        # déjà). On active pnpm proprement via corepack, en épinglant la version du
+        # dépôt (PNPM_VERSION) pour rester cohérent avec le lockfile --frozen.
         script: |
-          npm install -g pnpm@$PNPM_VERSION
+          corepack enable
+          corepack prepare pnpm@$PNPM_VERSION --activate
+          pnpm --version
 
       - name: 2. Deps frontend (workspace pnpm, depuis la racine)
         script: |
