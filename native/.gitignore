@@ -1,0 +1,9 @@
+# Plateformes natives générées par `npx cap add …` (recréables, volumineuses).
+/ios/
+/android/
+
+# Deps de la coque (installées à part, hors workspace pnpm).
+node_modules/
+
+# Copie du web injectée par `cap copy` (le source de vérité est ../frontend/dist).
+/dist/
