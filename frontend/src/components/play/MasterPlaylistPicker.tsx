@@ -10,7 +10,7 @@
  * Le son reste sur la console : ici on n'émet QUE des commandes serveur.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   masterListOfficialPlaylists,
@@ -58,8 +58,12 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
 
   // Perso
   const [perso, setPerso] = useState<MasterPlaylistEntry[] | null>(null);
-  // Officiel
+  // Officiel — ordre de source par défaut : apple_music → youtube → spotify.
+  // On démarre sur youtube puis on bascule sur Apple Music dès qu'une couverture
+  // Apple est détectée (cf. effet plus bas), tant que l'animateur n'a pas choisi
+  // lui-même. Sans couverture Apple → on reste sur youtube (repli propre).
   const [provider, setProvider] = useState<Provider>('youtube');
+  const providerTouchedRef = useRef(false);
   const [official, setOfficial] = useState<LibraryPlaylistSummary[] | null>(null);
   const [selected, setSelected] = useState<LibraryPlaylistSummary | null>(null);
 
@@ -90,6 +94,16 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
       .catch((e: unknown) => setError((e as Error).message))
       .finally(() => setLoading(false));
   }, [props.open, tab, provider, props.sessionId, props.token]);
+
+  // Défaut Apple Music : dès qu'au moins une playlist officielle a une couverture
+  // Apple, on met Apple Music en source par défaut (tant que l'animateur n'a pas
+  // choisi). Sinon on reste sur youtube. Miroir du comportement de la console.
+  useEffect(() => {
+    if (providerTouchedRef.current || provider !== 'youtube') return;
+    if (official && official.some((p) => (p.apple_music_count ?? 0) > 0)) {
+      setProvider('apple_music');
+    }
+  }, [official, provider]);
 
   // Reset à la fermeture.
   useEffect(() => {
@@ -195,11 +209,14 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
         {tab === 'official' && !selected && (
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <div className="inline-flex border-2 border-ink/20 rounded-lg overflow-hidden">
-              {(['youtube', 'spotify', 'apple_music'] as const).map((pv) => (
+              {(['apple_music', 'youtube', 'spotify'] as const).map((pv) => (
                 <button
                   key={pv}
                   type="button"
-                  onClick={() => setProvider(pv)}
+                  onClick={() => {
+                    providerTouchedRef.current = true;
+                    setProvider(pv);
+                  }}
                   className={`px-3 py-1.5 text-xs font-medium ${
                     provider === pv ? 'bg-ink text-cream' : 'bg-transparent text-ink-soft'
                   }`}
