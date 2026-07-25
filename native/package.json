@@ -14,7 +14,9 @@
   "dependencies": {
     "@capacitor/app": "^6.0.0",
     "@capacitor/core": "^6.1.0",
-    "@capacitor/ios": "^6.1.0"
+    "@capacitor/ios": "^6.1.0",
+    "@tutti/musickit": "file:./plugins/tutti-musickit",
+    "@tutti/external-screen": "file:./plugins/tutti-external-screen"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.1.0"

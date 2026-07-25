@@ -18,6 +18,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getAppleDeveloperToken } from './appleMusic.js';
 import { loadMusicKitSdk, type MusicKitInstance } from './musickitLoader.js';
+import { supportsNativeAppleMusic } from './platform.js';
+import { nativeMusicKit } from './nativeMusicKit.js';
 
 export type AppleMusicPlayerStatus =
   | 'idle'
@@ -106,9 +108,18 @@ export function useAppleMusicPlayer({
     enabledRef.current = enabled;
   }, [enabled]);
 
+  // feat/native (phase 1) — sur iPad natif avec le plugin MusicKit présent, on
+  // pilote la lecture via le PONT NATIF (ApplicationMusicPlayer Swift) au lieu de
+  // MusicKit JS : lecture full-track sans blocage autoplay. Partout ailleurs
+  // (web, desktop, iPad sans plugin) `useNative` est faux → chemin web inchangé.
+  const useNative = supportsNativeAppleMusic() && nativeMusicKit.isAvailable();
+  const useNativeRef = useRef(useNative);
+  useNativeRef.current = useNative;
+
   // ── Initialisation MusicKit ────────────────────────────────────────────────
   useEffect(() => {
     if (!enabled) return;
+    if (useNative) return; // chemin natif : voir l'effet dédié plus bas.
     let cancelled = false;
 
     void (async () => {
@@ -184,6 +195,36 @@ export function useAppleMusicPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, musicUserToken]);
 
+  // ── Initialisation NATIVE (iPad, plugin TuttiMusicKit) ──────────────────────
+  // feat/native (phase 1) — pas de SDK JS à charger : on autorise MusicKit natif
+  // puis on sonde l'état (250 ms) pour interpoler position/lecture, symétrique au
+  // `playbackTimeDidChange` du chemin web.
+  useEffect(() => {
+    if (!enabled || !useNative) return;
+    let cancelled = false;
+    let poll: number | null = null;
+    void (async () => {
+      setStatus('configuring');
+      const { authorized } = await nativeMusicKit.authorize();
+      if (cancelled) return;
+      setIsAuthorized(authorized);
+      setStatus('ready');
+      poll = window.setInterval(() => {
+        void nativeMusicKit.getStatus().then((s) => {
+          if (cancelled) return;
+          setIsPlaying(s.isPlaying);
+          setPositionMs(Math.round(s.positionMs));
+          setDurationMs(Math.round(s.durationMs));
+          if (s.isPlaying) setAudioBlocked(false);
+        });
+      }, 250);
+    })();
+    return () => {
+      cancelled = true;
+      if (poll !== null) window.clearInterval(poll);
+    };
+  }, [enabled, useNative]);
+
   // ── Contrôles ──────────────────────────────────────────────────────────────
 
   /**
@@ -212,9 +253,29 @@ export function useAppleMusicPlayer({
 
   const play = useCallback(
     async (catalogId: string): Promise<boolean> => {
+      lastCatalogIdRef.current = catalogId;
+      // feat/native (phase 1) — chemin natif iPad : ApplicationMusicPlayer joue
+      // full-track sans politique d'autoplay. En cas de non-autorisation, on
+      // lève l'overlay de secours (identique web).
+      if (useNativeRef.current) {
+        if (!enabledRef.current) return false;
+        const auth = await nativeMusicKit.authorize();
+        setIsAuthorized(auth.authorized);
+        if (!auth.authorized) {
+          setErrorCode('APPLE_NOT_AUTHORIZED');
+          setAudioBlocked(true);
+          return false;
+        }
+        const r = await nativeMusicKit.play(catalogId);
+        if (!r.ok) {
+          setAudioBlocked(true);
+          return false;
+        }
+        setAudioBlocked(false);
+        return true;
+      }
       const music = musicRef.current;
       if (!music || !enabledRef.current) return false;
-      lastCatalogIdRef.current = catalogId;
       // BONUS — un MusicKit NON autorisé ne joue que des extraits de 30 s
       // (preview). Plutôt que de dégrader silencieusement, on lève l'overlay de
       // secours : le tap user (geste frais) déclenchera authorize()+play via
@@ -246,6 +307,10 @@ export function useAppleMusicPlayer({
   );
 
   const pause = useCallback(async (): Promise<void> => {
+    if (useNativeRef.current) {
+      await nativeMusicKit.pause();
+      return;
+    }
     const music = musicRef.current;
     if (!music) return;
     try {
@@ -256,6 +321,11 @@ export function useAppleMusicPlayer({
   }, []);
 
   const resume = useCallback(async (): Promise<void> => {
+    if (useNativeRef.current) {
+      if (!enabledRef.current) return;
+      await nativeMusicKit.resume();
+      return;
+    }
     const music = musicRef.current;
     if (!music || !enabledRef.current) return;
     try {
@@ -266,6 +336,10 @@ export function useAppleMusicPlayer({
   }, []);
 
   const seek = useCallback(async (ms: number): Promise<void> => {
+    if (useNativeRef.current) {
+      await nativeMusicKit.seek(Math.max(0, ms));
+      return;
+    }
     const music = musicRef.current;
     if (!music) return;
     try {
@@ -276,6 +350,10 @@ export function useAppleMusicPlayer({
   }, []);
 
   const setVolume = useCallback(async (v: number): Promise<void> => {
+    if (useNativeRef.current) {
+      await nativeMusicKit.setVolume(Math.max(0, Math.min(1, v)));
+      return;
+    }
     const music = musicRef.current;
     if (!music) return;
     try {
@@ -292,6 +370,11 @@ export function useAppleMusicPlayer({
     // être appelé dans un geste user, ce que ce handler garantit. On NE recrée
     // pas l'instance MusicKit (elle est persistante, clé [enabled,
     // musicUserToken]) : le claim audio est ainsi conservé entre les morceaux.
+    if (useNativeRef.current) {
+      const { authorized } = await nativeMusicKit.authorize();
+      setIsAuthorized(authorized);
+      return authorized;
+    }
     const music = musicRef.current;
     if (!music) return false;
     if (!music.isAuthorized) {
@@ -309,6 +392,18 @@ export function useAppleMusicPlayer({
     // Appelé depuis l'overlay de secours (geste user frais garanti). (Ré)auto-
     // rise MusicKit si besoin puis rejoue le dernier morceau demandé. Le geste
     // frais bypasse la politique d'autoplay. Miroir youtube.tapToStart.
+    if (useNativeRef.current) {
+      const auth = await nativeMusicKit.authorize();
+      setIsAuthorized(auth.authorized);
+      const id = lastCatalogIdRef.current;
+      if (!id) {
+        setAudioBlocked(false);
+        return auth.authorized;
+      }
+      const r = await nativeMusicKit.play(id);
+      if (r.ok) setAudioBlocked(false);
+      return r.ok;
+    }
     const music = musicRef.current;
     if (!music) return false;
     if (!music.isAuthorized) {

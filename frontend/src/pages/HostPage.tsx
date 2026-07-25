@@ -57,6 +57,7 @@ import { useYouTubePlayer } from '../lib/useYouTubePlayer.js';
 import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
 import { useAppleMusicPlayer } from '../lib/useAppleMusicPlayer.js';
 import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
+import { useExternalPlayerScreen } from '../lib/useExternalPlayerScreen.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
 import { unlockAudioSync } from '../lib/audioUnlock.js';
 import { usePwa } from '../lib/usePwa.js';
@@ -834,6 +835,15 @@ function HostPageInner(): JSX.Element {
     currentTrack,
     isPaused: session?.is_paused ?? false,
     enabled: appleConnected && audioProvider === 'apple_music' && phase === 'roundPlaying',
+  });
+
+  // feat/native (phase 2) — sur iPad natif uniquement, pousse l'écran joueurs
+  // (/screen) sur un affichage externe branché à la tablette. No-op total sur
+  // web/desktop (supportsExternalPlayerScreen() y est faux).
+  useExternalPlayerScreen({
+    webOrigin: typeof window !== 'undefined' ? window.location.origin : '',
+    workspaceId,
+    active: !!session && session.status !== 'ENDED',
   });
 
   // BUG 1 — le provider RÉEL du morceau courant (décidé serveur au clone, étanche)

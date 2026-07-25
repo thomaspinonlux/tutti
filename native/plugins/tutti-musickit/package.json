@@ -1,0 +1,21 @@
+{
+  "name": "@tutti/musickit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pont MusicKit natif (lecture Apple Music full-track, sans blocage autoplay) pour la console Tutti iOS.",
+  "main": "src/index.ts",
+  "types": "src/definitions.ts",
+  "files": [
+    "src/",
+    "ios/",
+    "TuttiMusicKit.podspec"
+  ],
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    }
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^6.0.0"
+  }
+}
