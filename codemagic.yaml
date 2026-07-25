@@ -11,7 +11,7 @@
 #   CODEMAGIC → Team settings → Integrations → App Store Connect :
 #     • Ajouter une "App Store Connect API key" (Issuer ID + Key ID + fichier .p8).
 #     • Lui donner un NOM, puis reporter ce nom dans
-#       `integrations.app_store_connect` ci-dessous (remplacer TODO_ASC_INTEGRATION_NAME).
+#       `integrations.app_store_connect` ci-dessous (remplacer Tutti).
 #     • Avec cette intégration + le bloc `ios_signing`, Codemagic gère
 #       AUTOMATIQUEMENT le certificat de distribution et le provisioning profile
 #       (rien d'autre à créer côté signature).
@@ -19,9 +19,9 @@
 #   APP STORE CONNECT (côté Apple) :
 #     • Générer la clé API (Users and Access → Integrations → App Store Connect API),
 #       rôle "App Manager" (ou Admin) → Issuer ID, Key ID, .p8.
-#     • Créer l'app (My Apps → +) avec le bundle id ci-dessous (com.tutti.console).
+#     • Créer l'app (My Apps → +) avec le bundle id ci-dessous (app.tuttiparty).
 #
-# BUNDLE IDENTIFIER attendu : com.tutti.console
+# BUNDLE IDENTIFIER attendu : app.tuttiparty
 #   (= appId de native/capacitor.config.ts ; DOIT être identique des deux côtés
 #    et enregistré dans App Store Connect. À me confirmer / changer si besoin.)
 #
@@ -37,7 +37,7 @@ workflows:
     # Intégration App Store Connect (créée dans le dashboard Codemagic).
     # Fournit la clé API pour : signature auto, incrément de build, publication.
     integrations:
-      app_store_connect: TODO_ASC_INTEGRATION_NAME # ← nom de l'intégration ASC
+      app_store_connect: Tutti # ← nom de l'intégration ASC
 
     environment:
       # Xcode 26 requis. Si "26.0" n'est pas dispo dans les images Codemagic,
@@ -48,7 +48,7 @@ workflows:
       # ni profil à uploader manuellement).
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.tutti.console # ← À CONFIRMER (voir en-tête)
+        bundle_identifier: app.tuttiparty # ← À CONFIRMER (voir en-tête)
       vars:
         # Générés par `cap add ios` (Capacitor crée toujours workspace "App").
         XCODE_WORKSPACE: 'native/ios/App/App.xcworkspace'

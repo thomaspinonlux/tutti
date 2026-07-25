@@ -11,7 +11,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
  * que lit `frontend/src/lib/platform.ts` (isCapacitorNative / supportsNativeAppleMusic).
  */
 const config: CapacitorConfig = {
-  appId: 'com.tutti.console',
+  appId: 'app.tuttiparty',
   appName: 'Tutti',
   webDir: '../frontend/dist',
   ios: {
