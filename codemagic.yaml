@@ -104,26 +104,37 @@ workflows:
           cd native/ios/App
           agvtool new-version -all "$BUILD_NUMBER"
 
-      - name: 7. Signature (certificat neuf + profil) via outils Codemagic
-        # On utilise les outils codemagic-cli-tools (app-store-connect,
-        # xcode-project) : ils s'authentifient SEULS via l'intégration ASC — pas
-        # de .p8 manuel (le -authenticationKeyPath maison donnait "Invalid
-        # authentication key credential" car $APP_STORE_CONNECT_PRIVATE_KEY n'est
-        # pas exposée comme variable shell).
+      - name: 7. Signature (certificat + profil) via outils Codemagic
+        # Créer un certificat de distribution EXIGE une clé privée fournie par
+        # nous (Apple crée le certificat à partir de notre CSR) — d'où l'échec
+        # "Cannot create resource without certificate private key".
         #
-        # Le compte avait un certificat de distribution SANS clé privée locale
-        # ("Cannot save Signing Certificates without certificate private key") :
-        # on en CRÉE un neuf AVEC sa clé (--save le stocke pour ce build).
-        # ⚠️ Apple limite à 2 certificats de distribution. Si "maximum number of
-        #    certificates generated" : révoquer un ancien certificat "Apple
-        #    Distribution" sur developer.apple.com → Certificates, puis relancer.
+        # On fournit donc une clé privée à `fetch-signing-files --create`, qui
+        # crée le certificat À PARTIR d'elle (donc clé privée disponible) + le
+        # provisioning profile. Les outils s'authentifient seuls via l'intégration.
+        #
+        # RECOMMANDÉ (pérenne) : ajoute une variable Codemagic `CERTIFICATE_PRIVATE_KEY`
+        #   contenant UNE clé privée PEM générée une fois
+        #   (`openssl genrsa 2048`). Elle sera réutilisée → UN SEUL certificat.
+        # Sinon (fallback ci-dessous) on en génère une à la volée → ⚠️ un nouveau
+        #   certificat par build (Apple limite à 2 : révoquer un "Apple
+        #   Distribution" sur developer.apple.com → Certificates si "maximum
+        #   number of certificates generated").
         script: |
           set -e
           keychain initialize
-          app-store-connect certificates create --type IOS_DISTRIBUTION --save
+
+          CERT_KEY=/tmp/cert_key.pem
+          if [ -n "${CERTIFICATE_PRIVATE_KEY:-}" ]; then
+            printf '%s' "$CERTIFICATE_PRIVATE_KEY" > "$CERT_KEY"
+          else
+            openssl genrsa -out "$CERT_KEY" 2048
+          fi
+
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --platform IOS \
+            --certificate-key @file:"$CERT_KEY" \
             --create
           keychain add-certificates
           xcode-project use-profiles \
