@@ -12,9 +12,9 @@
 #     • Ajouter une "App Store Connect API key" (Issuer ID + Key ID + fichier .p8).
 #     • Lui donner un NOM, puis reporter ce nom dans
 #       `integrations.app_store_connect` ci-dessous (remplacer Tutti).
-#     • Signature AUTOMATIQUE gérée par Xcode au build (-allowProvisioningUpdates,
-#       étape 7) : Xcode enregistre le bundle id, crée le certificat + le profil
-#       et signe via la clé API. Rien à uploader côté signature.
+#     • Signature gérée au build par les outils Codemagic via la clé API (rôle
+#       Admin, étape 7) : création d'un certificat de distribution + du profil,
+#       puis signature. Rien à uploader côté signature.
 #
 #   APP STORE CONNECT (côté Apple) :
 #     • Générer la clé API (Users and Access → Integrations → App Store Connect API),
@@ -45,9 +45,8 @@ workflows:
       # utiliser "latest" ou la version exacte listée (doit être un Xcode 26.x).
       xcode: 26.0
       node: 20.19.0
-      # PAS de bloc `ios_signing:` : la signature est gérée à l'étape 7 par Xcode
-      # en automatique (-allowProvisioningUpdates + clé API rôle Admin) — Xcode
-      # enregistre le bundle id, crée le certificat + le profil et signe.
+      # PAS de bloc `ios_signing:` : la signature est gérée à l'étape 7 par les
+      # outils Codemagic via la clé API (création cert + profil, puis signature).
       vars:
         # Générés par `cap add ios` (Capacitor crée toujours workspace "App").
         XCODE_WORKSPACE: 'native/ios/App/App.xcworkspace'
@@ -105,64 +104,39 @@ workflows:
           cd native/ios/App
           agvtool new-version -all "$BUILD_NUMBER"
 
-      - name: 7. Archive + export .ipa (signature AUTOMATIQUE via clé API)
-        # Signature managée par Xcode (-allowProvisioningUpdates) : Xcode utilise
-        # la clé API App Store Connect (Admin) pour ENREGISTRER le bundle id,
-        # CRÉER le certificat + le provisioning profile et SIGNER — sans dépendre
-        # d'un matching de profil (ce qui échouait avec use-profiles :
-        # "App requires a provisioning profile").
+      - name: 7. Signature (certificat neuf + profil) via outils Codemagic
+        # On utilise les outils codemagic-cli-tools (app-store-connect,
+        # xcode-project) : ils s'authentifient SEULS via l'intégration ASC — pas
+        # de .p8 manuel (le -authenticationKeyPath maison donnait "Invalid
+        # authentication key credential" car $APP_STORE_CONNECT_PRIVATE_KEY n'est
+        # pas exposée comme variable shell).
         #
-        # Les variables APP_STORE_CONNECT_* sont injectées par l'intégration ASC.
+        # Le compte avait un certificat de distribution SANS clé privée locale
+        # ("Cannot save Signing Certificates without certificate private key") :
+        # on en CRÉE un neuf AVEC sa clé (--save le stocke pour ce build).
+        # ⚠️ Apple limite à 2 certificats de distribution. Si "maximum number of
+        #    certificates generated" : révoquer un ancien certificat "Apple
+        #    Distribution" sur developer.apple.com → Certificates, puis relancer.
         script: |
           set -e
           keychain initialize
+          app-store-connect certificates create --type IOS_DISTRIBUTION --save
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --platform IOS \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles \
+            --project "native/ios/App/App.xcodeproj"
 
-          # Écrit la clé API .p8 pour l'authentification xcodebuild.
-          KEY_DIR="$HOME/private_keys"
-          mkdir -p "$KEY_DIR"
-          KEY_PATH="$KEY_DIR/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8"
-          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > "$KEY_PATH"
-
-          ARCHIVE="$CM_BUILD_DIR/build/App.xcarchive"
-          IPA_DIR="$CM_BUILD_DIR/build/ipa"
-
-          # 1) Archive avec signature automatique cloud.
-          xcodebuild -workspace "$XCODE_WORKSPACE" -scheme "$XCODE_SCHEME" \
-            -configuration Release -destination 'generic/platform=iOS' \
-            -archivePath "$ARCHIVE" \
-            -authenticationKeyPath "$KEY_PATH" \
-            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            -allowProvisioningUpdates \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_STYLE=Automatic \
-            archive
-
-          # 2) ExportOptions.plist (App Store) écrit sans heredoc (robuste en YAML).
-          PLIST="$CM_BUILD_DIR/ExportOptions.plist"
-          {
-            echo '<?xml version="1.0" encoding="UTF-8"?>'
-            echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
-            echo '<plist version="1.0"><dict>'
-            echo '<key>method</key><string>app-store-connect</string>'
-            echo "<key>teamID</key><string>$APPLE_TEAM_ID</string>"
-            echo '<key>signingStyle</key><string>automatic</string>'
-            echo '<key>uploadSymbols</key><true/>'
-            echo '</dict></plist>'
-          } > "$PLIST"
-
-          # 3) Export en .ipa.
-          xcodebuild -exportArchive \
-            -archivePath "$ARCHIVE" \
-            -exportPath "$IPA_DIR" \
-            -exportOptionsPlist "$PLIST" \
-            -authenticationKeyPath "$KEY_PATH" \
-            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            -allowProvisioningUpdates
+      - name: 8. Archive + export .ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
 
     artifacts:
-      - build/ipa/*.ipa
+      - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
 
     # Publication sur TestFlight via l'intégration App Store Connect.
