@@ -23,6 +23,7 @@ import {
   closeBuzz,
   getActiveTrack,
   hasCorrectAnswer,
+  PHASE_2_DURATION_MS,
   registerCorrectAnswer,
   setPhase3,
   tryOpenBuzz,
@@ -667,10 +668,16 @@ async function persistScoreEvents(args: PersistArgs): Promise<void> {
 }
 
 /**
- * Programme le passage automatique en phase 3 après PHASE_2_DURATION_MS
- * (15s par défaut). Si le master skip ou give-answer entre temps, le timer
- * est annulé via clearActiveTrack ailleurs (le timer vérifie la phase
- * courante avant de transitionner).
+ * Programme le passage automatique en phase 3 après PHASE_2_DURATION_MS (10 s).
+ *
+ * fix/reveal-timer-mismatch — avant, ce timer était codé en dur à 15 s alors
+ * que le compte à rebours affiché (téléphones + TV) tombe à zéro à
+ * PHASE_2_DURATION_MS (10 s), depuis le MÊME `phase2_started_at`. Résultat :
+ * ~5 s de « blanc » entre la fin du compteur et la révélation. On utilise
+ * désormais la constante → révélation synchronisée avec le compteur affiché.
+ *
+ * Si le master skip ou give-answer entre temps, le timer est annulé ailleurs
+ * (le callback re-vérifie la phase courante avant de transitionner).
  */
 function schedulePhase3Transition(sessionId: string, roundId: string): void {
   // Annule un timer précédent éventuel (paranoïa).
@@ -686,7 +693,7 @@ function schedulePhase3Transition(sessionId: string, roundId: string): void {
       round_id: roundId,
       phase: 'phase3',
     });
-  }, 15_000);
+  }, PHASE_2_DURATION_MS);
   phase2Timers.set(roundId, timer);
 }
 

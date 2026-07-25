@@ -159,15 +159,26 @@ export function ScreenPage(): JSX.Element {
       console.info('[Screen socket] event reçu → re-poll immédiat');
       triggerPollRef.current?.();
     };
+    // fix/tv-socket-event-names — CES NOMS DOIVENT correspondre EXACTEMENT aux
+    // events réellement émis par le backend (broadcastToSession). Avant ce fix,
+    // 'track:phase' et 'track:reveal' ne matchaient RIEN (le backend émet
+    // 'track:phase_changed' et 'track:revealed') → la révélation et les
+    // changements de phase ne déclenchaient PAS de re-poll immédiat, et la TV
+    // n'affichait la réponse qu'au tick de polling suivant (jusqu'à 2 s de
+    // retard). Ajout aussi de buzz:received (surbrillance buzzer) et
+    // scores:invalidated (corrections de score) pour un rafraîchissement
+    // immédiat.
     const events = [
       'session:paused',
       'session:resumed',
       'session:ended',
       'session:started',
       'track:start',
-      'track:phase',
+      'track:phase_changed',
       'track:correct_answer',
-      'track:reveal',
+      'track:revealed',
+      'buzz:received',
+      'scores:invalidated',
       'round:created',
       'round:started',
       'round:ended',
