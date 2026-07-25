@@ -97,6 +97,13 @@ workflows:
           sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '15.0'/" ios/App/Podfile
           sed -i '' "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g" ios/App/App.xcodeproj/project.pbxproj
           pnpm exec cap sync ios
+          # Export compliance : Tutti n'utilise que du HTTPS standard (chiffrement
+          # EXEMPTÉ). On déclare `ITSAppUsesNonExemptEncryption=false` dans
+          # l'Info.plist → chaque build est auto-conforme, plus de blocage
+          # TestFlight "Build is missing export compliance" ni de question manuelle.
+          # (Add échoue si la clé existe déjà → Set en repli.)
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist \
+            || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" ios/App/App/Info.plist
 
       - name: 6. Numéro de build unique (requis par TestFlight)
         # $BUILD_NUMBER est fourni et auto-incrémenté par Codemagic à chaque build.
