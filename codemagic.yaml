@@ -12,13 +12,14 @@
 #     • Ajouter une "App Store Connect API key" (Issuer ID + Key ID + fichier .p8).
 #     • Lui donner un NOM, puis reporter ce nom dans
 #       `integrations.app_store_connect` ci-dessous (remplacer Tutti).
-#     • Avec cette intégration + le bloc `ios_signing`, Codemagic gère
-#       AUTOMATIQUEMENT le certificat de distribution et le provisioning profile
-#       (rien d'autre à créer côté signature).
+#     • Le workflow CRÉE lui-même le certificat de distribution ET le
+#       provisioning profile au build s'ils n'existent pas
+#       (app-store-connect fetch-signing-files ... --create, étape 7).
 #
 #   APP STORE CONNECT (côté Apple) :
 #     • Générer la clé API (Users and Access → Integrations → App Store Connect API),
-#       rôle "App Manager" (ou Admin) → Issuer ID, Key ID, .p8.
+#       rôle ADMIN (obligatoire : la création d'un certificat de distribution
+#       l'exige) → Issuer ID, Key ID, .p8.
 #     • Créer l'app (My Apps → +) avec le bundle id ci-dessous (app.tuttiparty).
 #
 # BUNDLE IDENTIFIER attendu : app.tuttiparty
@@ -44,16 +45,17 @@ workflows:
       # utiliser "latest" ou la version exacte listée (doit être un Xcode 26.x).
       xcode: 26.0
       node: 20.19.0
-      # Signature AUTOMATIQUE via l'intégration ASC ci-dessus (aucun certificat
-      # ni profil à uploader manuellement).
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: app.tuttiparty # ← À CONFIRMER (voir en-tête)
+      # PAS de bloc `ios_signing:` : il ne faisait que CHERCHER un profil existant
+      # (→ "No matching profiles found for bundle identifier ..."), sans le créer.
+      # La signature est gérée à l'étape 7 : fetch-signing-files --create crée le
+      # certificat de distribution + le profil via la clé API (rôle Admin).
       vars:
         # Générés par `cap add ios` (Capacitor crée toujours workspace "App").
         XCODE_WORKSPACE: 'native/ios/App/App.xcworkspace'
         XCODE_SCHEME: 'App'
         PNPM_VERSION: '10.33.2'
+        BUNDLE_ID: 'app.tuttiparty'
+        APPLE_TEAM_ID: 'N4QYGD595D'
 
     scripts:
       - name: 1. Installer pnpm
@@ -87,8 +89,22 @@ workflows:
           cd native/ios/App
           agvtool new-version -all "$BUILD_NUMBER"
 
-      - name: 7. Appliquer les profils de signature (fournis par l'intégration ASC)
+      - name: 7. Signature — CRÉER le certificat + le profil (clé API) puis les appliquer
+        # fetch-signing-files --create CRÉE le certificat de distribution ET le
+        # provisioning profile s'ils n'existent pas encore (clé API ASC rôle Admin,
+        # fournie par l'intégration "Tutti"). Ordre imposé :
+        #   keychain initialize      → prépare le trousseau du build
+        #   fetch-signing-files      → crée/récupère cert + profil (--create)
+        #   keychain add-certificates→ importe le cert dans le trousseau
+        #   use-profiles             → branche les profils sur le projet Xcode
+        # Le tout AVANT l'archive (étape 8).
         script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --platform IOS \
+            --create
+          keychain add-certificates
           xcode-project use-profiles
 
       - name: 8. Archive + export .ipa
