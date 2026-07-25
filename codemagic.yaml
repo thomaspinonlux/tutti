@@ -122,7 +122,13 @@ workflows:
             --platform IOS \
             --create
           keychain add-certificates
-          xcode-project use-profiles
+          # --project explicite : sans lui, use-profiles tournait depuis la racine
+          # sans patcher le bon projet → le target "App" restait en signature
+          # Manual sans profil ("App requires a provisioning profile" à l'archive).
+          # --warn-only désactivé : on veut échouer ici si le profil ne s'applique
+          # pas, plutôt qu'à l'archive.
+          xcode-project use-profiles \
+            --project "native/ios/App/App.xcodeproj"
 
       - name: 8. Archive + export .ipa
         script: |
