@@ -1,0 +1,22 @@
+{
+  "name": "tutti-native",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Coque native Capacitor (iPad d'abord) — console + son Tutti. Isolée du workspace pnpm pour ne pas toucher au build web.",
+  "scripts": {
+    "build:web": "pnpm -C ../frontend build",
+    "sync": "pnpm run build:web && cap copy && cap sync",
+    "add:ios": "cap add ios",
+    "open:ios": "cap open ios",
+    "add:android": "cap add android",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.1.0",
+    "@capacitor/ios": "^6.1.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.0"
+  }
+}
