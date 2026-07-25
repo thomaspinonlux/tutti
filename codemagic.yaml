@@ -84,9 +84,20 @@ workflows:
       - name: 5. Capacitor — générer + synchroniser le projet iOS
         # native/ios/ est gitignoré : on l'ajoute s'il n'existe pas, puis on
         # synchronise (copie de frontend/dist + pod install des plugins natifs).
+        #
+        # Cible de déploiement iOS 15.0 : les plugins natifs (MusicKit
+        # ApplicationMusicPlayer) exigent iOS 15+, mais le projet généré par
+        # Capacitor cible 13/14 → "required a higher minimum deployment target".
+        # On force 15.0 dans le Podfile ET le projet AVANT le pod install de
+        # `cap sync`. La 1ʳᵉ pod install de `cap add` échoue sur cette cible
+        # (13<15) : on l'ignore (|| true), le patch suivant la corrige.
         script: |
           cd native
-          [ -d ios ] || pnpm exec cap add ios
+          if [ ! -d ios ]; then
+            pnpm exec cap add ios || true
+          fi
+          sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '15.0'/" ios/App/Podfile
+          sed -i '' "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g" ios/App/App.xcodeproj/project.pbxproj
           pnpm exec cap sync ios
 
       - name: 6. Numéro de build unique (requis par TestFlight)
