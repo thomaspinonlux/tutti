@@ -1,5 +1,5 @@
 {
-  "name": "@tutti/musickit",
+  "name": "@tutti/music-kit",
   "version": "0.1.0",
   "private": true,
   "description": "Pont MusicKit natif (lecture Apple Music full-track, sans blocage autoplay) pour la console Tutti iOS.",
