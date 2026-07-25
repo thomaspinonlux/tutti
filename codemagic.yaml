@@ -1,0 +1,115 @@
+# =============================================================================
+# codemagic.yaml — build de l'app iOS Capacitor (dossier native/) dans le cloud
+# Codemagic, puis publication sur TestFlight (App Store Connect).
+#
+# L'app iOS n'est PAS committée (native/ios/ est gitignoré) : le workflow la
+# régénère à chaque build via `cap add ios`.
+#
+# -----------------------------------------------------------------------------
+# À CRÉER CÔTÉ DASHBOARD (ne rien hardcoder ici — voir le RAPPORT fourni) :
+#
+#   CODEMAGIC → Team settings → Integrations → App Store Connect :
+#     • Ajouter une "App Store Connect API key" (Issuer ID + Key ID + fichier .p8).
+#     • Lui donner un NOM, puis reporter ce nom dans
+#       `integrations.app_store_connect` ci-dessous (remplacer TODO_ASC_INTEGRATION_NAME).
+#     • Avec cette intégration + le bloc `ios_signing`, Codemagic gère
+#       AUTOMATIQUEMENT le certificat de distribution et le provisioning profile
+#       (rien d'autre à créer côté signature).
+#
+#   APP STORE CONNECT (côté Apple) :
+#     • Générer la clé API (Users and Access → Integrations → App Store Connect API),
+#       rôle "App Manager" (ou Admin) → Issuer ID, Key ID, .p8.
+#     • Créer l'app (My Apps → +) avec le bundle id ci-dessous (com.tutti.console).
+#
+# BUNDLE IDENTIFIER attendu : com.tutti.console
+#   (= appId de native/capacitor.config.ts ; DOIT être identique des deux côtés
+#    et enregistré dans App Store Connect. À me confirmer / changer si besoin.)
+#
+# IMAGE : Xcode 26 (obligatoire pour soumettre sur TestFlight depuis avril 2026).
+# =============================================================================
+
+workflows:
+  ios-testflight:
+    name: Tutti iOS → TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+
+    # Intégration App Store Connect (créée dans le dashboard Codemagic).
+    # Fournit la clé API pour : signature auto, incrément de build, publication.
+    integrations:
+      app_store_connect: TODO_ASC_INTEGRATION_NAME # ← nom de l'intégration ASC
+
+    environment:
+      # Xcode 26 requis. Si "26.0" n'est pas dispo dans les images Codemagic,
+      # utiliser "latest" ou la version exacte listée (doit être un Xcode 26.x).
+      xcode: 26.0
+      node: 20.19.0
+      # Signature AUTOMATIQUE via l'intégration ASC ci-dessus (aucun certificat
+      # ni profil à uploader manuellement).
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.tutti.console # ← À CONFIRMER (voir en-tête)
+      vars:
+        # Générés par `cap add ios` (Capacitor crée toujours workspace "App").
+        XCODE_WORKSPACE: 'native/ios/App/App.xcworkspace'
+        XCODE_SCHEME: 'App'
+        PNPM_VERSION: '10.33.2'
+
+    scripts:
+      - name: 1. Installer pnpm
+        script: |
+          npm install -g pnpm@$PNPM_VERSION
+
+      - name: 2. Deps frontend (workspace pnpm, depuis la racine)
+        script: |
+          pnpm install --frozen-lockfile
+
+      - name: 3. Build frontend (→ frontend/dist)
+        script: |
+          pnpm -C frontend build
+
+      - name: 4. Deps de native/ (HORS workspace)
+        script: |
+          cd native
+          pnpm install --ignore-workspace
+
+      - name: 5. Capacitor — générer + synchroniser le projet iOS
+        # native/ios/ est gitignoré : on l'ajoute s'il n'existe pas, puis on
+        # synchronise (copie de frontend/dist + pod install des plugins natifs).
+        script: |
+          cd native
+          [ -d ios ] || pnpm exec cap add ios
+          pnpm exec cap sync ios
+
+      - name: 6. Numéro de build unique (requis par TestFlight)
+        # $BUILD_NUMBER est fourni et auto-incrémenté par Codemagic à chaque build.
+        script: |
+          cd native/ios/App
+          agvtool new-version -all "$BUILD_NUMBER"
+
+      - name: 7. Appliquer les profils de signature (fournis par l'intégration ASC)
+        script: |
+          xcode-project use-profiles
+
+      - name: 8. Archive + export .ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    # Publication sur TestFlight via l'intégration App Store Connect.
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # Aucune soumission App Store ici — TestFlight uniquement.
+
+# -----------------------------------------------------------------------------
+# DÉCLENCHEMENT : par défaut, lancement MANUEL (bouton "Start new build" dans
+# Codemagic, ou via l'API). Pour builder automatiquement sur push/tag, ajouter
+# un bloc `triggering:` (voir doc Codemagic) — laissé manuel volontairement.
+# -----------------------------------------------------------------------------
