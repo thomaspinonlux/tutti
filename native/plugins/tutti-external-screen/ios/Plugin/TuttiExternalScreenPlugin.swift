@@ -18,8 +18,11 @@ import WebKit
 @objc(TuttiExternalScreenPlugin)
 public class TuttiExternalScreenPlugin: CAPPlugin {
 
+    // NB: on nomme la propriété `externalWebView` (pas `webView`) car CAPPlugin
+    // expose déjà une propriété `webView` (la WebView Capacitor) → "ambiguous
+    // use of 'webView'" à la compilation sinon.
     private var externalWindow: UIWindow?
-    private var webView: WKWebView?
+    private var externalWebView: WKWebView?
     private var pendingURL: URL?
 
     public override func load() {
@@ -75,11 +78,11 @@ public class TuttiExternalScreenPlugin: CAPPlugin {
         window.rootViewController = controller
         window.isHidden = false
         self.externalWindow = window
-        self.webView = web
+        self.externalWebView = web
     }
 
     private func tearDown() {
-        webView = nil
+        externalWebView = nil
         externalWindow?.isHidden = true
         externalWindow = nil
     }
