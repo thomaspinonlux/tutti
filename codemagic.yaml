@@ -45,8 +45,17 @@ workflows:
       # utiliser "latest" ou la version exacte listée (doit être un Xcode 26.x).
       xcode: 26.0
       node: 20.19.0
-      # PAS de bloc `ios_signing:` : la signature est gérée à l'étape 7 par les
-      # outils Codemagic via la clé API (création cert + profil, puis signature).
+      # Groupe de variables Codemagic à charger. La clé privée PERMANENTE
+      # `CERTIFICATE_PRIVATE_KEY` (étape 7) DOIT être créée dans un groupe
+      # nommé EXACTEMENT `ios_signing` (UI Codemagic → Environment variables,
+      # champ "Group" = ios_signing, case "Secure" cochée). Sans cette
+      # déclaration, la variable n'est PAS injectée → clé jetable à chaque
+      # build → nouveau certificat de distribution à chaque fois → limite
+      # Apple (2 max) atteinte → 409 "You already have a current Distribution
+      # certificate". Avec la clé permanente chargée : UN SEUL certificat,
+      # réutilisé à chaque build.
+      groups:
+        - ios_signing
       vars:
         # Générés par `cap add ios` (Capacitor crée toujours workspace "App").
         XCODE_WORKSPACE: 'native/ios/App/App.xcworkspace'
@@ -142,6 +151,14 @@ workflows:
             echo "Cle .p8   : presente (non affichee)"
           else
             echo "Cle .p8   : <VIDE>"
+          fi
+          # Clé privée PERMANENTE (groupe ios_signing). Si <VIDE> → le groupe
+          # n'est pas chargé ou la variable manque → cert recréé à chaque build
+          # → 409 à la longue. Doit afficher "presente".
+          if [ -n "${CERTIFICATE_PRIVATE_KEY:-}" ]; then
+            echo "Cle perma : presente (cle reutilisee, non affichee)"
+          else
+            echo "Cle perma : <VIDE> (cle jetable → nouveau cert a chaque build !)"
           fi
           echo "──────────────────────────────────────────────────────"
 
