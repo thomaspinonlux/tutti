@@ -12,12 +12,14 @@
  *
  * feat/manette-console-master :
  *   - titre + artiste (dévoilés au reveal comme partout — masqués en phase 1).
- *   - timeline EXACTE + scrub tactile : la position vient de la console
- *     (broadcast track:progress) ; glisser la barre → seek serveur absolu →
- *     la console applique. La télécommande n'émet AUCUN son.
+ *   - timeline EXACTE (affichage seul) : la position vient de la console
+ *     (broadcast track:progress). Le scrub tactile a été retiré
+ *     (fix/master-timeline-readonly) — trop de risque de toucher la barre par
+ *     erreur en soirée. L'avance/recul se fait par les boutons ±10 s. La
+ *     télécommande n'émet AUCUN son.
  */
 
-import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CurrentTrackState } from '@tutti/shared';
 import { Badge, Button, Card } from '../ui/index.js';
@@ -158,18 +160,13 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
   }
   if (durationMs) positionMs = Math.min(positionMs, durationMs);
 
-  // Scrub tactile.
-  const barRef = useRef<HTMLDivElement>(null);
-  const [drag, setDrag] = useState<number | null>(null); // fraction 0..1 pendant le drag
-  const canScrub = !!durationMs && !!props.onSeekTo && props.hasActiveRound && !!track;
-  const fracFromClientX = (clientX: number): number => {
-    const el = barRef.current;
-    if (!el) return 0;
-    const r = el.getBoundingClientRect();
-    return Math.min(1, Math.max(0, (clientX - r.left) / r.width));
-  };
-  const displayFrac = drag !== null ? drag : durationMs ? Math.min(1, positionMs / durationMs) : 0;
-  const displayLeftMs = drag !== null && durationMs ? drag * durationMs : positionMs;
+  // fix/master-timeline-readonly — la timeline est désormais AFFICHAGE SEUL.
+  // Le scrub tactile (glisser le doigt pour déplacer la lecture) a été retiré :
+  // en soirée, l'animateur touchait la barre par erreur en tenant son téléphone
+  // et faisait sauter la musique. On garde l'avance/recul par boutons ±10 s
+  // (gestes délibérés). Progression + temps restent affichés.
+  const displayFrac = durationMs ? Math.min(1, positionMs / durationMs) : 0;
+  const displayLeftMs = positionMs;
 
   const hasMeta = !!track && (!!track.title || !!track.artist);
 
@@ -203,55 +200,15 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               <span aria-hidden>♪</span>
             )}
           </div>
-          {/* Barre : draggable si durée connue. Zone tactile généreuse (py-2). */}
-          <div
-            ref={barRef}
-            role={canScrub ? 'slider' : undefined}
-            aria-label={canScrub ? 'Position de lecture' : undefined}
-            aria-valuemin={0}
-            aria-valuemax={durationMs ?? undefined}
-            aria-valuenow={canScrub ? Math.round(displayLeftMs) : undefined}
-            className={`-mx-1 px-1 py-2 ${canScrub ? 'cursor-pointer touch-none' : ''}`}
-            onPointerDown={
-              canScrub
-                ? (e) => {
-                    e.currentTarget.setPointerCapture(e.pointerId);
-                    setDrag(fracFromClientX(e.clientX));
-                  }
-                : undefined
-            }
-            onPointerMove={
-              canScrub
-                ? (e) => {
-                    if (drag === null) return;
-                    setDrag(fracFromClientX(e.clientX));
-                  }
-                : undefined
-            }
-            onPointerUp={
-              canScrub
-                ? (e) => {
-                    if (drag === null) return;
-                    const f = fracFromClientX(e.clientX);
-                    setDrag(null);
-                    if (durationMs && props.onSeekTo) props.onSeekTo(f * durationMs);
-                  }
-                : undefined
-            }
-          >
+          {/* fix/master-timeline-readonly — barre de progression AFFICHAGE SEUL
+              (non tactile) : plus de scrub accidental. Pas de handlers pointer,
+              pas de poignée, pas de role="slider". */}
+          <div className="-mx-1 px-1 py-2">
             <div className="relative h-2 bg-ink/10 rounded-full">
               <div
-                className={`absolute inset-y-0 left-0 bg-spritz rounded-full ${
-                  drag !== null ? '' : 'transition-[width] duration-200 ease-linear'
-                }`}
+                className="absolute inset-y-0 left-0 bg-spritz rounded-full transition-[width] duration-200 ease-linear"
                 style={{ width: `${Math.round(displayFrac * 100)}%` }}
               />
-              {canScrub && (
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-spritz-deep border-2 border-white shadow"
-                  style={{ left: `${Math.round(displayFrac * 100)}%` }}
-                />
-              )}
             </div>
           </div>
         </div>
