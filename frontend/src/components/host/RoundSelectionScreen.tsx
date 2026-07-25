@@ -408,7 +408,7 @@ export function RoundSelectionScreen({
                 aria-label={t('host.session.sourceLabel')}
               >
                 {(appleLibraryAvailable
-                  ? (['youtube', 'spotify', 'apple_music'] as const)
+                  ? (['apple_music', 'youtube', 'spotify'] as const)
                   : (['youtube', 'spotify'] as const)
                 ).map((pv) => {
                   const active = provider === pv;
