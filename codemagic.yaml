@@ -124,6 +124,20 @@ workflows:
           set -e
           keychain initialize
 
+          # Diagnostic (SANS secret) : Issuer ID + Key ID ne sont PAS sensibles.
+          # Compare-les avec App Store Connect. Si "<VIDE>" → l'intégration nommée
+          # "Tutti" n'est pas chargée (nom/config). Si valeurs correctes mais 401
+          # → le .p8 ne correspond pas à ces IDs (re-uploader la bonne clé).
+          echo "── Auth App Store Connect fournie par l'intégration ──"
+          echo "Issuer ID : ${APP_STORE_CONNECT_ISSUER_ID:-<VIDE>}"
+          echo "Key ID    : ${APP_STORE_CONNECT_KEY_IDENTIFIER:-<VIDE>}"
+          if [ -n "${APP_STORE_CONNECT_PRIVATE_KEY:-}" ]; then
+            echo "Cle .p8   : presente (non affichee)"
+          else
+            echo "Cle .p8   : <VIDE>"
+          fi
+          echo "──────────────────────────────────────────────────────"
+
           CERT_KEY=/tmp/cert_key.pem
           if [ -n "${CERTIFICATE_PRIVATE_KEY:-}" ]; then
             printf '%s' "$CERTIFICATE_PRIVATE_KEY" > "$CERT_KEY"
