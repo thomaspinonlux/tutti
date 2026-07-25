@@ -22,6 +22,8 @@ export type Platform = 'web' | 'ios' | 'android' | 'electron';
 interface CapacitorGlobal {
   isNativePlatform?: () => boolean;
   getPlatform?: () => string; // 'ios' | 'android' | 'web'
+  /** Plugins natifs enregistrés, exposés par la coque Capacitor à l'exécution. */
+  Plugins?: Record<string, unknown>;
 }
 
 interface TuttiDesktopGlobal {

@@ -22,12 +22,17 @@ const APP_URL = process.env.TUTTI_URL || 'http://localhost:5173';
 /** @type {BrowserWindow | null} */
 let win = null;
 
+// Mode kiosque plein écran pour un poste dédié en salle (TUTTI_KIOSK=1).
+const KIOSK = process.env.TUTTI_KIOSK === '1';
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1280,
     height: 820,
     minWidth: 960,
     minHeight: 640,
+    fullscreen: KIOSK,
+    kiosk: KIOSK,
     backgroundColor: '#17120e',
     title: 'Tutti',
     webPreferences: {

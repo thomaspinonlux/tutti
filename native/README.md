@@ -37,18 +37,26 @@ Ou, pour recharger à chaud sans rebuild : lancer `pnpm -C ../frontend dev`,
 décommenter le bloc `server.url` de `capacitor.config.ts` (IP de ta machine),
 puis `pnpm run sync` une fois.
 
-## Prochaines étapes (ponts natifs — phases 1 & 2 du plan)
+## Ponts natifs inclus (phases 1 & 2)
 
-Ces éléments ne sont PAS encore implémentés ici — la coque de la phase 0 se
-contente d'emballer le web. À venir :
+Deux plugins Capacitor locaux sont livrés dans `plugins/` et déclarés comme
+dépendances `file:` de cette coque — `cap sync` les intègre automatiquement :
 
-1. **Pont MusicKit natif** (phase 1) — un plugin Capacitor Swift exposant
-   `play(appleId)` / `pause()`, branché via `supportsNativeAppleMusic()` de
-   `frontend/src/lib/platform.ts`. → Apple Music full-track sans blocage autoplay.
-2. **Sortie écran joueurs** (phase 2) — une seconde `WKWebView` sur l'`UIScreen`
-   externe affichant la route `/screen`, rendue localement (latence TV nulle).
-3. Dans Xcode : activer **Background Modes → Audio** (son qui continue écran
-   verrouillé) et déclarer l'usage du **micro** (reconnaissance vocale).
+1. **`plugins/tutti-musickit`** (phase 1) — plugin Swift `ApplicationMusicPlayer`
+   exposant `authorize/play/pause/resume/seek/getStatus`. Côté JS, il est branché
+   via `frontend/src/lib/nativeMusicKit.ts` + `useAppleMusicPlayer` (chemin natif
+   quand `supportsNativeAppleMusic()`). → Apple Music full-track sans autoplay.
+2. **`plugins/tutti-external-screen`** (phase 2) — plugin Swift qui affiche la
+   route `/screen` sur un écran externe (2ᵉ `UIWindow`/`WKWebView`). Piloté par
+   `useExternalPlayerScreen`. → l'iPad sort l'écran joueurs sur la TV.
 
-Tant que ces ponts ne sont pas là, l'app native se comporte comme le web
-(Apple Music via MusicKit JS, avec l'overlay de secours autoplay déjà en place).
+### À faire dans Xcode après `cap add ios`
+
+- **Signing & Capabilities → Background Modes → Audio** (son écran verrouillé).
+- **Info.plist → `NSAppleMusicUsageDescription`** (accès médiathèque) et
+  **`NSMicrophoneUsageDescription`** (reconnaissance vocale).
+- Cible de déploiement **iOS 15+** (MusicKit `ApplicationMusicPlayer`).
+
+> ⚠️ Le code Swift des plugins n'a pas pu être compilé hors Xcode : à builder et
+> valider sur device. Si aucun plugin n'est présent au runtime, l'app native
+> retombe proprement sur le chemin web (MusicKit JS + overlay autoplay).

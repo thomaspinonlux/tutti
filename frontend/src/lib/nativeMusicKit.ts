@@ -1,0 +1,56 @@
+/**
+ * nativeMusicKit.ts — accès au pont MusicKit natif (plugin Capacitor
+ * `TuttiMusicKit`, cf. native/plugins/tutti-musickit) DEPUIS le frontend, via le
+ * bridge global `window.Capacitor.Plugins` — SANS importer `@capacitor/core`,
+ * pour ne rien ajouter aux dépendances du build web.
+ *
+ * C'est l'implémentation « native » de la lecture Apple Music, choisie par
+ * useAppleMusicPlayer quand `supportsNativeAppleMusic()` est vrai (iPad natif).
+ * Sur web / desktop, `isAvailable()` renvoie false → on reste sur MusicKit JS.
+ */
+
+interface NativeMusicKitBridge {
+  authorize(): Promise<{ authorized: boolean }>;
+  play(options: { catalogId: string }): Promise<{ ok: boolean }>;
+  pause(): Promise<void>;
+  resume(): Promise<void>;
+  seek(options: { ms: number }): Promise<void>;
+  setVolume(options: { value: number }): Promise<void>;
+  getStatus(): Promise<{ isPlaying: boolean; positionMs: number; durationMs: number }>;
+}
+
+function bridge(): NativeMusicKitBridge | null {
+  if (typeof window === 'undefined') return null;
+  const plugins = window.Capacitor?.Plugins as Record<string, unknown> | undefined;
+  return (plugins?.TuttiMusicKit as NativeMusicKitBridge | undefined) ?? null;
+}
+
+export const nativeMusicKit = {
+  /** True si le plugin natif est présent (coque iPad buildée). */
+  isAvailable(): boolean {
+    return bridge() !== null;
+  },
+  authorize(): Promise<{ authorized: boolean }> {
+    return bridge()?.authorize() ?? Promise.resolve({ authorized: false });
+  },
+  play(catalogId: string): Promise<{ ok: boolean }> {
+    return bridge()?.play({ catalogId }) ?? Promise.resolve({ ok: false });
+  },
+  pause(): Promise<void> {
+    return bridge()?.pause() ?? Promise.resolve();
+  },
+  resume(): Promise<void> {
+    return bridge()?.resume() ?? Promise.resolve();
+  },
+  seek(ms: number): Promise<void> {
+    return bridge()?.seek({ ms }) ?? Promise.resolve();
+  },
+  setVolume(value: number): Promise<void> {
+    return bridge()?.setVolume({ value }) ?? Promise.resolve();
+  },
+  getStatus(): Promise<{ isPlaying: boolean; positionMs: number; durationMs: number }> {
+    return (
+      bridge()?.getStatus() ?? Promise.resolve({ isPlaying: false, positionMs: 0, durationMs: 0 })
+    );
+  },
+};

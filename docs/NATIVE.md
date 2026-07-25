@@ -35,11 +35,22 @@ vs `WebMusicKitJS` (web) derrière une seule interface.
 
 - [x] **Phase 0** — couche `platform.ts` + coques `native/` (Capacitor) et
       `desktop/` (Electron) qui emballent le web tel quel. Build web inchangé.
-- [ ] **Phase 1** — pont MusicKit natif (plugin Capacitor Swift) → Apple Music
-      full-track sans blocage autoplay sur iPad.
-- [ ] **Phase 2** — sortie écran joueurs sur affichage externe (WKWebView sur
-      l'`UIScreen` secondaire) → latence TV nulle.
-- [ ] **Phase 3** — packaging desktop signé (dmg / NSIS).
+- [x] **Phase 1** — pont MusicKit natif : plugin `native/plugins/tutti-musickit`
+      (Swift `ApplicationMusicPlayer`) + wrapper `frontend/src/lib/nativeMusicKit.ts` + wiring guardé dans `useAppleMusicPlayer` (chemin natif si iPad, sinon web
+      inchangé). → Apple Music full-track sans blocage autoplay.
+- [x] **Phase 2** — sortie écran joueurs : plugin
+      `native/plugins/tutti-external-screen` (2ᵉ `UIWindow`/`WKWebView` sur
+      l'écran externe) + hook `useExternalPlayerScreen` (no-op hors iPad natif).
+- [x] **Phase 3** — desktop : coque Electron packageable (electron-builder
+      dmg / NSIS / AppImage) + mode kiosque (`TUTTI_KIOSK=1`). Signature = étape
+      user (certificats).
+
+> ⚠️ **Le code natif Swift (phases 1-2) n'a PAS pu être compilé/testé** (pas de
+> Mac/Xcode en CI). Il est structuré et prêt à builder sur device — à valider
+> via `native/README.md`. La couche JS/TS, elle, est buildée et vérifiée (tsc).
+>
+> Nuances : YouTube reste en WebView (pas de SDK natif). L'écran externe charge
+> l'URL `/screen` hébergée (gain = un seul appareil, plus de cast) ; le rendu
+> 100 % local viendrait d'une étape ultérieure servant le bundle à la WebView.
 
 Voir `native/README.md` et `desktop/README.md` pour lancer chaque coque.
-(Les builds iOS nécessitent un Mac + Xcode ; impossible en CI Linux.)

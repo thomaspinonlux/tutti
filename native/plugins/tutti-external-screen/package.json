@@ -1,0 +1,21 @@
+{
+  "name": "@tutti/external-screen",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sortie de l'écran joueurs (route /screen) sur un affichage externe (USB-C / AirPlay) depuis l'iPad, avec un contenu indépendant de la console.",
+  "main": "src/index.ts",
+  "types": "src/definitions.ts",
+  "files": [
+    "src/",
+    "ios/",
+    "TuttiExternalScreen.podspec"
+  ],
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    }
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^6.0.0"
+  }
+}
