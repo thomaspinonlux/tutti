@@ -12,9 +12,9 @@
 #     • Ajouter une "App Store Connect API key" (Issuer ID + Key ID + fichier .p8).
 #     • Lui donner un NOM, puis reporter ce nom dans
 #       `integrations.app_store_connect` ci-dessous (remplacer Tutti).
-#     • Le workflow CRÉE lui-même le certificat de distribution ET le
-#       provisioning profile au build s'ils n'existent pas
-#       (app-store-connect fetch-signing-files ... --create, étape 7).
+#     • Signature AUTOMATIQUE gérée par Xcode au build (-allowProvisioningUpdates,
+#       étape 7) : Xcode enregistre le bundle id, crée le certificat + le profil
+#       et signe via la clé API. Rien à uploader côté signature.
 #
 #   APP STORE CONNECT (côté Apple) :
 #     • Générer la clé API (Users and Access → Integrations → App Store Connect API),
@@ -45,10 +45,9 @@ workflows:
       # utiliser "latest" ou la version exacte listée (doit être un Xcode 26.x).
       xcode: 26.0
       node: 20.19.0
-      # PAS de bloc `ios_signing:` : il ne faisait que CHERCHER un profil existant
-      # (→ "No matching profiles found for bundle identifier ..."), sans le créer.
-      # La signature est gérée à l'étape 7 : fetch-signing-files --create crée le
-      # certificat de distribution + le profil via la clé API (rôle Admin).
+      # PAS de bloc `ios_signing:` : la signature est gérée à l'étape 7 par Xcode
+      # en automatique (-allowProvisioningUpdates + clé API rôle Admin) — Xcode
+      # enregistre le bundle id, crée le certificat + le profil et signe.
       vars:
         # Générés par `cap add ios` (Capacitor crée toujours workspace "App").
         XCODE_WORKSPACE: 'native/ios/App/App.xcworkspace'
@@ -106,38 +105,64 @@ workflows:
           cd native/ios/App
           agvtool new-version -all "$BUILD_NUMBER"
 
-      - name: 7. Signature — CRÉER le certificat + le profil (clé API) puis les appliquer
-        # fetch-signing-files --create CRÉE le certificat de distribution ET le
-        # provisioning profile s'ils n'existent pas encore (clé API ASC rôle Admin,
-        # fournie par l'intégration "Tutti"). Ordre imposé :
-        #   keychain initialize      → prépare le trousseau du build
-        #   fetch-signing-files      → crée/récupère cert + profil (--create)
-        #   keychain add-certificates→ importe le cert dans le trousseau
-        #   use-profiles             → branche les profils sur le projet Xcode
-        # Le tout AVANT l'archive (étape 8).
+      - name: 7. Archive + export .ipa (signature AUTOMATIQUE via clé API)
+        # Signature managée par Xcode (-allowProvisioningUpdates) : Xcode utilise
+        # la clé API App Store Connect (Admin) pour ENREGISTRER le bundle id,
+        # CRÉER le certificat + le provisioning profile et SIGNER — sans dépendre
+        # d'un matching de profil (ce qui échouait avec use-profiles :
+        # "App requires a provisioning profile").
+        #
+        # Les variables APP_STORE_CONNECT_* sont injectées par l'intégration ASC.
         script: |
+          set -e
           keychain initialize
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --platform IOS \
-            --create
-          keychain add-certificates
-          # --project explicite : sans lui, use-profiles tournait depuis la racine
-          # sans patcher le bon projet → le target "App" restait en signature
-          # Manual sans profil ("App requires a provisioning profile" à l'archive).
-          # --warn-only désactivé : on veut échouer ici si le profil ne s'applique
-          # pas, plutôt qu'à l'archive.
-          xcode-project use-profiles \
-            --project "native/ios/App/App.xcodeproj"
 
-      - name: 8. Archive + export .ipa
-        script: |
-          xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+          # Écrit la clé API .p8 pour l'authentification xcodebuild.
+          KEY_DIR="$HOME/private_keys"
+          mkdir -p "$KEY_DIR"
+          KEY_PATH="$KEY_DIR/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8"
+          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > "$KEY_PATH"
+
+          ARCHIVE="$CM_BUILD_DIR/build/App.xcarchive"
+          IPA_DIR="$CM_BUILD_DIR/build/ipa"
+
+          # 1) Archive avec signature automatique cloud.
+          xcodebuild -workspace "$XCODE_WORKSPACE" -scheme "$XCODE_SCHEME" \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath "$ARCHIVE" \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            archive
+
+          # 2) ExportOptions.plist (App Store) écrit sans heredoc (robuste en YAML).
+          PLIST="$CM_BUILD_DIR/ExportOptions.plist"
+          {
+            echo '<?xml version="1.0" encoding="UTF-8"?>'
+            echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
+            echo '<plist version="1.0"><dict>'
+            echo '<key>method</key><string>app-store-connect</string>'
+            echo "<key>teamID</key><string>$APPLE_TEAM_ID</string>"
+            echo '<key>signingStyle</key><string>automatic</string>'
+            echo '<key>uploadSymbols</key><true/>'
+            echo '</dict></plist>'
+          } > "$PLIST"
+
+          # 3) Export en .ipa.
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE" \
+            -exportPath "$IPA_DIR" \
+            -exportOptionsPlist "$PLIST" \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            -allowProvisioningUpdates
 
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
 
     # Publication sur TestFlight via l'intégration App Store Connect.
