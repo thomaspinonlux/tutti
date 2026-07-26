@@ -31,6 +31,7 @@ import {
   disconnectAppleMusic,
   type AppleMusicStatus,
 } from '../../lib/appleMusic.js';
+import { canUseInAppOAuth, connectViaInAppBrowser } from '../../lib/nativeOAuth.js';
 import { Button, Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { WorkspaceMembersCard } from '../../components/admin/settings/WorkspaceMembersCard.js';
 
@@ -238,6 +239,21 @@ export function SettingsPage(): JSX.Element {
     setSpotifyBusy(true);
     try {
       const authUrl = await startSpotifyConnect();
+      // Coque native : la redirection pleine page quitterait l'app sans y
+      // revenir → on passe par le navigateur in-app + sondage du statut.
+      if (canUseInAppOAuth()) {
+        const ok = await connectViaInAppBrowser(
+          authUrl,
+          async () => (await getSpotifyStatus().catch(() => null))?.connected ?? false,
+        );
+        if (ok) {
+          setSpotify(await getSpotifyStatus());
+          await refetch();
+          setSpotifyToast({ kind: 'success', msg: t('settings.spotifyConnectedToast') });
+        }
+        setSpotifyBusy(false);
+        return;
+      }
       window.location.href = authUrl;
     } catch (err: unknown) {
       setSpotifyToast({
@@ -290,6 +306,19 @@ export function SettingsPage(): JSX.Element {
     setYoutubeBusy(true);
     try {
       const authUrl = await startYouTubeConnect();
+      // Coque native : navigateur in-app + sondage du statut (cf. Spotify).
+      if (canUseInAppOAuth()) {
+        const ok = await connectViaInAppBrowser(
+          authUrl,
+          async () => (await getYouTubeStatus().catch(() => null))?.connected ?? false,
+        );
+        if (ok) {
+          setYoutube(await getYouTubeStatus());
+          setYoutubeToast({ kind: 'success', msg: t('settings.youtubeConnectedToast') });
+        }
+        setYoutubeBusy(false);
+        return;
+      }
       window.location.href = authUrl;
     } catch (err: unknown) {
       setYoutubeToast({
