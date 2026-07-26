@@ -1,6 +1,7 @@
 import Foundation
 import Capacitor
 import MusicKit
+import StoreKit
 
 /**
  * TuttiMusicKitPlugin — lecture Apple Music NATIVE pour la console Tutti.
@@ -26,6 +27,43 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         Task {
             let status = await MusicAuthorization.request()
             call.resolve(["authorized": status == .authorized])
+        }
+    }
+
+    /**
+     * Récupère le Music User Token (identifie le compte abonné du host) SANS
+     * popup web. Remplace `MusicKit.authorize()` (JS) qui ouvre une fenêtre
+     * `window.open` impossible dans la WebView native → connexion bloquée.
+     *
+     * Le developer token (JWT app-level) est minté par le backend et passé ici.
+     * StoreKit renvoie alors le Music User Token, que le frontend persiste via
+     * /api/auth/apple/connect (comme le flux web).
+     */
+    @objc func getUserToken(_ call: CAPPluginCall) {
+        guard let developerToken = call.getString("developerToken") else {
+            call.reject("developerToken requis")
+            return
+        }
+        Task {
+            // Dialogue d'autorisation natif iOS (nécessaire avant le token).
+            let status = await MusicAuthorization.request()
+            guard status == .authorized else {
+                call.reject("Autorisation Apple Music refusée")
+                return
+            }
+            SKCloudServiceController().requestUserToken(
+                forDeveloperToken: developerToken
+            ) { userToken, error in
+                if let error = error {
+                    call.reject("Music User Token : \(error.localizedDescription)")
+                    return
+                }
+                guard let userToken = userToken else {
+                    call.reject("Music User Token indisponible")
+                    return
+                }
+                call.resolve(["userToken": userToken])
+            }
         }
     }
 
