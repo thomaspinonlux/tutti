@@ -188,12 +188,21 @@ workflows:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
 
-    # Publication sur TestFlight via l'intégration App Store Connect.
+    # Upload sur App Store Connect via l'intégration — SANS soumission auto à la
+    # review bêta externe. Le build est uploadé + traité → disponible tout de
+    # suite pour les testeurs INTERNES (aucune review Apple requise).
+    #
+    # Test EXTERNE : à soumettre À LA MAIN quand tu veux (App Store Connect →
+    # Tutti → TestFlight → le build → "Soumettre à la vérification").
+    #
+    # Pourquoi pas `submit_to_testflight: true` : Apple n'autorise qu'UN build
+    # en review à la fois par version. Si un build est déjà en review, la
+    # soumission auto échoue avec "422: Another build is in review" → build
+    # marqué en échec alors que l'upload a réussi. Upload seul = zéro faux échec.
     publishing:
       app_store_connect:
         auth: integration
-        submit_to_testflight: true
-        # Aucune soumission App Store ici — TestFlight uniquement.
+        submit_to_testflight: false
 
 # -----------------------------------------------------------------------------
 # DÉCLENCHEMENT : par défaut, lancement MANUEL (bouton "Start new build" dans
