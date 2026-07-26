@@ -138,6 +138,12 @@ const STATIC_ALLOWED_ORIGINS = [
   'https://tutti-brown.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
+  // Coques natives (Capacitor) — cf. server.ts. iOS = capacitor://localhost,
+  // Android = http(s)://localhost. Requis pour le Socket.IO en session native.
+  'capacitor://localhost',
+  'ionic://localhost',
+  'http://localhost',
+  'https://localhost',
 ];
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
 const allowedOrigins = new Set([...STATIC_ALLOWED_ORIGINS, FRONTEND_URL]);

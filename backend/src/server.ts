@@ -65,6 +65,14 @@ const STATIC_ALLOWED_ORIGINS = [
   'https://tutti-brown.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
+  // Coques natives (Capacitor) : l'app iOS sert la WebView depuis
+  // capacitor://localhost, Android depuis http(s)://localhost. Ces origines ne
+  // sont pas des sites web → on les autorise explicitement (l'app native est
+  // notre propre client). Sans ça : « load fail » après connexion (CORS).
+  'capacitor://localhost',
+  'ionic://localhost',
+  'http://localhost',
+  'https://localhost',
 ];
 
 const allowedOrigins = new Set(STATIC_ALLOWED_ORIGINS);
