@@ -146,6 +146,16 @@ workflows:
           # (Add échoue si la clé existe déjà → Set en repli.)
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" ios/App/App/Info.plist \
             || /usr/libexec/PlistBuddy -c "Set :ITSAppUsesNonExemptEncryption false" ios/App/App/Info.plist
+          # Descriptions d'usage (privacy). iOS/macOS TUE l'app (crash TCC) si
+          # elle accède à une donnée privée sans texte déclaré dans l'Info.plist :
+          #   - Apple Music : le plugin MusicKit lit/joue Apple Music (console).
+          #   - Micro : le parcours joueur (/play) capture la voix (blind test
+          #     vocal). L'app native embarque toutes les routes → à déclarer aussi.
+          # (Add crée la clé ; Set en repli si déjà présente.)
+          /usr/libexec/PlistBuddy -c "Add :NSAppleMusicUsageDescription string 'Tutti utilise Apple Music pour diffuser les extraits musicaux pendant vos parties de blind test.'" ios/App/App/Info.plist \
+            || /usr/libexec/PlistBuddy -c "Set :NSAppleMusicUsageDescription 'Tutti utilise Apple Music pour diffuser les extraits musicaux pendant vos parties de blind test.'" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :NSMicrophoneUsageDescription string 'Tutti utilise le micro pour reconnaître vos réponses chantées ou dites à voix haute pendant le blind test.'" ios/App/App/Info.plist \
+            || /usr/libexec/PlistBuddy -c "Set :NSMicrophoneUsageDescription 'Tutti utilise le micro pour reconnaître vos réponses chantées ou dites à voix haute pendant le blind test.'" ios/App/App/Info.plist
 
       - name: 6. Numéro de build unique (requis par TestFlight)
         # $BUILD_NUMBER est fourni et auto-incrémenté par Codemagic à chaque build.
