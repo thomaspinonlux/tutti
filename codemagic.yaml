@@ -56,6 +56,15 @@ workflows:
       # réutilisé à chaque build.
       groups:
         - ios_signing
+        # Variables VITE_* du build frontend (Supabase, backend API/socket…).
+        # À créer dans un groupe Codemagic nommé EXACTEMENT `frontend_build`,
+        # avec les MÊMES valeurs que sur Vercel (Vercel → projet tutti →
+        # Settings → Environment Variables → Production). Sans elles, l'app
+        # native affiche une PAGE BLANCHE : `supabase.ts` crée son client à
+        # l'import via `createClient(VITE_SUPABASE_URL ?? '', …)` → chaîne vide
+        # → "supabaseUrl is required" → le module App plante → rien ne se rend.
+        # Vite lit les variables VITE_* du shell au build (étape 3).
+        - frontend_build
       vars:
         # Générés par `cap add ios` (Capacitor crée toujours workspace "App").
         XCODE_WORKSPACE: 'native/ios/App/App.xcworkspace'
@@ -80,7 +89,31 @@ workflows:
           pnpm install --frozen-lockfile
 
       - name: 3. Build frontend (→ frontend/dist)
+        # Garde-fou : sans les VITE_* (groupe frontend_build), l'app native
+        # tourne mais affiche une PAGE BLANCHE (client Supabase créé à l'import
+        # → "supabaseUrl is required" → App plante avant le render). On échoue
+        # ICI, clairement, plutôt que de livrer une app blanche.
+        # (On n'affiche JAMAIS les valeurs — juste definie/manquante.)
         script: |
+          set -e
+          MISSING=""
+          for V in VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY VITE_API_URL VITE_SOCKET_URL; do
+            eval VAL="\${$V:-}"
+            if [ -n "$VAL" ]; then
+              echo "✅ $V : definie"
+            else
+              echo "❌ $V : MANQUANTE"
+              MISSING="1"
+            fi
+          done
+          if [ -n "$MISSING" ]; then
+            echo ""
+            echo "Variables VITE_* manquantes → l'app afficherait une page blanche."
+            echo "Crée-les dans le groupe Codemagic 'frontend_build' avec les"
+            echo "valeurs de Vercel (Settings → Environment Variables → Production)."
+            exit 1
+          fi
+          # VITE_SELECTION_MUSIC_URL est optionnelle (musique d'ambiance) → pas bloquante.
           pnpm -C frontend build
 
       - name: 4. Deps de native/ (HORS workspace)
