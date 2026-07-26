@@ -9,6 +9,8 @@
 
 import { api } from './api.js';
 import { loadMusicKitSdk } from './musickitLoader.js';
+import { supportsNativeAppleMusic } from './platform.js';
+import { nativeMusicKit } from './nativeMusicKit.js';
 
 export async function getAppleDeveloperToken(): Promise<{ token: string; expires_at: string }> {
   return api('/api/auth/apple/developer-token');
@@ -58,6 +60,19 @@ export async function getApplePublicTokens(workspaceId: string): Promise<ApplePu
  * /connect. À appeler depuis un CLIC utilisateur (popup bloqué sinon).
  */
 export async function authorizeAppleMusic(): Promise<{ expires_at: string }> {
+  // Coque native (iPad/Mac) : le popup web `MusicKit.authorize()` (window.open)
+  // ne peut PAS s'ouvrir dans la WebView → connexion bloquée sur « chargement ».
+  // On passe par le plugin natif : dialogue d'autorisation iOS + Music User
+  // Token via StoreKit, puis persistance /connect (même finalité, sans popup).
+  if (supportsNativeAppleMusic() && nativeMusicKit.isAvailable()) {
+    const { token } = await getAppleDeveloperToken();
+    const { userToken } = await nativeMusicKit.getUserToken(token);
+    if (!userToken) {
+      throw new Error('Autorisation Apple Music annulée.');
+    }
+    return connectAppleMusic(userToken);
+  }
+
   const { token } = await getAppleDeveloperToken();
   const MusicKit = await loadMusicKitSdk();
   const music = await MusicKit.configure({

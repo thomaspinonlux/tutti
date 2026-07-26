@@ -6,6 +6,11 @@
 export interface TuttiMusicKitPlugin {
   /** Demande l'autorisation Apple Music (abonnement requis pour le full-track). */
   authorize(): Promise<{ authorized: boolean }>;
+  /**
+   * Récupère le Music User Token (compte abonné) en natif, SANS popup web.
+   * `developerToken` est minté par le backend. À persister via /connect.
+   */
+  getUserToken(options: { developerToken: string }): Promise<{ userToken: string }>;
   /** Lit un morceau par son catalog id Apple Music. */
   play(options: { catalogId: string }): Promise<{ ok: boolean }>;
   pause(): Promise<void>;

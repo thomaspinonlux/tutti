@@ -11,6 +11,7 @@
 
 interface NativeMusicKitBridge {
   authorize(): Promise<{ authorized: boolean }>;
+  getUserToken(options: { developerToken: string }): Promise<{ userToken: string }>;
   play(options: { catalogId: string }): Promise<{ ok: boolean }>;
   pause(): Promise<void>;
   resume(): Promise<void>;
@@ -32,6 +33,10 @@ export const nativeMusicKit = {
   },
   authorize(): Promise<{ authorized: boolean }> {
     return bridge()?.authorize() ?? Promise.resolve({ authorized: false });
+  },
+  /** Music User Token natif (compte abonné), pour persister la connexion sans popup. */
+  getUserToken(developerToken: string): Promise<{ userToken: string }> {
+    return bridge()?.getUserToken({ developerToken }) ?? Promise.resolve({ userToken: '' });
   },
   play(catalogId: string): Promise<{ ok: boolean }> {
     return bridge()?.play({ catalogId }) ?? Promise.resolve({ ok: false });
