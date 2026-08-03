@@ -58,6 +58,7 @@ import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
 import { useAppleMusicPlayer } from '../lib/useAppleMusicPlayer.js';
 import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
 import { useExternalPlayerScreen } from '../lib/useExternalPlayerScreen.js';
+import { isCapacitorNative } from '../lib/platform.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
 import { unlockAudioSync } from '../lib/audioUnlock.js';
 import { usePwa } from '../lib/usePwa.js';
@@ -1932,7 +1933,14 @@ function HostPageInner(): JSX.Element {
           IFrame YouTube ne fire pas onReady dans les 5s (typique : Content
           Blocker Safari qui filtre youtube.com / googlevideo.com). Variante
           PWA si standalone (instructions pour ouvrir Safari et désactiver). */}
-      {youtube.blockedByContentFilter && <ContentBlockerWarning isStandalone={isStandalone} />}
+      {/* Coque native (Capacitor) : la modale « bloqueur de contenu Safari »
+          est un FAUX POSITIF (pas de bloqueur Safari dans la WebView) et son
+          bouton « recharger » ne fait que reboucler → dead-end. Le player
+          YouTube web ne s'initialise pas dans la WebView native ; la source
+          fiable en natif est Apple Music. On masque donc la modale en natif. */}
+      {youtube.blockedByContentFilter && !isCapacitorNative() && (
+        <ContentBlockerWarning isStandalone={isStandalone} />
+      )}
 
       {/* fix/prevent-safari-reader-mode — role="application" évite que Safari
           détecte la page host comme article éditorial et propose son mode
