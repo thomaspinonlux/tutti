@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useMemo, useRef } from 'react';
+import { getShareableOrigin } from '../../lib/platform.js';
 import { useTranslation } from 'react-i18next';
 import type {
   CorrectAnswerEntry,
@@ -388,7 +389,7 @@ function DarkLeaderboard({
 // ── Panneau QR rejoindre (carte claire pour scan facile) ──────────────────
 function JoinQrDark({ shortCode }: { shortCode: string }): JSX.Element {
   const { t } = useTranslation();
-  const url = `${window.location.origin}/play?session=${shortCode}`;
+  const url = `${getShareableOrigin()}/play?session=${shortCode}`;
   return (
     <div className={`${PANEL} flex items-center gap-4 p-5`}>
       <div className="rounded-2xl bg-white p-2">

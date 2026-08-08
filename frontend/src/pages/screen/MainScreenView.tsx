@@ -26,6 +26,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { getShareableOrigin } from '../../lib/platform.js';
 import { useTranslation } from 'react-i18next';
 import type {
   CorrectAnswerEntry,
@@ -586,7 +587,7 @@ function LiveLeaderboard({ cumulative }: { cumulative: CumulativeScore[] }): JSX
  */
 function JoinQrPanel({ shortCode }: { shortCode: string }): JSX.Element {
   const { t } = useTranslation();
-  const url = `${window.location.origin}/play?session=${shortCode}`;
+  const url = `${getShareableOrigin()}/play?session=${shortCode}`;
   return (
     <Card
       size="sm"
@@ -819,7 +820,7 @@ function RevealResultMain({
 }): JSX.Element {
   const title = reveal?.title ?? track.title;
   const artist = reveal?.artist ?? track.artist;
-  const joinUrl = `${window.location.origin}/play?session=${joinCode}`;
+  const joinUrl = `${getShareableOrigin()}/play?session=${joinCode}`;
   return (
     <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-6 p-6 relative z-10">
       {/* Gauche — pochette dominante + infos */}

@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { getShareableOrigin } from '../../../lib/platform.js';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../lib/api.js';
 import { Badge, Button, Card } from '../../ui/index.js';
@@ -52,9 +53,7 @@ export function WorkspaceMembersCard(): JSX.Element {
     };
   }, []);
 
-  const inviteUrl = referralCode
-    ? `${window.location.origin}/auth/signup?ref=${referralCode}`
-    : null;
+  const inviteUrl = referralCode ? `${getShareableOrigin()}/auth/signup?ref=${referralCode}` : null;
 
   const copyInvite = async (): Promise<void> => {
     if (!inviteUrl) return;

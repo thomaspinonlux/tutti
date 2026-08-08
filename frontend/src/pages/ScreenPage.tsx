@@ -27,6 +27,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { getShareableOrigin } from '../lib/platform.js';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -371,7 +372,7 @@ function ScreenLobbyView({
   players: Array<{ id: string; pseudo: string; team_id: string | null }>;
 }): JSX.Element {
   const { t } = useTranslation();
-  const url = `${window.location.origin}/play?session=${joinCode}`;
+  const url = `${getShareableOrigin()}/play?session=${joinCode}`;
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
       <MultiColorBar height="md" />
@@ -583,7 +584,7 @@ function ScreenWithQrOverlay({
   children: React.ReactNode;
 }): JSX.Element {
   const { t } = useTranslation();
-  const url = `${window.location.origin}/play?session=${joinCode}`;
+  const url = `${getShareableOrigin()}/play?session=${joinCode}`;
   return (
     <div className="relative">
       {children}
@@ -795,7 +796,7 @@ function ScreenFinalPodiumView({
   const { t } = useTranslation();
   const [first, second, third, ...rest] = finalScores;
   const winnerName = first?.label ?? '';
-  const url = `${window.location.origin}/play?session=${joinCode}`;
+  const url = `${getShareableOrigin()}/play?session=${joinCode}`;
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
       <MultiColorBar height="md" />
