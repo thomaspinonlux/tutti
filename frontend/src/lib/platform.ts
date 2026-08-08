@@ -69,6 +69,27 @@ export function isWeb(): boolean {
 }
 
 /**
+ * Origine à utiliser pour TOUTE URL affichée ou partagée vers un AUTRE appareil
+ * (QR de jointure /play, lien « rejoindre », URL de l'écran TV externe, bouton
+ * partager, lien de parrainage…).
+ *
+ * En natif, `window.location.origin` vaut `capacitor://localhost` : inexploitable
+ * par un téléphone qui scanne le QR ou par une 2ᵉ WebView (écran externe). On
+ * renvoie donc l'URL WEB HÉBERGÉE (`VITE_WEB_ORIGIN`, défaut prod
+ * `https://tuttiparty.app`). En web / PWA, l'origine courante convient déjà
+ * (c'est `tuttiparty.app`). Jamais de slash final.
+ *
+ * ⚠️ NE PAS utiliser pour les redirections d'auth (OAuth / reset password) :
+ * celles-ci doivent revenir vers l'origine qui exécute réellement l'app.
+ */
+export function getShareableOrigin(): string {
+  if (isCapacitorNative()) {
+    return (import.meta.env.VITE_WEB_ORIGIN ?? 'https://tuttiparty.app').replace(/\/$/, '');
+  }
+  return typeof window !== 'undefined' ? window.location.origin : '';
+}
+
+/**
  * True si la plateforme peut fournir une lecture Apple Music NATIVE
  * (MusicKit Swift, sans blocage autoplay) : iOS via Capacitor uniquement.
  * Partout ailleurs on reste sur MusicKit JS (web) — cf. useAppleMusicPlayer.

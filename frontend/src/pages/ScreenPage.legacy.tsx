@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { getShareableOrigin } from '../lib/platform.js';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
@@ -386,7 +387,7 @@ function ScreenEndedView({
   void session;
   const [first, second, third, ...rest] = cumulative;
   const winnerName = first?.label ?? '';
-  const url = `${window.location.origin}/play?session=${shortCode}`;
+  const url = `${getShareableOrigin()}/play?session=${shortCode}`;
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-cream p-8">
       <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-4">

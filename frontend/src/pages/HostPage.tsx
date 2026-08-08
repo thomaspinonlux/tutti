@@ -58,7 +58,7 @@ import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
 import { useAppleMusicPlayer } from '../lib/useAppleMusicPlayer.js';
 import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
 import { useExternalPlayerScreen } from '../lib/useExternalPlayerScreen.js';
-import { isCapacitorNative } from '../lib/platform.js';
+import { isCapacitorNative, getShareableOrigin } from '../lib/platform.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
 import { unlockAudioSync } from '../lib/audioUnlock.js';
 import { usePwa } from '../lib/usePwa.js';
@@ -842,16 +842,10 @@ function HostPageInner(): JSX.Element {
   // (/screen) sur un affichage externe branché à la tablette. No-op total sur
   // web/desktop (supportsExternalPlayerScreen() y est faux).
   useExternalPlayerScreen({
-    // En natif, `window.location.origin` = capacitor://localhost : une 2ᵉ
-    // WebView autonome ne sait PAS servir ce scheme (réservé au bridge Capacitor
-    // principal) → écran externe BLANC. On charge donc l'URL web HÉBERGÉE
-    // (surchargeable via VITE_WEB_ORIGIN, défaut prod tuttiparty.app). Sur web,
-    // on garde l'origine courante.
-    webOrigin: isCapacitorNative()
-      ? (import.meta.env.VITE_WEB_ORIGIN ?? 'https://tuttiparty.app')
-      : typeof window !== 'undefined'
-        ? window.location.origin
-        : '',
+    // Écran externe = 2ᵉ WebView autonome : en natif elle ne sait pas servir
+    // capacitor://localhost → on lui donne l'URL web hébergée (cf.
+    // getShareableOrigin). Sur web, c'est l'origine courante.
+    webOrigin: getShareableOrigin(),
     workspaceId,
     active: !!session && session.status !== 'ENDED',
   });
@@ -1679,7 +1673,7 @@ function HostPageInner(): JSX.Element {
   }
 
   const teams = (session.teams_config as Team[] | null) ?? [];
-  const playUrl = `${window.location.origin}/play?session=${session.short_code}`;
+  const playUrl = `${getShareableOrigin()}/play?session=${session.short_code}`;
   const isModeB = !session.has_animator;
   const inGameplay =
     effectivePhase === 'roundPlaying' ||

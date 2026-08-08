@@ -11,6 +11,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { getShareableOrigin } from '../../lib/platform.js';
 import { QRCode } from './QRCode.js';
 
 interface Props {
@@ -33,7 +34,7 @@ export function JoinQrCorner({
   className,
 }: Props): JSX.Element {
   const { t } = useTranslation();
-  const url = `${window.location.origin}/play?session=${joinCode}`;
+  const url = `${getShareableOrigin()}/play?session=${joinCode}`;
 
   // Label sous le QR : reflète l'action courante (agrandir / fermer / statique).
   const actionLabel = onClick

@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import { getShareableOrigin } from '../../lib/platform.js';
 import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../ui/index.js';
 import { QRCode } from './QRCode.js';
@@ -46,7 +47,7 @@ export function TvCastButton({ tvCode, shortCode }: Props): JSX.Element | null {
 
   if (!tvCode) return null;
 
-  const joinUrl = `${window.location.origin}/tv/${tvCode}`;
+  const joinUrl = `${getShareableOrigin()}/tv/${tvCode}`;
   // Plein écran "même appareil" : UNIQUEMENT sur un vrai desktop multi-fenêtres.
   // Jamais sur iPad/tablette/téléphone (même en navigateur, pas seulement PWA)
   // — window.open y redirige sur l'onglet courant = piège. Sur ces appareils :
