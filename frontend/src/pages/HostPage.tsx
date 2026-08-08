@@ -842,7 +842,16 @@ function HostPageInner(): JSX.Element {
   // (/screen) sur un affichage externe branché à la tablette. No-op total sur
   // web/desktop (supportsExternalPlayerScreen() y est faux).
   useExternalPlayerScreen({
-    webOrigin: typeof window !== 'undefined' ? window.location.origin : '',
+    // En natif, `window.location.origin` = capacitor://localhost : une 2ᵉ
+    // WebView autonome ne sait PAS servir ce scheme (réservé au bridge Capacitor
+    // principal) → écran externe BLANC. On charge donc l'URL web HÉBERGÉE
+    // (surchargeable via VITE_WEB_ORIGIN, défaut prod tuttiparty.app). Sur web,
+    // on garde l'origine courante.
+    webOrigin: isCapacitorNative()
+      ? (import.meta.env.VITE_WEB_ORIGIN ?? 'https://tuttiparty.app')
+      : typeof window !== 'undefined'
+        ? window.location.origin
+        : '',
     workspaceId,
     active: !!session && session.status !== 'ENDED',
   });
