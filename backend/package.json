@@ -25,6 +25,7 @@
     "import:song-levels": "tsx scripts/importSongLevels.ts",
     "sync:workspace-playlists": "tsx scripts/syncWorkspacePlaylists.ts",
     "backfill:catalog-aliases": "tsx scripts/backfillCatalogAliases.ts",
+    "backfill:work-translations": "tsx scripts/backfillWorkTranslations.ts",
     "migrate:canonical-songs": "tsx scripts/migrateCanonicalSongs.ts",
     "import:canonical-songs": "tsx scripts/importCanonicalSongs.ts",
     "verify:canonical-ingest": "tsx scripts/verifyCanonicalIngest.ts"

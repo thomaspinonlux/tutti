@@ -375,3 +375,171 @@ export function estimateArtistCostEur(artistCount: number): number {
   const outputCost = ((artistCount * 150) / 1_000_000) * 15;
   return Number(((inputCost + outputCost) * usdToEur).toFixed(4));
 }
+
+/**
+ * feat/work-title-bilingual-aliases — enrichissement DISTINCT de generateAliases
+ * (qui produit des alias PHONÉTIQUES). Ici : traduction/localisation, pour les
+ * playlists FILM / DESSIN ANIMÉ / SÉRIE / JEUX VIDÉO / COMÉDIE MUSICALE.
+ *
+ * Produit :
+ *   1. Le titre OFFICIEL commercialisé dans l'AUTRE langue (pas une traduction
+ *      littérale) — ex. "Let It Go" → "Libérée délivrée". Null si aucune
+ *      version officielle localisée n'existe (cas fréquent : anime, VO gardée
+ *      en VO en France, etc.) — mieux vaut un null qu'une traduction inventée.
+ *   2. Le nom de l'ŒUVRE (film/série/dessin animé/jeu) dans les DEUX langues.
+ *      Si `workTitle` (déjà connu) est fourni, il sert d'ancre — le modèle
+ *      traduit CETTE œuvre plutôt que d'en re-déduire une autre.
+ */
+export interface WorkTranslationResult {
+  /** Titre officiel dans l'autre langue. Null si aucune version officielle. */
+  official_title_other_lang: string | null;
+  /** Nom de l'œuvre en français. Null si inconnu/inapplicable. */
+  work_title_fr: string | null;
+  /** Nom de l'œuvre en anglais (VO). Null si inconnu/inapplicable. */
+  work_title_en: string | null;
+  latency_ms: number;
+  usage: { input_tokens: number; output_tokens: number } | null;
+  error: string | null;
+  raw?: string;
+}
+
+export async function generateWorkTranslation(
+  title: string,
+  artist: string,
+  workTitle: string | null,
+  playlistLocale: 'fr' | 'en',
+): Promise<WorkTranslationResult> {
+  const t0 = Date.now();
+  const c = getClient();
+  if (!c) {
+    return {
+      official_title_other_lang: null,
+      work_title_fr: null,
+      work_title_en: null,
+      latency_ms: 0,
+      usage: null,
+      error: 'ANTHROPIC_API_KEY_MISSING',
+    };
+  }
+
+  const prompt = buildWorkTranslationPrompt(title, artist, workTitle, playlistLocale);
+
+  try {
+    const response = await c.messages.create({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 300,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const block = response.content[0];
+    const text = block && block.type === 'text' ? block.text : '';
+    const parsed = parseWorkTranslationJson(text);
+    const latency_ms = Date.now() - t0;
+
+    return {
+      ...parsed,
+      latency_ms,
+      usage: {
+        input_tokens: response.usage.input_tokens,
+        output_tokens: response.usage.output_tokens,
+      },
+      error: null,
+      raw: text,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[WorkTranslation] Generation failed for "${title}" | error=${msg}`);
+    return {
+      official_title_other_lang: null,
+      work_title_fr: null,
+      work_title_en: null,
+      latency_ms: Date.now() - t0,
+      usage: null,
+      error: msg,
+    };
+  }
+}
+
+function buildWorkTranslationPrompt(
+  title: string,
+  artist: string,
+  workTitle: string | null,
+  playlistLocale: 'fr' | 'en',
+): string {
+  const sourceLang = playlistLocale === 'fr' ? 'français' : 'anglais';
+  const otherLang = playlistLocale === 'fr' ? 'anglais' : 'français';
+  const workContext = workTitle
+    ? `L'œuvre (film/série/dessin animé/jeu) dont cette chanson est issue est déjà connue : "${workTitle}". Traduis CETTE œuvre, n'en déduis pas une autre.`
+    : `L'œuvre (film/série/dessin animé/jeu) dont cette chanson est issue n'est pas renseignée — identifie-la à partir du titre et de l'artiste.`;
+
+  return `Tu es expert en musique de films, séries, dessins animés, jeux vidéo et comédies musicales, et en localisation FR/EN de ces œuvres.
+
+Chanson à analyser (source en ${sourceLang}) :
+- Titre : "${title}"
+- Artiste : "${artist}"
+${workContext}
+
+Réponds en JSON strict avec EXACTEMENT ces 3 clés :
+
+{
+  "official_title_other_lang": "<titre OFFICIEL commercialisé en ${otherLang}>" | null,
+  "work_title_fr": "<nom de l'œuvre en français>" | null,
+  "work_title_en": "<nom de l'œuvre en anglais (VO)>" | null
+}
+
+RÈGLES STRICTES :
+1. "official_title_other_lang" = le titre RÉELLEMENT commercialisé/officiel en ${otherLang} (ex: "Let It Go" → "Libérée délivrée", "Circle of Life" → "L'histoire de la vie"). JAMAIS une traduction littérale inventée. Si aucune version officielle localisée n'existe (garder le titre original, cas fréquent pour les animes ou les VO non doublées), réponds null. Un FAUX null (tu ne connais pas) vaut mieux qu'une traduction inventée.
+2. "work_title_fr" / "work_title_en" = le nom COURT et usuel de l'œuvre dans chaque langue (ex: "La Reine des Neiges" / "Frozen"). Si l'œuvre garde le même nom dans les deux langues (ex: "Titanic"), répète-le dans les deux champs. Null UNIQUEMENT si l'œuvre est inconnue/non identifiable.
+3. Pas de préambule, pas de markdown, UNIQUEMENT le JSON.
+
+Maintenant, pour "${title}" par "${artist}", génère le JSON :`;
+}
+
+function parseWorkTranslationJson(text: string): {
+  official_title_other_lang: string | null;
+  work_title_fr: string | null;
+  work_title_en: string | null;
+} {
+  const empty = { official_title_other_lang: null, work_title_fr: null, work_title_en: null };
+  if (!text) return empty;
+  const cleaned = text
+    .trim()
+    .replace(/^```json\s*\n?/i, '')
+    .replace(/\n?```$/i, '')
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"');
+  const objMatch = cleaned.match(/\{[\s\S]*\}/);
+  const jsonStr = objMatch ? objMatch[0] : cleaned;
+  try {
+    const parsed: unknown = JSON.parse(jsonStr);
+    if (typeof parsed !== 'object' || parsed === null) return empty;
+    const p = parsed as Record<string, unknown>;
+    const clean = (v: unknown): string | null => {
+      if (typeof v !== 'string') return null;
+      const t = v.trim();
+      if (!t || t.toLowerCase() === 'null') return null;
+      return t;
+    };
+    return {
+      official_title_other_lang: clean(p.official_title_other_lang),
+      work_title_fr: clean(p.work_title_fr),
+      work_title_en: clean(p.work_title_en),
+    };
+  } catch (err) {
+    console.error(
+      `[WorkTranslation] JSON parse failed | text="${text.slice(0, 200)}" | err=${err instanceof Error ? err.message : 'unknown'}`,
+    );
+    return empty;
+  }
+}
+
+/**
+ * Estimation coût (EUR) pour generateWorkTranslation — prompt + output plus
+ * courts que generateAliases (3 champs courts vs 10 alias phonétiques).
+ */
+export function estimateWorkTranslationCostEur(trackCount: number): number {
+  const usdToEur = 0.92;
+  const inputCost = ((trackCount * 320) / 1_000_000) * 3;
+  const outputCost = ((trackCount * 70) / 1_000_000) * 15;
+  return Number(((inputCost + outputCost) * usdToEur).toFixed(4));
+}
