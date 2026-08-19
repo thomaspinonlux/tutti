@@ -6,10 +6,17 @@
  * existants (ne les touche pas) :
  *
  *   1. Titre officiel dans l'autre langue (title_aliases, additif) — ex.
- *      "Let It Go" → alias "libérée délivrée" (PAS une traduction littérale,
+ *      "Let It Go" → alias "liberee delivree" (PAS une traduction littérale,
  *      le vrai titre commercialisé). Rien si aucune version officielle.
  *   2. Nom de l'œuvre dans les DEUX langues (work_aliases, additif) — et
  *      remplit work_title UNIQUEMENT s'il est NULL (jamais écrasé sinon).
+ *
+ * NORMALISATION : les alias AJOUTÉS passent par basicNormalize (lib/aliases.ts),
+ * la même fonction que l'import initial du catalogue → minuscules, accents
+ * retirés, ponctuation et traits d'union → espaces. Les alias EXISTANTS ne sont
+ * jamais réécrits ; la dédup compare sur la forme normalisée.
+ * `work_title` fait exception : c'est la réponse AFFICHÉE en jeu, on y garde la
+ * forme lisible (casse + accents).
  *
  * Périmètre STRICT — ces 18 playlists uniquement (778 tracks) :
  *   Disney en français, Disney — Versions originales, Génériques Disney &
@@ -44,6 +51,7 @@ import {
   generateWorkTranslation,
   estimateWorkTranslationCostEur,
 } from '../src/lib/aliasGeneration.js';
+import { basicNormalize } from '../src/lib/aliases.js';
 
 config();
 
@@ -80,11 +88,15 @@ interface CliArgs {
 
 function parseArgs(): CliArgs {
   const args = process.argv.slice(2);
-  const dryRun = args.includes('--dry-run');
+  const sampleArgRaw = args.find((a) => a.startsWith('--sample='));
+  // --sample implique TOUJOURS le dry-run : un oubli de --dry-run ne doit
+  // jamais provoquer d'écriture en base.
+  const dryRun = args.includes('--dry-run') || Boolean(sampleArgRaw);
   const limitArg = args.find((a) => a.startsWith('--limit='));
   const limit = limitArg ? Number.parseInt(limitArg.split('=')[1] ?? '', 10) || null : null;
-  const sampleArg = args.find((a) => a.startsWith('--sample='));
-  const sample = sampleArg ? Number.parseInt(sampleArg.split('=')[1] ?? '', 10) || null : null;
+  const sample = sampleArgRaw
+    ? Number.parseInt(sampleArgRaw.split('=')[1] ?? '', 10) || null
+    : null;
   const costArg = args.find((a) => a.startsWith('--max-cost='));
   const maxCostEur = costArg ? Number.parseFloat(costArg.split('=')[1] ?? '') || 30 : 30;
   return { dryRun, limit, sample, maxCostEur };
@@ -101,15 +113,23 @@ function addCost(usage: { input_tokens: number; output_tokens: number } | null):
     (usage.input_tokens * PRICE_IN + usage.output_tokens * PRICE_OUT) * USD_TO_EUR;
 }
 
-function dedupeCaseInsensitive(existing: string[], additions: (string | null)[]): string[] {
-  const seen = new Set(existing.map((s) => s.toLowerCase()));
+/**
+ * Union + dédup, en NORMALISANT les ajouts à la forme canonique du catalogue
+ * (basicNormalize : minuscules, accents retirés, ponctuation/traits d'union →
+ * espaces). Les alias EXISTANTS sont conservés tels quels (jamais réécrits) ;
+ * la dédup compare sur la forme normalisée pour ne pas créer de doublon
+ * "Le Roi Lion" / "le roi lion".
+ */
+function mergeNormalizedAliases(existing: string[], additions: (string | null)[]): string[] {
+  const seen = new Set(existing.map((s) => basicNormalize(s)));
   const out = [...existing];
   for (const a of additions) {
     if (!a) continue;
-    const key = a.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push(a);
+    const normalized = basicNormalize(a);
+    if (!normalized) continue;
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    out.push(normalized);
   }
   return out;
 }
@@ -172,17 +192,44 @@ async function main(): Promise<void> {
       return;
     }
     const targets = tracks.slice(0, sample);
-    console.info(`[WorkTranslations] Échantillon RÉEL (API) sur ${targets.length} tracks…`);
+    console.info(
+      `[WorkTranslations] Échantillon RÉEL (API) sur ${targets.length} tracks — AUCUNE écriture\n`,
+    );
     for (const t of targets) {
       const locale = localeByPlaylist.get(t.playlist_id) ?? 'fr';
       const r = await generateWorkTranslation(t.title, t.artist, t.work_title, locale);
       addCost(r.usage);
+
+      if (r.error) {
+        console.info(`— "${t.title}" (${t.artist}) → ERREUR : ${r.error}\n`);
+        continue;
+      }
+
+      // Simule exactement ce que le mode réel écrirait.
+      const newTitleAliases = mergeNormalizedAliases(t.title_aliases, [
+        r.official_title_other_lang,
+      ]);
+      const newWorkAliases = mergeNormalizedAliases(t.work_aliases, [
+        r.work_title_fr,
+        r.work_title_en,
+      ]);
+      const newWorkTitle =
+        t.work_title ??
+        (locale === 'fr'
+          ? (r.work_title_fr ?? r.work_title_en)
+          : (r.work_title_en ?? r.work_title_fr));
+
+      const addedTitle = newTitleAliases.slice(t.title_aliases.length);
+      const addedWork = newWorkAliases.slice(t.work_aliases.length);
+
       console.info(
-        `\n— "${t.title}" (${t.artist}) | work_title actuel="${t.work_title ?? 'NULL'}"\n` +
-          `  official_title_other_lang = ${JSON.stringify(r.official_title_other_lang)}\n` +
-          `  work_title_fr             = ${JSON.stringify(r.work_title_fr)}\n` +
-          `  work_title_en             = ${JSON.stringify(r.work_title_en)}\n` +
-          `  tokens=${r.usage ? `${r.usage.input_tokens}+${r.usage.output_tokens}` : 'n/a'} | erreur=${r.error ?? 'aucune'}`,
+        `— "${t.title}" — ${t.artist}  [${locale}]\n` +
+          `  IA : titre_autre_langue=${JSON.stringify(r.official_title_other_lang)} | œuvre_fr=${JSON.stringify(r.work_title_fr)} | œuvre_en=${JSON.stringify(r.work_title_en)}\n` +
+          `  work_title   AVANT : ${JSON.stringify(t.work_title)}\n` +
+          `               APRÈS : ${JSON.stringify(newWorkTitle ?? null)}${t.work_title ? '  (inchangé — déjà renseigné)' : ''}\n` +
+          `  title_aliases  +${addedTitle.length} : ${addedTitle.length ? JSON.stringify(addedTitle) : '(rien)'}   [${t.title_aliases.length} existants conservés]\n` +
+          `  work_aliases   +${addedWork.length} : ${addedWork.length ? JSON.stringify(addedWork) : '(rien)'}   [${t.work_aliases.length} existants conservés]\n` +
+          `  tokens=${r.usage ? `${r.usage.input_tokens}+${r.usage.output_tokens}` : 'n/a'}\n`,
       );
     }
     console.info(
@@ -213,13 +260,17 @@ async function main(): Promise<void> {
         addCost(r.usage);
 
         if (!r.error) {
-          const newTitleAliases = dedupeCaseInsensitive(t.title_aliases, [
-            r.official_title_other_lang?.toLowerCase() ?? null,
+          // Alias de MATCHING → normalisés (forme canonique du catalogue).
+          const newTitleAliases = mergeNormalizedAliases(t.title_aliases, [
+            r.official_title_other_lang,
           ]);
-          const newWorkAliases = dedupeCaseInsensitive(t.work_aliases, [
+          const newWorkAliases = mergeNormalizedAliases(t.work_aliases, [
             r.work_title_fr,
             r.work_title_en,
           ]);
+          // work_title = réponse AFFICHÉE en jeu (guess_mode='work') → on garde
+          // la forme lisible (casse + accents), PAS la forme normalisée.
+          // Renseigné UNIQUEMENT s'il est NULL — jamais écrasé.
           const newWorkTitle =
             t.work_title ??
             (locale === 'fr'

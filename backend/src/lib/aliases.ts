@@ -9,7 +9,16 @@
  * Ces aliases servent au matching vocal Whisper en étape 11+.
  */
 
-function basicNormalize(s: string): string {
+/**
+ * Normalisation canonique d'un alias de matching vocal :
+ * minuscules, accents retirés (NFD), parenthèses/crochets retirés,
+ * ponctuation (traits d'union inclus) → espaces, espaces réduits.
+ *
+ * Exporté (basicNormalize) pour que les backfills d'alias écrivent la MÊME
+ * forme que l'import initial — une seule source de vérité, cf.
+ * scripts/backfillWorkTranslations.ts.
+ */
+export function basicNormalize(s: string): string {
   return s
     .toLowerCase()
     .normalize('NFD')
