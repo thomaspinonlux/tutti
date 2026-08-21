@@ -114,23 +114,38 @@ const VERSION_EXCLUSIONS = [
   'unplugged',
   'concert',
   'session',
-  // Remixes de club : rejetés. ⚠️ NE PAS mettre "edit" ni "mix" tout court —
-  // « Radio Edit » et « Single Version » sont des versions STANDARD acceptables
-  // (norm() retire les parenthèses, un 'mix)' rejetterait "Radio Edit" à tort).
-  'extended mix',
-  'club mix',
-  'dance mix',
-  'dub mix',
-  'extended version',
-  'radio mix',
+  'extended',
+  'twenty 4 seven',
+  'edit remix',
+  'vocal mix',
+  'bootleg',
+  'mashup',
+  'medley',
 ];
 
 /**
- * Versions explicitement ACCEPTABLES : si un segment matche l'une de ces
- * expressions, il n'est pas considéré comme un marqueur de rejet même s'il
- * contient par ailleurs un mot listé ci-dessus.
+ * Mots-clés rejetés en tant que MOT ENTIER (pas en sous-chaîne). C'est ce qui
+ * attrape « Trance Mix », « Club Mix », « 12" Mix », « Twenty 4 Seven Trance
+ * Mix » sans avoir à énumérer chaque style. Sûr uniquement grâce à
+ * VERSION_ALLOWLIST, évaluée AVANT (sinon « Radio Mix » ≠ « Radio Edit »).
  */
-const VERSION_ALLOWLIST = ['radio edit', 'single version', 'album version', 'original version'];
+const VERSION_EXCLUDED_WORDS = ['mix', 'remix', 'edits', 'rmx', 'dub', 'version'];
+
+/**
+ * Versions explicitement ACCEPTABLES (version standard / studio / radio).
+ * Évaluée AVANT les rejets : un segment qui matche est gardé même s'il contient
+ * par ailleurs un mot suspect (ex. « Radio Version » contient « version »).
+ */
+const VERSION_ALLOWLIST = [
+  'radio edit',
+  'radio version',
+  'single version',
+  'album version',
+  'original version',
+  'original mix', // en dance/house, "Original Mix" EST la version studio de référence
+  'main version',
+  'version originale',
+];
 
 interface CliArgs {
   dryRun: boolean;
@@ -187,35 +202,50 @@ function versionSegments(title: string): string[] {
   return segs;
 }
 
-/** True si le titre porte un marqueur de version indésirable. */
-function hasExcludedVersion(title: string, albumName: string | undefined): boolean {
-  const haystacks = [...versionSegments(title)];
+/** True si `n` (déjà normalisé) contient `word` comme MOT ENTIER. */
+function hasWord(n: string, word: string): boolean {
+  return ` ${n} `.includes(` ${norm(word)} `);
+}
+
+/**
+ * Renvoie le marqueur de version indésirable détecté, ou null si le titre
+ * semble être une version standard. Renvoyer le MARQUEUR (et pas juste un
+ * booléen) permet d'expliquer chaque décision dans la sortie.
+ */
+function excludedVersionReason(title: string, albumName: string | undefined): string | null {
   // L'album peut trahir une compilation karaoké/tribute même si le titre est nu.
   if (albumName) {
     const a = norm(albumName);
-    if (
-      a.includes('karaoke') ||
-      a.includes('karaoke version') ||
-      a.includes('tribute') ||
-      a.includes('made famous') ||
-      a.includes('in the style of') ||
-      a.includes('originally performed')
-    ) {
-      return true;
+    for (const bad of [
+      'karaoke',
+      'tribute',
+      'made famous',
+      'in the style of',
+      'originally performed',
+    ]) {
+      if (a.includes(norm(bad))) return `album « ${albumName} » (${bad})`;
     }
   }
-  for (const seg of haystacks) {
+  for (const seg of versionSegments(title)) {
     const n = norm(seg);
     if (!n) continue;
-    // Version explicitement acceptable (radio edit, single version…) → on ne
-    // rejette pas ce segment, même s'il contient un mot par ailleurs suspect.
+    // Version explicitement acceptable (radio edit, radio version, original
+    // mix…) → segment gardé, même s'il contient un mot par ailleurs suspect.
     if (VERSION_ALLOWLIST.some((ok) => n.includes(norm(ok)))) continue;
     for (const bad of VERSION_EXCLUSIONS) {
       const nb = norm(bad);
-      if (nb && n.includes(nb)) return true;
+      if (nb && n.includes(nb)) return `« ${seg.trim()} » (${bad})`;
+    }
+    for (const w of VERSION_EXCLUDED_WORDS) {
+      if (hasWord(n, w)) return `« ${seg.trim()} » (${w})`;
     }
   }
-  return false;
+  return null;
+}
+
+/** Raccourci booléen (filtrage des candidats). */
+function hasExcludedVersion(title: string, albumName: string | undefined): boolean {
+  return excludedVersionReason(title, albumName) !== null;
 }
 
 interface Candidate {
@@ -384,33 +414,82 @@ async function main(): Promise<void> {
   if (limit) groups = groups.slice(0, limit);
   if (sample) groups = groups.slice(0, sample);
 
-  const needsReplacement: Array<{ title: string; artist: string; why: string; rows: number }> = [];
-  let matched = 0;
-  let unchanged = 0;
+  const needsReplacement: Array<{
+    title: string;
+    artist: string;
+    why: string;
+    rows: number;
+    currentId: string | null;
+    currentName: string | null;
+  }> = [];
+  let kept = 0;
+  let filled = 0;
+  let replaced = 0;
   let updated = 0;
   let errors = 0;
 
   for (const group of groups) {
     const t = group[0]!;
     const currentId = t.apple_music_id;
+    const label = `"${t.artist} — ${t.title}"${t.year ? ` (${t.year})` : ''}`;
+    const playlists = [...new Set(group.map((g) => g.playlist.name_fr))].join(', ');
 
-    // Pour un id existant, on récupère le NOM EXACT de la piste Apple pointée :
-    // c'est ce qui révèle une reprise (bug Dragostea Din Tei).
+    // ── 1. DIAGNOSTIC de l'id actuel ───────────────────────────────────────
+    // Règle d'or : on ne touche PAS à ce qui marche. Un remplacement n'est
+    // envisagé que si l'id actuel est réellement défectueux.
     let currentName: string | null = null;
     let currentArtist: string | null = null;
     let currentAlbum: string | null = null;
-    if (currentId) {
+    let problem: string | null = null;
+
+    if (!currentId) {
+      problem = 'aucun apple_music_id (titre injouable en Apple)';
+    } else {
       try {
         const cur = await apple.getTrack(currentId);
-        currentName = cur?.title ?? '(introuvable au catalogue)';
-        currentArtist = cur?.artist ?? null;
-        currentAlbum = cur?.album ?? null;
+        if (!cur) {
+          problem = 'id introuvable au catalogue Apple';
+        } else {
+          currentName = cur.title;
+          currentArtist = cur.artist;
+          currentAlbum = cur.album ?? null;
+          const versionProblem = excludedVersionReason(cur.title, cur.album);
+          if (versionProblem) {
+            problem = `version suspecte : ${versionProblem}`;
+          } else if (
+            norm(cur.artist) !== norm(t.artist) &&
+            !norm(cur.artist).includes(norm(t.artist))
+          ) {
+            // Artiste différent = très probablement une reprise.
+            problem = `artiste différent : « ${cur.artist} » au lieu de « ${t.artist} » (reprise ?)`;
+          }
+        }
       } catch (err) {
-        currentName = `(erreur lookup : ${err instanceof Error ? err.message : 'inconnue'})`;
+        errors += 1;
+        console.error(
+          `[RematchApple] ERREUR lookup ${label} : ${err instanceof Error ? err.message : 'inconnue'}`,
+        );
+        await sleep(THROTTLE_MS);
+        continue;
       }
       await sleep(THROTTLE_MS);
     }
 
+    // ── 2. Id actuel SAIN → on garde, sans même chercher ──────────────────
+    if (!problem) {
+      kept += 1;
+      if (dryRun) {
+        console.info(
+          `\n✅ ${label}   [${group.length} ligne(s)]\n` +
+            `   playlists : ${playlists}\n` +
+            `   ACTUEL    : ${currentId} → « ${currentName} » — ${currentArtist}${currentAlbum ? ` [${currentAlbum}]` : ''}\n` +
+            `   action    : INCHANGÉ (version standard, on ne touche pas à ce qui marche)`,
+        );
+      }
+      continue;
+    }
+
+    // ── 3. Id défectueux ou absent → recherche d'un remplaçant ────────────
     let best: Scored | null = null;
     let rejected = 0;
     let totalCandidates = 0;
@@ -419,57 +498,52 @@ async function main(): Promise<void> {
     } catch (err) {
       errors += 1;
       console.error(
-        `[RematchApple] ERREUR recherche "${t.artist} — ${t.title}" : ${err instanceof Error ? err.message : 'inconnue'}`,
+        `[RematchApple] ERREUR recherche ${label} : ${err instanceof Error ? err.message : 'inconnue'}`,
       );
       await sleep(THROTTLE_MS);
       continue;
     }
     await sleep(THROTTLE_MS);
 
-    const currentLooksWrong =
-      currentId !== null &&
-      currentName !== null &&
-      hasExcludedVersion(currentName, currentAlbum ?? undefined);
-
-    if (!best) {
+    // Aucun candidat valable → on ne modifie RIEN, on liste pour arbitrage.
+    if (!best || best.id === currentId) {
+      const why = !best
+        ? totalCandidates === 0
+          ? 'aucun résultat Apple'
+          : `aucune version standard trouvée (${totalCandidates} résultats, ${rejected} rejetés)`
+        : `seul candidat = l'id actuel, lui-même défectueux (${problem})`;
       needsReplacement.push({
         title: t.title,
         artist: t.artist,
-        why:
-          totalCandidates === 0
-            ? 'aucun résultat Apple'
-            : `aucun candidat valable (${totalCandidates} résultats, ${rejected} rejetés pour version)`,
+        why,
         rows: group.length,
+        currentId,
+        currentName,
       });
       console.info(
-        `\n❌ REMPLACEMENT REQUIS — "${t.artist} — ${t.title}"${t.year ? ` (${t.year})` : ''}\n` +
-          `   playlists : ${group.map((g) => g.playlist.name_fr).join(', ')}\n` +
-          `   id actuel : ${currentId ?? 'AUCUN'}${currentName ? ` → « ${currentName} »` : ''}\n` +
-          `   raison    : ${totalCandidates === 0 ? 'aucun résultat Apple' : `${totalCandidates} résultats, ${rejected} rejetés (version), aucun au-dessus du seuil`}`,
+        `\n❌ REMPLACEMENT REQUIS — ${label}   [${group.length} ligne(s)]\n` +
+          `   playlists : ${playlists}\n` +
+          `   ACTUEL    : ${currentId ?? 'AUCUN'}${currentName ? ` → « ${currentName} »${currentArtist ? ` — ${currentArtist}` : ''}${currentAlbum ? ` [${currentAlbum}]` : ''}` : ''}\n` +
+          `   problème  : ${problem}\n` +
+          `   raison    : ${why}`,
       );
       continue;
     }
 
-    matched += 1;
-    const willChange = currentId !== best.id;
+    if (currentId) replaced += 1;
+    else filled += 1;
 
-    // Affichage détaillé en dry-run / sample / only : c'est CE bloc qui permet
-    // de vérifier qu'on ne prend pas une reprise.
     if (dryRun) {
       console.info(
-        `\n${willChange ? '🔄' : '✅'} "${t.artist} — ${t.title}"${t.year ? ` (${t.year})` : ''}   [${group.length} ligne(s)]\n` +
-          `   playlists   : ${[...new Set(group.map((g) => g.playlist.name_fr))].join(', ')}\n` +
-          `   AVANT       : ${currentId ?? 'AUCUN'}${currentName ? `  → « ${currentName} »${currentArtist ? ` — ${currentArtist}` : ''}${currentAlbum ? ` [${currentAlbum}]` : ''}` : ''}${currentLooksWrong ? '   ⚠️ VERSION SUSPECTE' : ''}\n` +
-          `   APRÈS       : ${best.id}  → « ${best.name} » — ${best.artist}${best.album ? ` [${best.album}]` : ''}${best.year ? ` (${best.year})` : ''}\n` +
-          `   score       : ${best.score} (${best.reasons.join(', ')})\n` +
-          `   candidats   : ${totalCandidates} trouvés, ${rejected} rejetés (remix/live/karaoké/…)\n` +
-          `   action      : ${willChange ? 'MISE À JOUR' : 'inchangé (déjà le bon id)'}`,
+        `\n🔄 ${label}   [${group.length} ligne(s)]\n` +
+          `   playlists : ${playlists}\n` +
+          `   AVANT     : ${currentId ?? 'AUCUN'}${currentName ? ` → « ${currentName} »${currentArtist ? ` — ${currentArtist}` : ''}${currentAlbum ? ` [${currentAlbum}]` : ''}` : ''}\n` +
+          `   RAISON    : ${problem}\n` +
+          `   APRÈS     : ${best.id} → « ${best.name} » — ${best.artist}${best.album ? ` [${best.album}]` : ''}${best.year ? ` (${best.year})` : ''}\n` +
+          `   score     : ${best.score} (${best.reasons.join(', ')})\n` +
+          `   candidats : ${totalCandidates} trouvés, ${rejected} rejetés (remix/live/karaoké/…)\n` +
+          `   action    : ${currentId ? 'MISE À JOUR' : 'RENSEIGNEMENT'}`,
       );
-    }
-
-    if (!willChange) {
-      unchanged += 1;
-      continue;
     }
 
     if (!dryRun) {
@@ -482,16 +556,21 @@ async function main(): Promise<void> {
   }
 
   console.info('\n[RematchApple] ═══════════ SUMMARY ═══════════');
-  console.info(`  Morceaux traités       : ${groups.length}`);
-  console.info(`  Matchés (id valable)   : ${matched}`);
-  console.info(`  Déjà corrects          : ${unchanged}`);
-  console.info(`  Lignes mises à jour    : ${dryRun ? '0 (DRY-RUN)' : updated}`);
-  console.info(`  REMPLACEMENT REQUIS    : ${needsReplacement.length}`);
-  console.info(`  Erreurs API            : ${errors}`);
+  console.info(`  Morceaux traités        : ${groups.length}`);
+  console.info(`  INCHANGÉS (déjà bons)   : ${kept}`);
+  console.info(`  RENSEIGNÉS (id absent)  : ${filled}`);
+  console.info(`  REMPLACÉS (id pourri)   : ${replaced}`);
+  console.info(`  Lignes écrites          : ${dryRun ? '0 (DRY-RUN)' : updated}`);
+  console.info(`  REMPLACEMENT REQUIS     : ${needsReplacement.length}`);
+  console.info(`  Erreurs API             : ${errors}`);
   if (needsReplacement.length > 0) {
-    console.info('\n  ── Titres à remplacer (aucune version standard sur Apple) ──');
+    console.info('\n  ── Titres à arbitrer (aucune version standard sur Apple) ──');
     for (const r of needsReplacement) {
-      console.info(`   • ${r.artist} — ${r.title}  (${r.rows} ligne(s)) — ${r.why}`);
+      console.info(
+        `   • ${r.artist} — ${r.title}  (${r.rows} ligne(s))\n` +
+          `     id actuel : ${r.currentId ?? 'AUCUN'}${r.currentName ? ` → « ${r.currentName} »` : ''}\n` +
+          `     raison    : ${r.why}`,
+      );
     }
     console.info("\n  ⚠️ Ces titres n'ont PAS été modifiés. À valider/remplacer manuellement.");
   }
