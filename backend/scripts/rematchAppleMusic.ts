@@ -11,18 +11,31 @@
  *                  / live / karaoké → l'animateur lance l'original, les joueurs
  *                  entendent autre chose.
  *
+ * RÈGLE D'OR : on ne touche PAS à ce qui marche. Un id qui pointe déjà sur une
+ * version standard n'est JAMAIS remplacé, même si un autre candidat obtient un
+ * meilleur score. (Sans cette règle, le script dégradait de bons matchs :
+ * « Dreams (Radio Version) » → « Dreams (Twenty 4 Seven Trance Mix) ».)
+ *
  * ALGORITHME (par titre) :
- *   1. Recherche catalogue Apple ("<artiste> <titre>", storefront FR).
- *   2. Filtrage STRICT des candidats — rejet de : remix, live, karaoke, cover,
- *      acoustic, re-recorded, "made famous by", tribute, instrumental,
- *      "in the style of", edit radio douteux… (cf. VERSION_EXCLUSIONS).
+ *   1. DIAGNOSTIC de l'id ACTUEL (getTrack). Il est jugé DÉFECTUEUX si :
+ *        - absent, ou introuvable au catalogue Apple ;
+ *        - porté par un artiste différent (= reprise) ;
+ *        - marqué d'une version suspecte (remix/live/karaoké/…).
+ *      Sinon → INCHANGÉ, et AUCUNE recherche n'est lancée (moins d'appels API).
+ *   2. Seulement si défectueux : recherche catalogue ("<artiste> <titre>", FR).
+ *   3. Filtrage STRICT des candidats (cf. VERSION_EXCLUSIONS +
+ *      VERSION_EXCLUDED_WORDS, tempérés par VERSION_ALLOWLIST).
  *      ⚠️ Le filtre ne regarde QUE les suffixes de version (parenthèses,
  *      crochets, après un tiret) — sinon « Live and Let Die » ou « Cover Me »
  *      seraient rejetés à tort.
- *   3. Scoring : artiste exact > titre exact > proximité d'année > popularité
+ *   4. Scoring : artiste exact > titre exact > proximité d'année > popularité
  *      implicite (ordre Apple). Le meilleur candidat valide gagne.
- *   4. Aucun candidat valable → le titre est listé pour REMPLACEMENT MANUEL.
- *      Le script ne remplace JAMAIS de lui-même.
+ *   5. Aucun candidat valable → le titre est listé pour REMPLACEMENT MANUEL
+ *      (avec son id et son titre Apple actuels). Le script ne remplace JAMAIS
+ *      de lui-même.
+ *
+ * Chaque MISE À JOUR affiche la RAISON du remplacement : aucune modification
+ * n'est cosmétique.
  *
  * Le script n'ÉCRIT que `apple_music_id`. Il ne touche à aucun autre champ.
  *
