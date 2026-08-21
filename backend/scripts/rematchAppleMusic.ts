@@ -114,9 +114,23 @@ const VERSION_EXCLUSIONS = [
   'unplugged',
   'concert',
   'session',
-  'edit)',
-  'mix)',
+  // Remixes de club : rejetés. ⚠️ NE PAS mettre "edit" ni "mix" tout court —
+  // « Radio Edit » et « Single Version » sont des versions STANDARD acceptables
+  // (norm() retire les parenthèses, un 'mix)' rejetterait "Radio Edit" à tort).
+  'extended mix',
+  'club mix',
+  'dance mix',
+  'dub mix',
+  'extended version',
+  'radio mix',
 ];
+
+/**
+ * Versions explicitement ACCEPTABLES : si un segment matche l'une de ces
+ * expressions, il n'est pas considéré comme un marqueur de rejet même s'il
+ * contient par ailleurs un mot listé ci-dessus.
+ */
+const VERSION_ALLOWLIST = ['radio edit', 'single version', 'album version', 'original version'];
 
 interface CliArgs {
   dryRun: boolean;
@@ -193,6 +207,9 @@ function hasExcludedVersion(title: string, albumName: string | undefined): boole
   for (const seg of haystacks) {
     const n = norm(seg);
     if (!n) continue;
+    // Version explicitement acceptable (radio edit, single version…) → on ne
+    // rejette pas ce segment, même s'il contient un mot par ailleurs suspect.
+    if (VERSION_ALLOWLIST.some((ok) => n.includes(norm(ok)))) continue;
     for (const bad of VERSION_EXCLUSIONS) {
       const nb = norm(bad);
       if (nb && n.includes(nb)) return true;
