@@ -59,6 +59,8 @@ export interface LibraryPlaylistSummary {
   cover_fallback_youtube_id: string | null;
   /** feat/guess-work-mode — null (défaut, artist+title) | 'work' (devine l'œuvre). */
   guess_mode: string | null;
+  /** feat/forced-source — source imposée ('apple_music'|'youtube'|'spotify') ou null. */
+  forced_source: string | null;
 }
 
 export interface LibraryPlaylistDetail extends LibraryPlaylistSummary {
@@ -202,6 +204,7 @@ async function listVisiblePlaylistsCore(
       cover_fallback_url: firstWithMedia?.cover_url ?? null,
       cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
       guess_mode: p.guess_mode,
+      forced_source: p.forced_source,
     };
   });
 }
@@ -291,6 +294,7 @@ export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
       cover_fallback_url: firstWithMedia?.cover_url ?? null,
       cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
       guess_mode: p.guess_mode,
+      forced_source: p.forced_source,
     };
   });
 }
@@ -357,6 +361,7 @@ async function getVisiblePlaylistDetailCore(
     cover_fallback_url: firstWithMedia?.cover_url ?? null,
     cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
     guess_mode: playlist.guess_mode,
+    forced_source: playlist.forced_source,
     tracks: playlist.tracks.map((t) => ({
       id: t.id,
       position: t.position,

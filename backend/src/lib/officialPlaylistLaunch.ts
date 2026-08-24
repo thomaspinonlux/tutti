@@ -87,7 +87,22 @@ export async function launchOfficialPlaylistForSession(
   },
 ): Promise<LaunchOfficialPlaylistResult> {
   const detail = playlistDetail;
-  const preferProvider: PlayProvider = opts.preferProvider;
+
+  // feat/forced-source — la playlist peut IMPOSER sa source audio. Si
+  // `forced_source` est posée en base, elle écrase le provider demandé par le
+  // client : une playlist musique reste sur Apple Music même si le host a
+  // Spotify connecté, une playlist films/génériques reste sur YouTube.
+  // Combiné aux « mondes étanches » plus bas (aucun repli croisé), une partie
+  // ne peut plus partir sur une source non voulue.
+  const forced = detail.forced_source;
+  const isPlayProvider = (v: string | null): v is PlayProvider =>
+    v === 'spotify' || v === 'youtube' || v === 'apple_music';
+  const preferProvider: PlayProvider = isPlayProvider(forced) ? forced : opts.preferProvider;
+  if (isPlayProvider(forced) && forced !== opts.preferProvider) {
+    console.info(
+      `[Launch] playlist ${detail.slug} : source verrouillée sur ${forced} (demandé : ${opts.preferProvider})`,
+    );
+  }
 
   // 3. Pour chaque track : choisir provider + provider_track_id
   type ChosenTrack = {

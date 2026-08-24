@@ -36,10 +36,33 @@ export type ProviderChoice =
   | { provider: 'apple_music'; id: string }
   | { provider: null; error: 'NO_PROVIDER_AVAILABLE' };
 
+/** feat/forced-source — source imposée par la playlist (colonne forced_source). */
+export type ForcedSource = 'spotify' | 'youtube' | 'apple_music' | null | undefined;
+
 export function selectProvider(
   track: LibraryTrackProviderIds,
   host: HostProviders,
+  forcedSource?: ForcedSource,
 ): ProviderChoice {
+  // feat/forced-source — quand la playlist impose sa source, on ne regarde
+  // QUE celle-là : pas de repli sur une autre plateforme. Une track sans l'id
+  // de cette source est déclarée non jouable, comme côté backend.
+  if (forcedSource === 'apple_music') {
+    return track.apple_music_id
+      ? { provider: 'apple_music', id: track.apple_music_id }
+      : { provider: null, error: 'NO_PROVIDER_AVAILABLE' };
+  }
+  if (forcedSource === 'youtube') {
+    return track.youtube_id
+      ? { provider: 'youtube', id: track.youtube_id }
+      : { provider: null, error: 'NO_PROVIDER_AVAILABLE' };
+  }
+  if (forcedSource === 'spotify') {
+    return track.spotify_id
+      ? { provider: 'spotify', id: track.spotify_id }
+      : { provider: null, error: 'NO_PROVIDER_AVAILABLE' };
+  }
+
   if (host.spotify.connected && track.spotify_id) {
     return { provider: 'spotify', id: track.spotify_id };
   }
@@ -57,7 +80,16 @@ export function selectProvider(
  * `preferProvider` envoyé à POST /launch — backend choisit ensuite par track
  * avec fallback intégré.
  */
-export function preferredProvider(host: HostProviders): 'spotify' | 'youtube' | null {
+export function preferredProvider(
+  host: HostProviders,
+  forcedSource?: ForcedSource,
+): 'spotify' | 'youtube' | 'apple_music' | null {
+  // feat/forced-source — la playlist décide en premier. Le backend
+  // re-verrouille de toute façon au launch, mais on envoie le bon
+  // preferProvider pour que l'UI et les logs soient cohérents.
+  if (forcedSource === 'apple_music' || forcedSource === 'youtube' || forcedSource === 'spotify') {
+    return forcedSource;
+  }
   // Pivot YouTube-only — Spotify sorti du flow officiel. On exige
   // YouTube connecté ; ignore Spotify même si dispo.
   if (host.youtube.connected) return 'youtube';

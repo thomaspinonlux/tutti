@@ -876,6 +876,13 @@ model OfficialPlaylist {
   ///     track (= devine l'ŒUVRE, ex: "Le Roi Lion" pour la chanson
   ///     "Circle of Life"). Câblé au clone-on-launch (cf. library.ts).
   guess_mode           String?            @db.VarChar(16)
+  /// feat/forced-source — source audio VERROUILLÉE pour cette playlist :
+  ///   'apple_music' | 'youtube' | 'spotify' | null (= choix du host).
+  /// Quand elle est posée, elle écrase le `preferProvider` demandé au launch :
+  /// une playlist musique reste sur Apple même si le host a Spotify connecté,
+  /// une playlist films/génériques reste sur YouTube. Aucun repli croisé —
+  /// une track sans l'id de la source verrouillée est simplement écartée.
+  forced_source        String?            @db.VarChar(16)
   created_at           DateTime           @default(now()) @db.Timestamptz(6)
   updated_at           DateTime           @updatedAt @db.Timestamptz(6)
 
