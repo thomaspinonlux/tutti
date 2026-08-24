@@ -78,3 +78,6 @@ tmp/
 .husky/_/
 .vercel
 exports/
+
+# Clés MusicKit Apple (ne JAMAIS committer)
+*.p8

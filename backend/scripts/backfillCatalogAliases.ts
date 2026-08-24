@@ -108,9 +108,22 @@ async function main(): Promise<void> {
   // fix/official-import-canonical — cible les title_aliases vides ET le socle
   // 'heuristic' posé par l'import officiel (upgrade IA), sans toucher 'ai'/
   // 'catalog' déjà enrichis.
+  //
+  // fix/artist-aliases-orphelins — on cible AUSSI les lignes dont seuls les
+  // artist_aliases sont vides. Cas réel : quand generateArtistAliases échoue
+  // ou renvoie [], la phase 2b écrivait quand même la ligne avec
+  // artist_aliases: [] et aliases_source 'ai' → la ligne devenait invisible à
+  // toutes les relances suivantes. Ces lignes sont désormais reprises, et la
+  // phase 2b ne régénère que ce qui manque (cf. plus bas).
   const catalogEmpty = await prisma.officialPlaylistTrack.findMany({
-    where: { OR: [{ title_aliases: { isEmpty: true } }, { aliases_source: 'heuristic' }] },
-    select: { id: true, title: true, artist: true, youtube_id: true },
+    where: {
+      OR: [
+        { title_aliases: { isEmpty: true } },
+        { artist_aliases: { isEmpty: true } },
+        { aliases_source: 'heuristic' },
+      ],
+    },
+    select: { id: true, title: true, artist: true, youtube_id: true, title_aliases: true },
   });
   console.info(`[CatalogAliases] ${catalogEmpty.length} tracks catalogue à (ré)enrichir`);
 
@@ -151,6 +164,17 @@ async function main(): Promise<void> {
   for (const ws of wsTracks) {
     if (ws.artist.aliases.length > 0) {
       knownArtistAliases.set(lower(ws.artist.canonical_name), ws.artist.aliases);
+    }
+  }
+  // fix/artist-aliases-orphelins — le catalogue lui-même est un cache : si un
+  // artiste a déjà des alias sur une autre ligne, inutile de rappeler l'IA.
+  const catalogKnown = await prisma.officialPlaylistTrack.findMany({
+    where: { NOT: { artist_aliases: { isEmpty: true } } },
+    select: { artist: true, artist_aliases: true },
+  });
+  for (const ck of catalogKnown) {
+    if (!knownArtistAliases.has(lower(ck.artist))) {
+      knownArtistAliases.set(lower(ck.artist), ck.artist_aliases);
     }
   }
   const artistsToGen = artistNames.filter((a) => !knownArtistAliases.has(lower(a)));
@@ -194,19 +218,42 @@ async function main(): Promise<void> {
 
   // 2b. Titres par track + write title_aliases + artist_aliases (cache).
   let tracksGenerated = 0;
+  let artistOnlyFilled = 0;
   let failed = 0;
   if (!dryRun && !budgetExceeded) {
     await Promise.all(
       targets.map((ct) =>
         limiter(async () => {
           if (budgetExceeded) return;
+          const artistAliases = knownArtistAliases.get(lower(ct.artist)) ?? [];
+
+          // fix/artist-aliases-orphelins — la ligne a déjà ses alias de TITRE :
+          // seul l'artiste manquait. On complète sans rappeler l'IA (coût 0).
+          if (ct.title_aliases.length > 0) {
+            if (artistAliases.length > 0) {
+              await prisma.officialPlaylistTrack.update({
+                where: { id: ct.id },
+                data: { artist_aliases: artistAliases },
+              });
+              artistOnlyFilled += 1;
+            } else {
+              console.warn(
+                `[CatalogAliases] artiste sans alias, ligne laissée en l'état : « ${ct.artist} » — ${ct.title}`,
+              );
+              failed += 1;
+            }
+            return;
+          }
+
           const r = await generateAliases(ct.title, ct.artist);
           addCost(r.usage);
           if (r.error || r.aliases.length === 0) {
             failed += 1;
             return;
           }
-          const artistAliases = knownArtistAliases.get(lower(ct.artist)) ?? [];
+          if (artistAliases.length === 0) {
+            console.warn(`[CatalogAliases] aucun alias d'artiste pour « ${ct.artist} »`);
+          }
           await prisma.officialPlaylistTrack.update({
             where: { id: ct.id },
             data: { title_aliases: r.aliases, artist_aliases: artistAliases, aliases_source: 'ai' },
@@ -232,6 +279,7 @@ async function main(): Promise<void> {
   console.info(`  Migrées depuis workspace : ${migrated}${dryRun ? ' (DRY)' : ''}`);
   console.info(`  Artistes générés (IA)    : ${artistsGenerated}`);
   console.info(`  Tracks générées (IA)     : ${tracksGenerated}`);
+  console.info(`  Artistes complétés seuls : ${artistOnlyFilled}`);
   console.info(`  Échecs génération        : ${failed}`);
   console.info(`  Coût total               : ${cumulativeCostEur.toFixed(2)}€`);
   console.info(
