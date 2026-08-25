@@ -404,7 +404,11 @@
         "officialLibrary": "La bibliothèque officielle Tutti arrive bientôt 🎵",
         "officialQuizLibrary": "La bibliothèque Quizz officielle Tutti arrive bientôt 🎯"
       },
-      "lvl_mix_em": "Mix Facile/Moyen"
+      "lvl_mix_em": "Mix Facile/Moyen",
+      "lyricsShow": "Paroles",
+      "lyricsHide": "Masquer les paroles",
+      "lyricsWrong": "Paroles fausses",
+      "lyricsRemoved": "Paroles retirées pour ce titre"
     },
     "toastJoined": "{{pseudo}} a rejoint la partie",
     "toastKicked": "{{pseudo}} a été exclu",

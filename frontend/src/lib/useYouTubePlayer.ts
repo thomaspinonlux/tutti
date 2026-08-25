@@ -71,6 +71,8 @@ export interface UseYouTubePlayerResult {
   error: string | null;
   isPlaying: boolean;
   positionMs: number;
+  /** feat/synced-lyrics — position RÉELLE du lecteur (cf. useAppleMusicPlayer). */
+  readPositionMs: () => number;
   durationMs: number;
   /** Charge un videoId et démarre lecture (avec start/end anti-pub). */
   play: (videoId: string, opts?: { startSec?: number; endSec?: number }) => Promise<boolean>;
@@ -1092,11 +1094,23 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
     };
   }, []);
 
+  // feat/synced-lyrics — position réelle lue directement sur le player YT.
+  const readPositionMs = useCallback((): number => {
+    const p = playerRef.current;
+    if (!p || typeof p.getCurrentTime !== 'function') return 0;
+    try {
+      return Math.round((p.getCurrentTime() ?? 0) * 1000);
+    } catch {
+      return 0;
+    }
+  }, []);
+
   return {
     status,
     error,
     isPlaying,
     positionMs,
+    readPositionMs,
     durationMs,
     play,
     pause,
