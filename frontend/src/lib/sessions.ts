@@ -627,7 +627,9 @@ export async function masterLaunchOfficial(
   playlistId: string,
   token: string,
   preferProvider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
-  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+  // fix/mix-em-types — aligné sur launchLibraryPlaylist (library.ts), qui
+  // accepte déjà 'MIX_EM'.
+  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
 ): Promise<{ round: SessionRoundWithPlaylist; state: CurrentTrackState | null }> {
   return api(
     `/api/sessions/${encodeURIComponent(sessionId)}/master/library/playlists/${encodeURIComponent(playlistId)}/launch`,

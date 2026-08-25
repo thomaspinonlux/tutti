@@ -1141,7 +1141,8 @@ function HostPageInner(): JSX.Element {
         trackCount: number;
         // feat/thematic-level-filter — niveau choisi sur une thématique éclatée
         // (clone-filtré au launch). undefined = tous niveaux (Mix / décennies).
-        difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT';
+        // fix/mix-em-types — inclut 'MIX_EM' (mix Facile/Moyen), cf. LaunchLevel.
+        difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM';
       };
   const [pendingFirstPlay, setPendingFirstPlay] = useState<PendingFirstPlay | null>(null);
 
@@ -1187,7 +1188,10 @@ function HostPageInner(): JSX.Element {
   // feat/thematic-level-filter — niveau choisi sur une thématique éclatée, relu
   // au launch (clone-filtré). Ref : survit pick→preview→confirm. undefined =
   // tous niveaux (Mix / décennies / thématique non éclatée).
-  const pickedDifficultyRef = useRef<'EASY' | 'MEDIUM' | 'EXPERT' | undefined>(undefined);
+  // fix/mix-em-types — inclut 'MIX_EM' (mix Facile/Moyen), cf. LaunchLevel.
+  const pickedDifficultyRef = useRef<'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM' | undefined>(
+    undefined,
+  );
   const [previewReport, setPreviewReport] = useState<PlayabilityReport | null>(null);
 
   const fetchHostProviders = async (): Promise<HostProviders> => {
@@ -1236,7 +1240,9 @@ function HostPageInner(): JSX.Element {
   const openOfficialPreview = async (
     playlistId: string,
     provider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
-    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+    // fix/mix-em-types — LaunchLevel a gagné 'MIX_EM' (mix Facile/Moyen) en
+    // 9a41413 ; cette signature n'avait pas suivi → build frontend cassé.
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
   ): Promise<void> => {
     if (!session) return;
     pickedProviderRef.current = provider; // source choisie → relue au launch
@@ -1265,7 +1271,9 @@ function HostPageInner(): JSX.Element {
   const handlePickOfficial = async (
     summary: LibraryPlaylistSummary,
     provider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
-    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+    // fix/mix-em-types — LaunchLevel a gagné 'MIX_EM' (mix Facile/Moyen) en
+    // 9a41413 ; cette signature n'avait pas suivi → build frontend cassé.
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
   ): Promise<void> => {
     if (summary.locked) return; // ne devrait pas arriver — card disabled
     await openOfficialPreview(summary.id, provider, difficulty);
