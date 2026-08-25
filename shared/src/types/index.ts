@@ -280,6 +280,17 @@ export interface CurrentTrackState {
   phase2_started_at: string | null;
   /** Toutes les bonnes réponses enregistrées jusque-là, dans l'ordre. */
   correct_answers: CorrectAnswerEntry[];
+  /**
+   * feat/synced-lyrics — des paroles SYNCHRONISÉES vérifiées existent-elles
+   * pour ce morceau ? Pilote l'affichage du bouton « Paroles » côté animateur.
+   *
+   * Ne contient JAMAIS le texte : les paroles trahissent la réponse, elles ne
+   * sont servies que par GET /api/sessions/by-code/:code/lyrics/current, et
+   * seulement après révélation. Ce booléen seul ne révèle rien.
+   *
+   * Optionnel pour rétrocompat avec les broadcasts plus anciens (absent = false).
+   */
+  lyrics_available?: boolean;
 }
 
 /** Durée de la phase 2 en ms (constante partagée frontend ↔ backend). */

@@ -30,6 +30,7 @@ import { getCumulativeScores } from './scores.js';
 import { buildCurrentTrackStateSnapshot, getEffectiveRoundTrackCount } from './gameplayCore.js';
 import { getFocusedSelection } from './playlistSelectionStore.js';
 import { getQrOverlay } from './qrOverlayStore.js';
+import { getLyricsOverlay } from './lyrics/lyricsOverlayStore.js';
 import type { GameMode, Team } from '@tutti/shared';
 
 export type ScreenState =
@@ -61,6 +62,12 @@ export type ScreenState =
       roundsTotal: number;
       /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
       qr_overlay: boolean;
+      /**
+       * feat/synced-lyrics — animateur a demandé l'affichage des paroles.
+       * Ne contient PAS le texte : la TV le charge par la route publique
+       * (qui refuse tant que le morceau n'est pas révélé).
+       */
+      lyrics_overlay: boolean;
       lastUpdate: string;
     }
   | {
@@ -72,6 +79,8 @@ export type ScreenState =
       currentTrack: CurrentTrackState | null;
       /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
       qr_overlay: boolean;
+      /** feat/synced-lyrics — cf. variante PLAYING. */
+      lyrics_overlay: boolean;
       lastUpdate: string;
     }
   | {
@@ -321,6 +330,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       session: serializeSession(session),
       currentTrack,
       qr_overlay: getQrOverlay(workspaceId),
+      lyrics_overlay: getLyricsOverlay(session.id),
       lastUpdate,
     };
   }
@@ -350,6 +360,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       roundPosition: playingRound.position,
       roundsTotal,
       qr_overlay: getQrOverlay(workspaceId),
+      lyrics_overlay: getLyricsOverlay(session.id),
       lastUpdate,
     };
   }

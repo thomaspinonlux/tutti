@@ -26,6 +26,12 @@ import { z } from 'zod';
 import { Prisma, RoundStatus, ScoreEventType } from '@prisma/client';
 import type { GameMode, Team } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
+import { clearLyricsOverlay } from '../lib/lyrics/lyricsOverlayStore.js';
+import {
+  toggleLyricsOverlay,
+  rejectCurrentLyrics,
+  lyricsErrorStatus,
+} from '../lib/lyrics/lyricsActions.js';
 import { requireMasterParticipant } from '../middleware/master.js';
 import { broadcastToSession } from '../socket/index.js';
 import { clearActiveTrack, getActiveTrack, restartActiveTrack } from '../lib/gameState.js';
@@ -465,6 +471,37 @@ router.post('/reveal', giveAnswerHandler);
 
 // ── POST /pause ───────────────────────────────────────────────────────────
 
+// ── feat/synced-lyrics — overlay paroles (télécommande animateur) ─────────
+// Mêmes gardes que la route host (lib/lyrics/lyricsActions.ts) : morceau
+// révélé + paroles vérifiées, sinon 409.
+
+router.post('/lyrics-overlay', async (req: Request<{ id: string }>, res: Response) => {
+  const parsed = z.object({ on: z.boolean() }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'INVALID_BODY', message: parsed.error.message } });
+    return;
+  }
+  const result = await toggleLyricsOverlay(req.master!.sessionId, parsed.data.on);
+  if (!result.ok) {
+    res
+      .status(lyricsErrorStatus(result.error!))
+      .json({ error: { code: result.error, message: 'Paroles indisponibles pour ce morceau' } });
+    return;
+  }
+  res.json({ ok: true, on: parsed.data.on });
+});
+
+router.post('/lyrics-reject', async (req: Request<{ id: string }>, res: Response) => {
+  const result = await rejectCurrentLyrics(req.master!.sessionId);
+  if (!result.ok) {
+    res
+      .status(lyricsErrorStatus(result.error!))
+      .json({ error: { code: result.error, message: 'Aucun morceau courant' } });
+    return;
+  }
+  res.json({ ok: true });
+});
+
 router.post('/pause', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   try {
     const session = await prisma.session.update({
@@ -624,6 +661,9 @@ router.post('/end-session', async (req: Request<{ id: string }>, res: Response):
         team_id: p.team_id,
       })),
     });
+    // feat/synced-lyrics — fin de session (télécommande).
+    clearLyricsOverlay(session.id);
+    broadcastToSession(session.id, 'lyrics:overlay', { on: false });
     broadcastToSession(session.id, 'session:ended', { session, cumulative });
     res.json({ session, cumulative });
   } catch (err: unknown) {

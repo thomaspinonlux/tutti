@@ -52,6 +52,12 @@ export type ScreenState =
       roundsTotal: number;
       /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
       qr_overlay: boolean;
+      /**
+       * feat/synced-lyrics — l'animateur a demandé l'affichage des paroles.
+       * Ne porte PAS le texte : la TV le charge via fetchCurrentLyrics(), qui
+       * refuse tant que le morceau n'est pas révélé.
+       */
+      lyrics_overlay: boolean;
       lastUpdate: string;
     }
   | {
@@ -63,6 +69,8 @@ export type ScreenState =
       currentTrack: CurrentTrackState | null;
       /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
       qr_overlay: boolean;
+      /** feat/synced-lyrics — cf. variante PLAYING. */
+      lyrics_overlay: boolean;
       lastUpdate: string;
     }
   | {

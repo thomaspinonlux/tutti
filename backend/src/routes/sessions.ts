@@ -32,6 +32,13 @@ import {
 import type { Team, GameMode as GameModeType, ParticipantRole } from '@tutti/shared';
 import { isAnimatorRole } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
+import { clearLyricsOverlay } from '../lib/lyrics/lyricsOverlayStore.js';
+import { getUsableLyrics } from '../lib/lyrics/lyricsStore.js';
+import {
+  toggleLyricsOverlay,
+  rejectCurrentLyrics,
+  lyricsErrorStatus,
+} from '../lib/lyrics/lyricsActions.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { generateUniqueShortCode } from '../lib/shortCode.js';
@@ -42,6 +49,7 @@ import {
   DEFAULT_SESSION_SIZE,
   getEffectiveRoundTrackCount,
   pickRandomTrackIdsForRound,
+  isTrackAnswerPublic,
 } from '../lib/gameplayCore.js';
 import { signParticipantToken } from '../lib/participantToken.js';
 import { getCumulativeScores } from '../lib/scores.js';
@@ -368,6 +376,73 @@ router.get(
       res
         .status(500)
         .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur récupération session' } });
+    }
+  },
+);
+
+// ── GET /by-code/:short_code/lyrics/current (public, TV) ─────────────────
+// feat/synced-lyrics — sert le TEXTE des paroles du morceau courant.
+//
+// C'EST LA GARDE ANTI-TRICHE CENTRALE. Les paroles donnent la réponse : cette
+// route refuse tant que le morceau n'est pas révélé (403 LYRICS_NOT_PUBLIC).
+// En phase 1/2, la réponse ne fuit donc ni par l'état socket (le state ne
+// porte qu'un booléen), ni par ici.
+//
+// `no-store` : jamais de mise en cache d'une réponse dépendant de la phase.
+
+router.get(
+  '/by-code/:short_code/lyrics/current',
+  async (req: Request<{ short_code: string }>, res: Response): Promise<void> => {
+    res.setHeader('Cache-Control', 'no-store');
+    const code = req.params.short_code.toUpperCase();
+    try {
+      const session = await prisma.session.findUnique({
+        where: { short_code: code },
+        select: { id: true },
+      });
+      if (!session) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+        return;
+      }
+      const round = await prisma.sessionRound.findFirst({
+        where: { session_id: session.id, status: 'PLAYING' },
+        select: { id: true },
+      });
+      if (!round) {
+        res.status(404).json({ error: { code: 'NO_ACTIVE_TRACK', message: 'Aucune manche' } });
+        return;
+      }
+      const active = getActiveTrack(round.id);
+      if (!active) {
+        res.status(404).json({ error: { code: 'NO_ACTIVE_TRACK', message: 'Aucun morceau' } });
+        return;
+      }
+      // Garde : jamais de paroles avant la révélation.
+      if (!isTrackAnswerPublic(active.phase)) {
+        res
+          .status(403)
+          .json({ error: { code: 'LYRICS_NOT_PUBLIC', message: 'Morceau pas encore révélé' } });
+        return;
+      }
+      const track = await prisma.track.findUnique({
+        where: { id: active.track_id },
+        select: { provider: true, provider_track_id: true },
+      });
+      if (!track) {
+        res
+          .status(404)
+          .json({ error: { code: 'NO_ACTIVE_TRACK', message: 'Morceau introuvable' } });
+        return;
+      }
+      const lyrics = await getUsableLyrics(track.provider, track.provider_track_id);
+      if (!lyrics) {
+        res.status(404).json({ error: { code: 'LYRICS_UNAVAILABLE', message: 'Pas de paroles' } });
+        return;
+      }
+      res.json({ provider_track_id: track.provider_track_id, lrc: lyrics.lrc });
+    } catch (err: unknown) {
+      console.error('[GET /sessions/by-code/:code/lyrics/current] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL', message: 'Erreur serveur' } });
     }
   },
 );
@@ -762,6 +837,63 @@ router.post(
 
 // ── POST /:id/end (host) — termine toute la session ───────────────────────
 
+// ── feat/synced-lyrics — overlay paroles (console animateur) ──────────────
+// Affichage MANUEL uniquement. Les gardes (morceau révélé + paroles vérifiées)
+// vivent dans lib/lyrics/lyricsActions.ts, partagées avec la route master.
+
+router.post(
+  '/:id/lyrics-overlay',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = z.object({ on: z.boolean() }).safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'INVALID_BODY', message: parsed.error.message } });
+      return;
+    }
+    const session = await prisma.session.findFirst({
+      where: { id: req.params.id, establishment: { workspace_id: req.workspaceId! } },
+      select: { id: true },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    const result = await toggleLyricsOverlay(session.id, parsed.data.on);
+    if (!result.ok) {
+      res
+        .status(lyricsErrorStatus(result.error!))
+        .json({ error: { code: result.error, message: 'Paroles indisponibles pour ce morceau' } });
+      return;
+    }
+    res.json({ ok: true, on: parsed.data.on });
+  },
+);
+
+router.post(
+  '/:id/lyrics-reject',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const session = await prisma.session.findFirst({
+      where: { id: req.params.id, establishment: { workspace_id: req.workspaceId! } },
+      select: { id: true },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    const result = await rejectCurrentLyrics(session.id);
+    if (!result.ok) {
+      res
+        .status(lyricsErrorStatus(result.error!))
+        .json({ error: { code: result.error, message: 'Aucun morceau courant' } });
+      return;
+    }
+    res.json({ ok: true });
+  },
+);
+
 router.post(
   '/:id/end',
   requireAuth,
@@ -806,6 +938,9 @@ router.post(
           team_id: p.team_id,
         })),
       });
+      // feat/synced-lyrics — fin de session : on éteint l'overlay paroles.
+      clearLyricsOverlay(session.id);
+      broadcastToSession(session.id, 'lyrics:overlay', { on: false });
       broadcastToSession(session.id, 'session:ended', { session, cumulative });
       res.json({ session, cumulative });
     } catch (err: unknown) {
@@ -850,6 +985,9 @@ router.post(
           is_paused: false,
         },
       });
+      // feat/synced-lyrics — abandon : idem, plus de paroles à l'écran.
+      clearLyricsOverlay(req.params.id);
+      broadcastToSession(req.params.id, 'lyrics:overlay', { on: false });
       // Pas de broadcast 'session:ended' — abandon silencieux. L'écran TV
       // détectera le passage à IDLE via polling /screen-state.
       res.json({ ok: true });
