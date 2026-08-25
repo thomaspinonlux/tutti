@@ -51,6 +51,16 @@ export interface MasterMenuProps {
   onSeekTo?: (ms: number) => void;
   /** feat/master-volume — volume 0..1 → commande serveur, la console applique. */
   onSetVolume?: (v: number) => void;
+  /**
+   * feat/synced-lyrics — paroles disponibles ET morceau révélé ? Calculé par
+   * l'appelant depuis currentTrack.lyrics_available + la phase. Si false, le
+   * bouton n'est PAS rendu (règle : pas de paroles vérifiées → pas de bouton).
+   */
+  lyricsAvailable?: boolean;
+  /** Overlay paroles actuellement affiché (source de vérité = serveur). */
+  lyricsOn?: boolean;
+  onToggleLyrics?: (on: boolean) => void;
+  onRejectLyrics?: () => void;
   /** Position/durée diffusées par la console (track:progress). */
   progress?: MasterProgress | null;
   onEndRound?: () => Promise<void>;
@@ -237,6 +247,31 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           <span className="font-mono text-xs text-ink-soft tabular-nums w-9 text-right">
             {Math.round(volume * 100)}%
           </span>
+        </div>
+      )}
+
+      {/* ── feat/synced-lyrics — paroles (affichage MANUEL) ───────────────
+          Rendu UNIQUEMENT si des paroles vérifiées existent pour le morceau
+          ET qu'il est révélé (l'appelant calcule `lyricsAvailable`). */}
+      {props.lyricsAvailable && props.onToggleLyrics && (
+        <div className="flex items-center gap-2">
+          <CtrlButton
+            tone={props.lyricsOn ? 'go' : 'neutral'}
+            icon="🎤"
+            label={props.lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
+            onClick={() => props.onToggleLyrics!(!props.lyricsOn)}
+            disabled={props.busy}
+          />
+          {props.onRejectLyrics && (
+            <button
+              type="button"
+              onClick={() => props.onRejectLyrics!()}
+              disabled={props.busy}
+              className="shrink-0 px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-ink-soft underline underline-offset-2 disabled:opacity-40"
+            >
+              {t('host.session.lyricsWrong')}
+            </button>
+          )}
         </div>
       )}
 
