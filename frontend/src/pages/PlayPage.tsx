@@ -661,7 +661,9 @@ export function PlayPage(): JSX.Element {
   const handleMasterPickOfficial = async (
     playlistId: string,
     provider: 'youtube' | 'spotify' | 'apple_music',
-    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+    // fix/mix-em-types — LaunchLevel a gagné 'MIX_EM' (mix Facile/Moyen) en
+    // 9a41413 ; cette signature n'avait pas suivi → build frontend cassé.
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
   ): Promise<void> => {
     setMasterPickerOpen(false);
     return masterCall(async () => {

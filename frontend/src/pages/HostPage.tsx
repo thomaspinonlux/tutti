@@ -47,8 +47,14 @@ import {
   startSession,
   toggleParticipantMaster,
 } from '../lib/sessions.js';
-import { abandonSession, postQrOverlay } from '../lib/screenState.js';
+import {
+  abandonSession,
+  postQrOverlay,
+  postLyricsOverlay,
+  postRejectLyrics,
+} from '../lib/screenState.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
+import { fetchCurrentLyrics, type LrcLine } from '../lib/lyrics.js';
 import { connectAsHost } from '../lib/socket.js';
 import { getMe } from '../lib/me.js';
 import { useSpotifyPlayer } from '../lib/useSpotifyPlayer.js';
@@ -577,6 +583,13 @@ function HostPageInner(): JSX.Element {
         // feat/master-volume — la manette a réglé le volume → la CONSOLE applique
         // sur SON lecteur (cf. effet pendingVolume plus bas). Même logique que le
         // seek : state + effet pour lire le lecteur courant (pas de closure périmée).
+        // feat/synced-lyrics — le serveur fait autorité sur l'affichage des
+        // paroles (bouton console OU télécommande). `available: false` arrive
+        // après un rejet « Paroles fausses » → le bouton doit disparaître.
+        socket.on('lyrics:overlay', ({ on, available }: { on: boolean; available?: boolean }) => {
+          setLyricsOn(on);
+          if (available === false) setLyricsRejected(true);
+        });
         socket.on('track:volume', ({ volume }: { volume: number }) => {
           console.info('[Socket] track:volume received →', Math.round(volume * 100), '%');
           setPendingVolume({ v: volume, at: Date.now() });
@@ -666,6 +679,57 @@ function HostPageInner(): JSX.Element {
       return next;
     });
   };
+  // ── feat/synced-lyrics — overlay paroles (affichage MANUEL) ─────────────
+  // `lyricsOn` suit l'événement serveur `lyrics:overlay`, jamais un état
+  // optimiste : le serveur est la source de vérité (il refuse si le morceau
+  // n'est pas révélé ou si aucune parole vérifiée n'existe).
+  const [lyricsOn, setLyricsOn] = useState(false);
+  const [lyricsLines, setLyricsLines] = useState<LrcLine[] | null>(null);
+  const [lyricsRejected, setLyricsRejected] = useState(false);
+
+  // Le bouton n'existe que si des paroles vérifiées existent ET que le morceau
+  // est révélé (les paroles trahissent la réponse).
+  const lyricsPhaseOk =
+    currentTrack?.phase === 'phase3' || currentTrack?.phase === 'phase3-revealed';
+  const canShowLyrics = !!currentTrack?.lyrics_available && lyricsPhaseOk && !lyricsRejected;
+
+  const toggleLyrics = (): void => {
+    if (!session) return;
+    const next = !lyricsOn;
+    void postLyricsOverlay(session.id, next).catch(() => undefined);
+  };
+
+  const rejectLyrics = (): void => {
+    if (!session) return;
+    setLyricsRejected(true);
+    void postRejectLyrics(session.id).catch(() => undefined);
+  };
+
+  // Nouveau morceau → on repart d'un état propre (le serveur éteint déjà
+  // l'overlay, on remet aussi le drapeau de rejet local à zéro).
+  useEffect(() => {
+    setLyricsRejected(false);
+    setLyricsLines(null);
+  }, [currentTrack?.track_id]);
+
+  // Mode B : la console AFFICHE elle-même les paroles, il lui faut le texte.
+  // (On relit session.has_animator ici : `isModeB` est défini plus bas.)
+  useEffect(() => {
+    const modeB = session ? !session.has_animator : false;
+    if (!modeB || !lyricsOn || !session?.short_code) {
+      setLyricsLines(null);
+      return;
+    }
+    let cancelled = false;
+    void fetchCurrentLyrics(session.short_code).then((lines) => {
+      if (!cancelled) setLyricsLines(lines);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, lyricsOn, currentTrack?.track_id]);
+
   // Sort de la partie (ou changement de phase) → on coupe l'overlay pour ne
   // pas le laisser collé sur l'écran de sélection / podium.
   useEffect(() => {
@@ -1077,7 +1141,8 @@ function HostPageInner(): JSX.Element {
         trackCount: number;
         // feat/thematic-level-filter — niveau choisi sur une thématique éclatée
         // (clone-filtré au launch). undefined = tous niveaux (Mix / décennies).
-        difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT';
+        // fix/mix-em-types — inclut 'MIX_EM' (mix Facile/Moyen), cf. LaunchLevel.
+        difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM';
       };
   const [pendingFirstPlay, setPendingFirstPlay] = useState<PendingFirstPlay | null>(null);
 
@@ -1123,7 +1188,10 @@ function HostPageInner(): JSX.Element {
   // feat/thematic-level-filter — niveau choisi sur une thématique éclatée, relu
   // au launch (clone-filtré). Ref : survit pick→preview→confirm. undefined =
   // tous niveaux (Mix / décennies / thématique non éclatée).
-  const pickedDifficultyRef = useRef<'EASY' | 'MEDIUM' | 'EXPERT' | undefined>(undefined);
+  // fix/mix-em-types — inclut 'MIX_EM' (mix Facile/Moyen), cf. LaunchLevel.
+  const pickedDifficultyRef = useRef<'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM' | undefined>(
+    undefined,
+  );
   const [previewReport, setPreviewReport] = useState<PlayabilityReport | null>(null);
 
   const fetchHostProviders = async (): Promise<HostProviders> => {
@@ -1172,7 +1240,9 @@ function HostPageInner(): JSX.Element {
   const openOfficialPreview = async (
     playlistId: string,
     provider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
-    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+    // fix/mix-em-types — LaunchLevel a gagné 'MIX_EM' (mix Facile/Moyen) en
+    // 9a41413 ; cette signature n'avait pas suivi → build frontend cassé.
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
   ): Promise<void> => {
     if (!session) return;
     pickedProviderRef.current = provider; // source choisie → relue au launch
@@ -1201,7 +1271,9 @@ function HostPageInner(): JSX.Element {
   const handlePickOfficial = async (
     summary: LibraryPlaylistSummary,
     provider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
-    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+    // fix/mix-em-types — LaunchLevel a gagné 'MIX_EM' (mix Facile/Moyen) en
+    // 9a41413 ; cette signature n'avait pas suivi → build frontend cassé.
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
   ): Promise<void> => {
     if (summary.locked) return; // ne devrait pas arriver — card disabled
     await openOfficialPreview(summary.id, provider, difficulty);
@@ -1757,6 +1829,20 @@ function HostPageInner(): JSX.Element {
           busy={busy}
           positionMs={audioPositionMs}
           durationMs={audioDurationMs}
+          lyrics={
+            lyricsLines
+              ? {
+                  lines: lyricsLines,
+                  // Position RÉELLE du lecteur (mode B : le son sort d'ici),
+                  // pas l'état React à 1 Hz — sinon les paroles saccadent.
+                  getPositionMs: () =>
+                    audioProvider === 'apple_music'
+                      ? apple.readPositionMs()
+                      : youtube.readPositionMs(),
+                  paused: session?.is_paused ?? false,
+                }
+              : undefined
+          }
           onSkipTrack={handleSkipTrack}
           onGiveAnswer={handleGiveAnswer}
           onNextTrack={handleNextTrack}
@@ -2161,7 +2247,36 @@ function HostPageInner(): JSX.Element {
             {/* feat/tv-join-qr-codes (D) — petit QR en coin pendant la partie ;
                 clic → overlay QR géant sur la TV (re-clic → off). */}
             {effectivePhase === 'roundPlaying' && playingRound && (
-              <JoinQrCorner joinCode={session.short_code} onClick={toggleQrBig} active={qrBig} />
+              <>
+                <JoinQrCorner joinCode={session.short_code} onClick={toggleQrBig} active={qrBig} />
+                {/* feat/synced-lyrics — bouton PAROLES (affichage manuel).
+                  Rendu UNIQUEMENT si des paroles vérifiées existent pour ce
+                  morceau ET qu'il est révélé. Sinon : pas de bouton du tout. */}
+                {canShowLyrics && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleLyrics}
+                      disabled={busy}
+                      aria-pressed={lyricsOn}
+                      className={`px-3 py-2 font-mono text-xs uppercase tracking-wider border-2 border-ink rounded transition-colors disabled:opacity-40 ${
+                        lyricsOn ? 'bg-basil text-cream' : 'bg-white/[0.06] text-white/70'
+                      }`}
+                    >
+                      🎤 {lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={rejectLyrics}
+                      disabled={busy}
+                      title={t('host.session.lyricsRemoved')}
+                      className="px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-white/45 underline underline-offset-2 disabled:opacity-40"
+                    >
+                      {t('host.session.lyricsWrong')}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
 
             {effectivePhase === 'intermission' &&

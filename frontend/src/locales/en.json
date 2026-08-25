@@ -404,7 +404,11 @@
         "officialLibrary": "The Tutti official library is coming soon 🎵",
         "officialQuizLibrary": "The Tutti Quizz library is coming soon 🎯"
       },
-      "lvl_mix_em": "Easy/Medium mix"
+      "lvl_mix_em": "Easy/Medium mix",
+      "lyricsShow": "Lyrics",
+      "lyricsHide": "Hide lyrics",
+      "lyricsWrong": "Wrong lyrics",
+      "lyricsRemoved": "Lyrics removed for this track"
     },
     "toastJoined": "{{pseudo}} joined the game",
     "toastKicked": "{{pseudo}} was kicked",

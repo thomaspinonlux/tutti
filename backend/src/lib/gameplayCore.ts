@@ -15,6 +15,8 @@ import { DEFAULT_SESSION_SIZE } from '@tutti/shared';
 import { prisma } from './prisma.js';
 import type { Tier } from '../config/levelWeights.js';
 import { broadcastToSession, emitTrackAnswer } from '../socket/index.js';
+import { getUsableLyrics } from './lyrics/lyricsStore.js';
+import { clearLyricsOverlay } from './lyrics/lyricsOverlayStore.js';
 import {
   clearActiveTrack,
   setActiveTrack,
@@ -195,6 +197,14 @@ export async function buildAndBroadcastTrack(
   if (!playlistTrack) return null;
   const track = playlistTrack.track;
 
+  // feat/synced-lyrics — des paroles vérifiées existent-elles pour ce morceau ?
+  // Simple booléen : le TEXTE n'est jamais dans l'état (il trahirait la
+  // réponse). Il n'est servi qu'après révélation, par la route dédiée.
+  // Best-effort : une erreur DB ne doit jamais empêcher un morceau de démarrer.
+  const lyricsAvailable = await getUsableLyrics(track.provider, track.provider_track_id)
+    .then((l) => l !== null)
+    .catch(() => false);
+
   const nowMs = Date.now();
   const state: CurrentTrackState = {
     round_id: round.id,
@@ -212,7 +222,13 @@ export async function buildAndBroadcastTrack(
     phase: 'phase1',
     phase2_started_at: null,
     correct_answers: [],
+    lyrics_available: lyricsAvailable,
   };
+
+  // Nouveau morceau → les paroles du précédent ne doivent JAMAIS rester à
+  // l'écran. L'animateur devra rappuyer sur « Paroles » (affichage manuel).
+  clearLyricsOverlay(sessionId);
+  broadcastToSession(sessionId, 'lyrics:overlay', { on: false });
 
   setActiveTrack(round.id, {
     round_id: round.id,
@@ -629,6 +645,10 @@ export async function endRoundInternal(
         },
       }
     : null;
+  // feat/synced-lyrics — fin de manche : plus de morceau courant, donc plus de
+  // paroles à l'écran.
+  clearLyricsOverlay(sessionId);
+  broadcastToSession(sessionId, 'lyrics:overlay', { on: false });
   broadcastToSession(sessionId, 'round:ended', { round: enriched });
   return enriched;
 }
@@ -665,6 +685,11 @@ export async function buildCurrentTrackStateSnapshot(
     include: { artist: { select: { canonical_name: true } } },
   });
   if (!track) return null;
+  // feat/synced-lyrics — le snapshot sert au rechargement de page : sans ce
+  // champ, le bouton « Paroles » disparaîtrait après un F5 côté animateur.
+  const lyricsAvailable = await getUsableLyrics(track.provider, track.provider_track_id)
+    .then((l) => l !== null)
+    .catch(() => false);
   return {
     round_id: active.round_id,
     track_index: active.track_index,
@@ -678,6 +703,7 @@ export async function buildCurrentTrackStateSnapshot(
     cover_url: track.cover_url,
     started_at: new Date(active.started_at_ms).toISOString(),
     duration_ms: track.duration_ms,
+    lyrics_available: lyricsAvailable,
     phase: active.phase,
     phase2_started_at: active.phase2_started_at_ms
       ? new Date(active.phase2_started_at_ms).toISOString()

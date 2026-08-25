@@ -24,6 +24,7 @@ import { QRCode } from '../../components/host/QRCode.js';
 import { fireConfetti } from '../../components/ui/Confetti.js';
 import { useTimeElapsed, useTimeRemaining } from './MainScreenView.js';
 import type { MainScreenViewProps } from './MainScreenView.js';
+import { LyricsOverlay } from '../../components/screen/LyricsOverlay.js';
 
 const CORAL = '#FF5C4D';
 const PANEL =
@@ -467,7 +468,8 @@ function ReadyStage({
 
 // ── Vue principale ────────────────────────────────────────────────────────
 export function TvScreenView(props: MainScreenViewProps): JSX.Element {
-  const { session, currentTrack, cumulative, correctAnswers, phase2StartedAt, lastReveal } = props;
+  const { session, currentTrack, cumulative, correctAnswers, phase2StartedAt, lastReveal, lyrics } =
+    props;
   const { t } = useTranslation();
 
   const playingRound = session.rounds.find((r) => r.status === 'PLAYING') ?? null;
@@ -519,7 +521,34 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
         phaseLabel={phaseLabel}
       />
 
-      {isRevealed && currentTrack ? (
+      {isRevealed && currentTrack && lyrics && lyrics.lines.length > 0 ? (
+        /* ── REVEAL + PAROLES ──
+           feat/synced-lyrics — quand l'animateur a demandé les paroles, elles
+           prennent la zone centrale. Pochette / artiste / titre restent
+           visibles, en plus petit, en colonne latérale.
+           DOUBLE GARDE : `isRevealed` conditionne ce bloc — jamais de paroles
+           en phase 1/2, même si la prop est fournie. */
+        <main className="grid flex-1 grid-cols-1 gap-8 px-12 pb-12 lg:grid-cols-[1fr_320px]">
+          <section className="flex min-h-0 items-center justify-center">
+            <LyricsOverlay
+              lines={lyrics.lines}
+              getPositionMs={lyrics.getPositionMs}
+              paused={lyrics.paused}
+            />
+          </section>
+          <aside className="flex flex-col items-center justify-center gap-4 opacity-80">
+            <div className="w-40">
+              <RevealCoverDark track={currentTrack} title={title} />
+            </div>
+            <p className="text-center font-display text-2xl font-bold leading-tight text-white">
+              {title}
+            </p>
+            <p className="text-center font-editorial text-xl italic" style={{ color: CORAL }}>
+              {artist}
+            </p>
+          </aside>
+        </main>
+      ) : isRevealed && currentTrack ? (
         /* ── REVEAL ── */
         <main className="grid flex-1 grid-cols-1 gap-10 px-12 pb-12 lg:grid-cols-[1.5fr_1fr]">
           <section className="flex min-h-0 flex-col items-center justify-center gap-10 lg:flex-row">

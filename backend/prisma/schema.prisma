@@ -347,11 +347,69 @@ model Song {
   artist           Artist                  @relation(fields: [artist_id], references: [id], onDelete: Restrict)
   catalog_tracks   OfficialPlaylistTrack[]
   workspace_tracks Track[]
+  lyrics           TrackLyrics[]
 
   @@index([artist_id])
   @@index([level])
   @@index([themes], type: Gin)
   @@map("songs")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  TRACK_LYRICS (feat/synced-lyrics — paroles synchronisées, affichage MANUEL)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Cache des paroles SYNCHRONISÉES (format LRC) d'un morceau, par provider.
+/// Source : LRCLIB (https://lrclib.net, API publique sans clé). Apple ne
+/// fournit PAS le texte des paroles (MusicKit expose seulement `hasLyrics`).
+///
+/// Règle produit : on n'affiche QUE des paroles vérifiées. `status='ok'` est le
+/// SEUL état affichable ; tout le reste (`unusable`, `rejected`) fait
+/// disparaître le bouton « Paroles » côté animateur. Aucun « meilleur effort ».
+///
+/// Rempli hors ligne par `pnpm prefetch:lyrics` (jamais à la volée pendant une
+/// partie) — cf. lib/lyrics/prefetchLyrics.ts.
+model TrackLyrics {
+  id                   String    @id @default(uuid()) @db.Uuid
+  /// Provider du morceau ('apple_music' en v1 ; 'youtube' possible plus tard).
+  provider             String    @db.VarChar(32)
+  /// ID du morceau côté provider (apple_music_id, video id YouTube…).
+  provider_track_id    String    @db.VarChar(128)
+  /// Rattachement optionnel à la chanson canonique (confort de requête/audit).
+  song_id              String?   @db.Uuid
+  /// Origine des paroles. 'lrclib' en v1.
+  source               String    @db.VarChar(16)
+  /// Id de l'entrée côté source (LRCLIB), pour retrouver/re-vérifier.
+  source_id            Int?
+  /// Durée du morceau CHEZ LE PROVIDER (Apple), en ms. Sert à valider que les
+  /// paroles correspondent bien à CETTE version (et pas à un remix/live).
+  provider_duration_ms Int
+  /// Durée annoncée par la source des paroles, en ms. L'écart avec
+  /// provider_duration_ms est le critère anti-« autre version » (≤ 2 s).
+  source_duration_ms   Int?
+  /// Le LRC brut ligne-à-ligne. NULL si status ≠ 'ok'.
+  synced_lrc           String?
+  /// Nombre de lignes horodatées non vides (garde-fou qualité).
+  line_count           Int       @default(0)
+  /// 'ok'        : paroles synchronisées vérifiées → affichables.
+  /// 'unusable'  : rien d'exploitable trouvé (cf. reason).
+  /// 'rejected'  : rejeté MANUELLEMENT par un animateur (« Paroles fausses »).
+  ///               Définitif : jamais réécrit par le prefetch.
+  status               String    @db.VarChar(16)
+  /// none | plain_only | other_version | too_few_lines | non_monotonic |
+  /// out_of_range | instrumental | manual | fetch_error
+  reason               String?
+  fetched_at           DateTime? @db.Timestamptz(6)
+  checked_at           DateTime? @db.Timestamptz(6)
+  rejected_at          DateTime? @db.Timestamptz(6)
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime  @updatedAt @db.Timestamptz(6)
+
+  song Song? @relation(fields: [song_id], references: [id], onDelete: SetNull)
+
+  @@unique([provider, provider_track_id])
+  @@index([status])
+  @@map("track_lyrics")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

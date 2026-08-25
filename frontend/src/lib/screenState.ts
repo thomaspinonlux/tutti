@@ -52,6 +52,12 @@ export type ScreenState =
       roundsTotal: number;
       /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
       qr_overlay: boolean;
+      /**
+       * feat/synced-lyrics — l'animateur a demandé l'affichage des paroles.
+       * Ne porte PAS le texte : la TV le charge via fetchCurrentLyrics(), qui
+       * refuse tant que le morceau n'est pas révélé.
+       */
+      lyrics_overlay: boolean;
       lastUpdate: string;
     }
   | {
@@ -63,6 +69,8 @@ export type ScreenState =
       currentTrack: CurrentTrackState | null;
       /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
       qr_overlay: boolean;
+      /** feat/synced-lyrics — cf. variante PLAYING. */
+      lyrics_overlay: boolean;
       lastUpdate: string;
     }
   | {
@@ -132,6 +140,25 @@ export async function postFocusedPlaylist(
  * feat/tv-join-qr-codes — toggle l'overlay QR géant sur la TV. Indépendant du
  * focus/scroll : marche pendant la partie comme pendant la sélection.
  */
+// ── feat/synced-lyrics — overlay paroles depuis la console host ───────────
+// Contrairement au QR (indexé workspace), les paroles suivent le MORCEAU, donc
+// la session. Le serveur refuse (409) si le morceau n'est pas révélé ou si
+// aucune parole vérifiée n'existe.
+
+export async function postLyricsOverlay(sessionId: string, on: boolean): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/lyrics-overlay`, {
+    method: 'POST',
+    body: { on },
+  });
+}
+
+/** « Paroles fausses » — rejet DÉFINITIF pour ce titre, toutes parties confondues. */
+export async function postRejectLyrics(sessionId: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/lyrics-reject`, {
+    method: 'POST',
+  });
+}
+
 export async function postQrOverlay(enabled: boolean): Promise<void> {
   await api('/api/workspace/screen-state/qr-overlay', {
     method: 'POST',

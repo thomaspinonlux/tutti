@@ -529,6 +529,31 @@ export async function masterSetVolume(
   });
 }
 
+// ── feat/synced-lyrics — overlay paroles depuis la télécommande ───────────
+// Le serveur refuse (409) si le morceau n'est pas révélé ou si aucune parole
+// vérifiée n'existe : la garde n'est jamais côté client.
+
+export async function masterLyricsOverlay(
+  sessionId: string,
+  token: string,
+  on: boolean,
+): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/lyrics-overlay`, {
+    method: 'POST',
+    body: { token, on },
+    anonymous: true,
+  });
+}
+
+/** « Paroles fausses » — rejet DÉFINITIF pour ce titre, toutes parties confondues. */
+export async function masterRejectLyrics(sessionId: string, token: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/lyrics-reject`, {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}
+
 export async function masterRestartTrack(
   sessionId: string,
   roundId: string,
@@ -602,7 +627,9 @@ export async function masterLaunchOfficial(
   playlistId: string,
   token: string,
   preferProvider: 'youtube' | 'spotify' | 'apple_music' = 'youtube',
-  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+  // fix/mix-em-types — aligné sur launchLibraryPlaylist (library.ts), qui
+  // accepte déjà 'MIX_EM'.
+  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
 ): Promise<{ round: SessionRoundWithPlaylist; state: CurrentTrackState | null }> {
   return api(
     `/api/sessions/${encodeURIComponent(sessionId)}/master/library/playlists/${encodeURIComponent(playlistId)}/launch`,

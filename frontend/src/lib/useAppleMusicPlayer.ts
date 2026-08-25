@@ -52,6 +52,13 @@ export interface UseAppleMusicPlayerResult {
   isAuthorized: boolean;
   isPlaying: boolean;
   positionMs: number;
+  /**
+   * feat/synced-lyrics — position RÉELLE du lecteur, lue à la demande.
+   * `positionMs` (état React) n'est rafraîchi qu'à ~1 Hz : trop grossier pour
+   * synchroniser des paroles. Cette fonction interroge directement MusicKit,
+   * ce qui permet à l'overlay de la relire à chaque frame.
+   */
+  readPositionMs: () => number;
   durationMs: number;
   /** Joue un morceau par son catalog id Apple Music. */
   play: (catalogId: string) => Promise<boolean>;
@@ -442,6 +449,14 @@ export function useAppleMusicPlayer({
     };
   }, []);
 
+  // feat/synced-lyrics — lecture directe de la position MusicKit (pas l'état
+  // React) : l'overlay paroles l'appelle à chaque frame d'animation.
+  const readPositionMs = useCallback((): number => {
+    const m = musicRef.current;
+    if (!m) return 0;
+    return Math.round((m.currentPlaybackTime ?? 0) * 1000);
+  }, []);
+
   return {
     status,
     error,
@@ -449,6 +464,7 @@ export function useAppleMusicPlayer({
     isAuthorized,
     isPlaying,
     positionMs,
+    readPositionMs,
     durationMs,
     play,
     pause,

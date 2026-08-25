@@ -43,6 +43,7 @@ import { getScreenState, type ScreenState } from '../lib/screenState.js';
 import type { RoundRankingEntry, FastestPlayer } from '../lib/sessions.js';
 import { getMe } from '../lib/me.js';
 import { connectAsSpectator } from '../lib/socket.js';
+import { fetchCurrentLyrics, type LrcLine } from '../lib/lyrics.js';
 import { TvScreenView } from './screen/TvScreenView.js';
 import { screenStateToMainScreenProps } from './screen/adapters/screenStateToMainScreenProps.js';
 import { getPublicCatalog, type LibraryCategoryWithPlaylists } from '../lib/library.js';
@@ -83,6 +84,11 @@ export function ScreenPage(): JSX.Element {
   // (cf. useEffect socket plus bas). Le polling 2s reste actif en parallèle
   // comme filet de sécurité si le socket meurt.
   const triggerPollRef = useRef<(() => void) | null>(null);
+  // feat/synced-lyrics — Mode A : la TV n'a PAS le son (il sort de la console).
+  // On suit donc la position via track:progress (émis 1×/s par la console) et
+  // on interpole entre deux messages, sinon les paroles avanceraient par à-coups.
+  const progressRef = useRef<{ position_ms: number; at: number; is_paused: boolean } | null>(null);
+  const [lyricsLines, setLyricsLines] = useState<LrcLine[] | null>(null);
 
   // Polling state machine
   useEffect(() => {
@@ -149,6 +155,49 @@ export function ScreenPage(): JSX.Element {
     };
   }, [workspaceId]);
 
+  // feat/synced-lyrics — charge le TEXTE quand l'animateur active l'overlay.
+  // Le serveur refuse tant que le morceau n'est pas révélé : fetchCurrentLyrics
+  // renvoie alors null et rien ne s'affiche. Rechargé à chaque changement de
+  // morceau (track_id) pour ne jamais afficher les paroles du précédent.
+  const lyricsOn =
+    screenState && 'lyrics_overlay' in screenState ? screenState.lyrics_overlay : false;
+  const lyricsTrackId =
+    screenState && 'currentTrack' in screenState
+      ? (screenState.currentTrack?.track_id ?? null)
+      : null;
+  const lyricsJoinCode = screenState && 'joinCode' in screenState ? screenState.joinCode : null;
+
+  useEffect(() => {
+    if (!lyricsOn || !lyricsJoinCode || !lyricsTrackId) {
+      setLyricsLines(null);
+      return;
+    }
+    let cancelled = false;
+    void fetchCurrentLyrics(lyricsJoinCode).then((lines) => {
+      if (!cancelled) setLyricsLines(lines);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [lyricsOn, lyricsJoinCode, lyricsTrackId]);
+
+  // Position audio pour la synchro : la TV n'a pas le son, on interpole depuis
+  // le dernier track:progress reçu. Repli sur l'estimation started_at si aucun
+  // message depuis 5 s (console déconnectée ou socket mort).
+  const getLyricsPositionMs = useMemo(() => {
+    return (): number => {
+      const p = progressRef.current;
+      if (p && Date.now() - p.at < 5000) {
+        return p.position_ms + (p.is_paused ? 0 : Date.now() - p.at);
+      }
+      if (screenState && 'currentTrack' in screenState && screenState.currentTrack?.started_at) {
+        const ms = Date.now() - new Date(screenState.currentTrack.started_at).getTime();
+        return Number.isFinite(ms) && ms > 0 ? ms : 0;
+      }
+      return 0;
+    };
+  }, [screenState]);
+
   // Socket spectator : trigger re-poll immédiat sur events critiques.
   // Best-effort overlay au-dessus du polling 2s (qui reste source de vérité).
   // Si le socket meurt → polling rattrape au prochain tick.
@@ -186,10 +235,25 @@ export function ScreenPage(): JSX.Element {
       // feat/tv-playlist-selection-sync — re-poll quand l'host change la
       // playlist focused dans le carrousel.
       'screen-state:focus-changed',
+      // feat/synced-lyrics — l'animateur a (dé)clenché l'affichage des paroles.
+      'lyrics:overlay',
     ];
     events.forEach((ev) => socket.on(ev, trigger));
+
+    // feat/synced-lyrics — position audio réelle diffusée par la console.
+    // Mémorisée avec son horodatage local pour interpoler entre deux messages.
+    const onProgress = (p: { position_ms: number; is_paused?: boolean }): void => {
+      progressRef.current = {
+        position_ms: p.position_ms,
+        at: Date.now(),
+        is_paused: p.is_paused ?? false,
+      };
+    };
+    socket.on('track:progress', onProgress);
+
     return () => {
       events.forEach((ev) => socket.off(ev, trigger));
+      socket.off('track:progress', onProgress);
       socket.disconnect();
     };
   }, [joinCode]);
@@ -281,13 +345,35 @@ export function ScreenPage(): JSX.Element {
       // feat/tv-join-qr-codes (D) — overlay QR géant si l'animateur l'a toggle.
       return (
         <ScreenWithQrOverlay joinCode={screenState.joinCode} show={screenState.qr_overlay}>
-          <TvScreenView {...screenStateToMainScreenProps(screenState)} />
+          <TvScreenView
+            {...screenStateToMainScreenProps(screenState)}
+            lyrics={
+              lyricsLines
+                ? {
+                    lines: lyricsLines,
+                    getPositionMs: getLyricsPositionMs,
+                    paused: progressRef.current?.is_paused ?? false,
+                  }
+                : undefined
+            }
+          />
         </ScreenWithQrOverlay>
       );
     case 'PAUSED':
       return (
         <ScreenWithQrOverlay joinCode={screenState.joinCode} show={screenState.qr_overlay}>
-          <TvScreenView {...screenStateToMainScreenProps(screenState)} />
+          <TvScreenView
+            {...screenStateToMainScreenProps(screenState)}
+            lyrics={
+              lyricsLines
+                ? {
+                    lines: lyricsLines,
+                    getPositionMs: getLyricsPositionMs,
+                    paused: progressRef.current?.is_paused ?? false,
+                  }
+                : undefined
+            }
+          />
         </ScreenWithQrOverlay>
       );
     case 'ROUND_PODIUM':
