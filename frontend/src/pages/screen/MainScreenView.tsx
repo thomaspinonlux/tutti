@@ -26,6 +26,8 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { LyricsOverlay } from '../../components/screen/LyricsOverlay.js';
+import type { LrcLine } from '../../lib/lyrics.js';
 import { getShareableOrigin } from '../../lib/platform.js';
 import { useTranslation } from 'react-i18next';
 import type {
@@ -887,6 +889,13 @@ export interface MainScreenViewProps {
   positionMs?: number;
   /** Durée totale track en ms (depuis SDK ou track meta). */
   durationMs?: number;
+  /**
+   * feat/synced-lyrics — paroles synchronisées à afficher À LA PLACE du bandeau
+   * de révélation. Fournie uniquement quand l'animateur les a demandées
+   * explicitement. Double garde : même fournie, rien ne s'affiche tant que le
+   * morceau n'est pas révélé.
+   */
+  lyrics?: { lines: LrcLine[]; getPositionMs: () => number; paused: boolean };
   /** Handlers admin (footer iPad — disponibles si auth Supabase). */
   busy?: boolean;
   onSkipTrack?: () => void;
@@ -905,6 +914,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
     activeBuzzCount,
     positionMs,
     durationMs,
+    lyrics,
     busy = false,
     onSkipTrack,
     onGiveAnswer,
@@ -1049,8 +1059,21 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
                   </p>
                 )}
 
-                {/* Phase 3 — bandeau dance call */}
-                {isRevealed && <Phase3DanceCall />}
+                {/* Phase 3 — paroles si demandées, sinon bandeau dance call.
+                    DOUBLE GARDE : `isRevealed` est réévalué ici même si la prop
+                    `lyrics` est fournie — aucune parole en phase 1/2. */}
+                {isRevealed &&
+                  (lyrics && lyrics.lines.length > 0 ? (
+                    <div className="w-full mt-6 min-h-[40vh] flex items-center justify-center">
+                      <LyricsOverlay
+                        lines={lyrics.lines}
+                        getPositionMs={lyrics.getPositionMs}
+                        paused={lyrics.paused}
+                      />
+                    </div>
+                  ) : (
+                    <Phase3DanceCall />
+                  ))}
 
                 {/* Confettis confinés au stage — seulement si gagnant. */}
                 {showConfetti && (
