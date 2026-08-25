@@ -38,3 +38,24 @@ export const LEVEL_WEIGHTS: Record<Tier, Partial<Record<Tier, number>>> = {
 export function cumulativeTiers(level: Tier): Tier[] {
   return Object.keys(LEVEL_WEIGHTS[level]) as Tier[];
 }
+
+/**
+ * feat/two-mix-options — niveaux « mix » explicites, TIRAGE PLAT (aucune
+ * pondération) :
+ *   MIX_EM  → pool {EASY, MEDIUM}          (mix Facile/Moyen)
+ *   (le Mix complet E+M+X plat existe déjà : difficulty absent → pool complet)
+ * LaunchLevel = ce que la route de lancement accepte désormais.
+ */
+export type LaunchLevel = Tier | 'MIX_EM';
+
+/** Pool de tiers d'un niveau de lancement (cumulatif pour les Tier, explicite
+ *  pour les mixes). */
+export function poolTiers(level: LaunchLevel): Tier[] {
+  if (level === 'MIX_EM') return ['EASY', 'MEDIUM'];
+  return cumulativeTiers(level);
+}
+
+/** true si le niveau se tire PONDÉRÉ (LEVEL_WEIGHTS) ; false → tirage plat. */
+export function isWeightedLevel(level: LaunchLevel): level is Tier {
+  return level !== 'MIX_EM';
+}

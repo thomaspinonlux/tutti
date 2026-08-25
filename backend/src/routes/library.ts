@@ -191,7 +191,8 @@ const launchBody = z.object({
   // clone ne matérialise QUE les OfficialPlaylistTrack de ce difficulty
   // (clone-filtré, pas de migration schéma). Absent / undefined = tous niveaux
   // (Mix, décennies, legacy plates). Garde-fou côté route : pool < 15 → Mix.
-  difficulty: z.enum(['EASY', 'MEDIUM', 'EXPERT']).optional(),
+  // feat/two-mix-options — MIX_EM = mix Facile/Moyen (pool E+M, tirage plat).
+  difficulty: z.enum(['EASY', 'MEDIUM', 'EXPERT', 'MIX_EM']).optional(),
 });
 
 router.post(

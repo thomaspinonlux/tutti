@@ -62,7 +62,7 @@ interface Props {
   onPickOfficial: (
     playlist: LibraryPlaylistSummary,
     provider: 'youtube' | 'spotify' | 'apple_music',
-    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
   ) => void | Promise<void>;
   /** feat/two-provider-libraries — onglet Spotify dispo (host allowlisté + Spotify connecté). */
   spotifyLibraryAvailable?: boolean;

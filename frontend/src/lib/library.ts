@@ -124,7 +124,7 @@ export async function launchLibraryPlaylist(
   preferProvider: PreferProvider = 'youtube',
   // feat/thematic-level-filter — niveau choisi sur une thématique (clone-filtré
   // côté backend). undefined = tous niveaux (Mix / décennies / legacy plates).
-  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
 ): Promise<LaunchResult> {
   return api<LaunchResult>(`/api/library/playlists/${encodeURIComponent(id)}/launch`, {
     method: 'POST',

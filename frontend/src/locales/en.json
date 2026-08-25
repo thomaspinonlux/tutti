@@ -329,7 +329,7 @@
     "playersEmpty": "No player connected yet.",
     "playersPts": "pts",
     "missingCode": "Session code missing from URL.",
-    "notFound": "Session not found.",
+    "notFound": "Not found",
     "scanToJoin": "Scan to join",
     "participants": "Players",
     "waitingForPlayers": "Waiting for the first players…",
@@ -363,7 +363,7 @@
       "lvl_easy": "Easy",
       "lvl_medium": "Medium",
       "lvl_hard": "Hard",
-      "lvl_mix": "Mix (all levels)",
+      "lvl_mix": "Full mix (all levels)",
       "backToThemes": "Back to themes",
       "chooseLevel": "Choose the level",
       "sourceLabel": "Sound source",
@@ -403,7 +403,8 @@
       "empty": {
         "officialLibrary": "The Tutti official library is coming soon 🎵",
         "officialQuizLibrary": "The Tutti Quizz library is coming soon 🎯"
-      }
+      },
+      "lvl_mix_em": "Easy/Medium mix"
     },
     "toastJoined": "{{pseudo}} joined the game",
     "toastKicked": "{{pseudo}} was kicked",
@@ -442,7 +443,6 @@
     "buzzed": "BUZZ",
     "awaitingAnswer": "{{pseudo}} is answering…",
     "reveal": "It was",
-    "notFound": "Not found",
     "nextTrack": "Next track",
     "viewRanking": "View ranking",
     "reconnecting": "Reconnecting to server…",

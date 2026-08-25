@@ -32,18 +32,24 @@ interface Props {
   onPickOfficial: (
     playlistId: string,
     provider: 'youtube' | 'spotify' | 'apple_music',
-    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
   ) => void | Promise<void>;
 }
 
 type Tab = 'perso' | 'official';
 type Provider = 'youtube' | 'spotify' | 'apple_music';
 
-const LEVELS: { key: string; label: string; difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' }[] = [
+const LEVELS: {
+  key: string;
+  label: string;
+  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM';
+}[] = [
   { key: 'mix', label: 'Mix' },
   { key: 'n1', label: 'N1 · Facile', difficulty: 'EASY' },
   { key: 'n2', label: 'N2 · Moyen', difficulty: 'MEDIUM' },
   { key: 'n3', label: 'N3 · Difficile', difficulty: 'EXPERT' },
+  // feat/two-mix-options — mix explicite Facile+Moyen, tirage plat backend.
+  { key: 'mix_em', label: 'Mix Facile/Moyen', difficulty: 'MIX_EM' },
 ];
 
 function norm(s: string): string {
@@ -156,7 +162,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
 
   if (!props.open) return null;
 
-  const launchOfficial = (difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT'): void => {
+  const launchOfficial = (difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM'): void => {
     if (!selected) return;
     setLaunching(true);
     void Promise.resolve(props.onPickOfficial(selected.id, provider, difficulty)).finally(() =>
@@ -287,6 +293,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                   !dc ||
                   lvl.difficulty === undefined ||
                   (lvl.difficulty === 'EASY' && dc.EASY >= 15) ||
+                  (lvl.difficulty === 'MIX_EM' && dc.EASY >= 15 && dc.MEDIUM >= 15) ||
                   (lvl.difficulty === 'MEDIUM' && dc.EASY + dc.MEDIUM >= 15) ||
                   (lvl.difficulty === 'EXPERT' && dc.EASY + dc.MEDIUM + dc.EXPERT >= 15);
                 return (

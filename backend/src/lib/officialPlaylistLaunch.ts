@@ -23,7 +23,13 @@ import {
   pickRandomTrackIdsForRound,
   pickWeightedTrackIdsForRound,
 } from './gameplayCore.js';
-import { LEVEL_WEIGHTS, cumulativeTiers, type Tier } from '../config/levelWeights.js';
+import {
+  LEVEL_WEIGHTS,
+  poolTiers,
+  isWeightedLevel,
+  type Tier,
+  type LaunchLevel,
+} from '../config/levelWeights.js';
 import type { LibraryPlaylistDetail } from './officialLibraryQueries.js';
 import type { CurrentTrackState } from '@tutti/shared';
 
@@ -83,7 +89,7 @@ export async function launchOfficialPlaylistForSession(
   establishmentId: string,
   opts: {
     preferProvider: PlayProvider;
-    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT';
+    difficulty?: LaunchLevel;
   },
 ): Promise<LaunchOfficialPlaylistResult> {
   const detail = playlistDetail;
@@ -134,14 +140,14 @@ export async function launchOfficialPlaylistForSession(
 
   // feat/thematic-level-cumulative-weighted — construit le pool clonable.
   // level ≠ null → pool CUMULATIF (inclusif vers le bas) : ne matérialise que
-  // les tiers de cumulativeTiers(level) (ex. EXPERT → EASY+MEDIUM+EXPERT) ;
+  // les tiers de poolTiers(level) (ex. EXPERT → EASY+MEDIUM+EXPERT, MIX_EM → EASY+MEDIUM) ;
   // null → tous niveaux (Mix / décennies / legacy plates = comportement
   // historique inchangé). La playabilité (is_playable + provider) est
   // appliquée APRÈS le filtre niveau. Chaque track conserve son `tier`.
   const buildChosen = (
-    level: Tier | null,
+    level: LaunchLevel | null,
   ): { chosen: ChosenTrack[]; skippedNotPlayable: number } => {
-    const allowedTiers = level ? cumulativeTiers(level) : null;
+    const allowedTiers = level ? poolTiers(level) : null;
     const out: ChosenTrack[] = [];
     let skipped = 0;
     for (const t of detail.tracks) {
@@ -215,18 +221,21 @@ export async function launchOfficialPlaylistForSession(
   // (null si fallback Mix), relu au tirage pour décider pondéré vs plat.
   // Anti-répétition (SessionPlayedTrack) conservée en aval.
   const MIN_LEVEL_POOL = 15;
-  const requestedDifficulty = (opts.difficulty as Tier | undefined) ?? null;
-  let effectiveDifficulty: Tier | null = requestedDifficulty;
+  const requestedDifficulty = (opts.difficulty as LaunchLevel | undefined) ?? null;
+  // feat/two-mix-options — un niveau « mix » (MIX_EM) restreint le POOL mais
+  // se tire PLAT : effectiveDifficulty (pondération) reste null pour lui.
+  let effectiveDifficulty: Tier | null =
+    requestedDifficulty && isWeightedLevel(requestedDifficulty) ? requestedDifficulty : null;
   let { chosen, skippedNotPlayable } = buildChosen(requestedDifficulty);
   if (requestedDifficulty && chosen.length < MIN_LEVEL_POOL) {
     console.info(
-      `[Launch] Playlist ${detail.slug}: niveau ${requestedDifficulty} → pool cumulé=${chosen.length} < ${MIN_LEVEL_POOL} jouables → fallback Mix (tous niveaux, tirage plat)`,
+      `[Launch] Playlist ${detail.slug}: niveau ${requestedDifficulty} → pool=${chosen.length} < ${MIN_LEVEL_POOL} jouables → fallback Mix complet (tous niveaux, tirage plat)`,
     );
     effectiveDifficulty = null;
     ({ chosen, skippedNotPlayable } = buildChosen(null));
   } else if (requestedDifficulty) {
     console.info(
-      `[Launch] Playlist ${detail.slug}: niveau cumulé ${requestedDifficulty} (tiers ${cumulativeTiers(requestedDifficulty).join('+')}) → pool=${chosen.length} jouables`,
+      `[Launch] Playlist ${detail.slug}: niveau ${requestedDifficulty} (tiers ${poolTiers(requestedDifficulty).join('+')}, tirage ${isWeightedLevel(requestedDifficulty) ? 'pondéré' : 'plat'}) → pool=${chosen.length} jouables`,
     );
   }
   if (chosen.length === 0) {

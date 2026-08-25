@@ -16,8 +16,14 @@
  */
 import type { LibraryCategoryWithPlaylists, LibraryPlaylistSummary } from './library.js';
 
-export type LevelKey = 'easy' | 'medium' | 'hard' | 'mix';
-export const LEVEL_ORDER: Record<LevelKey, number> = { easy: 0, medium: 1, hard: 2, mix: 3 };
+export type LevelKey = 'easy' | 'medium' | 'hard' | 'mix_em' | 'mix';
+export const LEVEL_ORDER: Record<LevelKey, number> = {
+  easy: 0,
+  medium: 1,
+  hard: 2,
+  mix_em: 3,
+  mix: 4,
+};
 
 // feat/thematic-level-filter — seuil mini de tracks par niveau pour proposer le
 // sous-picker (et garde-fou backend au tirage). Le sous-picker n'apparaît que si
@@ -65,7 +71,7 @@ export interface ThemeVariant {
    * (easy/medium/hard). undefined pour Mix et pour les décennies (le niveau y
    * est déjà une playlist séparée → pas de filtre difficulty).
    */
-  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT';
+  difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM';
   /** Nb de tracks de ce niveau (affichage). undefined → playlist.track_count. */
   count?: number;
 }
@@ -140,7 +146,20 @@ export function expandThematicLevels(p: LibraryPlaylistSummary): ThemeVariant[] 
       count: cumExpert,
     });
   }
-  // Carte Mix (tout, tirage plat) — difficulty undefined → clone complet backend.
+  // feat/two-mix-options — carte « Mix Facile/Moyen » (pool E+M, tirage PLAT
+  // côté backend). Affichée dès que Facile ET Moyen ont chacun ≥ seuil : deux
+  // vrais viviers à mélanger, sans les experts.
+  if (c.EASY >= THEMATIC_LEVEL_MIN && c.MEDIUM >= THEMATIC_LEVEL_MIN) {
+    variants.push({
+      level: 'mix_em',
+      playlist: p,
+      variantId: `${p.id}::mix_em`,
+      difficulty: 'MIX_EM',
+      count: cumMedium,
+    });
+  }
+  // Carte Mix complet (E+M+X, tirage plat) — difficulty undefined → clone
+  // complet backend. C'est le second mix demandé : tous niveaux confondus.
   variants.push({
     level: 'mix',
     playlist: p,

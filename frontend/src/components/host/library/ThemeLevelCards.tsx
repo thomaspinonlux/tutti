@@ -34,7 +34,7 @@ interface Props {
    */
   onPickLevel?: (
     playlist: LibraryPlaylistSummary,
-    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT',
+    difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
   ) => void;
 }
 
@@ -79,7 +79,9 @@ export function ThemeLevelCards({
                 ? 'bg-lemon text-ink'
                 : v.level === 'hard'
                   ? 'bg-raspberry text-cream'
-                  : 'bg-spritz text-cream';
+                  : v.level === 'mix_em'
+                    ? 'bg-gradient-to-br from-basil to-lemon text-ink'
+                    : 'bg-spritz text-cream';
           // feat/thematic-level-filter — ancre/key = variantId (= playlist.id
           // pour les décennies → mirror #121 inchangé ; `${id}::${level}` pour
           // une thématique éclatée → cartes uniques malgré la même playlist).
