@@ -232,7 +232,8 @@
     "aliasPlaceholder": "Add an alias…",
     "aliasRemove": "Remove alias",
     "addTrackCta": "Add a track",
-    "launchSession": "Start a blind test with this playlist"
+    "launchSession": "Start a blind test with this playlist",
+    "sourceSpotifyDisabled": "Spotify is no longer used for the official library"
   },
   "sessionConfig": {
     "title": "New blind test",

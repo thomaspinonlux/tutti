@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "rootDir": ".", "outDir": "/tmp/arbout" },
+  "include": ["scripts/arbitrateAppleMusic.ts", "src/**/*"]
+}

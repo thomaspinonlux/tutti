@@ -1,0 +1,418 @@
+{
+  "created_at": "2026-06-23T16:50:34.315Z",
+  "campaign": "vague3-work",
+  "created_playlist_ids": [],
+  "track_ids": [
+    "72824e64-621c-4164-aa74-6d5d401fa9b0",
+    "8d569089-9e90-4e65-b2d8-66045cfc9ec4",
+    "361c0aa3-385c-451f-81e3-d2a02ba9eee3",
+    "7555a4c5-74bc-4209-a20d-6c87e6145eb7",
+    "b189eff3-8f2d-4ff3-9204-25c9b8a4cf0e",
+    "2ae2b92f-6b2b-4fd2-94d4-6468e9ca15b7",
+    "beeb2844-c7f9-4871-b923-b575757ffcd0",
+    "0e0691b0-3036-428d-9d58-1b74e04d18a5",
+    "474794c7-a420-40a3-9781-9472123a4706",
+    "d2dd0873-7f84-4aac-be7d-e12c658293a0",
+    "8a6f44e0-47ca-4c0f-a853-b3dcf251cbbc",
+    "e0854b81-a3c6-4677-9c44-a78afbb0ce65",
+    "4ce12b1e-3dfc-4ba1-bad1-fecf1e09c925",
+    "e12bd0c3-6260-4e50-afd1-b1a490e8d37c",
+    "6a892ccc-8164-4ad6-8cc1-790b166e3dd1",
+    "b3a51613-aa8d-44df-96ad-aebeff220d2c",
+    "f9750aac-3d78-4411-84b9-6c4402606812",
+    "5f62d3c8-32b6-4d6a-b625-f378828c19f3",
+    "253adbb1-f4f2-4c0a-950d-d3e6fdd56f08",
+    "f2d6ae2c-751e-4f25-93e8-18144eea2825",
+    "a576cb8a-60f0-4695-a896-6790c9bb4510",
+    "c524e26d-1e2b-47b9-9329-1d8d6e772dd8",
+    "3256a8d6-91a0-4fee-9707-85f194a9de12",
+    "dea7a064-07fa-4e5d-9da8-47bedabf501b",
+    "01b004d6-8789-4c53-b982-37cbde5eaea9",
+    "082d3323-b4ac-4c2b-9a41-2f665391cf28",
+    "83796f63-759b-4f88-8d5c-b7142fc69e32"
+  ],
+  "count": 27,
+  "items": [
+    {
+      "id": "72824e64-621c-4164-aa74-6d5d401fa9b0",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Pokémon Theme",
+      "work_title": "Pokémon",
+      "work_aliases": ["Pokemon"],
+      "youtube_id": "2zMIddjFAIA",
+      "level": "EASY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "8d569089-9e90-4e65-b2d8-66045cfc9ec4",
+      "slug": "official-pl-series-tv",
+      "artist": "The Rembrandts",
+      "title": "I'll Be There for You",
+      "work_title": "Friends",
+      "work_aliases": ["Friends"],
+      "youtube_id": "q-9kPks0IfE",
+      "level": "EASY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "361c0aa3-385c-451f-81e3-d2a02ba9eee3",
+      "slug": "official-pl-series-tv",
+      "artist": "Nick Cave & the Bad Seeds",
+      "title": "Red Right Hand",
+      "work_title": "Peaky Blinders",
+      "work_aliases": ["Peaky Blinders"],
+      "youtube_id": "RrxePKps87k",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "7555a4c5-74bc-4209-a20d-6c87e6145eb7",
+      "slug": "official-pl-series-tv",
+      "artist": "Lalo Schifrin",
+      "title": "Mission: Impossible Theme",
+      "work_title": "Mission: Impossible",
+      "work_aliases": ["Mission Impossible"],
+      "youtube_id": "q2Rc5BPjPq8",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "b189eff3-8f2d-4ff3-9204-25c9b8a4cf0e",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Green Hill Zone",
+      "work_title": "Sonic the Hedgehog",
+      "work_aliases": ["Sonic"],
+      "youtube_id": "55uDJ39W4i0",
+      "level": "EASY",
+      "videoTitle": "Green Hill Zone - Sonic the Hedgehog [OST]",
+      "reused": false
+    },
+    {
+      "id": "2ae2b92f-6b2b-4fd2-94d4-6468e9ca15b7",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Techno Syndrome (Mortal Kombat)",
+      "work_title": "Mortal Kombat",
+      "work_aliases": ["Mortal Kombat"],
+      "youtube_id": "kWO2AuJT67w",
+      "level": "MEDIUM",
+      "videoTitle": "Techno Syndrome (Mortal Kombat)",
+      "reused": false
+    },
+    {
+      "id": "beeb2844-c7f9-4871-b923-b575757ffcd0",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Brinstar Theme",
+      "work_title": "Metroid",
+      "work_aliases": ["Metroid"],
+      "youtube_id": "tVUYyVfydqY",
+      "level": "EXPERT",
+      "videoTitle": "Super Metroid Music - Brinstar (The Jungle Floor)",
+      "reused": false
+    },
+    {
+      "id": "0e0691b0-3036-428d-9d58-1b74e04d18a5",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Splattack!",
+      "work_title": "Splatoon",
+      "work_aliases": ["Splatoon"],
+      "youtube_id": "LBQmvJyIKTg",
+      "level": "EXPERT",
+      "videoTitle": "Splattack ! - Splatoon OST",
+      "reused": false
+    },
+    {
+      "id": "474794c7-a420-40a3-9781-9472123a4706",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Hollow Knight Theme",
+      "work_title": "Hollow Knight",
+      "work_aliases": ["Hollow Knight"],
+      "youtube_id": "r6PuACnHkNY",
+      "level": "EXPERT",
+      "videoTitle": "Hollow Knight OST - Hollow Knight",
+      "reused": false
+    },
+    {
+      "id": "d2dd0873-7f84-4aac-be7d-e12c658293a0",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Wii Sports Theme",
+      "work_title": "Wii Sports",
+      "work_aliases": ["Wii Sports"],
+      "youtube_id": "scnFH-MldJM",
+      "level": "MEDIUM",
+      "videoTitle": "Wii Sports Theme Tune 10 hours",
+      "reused": false
+    },
+    {
+      "id": "8a6f44e0-47ca-4c0f-a853-b3dcf251cbbc",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Among Us Drip Theme",
+      "work_title": "Among Us",
+      "work_aliases": ["Among Us"],
+      "youtube_id": "qvHwt84VgC4",
+      "level": "MEDIUM",
+      "videoTitle": "3D Printed Among Us Drip Theme Musical Print",
+      "reused": false
+    },
+    {
+      "id": "e0854b81-a3c6-4677-9c44-a78afbb0ce65",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Weight of the World",
+      "work_title": "Nier: Automata",
+      "work_aliases": ["Nier Automata"],
+      "youtube_id": "PslQESlD4xs",
+      "level": "EXPERT",
+      "videoTitle": "Weight of the World/the End of YoRHa",
+      "reused": false
+    },
+    {
+      "id": "4ce12b1e-3dfc-4ba1-bad1-fecf1e09c925",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Pong",
+      "work_title": "Pong",
+      "work_aliases": ["Pong"],
+      "youtube_id": "fR6AWymfGXM",
+      "level": "EXPERT",
+      "videoTitle": "Ping Pong Level: 9999",
+      "reused": false
+    },
+    {
+      "id": "e12bd0c3-6260-4e50-afd1-b1a490e8d37c",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "That's the Way It Is",
+      "work_title": "Red Dead Redemption 2",
+      "work_aliases": ["Red Dead Redemption"],
+      "youtube_id": "HjYLY3BGDY4",
+      "level": "EXPERT",
+      "videoTitle": "That&#39;s The Way It Is",
+      "reused": false
+    },
+    {
+      "id": "6a892ccc-8164-4ad6-8cc1-790b166e3dd1",
+      "slug": "official-pl-video-games",
+      "artist": "Bande originale",
+      "title": "Outer Wilds Theme",
+      "work_title": "Outer Wilds",
+      "work_aliases": ["Outer Wilds"],
+      "youtube_id": "n-KFYqCHZ7A",
+      "level": "EXPERT",
+      "videoTitle": "Outer Wilds - Reprise",
+      "reused": false
+    },
+    {
+      "id": "b3a51613-aa8d-44df-96ad-aebeff220d2c",
+      "slug": "official-pl-club-dorothee",
+      "artist": "Bande originale",
+      "title": "Albator",
+      "work_title": "Albator",
+      "work_aliases": ["Captain Harlock"],
+      "youtube_id": "SdgoUHuOHNM",
+      "level": "MEDIUM",
+      "videoTitle": "Albator attaque",
+      "reused": false
+    },
+    {
+      "id": "f9750aac-3d78-4411-84b9-6c4402606812",
+      "slug": "official-pl-club-dorothee",
+      "artist": "Bande originale",
+      "title": "Les Entrechats",
+      "work_title": "Les Entrechats",
+      "work_aliases": ["Heathcliff"],
+      "youtube_id": "ZUB_b32RvFY",
+      "level": "MEDIUM",
+      "videoTitle": "Les entrechats 1 [4 épisodes complet]",
+      "reused": false
+    },
+    {
+      "id": "5f62d3c8-32b6-4d6a-b625-f378828c19f3",
+      "slug": "official-pl-club-dorothee",
+      "artist": "Bande originale",
+      "title": "Candy",
+      "work_title": "Candy",
+      "work_aliases": ["Candy Candy"],
+      "youtube_id": "6bLOjmY--TA",
+      "level": "EASY",
+      "videoTitle": "Iggy Pop - Candy",
+      "reused": false
+    },
+    {
+      "id": "253adbb1-f4f2-4c0a-950d-d3e6fdd56f08",
+      "slug": "official-pl-club-dorothee",
+      "artist": "Bande originale",
+      "title": "Lamu",
+      "work_title": "Lamu",
+      "work_aliases": ["Urusei Yatsura"],
+      "youtube_id": "yv68Wjyggo8",
+      "level": "EXPERT",
+      "videoTitle": "Lamu",
+      "reused": false
+    },
+    {
+      "id": "f2d6ae2c-751e-4f25-93e8-18144eea2825",
+      "slug": "official-pl-club-dorothee",
+      "artist": "Bernard Minet",
+      "title": "Les Tortues Ninja",
+      "work_title": "Les Tortues Ninja",
+      "work_aliases": ["Tortues Ninja"],
+      "youtube_id": "Wq8G21065ug",
+      "level": "MEDIUM",
+      "videoTitle": "[Léon] Les Tortues Ninja",
+      "reused": false
+    },
+    {
+      "id": "a576cb8a-60f0-4695-a896-6790c9bb4510",
+      "slug": "official-pl-club-dorothee",
+      "artist": "Bande originale",
+      "title": "Card Captor Sakura",
+      "work_title": "Card Captor Sakura",
+      "work_aliases": ["Sakura"],
+      "youtube_id": "LZp2KB5L1Ys",
+      "level": "EXPERT",
+      "videoTitle": "Full Movie| Cardcaptor Sakura: The Sealed Card (In the original Japanese without English Subtitles)",
+      "reused": false
+    },
+    {
+      "id": "c524e26d-1e2b-47b9-9329-1d8d6e772dd8",
+      "slug": "official-pl-series-tv",
+      "artist": "Bande originale",
+      "title": "The Office Theme",
+      "work_title": "The Office",
+      "work_aliases": ["The Office"],
+      "youtube_id": "0T-if-Vj2Xs",
+      "level": "MEDIUM",
+      "videoTitle": "The Office (Main Theme)",
+      "reused": false
+    },
+    {
+      "id": "3256a8d6-91a0-4fee-9707-85f194a9de12",
+      "slug": "official-pl-series-tv",
+      "artist": "Jan Hammer",
+      "title": "Crockett's Theme",
+      "work_title": "Miami Vice",
+      "work_aliases": ["Deux flics à Miami"],
+      "youtube_id": "Lfgf9HatIHI",
+      "level": "MEDIUM",
+      "videoTitle": "Jan Hammer - Crockett&#39;s Theme (Miami Vice)",
+      "reused": false
+    },
+    {
+      "id": "dea7a064-07fa-4e5d-9da8-47bedabf501b",
+      "slug": "official-pl-series-tv",
+      "artist": "Bande originale",
+      "title": "Seinfeld Theme",
+      "work_title": "Seinfeld",
+      "work_aliases": ["Seinfeld"],
+      "youtube_id": "a6g5zrz1O-w",
+      "level": "EXPERT",
+      "videoTitle": "Seinfeld Theme",
+      "reused": false
+    },
+    {
+      "id": "01b004d6-8789-4c53-b982-37cbde5eaea9",
+      "slug": "official-pl-series-tv",
+      "artist": "Nerf Herder",
+      "title": "Buffy Theme",
+      "work_title": "Buffy the Vampire Slayer",
+      "work_aliases": ["Buffy contre les vampires"],
+      "youtube_id": "Ibc6CBRIjnQ",
+      "level": "EXPERT",
+      "videoTitle": "Theme Song | Season 1 | Buffy the Vampire Slayer",
+      "reused": false
+    },
+    {
+      "id": "082d3323-b4ac-4c2b-9a41-2f665391cf28",
+      "slug": "official-pl-series-tv",
+      "artist": "Frank Sinatra",
+      "title": "Love and Marriage",
+      "work_title": "Married... with Children",
+      "work_aliases": ["Mariés deux enfants"],
+      "youtube_id": "Z_BGoDLwI-0",
+      "level": "MEDIUM",
+      "videoTitle": "Frank Sinatra Love And Marriage Married With Children PBS Kids Song",
+      "reused": false
+    },
+    {
+      "id": "83796f63-759b-4f88-8d5c-b7142fc69e32",
+      "slug": "official-pl-series-tv",
+      "artist": "Alexandre Astier",
+      "title": "Générique de Kaamelott",
+      "work_title": "Kaamelott",
+      "work_aliases": ["Kaamelott"],
+      "youtube_id": "gDmRcL2ioaE",
+      "level": "MEDIUM",
+      "videoTitle": "Arthur et les Musiciens (Bande originale du film &quot;Kaamelott - Premier Volet&quot;)",
+      "reused": false
+    }
+  ],
+  "backfilled": [
+    {
+      "id": "b7dca68b-9829-4000-9440-867387be4b2a",
+      "slug": "official-pl-video-games",
+      "work_title": "Super Mario Bros."
+    },
+    {
+      "id": "6d16b7b8-adb1-4b51-b17e-a63d6fc8eae6",
+      "slug": "official-pl-video-games",
+      "work_title": "The Legend of Zelda"
+    },
+    {
+      "id": "8973bb5e-962b-4f51-804e-19aa1067e26f",
+      "slug": "official-pl-video-games",
+      "work_title": "Final Fantasy VII"
+    },
+    {
+      "id": "e7e23056-0470-495e-a800-bf87ad408e5f",
+      "slug": "official-pl-video-games",
+      "work_title": "Minecraft"
+    },
+    {
+      "id": "0e6fddd6-47d5-49bf-8650-830c9a36f920",
+      "slug": "official-pl-video-games",
+      "work_title": "The Elder Scrolls V: Skyrim"
+    },
+    {
+      "id": "a8e79aad-32a7-4f45-8669-52208c660656",
+      "slug": "official-pl-video-games",
+      "work_title": "Undertale"
+    },
+    {
+      "id": "6af6f0f0-1e38-49f6-a7ed-a093050165c8",
+      "slug": "official-pl-club-dorothee",
+      "work_title": "Les Chevaliers du Zodiaque"
+    },
+    {
+      "id": "f0f53586-425c-4881-a3d7-655193c0a29a",
+      "slug": "official-pl-club-dorothee",
+      "work_title": "Bioman"
+    },
+    {
+      "id": "829f1440-f145-4e27-9cf8-4550d9f546cd",
+      "slug": "official-pl-series-tv",
+      "work_title": "Stranger Things"
+    },
+    {
+      "id": "49857fc7-e3ee-47d4-bc93-914db1f4aecc",
+      "slug": "official-pl-series-tv",
+      "work_title": "Twin Peaks"
+    },
+    {
+      "id": "ee1bcd34-7ee1-4dca-a7cd-981174ab2693",
+      "slug": "official-pl-series-tv",
+      "work_title": "Lost"
+    }
+  ]
+}

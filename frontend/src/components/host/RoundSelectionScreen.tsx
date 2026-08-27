@@ -65,6 +65,8 @@ interface Props {
     difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
   ) => void | Promise<void>;
   /** feat/two-provider-libraries — onglet Spotify dispo (host allowlisté + Spotify connecté). */
+  /** Déprécié depuis fix/source-tabs-forced-source : l'onglet Spotify est
+   *  grisé quoi qu'il arrive. Conservé pour ne pas casser les appelants. */
   spotifyLibraryAvailable?: boolean;
   /** feat/apple-music — onglet Apple Music dispo (compte Apple Music connecté). */
   appleLibraryAvailable?: boolean;
@@ -92,7 +94,6 @@ export function RoundSelectionScreen({
   onEndSession,
   loading,
   joinCode,
-  spotifyLibraryAvailable,
   appleLibraryAvailable,
 }: Props): JSX.Element {
   const { t } = useTranslation();
@@ -412,9 +413,11 @@ export function RoundSelectionScreen({
                   : (['youtube', 'spotify'] as const)
                 ).map((pv) => {
                   const active = provider === pv;
+                  // fix/source-tabs-forced-source — Spotify est sorti du flow
+                  // officiel (cf. preferredProvider) : onglet TOUJOURS grisé,
+                  // même si le workspace a une connexion Spotify active.
                   const locked =
-                    (pv === 'spotify' && !spotifyLibraryAvailable) ||
-                    (pv === 'apple_music' && !appleLibraryAvailable);
+                    pv === 'spotify' || (pv === 'apple_music' && !appleLibraryAvailable);
                   const activeColor =
                     pv === 'spotify'
                       ? 'bg-basil text-cream'

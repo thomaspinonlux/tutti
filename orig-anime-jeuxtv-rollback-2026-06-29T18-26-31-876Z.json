@@ -1,0 +1,156 @@
+{
+  "created_at": "2026-06-29T18:26:50.778Z",
+  "campaign": "work-anime-jeuxtv",
+  "created_playlist_ids": [
+    "df11f4a3-e031-4ef5-a395-371d4f7b5a9e",
+    "647c70e0-283f-45b7-91cc-7e098feac1aa"
+  ],
+  "track_ids": [
+    "643518ec-1178-47d8-9c49-59841779b6ea",
+    "4ec67528-1490-46f0-b68d-67fe0943c09a",
+    "1b6f97e1-e241-4fd9-a05d-6ef1472bde12",
+    "6583724b-56db-4808-8804-7068363f366e",
+    "bafaacf5-c0a9-47cd-8c77-eeabb05787e0",
+    "6d61f544-766b-4c8d-a1f0-367871c2919d",
+    "c549d45f-5c20-4a1a-8eb9-b853d9c86639",
+    "1927c16d-af67-4c8a-86cd-cd5c54e2cf06",
+    "6d577d60-0741-4a09-b89c-6f65feac8678",
+    "fe53ac26-c0e8-4e66-9e38-36a8e5b5b031",
+    "0fc2b098-89c8-4657-aafb-bfef70737321",
+    "46cc5a27-336d-4f39-add2-1c5ade4e922f",
+    "72ceaeb0-ee6c-404f-8713-af5c5172d213"
+  ],
+  "count": 13,
+  "items": [
+    {
+      "id": "643518ec-1178-47d8-9c49-59841779b6ea",
+      "playlist": "Anime (Openings)",
+      "artist": "Hiroshi Kitadani",
+      "title": "We Are!",
+      "youtube_id": "lzOAFeWv79c",
+      "level": "EASY",
+      "videoTitle": "Hiroshi Kitadani - We Are ! ",
+      "reused": false
+    },
+    {
+      "id": "4ec67528-1490-46f0-b68d-67fe0943c09a",
+      "playlist": "Anime (Openings)",
+      "artist": "Flow",
+      "title": "Sign",
+      "youtube_id": "qpi9YXaChHI",
+      "level": "EASY",
+      "videoTitle": "FLOW - Sign",
+      "reused": false
+    },
+    {
+      "id": "1b6f97e1-e241-4fd9-a05d-6ef1472bde12",
+      "playlist": "Anime (Openings)",
+      "artist": "Tatsuya Kitani",
+      "title": "Where Our Blue Is",
+      "youtube_id": "A2jr18ZbkFc",
+      "level": "MEDIUM",
+      "videoTitle": "Where Our Blue Is (Acoustic Version)",
+      "reused": false
+    },
+    {
+      "id": "6583724b-56db-4808-8804-7068363f366e",
+      "playlist": "Anime (Openings)",
+      "artist": "Hiroyuki Sawano",
+      "title": "Blumenkranz",
+      "youtube_id": "zRI5uW6DLXg",
+      "level": "MEDIUM",
+      "videoTitle": "Blumenkranz",
+      "reused": false
+    },
+    {
+      "id": "bafaacf5-c0a9-47cd-8c77-eeabb05787e0",
+      "playlist": "Anime (Openings)",
+      "artist": "Kalafina",
+      "title": "Magia",
+      "youtube_id": "QwquipMpsiQ",
+      "level": "MEDIUM",
+      "videoTitle": "Kalafina - Magia",
+      "reused": false
+    },
+    {
+      "id": "6d61f544-766b-4c8d-a1f0-367871c2919d",
+      "playlist": "Anime (Openings)",
+      "artist": "Yoko Kanno",
+      "title": "Tank!",
+      "youtube_id": "UFFa0QoHWvE",
+      "level": "EXPERT",
+      "videoTitle": "Tank!",
+      "reused": false
+    },
+    {
+      "id": "c549d45f-5c20-4a1a-8eb9-b853d9c86639",
+      "playlist": "Génériques Jeux TV & Émissions FR",
+      "artist": "Générique TV",
+      "title": "Thème principal",
+      "youtube_id": "USOsp5yQhZY",
+      "level": "EASY",
+      "videoTitle": "Fever Ray - If I Had A Heart | The Vikings (Music from the TV Series)",
+      "reused": false
+    },
+    {
+      "id": "1927c16d-af67-4c8a-86cd-cd5c54e2cf06",
+      "playlist": "Génériques Jeux TV & Émissions FR",
+      "artist": "Générique TV",
+      "title": "Thème principal",
+      "youtube_id": "SJVc_W0pK1s",
+      "level": "EASY",
+      "videoTitle": "Game Show Tv Theme Music",
+      "reused": false
+    },
+    {
+      "id": "6d577d60-0741-4a09-b89c-6f65feac8678",
+      "playlist": "Génériques Jeux TV & Émissions FR",
+      "artist": "Générique TV",
+      "title": "Thème principal",
+      "youtube_id": "SJVc_W0pK1s",
+      "level": "EASY",
+      "videoTitle": "Game Show Tv Theme Music",
+      "reused": false
+    },
+    {
+      "id": "fe53ac26-c0e8-4e66-9e38-36a8e5b5b031",
+      "playlist": "Génériques Jeux TV & Émissions FR",
+      "artist": "Générique TV",
+      "title": "Thème principal",
+      "youtube_id": "SJVc_W0pK1s",
+      "level": "EASY",
+      "videoTitle": "Game Show Tv Theme Music",
+      "reused": false
+    },
+    {
+      "id": "0fc2b098-89c8-4657-aafb-bfef70737321",
+      "playlist": "Génériques Jeux TV & Émissions FR",
+      "artist": "Générique TV",
+      "title": "Thème principal",
+      "youtube_id": "USOsp5yQhZY",
+      "level": "EASY",
+      "videoTitle": "Fever Ray - If I Had A Heart | The Vikings (Music from the TV Series)",
+      "reused": false
+    },
+    {
+      "id": "46cc5a27-336d-4f39-add2-1c5ade4e922f",
+      "playlist": "Génériques Jeux TV & Émissions FR",
+      "artist": "Générique TV",
+      "title": "Thème principal",
+      "youtube_id": "USOsp5yQhZY",
+      "level": "EASY",
+      "videoTitle": "Fever Ray - If I Had A Heart | The Vikings (Music from the TV Series)",
+      "reused": false
+    },
+    {
+      "id": "72ceaeb0-ee6c-404f-8713-af5c5172d213",
+      "playlist": "Génériques Jeux TV & Émissions FR",
+      "artist": "Générique TV",
+      "title": "Thème principal",
+      "youtube_id": "USOsp5yQhZY",
+      "level": "MEDIUM",
+      "videoTitle": "Fever Ray - If I Had A Heart | The Vikings (Music from the TV Series)",
+      "reused": false
+    }
+  ]
+}

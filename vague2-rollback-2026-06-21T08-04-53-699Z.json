@@ -1,0 +1,362 @@
+{
+  "created_at": "2026-06-21T08:05:22.340Z",
+  "campaign": "vague2",
+  "created_playlist_ids": [],
+  "track_ids": [
+    "55ac2c0b-8484-499f-a088-b1a6ac17ebbc",
+    "88a0b76d-e7ee-47ee-90ce-f0ccc081a8d7",
+    "2612d339-7f29-4989-8e20-d85fd1f4617e",
+    "ec785aca-479c-4b28-afc9-19a910831cb7",
+    "d3afa8c0-6c4a-42f1-8b77-73731285015c",
+    "e94e3167-6b2b-4f5e-bce5-77bbc6bb962b",
+    "4a3487bf-f241-44aa-8bdd-578872a3d5d8",
+    "37eddccb-6892-4ec3-9a30-505ea8c6f02f",
+    "73529371-4da2-4ff4-8abd-ddb069f1be35",
+    "9247349e-6da3-41fe-91e7-97fc0c512e64",
+    "4b7b2ac2-48a7-4038-b153-511d15a18a13",
+    "af1671dd-6bf1-4087-92d7-58fb8403dd9a",
+    "5138e3af-2e9c-442f-8a87-3fdb95848ee2",
+    "0cfa7356-e392-435d-8b1f-ea3953a3491e",
+    "32e86bb0-4d7b-4992-8a03-35f459f61ea8",
+    "91d884bf-409d-4ad6-8956-957e1f932e84",
+    "2045b1b6-541b-43f6-a77a-87f309148735",
+    "5fde8260-4cf0-478b-8cd1-188a4d3ffa8a",
+    "4efb4249-c1a0-4956-a2b3-915c16de9022",
+    "30f451bd-44ba-4b99-afd1-13838394bda3",
+    "ae4cba84-a049-4488-90c2-584b2a942d49",
+    "d44f6206-94ff-4b31-a0db-3c10398f1f39",
+    "e9bb1a56-8898-4d2d-a60b-b14070347d60",
+    "66aed2a1-c336-4b55-83a1-ca0d433554aa",
+    "c14b5535-ad1a-42b6-bfc2-33366429102b",
+    "747c989c-a402-43d4-b8a8-8201fa926103",
+    "372fb40b-43eb-411c-8cf1-f5002f10a764",
+    "00f70ae1-3d36-4206-8571-8a7b2a0c04a4",
+    "dd62693d-d22f-4d15-8670-8fc436cd555c",
+    "095ea489-45ea-45ef-a94a-0fff784eeb2e",
+    "94bb6c5c-49bd-4385-97e6-1a46800abc27",
+    "78c8d62c-1d3b-4415-ad65-eb29bf3f8399"
+  ],
+  "count": 32,
+  "items": [
+    {
+      "id": "55ac2c0b-8484-499f-a088-b1a6ac17ebbc",
+      "playlist": "Disco dancefloor",
+      "artist": "Carl Douglas",
+      "title": "Kung Fu Fighting",
+      "youtube_id": "GDQu1j_8xb8",
+      "level": "EASY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "88a0b76d-e7ee-47ee-90ce-f0ccc081a8d7",
+      "playlist": "Tubes de l'été",
+      "artist": "Bellini",
+      "title": "Samba de Janeiro",
+      "youtube_id": "HAiHEQblKeQ",
+      "level": "EASY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "2612d339-7f29-4989-8e20-d85fd1f4617e",
+      "playlist": "Tubes de l'été",
+      "artist": "Pitbull",
+      "title": "I Know You Want Me (Calle Ocho)",
+      "youtube_id": "8F8nBXEYP2g",
+      "level": "EASY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "ec785aca-479c-4b28-afc9-19a910831cb7",
+      "playlist": "Tubes de l'été",
+      "artist": "Luis Fonsi",
+      "title": "Échame la Culpa",
+      "youtube_id": "TyHvyGVs42U",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "d3afa8c0-6c4a-42f1-8b77-73731285015c",
+      "playlist": "Slows cultes",
+      "artist": "Westlife",
+      "title": "Flying Without Wings",
+      "youtube_id": "fZOW8ZuLG2o",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "e94e3167-6b2b-4f5e-bce5-77bbc6bb962b",
+      "playlist": "Slows cultes",
+      "artist": "Mr. Big",
+      "title": "To Be with You",
+      "youtube_id": "icsAF0TjP4E",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "4a3487bf-f241-44aa-8bdd-578872a3d5d8",
+      "playlist": "Intros légendaires",
+      "artist": "Eric Clapton",
+      "title": "Layla (Unplugged)",
+      "youtube_id": "iZV7akaSo0s",
+      "level": "EXPERT",
+      "videoTitle": "Eric Clapton - Layla (Unplugged)",
+      "reused": false
+    },
+    {
+      "id": "37eddccb-6892-4ec3-9a30-505ea8c6f02f",
+      "playlist": "Intros légendaires",
+      "artist": "Ramones",
+      "title": "Blitzkrieg Bop",
+      "youtube_id": "NQDPx_k66w4",
+      "level": "MEDIUM",
+      "videoTitle": "Blitzkrieg Bop",
+      "reused": false
+    },
+    {
+      "id": "73529371-4da2-4ff4-8abd-ddb069f1be35",
+      "playlist": "Génériques films & séries",
+      "artist": "Wang Chung",
+      "title": "Dance Hall Days",
+      "youtube_id": "V-xpJRwIA-Q",
+      "level": "EXPERT",
+      "videoTitle": "Wang Chung - Dance Hall Days",
+      "reused": false
+    },
+    {
+      "id": "9247349e-6da3-41fe-91e7-97fc0c512e64",
+      "playlist": "Génériques films & séries",
+      "artist": "Tom Jones",
+      "title": "It's Not Unusual",
+      "youtube_id": "k-HdGnzYdFQ",
+      "level": "MEDIUM",
+      "videoTitle": "It&#39;s Not Unusual",
+      "reused": false
+    },
+    {
+      "id": "4b7b2ac2-48a7-4038-b153-511d15a18a13",
+      "playlist": "Génériques films & séries",
+      "artist": "DeBarge",
+      "title": "Rhythm of the Night",
+      "youtube_id": "N0k0FAlLlK0",
+      "level": "MEDIUM",
+      "videoTitle": "Rhythm Of The Night",
+      "reused": false
+    },
+    {
+      "id": "af1671dd-6bf1-4087-92d7-58fb8403dd9a",
+      "playlist": "Disco dancefloor",
+      "artist": "Bee Gees",
+      "title": "You Should Be Dancing",
+      "youtube_id": "1sqE6P3XyiQ",
+      "level": "MEDIUM",
+      "videoTitle": "You Should Be Dancing",
+      "reused": false
+    },
+    {
+      "id": "5138e3af-2e9c-442f-8a87-3fdb95848ee2",
+      "playlist": "Disco dancefloor",
+      "artist": "Boney M.",
+      "title": "Daddy Cool",
+      "youtube_id": "C3PTPNpfVnw",
+      "level": "EASY",
+      "videoTitle": "Boney M. - Daddy Cool",
+      "reused": false
+    },
+    {
+      "id": "0cfa7356-e392-435d-8b1f-ea3953a3491e",
+      "playlist": "Disco dancefloor",
+      "artist": "The Jacksons",
+      "title": "Blame It on the Boogie",
+      "youtube_id": "nqxVMLVe62U",
+      "level": "MEDIUM",
+      "videoTitle": "The Jacksons - Blame It On the Boogie (Official Video)",
+      "reused": false
+    },
+    {
+      "id": "32e86bb0-4d7b-4992-8a03-35f459f61ea8",
+      "playlist": "Disco dancefloor",
+      "artist": "Tavares",
+      "title": "Heaven Must Be Missing an Angel",
+      "youtube_id": "56CpV-4lEe0",
+      "level": "EXPERT",
+      "videoTitle": "Heaven Must Be Missing An Angel",
+      "reused": false
+    },
+    {
+      "id": "91d884bf-409d-4ad6-8956-957e1f932e84",
+      "playlist": "Disco dancefloor",
+      "artist": "Sheila & B. Devotion",
+      "title": "Spacer",
+      "youtube_id": "U0bxpXXz4mI",
+      "level": "EXPERT",
+      "videoTitle": "Sheila B. Devotion - Spacer 1980",
+      "reused": false
+    },
+    {
+      "id": "2045b1b6-541b-43f6-a77a-87f309148735",
+      "playlist": "Disco dancefloor",
+      "artist": "Santa Esmeralda",
+      "title": "Don't Let Me Be Misunderstood",
+      "youtube_id": "epKBqRhebOc",
+      "level": "MEDIUM",
+      "videoTitle": "Santa Esmeralda - Don&#39;t Let Me Be Misunderstood - 1977 HD &amp; HQ",
+      "reused": false
+    },
+    {
+      "id": "5fde8260-4cf0-478b-8cd1-188a4d3ffa8a",
+      "playlist": "Disco dancefloor",
+      "artist": "Baccara",
+      "title": "Yes Sir, I Can Boogie",
+      "youtube_id": "TfesxFLsreQ",
+      "level": "EASY",
+      "videoTitle": "Yes Sir I Can Boogie",
+      "reused": false
+    },
+    {
+      "id": "4efb4249-c1a0-4956-a2b3-915c16de9022",
+      "playlist": "Disco dancefloor",
+      "artist": "George McCrae",
+      "title": "Rock Your Baby",
+      "youtube_id": "6Q15-kql1YE",
+      "level": "EXPERT",
+      "videoTitle": "Rock Your Baby",
+      "reused": false
+    },
+    {
+      "id": "30f451bd-44ba-4b99-afd1-13838394bda3",
+      "playlist": "Rap FR culte",
+      "artist": "Sniper",
+      "title": "Gravé dans la roche",
+      "youtube_id": "Iy1gH00vkMw",
+      "level": "MEDIUM",
+      "videoTitle": "Sniper - Gravé dans la roche",
+      "reused": false
+    },
+    {
+      "id": "ae4cba84-a049-4488-90c2-584b2a942d49",
+      "playlist": "Rap FR culte",
+      "artist": "Orelsan",
+      "title": "Tout va bien",
+      "youtube_id": "jWcAkOhorpg",
+      "level": "MEDIUM",
+      "videoTitle": "OrelSan-Tout Va Bien",
+      "reused": false
+    },
+    {
+      "id": "d44f6206-94ff-4b31-a0db-3c10398f1f39",
+      "playlist": "Rap FR culte",
+      "artist": "Damso",
+      "title": "Mosaïque solitaire",
+      "youtube_id": "q2c7Ie1Sz1Q",
+      "level": "EXPERT",
+      "videoTitle": "Damso - Γ. Mosaïque Solitaire",
+      "reused": false
+    },
+    {
+      "id": "e9bb1a56-8898-4d2d-a60b-b14070347d60",
+      "playlist": "Rap FR culte",
+      "artist": "Bigflo & Oli",
+      "title": "Demain",
+      "youtube_id": "7XKidex-w1Q",
+      "level": "MEDIUM",
+      "videoTitle": "Demain (Bigflo &amp; Oli X Petit Biscuit)",
+      "reused": false
+    },
+    {
+      "id": "66aed2a1-c336-4b55-83a1-ca0d433554aa",
+      "playlist": "Rap FR culte",
+      "artist": "Kaaris",
+      "title": "Zoo",
+      "youtube_id": "xX4Pxiwti4E",
+      "level": "EXPERT",
+      "videoTitle": "Kaaris - Zoo",
+      "reused": false
+    },
+    {
+      "id": "c14b5535-ad1a-42b6-bfc2-33366429102b",
+      "playlist": "Rap FR culte",
+      "artist": "Sinik",
+      "title": "Une époque formidable",
+      "youtube_id": "mJ7YyYpJ_2U",
+      "level": "EXPERT",
+      "videoTitle": "Une époque formidable",
+      "reused": false
+    },
+    {
+      "id": "747c989c-a402-43d4-b8a8-8201fa926103",
+      "playlist": "Rap FR culte",
+      "artist": "Ninho",
+      "title": "Goutte d'eau",
+      "youtube_id": "0uLp-tejcSo",
+      "level": "MEDIUM",
+      "videoTitle": "Ninho - Goutte d&#39;eau (Clip officiel)",
+      "reused": false
+    },
+    {
+      "id": "372fb40b-43eb-411c-8cf1-f5002f10a764",
+      "playlist": "Rap FR culte",
+      "artist": "Werenoi",
+      "title": "Guerilla",
+      "youtube_id": "GFqbhQULYik",
+      "level": "EXPERT",
+      "videoTitle": "Werenoi (ft. Hamza) - Maudit (Visualizer)",
+      "reused": false
+    },
+    {
+      "id": "00f70ae1-3d36-4206-8571-8a7b2a0c04a4",
+      "playlist": "Rap FR culte",
+      "artist": "Ärsenik",
+      "title": "Boxe avec les mots",
+      "youtube_id": "qvc8AaCwZdM",
+      "level": "EXPERT",
+      "videoTitle": "Boxe avec les mots",
+      "reused": false
+    },
+    {
+      "id": "dd62693d-d22f-4d15-8670-8fc436cd555c",
+      "playlist": "Tubes de l'été",
+      "artist": "Shawn Mendes",
+      "title": "Señorita",
+      "youtube_id": "Pkh8UtuejGw",
+      "level": "EASY",
+      "videoTitle": "Shawn Mendes, Camila Cabello - Señorita",
+      "reused": false
+    },
+    {
+      "id": "095ea489-45ea-45ef-a94a-0fff784eeb2e",
+      "playlist": "Tubes de l'été",
+      "artist": "MAGIC SYSTEM",
+      "title": "Premier Gaou",
+      "youtube_id": "RJMpeYwifEU",
+      "level": "EASY",
+      "videoTitle": "Magic System - Premiere Gaou",
+      "reused": false
+    },
+    {
+      "id": "94bb6c5c-49bd-4385-97e6-1a46800abc27",
+      "playlist": "Tubes de l'été",
+      "artist": "Tiësto",
+      "title": "The Business",
+      "youtube_id": "4x2S3LhbM0k",
+      "level": "MEDIUM",
+      "videoTitle": "Tiësto - The Business (Lyrics)",
+      "reused": false
+    },
+    {
+      "id": "78c8d62c-1d3b-4415-ad65-eb29bf3f8399",
+      "playlist": "Slows cultes",
+      "artist": "Bryan Adams",
+      "title": "Please Forgive Me",
+      "youtube_id": "Qy4zFJmE-1E",
+      "level": "MEDIUM",
+      "videoTitle": "Please forgive me",
+      "reused": false
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+{
+  "created_at": "2026-06-30T19:59:05.328Z",
+  "campaign": "groupeA-series-tv",
+  "created_playlist_ids": [],
+  "track_ids": [
+    "aab53d9c-a4f9-40ae-8df4-262eabed5c25",
+    "399a5bb4-e729-4943-bd49-85a1efdb0d3d",
+    "1a993a0a-7fa0-435b-935c-9a9da9522251",
+    "8f6882bf-1083-40ab-abcb-65f7b62c4e68",
+    "b4073b63-9cd9-4efe-a2d4-e577638e0d95",
+    "8fee9850-34f0-46e6-9ab1-2fbe617fa728",
+    "92736760-ab05-429a-8798-35ca20f4c5c3",
+    "1feb800d-fd8e-41cf-beaa-45ffa5c2a078",
+    "9a1ecc4f-c3cd-4e8b-ba73-b9e864b6c751",
+    "8ade7658-5dd3-45e9-a4a3-c320b052e8e0",
+    "1d70710d-b5ee-4012-b31d-9f454788e958",
+    "cc9764c0-a242-41ca-a2da-8fcdcd69bbd8",
+    "ebdd67c4-db90-48f7-a53b-de4638f59e69",
+    "5bb35c86-0265-4c30-9c60-82ec340e03c5",
+    "79a25356-b28e-4b7c-add0-6889a429fa01",
+    "acc44c1e-dd51-4a6b-a94c-7bd59d0bb456",
+    "4ecff333-ac3a-451d-9dac-0a276d1a5ab7",
+    "eecd40cb-0dfc-4f61-8274-4bffdaaf23c7",
+    "d6edfef9-9306-4ad1-a9e6-1166ddff3e46",
+    "99b3a1bc-2c17-4e61-97c1-bd2c05f9efe9",
+    "f81494f5-fc52-405e-9c60-2950254581af"
+  ],
+  "count": 21,
+  "items": [
+    {
+      "id": "aab53d9c-a4f9-40ae-8df4-262eabed5c25",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Friends (I'll Be There for You)",
+      "youtube_id": "RIjTq_OdFvo",
+      "level": "EASY",
+      "videoTitle": "I&#39;ll Be There for You (Theme From &quot;Friends&quot;)",
+      "reused": false
+    },
+    {
+      "id": "399a5bb4-e729-4943-bd49-85a1efdb0d3d",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Game of Thrones",
+      "youtube_id": "D3z12372SkI",
+      "level": "EASY",
+      "videoTitle": "Generique Game Of Thrones HD",
+      "reused": false
+    },
+    {
+      "id": "1a993a0a-7fa0-435b-935c-9a9da9522251",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Breaking Bad",
+      "youtube_id": "_ykOTpzuZN0",
+      "level": "EASY",
+      "videoTitle": "Negro y Azul (The Heisenberg Song) | Breaking Bad",
+      "reused": false
+    },
+    {
+      "id": "8f6882bf-1083-40ab-abcb-65f7b62c4e68",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "The Simpsons",
+      "youtube_id": "UxOWT1agmYg",
+      "level": "EASY",
+      "videoTitle": "Générique des Simpson - 1er",
+      "reused": false
+    },
+    {
+      "id": "b4073b63-9cd9-4efe-a2d4-e577638e0d95",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Stranger Things",
+      "youtube_id": "2obv0DHuhu4",
+      "level": "EASY",
+      "videoTitle": "Stranger Things",
+      "reused": false
+    },
+    {
+      "id": "8fee9850-34f0-46e6-9ab1-2fbe617fa728",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Peaky Blinders (Red Right Hand)",
+      "youtube_id": "5szR0RqqnYU",
+      "level": "EASY",
+      "videoTitle": "Red Right Hand (Immortal)",
+      "reused": false
+    },
+    {
+      "id": "92736760-ab05-429a-8798-35ca20f4c5c3",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "The Office",
+      "youtube_id": "0T-if-Vj2Xs",
+      "level": "EASY",
+      "videoTitle": "The Office (Main Theme)",
+      "reused": false
+    },
+    {
+      "id": "1feb800d-fd8e-41cf-beaa-45ffa5c2a078",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Sex and the City",
+      "youtube_id": "owWFNcoxECk",
+      "level": "EASY",
+      "videoTitle": "Générique - Sex and the city (Saison 6)",
+      "reused": false
+    },
+    {
+      "id": "9a1ecc4f-c3cd-4e8b-ba73-b9e864b6c751",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Prison Break",
+      "youtube_id": "2v5eH7H13ic",
+      "level": "EASY",
+      "videoTitle": "Générique - Prison Break (Saison 1)",
+      "reused": false
+    },
+    {
+      "id": "8ade7658-5dd3-45e9-a4a3-c320b052e8e0",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Dexter",
+      "youtube_id": "35iyETTPhiU",
+      "level": "EASY",
+      "videoTitle": "Générique - Dexter (Saison 1)",
+      "reused": false
+    },
+    {
+      "id": "1d70710d-b5ee-4012-b31d-9f454788e958",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "House MD (Teardrop)",
+      "youtube_id": "u7K72X4eo_s",
+      "level": "EASY",
+      "videoTitle": "Massive Attack - Teardrop (Official Video)",
+      "reused": false
+    },
+    {
+      "id": "cc9764c0-a242-41ca-a2da-8fcdcd69bbd8",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Twin Peaks",
+      "youtube_id": "0WrUKnFSCok",
+      "level": "EXPERT",
+      "videoTitle": "Générique  - Twin Peaks (Saison 1)",
+      "reused": false
+    },
+    {
+      "id": "ebdd67c4-db90-48f7-a53b-de4638f59e69",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "The X-Files",
+      "youtube_id": "rhZE-bAzEqc",
+      "level": "EXPERT",
+      "videoTitle": "[Série] Musique -   X-Files",
+      "reused": false
+    },
+    {
+      "id": "5bb35c86-0265-4c30-9c60-82ec340e03c5",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Six Feet Under",
+      "youtube_id": "whKVS5iFFLI",
+      "level": "EXPERT",
+      "videoTitle": "Generique Six feet under HD",
+      "reused": false
+    },
+    {
+      "id": "79a25356-b28e-4b7c-add0-6889a429fa01",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Mad Men",
+      "youtube_id": "Cx7Z-93A-tI",
+      "level": "EXPERT",
+      "videoTitle": "Mad Men (Version Longue Inédite - Générique / Thème Série Télé)",
+      "reused": false
+    },
+    {
+      "id": "acc44c1e-dd51-4a6b-a94c-7bd59d0bb456",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "True Detective (Far from Any Road)",
+      "youtube_id": "898P-EoTJFs",
+      "level": "EXPERT",
+      "videoTitle": "BO True Detective S1 (+ Paroles Fr)",
+      "reused": false
+    },
+    {
+      "id": "4ecff333-ac3a-451d-9dac-0a276d1a5ab7",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "The Wire",
+      "youtube_id": "J4zZCuNAGRo",
+      "level": "EXPERT",
+      "videoTitle": "Way Down In The Hole",
+      "reused": false
+    },
+    {
+      "id": "eecd40cb-0dfc-4f61-8274-4bffdaaf23c7",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Westworld",
+      "youtube_id": "hGFY7R_2hwA",
+      "level": "EXPERT",
+      "videoTitle": "Les SECRETS du GÉNÉRIQUE de WESTWORLD",
+      "reused": false
+    },
+    {
+      "id": "d6edfef9-9306-4ad1-a9e6-1166ddff3e46",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Succession",
+      "youtube_id": "ChU_W9LfgZo",
+      "level": "EXPERT",
+      "videoTitle": "Succession (Main Title Theme)",
+      "reused": false
+    },
+    {
+      "id": "99b3a1bc-2c17-4e61-97c1-bd2c05f9efe9",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "The Crown",
+      "youtube_id": "EIEqXWHPf88",
+      "level": "EXPERT",
+      "videoTitle": "The Crown Main Title| The Crown: Season One (Soundtrack from the Netflix Original Series)",
+      "reused": false
+    },
+    {
+      "id": "f81494f5-fc52-405e-9c60-2950254581af",
+      "playlist": "Génériques Séries TV",
+      "artist": "Générique",
+      "title": "Better Call Saul",
+      "youtube_id": "0cRLFSQa-Sg",
+      "level": "EXPERT",
+      "videoTitle": "Better Call Saul End Credits",
+      "reused": false
+    }
+  ]
+}

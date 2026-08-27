@@ -1,0 +1,175 @@
+genre,artist,title,level
+rock,Queen,Bohemian Rhapsody,facile
+rock,AC/DC,Highway to Hell,facile
+rock,Survivor,Eye of the Tiger,facile
+rock,Guns N' Roses,Sweet Child o' Mine,facile
+rock,Nirvana,Smells Like Teen Spirit,facile
+rock,The White Stripes,Seven Nation Army,facile
+rock,Toto,Africa,facile
+rock,Journey,Don't Stop Believin',facile
+rock,Bon Jovi,Livin' on a Prayer,facile
+rock,The Police,Every Breath You Take,facile
+rock,Europe,The Final Countdown,facile
+rock,Eagles,Hotel California,facile
+rock,Deep Purple,Smoke on the Water,facile
+rock,Queen,We Will Rock You,facile
+disco-funk,Bee Gees,Stayin' Alive,facile
+disco-funk,Earth Wind & Fire,September,facile
+disco-funk,Gloria Gaynor,I Will Survive,facile
+disco-funk,Donna Summer,Hot Stuff,facile
+disco-funk,Kool & The Gang,Celebration,facile
+disco-funk,Sister Sledge,We Are Family,facile
+disco-funk,Village People,Y.M.C.A.,facile
+disco-funk,ABBA,Dancing Queen,facile
+disco-funk,Chic,Le Freak,facile
+disco-funk,KC and the Sunshine Band,That's the Way (I Like It),facile
+disco-funk,Diana Ross,I'm Coming Out,facile
+disco-funk,Michael Jackson,Don't Stop 'Til You Get Enough,facile
+soul-rnb,Aretha Franklin,Respect,facile
+soul-rnb,Marvin Gaye,I Heard It Through the Grapevine,facile
+soul-rnb,Stevie Wonder,Superstition,facile
+soul-rnb,Otis Redding,(Sittin' On) The Dock of the Bay,facile
+soul-rnb,Ray Charles,Hit the Road Jack,facile
+soul-rnb,James Brown,I Got You (I Feel Good),facile
+soul-rnb,Whitney Houston,I Wanna Dance with Somebody,facile
+soul-rnb,Beyoncé,Crazy in Love,facile
+soul-rnb,Rihanna,Umbrella,facile
+soul-rnb,Usher,Yeah!,facile
+soul-rnb,Alicia Keys,No One,facile
+soul-rnb,Destiny's Child,Survivor,facile
+electro-edm,Avicii,Wake Me Up,facile
+electro-edm,David Guetta,Titanium,facile
+electro-edm,Daft Punk,One More Time,facile
+electro-edm,Calvin Harris,Summer,facile
+electro-edm,Swedish House Mafia,Don't You Worry Child,facile
+electro-edm,The Chainsmokers,Closer,facile
+electro-edm,Alan Walker,Faded,facile
+electro-edm,Martin Garrix,Animals,facile
+electro-edm,Eric Prydz,Call on Me,facile
+electro-edm,Darude,Sandstorm,facile
+electro-edm,Robin Schulz,Prayer in C,facile
+electro-edm,Major Lazer,Lean On,facile
+french-touch,Daft Punk,Around the World,facile
+french-touch,Stardust,Music Sounds Better with You,facile
+french-touch,Modjo,Lady (Hear Me Tonight),facile
+french-touch,Justice,D.A.N.C.E.,facile
+french-touch,Bob Sinclar,Love Generation,facile
+french-touch,David Guetta,Love Don't Let Me Go,facile
+french-touch,Cassius,1999,facile
+french-touch,Daft Punk,Get Lucky,facile
+french-touch,Bob Sinclar,World Hold On,facile
+french-touch,Martin Solveig,Hello,facile
+reggae,Bob Marley,No Woman No Cry,facile
+reggae,Bob Marley,Could You Be Loved,facile
+reggae,Bob Marley,Three Little Birds,facile
+reggae,Bob Marley,Jamming,facile
+reggae,UB40,Red Red Wine,facile
+reggae,Inner Circle,Sweat (A La La La La Long),facile
+reggae,Shaggy,It Wasn't Me,facile
+reggae,Shaggy,Boombastic,facile
+reggae,Snow,Informer,facile
+reggae,Ini Kamoze,Here Comes the Hotstepper,facile
+reggae,Eddy Grant,Electric Avenue,facile
+reggae,Desmond Dekker,Israelites,facile
+country,John Denver,Take Me Home Country Roads,facile
+country,Dolly Parton,Jolene,facile
+country,Dolly Parton,9 to 5,facile
+country,Johnny Cash,Ring of Fire,facile
+country,Kenny Rogers,The Gambler,facile
+country,Shania Twain,Man! I Feel Like a Woman!,facile
+country,Willie Nelson,On the Road Again,facile
+country,Lynyrd Skynyrd,Sweet Home Alabama,facile
+country,Taylor Swift,Love Story,facile
+country,Carrie Underwood,Before He Cheats,facile
+country,Garth Brooks,Friends in Low Places,facile
+country,Johnny Cash,I Walk the Line,facile
+metal,Metallica,Enter Sandman,facile
+metal,Metallica,Nothing Else Matters,facile
+metal,AC/DC,Thunderstruck,facile
+metal,Ozzy Osbourne,Crazy Train,facile
+metal,Black Sabbath,Paranoid,facile
+metal,Iron Maiden,The Trooper,facile
+metal,Rammstein,Du Hast,facile
+metal,System of a Down,Chop Suey!,facile
+metal,Guns N' Roses,Welcome to the Jungle,facile
+metal,Twisted Sister,We're Not Gonna Take It,facile
+metal,Judas Priest,Breaking the Law,facile
+metal,Motörhead,Ace of Spades,facile
+latino,Luis Fonsi,Despacito,facile
+latino,Shakira,Hips Don't Lie,facile
+latino,Shakira,Waka Waka (This Time for Africa),facile
+latino,Ricky Martin,Livin' la Vida Loca,facile
+latino,Gipsy Kings,Bamboléo,facile
+latino,Los del Río,Macarena,facile
+latino,Daddy Yankee,Gasolina,facile
+latino,Enrique Iglesias,Bailando,facile
+latino,Santana,Smooth,facile
+latino,Manu Chao,Me Gustas Tú,facile
+latino,J Balvin,Mi Gente,facile
+latino,Ricky Martin,María,facile
+rap-us,Eminem,Lose Yourself,facile
+rap-us,Eminem,The Real Slim Shady,facile
+rap-us,Dr. Dre,Still D.R.E.,facile
+rap-us,Snoop Dogg,Drop It Like It's Hot,facile
+rap-us,50 Cent,In Da Club,facile
+rap-us,Coolio,Gangsta's Paradise,facile
+rap-us,The Notorious B.I.G.,Juicy,facile
+rap-us,2Pac,California Love,facile
+rap-us,OutKast,Hey Ya!,facile
+rap-us,Kanye West,Stronger,facile
+rap-us,Jay-Z,Empire State of Mind,facile
+rap-us,House of Pain,Jump Around,facile
+rap-fr,IAM,Je danse le Mia,facile
+rap-fr,MC Solaar,Caroline,facile
+rap-fr,NTM,Laisse pas traîner ton fils,facile
+rap-fr,Diam's,La Boulette,facile
+rap-fr,Maître Gims,Bella,facile
+rap-fr,Black M,Sur ma route,facile
+rap-fr,Stromae,Alors on danse,facile
+rap-fr,Orelsan,Basique,facile
+rap-fr,Bigflo & Oli,Dommage,facile
+rap-fr,Soprano,Cosmo,facile
+rap-fr,Sexion d'Assaut,Désolé,facile
+rap-fr,Booba,Tombé pour elle,facile
+afrobeats,CKay,Love Nwantiti,facile
+afrobeats,Rema,Calm Down,facile
+afrobeats,Burna Boy,Last Last,facile
+afrobeats,Wizkid,Essence,facile
+afrobeats,Master KG,Jerusalema,facile
+afrobeats,Davido,Fall,facile
+afrobeats,Yemi Alade,Johnny,facile
+afrobeats,Fireboy DML,Peru,facile
+afrobeats,Burna Boy,Ye,facile
+afrobeats,Aya Nakamura,Djadja,facile
+films,Céline Dion,My Heart Will Go On,facile
+films,Whitney Houston,I Will Always Love You,facile
+films,Bill Conti,Gonna Fly Now (Rocky),facile
+films,Ray Parker Jr.,Ghostbusters,facile
+films,Bill Medley & Jennifer Warnes,(I've Had) The Time of My Life,facile
+films,Berlin,Take My Breath Away,facile
+films,Kenny Loggins,Footloose,facile
+films,Irene Cara,Flashdance... What a Feeling,facile
+films,Elton John,Can You Feel the Love Tonight,facile
+films,John Travolta & Olivia Newton-John,You're the One That I Want,facile
+films,Bryan Adams,(Everything I Do) I Do It for You,facile
+films,Vangelis,Chariots of Fire,facile
+disney,Idina Menzel,Let It Go,facile
+disney,Elton John,Circle of Life,facile
+disney,Peabo Bryson & Regina Belle,A Whole New World,facile
+disney,Samuel E. Wright,Under the Sea,facile
+disney,Nathan Lane & Ernie Sabella,Hakuna Matata,facile
+disney,Auli'i Cravalho,How Far I'll Go,facile
+disney,Angela Lansbury,Beauty and the Beast,facile
+disney,Lebo M,He Lives in You,facile
+disney,Phil Harris,The Bare Necessities,facile
+disney,Robin Williams,Friend Like Me,facile
+noel,Mariah Carey,All I Want for Christmas Is You,facile
+noel,Wham!,Last Christmas,facile
+noel,Brenda Lee,Rockin' Around the Christmas Tree,facile
+noel,José Feliciano,Feliz Navidad,facile
+noel,Band Aid,Do They Know It's Christmas?,facile
+noel,Chris Rea,Driving Home for Christmas,facile
+noel,Bobby Helms,Jingle Bell Rock,facile
+noel,Slade,Merry Xmas Everybody,facile
+noel,Wizzard,I Wish It Could Be Christmas Everyday,facile
+noel,Michael Bublé,It's Beginning to Look a Lot Like Christmas,facile

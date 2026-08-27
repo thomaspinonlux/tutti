@@ -44,6 +44,10 @@ export interface LibraryPlaylistSummary {
    *  hqdefault.jpg si Spotify cover absent. */
   cover_fallback_url?: string | null;
   cover_fallback_youtube_id?: string | null;
+  /** fix/source-tabs-forced-source — source imposée de la playlist
+   *  ('apple_music' | 'youtube' | 'spotify'). C'est ELLE qui décide sous quel
+   *  onglet de source la playlist apparaît. NULL = legacy → repli compteurs. */
+  forced_source?: string | null;
 }
 
 /** feat/playlist-categories-schema — entrée du JSON groupé par catégorie. */

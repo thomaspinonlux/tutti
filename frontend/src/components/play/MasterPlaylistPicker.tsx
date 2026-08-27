@@ -19,6 +19,7 @@ import {
   type MasterPlaylistEntry,
 } from '../../lib/sessions.js';
 import type { LibraryPlaylistSummary } from '../../lib/library.js';
+import { playlistMatchesSource } from '../../lib/providerSelection.js';
 import { Badge, Button, Card } from '../ui/index.js';
 
 interface Props {
@@ -124,13 +125,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
     if (!official) return null;
     const nq = norm(q.trim());
     return official
-      .filter((p) =>
-        provider === 'youtube'
-          ? p.youtube_count > 0
-          : provider === 'spotify'
-            ? p.spotify_count > 0
-            : (p.apple_music_count ?? 0) > 0,
-      )
+      .filter((p) => playlistMatchesSource(p, provider))
       .filter((p) => !nq || norm(p.name_fr).includes(nq) || norm(p.name_en).includes(nq));
   }, [official, q, provider]);
 
@@ -215,21 +210,38 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
         {tab === 'official' && !selected && (
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <div className="inline-flex border-2 border-ink/20 rounded-lg overflow-hidden">
-              {(['apple_music', 'youtube', 'spotify'] as const).map((pv) => (
-                <button
-                  key={pv}
-                  type="button"
-                  onClick={() => {
-                    providerTouchedRef.current = true;
-                    setProvider(pv);
-                  }}
-                  className={`px-3 py-1.5 text-xs font-medium ${
-                    provider === pv ? 'bg-ink text-cream' : 'bg-transparent text-ink-soft'
-                  }`}
-                >
-                  {pv === 'youtube' ? '▶ YouTube' : pv === 'spotify' ? '♪ Spotify' : ' Apple Music'}
-                </button>
-              ))}
+              {(['apple_music', 'youtube', 'spotify'] as const).map((pv) => {
+                // fix/source-tabs-forced-source — Spotify est hors du flow
+                // officiel (cf. preferredProvider) : onglet grisé, non cliquable.
+                const locked = pv === 'spotify';
+                return (
+                  <button
+                    key={pv}
+                    type="button"
+                    disabled={locked}
+                    aria-disabled={locked}
+                    title={locked ? t('playlists.sourceSpotifyDisabled') : undefined}
+                    onClick={() => {
+                      if (locked) return;
+                      providerTouchedRef.current = true;
+                      setProvider(pv);
+                    }}
+                    className={`px-3 py-1.5 text-xs font-medium ${
+                      locked
+                        ? 'bg-transparent text-ink-soft/35 cursor-not-allowed'
+                        : provider === pv
+                          ? 'bg-ink text-cream'
+                          : 'bg-transparent text-ink-soft'
+                    }`}
+                  >
+                    {pv === 'youtube'
+                      ? '▶ YouTube'
+                      : pv === 'spotify'
+                        ? '♪ Spotify'
+                        : ' Apple Music'}
+                  </button>
+                );
+              })}
             </div>
             <input
               type="search"

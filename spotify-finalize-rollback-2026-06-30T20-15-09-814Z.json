@@ -1,0 +1,22 @@
+{
+  "created_at": "2026-06-30T20:15:43.440Z",
+  "campaign": "spotify-finalize",
+  "undo": "set spotify_id=null pour track_ids",
+  "track_ids": [
+    "005aa9f3-b761-4770-aa26-04af18ed0a5c",
+    "008d0569-0b45-485c-8367-06ffbf1ac6c9",
+    "012915f9-9eb8-467a-9a0a-22bef4d902aa",
+    "01aaf19b-d8b7-4c4a-a3ac-1d07171d4fdc",
+    "01e35c40-a245-4f02-ac57-438b36fd4812",
+    "01f2dcb2-80f6-4da3-83c7-1abe098d1f99",
+    "02f8c8b9-253f-4557-aac1-dcc3710e4431",
+    "03493723-ff18-44d0-85fe-a8a4485f8c4a",
+    "03dafc3b-21ab-4912-bd34-8fad7c788e4d",
+    "0453b324-9c81-4917-be44-850a05fbebbb",
+    "048828ed-e8dd-48d0-a362-af1ebd3f2778",
+    "04c01c52-0906-4ea6-bee5-4b197bd205b8",
+    "04ccb6bd-eef8-4f98-9488-b2a467fc39d1",
+    "05897dba-0620-43ca-9fc3-57d743cd908b"
+  ],
+  "count": 14
+}

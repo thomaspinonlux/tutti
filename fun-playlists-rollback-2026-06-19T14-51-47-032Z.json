@@ -1,0 +1,452 @@
+{
+  "created_at": "2026-06-19T14:52:05.536Z",
+  "created_playlist_ids": [
+    "2ff4eb3f-06e6-45b0-be1e-fe9be0179709",
+    "583c56b2-89c4-48bf-b37a-ebc8c0c19bbb"
+  ],
+  "track_ids": [
+    "9fe7cd44-f016-4425-b53b-c2cd75958ba2",
+    "67d7b55c-d162-4fc0-a2ab-7eb3874ebc2d",
+    "8eca2f7c-09bd-4ef7-b3ea-15f4ed2e0456",
+    "2afd598d-d85d-4768-b3b1-e4dbaac40f8f",
+    "1239700d-ecbd-49e6-b74d-a1c5d0694406",
+    "34e53bab-d4b9-43c5-94d8-be779096ba8e",
+    "a9ec692a-d3f4-43e8-9c54-943d2afa63a3",
+    "cc4a8a00-f9ff-468e-baf3-eda4a41f91ef",
+    "a49b5d37-c7a8-4182-8ab1-d76ebacbbb6f",
+    "cf23712e-aef3-4c0a-beaa-e7a2bf6c8906",
+    "f85943d1-c2ec-48c6-be84-5cb37ba63ea2",
+    "ad7f716f-900c-4ecd-9a3f-b60dce2e53fd",
+    "69c74805-f2fc-4bf9-bd88-0b9317aba880",
+    "cbff41f0-3d06-48ac-9304-dd4e1a0f14ed",
+    "19d37c21-c3aa-43dd-9913-5f7be7cfa6d6",
+    "84f29bb8-91a3-44a1-864c-a762d066e703",
+    "2133295f-be19-4026-b325-20dac59a7c10",
+    "feff9710-16c8-47d0-b0fd-8036f604aa46",
+    "358e40b5-fc61-4b6b-9b3c-996facd435c6",
+    "b88a4d21-23a0-448e-8e3e-4a2b09bbac37",
+    "86d46bcf-b806-473d-bb2a-a6e011db1219",
+    "599cd326-e3e2-46b5-bd52-c6e5776e2759",
+    "6e06910b-dfef-4c54-98f5-0b1c02786ec7",
+    "52e929b9-9154-4b10-b118-968c9cb46cc3",
+    "3a8dae58-dc1f-4699-b7e5-0d8f13aea19a",
+    "e784d68e-62d3-4ab3-9d80-5cd84f8704ed",
+    "1932d169-9228-4600-b91c-9a4b712b3483",
+    "8cdbec07-cbf7-495e-bdb9-d1d42e500176",
+    "0734aff2-b775-496c-a56a-a5509b017b12",
+    "7c4da06b-82c6-4946-81f0-aacfee2dd17c",
+    "0b571d8b-3b0e-4590-addf-d6667ff25c7d",
+    "187e5716-8a82-49ba-8849-b890a63b4b95",
+    "3e988445-2bbb-477d-ba31-9e56ede61db9",
+    "85b9782d-3a7d-4686-9859-56ff4562fb00",
+    "3bcc069e-0d03-4afd-b145-5c81ab841e71",
+    "4bf0811c-75b1-492c-b608-5b98d252b7a7",
+    "2b7b38ba-c378-4ef1-a44f-840b6db01760",
+    "14480452-8d03-4073-89e7-94b441c8959c",
+    "798d9fca-d6ac-439c-ac53-440ebe51dab7",
+    "005fc921-97fc-45d4-868e-6a194e406892",
+    "38bddd7b-2e0d-47e4-96e9-eaf734ce3b73",
+    "f97f5629-3620-4835-86a0-3f1e134723f7",
+    "abb9a971-1a0b-41f2-8b85-f60e9b2602c9",
+    "dbe7492c-9191-40c3-95bf-802255a82b90"
+  ],
+  "count": 44,
+  "items": [
+    {
+      "id": "9fe7cd44-f016-4425-b53b-c2cd75958ba2",
+      "playlist": "Guilty Pleasures",
+      "artist": "Aqua",
+      "title": "Barbie Girl",
+      "youtube_id": "ZyhrYis509A",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "67d7b55c-d162-4fc0-a2ab-7eb3874ebc2d",
+      "playlist": "Guilty Pleasures",
+      "artist": "Las Ketchup",
+      "title": "Aserejé (The Ketchup Song)",
+      "youtube_id": "5llcBScGuAE",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "8eca2f7c-09bd-4ef7-b3ea-15f4ed2e0456",
+      "playlist": "Guilty Pleasures",
+      "artist": "Eiffel 65",
+      "title": "Blue (Da Ba Dee)",
+      "youtube_id": "zA52uNzx7Y4",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "2afd598d-d85d-4768-b3b1-e4dbaac40f8f",
+      "playlist": "Guilty Pleasures",
+      "artist": "Vengaboys",
+      "title": "Boom Boom Boom Boom!!",
+      "youtube_id": "llyiQ4I-mcQ",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "1239700d-ecbd-49e6-b74d-a1c5d0694406",
+      "playlist": "Guilty Pleasures",
+      "artist": "Vengaboys",
+      "title": "We Like to Party!",
+      "youtube_id": "VaGOFlw-E4M",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "34e53bab-d4b9-43c5-94d8-be779096ba8e",
+      "playlist": "Guilty Pleasures",
+      "artist": "Lou Bega",
+      "title": "Mambo No. 5 (A Little Bit of...)",
+      "youtube_id": "EK_LN3XEcnw",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "a9ec692a-d3f4-43e8-9c54-943d2afa63a3",
+      "playlist": "Guilty Pleasures",
+      "artist": "Rednex",
+      "title": "Cotton Eye Joe",
+      "youtube_id": "mOYZaiDZ7BM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "cc4a8a00-f9ff-468e-baf3-eda4a41f91ef",
+      "playlist": "Guilty Pleasures",
+      "artist": "O-Zone",
+      "title": "Dragostea Din Tei",
+      "youtube_id": "YnopHCL1Jk8",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "a49b5d37-c7a8-4182-8ab1-d76ebacbbb6f",
+      "playlist": "Guilty Pleasures",
+      "artist": "Spice Girls",
+      "title": "Wannabe",
+      "youtube_id": "gJLIiF15wjQ",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "cf23712e-aef3-4c0a-beaa-e7a2bf6c8906",
+      "playlist": "Guilty Pleasures",
+      "artist": "Baha Men",
+      "title": "Who Let the Dogs Out",
+      "youtube_id": "ojULkWEUsPs",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "f85943d1-c2ec-48c6-be84-5cb37ba63ea2",
+      "playlist": "Guilty Pleasures",
+      "artist": "Scatman John",
+      "title": "Scatman (Ski-Ba-Bop-Ba-Dop-Bop)",
+      "youtube_id": "Hy8kmNEo1i8",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "ad7f716f-900c-4ecd-9a3f-b60dce2e53fd",
+      "playlist": "Guilty Pleasures",
+      "artist": "Haddaway",
+      "title": "What Is Love",
+      "youtube_id": "HEXWRTEbj1I",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "69c74805-f2fc-4bf9-bd88-0b9317aba880",
+      "playlist": "Guilty Pleasures",
+      "artist": "Whigfield",
+      "title": "Saturday Night",
+      "youtube_id": "8DNQRtmIMxk",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "cbff41f0-3d06-48ac-9304-dd4e1a0f14ed",
+      "playlist": "Guilty Pleasures",
+      "artist": "Gala",
+      "title": "Freed from Desire",
+      "youtube_id": "4eJckVIJk5c",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "19d37c21-c3aa-43dd-9913-5f7be7cfa6d6",
+      "playlist": "Guilty Pleasures",
+      "artist": "Right Said Fred",
+      "title": "I'm Too Sexy",
+      "youtube_id": "P5mtclwloEQ",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "84f29bb8-91a3-44a1-864c-a762d066e703",
+      "playlist": "Guilty Pleasures",
+      "artist": "Cascada",
+      "title": "Everytime We Touch",
+      "youtube_id": "4G6QDNC4jPs",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "2133295f-be19-4026-b325-20dac59a7c10",
+      "playlist": "Guilty Pleasures",
+      "artist": "2 Unlimited",
+      "title": "No Limit",
+      "youtube_id": "qM5W7Xn7FiA",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "feff9710-16c8-47d0-b0fd-8036f604aa46",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Queen",
+      "title": "Bohemian Rhapsody",
+      "youtube_id": "fJ9rUzIMcZQ",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "358e40b5-fc61-4b6b-9b3c-996facd435c6",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Journey",
+      "title": "Don't Stop Believin'",
+      "youtube_id": "1k8craCGpgs",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "b88a4d21-23a0-448e-8e3e-4a2b09bbac37",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "The Killers",
+      "title": "Mr. Brightside",
+      "youtube_id": "l7MaKmKJqoc",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "86d46bcf-b806-473d-bb2a-a6e011db1219",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Oasis",
+      "title": "Wonderwall",
+      "youtube_id": "bx1Bh8ZvH84",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "599cd326-e3e2-46b5-bd52-c6e5776e2759",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Neil Diamond",
+      "title": "Sweet Caroline",
+      "youtube_id": "1vhFnTjia_I",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "6e06910b-dfef-4c54-98f5-0b1c02786ec7",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Toto",
+      "title": "Africa",
+      "youtube_id": "Kb7lAMjFuA0",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "52e929b9-9154-4b10-b118-968c9cb46cc3",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Bon Jovi",
+      "title": "Livin' on a Prayer",
+      "youtube_id": "CuUefy9bT9U",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "3a8dae58-dc1f-4699-b7e5-0d8f13aea19a",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "ABBA",
+      "title": "Dancing Queen",
+      "youtube_id": "-sVB91NTa4A",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "e784d68e-62d3-4ab3-9d80-5cd84f8704ed",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Survivor",
+      "title": "Eye of the Tiger",
+      "youtube_id": "kI-TBmie1Yc",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "1932d169-9228-4600-b91c-9a4b712b3483",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Village People",
+      "title": "Y.M.C.A.",
+      "youtube_id": "Q7c9gopd69k",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "8cdbec07-cbf7-495e-bdb9-d1d42e500176",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Bryan Adams",
+      "title": "Summer of '69",
+      "youtube_id": "9f06QZCVUHg",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "0734aff2-b775-496c-a56a-a5509b017b12",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Europe",
+      "title": "The Final Countdown",
+      "youtube_id": "lZzcQ-uQ8R0",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "7c4da06b-82c6-4946-81f0-aacfee2dd17c",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Robbie Williams",
+      "title": "Angels",
+      "youtube_id": "luwAMFcc2f8",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "0b571d8b-3b0e-4590-addf-d6667ff25c7d",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Kiss",
+      "title": "I Was Made for Lovin' You",
+      "youtube_id": "Gcj34XixuYg",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "187e5716-8a82-49ba-8849-b890a63b4b95",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Michel Sardou",
+      "title": "Les Lacs du Connemara",
+      "youtube_id": "bpEmjxobvbY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "3e988445-2bbb-477d-ba31-9e56ede61db9",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Jean-Jacques Goldman",
+      "title": "Quand la musique est bonne",
+      "youtube_id": "-boDeijWuOY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "85b9782d-3a7d-4686-9859-56ff4562fb00",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Indochine",
+      "title": "L'Aventurier",
+      "youtube_id": "VDe-i6l4-NU",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "3bcc069e-0d03-4afd-b145-5c81ab841e71",
+      "playlist": "Guilty Pleasures",
+      "artist": "Crazy Frog",
+      "title": "Axel F",
+      "youtube_id": "t0nxKPBiceo",
+      "videoTitle": "Axel F",
+      "reused": false
+    },
+    {
+      "id": "4bf0811c-75b1-492c-b608-5b98d252b7a7",
+      "playlist": "Guilty Pleasures",
+      "artist": "Daddy DJ",
+      "title": "Daddy DJ",
+      "youtube_id": "tiKcjawMVgI",
+      "videoTitle": "Daddy DJ (Original Radio Edit / Remastered 2025)",
+      "reused": false
+    },
+    {
+      "id": "2b7b38ba-c378-4ef1-a44f-840b6db01760",
+      "playlist": "Guilty Pleasures",
+      "artist": "Aqua",
+      "title": "Doctor Jones",
+      "youtube_id": "-1jPUB7gRyg",
+      "videoTitle": "Aqua - Doctor Jones",
+      "reused": false
+    },
+    {
+      "id": "14480452-8d03-4073-89e7-94b441c8959c",
+      "playlist": "Guilty Pleasures",
+      "artist": "DJ Ötzi",
+      "title": "Hey Baby (Uhh Ahh)",
+      "youtube_id": "9YFtlvDOVVE",
+      "videoTitle": "Dj Otzi - Hey Baby (Uhh, Ahh)",
+      "reused": false
+    },
+    {
+      "id": "798d9fca-d6ac-439c-ac53-440ebe51dab7",
+      "playlist": "Guilty Pleasures",
+      "artist": "Corona",
+      "title": "The Rhythm of the Night",
+      "youtube_id": "M4rJdf97JbA",
+      "videoTitle": "Corona - The Rhythm Of The Night",
+      "reused": false
+    },
+    {
+      "id": "005fc921-97fc-45d4-868e-6a194e406892",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Joe Dassin",
+      "title": "Les Champs-Élysées",
+      "youtube_id": "tDWeLlvYyYU",
+      "videoTitle": "Joe Dassin - Les Champs-Elysées (Audio)",
+      "reused": false
+    },
+    {
+      "id": "38bddd7b-2e0d-47e4-96e9-eaf734ce3b73",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Claude François",
+      "title": "Alexandrie Alexandra",
+      "youtube_id": "ZRaOzXS1slI",
+      "videoTitle": "Alexandrie Alexandra",
+      "reused": false
+    },
+    {
+      "id": "f97f5629-3620-4835-86a0-3f1e134723f7",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "France Gall",
+      "title": "Résiste",
+      "youtube_id": "JEAX24VgAsk",
+      "videoTitle": "France Gall - Résiste",
+      "reused": false
+    },
+    {
+      "id": "abb9a971-1a0b-41f2-8b85-f60e9b2602c9",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Patrick Sébastien",
+      "title": "Le Petit Bonhomme en mousse",
+      "youtube_id": "LJP4ICgu-6g",
+      "videoTitle": "Patrick Sébastien - Le petit bonhomme en mousse",
+      "reused": false
+    },
+    {
+      "id": "dbe7492c-9191-40c3-95bf-802255a82b90",
+      "playlist": "Karaoké de Komptoir",
+      "artist": "Daniel Balavoine",
+      "title": "L'Aziza",
+      "youtube_id": "O4ACXQxCgc8",
+      "videoTitle": "Daniel Balavoine - L&#39;Aziza (Clip Officiel)",
+      "reused": false
+    }
+  ]
+}

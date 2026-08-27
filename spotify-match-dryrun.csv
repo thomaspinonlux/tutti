@@ -1,0 +1,701 @@
+group,playlist,artist,title,youtube_id,spotify_track_name,spotify_artist_name,spotify_id,confidence,flag
+G1,official-pl-80s-easy,Def Leppard,Pour Some Sugar on Me,0UIB9Y4OFPs,Pour Some Sugar On Me,Def Leppard,1aZLIbKEdsyqxyD6iNcrbA,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Journey,Don't Stop Believin',1k8craCGpgs,Don't Stop Believin',Journey,77NNZQSqzLNqh2A9JhLRkg,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,George Michael,Careless Whisper,izGwDsrQ1eQ,Careless Whisper,George Michael,5WDLRQ3VCdVrKw0njWe5E5,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Dolly Parton,Nine to Five,UbxUSsFXYo4,9 to 5,Dolly Parton,4w3tQBXhn5345eUXDGBWZG,a1.00 t0.33,no-match
+G1,official-pl-80s-easy,The Bangles,Walk Like an Egyptian,Cv6tuzHUuuk,Walk Like an Egyptian,The Bangles,1Jwc3ODLQxtbnS8M9TflSP,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Journey,Separate Ways (Worlds Apart),LatorN4P9aA,Separate Ways (Worlds Apart) [2023 Remaster],Journey,1pTw2cNrp9L3esxLAvWnN2,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Duran Duran,Rio,nTizYn3-QN0,Rio - US Edit,Duran Duran,68x0eW1iIqXU0exrafu8Ti,a1.00 t0.27,no-match
+G1,official-pl-80s-easy,Dire Straits,Money for Nothing,wTP2RUD_cL0,Money For Nothing,Dire Straits,01Txvu3dNthhldq8oR0Pae,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Spandau Ballet,True,AR8D2yqgQ1U,True,Spandau Ballet,4q2lRiodoQnyFO65watkse,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,The Police,Every Breath You Take,iOT_zuDHvVk,Every Breath You Take,The Police,1JSTJqkT5qHq8MDJnJbRE1,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,The Buggles,Video Killed the Radio Star,W8r-tXRLazs,Video Killed The Radio Star,The Buggles,7o7E1nrHWncYY7PY94gCiX,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Michael Jackson,Beat It,oRdxUFDoQe0,Beat It,Michael Jackson,3BovdzfaX4jb5KFQwoPfAw,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Dexys Midnight Runners,Come On Eileen,GbpnAGajyMc,Come On Eileen,Dexys Midnight Runners,3MrWxJaD2AT0W9DjWF64Vm,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Bruce Springsteen,Dancing in the Dark,129kuDCQtHs,Dancing In the Dark,Bruce Springsteen,7FwBtcecmlpc1sLySPXeGE,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Pet Shop Boys,West End Girls,p3j2NYZ8FKs,West End Girls,Pet Shop Boys,5Dqik1P9toCJTLj5rEm78s,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Nena,99 Luftballons,Fpu5a0Bl8eY,99 Luftballons,Nena,2IJftBfq7pJ43tfnOR0RB3,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Tommy Tutone,867-5309/Jenny,6WTdTwcmxyo,867-5309 / Jenny,Tommy Tutone,6iX1f3r7oUJnMbGgQ2gx1j,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Toni Basil,Mickey,0aqLwHP4y6Q,Mickey,Toni Basil,5b6v3PGTEXnOEh4hy9aPhS,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Olivia Newton-John,Physical,vWz9VN40nCA,Physical (Remastered 2021),Olivia Newton-John,0bB0aRsAB2CTYRCeoMOFHU,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Blondie,Call Me,StKVS0eI85I,Call Me,Blondie,7HKxTNVlkHsfMLhigmhC0I,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Bonnie Tyler,Holding Out for a Hero,bWcASV2sey0,Holding Out for a Hero - Single Version,Bonnie Tyler,3qE6p9fN4YeILT0cQcY1cD,a1.00 t0.59,review
+G1,official-pl-80s-easy,Belinda Carlisle,Heaven Is a Place on Earth,NOGEyBeoBGM,Heaven Is a Place on Earth,Belinda Carlisle,1ryT9eOWD1JuxPD5ew53SJ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,The Clash,Should I Stay or Should I Go,BN1WwnEDWAM,Should I Stay or Should I Go - Remastered,The Clash,39shmbIHICJ2Wxnk1fPSdz,a1.00 t0.72,review
+G1,official-pl-80s-easy,A Flock of Seagulls,I Ran (So Far Away),iIpfWORQWhU,I Ran (So Far Away),A Flock Of Seagulls,6vKVuBeExHlEh9cZ8Ppk8t,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Toto,Rosanna,qmOLtTGvsbM,Rosanna,TOTO,37BTh5g05cxBIRYMbw8g2T,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,AC/DC,You Shook Me All Night Long,Lo2qQmj0_h4,You Shook Me All Night Long,AC/DC,2SiXAy7TuUkycRVbbWDEpo,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Elton John,I'm Still Standing,ZHwVBirqD2s,I'm Still Standing,Elton John,1jDJFeK9x3OZboIAHsY9k2,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Starship,Nothing's Gonna Stop Us Now,3wxyN3z9PL4,Nothing's Gonna Stop Us Now,Starship,3X7uFMzJrEE0sxn62qd8Ch,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Tiffany,I Think We're Alone Now,w6Q3mHyzn78,I Think We're Alone Now,Tiffany,4uvjOKsp7mSjrDhWdkLPBY,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Roxette,The Look,LlVI7ZNiFlI,The Look,Roxette,4Ln6CP07DElm8ay1RxyYa9,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Irene Cara,Flashdance... What a Feeling,ILWSp0m9G2U,"Flashdance, What a Feeling",E-Motion / Irene Cara / SPYZR,0w62PUYitc8Pv08LZ06UNS,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Los Lobos,La Bamba,Jp6j5HJ-Cok,La Bamba,Los Lobos,0uMMLry3hzWGn3q3loqMkm,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Whitesnake,Here I Go Again,WyF8RHM1OCg,Here I Go Again - Radio Mix,Whitesnake,5ggHTNfpr7cDPBAlpLaumV,a1.00 t0.60,review
+G1,official-pl-80s-easy,Rick Astley,Never Gonna Give You Up,dQw4w9WgXcQ,Never Gonna Give You Up,Rick Astley,4PTG3Z6ehGkBFwjybzWkR8,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Peter Gabriel,Sledgehammer,OJWJE0x7T4Q,Sledgehammer,Peter Gabriel,029NqmIySn1kOY305AAhxT,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Survivor,Eye of the Tiger,btPJPFnesV4,Eye of the Tiger,Survivor,2HHtWyy5CgaQbC7XSoOb0e,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Madonna,Material Girl,6p-lDYPR2P8,Material Girl,Madonna,7bkyXSi4GtVfD7itZRUR3e,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Bananarama,Venus,d4-1ASpdT1Y,Venus,Bananarama,4XX1pFUkQOZTYp6Hb6a6Ae,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,A-ha,Take On Me,MIgK3zOk0zg,Take on Me,a-ha,2WfaOiMkCvy7F5fcp2zZ8L,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Eurythmics,Sweet Dreams (Are Made of This),qeMFqkcPYcg,Sweet Dreams (Are Made of This),Eurythmics / Annie Lennox / Dave Stewart,6zIfdCmmhPCX0cMquBsC37,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Soft Cell,Tainted Love,oGXpDhNAO1Y,Tainted Love,Soft Cell,0cGG2EouYCEEC3xfa0tDFV,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Whitney Houston,I Wanna Dance with Somebody,eH3giaIzONA,I Wanna Dance with Somebody (Who Loves Me),Whitney Houston,2tUBqZG2AbRi7Q0BIrVrEj,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Toto,Africa,Kb7lAMjFuA0,Africa,TOTO,2374M0fQpWi3dLnB54qaLX,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Bon Jovi,Livin' on a Prayer,CuUefy9bT9U,Livin' On A Prayer,Bon Jovi,37ZJ0p5Jm13JPevGcx4SkF,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Europe,The Final Countdown,lZzcQ-uQ8R0,The Final Countdown,Europe,3MrRksHupTVEQ7YbA0FsZK,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Duran Duran,Hungry Like the Wolf,oJL-lCzEXgI,Hungry Like the Wolf,Duran Duran,2qeESyQyH7MRHCBotCQsNq,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Van Halen,Jump,SwYN7mTi6HM,Jump,Van Halen,6Fba9RZtC6vTY814JToDtP,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Madonna,Like a Virgin,50nag9B6Pps,Like a Virgin,Madonna,1ZPlNanZsJSPK5h9YZZFbZ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Rick Springfield,Jesse's Girl,qYkbTyHXwbs,Jessie's Girl,Rick Springfield,5RsUlxLto4NZbhJpqJbHfN,a1.00 t0.92,auto-ok
+G1,official-pl-80s-easy,Foreigner,I Want to Know What Love Is,raNGeq3_DtM,I Want to Know What Love Is,Foreigner,04OjLvOApQve45B0ISx4XN,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Technotronic,Pump Up the Jam,9EcjWd-O4jI,Pump Up The Jam,Technotronic,21qnJAMtzC6S5SESuqQLEK,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Queen,Don't Stop Me Now,HgzGwKwLmgM,Don't Stop Me Now - ...Revisited,Queen,3INsYP1Y8GG4qJvBsKCdXC,a1.00 t0.63,review
+G1,official-pl-80s-easy,Tears for Fears,Everybody Wants to Rule the World,aGCdLKXNF3w,Everybody Wants To Rule The World,Tears For Fears,4RvWPyQ5RL0ao9LPZeSouE,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Kenny Loggins,Footloose,ltrMfT4Qz5Y,Footloose,Kenny Loggins,6W2VbtvMrDXm5vYeB7amkO,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Cyndi Lauper,Time After Time,VdQY7BusJNU,Time After Time,Cyndi Lauper,7o9uu2GDtVDr9nsR7ZRN73,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Wham!,Wake Me Up Before You Go-Go,pIgZ7gMze7A,Wake Me Up Before You Go-Go,Wham!,0ikz6tENMONtK6qGkOrU3c,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Tina Turner,What's Love Got to Do with It,oGpFcHTxjZs,What's Love Got to Do with It,Tina Turner,4kOfxxnW1ukZdsNbCKY9br,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,The Bangles,Manic Monday,SsmVgoXDq2w,Manic Monday,The Bangles,7Di7t9yGoxdZRLAt5a4pi0,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Men at Work,Down Under,XfR9iY5y94s,Down Under,Men At Work,3ZZq9396zv8pcn5GYVhxUi,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Elton John,Nikita,dLHtV_S2HZw,Nikita,Elton John,3G0ENKW9vzV0SuYKaWFflI,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Michael Sembello,Maniac,6GCNUeTFSbA,Maniac,Michael Sembello,0QKfiqpEU4h9ycPSzIFwYe,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Kool & The Gang,Celebration,3GwjfUFyY6M,Celebration,Kool & The Gang,3K7Q9PHUWPTaknlbFPThn2,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Starship,We Built This City,K1b8AhIsSYQ,We Built This City,Starship,6OnfBiiSc9RGKiBKKtZXgQ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Tears for Fears,Shout,Ye7FKc1JQe4,Shout,Tears For Fears,2gQaQUhDCNGfBVXTvxAmXQ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,The Outfield,Your Love,4N1iwQxiHrs,Your Love,The Outfield,5dRQUolXAVX3BbCiIxmSsf,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Queen,Another One Bites the Dust,rY0WxgSXdEE,Another One Bites The Dust,Queen,2k1yPYf9WGA4LiqcLVwtzn,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,The B-52's,Love Shack,9SOryJvTAGs,Love Shack,The B-52's,4W4wYHtsrgDiivRASVOINL,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Billy Joel,Uptown Girl,hCuMWrfXG4E,Uptown Girl,Billy Joel,5zA8vzDGqPl2AzZkEYQGKh,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Simple Minds,Don't You (Forget About Me),CdqoNKCCt7A,Don't You (Forget About Me),Simple Minds,5Y8Rj0s6wuM5DlQdllYiWl,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Guns N' Roses,Sweet Child O' Mine,1w7OgIMMRc4,Sweet Child O' Mine,Guns N' Roses,7snQQk1zcKl8gZ92AnueZW,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Cyndi Lauper,Girls Just Want to Have Fun,PIb6AZdTr-A,Girls Just Want to Have Fun,Cyndi Lauper,4y1LsJpmMti1PfRQV9AWWe,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Michael Jackson,Billie Jean,OZGtRvYF-A4,Billie Jean,Michael Jackson,7J1uxwnxfQLu4APicE5Rnj,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Culture Club,Karma Chameleon,JmcA9LIIXWw,Karma Chameleon,Culture Club,3XDeeP9wBZzGhIPZmLfEEx,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,The Human League,Don't You Want Me,uPudE8nDog0,Don't You Want Me,The Human League,3AIEEEIDJFnqv8rozNVCRZ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Phil Collins,In the Air Tonight,YkADj0TPrJA,In the Air Tonight,Phil Collins,6mYXXXgFZZmk2mgejwSwdN,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Katrina and the Waves,Walking on Sunshine,iPUmE-tne5U,Walking On Sunshine,Katrina & The Waves,05wIrZSwuaVWhcv5FfqeH0,a0.81 t1.00,review
+G1,official-pl-80s-easy,Falco,Rock Me Amadeus,cVikZ8Oe_XA,Rock Me Amadeus,Falco,0DfG1ltJnZyq4Tx3ZLL7ZU,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,New Order,Bizarre Love Triangle,7uEBuqkkQRk,Bizarre Love Triangle,New Order,6wVViUl2xSRoDK2T7dMZbR,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,James Brown,Living in America,c5BL4RNFr58,Living in America,James Brown,0T1OrvV6bOQVL2vSQiDn6W,a1.00 t1.00,auto-ok
+G1,official-pl-80s-easy,Bonnie Tyler,Total Eclipse of the Heart,lcOxhH8N3Bo,Total Eclipse of the Heart,Bonnie Tyler,7wuJGgpTNzbUyn26IOY6rj,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Rihanna,Umbrella,CvBfHwUxHIk,Umbrella,Rihanna / JAŸ-Z,49FYlytm3dAAraYgpoJZux,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Blondie,Call Me,StKVS0eI85I,Call Me,Blondie,7HKxTNVlkHsfMLhigmhC0I,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Alphaville,Forever Young,YHRvDo8rUoQ,Forever Young,Alphaville,4S1VYqwfkLit9mKVY3MXoo,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,a-ha,Take On Me,djV11Xbc914,Take on Me,a-ha,2WfaOiMkCvy7F5fcp2zZ8L,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Queen,Don't Stop Me Now,HgzGwKwLmgM,Don't Stop Me Now - ...Revisited,Queen,3INsYP1Y8GG4qJvBsKCdXC,a1.00 t0.63,review
+G1,official-pl-karaoke,Katy Perry,Firework,QGJuMBdaqIw,Firework,Katy Perry,1mXuMM6zjPgjL4asbBsgnt,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Beyoncé,Crazy in Love,ViwtNLUqkMY,Crazy In Love (feat. JAY-Z),Beyoncé / JAŸ-Z,5IVuqXILoxVWvWEPm82Jxr,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Miley Cyrus,Party in the U.S.A.,M11SvDtPBhA,Party In The U.S.A.,Miley Cyrus,3E7dfMvvCLUddWissuqMwr,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Adele,Someone Like You,hLQl3WQQoQ0,Someone Like You,Adele,3bNv3VuUOKgrf5hu3YcuRo,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Rihanna,We Found Love,tg00YEETFzg,We Found Love,Rihanna / Calvin Harris,0U10zFw4GlBacOy9VDGfGL,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,ABBA,Dancing Queen,xFrGuyw1V8s,Dancing Queen,ABBA,0GjEhVFGZW8afUYGChu3Rr,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Justin Timberlake,SexyBack,3gOHvDP_vCs,SexyBack (feat. Timbaland),Justin Timberlake / Timbaland,0O45fw2L5vsWpdsOdXwNAR,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Taylor Swift,Shake It Off,nfWlot6h_JM,Shake It Off,Taylor Swift,0cqRj7pUJDkTCEsJkx8snD,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Carly Rae Jepsen,Call Me Maybe,fWNaR-rxAic,Call Me Maybe,Carly Rae Jepsen,20I6sIOMTCkB6w7ryavxtO,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,The B-52's,Love Shack,9SOryJvTAGs,Love Shack,The B-52's,4W4wYHtsrgDiivRASVOINL,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Pharrell Williams,Happy,ZbZSe6N_BXs,Happy - Live,Pharrell Williams,72K0gi3DyEuaW0kPCw0lrO,a1.00 t0.50,no-match
+G1,official-pl-karaoke,Bryan Adams,Summer of '69,9f06QZCVUHg,Summer Of '69,Bryan Adams,0GONea6G2XdnHWjNZd6zt3,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Madonna,Vogue,GuJQSAiODqI,Vogue,Madonna,3WFgRhgECxQYyy8Ldhk2PG,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Usher,Yeah!,GxBSyx85Kp8,Yeah! (feat. Lil Jon & Ludacris),USHER / Lil Jon / Ludacris,5rb9QrpfcKFHM1EUbSIurX,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,4 Non Blondes,What's Up?,6NXnxTNIWkc,What's Up?,4 Non Blondes,0jWgAnTrNZmOGmqgvHhZEm,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Nirvana,Smells Like Teen Spirit,hTWKbfoikeg,Smells Like Teen Spirit,Nirvana,4CeeEOM32jQcH3eN9Q2dGj,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Destiny's Child,Survivor,-m9K_Gi55zw,Survivor,Destiny's Child,2Mpj1Ul5OFPyyP4wB62Rvi,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Kenny Rogers & Dolly Parton,Islands in the Stream,UaNGtgYwSsU,Islands In the Stream,Dolly Parton / Kenny Rogers,6dnco8haegnJYtylV26cBq,a0.48 t1.00,no-match
+G1,official-pl-karaoke,Hanson,MMMBop,NHozn0YXAeE,MMMBop,Hanson,0lnxrQAd9ZxbhBBe7d8FO8,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,fun.,We Are Young,SlCXgj2bS_A,We Are Young (feat. Janelle Monáe),fun. / Janelle Monáe,5rgy6ghBq1eRApCkeUdJXf,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,"Christina Aguilera, Lil' Kim, Mýa, Pink",Lady Marmalade,RQa7SvVCdZk,Lady Marmalade,Christina Aguilera / Lil' Kim / Mýa / P!nk,7uFwgf6ee162UIu7bDxk3q,a0.51 t1.00,no-match
+G1,official-pl-karaoke,The Rembrandts,I'll Be There for You,RIjTq_OdFvo,"I'll Be There for You (Theme from ""Friends')",The Rembrandts,1lfjTOtTRUDkzcmahA4lcs,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,*NSYNC,Bye Bye Bye,C27NShgTQE4,Bye Bye Bye,*NSYNC,4r8lRYnoOGdEi6YyI5OC1o,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Backstreet Boys,I Want It That Way,z6Wq59qrdB0,I Want It That Way,Backstreet Boys,47BBI51FKFwOMlIiX6m8ya,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Lady Gaga,Poker Face,bESGLojNYSo,Poker Face,Lady Gaga,1QV6tiMFM6fSOKOGLMHYYg,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Taylor Swift,Love Story,8xg3vE8Ie_E,Love Story,Taylor Swift,1D4PL9B8gOg78jiHg3FvBb,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,The Police,Every Breath You Take,OMOGaugKpzs,Every Breath You Take,The Police,1JSTJqkT5qHq8MDJnJbRE1,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Oasis,Wonderwall,bx1Bh8ZvH84,Wonderwall,Oasis,1qPbGZqppFwLwcBC1JQ6Vr,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Haddaway,What Is Love,HEXWRTEbj1I,"What Is Love - 7"" Mix",Haddaway,7JkZ2hQdDonRURJjlMuh8q,a1.00 t0.67,review
+G1,official-pl-karaoke,Madonna,Like a Prayer,79fzeNUqQbQ,Like a Prayer,Madonna,2v7ywbUzCgcVohHaKUcacV,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Neil Diamond,Sweet Caroline,1vhFnTjia_I,Sweet Caroline,Neil Diamond,62AuGbAkt8Ox2IrFFb8GKV,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Walk the Moon,Shut Up and Dance,6JCLY0Rlx6Q,Shut Up and Dance,WALK THE MOON,4kbj5MwxO1bq9wjT5g9HaA,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Smash Mouth,All Star,L_jWHffIx5E,All Star,Smash Mouth,3cfOd4CMv2snFaKAnMdnvK,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,OutKast,Hey Ya!,PWgvGjAhvIw,Hey Ya!,Outkast,2PpruBYCo4H7WOBJ7Q2EwM,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,*NSYNC,It's Gonna Be Me,GQMlWwIXg3M,It's Gonna Be Me,*NSYNC,2AW37v0bDyuOzGP3XnmFuA,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,The Black Eyed Peas,I Gotta Feeling,uSD4vsh1zDA,I Gotta Feeling,Black Eyed Peas,4kLLWz7srcuLKA7Et40PQR,a0.79 t1.00,review
+G1,official-pl-karaoke,Kelly Clarkson,Since U Been Gone,R7UrFYvl5TE,Since U Been Gone,Kelly Clarkson,6JY1IdkZGeIcPegKxjSKeb,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Katy Perry,I Kissed a Girl,LbtpaR_1mAQ,I Kissed A Girl,Katy Perry,14iN3o8ptQ8cFVZTEmyQRV,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,fun.,Some Nights,JKbKDEBPEcs,Some Nights,fun.,67WTwafOMgegV6ABnBQxcE,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Lady Gaga,Bad Romance,qrO4YZeyl0I,Bad Romance,Lady Gaga,0SiywuOBRcynK0uKGWdCnn,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Britney Spears,Baby One More Time,C-u5WLJ9Yk4,...Baby One More Time,Britney Spears,3MjUtNVVq3C8Fn0MP3zhXa,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Adele,Rolling in the Deep,rYEDA3JcQqw,Rolling in the Deep,Adele,4OSBTYWVwsQhGLF9NHvIbR,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Bonnie Tyler,Total Eclipse of the Heart,lcOxhH8N3Bo,Total Eclipse of the Heart,Bonnie Tyler,7wuJGgpTNzbUyn26IOY6rj,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Journey,Don't Stop Believin',1k8craCGpgs,Don't Stop Believin',Journey,77NNZQSqzLNqh2A9JhLRkg,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Queen,We Are the Champions,04854XqcfCY,We Are The Champions,Queen,33Hfe4rjHjNMYhFl8tWWuy,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Spice Girls,Wannabe,gJLIiF15wjQ,Wannabe,Spice Girls,1Je1IMUlBXcx1Fz0WE7oPT,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,TLC,No Scrubs,FrLequ6dUdM,No Scrubs,TLC,1KGi9sZVMeszgZOWivFpxs,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,John Travolta & Olivia Newton-John,You're the One That I Want,7oKPYe53h78,You're The One That I Want (Remastered 2022),Olivia Newton-John / John Travolta,1OBAPPxgujYUVYerorsg90,a0.56 t1.00,review
+G1,official-pl-karaoke,Survivor,Eye of the Tiger,btPJPFnesV4,Eye of the Tiger,Survivor,2HHtWyy5CgaQbC7XSoOb0e,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,MC Hammer,U Can't Touch This,otCpCn0l4Wo,U Can't Touch This,MC Hammer,1B75hgRqe7A4fwee3g3Wmu,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Toto,Africa,FTQbiNvZqaY,Africa,TOTO,2374M0fQpWi3dLnB54qaLX,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Rick Springfield,Jessie's Girl,qYkbTyHXwbs,Jessie's Girl,Rick Springfield,5RsUlxLto4NZbhJpqJbHfN,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Spice Girls,Spice Up Your Life,NG2i4d8xOMo,Spice Up Your Life,Spice Girls,5qGwqO0lkbBXw4xNfzT7SF,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,ABBA,Mamma Mia,unfzfe8f9NI,Mamma Mia,ABBA,2TxCwUlqaOH3TIyJqGgR91,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,The Pointer Sisters,I'm So Excited,8iwBM_YB1sE,I'm So Excited,The Pointer Sisters,1ot6jEe4w4hYnsOPjd3xKQ,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Justin Timberlake,Can't Stop the Feeling!,ru0K8uYEZWw,"CAN'T STOP THE FEELING! (from DreamWorks Animation's ""TROLLS"")",Justin Timberlake,6JV2JOEocMgcZxYSZelKcc,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Kenny Loggins,Footloose,ltrMfT4Qz5Y,Footloose,Kenny Loggins,6W2VbtvMrDXm5vYeB7amkO,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Cyndi Lauper,Girls Just Want to Have Fun,PIb6AZdTr-A,Girls Just Want to Have Fun,Cyndi Lauper,4y1LsJpmMti1PfRQV9AWWe,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Britney Spears,Oops!... I Did It Again,Ene9uJmOBV0,Oops!...I Did It Again,Britney Spears,6naxalmIoLFWR0siv8dnQQ,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Shaggy,It Wasn't Me,2g5Hz17C4is,It Wasn't Me,Shaggy / Rik Rok,3WkibOpDF7cQ5xntM1epyf,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Bill Medley & Jennifer Warnes,(I've Had) The Time of My Life,4BQLE_RrTSU,"(I've Had) The Time of My Life - 12"" Version",Bill Medley / Jennifer Warnes,7tDPPdcjJs1pMf9KfZZ0i0,a0.56 t0.63,review
+G1,official-pl-karaoke,Michael Jackson,Billie Jean,Zi_XLOBDo_Y,Billie Jean,Michael Jackson,7J1uxwnxfQLu4APicE5Rnj,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Vanilla Ice,Ice Ice Baby,rog8ou-ZepE,Ice Ice Baby,Vanilla Ice,3XVozq1aeqsJwpXrEZrDJ9,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Guns N' Roses,Sweet Child O' Mine,1w7OgIMMRc4,Sweet Child O' Mine,Guns N' Roses,7snQQk1zcKl8gZ92AnueZW,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Beyoncé,Single Ladies (Put a Ring on It),4m1EFMoRFvY,Single Ladies (Put a Ring on It),Beyoncé,557un1HgwYMuqfWGSTmnxw,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,C+C Music Factory,Everybody Dance Now,LaTGrV58wec,"Here We Go, Let's Rock & Roll (feat. Freedom Williams & Zelma Davis)",C & C Music Factory / Freedom Williams / Zelma Davis,0whwYFXgGNg14O8hdHguzV,a1.00 t0.27,no-match
+G1,official-pl-karaoke,Destiny's Child,Say My Name,sQgd6MccwZc,Say My Name,Destiny's Child,7H6ev70Weq6DdpZyyTmUXk,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Katrina and the Waves,Walking on Sunshine,iPUmE-tne5U,Walking On Sunshine,Katrina & The Waves,05wIrZSwuaVWhcv5FfqeH0,a0.81 t1.00,review
+G1,official-pl-karaoke,Whitney Houston,I Wanna Dance with Somebody,eH3giaIzONA,I Wanna Dance with Somebody (Who Loves Me),Whitney Houston,2tUBqZG2AbRi7Q0BIrVrEj,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Wham!,Wake Me Up Before You Go-Go,pIgZ7gMze7A,Wake Me Up Before You Go-Go,Wham!,0ikz6tENMONtK6qGkOrU3c,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Mark Ronson ft. Bruno Mars,Uptown Funk,OPf0YbXqDm0,Uptown Funk (feat. Bruno Mars),Mark Ronson / Bruno Mars,32OlwWuMpZ6b0aN2RZOeMS,a0.50 t1.00,no-match
+G1,official-pl-karaoke,"Earth, Wind & Fire",September,Gs069dndIYk,September,"Earth, Wind & Fire",2grjqo0Frpf2okIBiifQKs,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Gnarls Barkley,Crazy,bd2B6SjMh_w,Crazy,Gnarls Barkley / CeeLo Green / Danger Mouse,1vxw6aYJls2oq3gW0DujAo,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,Bon Jovi,Livin' on a Prayer,lDK9QqIzhwk,Livin' On A Prayer,Bon Jovi,37ZJ0p5Jm13JPevGcx4SkF,a1.00 t1.00,auto-ok
+G1,official-pl-karaoke,The Killers,Mr. Brightside,gGdGFtwCNBE,Mr. Brightside,The Killers,003vvx7Niy0yvhvHt4a68B,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Destiny's Child,Say My Name,sQgd6MccwZc,Say My Name,Destiny's Child,7H6ev70Weq6DdpZyyTmUXk,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,TLC,No Scrubs,rmOd7z8Edrg,No Scrubs,TLC,1KGi9sZVMeszgZOWivFpxs,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Ricky Martin,Livin' la Vida Loca,CN5hQOI__10,Livin' la Vida Loca,Ricky Martin,0Ph6L4l8dYUuXFmb71Ajnd,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Blackstreet,No Diggity,3KL9mRus19o,No Diggity,Blackstreet / Dr. Dre / Queen Pen,5tzDYbMDhomaADt9hKhANt,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Shania Twain,Man! I Feel Like a Woman!,ZJL4UGSbeFg,Man! I Feel Like A Woman!,Shania Twain,6sxptembJVty4sNtcPMAVz,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Sinéad O'Connor,Nothing Compares 2 U,0-EF60neguk,Nothing Compares 2 U,Sinéad O'Connor,5GHY1DFWKz3Prg2V0Iodqo,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,TLC,Waterfalls,8WEtxJ4-sh4,Waterfalls,TLC,6qspW4YKycviDFjHBOaqUY,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,No Doubt,Don't Speak,TR3Vdo5etCQ,Don't Speak,No Doubt,6urCAbunOQI4bLhmGpX7iS,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Alanis Morissette,Ironic,Jne9t8sHpUc,Ironic,Alanis Morissette,29YBihzQOmat0U74k4ukdx,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Lauryn Hill,Doo Wop (That Thing),T6QKqFPRZSA,Doo Wop (That Thing),Ms. Lauryn Hill,0uEp9E98JB5awlA084uaIg,a0.79 t1.00,review
+G1,official-pl-90s-easy,Metallica,Enter Sandman,CD-E-LDc384,Enter Sandman - Live,Metallica,0sqNMGqq6PJK2YTYUciYwN,a1.00 t0.72,review
+G1,official-pl-90s-easy,U2,One,ftjEcrrf7r0,One,U2,3G69vJMWsX6ZohTykad2AU,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Ice Cube,It Was a Good Day,h4UqMyldS7Q,It Was A Good Day,Ice Cube,2ywSzBCUc4lSW2AiOZf4Tx,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,*NSYNC,It's Gonna Be Me,GQMlWwIXg3M,It's Gonna Be Me,*NSYNC,2AW37v0bDyuOzGP3XnmFuA,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Boyz II Men,End of the Road,zDKO6XYXioc,End Of The Road,Boyz II Men,3l3xTXsUXeWlkPqzMs7mPD,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Chumbawamba,Tubthumping,2H5uWRjFsGc,Tubthumping,Chumbawamba,5YScXJKtefsgdskIy60N7A,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Puff Daddy ft. Faith Evans,I'll Be Missing You,NKMtZm2YuBE,"I'll Be Missing You (feat. Faith Evans, 112)",Diddy / Faith Evans / 112,3QHONiXGMGU3z68mQInncF,a0.50 t1.00,no-match
+G1,official-pl-90s-easy,Spin Doctors,Two Princes,wsdy_rct6uo,Two Princes,Spin Doctors,4ePP9So5xRzspjLFVVbj90,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Third Eye Blind,Semi-Charmed Life,beINamVRGy4,Semi-Charmed Life,Third Eye Blind,42et6fnHCw1HIPSrdPprMl,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Janet Jackson,Together Again,b7k0a5hYnSI,Together Again,Janet Jackson,1aJnGme5ZRltYTp8FJ52eZ,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Mark Morrison,Return of the Mack,uB1D9wWxd2w,Return of the Mack,Mark Morrison,3jDdpx9PMlfMBS5tOBHFm9,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,The Notorious B.I.G.,Hypnotize,glEiPXAYE-U,Hypnotize,The Notorious B.I.G.,5wLvXRcwv2pvQsuRjt9piO,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Natalie Imbruglia,Torn,VV1XWJN3nJo,Torn,Natalie Imbruglia,1Jaah2tmN9Hv81A87KZ1MU,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Lou Bega,Mambo No. 5,EK_LN3XEcnw,Mambo No. 5 (a Little Bit of...),Lou Bega,6x4tKaOzfNJpEJHySoiJcs,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Spice Girls,Wannabe,tTZDHlnTgR0,Wannabe,Spice Girls,1Je1IMUlBXcx1Fz0WE7oPT,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Los del Río,Macarena,2zvd1JQ0EKY,Macarena,Los Del Rio,6mhw2fEPH4fMF0wolNm96e,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Oasis,Wonderwall,PoJh4JNedns,Wonderwall,Oasis,1qPbGZqppFwLwcBC1JQ6Vr,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Céline Dion,My Heart Will Go On,mNsm2P0l_7Y,"My Heart Will Go On - Love Theme from ""Titanic""",Céline Dion,33LC84JgLvK2KuW43MfaNq,a1.00 t0.44,no-match
+G1,official-pl-90s-easy,Madonna,Vogue,GuJQSAiODqI,Vogue,Madonna,3WFgRhgECxQYyy8Ldhk2PG,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Boyz II Men,I'll Make Love to You,fV8vB1BB2qc,I'll Make Love To You,Boyz II Men,7dfl9X38RhIvB3oSmmneq3,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Eiffel 65,Blue (Da Ba Dee),zA52uNzx7Y4,Eiffel 65 - Blue (Da Ba Dee) (Samuele Sartini & Cire Remix),Eiffel 65 / Samuele Sartini / CIRE,2xeTDoozKW0Igu501Yntux,a1.00 t0.29,no-match
+G1,official-pl-90s-easy,Goo Goo Dolls,Iris,NdYWuo9OFAw,Iris,The Goo Goo Dolls,6Qyc6fS4DsZjB2mRW9DsQs,a0.76 t1.00,review
+G1,official-pl-90s-easy,Rednex,Cotton Eye Joe,mOYZaiDZ7BM,Cotton Eye Joe,Rednex,06hsdMbBxWGqBO0TV0Zrkf,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Smash Mouth,All Star,L_jWHffIx5E,All Star,Smash Mouth,3cfOd4CMv2snFaKAnMdnvK,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,U2,Beautiful Day,co6WMzDOh1o,Beautiful Day,U2,0gzqZ9d1jIKo9psEIthwXe,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Snap!,Rhythm Is a Dancer,WMPM1q_Uyxc,Rhythm Is a Dancer,SNAP!,5uFYYOyT3EclOVhiFzPJSz,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Britney Spears,...Baby One More Time,hitIxB22QcI,...Baby One More Time,Britney Spears,3MjUtNVVq3C8Fn0MP3zhXa,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Whitney Houston,I Will Always Love You,T9Ybsvw_0p4,I Will Always Love You,Whitney Houston,4eHbdreAnSOrDDsFfc4Fpm,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Nirvana,Smells Like Teen Spirit,hTWKbfoikeg,Smells Like Teen Spirit,Nirvana,4CeeEOM32jQcH3eN9Q2dGj,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Santana ft. Rob Thomas,Smooth,6Whgn_iE5uc,Smooth (feat. Rob Thomas),Santana / Rob Thomas,0n2SEXB2qoRQg171q7XqeW,a0.56 t1.00,review
+G1,official-pl-90s-easy,Aqua,Barbie Girl,eLXXFVNFKww,Barbie Girl,Aqua,5ZrDlcxIDZyjOzHdYW1ydr,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Technotronic,Pump Up the Jam,9EcjWd-O4jI,Pump Up The Jam,Technotronic,21qnJAMtzC6S5SESuqQLEK,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Blind Melon,No Rain,3qVPNONdF58,No Rain,Blind Melon,6txWz9UapYHVxEd7dDIHXT,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Haddaway,What Is Love,HEXWRTEbj1I,"What Is Love - 7"" Mix",Haddaway,7JkZ2hQdDonRURJjlMuh8q,a1.00 t0.67,review
+G1,official-pl-90s-easy,R.E.M.,Losing My Religion,xwtdhWltSIg,Losing My Religion,R.E.M.,31AOj9sFz2gM0O3hMARRBx,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,The Cranberries,Zombie,6Ejga4kJUts,Zombie,The Cranberries,49wOjOkS4pBK3PQnPnNYjb,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Vanilla Ice,Ice Ice Baby,rog8ou-ZepE,Ice Ice Baby,Vanilla Ice,3XVozq1aeqsJwpXrEZrDJ9,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Divinyls,I Touch Myself,wv-34w8kGPM,I Touch Myself,Divinyls,6oNvmplQGUkmAh441Teows,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Hanson,MMMBop,NHozn0YXAeE,MMMBop,Hanson,0lnxrQAd9ZxbhBBe7d8FO8,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Ace of Base,The Sign,iqu132vTl5Y,The Sign,Ace of Base,0hrBpAOgrt8RXigk83LLNE,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Radiohead,Creep,XFkzRNyygfk,Creep,Radiohead,70LcF31zb1H0PyJoS1Sx1r,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,The Verve,Bitter Sweet Symphony,1lyu1KKwC74,Bitter Sweet Symphony,The Verve,1WYEDcS7WGjv0rG7rmMX3o,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,The Notorious B.I.G.,Mo Money Mo Problems,gUhRKVIjJtw,Mo Money Mo Problems (feat. Puff Daddy & Mase) - 2014 Remaster,The Notorious B.I.G. / Mase / Diddy,4INDiWSKvqSKDEu7mh8HFz,a1.00 t0.59,review
+G1,official-pl-90s-easy,*NSYNC,Tearin' Up My Heart,Eo-KmOd3i7s,Tearin' up My Heart - Radio Edit,*NSYNC,73q3FpQVXWk5eSUnyo83E4,a1.00 t0.62,review
+G1,official-pl-90s-easy,Alanis Morissette,You Oughta Know,NPcyTyilmYY,You Oughta Know,Alanis Morissette,17ZAZ24Eyh5fKqQ06u4R3d,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Seal,Kiss From a Rose,AMD2TwRvuoU,Kiss from a Rose,Seal,3YKptz29AsOlm7WAVnztBh,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,2Pac ft. Dr. Dre,California Love,J7_bMdYfSws,California Love (Ft. Dr.Dre) (By 2 Pac) (Instrumental Karaoke Version),ZZang KARAOKE,1o5lUTXTAFh09WQqcHC9LD,a0.31 t1.00,no-match
+G1,official-pl-90s-easy,4 Non Blondes,What's Up?,6NXnxTNIWkc,What's Up?,4 Non Blondes,0jWgAnTrNZmOGmqgvHhZEm,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Warren G ft. Nate Dogg,Regulate,1plPyJdXKIY,Regulate,Warren G / Nate Dogg,7nYvUtkQMx1v80S2FH2s9J,a0.50 t1.00,no-match
+G1,official-pl-90s-easy,Backstreet Boys,I Want It That Way,4fndeDfaWCg,I Want It That Way,Backstreet Boys,47BBI51FKFwOMlIiX6m8ya,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,B*Witched,C'est la Vie,UvjLgjtJKsc,C'est la Vie,B*Witched,0SHmApKzT0EWhbFKBjsOex,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Right Said Fred,I'm Too Sexy,P5mtclwloEQ,I'm Too Sexy,Right Said Fred,1MQrMQwfqjgOjXEUaN9AMd,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Sir Mix-a-Lot,Baby Got Back,X53ZSxkQ3Ho,Baby Got Back,Sir Mix-A-Lot,2P6M8GbSXWkHXRf7S642PJ,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,The Verve Pipe,The Freshmen,1umEXpGHc0E,The Freshmen,The Verve Pipe,21jEuMn2lf37715rwjow2M,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Deep Blue Something,Breakfast at Tiffany's,1ClCpfeIELw,Breakfast At Tiffany's,Deep Blue Something,1uzWOoJdADfstQuFtQFTUn,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Soundgarden,Black Hole Sun,3mbBbFH9fAg,Black Hole Sun,Soundgarden,2EoOZnxNgtmZaD8uUmz2nD,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Eagle-Eye Cherry,Save Tonight,Nntd2fgMUYw,Save Tonight,Eagle-Eye Cherry,0smyCrJiibi2uwCiq5R1vj,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,EMF,Unbelievable,sfCLt0kTd5E,Unbelievable,EMF,5VYTKiOnHw4iTrB9pG3yum,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,The Proclaimers,I'm Gonna Be (500 Miles),tbNlMtqrYS0,I'm Gonna Be (500 Miles),The Proclaimers,67iAlVNDDdddxqSD2EZhFs,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,The Cranberries,Linger,G6Kspj3OO0s,Linger,The Cranberries,3HHehSGzW9dhs2V7Sod4jX,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Guns N' Roses,November Rain,lRmJZIQfjbo,November Rain,Guns N' Roses,3YRCqOhFifThpSRFJ1VWFM,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Cher,Believe,n7wvAEDOxAs,Believe,Cher,2goLsvvODILDzeeiT4dAoR,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Madonna,Ray of Light,x3ov9USxVxY,Ray of Light,Madonna,4Fpsa3pYc3gozrxHRRPvR6,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Coolio,Gangsta's Paradise,fPO76Jlnz6c,Gangsta's Paradise,Coolio / L.V.,1DIXPcTDzTj8ZMHt3PDt8p,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,MC Hammer,U Can't Touch This,otCpCn0l4Wo,U Can't Touch This,MC Hammer,1B75hgRqe7A4fwee3g3Wmu,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Toni Braxton,Un-Break My Heart,p2Rch6WvPJE,Un-Break My Heart,Toni Braxton,5Ihd9HrPvOADyVoonH9ZjB,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Fugees,Killing Me Softly,8iATPHyiBEI,Killing Me Softly With His Song,Fugees / Ms. Lauryn Hill,0Q0IVlqMV64kNLlwjPj0Hl,a1.00 t0.53,no-match
+G1,official-pl-90s-easy,Shania Twain,That Don't Impress Me Much,mqFLXayD6e8,That Don't Impress Me Much,Shania Twain,4FUfoWMypAyWbOavmYyeNu,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Michael Jackson,Black or White,F2AitTPI5U0,Black or White,Michael Jackson,7EsjkelQuoUlJXEw7SeVV4,a1.00 t1.00,auto-ok
+G1,official-pl-90s-easy,Christina Aguilera,Genie in a Bottle,kIDWgqDBNXA,Genie In a Bottle,Christina Aguilera,11mwFrKvLXCbcVGNxffGyP,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,George Michael,Careless Whisper,izGwDsrQ1eQ,Careless Whisper,George Michael,5WDLRQ3VCdVrKw0njWe5E5,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Pet Shop Boys,West End Girls,p3j2NYZ8FKs,West End Girls,Pet Shop Boys,5Dqik1P9toCJTLj5rEm78s,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Bonnie Tyler,Holding Out for a Hero,CPK2HwYzjkA,Holding Out for a Hero - Single Version,Bonnie Tyler,3qE6p9fN4YeILT0cQcY1cD,a1.00 t0.59,review
+G1,official-pl-80s-mix,Starship,Nothing's Gonna Stop Us Now,3wxyN3z9PL4,Nothing's Gonna Stop Us Now,Starship,3X7uFMzJrEE0sxn62qd8Ch,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Journey,Separate Ways (Worlds Apart),LatorN4P9aA,Separate Ways (Worlds Apart) [2023 Remaster],Journey,1pTw2cNrp9L3esxLAvWnN2,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Journey,Don't Stop Believin',1k8craCGpgs,Don't Stop Believin',Journey,77NNZQSqzLNqh2A9JhLRkg,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Blondie,Call Me,StKVS0eI85I,Call Me,Blondie,7HKxTNVlkHsfMLhigmhC0I,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Michael Jackson,Billie Jean,Zi_XLOBDo_Y,Billie Jean,Michael Jackson,7J1uxwnxfQLu4APicE5Rnj,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Dexys Midnight Runners,Come On Eileen,oc-P8oDuS0Q,Come On Eileen,Dexys Midnight Runners,3MrWxJaD2AT0W9DjWF64Vm,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Dire Straits,Money for Nothing,wTP2RUD_cL0,Money For Nothing,Dire Straits,01Txvu3dNthhldq8oR0Pae,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The Weather Girls,It's Raining Men,l5aZJBLAu1E,It's Raining Men,The Weather Girls,2IvetNzSZMH5gwjInoyr18,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The Police,Every Breath You Take,OMOGaugKpzs,Every Breath You Take,The Police,1JSTJqkT5qHq8MDJnJbRE1,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The Bangles,Manic Monday,SsmVgoXDq2w,Manic Monday,The Bangles,7Di7t9yGoxdZRLAt5a4pi0,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Tina Turner,What's Love Got to Do with It,oGpFcHTxjZs,What's Love Got to Do with It,Tina Turner,4kOfxxnW1ukZdsNbCKY9br,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Queen,Another One Bites the Dust,rY0WxgSXdEE,Another One Bites The Dust,Queen,2k1yPYf9WGA4LiqcLVwtzn,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Madonna,Open Your Heart,snsTmi9N9Gs,Open Your Heart,Madonna,6poribUG9PSY1eudyCjJTS,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Duran Duran,Rio,nTizYn3-QN0,Rio - US Edit,Duran Duran,68x0eW1iIqXU0exrafu8Ti,a1.00 t0.27,no-match
+G1,official-pl-80s-mix,Falco,Rock Me Amadeus,cVikZ8Oe_XA,Rock Me Amadeus,Falco,0DfG1ltJnZyq4Tx3ZLL7ZU,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The B-52's,Love Shack,9SOryJvTAGs,Love Shack,The B-52's,4W4wYHtsrgDiivRASVOINL,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Billy Joel,Uptown Girl,hCuMWrfXG4E,Uptown Girl,Billy Joel,5zA8vzDGqPl2AzZkEYQGKh,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Laura Branigan,Self Control,RP0_8J7uxhs,Self Control,Laura Branigan,6JNJERZGJwDVgkmbohBw7u,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Kenny Loggins,Danger Zone,siwpn14IE7E,"Danger Zone - From ""Top Gun"" Original Soundtrack",Kenny Loggins,34x6hEJgGAOQvmlMql5Ige,a1.00 t0.25,no-match
+G1,official-pl-80s-mix,Bryan Adams,Summer of '69,1i0i5lG6Ojc,Summer Of '69,Bryan Adams,0GONea6G2XdnHWjNZd6zt3,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,George Michael,Faith,6Cs3Pvmmv0E,Faith - Remastered,George Michael,0HEmnAUT8PHznIAAmVXqFJ,a1.00 t0.31,no-match
+G1,official-pl-80s-mix,Don Henley,The Boys of Summer,6RUIeX6UCT8,The Boys Of Summer,Don Henley,4TIZrHkVMOnEb0L3Vj8zUc,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Yes,Owner of a Lonely Heart,7LLzPPFc21o,Owner of a Lonely Heart,Yes,0GTK6TesV108Jj5D3MHsYb,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The Cars,Drive,D2_oJJUhseA,Drive,The Cars,3wfujdbamR3Z46F4xav7LM,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Europe,The Final Countdown,9jK-NcRmVcw,The Final Countdown,Europe,3MrRksHupTVEQ7YbA0FsZK,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Duran Duran,Hungry Like the Wolf,oJL-lCzEXgI,Hungry Like the Wolf,Duran Duran,2qeESyQyH7MRHCBotCQsNq,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Phil Collins,In the Air Tonight,YkADj0TPrJA,In the Air Tonight,Phil Collins,6mYXXXgFZZmk2mgejwSwdN,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Blondie,Heart of Glass,WGU_4-5RaxU,Heart Of Glass,Blondie,41AE8ODX2JETBCa6muhSLY,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The Bangles,Eternal Flame,PSoOFn3wQV4,Eternal Flame,The Bangles / Susanna Hoffs,5MoDQWMDMaAGDEiWsJfeCi,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Foreigner,I Want to Know What Love Is,raNGeq3_DtM,I Want to Know What Love Is,Foreigner,04OjLvOApQve45B0ISx4XN,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Madonna,Like a Prayer,79fzeNUqQbQ,Like a Prayer,Madonna,2v7ywbUzCgcVohHaKUcacV,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Katrina and the Waves,Walking on Sunshine,iPUmE-tne5U,Walking On Sunshine,Katrina & The Waves,05wIrZSwuaVWhcv5FfqeH0,a0.81 t1.00,review
+G1,official-pl-80s-mix,Los Lobos,La Bamba,nLAWPrCUQQ0,La Bamba,Los Lobos,0uMMLry3hzWGn3q3loqMkm,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Run-DMC,Walk This Way,e1ereiiBaiQ,Walk This Way (feat. Aerosmith),Run–D.M.C. / Aerosmith,6qUEOWqOzu1rLPUPQ1ECpx,a0.78 t1.00,review
+G1,official-pl-80s-mix,Kenny Loggins,Footloose,ltrMfT4Qz5Y,Footloose,Kenny Loggins,6W2VbtvMrDXm5vYeB7amkO,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,David Bowie,Let's Dance,VbD_kBJc_gI,Let's Dance - 2018 Remaster,David Bowie,3ix6K4wZY29bCujrSznwFZ,a1.00 t0.44,no-match
+G1,official-pl-80s-mix,Bryan Adams,Heaven,vf3zFvcKQkw,Heaven,Bryan Adams,7Ewz6bJ97vUqk5HdkvguFQ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The J. Geils Band,Centerfold,BqDjMZKf-wg,Centerfold,The J. Geils Band,1ynmMEK1fkyiZ6Z6F3ThEt,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Rick Springfield,Jessie's Girl,qYkbTyHXwbs,Jessie's Girl,Rick Springfield,5RsUlxLto4NZbhJpqJbHfN,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The Clash,Should I Stay or Should I Go,BN1WwnEDWAM,Should I Stay or Should I Go - Remastered,The Clash,39shmbIHICJ2Wxnk1fPSdz,a1.00 t0.72,review
+G1,official-pl-80s-mix,Men at Work,Down Under,XfR9iY5y94s,Down Under,Men At Work,3ZZq9396zv8pcn5GYVhxUi,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,David Bowie,Ashes to Ashes,HyMm4rJemtI,Ashes To Ashes - Live,David Bowie,1JUTIdmN2n8YPajApdUYJw,a1.00 t0.74,review
+G1,official-pl-80s-mix,Frankie Goes to Hollywood,Relax,Yem_iEHiyJ0,Relax,Frankie Goes To Hollywood,5WJ92b9eMC0xZ7BaukU1E4,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Nena,99 Luftballons,Fpu5a0Bl8eY,99 Luftballons,Nena,2IJftBfq7pJ43tfnOR0RB3,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Soft Cell,Tainted Love,XZVpR3Pk-r8,Tainted Love,Soft Cell,0cGG2EouYCEEC3xfa0tDFV,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Toto,Africa,FTQbiNvZqaY,Africa,TOTO,2374M0fQpWi3dLnB54qaLX,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Elton John,I'm Still Standing,ZHwVBirqD2s,I'm Still Standing,Elton John,1jDJFeK9x3OZboIAHsY9k2,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Starship,We Built This City,K1b8AhIsSYQ,We Built This City,Starship,6OnfBiiSc9RGKiBKKtZXgQ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Bon Jovi,Livin' on a Prayer,lDK9QqIzhwk,Livin' On A Prayer,Bon Jovi,37ZJ0p5Jm13JPevGcx4SkF,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Guns N' Roses,Sweet Child O' Mine,1w7OgIMMRc4,Sweet Child O' Mine,Guns N' Roses,7snQQk1zcKl8gZ92AnueZW,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The Buggles,Video Killed the Radio Star,W8r-tXRLazs,Video Killed The Radio Star,The Buggles,7o7E1nrHWncYY7PY94gCiX,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,a-ha,Take On Me,djV11Xbc914,Take on Me,a-ha,2WfaOiMkCvy7F5fcp2zZ8L,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Spandau Ballet,True,AR8D2yqgQ1U,True,Spandau Ballet,4q2lRiodoQnyFO65watkse,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The Outfield,Your Love,4N1iwQxiHrs,Your Love,The Outfield,5dRQUolXAVX3BbCiIxmSsf,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Culture Club,Karma Chameleon,JmcA9LIIXWw,Karma Chameleon,Culture Club,3XDeeP9wBZzGhIPZmLfEEx,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Kim Carnes,Bette Davis Eyes,EPOIS5taqA8,Bette Davis Eyes,Kim Carnes,0odIT9B9BvOCnXfS0e4lB5,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Cyndi Lauper,Girls Just Want to Have Fun,PIb6AZdTr-A,Girls Just Want to Have Fun,Cyndi Lauper,4y1LsJpmMti1PfRQV9AWWe,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Survivor,Eye of the Tiger,btPJPFnesV4,Eye of the Tiger,Survivor,2HHtWyy5CgaQbC7XSoOb0e,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Bonnie Tyler,Total Eclipse of the Heart,lcOxhH8N3Bo,Total Eclipse of the Heart,Bonnie Tyler,7wuJGgpTNzbUyn26IOY6rj,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Wham!,Wake Me Up Before You Go-Go,pIgZ7gMze7A,Wake Me Up Before You Go-Go,Wham!,0ikz6tENMONtK6qGkOrU3c,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Rick Astley,Never Gonna Give You Up,dQw4w9WgXcQ,Never Gonna Give You Up,Rick Astley,4PTG3Z6ehGkBFwjybzWkR8,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Pat Benatar,Love Is a Battlefield,IGVZOLV9SPo,Love Is A Battlefield,Pat Benatar,4p1PizAGdglm2sVvPuFPWs,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Phil Collins,Against All Odds (Take a Look at Me Now),uVjEcIANv1o,Against All Odds (Take a Look at Me Now) - 2016 Remaster,Phil Collins,63CHa6rmamv9OsehkRD8oz,a1.00 t0.53,no-match
+G1,official-pl-80s-mix,Billy Joel,We Didn't Start the Fire,eFTLKWw542g,We Didn't Start the Fire,Billy Joel,3Cx4yrFaX8CeHwBMReOWXI,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Irene Cara,Flashdance... What a Feeling,IYKsjdkdRbw,"Flashdance, What a Feeling",E-Motion / Irene Cara / SPYZR,0w62PUYitc8Pv08LZ06UNS,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Bananarama,Cruel Summer,l9ml3nyww80,Cruel Summer,Bananarama,2EGaDf0cPX789H3LNeB03D,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Mötley Crüe,"Girls, Girls, Girls",d2XdmyBtCRQ,"Girls, Girls, Girls",Mötley Crüe,3439OLNIeD3y68kVuoZUO5,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,U2,With or Without You,ujNeHIo7oTE,With Or Without You,U2,4N0fzRX3T7QkOecp3pkWpp,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Whitney Houston,I Wanna Dance with Somebody,eH3giaIzONA,I Wanna Dance with Somebody (Who Loves Me),Whitney Houston,2tUBqZG2AbRi7Q0BIrVrEj,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Eurythmics,Sweet Dreams (Are Made of This),qeMFqkcPYcg,Sweet Dreams (Are Made of This),Eurythmics / Annie Lennox / Dave Stewart,6zIfdCmmhPCX0cMquBsC37,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Tears for Fears,Shout,Ye7FKc1JQe4,Shout,Tears For Fears,2gQaQUhDCNGfBVXTvxAmXQ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Crowded House,Don't Dream It's Over,J9gKyRmic20,Don't Dream It's Over,Crowded House,56GbZVwxMdf1DENCluYS8A,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Simple Minds,Don't You (Forget About Me),CdqoNKCCt7A,Don't You (Forget About Me),Simple Minds,5Y8Rj0s6wuM5DlQdllYiWl,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Bon Jovi,You Give Love a Bad Name,KrZHPOeOxQQ,You Give Love A Bad Name,Bon Jovi,0rmGAIH9LNJewFw7nKzZnc,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,The Human League,Don't You Want Me,uPudE8nDog0,Don't You Want Me,The Human League,3AIEEEIDJFnqv8rozNVCRZ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Michael Jackson,Beat It,ftCalx6_pYA,Beat It,Michael Jackson,3BovdzfaX4jb5KFQwoPfAw,a1.00 t1.00,auto-ok
+G1,official-pl-80s-mix,Cyndi Lauper,Time After Time,F1mqrCTFoz4,Time After Time,Cyndi Lauper,7o9uu2GDtVDr9nsR7ZRN73,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Pet Shop Boys,West End Girls,p3j2NYZ8FKs,West End Girls,Pet Shop Boys,5Dqik1P9toCJTLj5rEm78s,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Nena,99 Luftballons,Fpu5a0Bl8eY,99 Luftballons,Nena,2IJftBfq7pJ43tfnOR0RB3,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Dire Straits,Money for Nothing,qmRzbKNbTsY,Money For Nothing,Dire Straits,01Txvu3dNthhldq8oR0Pae,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Dexys Midnight Runners,Come On Eileen,oc-P8oDuS0Q,Come On Eileen,Dexys Midnight Runners,3MrWxJaD2AT0W9DjWF64Vm,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Rick Astley,Never Gonna Give You Up,dQw4w9WgXcQ,Never Gonna Give You Up,Rick Astley,4PTG3Z6ehGkBFwjybzWkR8,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Madonna,Material Girl,6p-lDYPR2P8,Material Girl,Madonna,7bkyXSi4GtVfD7itZRUR3e,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Guns N' Roses,Sweet Child O' Mine,1w7OgIMMRc4,Sweet Child O' Mine,Guns N' Roses,7snQQk1zcKl8gZ92AnueZW,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Spandau Ballet,True,AR8D2yqgQ1U,True,Spandau Ballet,4q2lRiodoQnyFO65watkse,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,The Police,Every Breath You Take,OMOGaugKpzs,Every Breath You Take,The Police,1JSTJqkT5qHq8MDJnJbRE1,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Journey,Don't Stop Believin',1k8craCGpgs,Don't Stop Believin',Journey,77NNZQSqzLNqh2A9JhLRkg,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Michael Jackson,Billie Jean,Zi_XLOBDo_Y,Billie Jean,Michael Jackson,7J1uxwnxfQLu4APicE5Rnj,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Peter Gabriel,Sledgehammer,OJWJE0x7T4Q,Sledgehammer,Peter Gabriel,029NqmIySn1kOY305AAhxT,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Wham!,Wake Me Up Before You Go-Go,pIgZ7gMze7A,Wake Me Up Before You Go-Go,Wham!,0ikz6tENMONtK6qGkOrU3c,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Rick Springfield,Jessie's Girl,qYkbTyHXwbs,Jessie's Girl,Rick Springfield,5RsUlxLto4NZbhJpqJbHfN,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Bonnie Tyler,Holding Out for a Hero,bWcASV2sey0,Holding Out for a Hero - Single Version,Bonnie Tyler,3qE6p9fN4YeILT0cQcY1cD,a1.00 t0.59,review
+G1,official-pl-80s-medium,Devo,Whip It,j_QLzthSkfM,Whip It,DEVO,6QG0wcgoCsa9pqFyTg0rRO,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Bon Jovi,You Give Love a Bad Name,KrZHPOeOxQQ,You Give Love A Bad Name,Bon Jovi,0rmGAIH9LNJewFw7nKzZnc,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Cameo,Word Up!,MZjAantupsA,Word Up,Cameo,7LoGfKBAaOl0nxhodJ1240,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Toto,Rosanna,qmOLtTGvsbM,Rosanna,TOTO,37BTh5g05cxBIRYMbw8g2T,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Corey Hart,Sunglasses at Night,X2LTL8KgKv8,Sunglasses At Night,Corey Hart,5uRsBdLhn91AYcsTCOGNOC,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Alphaville,Forever Young,t1TcDHrkQYg,Forever Young,Alphaville,4S1VYqwfkLit9mKVY3MXoo,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Van Halen,Jump,SwYN7mTi6HM,Jump,Van Halen,6Fba9RZtC6vTY814JToDtP,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Bananarama,Venus,d4-1ASpdT1Y,Venus,Bananarama,4XX1pFUkQOZTYp6Hb6a6Ae,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Frankie Goes to Hollywood,Relax,Leyn-oS5ASI,Relax,Frankie Goes To Hollywood,5WJ92b9eMC0xZ7BaukU1E4,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Prince,When Doves Cry,UG3VcCAlUgE,When Doves Cry,Prince,6sby78fghipoXHQLeeZFFH,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Robert Palmer,Addicted to Love,XcATvu5f9vE,Addicted To Love,Robert Palmer / Eric 'ET' Thorngren,5izGeTxueiFX1UPFGohY9w,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Survivor,Eye of the Tiger,btPJPFnesV4,Eye of the Tiger,Survivor,2HHtWyy5CgaQbC7XSoOb0e,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Foreigner,I Want to Know What Love Is,raNGeq3_DtM,I Want to Know What Love Is,Foreigner,04OjLvOApQve45B0ISx4XN,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Soft Cell,Tainted Love,XZVpR3Pk-r8,Tainted Love,Soft Cell,0cGG2EouYCEEC3xfa0tDFV,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Belinda Carlisle,Heaven Is a Place on Earth,KHk-266zAbk,Heaven Is a Place on Earth,Belinda Carlisle,1ryT9eOWD1JuxPD5ew53SJ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,U2,With or Without You,O-kWo5N1E3s,With Or Without You,U2,4N0fzRX3T7QkOecp3pkWpp,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Depeche Mode,Just Can't Get Enough,_6FBfAQ-NDE,Just Can't Get Enough,Depeche Mode,0qi4b1l0eT3jpzeNHeFXDT,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Michael Jackson,Smooth Criminal,tOgftEf7UDg,Smooth Criminal - Radio Edit,Michael Jackson,3gZeP8JZB5Q9GX3AC7bUEF,a1.00 t0.58,review
+G1,official-pl-80s-medium,Bon Jovi,Livin' on a Prayer,lDK9QqIzhwk,Livin' On A Prayer,Bon Jovi,37ZJ0p5Jm13JPevGcx4SkF,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Europe,The Final Countdown,9jK-NcRmVcw,The Final Countdown,Europe,3MrRksHupTVEQ7YbA0FsZK,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Duran Duran,Hungry Like the Wolf,oJL-lCzEXgI,Hungry Like the Wolf,Duran Duran,2qeESyQyH7MRHCBotCQsNq,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Huey Lewis & The News,The Power of Love,ZpW80qf7NzE,The Power Of Love,Huey Lewis & The News,2olVm1lHicpveMAo4AUDRB,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,George Michael,Careless Whisper,izGwDsrQ1eQ,Careless Whisper,George Michael,5WDLRQ3VCdVrKw0njWe5E5,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Starship,Nothing's Gonna Stop Us Now,3wxyN3z9PL4,Nothing's Gonna Stop Us Now,Starship,3X7uFMzJrEE0sxn62qd8Ch,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Toto,Africa,FTQbiNvZqaY,Africa,TOTO,2374M0fQpWi3dLnB54qaLX,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Simple Minds,Don't You (Forget About Me),CdqoNKCCt7A,Don't You (Forget About Me),Simple Minds,5Y8Rj0s6wuM5DlQdllYiWl,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Michael Sembello,Maniac,vKWfu2xbLCs,Maniac,Michael Sembello,0QKfiqpEU4h9ycPSzIFwYe,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,The Bangles,Manic Monday,ZFQ8mrdkH_0,Manic Monday,The Bangles,7Di7t9yGoxdZRLAt5a4pi0,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,a-ha,Take On Me,djV11Xbc914,Take on Me,a-ha,2WfaOiMkCvy7F5fcp2zZ8L,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Whitney Houston,I Wanna Dance with Somebody,eH3giaIzONA,I Wanna Dance with Somebody (Who Loves Me),Whitney Houston,2tUBqZG2AbRi7Q0BIrVrEj,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Elton John,I'm Still Standing,ZHwVBirqD2s,I'm Still Standing,Elton John,1jDJFeK9x3OZboIAHsY9k2,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Culture Club,Karma Chameleon,JmcA9LIIXWw,Karma Chameleon,Culture Club,3XDeeP9wBZzGhIPZmLfEEx,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Duran Duran,Rio,nTizYn3-QN0,Rio - US Edit,Duran Duran,68x0eW1iIqXU0exrafu8Ti,a1.00 t0.27,no-match
+G1,official-pl-80s-medium,Eurythmics,Sweet Dreams (Are Made of This),qeMFqkcPYcg,Sweet Dreams (Are Made of This),Eurythmics / Annie Lennox / Dave Stewart,6zIfdCmmhPCX0cMquBsC37,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,The Romantics,What I Like About You,Rqnw5IfbZOU,What I Like About You,The Romantics,6NdcSEhpGGAYXNnnhGS2s6,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Queen & David Bowie,Under Pressure,a01QQZyl-_I,Under Pressure,Queen / David Bowie,6suU8oBlW4O2pg88tOXgHo,a0.65 t1.00,review
+G1,official-pl-80s-medium,Tears for Fears,Shout,Ye7FKc1JQe4,Shout,Tears For Fears,2gQaQUhDCNGfBVXTvxAmXQ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Kool & The Gang,Celebration,3GwjfUFyY6M,Celebration,Kool & The Gang,3K7Q9PHUWPTaknlbFPThn2,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Madness,Our House,KwIe_sjKeAY,Our House,Madness,5HrtZ0YLAcKIRx4tdQoHWc,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Peter Schilling,Major Tom (Coming Home),N1Hs2AQwDgA,Major Tom (Coming Home),Peter Schilling,709ffFK4o4MtG1NKoLvOma,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Starship,We Built This City,K1b8AhIsSYQ,We Built This City,Starship,6OnfBiiSc9RGKiBKKtZXgQ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Cyndi Lauper,Time After Time,VdQY7BusJNU,Time After Time,Cyndi Lauper,7o9uu2GDtVDr9nsR7ZRN73,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,The Buggles,Video Killed the Radio Star,W8r-tXRLazs,Video Killed The Radio Star,The Buggles,7o7E1nrHWncYY7PY94gCiX,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Madonna,Open Your Heart,snsTmi9N9Gs,Open Your Heart,Madonna,6poribUG9PSY1eudyCjJTS,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,The B-52's,Love Shack,9SOryJvTAGs,Love Shack,The B-52's,4W4wYHtsrgDiivRASVOINL,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Whitesnake,Here I Go Again,WyF8RHM1OCg,Here I Go Again - Radio Mix,Whitesnake,5ggHTNfpr7cDPBAlpLaumV,a1.00 t0.60,review
+G1,official-pl-80s-medium,Paula Abdul,Straight Up,El1kgCqD7Xk,Straight Up,Paula Abdul,5xl5582IihbEZAnfj0xyso,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Thomas Dolby,She Blinded Me with Science,V83JR2IoI8k,She Blinded Me With Science,Thomas Dolby,4RkKf3UBRxF2kn2Vh0ww8l,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Olivia Newton-John,Physical,vWz9VN40nCA,Physical (Remastered 2021),Olivia Newton-John,0bB0aRsAB2CTYRCeoMOFHU,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,A Flock of Seagulls,I Ran (So Far Away),iIpfWORQWhU,I Ran (So Far Away),A Flock Of Seagulls,6vKVuBeExHlEh9cZ8Ppk8t,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Talking Heads,Burning Down the House,_3eC35LoF4U,Burning Down the House,Talking Heads,2VNfJpwdEQBLyXajaa6LWT,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Living in a Box,Living in a Box,mHzfhU8t5i8,Living in a Box,Living In A Box,4j2non7vSAI1dZwsBIdGLz,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Fine Young Cannibals,She Drives Me Crazy,UtvmTu4zAMg,She Drives Me Crazy,Fine Young Cannibals,4d6eqRtpDX7tydHJGDZUBQ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,UB40,Red Red Wine,zXt56MB-3vc,Red Red Wine,UB40,4uOKFydzAejjSFqYbv1XPt,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Talking Heads,Once in a Lifetime,5IsSpAOD6K8,Once in a Lifetime,Talking Heads,1Tr4K5MU5XYE44umXGDndd,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Men at Work,Down Under,XfR9iY5y94s,Down Under,Men At Work,3ZZq9396zv8pcn5GYVhxUi,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Billy Idol,White Wedding,DP8A3ZfwYj0,White Wedding - Pt. 1,Billy Idol,1gzIbdFnGJ226LTl0Cn2SX,a1.00 t0.72,review
+G1,official-pl-80s-medium,The J. Geils Band,Centerfold,BqDjMZKf-wg,Centerfold,The J. Geils Band,1ynmMEK1fkyiZ6Z6F3ThEt,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Crowded House,Don't Dream It's Over,J9gKyRmic20,Don't Dream It's Over,Crowded House,56GbZVwxMdf1DENCluYS8A,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,The Human League,Don't You Want Me,uPudE8nDog0,Don't You Want Me,The Human League,3AIEEEIDJFnqv8rozNVCRZ,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Cyndi Lauper,Girls Just Want to Have Fun,PIb6AZdTr-A,Girls Just Want to Have Fun,Cyndi Lauper,4y1LsJpmMti1PfRQV9AWWe,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,After the Fire,Der Kommissar,vBfFDTPPlaM,Der Kommissar,After The Fire,0OCoPwxoxtmhwTzUCpilQc,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Tears for Fears,Everybody Wants to Rule the World,aGCdLKXNF3w,Everybody Wants To Rule The World,Tears For Fears,4RvWPyQ5RL0ao9LPZeSouE,a1.00 t1.00,auto-ok
+G1,official-pl-80s-medium,Katrina and the Waves,Walking on Sunshine,iPUmE-tne5U,Walking On Sunshine,Katrina & The Waves,05wIrZSwuaVWhcv5FfqeH0,a0.81 t1.00,review
+G1,official-pl-80s-medium,Bonnie Tyler,Total Eclipse of the Heart,LSYGIljR6sQ,Total Eclipse of the Heart,Bonnie Tyler,7wuJGgpTNzbUyn26IOY6rj,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Soundgarden,Black Hole Sun,3mbBbFH9fAg,Black Hole Sun,Soundgarden,2EoOZnxNgtmZaD8uUmz2nD,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,TLC,Waterfalls,8WEtxJ4-sh4,Waterfalls,TLC,6qspW4YKycviDFjHBOaqUY,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Spice Girls,Wannabe,gJLIiF15wjQ,Wannabe,Spice Girls,1Je1IMUlBXcx1Fz0WE7oPT,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Ricky Martin,Livin' la Vida Loca,p47fEXGabaY,Livin' la Vida Loca,Ricky Martin,0Ph6L4l8dYUuXFmb71Ajnd,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Oasis,Wonderwall,bx1Bh8ZvH84,Wonderwall,Oasis,1qPbGZqppFwLwcBC1JQ6Vr,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Backstreet Boys,I Want It That Way,4fndeDfaWCg,I Want It That Way,Backstreet Boys,47BBI51FKFwOMlIiX6m8ya,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Blind Melon,No Rain,3qVPNONdF58,No Rain,Blind Melon,6txWz9UapYHVxEd7dDIHXT,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Metallica,Enter Sandman,CD-E-LDc384,Enter Sandman - Live,Metallica,0sqNMGqq6PJK2YTYUciYwN,a1.00 t0.72,review
+G1,official-pl-90s-mix,U2,One,ftjEcrrf7r0,One,U2,3G69vJMWsX6ZohTykad2AU,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Mark Morrison,Return of the Mack,uB1D9wWxd2w,Return of the Mack,Mark Morrison,3jDdpx9PMlfMBS5tOBHFm9,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Hanson,MMMBop,NHozn0YXAeE,MMMBop,Hanson,0lnxrQAd9ZxbhBBe7d8FO8,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Elastica,Connection,ilKcXIFi-Rc,Connection,Elastica,53LZqMzQEnjBkFXPqOq0cD,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,The Presidents of the United States of America,Peaches,wvAnQqVJ3XQ,Peaches,The Presidents Of The United States Of America,750wm5pwuAQfnSLX8mxa5f,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Ace of Base,The Sign,iqu132vTl5Y,The Sign,Ace of Base,0hrBpAOgrt8RXigk83LLNE,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Salt-N-Pepa,Shoop,4vaN01VLYSQ,Shoop,Salt-N-Pepa,0Pu71wxadDlB8fJXfjIjeJ,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,NSYNC,Tearin' Up My Heart,GQMlWwIXg3M,Tearin' up My Heart - Radio Edit,*NSYNC,73q3FpQVXWk5eSUnyo83E4,a1.00 t0.62,review
+G1,official-pl-90s-mix,2Pac,California Love,J7_bMdYfSws,California Love,2Pac,0LyLz6XsVs6wz85dK0S6EG,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Foo Fighters,Everlong,eBG7P-K-r1Y,Everlong,Foo Fighters,5UWwZ5lm5PKu6eKsHAGxOk,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Nirvana,Come as You Are,vabnZ9-ex7o,Come As You Are,Nirvana,2RsAajgo0g7bMCHxwH3Sk0,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Green Day,Basket Case,NUTGr5t3MoY,Basket Case,Green Day,6L89mwZXSOwYl76YXfX13s,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Spin Doctors,Two Princes,wsdy_rct6uo,Two Princes,Spin Doctors,4ePP9So5xRzspjLFVVbj90,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,4 Non Blondes,What's Up?,6NXnxTNIWkc,What's Up?,4 Non Blondes,0jWgAnTrNZmOGmqgvHhZEm,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Whitney Houston,I Will Always Love You,3JWTaaS7LdU,I Will Always Love You,Whitney Houston,4eHbdreAnSOrDDsFfc4Fpm,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,The Chemical Brothers,Block Rockin' Beats,iTxOKsyZ0Lw,Block Rockin' Beats,The Chemical Brothers,1FNvrp5K02oThumS6gllzp,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Robin S.,Show Me Love,Ps2Jc28tQrw,Show Me Love,Robin S,4t0UsYzmmmZRMTWn77jiGF,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Sinéad O'Connor,Nothing Compares 2 U,0-EF60neguk,Nothing Compares 2 U,Sinéad O'Connor,5GHY1DFWKz3Prg2V0Iodqo,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,R.E.M.,Losing My Religion,xwtdhWltSIg,Losing My Religion,R.E.M.,31AOj9sFz2gM0O3hMARRBx,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Cher,Believe,nZXRV4MezEw,Believe,Cher,2goLsvvODILDzeeiT4dAoR,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,The Cranberries,Linger,gPFP8bdQKJY,Linger,The Cranberries,3HHehSGzW9dhs2V7Sod4jX,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Vanilla Ice,Ice Ice Baby,GOQtzxPnoY0,Ice Ice Baby,Vanilla Ice,3XVozq1aeqsJwpXrEZrDJ9,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,MC Hammer,U Can't Touch This,_NNYI8VbFyY,U Can't Touch This,MC Hammer,1B75hgRqe7A4fwee3g3Wmu,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Alanis Morissette,Ironic,Jne9t8sHpUc,Ironic,Alanis Morissette,29YBihzQOmat0U74k4ukdx,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Fatboy Slim,Praise You,1BoXlv-TV2c,Praise You,Fatboy Slim,1FS21kclHQ2vVi3U1ZxETc,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Daft Punk,Around the World,dwDns8x3Jb4,Around the World,Daft Punk,1pKYYY0dkg23sQQXi0Q5zN,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Massive Attack,Unfinished Sympathy,ZWmrfgj0MZI,Unfinished Sympathy,Massive Attack / Shara Nelson,28jaG0nLqlijtHGQzZqGWK,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Smash Mouth,All Star,SWFA0d2vIUk,All Star,Smash Mouth,3cfOd4CMv2snFaKAnMdnvK,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Nirvana,Smells Like Teen Spirit,hTWKbfoikeg,Smells Like Teen Spirit,Nirvana,4CeeEOM32jQcH3eN9Q2dGj,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Technotronic,Pump Up the Jam,9EcjWd-O4jI,Pump Up The Jam,Technotronic,21qnJAMtzC6S5SESuqQLEK,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Haddaway,What Is Love,HEXWRTEbj1I,"What Is Love - 7"" Mix",Haddaway,7JkZ2hQdDonRURJjlMuh8q,a1.00 t0.67,review
+G1,official-pl-90s-mix,The Verve,Bitter Sweet Symphony,1lyu1KKwC74,Bitter Sweet Symphony,The Verve,1WYEDcS7WGjv0rG7rmMX3o,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Right Said Fred,I'm Too Sexy,P5mtclwloEQ,I'm Too Sexy,Right Said Fred,1MQrMQwfqjgOjXEUaN9AMd,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Blackstreet,No Diggity,3KL9mRus19o,No Diggity,Blackstreet / Dr. Dre / Queen Pen,5tzDYbMDhomaADt9hKhANt,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Rednex,Cotton Eye Joe,mOYZaiDZ7BM,Cotton Eye Joe,Rednex,06hsdMbBxWGqBO0TV0Zrkf,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Stone Temple Pilots,Plush,V5UOC0C0x8Q,Plush,Stone Temple Pilots,3jJZVeExYzVYiV6Y9Fl3DX,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Semisonic,Closing Time,xGytDsqkQY8,Closing Time,Semisonic,1A5V1sxyCLpKJezp75tUXn,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,"Earth, Wind & Fire",September,Gs069dndIYk,September,"Earth, Wind & Fire",2grjqo0Frpf2okIBiifQKs,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Natalie Imbruglia,Torn,VV1XWJN3nJo,Torn,Natalie Imbruglia,1Jaah2tmN9Hv81A87KZ1MU,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,TLC,No Scrubs,FrLequ6dUdM,No Scrubs,TLC,1KGi9sZVMeszgZOWivFpxs,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Britney Spears,Baby One More Time,C-u5WLJ9Yk4,...Baby One More Time,Britney Spears,3MjUtNVVq3C8Fn0MP3zhXa,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Madonna,Vogue,GuJQSAiODqI,Vogue,Madonna,3WFgRhgECxQYyy8Ldhk2PG,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Ace of Base,All That She Wants,d73tiBBzvFM,All That She Wants,Ace of Base,6kWJvPfC4DgUpRsXKNa9z9,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,C+C Music Factory,Gonna Make You Sweat (Everybody Dance Now),LaTGrV58wec,Gonna Make You Sweat (Everybody Dance Now) (feat. Freedom Williams),C & C Music Factory / Freedom Williams,7eheoW4hxrH51ww2QePVwF,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,The Rembrandts,I'll Be There for You,q-9kPks0IfE,"I'll Be There for You (Theme from ""Friends')",The Rembrandts,1lfjTOtTRUDkzcmahA4lcs,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Pearl Jam,Even Flow,tkbgtVFlyCQ,Even Flow,Pearl Jam,6QewNVIDKdSl8Y3ycuHIei,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Cypress Hill,Insane in the Brain,RijB8wnJCN0,Insane in the Brain,Cypress Hill,1oTHteQbmJw15rPxPVXUTv,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Eagle-Eye Cherry,Save Tonight,Nntd2fgMUYw,Save Tonight,Eagle-Eye Cherry,0smyCrJiibi2uwCiq5R1vj,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,The Verve Pipe,The Freshmen,1umEXpGHc0E,The Freshmen,The Verve Pipe,21jEuMn2lf37715rwjow2M,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,The Wallflowers,One Headlight,Zzyfcys1aLM,One Headlight,The Wallflowers,0z1b34WikhOH9ZxU8QDWcv,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Deep Blue Something,Breakfast at Tiffany's,1ClCpfeIELw,Breakfast At Tiffany's,Deep Blue Something,1uzWOoJdADfstQuFtQFTUn,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Third Eye Blind,Semi-Charmed Life,beINamVRGy4,Semi-Charmed Life,Third Eye Blind,42et6fnHCw1HIPSrdPprMl,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,House of Pain,Jump Around,XhzpxjuwZy0,Jump Around,House Of Pain,6JymsaWDHk2Yj4e0yNBIFH,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Jane's Addiction,Jane Says,xh-5FI21s6M,Jane Says,Jane's Addiction,7c1Dar0pIAW7w5TzaGjt9t,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Green Day,Good Riddance (Time of Your Life),CnQ8N1KacJc,Good Riddance (Time of Your Life),Green Day,6ORqU0bHbVCRjXm9AjyHyZ,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Soul Asylum,Runaway Train,NRtvqT_wMeY,Runaway Train,Soul Asylum,3Ib3SJV8ZXuLvDiDb2w1As,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Seal,Kiss from a Rose,AMD2TwRvuoU,Kiss from a Rose,Seal,3YKptz29AsOlm7WAVnztBh,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,The Notorious B.I.G.,Mo Money Mo Problems,gUhRKVIjJtw,Mo Money Mo Problems (feat. Puff Daddy & Mase) - 2014 Remaster,The Notorious B.I.G. / Mase / Diddy,4INDiWSKvqSKDEu7mh8HFz,a1.00 t0.59,review
+G1,official-pl-90s-mix,Spice Girls,2 Become 1,FA5jsa1lR9c,2 Become 1,Spice Girls,36AWdhZIGLUTkWpJDhe7va,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Christina Aguilera,Genie in a Bottle,kIDWgqDBNXA,Genie In a Bottle,Christina Aguilera,11mwFrKvLXCbcVGNxffGyP,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Warren G & Nate Dogg,Regulate,1plPyJdXKIY,Regulate,Warren G / Nate Dogg,7nYvUtkQMx1v80S2FH2s9J,a0.50 t1.00,no-match
+G1,official-pl-90s-mix,Stone Temple Pilots,Interstate Love Song,yjJL9DGU7Gg,Interstate Love Song,Stone Temple Pilots,600s08VdbjiyAjDGDjYSFI,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Oasis,Champagne Supernova,VGfDg7wju6M,Champagne Supernova,Oasis,6EMynpZ10GVcwVqiLZj6Ye,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Radiohead,Creep,fAuT8_dboWo,Creep,Radiohead,70LcF31zb1H0PyJoS1Sx1r,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Fine Young Cannibals,She Drives Me Crazy,UtvmTu4zAMg,She Drives Me Crazy,Fine Young Cannibals,4d6eqRtpDX7tydHJGDZUBQ,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Wu-Tang Clan,C.R.E.A.M.,PBwAxmrE194,C.R.E.A.M. (Cash Rules Everything Around Me),Wu-Tang Clan,119c93MHjrDLJTApCVGpvx,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Red Hot Chili Peppers,Under the Bridge,lwlogyj7nFE,Under the Bridge,Red Hot Chili Peppers,3d9DChrdc6BOeFsbrZ3Is0,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Portishead,Glory Box,4qQyUi4zfDs,Glory Box,Portishead,3Ty7OTBNSigGEpeW2PqcsC,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Lisa Loeb,Stay (I Missed You),i9HGwRbMiVY,Stay (I Missed You),Walk off the Earth / Lisa Loeb,0x7GBUMRiX4O3xy9prrsgU,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Live,Lightning Crashes,qlbW9mlm7io,Lightning Crashes,Live,48iWbsOaBUAGzMdoSmqyg1,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,The Cranberries,Zombie,6Ejga4kJUts,Zombie,The Cranberries,49wOjOkS4pBK3PQnPnNYjb,a1.00 t1.00,auto-ok
+G1,official-pl-90s-mix,Scatman John,Scatman (Ski-Ba-Bop-Ba-Dop-Bop),Hy8kmNEo1i8,Scatman (ski-ba-bop-ba-dop-bop),Scatman John,623rRTKwGmgjH6sjE9uWLh,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Spice Girls,Wannabe,gJLIiF15wjQ,Wannabe,Spice Girls,1Je1IMUlBXcx1Fz0WE7oPT,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Blur,Song 2,SSbBvKaM6sk,Song 2,Blur,3GfOAdcoc3X5GPiiXmpBjK,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Alice Deejay,Better Off Alone,Lgs9QUtWc3M,Better Off Alone,Alice Deejay,5XVjNRubJUW0iPhhSWpLCj,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Blackstreet,No Diggity,3KL9mRus19o,No Diggity,Blackstreet / Dr. Dre / Queen Pen,5tzDYbMDhomaADt9hKhANt,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Lou Bega,Mambo No. 5,EK_LN3XEcnw,Mambo No. 5 (a Little Bit of...),Lou Bega,6x4tKaOzfNJpEJHySoiJcs,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Cher,Believe,nZXRV4MezEw,Believe,Cher,2goLsvvODILDzeeiT4dAoR,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,The Cranberries,Linger,G6Kspj3OO0s,Linger,The Cranberries,3HHehSGzW9dhs2V7Sod4jX,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Nirvana,Smells Like Teen Spirit,hTWKbfoikeg,Smells Like Teen Spirit,Nirvana,4CeeEOM32jQcH3eN9Q2dGj,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Pulp,Common People,yuTMWgOduFM,Common People,Pulp,3SzP7yEGRSbfnkkNVMxxYa,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Toni Braxton,Un-Break My Heart,p2Rch6WvPJE,Un-Break My Heart,Toni Braxton,5Ihd9HrPvOADyVoonH9ZjB,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Smash Mouth,All Star,L_jWHffIx5E,All Star,Smash Mouth,3cfOd4CMv2snFaKAnMdnvK,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Aqua,Barbie Girl,ZyhrYis509A,Barbie Girl,Aqua,5ZrDlcxIDZyjOzHdYW1ydr,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Lit,My Own Worst Enemy,sc5iTNVEOAg,My Own Worst Enemy,Lit,33iv3wnGMrrDugd7GBso1z,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Pearl Jam,Even Flow,tkbgtVFlyCQ,Even Flow,Pearl Jam,6QewNVIDKdSl8Y3ycuHIei,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Tom Cochrane,Life Is a Highway,U3sMjm9Eloo,Life Is A Highway,Tom Cochrane,7jIFGkTBIK1UwWaEXMW2Nh,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Space,Female of the Species,F1NBpVKWh_c,Female of the Species,Space,5beiMMlsINDI5fxRdF0D42,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Pulp,Disco 2000,qJS3xnD7Mus,Disco 2000,Pulp,48nfjq644cod3jFR0gpSuU,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Semisonic,Closing Time,xGytDsqkQY8,Closing Time,Semisonic,1A5V1sxyCLpKJezp75tUXn,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,No Doubt,Don't Speak,1leInEAlbjY,Don't Speak,No Doubt,6urCAbunOQI4bLhmGpX7iS,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,TLC,No Scrubs,FrLequ6dUdM,No Scrubs,TLC,1KGi9sZVMeszgZOWivFpxs,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Eagle-Eye Cherry,Save Tonight,Nntd2fgMUYw,Save Tonight,Eagle-Eye Cherry,0smyCrJiibi2uwCiq5R1vj,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Hanson,MMM Bop,NHozn0YXAeE,MMMBop,Hanson,0lnxrQAd9ZxbhBBe7d8FO8,a1.00 t0.86,auto-ok
+G1,official-pl-90s-medium,The Cranberries,Zombie,6Ejga4kJUts,Zombie,The Cranberries,49wOjOkS4pBK3PQnPnNYjb,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Robin S.,Show Me Love,7HP9Z_3exGE,Show Me Love,Robin S,4t0UsYzmmmZRMTWn77jiGF,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Coolio,Gangsta's Paradise,fPO76Jlnz6c,Gangsta's Paradise,Coolio / L.V.,1DIXPcTDzTj8ZMHt3PDt8p,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Goo Goo Dolls,Iris,zDOILKOOUCo,Iris,The Goo Goo Dolls,6Qyc6fS4DsZjB2mRW9DsQs,a0.76 t1.00,review
+G1,official-pl-90s-medium,The Wallflowers,One Headlight,Zzyfcys1aLM,One Headlight,The Wallflowers,0z1b34WikhOH9ZxU8QDWcv,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Chumbawamba,Tubthumping,OQhbt2c8JqU,Tubthumping,Chumbawamba,5YScXJKtefsgdskIy60N7A,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,TLC,Waterfalls,8WEtxJ4-sh4,Waterfalls,TLC,6qspW4YKycviDFjHBOaqUY,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Elastica,Connection,ilKcXIFi-Rc,Connection,Elastica,53LZqMzQEnjBkFXPqOq0cD,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,4 Non Blondes,What's Up?,LRx8_mdaAg8,What's Up?,4 Non Blondes,0jWgAnTrNZmOGmqgvHhZEm,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Whitney Houston,I Will Always Love You,3JWTaaS7LdU,I Will Always Love You,Whitney Houston,4eHbdreAnSOrDDsFfc4Fpm,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Green Day,Basket Case,NUTGr5t3MoY,Basket Case,Green Day,6L89mwZXSOwYl76YXfX13s,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Mark Morrison,Return of the Mack,uB1D9wWxd2w,Return of the Mack,Mark Morrison,3jDdpx9PMlfMBS5tOBHFm9,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Oasis,Wonderwall,bx1Bh8ZvH84,Wonderwall,Oasis,1qPbGZqppFwLwcBC1JQ6Vr,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Santana ft. Rob Thomas,Smooth,6Whgn_iE5uc,Smooth (feat. Rob Thomas),Santana / Rob Thomas,0n2SEXB2qoRQg171q7XqeW,a0.56 t1.00,review
+G1,official-pl-90s-medium,Haddaway,What Is Love,HEXWRTEbj1I,"What Is Love - 7"" Mix",Haddaway,7JkZ2hQdDonRURJjlMuh8q,a1.00 t0.67,review
+G1,official-pl-90s-medium,Harvey Danger,Flagpole Sitta,wYsMjEeEg4g,Flagpole Sitta,Harvey Danger,23UPb5fN5X6dMwIK6Sl2Wz,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Eve 6,Inside Out,T8Xb_7YDroQ,Inside Out,Eve 6,4GiVcDqNQI0fc0yYuRGH9m,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Savage Garden,Truly Madly Deeply,WQnAxOQxQIU,Truly Madly Deeply,Savage Garden,013AWvizllIUEC2FOBzOnh,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,The Verve,Bitter Sweet Symphony,1lyu1KKwC74,Bitter Sweet Symphony,The Verve,1WYEDcS7WGjv0rG7rmMX3o,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Aerosmith,I Don't Want to Miss a Thing,WC6lEMYmxR8,I Don't Want To Miss A Thing - Pop Mix,Aerosmith,1xEEN1FMnnrJmdhbCWXCQj,a1.00 t0.78,review
+G1,official-pl-90s-medium,Stone Temple Pilots,Plush,V5UOC0C0x8Q,Plush,Stone Temple Pilots,3jJZVeExYzVYiV6Y9Fl3DX,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Britney Spears,Baby One More Time,C-u5WLJ9Yk4,...Baby One More Time,Britney Spears,3MjUtNVVq3C8Fn0MP3zhXa,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Ricky Martin,Livin' la Vida Loca,p47fEXGabaY,Livin' la Vida Loca,Ricky Martin,0Ph6L4l8dYUuXFmb71Ajnd,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Rednex,Cotton Eye Joe,mOYZaiDZ7BM,Cotton Eye Joe,Rednex,06hsdMbBxWGqBO0TV0Zrkf,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Radiohead,Creep,XFkzRNyygfk,Creep,Radiohead,70LcF31zb1H0PyJoS1Sx1r,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Sugar Ray,Fly,zUtnwcv-quE,Fly,Sugar Ray,3uPfVXcjnpOjyzI3jb3js4,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Blind Melon,No Rain,3qVPNONdF58,No Rain,Blind Melon,6txWz9UapYHVxEd7dDIHXT,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Mariah Carey,Fantasy,qq09UkPRdFY,Fantasy,Mariah Carey,6xkryXuiZU360Lngd4sx13,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Darude,Sandstorm,y6120QOlsfU,Sandstorm,Darude,6Sy9BUbgFse0n0LPA5lwy5,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Blur,Girls & Boys,WDswiT87oo8,Girls & Boys,Blur,5CeL9C3bsoe4yzYS1Qz8cw,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Jamiroquai,Virtual Insanity,4JkIs37a2JE,Virtual Insanity,Jamiroquai,24SUWisv2lYQiB3bVpE1sn,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Bloodhound Gang,The Bad Touch,xat1GVnl8-k,The Bad Touch,Bloodhound Gang,5EYdTPdJD74r9EVZBztqGG,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,The Presidents of the United States of America,Peaches,wvAnQqVJ3XQ,Peaches,The Presidents Of The United States Of America,750wm5pwuAQfnSLX8mxa5f,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Destiny's Child,Say My Name,sQgd6MccwZc,Say My Name,Destiny's Child,7H6ev70Weq6DdpZyyTmUXk,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Primitive Radio Gods,Standing Outside a Broken Phone Booth with Money in My Hand,4XJxFAoiWSY,Standing Outside a Broken Phone Booth with Money in My Hand,Primitive Radio Gods,5hcer4MP5GeHqtSjDYx5AC,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Spin Doctors,Two Princes,wsdy_rct6uo,Two Princes,Spin Doctors,4ePP9So5xRzspjLFVVbj90,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,OMC,How Bizarre,C2cMG33mWVY,How Bizarre,OMC,46q5BtHso0ECuTKeq70ZhW,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Alice in Chains,Man in the Box,TAqZb52sgpU,Man in the Box,Alice In Chains,6gZVQvQZOFpzIy3HblJ20F,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Stone Temple Pilots,Interstate Love Song,yjJL9DGU7Gg,Interstate Love Song,Stone Temple Pilots,600s08VdbjiyAjDGDjYSFI,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,The Toadies,Possum Kingdom,EkwD5rQ-_d4,Possum Kingdom,Toadies,56SkdBKyR2zOkjk6wVFI9s,a0.64 t1.00,review
+G1,official-pl-90s-medium,Nirvana,Come As You Are,vabnZ9-ex7o,Come As You Are,Nirvana,2RsAajgo0g7bMCHxwH3Sk0,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Backstreet Boys,I Want It That Way,4fndeDfaWCg,I Want It That Way,Backstreet Boys,47BBI51FKFwOMlIiX6m8ya,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Natalie Imbruglia,Torn,UOJkzcJigGI,Torn,Natalie Imbruglia,1Jaah2tmN9Hv81A87KZ1MU,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Lauryn Hill,Doo Wop (That Thing),T6QKqFPRZSA,Doo Wop (That Thing),Ms. Lauryn Hill,0uEp9E98JB5awlA084uaIg,a0.79 t1.00,review
+G1,official-pl-90s-medium,Bush,Glycerine,hOllF3TgAsM,Glycerine (Live) [feat. Gwen Stefani],Bush,4VsClQxmqKJndZnX6tNBi9,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Green Day,Good Riddance (Time of Your Life),CnQ8N1KacJc,Good Riddance (Time of Your Life),Green Day,6ORqU0bHbVCRjXm9AjyHyZ,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Seal,Kiss from a Rose,3-Yh6rnOchs,Kiss from a Rose,Seal,3YKptz29AsOlm7WAVnztBh,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Soundgarden,Black Hole Sun,efc7njKAfgo,Black Hole Sun,Soundgarden,2EoOZnxNgtmZaD8uUmz2nD,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Christina Aguilera,Genie in a Bottle,dMm90NTa1T4,Genie In a Bottle,Christina Aguilera,11mwFrKvLXCbcVGNxffGyP,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Ace of Base,The Sign,iqu132vTl5Y,The Sign,Ace of Base,0hrBpAOgrt8RXigk83LLNE,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Eiffel 65,Blue (Da Ba Dee),zA52uNzx7Y4,Eiffel 65 - Blue (Da Ba Dee) (Samuele Sartini & Cire Remix),Eiffel 65 / Samuele Sartini / CIRE,2xeTDoozKW0Igu501Yntux,a1.00 t0.29,no-match
+G1,official-pl-90s-medium,Deep Blue Something,Breakfast at Tiffany's,1ClCpfeIELw,Breakfast At Tiffany's,Deep Blue Something,1uzWOoJdADfstQuFtQFTUn,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Madonna,Vogue,GuJQSAiODqI,Vogue,Madonna,3WFgRhgECxQYyy8Ldhk2PG,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Cornershop,Brimful of Asha,lM7H0ooV_o8,Brimful of Asha,Cornershop,3RNUFPrfUVeOhd6wcKnf6z,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Third Eye Blind,Semi-Charmed Life,beINamVRGy4,Semi-Charmed Life,Third Eye Blind,42et6fnHCw1HIPSrdPprMl,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Destiny's Child,"Bills, Bills, Bills",NiF6-0UTqtc,"Bills, Bills, Bills",Destiny's Child,1Oi2zpmL81Q0yScF1zxaC0,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,The La's,There She Goes,eu2iv-vMKT8,There She Goes,The La's,4c6vZqYHFur11FbWATIJ9P,a1.00 t1.00,auto-ok
+G1,official-pl-90s-medium,Scatman John,Scatman (Ski-Ba-Bop-Ba-Dop-Bop),Hy8kmNEo1i8,Scatman (ski-ba-bop-ba-dop-bop),Scatman John,623rRTKwGmgjH6sjE9uWLh,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Bowling for Soup,1985,K38xNqZvBJI,1985,Bowling For Soup,5oQcOu1omDykbIPSdSQQNJ,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,U2,Beautiful Day,co6WMzDOh1o,Beautiful Day,U2,0gzqZ9d1jIKo9psEIthwXe,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Amy Winehouse,Rehab,KUmZp8pR1uc,Rehab,Amy Winehouse,1L5tZi0izXsi5Kk5OJf4W0,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Lady Gaga,Poker Face,bESGLojNYSo,Poker Face,Lady Gaga,1QV6tiMFM6fSOKOGLMHYYg,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Avril Lavigne,Complicated,5NPBIwQyPWE,Complicated,Avril Lavigne,5xEM5hIgJ1jjgcEBfpkt2F,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Shakira,Hips Don't Lie,DUT5rEU6pqM,Hips Don't Lie (feat. Wyclef Jean),Shakira / Wyclef Jean,3d0WouFnFmr0K3kjeza3fF,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Natasha Bedingfield,Unwritten,b7k0a5hYnSI,Unwritten,Natasha Bedingfield,3U5JVgI2x4rDyHGObzJfNf,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Kanye West,Gold Digger,6vwNcNOTVzY,Gold Digger,Kanye West / Jamie Foxx,1PS1QMdUqOal0ai3Gt7sDQ,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Gwen Stefani,Hollaback Girl,Kgjkth6BRRY,Hollaback Girl,Gwen Stefani,0eqH0ALoDQevq59YcQ53KE,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Timbaland,Apologize,ZSM3w1v-A_Y,Apologize,Timbaland / OneRepublic,6q3zC9dDD4lUNk8nfUztXy,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Nelly,Dilemma,8WYHDfJDPDc,Dilemma,Nelly / Kelly Rowland,0ARK753YaiJbpLUk7z5yIM,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,P!nk,So What,FJfFZqTlWrQ,So What,P!nk,0JiY190vktuhSGN6aqJdrt,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Flo Rida,Low,U2waT9TxPU0,Low (feat. T-Pain),Flo Rida / T-Pain,0CAfXk7DXMnon4gLudAp7J,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Bon Jovi,It's My Life,vx2u5uUu3DE,It's My Life,Bon Jovi,0v1XpBHnsbkCn7iJ9Ucr1l,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,T.I.,Whatever You Like,nQJACVmankY,Whatever You Like,T.I.,1IAzD1muglOxOcPbUHs70R,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Jason Mraz,I'm Yours,EkHTsc9PU2A,I'm Yours,Jason Mraz,1EzrEOXmMH3G43AXT1y7pA,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Adele,Rolling in the Deep,rYEDA3JcQqw,Rolling in the Deep,Adele,4OSBTYWVwsQhGLF9NHvIbR,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Fountains of Wayne,Stacy's Mom,dZLfasMPOU4,Stacy's Mom,Fountains Of Wayne,27L8sESb3KR79asDUBu8nW,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Owl City,Fireflies,psuRGfAaju4,Fireflies,Owl City,3DamFFqW32WihKkTVlwTYQ,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,50 Cent,In da Club,5qm8PH4xAss,In Da Club,50 Cent,7iL6o9tox1zgHpKUfh9vuC,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Akon,Smack That,bKDdT_nyP54,Smack That,Akon / Eminem,2kQuhkFX7uSVepCD3h29g5,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Kelly Clarkson,Because of You,Ra-Om7UMSJc,Because of You,Kelly Clarkson,0gJvqi9QyASOCtJu99tytc,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Coldplay,Clocks,d020hcWA_Wg,Clocks,Coldplay,0BCPKOYdS2jbQ8iyB56Zns,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Katy Perry,Hot N Cold,kTHNpusq654,Hot N Cold,Katy Perry,0iGckQFyv6svOfAbAY9aWJ,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,The Killers,Mr. Brightside,l7MaKmKJqoc,Mr. Brightside,The Killers,003vvx7Niy0yvhvHt4a68B,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Linkin Park,In the End,ZieDWVxm7tE,In the End,Linkin Park,60a0Rd6pjrkxjPbaKzXjfq,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,OutKast,Hey Ya!,PWgvGjAhvIw,Hey Ya!,Outkast,2PpruBYCo4H7WOBJ7Q2EwM,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Beyoncé,Single Ladies (Put a Ring on It),4m1EFMoRFvY,Single Ladies (Put a Ring on It),Beyoncé,557un1HgwYMuqfWGSTmnxw,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Beyoncé,Crazy in Love,ViwtNLUqkMY,Crazy In Love (feat. JAY-Z),Beyoncé / JAŸ-Z,5IVuqXILoxVWvWEPm82Jxr,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Jay-Z,Empire State of Mind,183mZ-wj7eA,Empire State Of Mind,JAŸ-Z / Alicia Keys,2igwFfvr1OAGX9SKDCPBwO,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Rihanna,Don't Stop the Music,yd8jh9QYfEs,Don't Stop The Music,Rihanna,0ByMNEPAPpOR5H69DVrTNy,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Kings of Leon,Use Somebody,gnhXHvRoUd0,Use Somebody,Kings of Leon,5VGlqQANWDKJFl0MBG3sg2,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Usher,Yeah!,GxBSyx85Kp8,Yeah! (feat. Lil Jon & Ludacris),USHER / Lil Jon / Ludacris,5rb9QrpfcKFHM1EUbSIurX,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Eminem,Lose Yourself,_Yhyp-_hX2s,Lose Yourself,Eminem,7MJQ9Nfxzh8LPZ9e9u68Fq,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Linkin Park,Numb,kXYiU_JCYtU,Numb,Linkin Park,2nLtzopw4rPReszdYBJU6h,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Alicia Keys,No One,rywUS-ohqeE,No One,Alicia Keys,6IwKcFdiRQZOWeYNhUiWIv,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Justin Timberlake,Cry Me a River,DksSPZTZES0,Cry Me a River,Justin Timberlake,7Lf7oSEVdzZqTA0kEDSlS5,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Evanescence,Bring Me to Life,3YxaaGgTQYM,Bring Me To Life,Evanescence,0COqiPhxzoWICwFCS4eZcp,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Jimmy Eat World,The Middle,oKsxPW6i3pM,The Middle,Jimmy Eat World,6GG73Jik4jUlQCkKg9JuGO,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,The Black Eyed Peas,Where Is the Love?,WpYeekQkAdc,Where Is The Love?,Black Eyed Peas,0xmjwnQ3FNE6HuWCt2nHdZ,a0.79 t1.00,review
+G1,official-pl-2000s-easy,Coldplay,Viva la Vida,dvgZkm1xWPE,Viva La Vida,Coldplay,1mea3bSkSGXuIRvnydlB5b,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Christina Aguilera,Beautiful,eAfyFTzZDMM,Beautiful,Christina Aguilera,3TCauNPqFiniaYHBvEVoHG,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Miley Cyrus,Party in the U.S.A.,M11SvDtPBhA,Party In The U.S.A.,Miley Cyrus,3E7dfMvvCLUddWissuqMwr,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,OutKast,Ms. Jackson,MYxAiK6VnXw,Ms. Jackson,Outkast,0I3q5fE6wg7LIfHGngUTnV,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,M.I.A.,Paper Planes,ewRjZoRtu0Y,Paper Planes,M.I.A.,1ixbwbeBi5ufN4noUKmW5a,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Nelly Furtado,Promiscuous,0J2QdDbelmY,Promiscuous,Nelly Furtado / Timbaland,2gam98EZKrF9XuOkU13ApN,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Sean Kingston,Beautiful Girls,MrTz5xjmso4,Beautiful Girls,Sean Kingston,67D9O4Oau629qirRXtTWCS,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Justin Timberlake,SexyBack,3gOHvDP_vCs,SexyBack (feat. Timbaland),Justin Timberlake / Timbaland,0O45fw2L5vsWpdsOdXwNAR,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Hoobastank,The Reason,fV4DiAyExN0,The Reason,Hoobastank,5B5eTk7DF8KVp1zpQoY1XY,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Gorillaz,Feel Good Inc.,HyHNuVaZJ-k,Feel Good Inc.,Gorillaz / De La Soul,0d28khcov6AiegSCpG5TuT,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Plain White T's,Hey There Delilah,h_m-BjrxmgI,Hey There Delilah,Plain White T's,4RCWB3V8V0dignt99LZ8vH,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Taylor Swift,Love Story,8xg3vE8Ie_E,Love Story,Taylor Swift,1D4PL9B8gOg78jiHg3FvBb,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Vanessa Carlton,A Thousand Miles,Cwkej79U3ek,A Thousand Miles,Vanessa Carlton,4w1lzcaoZ1IC2K5TwjalRP,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Usher,OMG,1RnPB76mjxI,OMG (feat. will.i.am),USHER / will.i.am,1bM50INir8voAkVoKuvEUI,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Nickelback,How You Remind Me,1cQh1ccqu8M,How You Remind Me,Nickelback,0gmbgwZ8iqyMPmXefof8Yf,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Lifehouse,Hanging by a Moment,tPnK39ax_AM,Hanging By A Moment,Lifehouse,6jWLyg8AuMQ9LtIB2UlfOF,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Taylor Swift,You Belong with Me,VuNIsY6JdUw,You Belong With Me,Taylor Swift,1GEBsLDvJGw7kviySRI6GX,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,P!nk,Get the Party Started,mW1dbiD_zDk,Get the Party Started,P!nk,02jcEwywffn3Tsb48fXmlW,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,The Killers,Somebody Told Me,Y5fBdpreJiU,Somebody Told Me,The Killers,6PwjJ58I4t7Mae9xfZ9l9v,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Corinne Bailey Rae,Put Your Records On,rjOhZZyn30k,Put Your Records On,Corinne Bailey Rae,5f5YqZZe34nsabun39eqo8,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Feist,"1, 2, 3, 4",ABYnqp-bxvg,"1, 2, 3, 4 (Van She Tech Remix) - Mixed",Feist / Van She Tech,3EjunV64KClOUVAY5bh1br,a1.00 t0.54,no-match
+G1,official-pl-2000s-easy,Leona Lewis,Bleeding Love,7_weSk0BonM,Bleeding Love,Leona Lewis,7wZUrN8oemZfsEd1CGkbXE,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Alicia Keys,Fallin',Urdlvw0SSEc,Fallin',Alicia Keys,0KQx6HOpJueiSkztcS0r7D,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Sean Paul,Temperature,dW2MmuA1nI4,Temperature,Sean Paul,0k2GOhqsrxDTAbFFSdNJjT,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Green Day,American Idiot,Ee_uujKuJMI,American Idiot,Green Day,6nTiIhLmQ3FWhvrGafw2zj,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Fergie,Fergalicious,5T0utQ-XWGY,Fergalicious,Fergie / will.i.am,6Q44rxzH39y2tjic98Spo5,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Kylie Minogue,Can't Get You Out of My Head,YPwtJ89jes4,Can't Get You out of My Head,Kylie Minogue,3E7ZwUMJFqpsDOJzEkBrQ7,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Avril Lavigne,Sk8er Boi,TIy3n2b7V9k,Sk8er Boi,Avril Lavigne,00Mb3DuaIH1kjrwOku9CGU,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Britney Spears,Toxic,LOZuxwVk7TU,Toxic,Britney Spears,6I9VzXrHxO9rA9A5euc8Ak,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,The White Stripes,Seven Nation Army,3ObXzrR1zhA,Seven Nation Army,The White Stripes,3dPQuX8Gs42Y7b454ybpMR,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Franz Ferdinand,Take Me Out,Ijk4j-r7qPA,Take Me Out,Franz Ferdinand,20I8RduZC2PWMWTDCZuuAN,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,The Pussycat Dolls,Buttons,VCLxJd1d84s,Buttons,The Pussycat Dolls,314QzMOrpNUqWBUozYshf6,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Kings of Leon,Sex on Fire,RF0HhrwIwp0,Sex on Fire,Kings of Leon,0ntQJM78wzOLVeCUAW7Y45,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Rihanna,Umbrella,CvBfHwUxHIk,Umbrella,Rihanna / JAŸ-Z,49FYlytm3dAAraYgpoJZux,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Snow Patrol,Chasing Cars,GemKqzILV4w,Chasing Cars,Snow Patrol,5hnyJvgoWiQUYZttV4wXy6,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Chris Brown,With You,nmcdLOjGVzw,With You,Chris Brown,5Lgcn7u07bHuqbOtXkN62u,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,Lady Gaga,Bad Romance,qrO4YZeyl0I,Bad Romance,Lady Gaga,0SiywuOBRcynK0uKGWdCnn,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,The Black Eyed Peas,I Gotta Feeling,uSD4vsh1zDA,I Gotta Feeling,Black Eyed Peas,4kLLWz7srcuLKA7Et40PQR,a0.79 t1.00,review
+G1,official-pl-2000s-easy,Kelly Clarkson,Since U Been Gone,R7UrFYvl5TE,Since U Been Gone,Kelly Clarkson,6JY1IdkZGeIcPegKxjSKeb,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-easy,T-Pain,Buy U a Drank,dBrRBZy8OTs,Buy U a Drank (Shawty Snappin') (feat. Yung Joc),T-Pain / Yung Joc,1tkMs9wDPknQ3ZHcKDw1ES,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Franz Ferdinand,Take Me Out,GhCXAiNz9Jo,Take Me Out,Franz Ferdinand,20I8RduZC2PWMWTDCZuuAN,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,The Pussycat Dolls,Buttons,VCLxJd1d84s,Buttons,The Pussycat Dolls,314QzMOrpNUqWBUozYshf6,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,The Killers,Mr. Brightside,gGdGFtwCNBE,Mr. Brightside,The Killers,003vvx7Niy0yvhvHt4a68B,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Chris Brown,With You,nmcdLOjGVzw,With You,Chris Brown,5Lgcn7u07bHuqbOtXkN62u,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,P!nk,Get the Party Started,mW1dbiD_zDk,Get the Party Started,P!nk,02jcEwywffn3Tsb48fXmlW,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,OutKast,Hey Ya!,PWgvGjAhvIw,Hey Ya!,Outkast,2PpruBYCo4H7WOBJ7Q2EwM,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,MGMT,Electric Feel,MmZexg8sxyk,Electric Feel,MGMT,3FtYbEfBqAlGO46NUDQSAt,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Nelly Furtado,Promiscuous,0J3vgcE5i2o,Promiscuous,Nelly Furtado / Timbaland,2gam98EZKrF9XuOkU13ApN,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Sean Kingston,Beautiful Girls,MrTz5xjmso4,Beautiful Girls,Sean Kingston,67D9O4Oau629qirRXtTWCS,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,The Black Eyed Peas,I Gotta Feeling,uSD4vsh1zDA,I Gotta Feeling,Black Eyed Peas,4kLLWz7srcuLKA7Et40PQR,a0.79 t1.00,review
+G1,official-pl-2000s-mix,Rihanna,Umbrella,CvBfHwUxHIk,Umbrella,Rihanna / JAŸ-Z,49FYlytm3dAAraYgpoJZux,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Amy Winehouse,Rehab,KUmZp8pR1uc,Rehab,Amy Winehouse,1L5tZi0izXsi5Kk5OJf4W0,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Alicia Keys,Fallin',Urdlvw0SSEc,Fallin',Alicia Keys,0KQx6HOpJueiSkztcS0r7D,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Kelly Clarkson,Since U Been Gone,R7UrFYvl5TE,Since U Been Gone,Kelly Clarkson,6JY1IdkZGeIcPegKxjSKeb,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Feist,1234,ABYnqp-bxvg,1234,Feist,49CP2usyaN98EdtrOWXnal,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Sean Paul,Get Busy,oPQ3o14ksaM,Get Busy,Sean Paul,6bK9BH9Ts8Gj5JFvnQkzak,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Sean Paul,Temperature,dW2MmuA1nI4,Temperature,Sean Paul,0k2GOhqsrxDTAbFFSdNJjT,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Papa Roach,Last Resort,j0lSpNtjPM8,Last Resort,Papa Roach,5W8YXBz9MTIDyrpYaCg2Ky,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,blink-182,All the Small Things,9Ht5RZpzPqw,All The Small Things,blink-182,2m1hi0nfMR9vdGC8UcrnwU,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,P!nk,So What,FJfFZqTlWrQ,So What,P!nk,0JiY190vktuhSGN6aqJdrt,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Linkin Park,In the End,eVTXPUF4Oz4,In the End,Linkin Park,60a0Rd6pjrkxjPbaKzXjfq,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Kanye West,Gold Digger,6vwNcNOTVzY,Gold Digger,Kanye West / Jamie Foxx,1PS1QMdUqOal0ai3Gt7sDQ,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Gwen Stefani,Hollaback Girl,Kgjkth6BRRY,Hollaback Girl,Gwen Stefani,0eqH0ALoDQevq59YcQ53KE,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Journey,Don't Stop Believin',1k8craCGpgs,Don't Stop Believin',Journey,77NNZQSqzLNqh2A9JhLRkg,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,50 Cent,In da Club,5qm8PH4xAss,In Da Club,50 Cent,7iL6o9tox1zgHpKUfh9vuC,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Christina Aguilera,Beautiful,eAfyFTzZDMM,Beautiful,Christina Aguilera,3TCauNPqFiniaYHBvEVoHG,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Justin Timberlake,SexyBack,3gOHvDP_vCs,SexyBack (feat. Timbaland),Justin Timberlake / Timbaland,0O45fw2L5vsWpdsOdXwNAR,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Daniel Powter,Bad Day,gH476CxJxfg,Bad Day,Daniel Powter,0mUyMawtxj1CJ76kn9gIZK,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,O-Zone,Dragostea Din Tei,YnopHCL1Jk8,Dragostea din tei,O-Zone,52Zr0sinhWTCRrQhRRY4EP,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Green Day,American Idiot,Ee_uujKuJMI,American Idiot,Green Day,6nTiIhLmQ3FWhvrGafw2zj,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Linkin Park,Numb,kXYiU_JCYtU,Numb,Linkin Park,2nLtzopw4rPReszdYBJU6h,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Lady Gaga,Just Dance,2Abk1jAONjw,Just Dance,Lady Gaga / Colby O'Donis,1dzQoRqT5ucxXVaAhTcT0J,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Hoobastank,The Reason,fV4DiAyExN0,The Reason,Hoobastank,5B5eTk7DF8KVp1zpQoY1XY,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Natalie Imbruglia,Torn,VV1XWJN3nJo,Torn,Natalie Imbruglia,1Jaah2tmN9Hv81A87KZ1MU,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,The Black Eyed Peas,Pump It,ZaI2IlHwmgQ,Pump It,Black Eyed Peas,2ygMBIctKIAfbEBcT9065L,a0.79 t1.00,review
+G1,official-pl-2000s-mix,U2,Beautiful Day,co6WMzDOh1o,Beautiful Day,U2,0gzqZ9d1jIKo9psEIthwXe,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Santana,Smooth,6Whgn_iE5uc,Smooth (feat. Rob Thomas),Santana / Rob Thomas,0n2SEXB2qoRQg171q7XqeW,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,System of a Down,Toxicity,iywaBOMvYLI,Toxicity,System Of A Down,0snQkGI5qnAmohLE7jTsTn,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Avril Lavigne,Sk8er Boi,TIy3n2b7V9k,Sk8er Boi,Avril Lavigne,00Mb3DuaIH1kjrwOku9CGU,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Wheatus,Teenage Dirtbag,FC3y9llDXuM,Teenage Dirtbag,Wheatus,25FTMokYEbEWHEdss5JLZS,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,M.I.A.,Paper Planes,ewRjZoRtu0Y,Paper Planes,M.I.A.,1ixbwbeBi5ufN4noUKmW5a,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Destiny's Child,Survivor,Wmc8bQoL-J0,Survivor,Destiny's Child,2Mpj1Ul5OFPyyP4wB62Rvi,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Nelly,Hot in Herre,GeZZr_p6vB8,Hot In Herre,Nelly,04KTF78FFg8sOHC1BADqbY,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Coldplay,Clocks,d020hcWA_Wg,Clocks,Coldplay,0BCPKOYdS2jbQ8iyB56Zns,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Coldplay,Fix You,k4V3Mo61fJM,Fix You,Coldplay,7LVHVU3tWfcxj5aiPFEW4Q,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Yeah Yeah Yeahs,Heads Will Roll,vw3k_jWa-gI,Heads Will Roll,Yeah Yeah Yeahs,2WRFD9WczJ975X2K1Y9YVs,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Arctic Monkeys,Mardy Bum,0jX6aSTt9ek,Mardy Bum,Arctic Monkeys,2fyIS6GXMgUcSv4oejx63f,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Justin Timberlake,Cry Me a River,DksSPZTZES0,Cry Me a River,Justin Timberlake,7Lf7oSEVdzZqTA0kEDSlS5,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Evanescence,Bring Me to Life,3YxaaGgTQYM,Bring Me To Life,Evanescence,0COqiPhxzoWICwFCS4eZcp,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,The White Stripes,Seven Nation Army,0J2QdDbelmY,Seven Nation Army,The White Stripes,3dPQuX8Gs42Y7b454ybpMR,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Alicia Keys,No One,rywUS-ohqeE,No One,Alicia Keys,6IwKcFdiRQZOWeYNhUiWIv,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Gorillaz,Feel Good Inc.,HyHNuVaZJ-k,Feel Good Inc.,Gorillaz / De La Soul,0d28khcov6AiegSCpG5TuT,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Kings of Leon,Use Somebody,gnhXHvRoUd0,Use Somebody,Kings of Leon,5VGlqQANWDKJFl0MBG3sg2,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Corinne Bailey Rae,Put Your Records On,rjOhZZyn30k,Put Your Records On,Corinne Bailey Rae,5f5YqZZe34nsabun39eqo8,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Timbaland,Apologize,ZSM3w1v-A_Y,Apologize,Timbaland / OneRepublic,6q3zC9dDD4lUNk8nfUztXy,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Foo Fighters,The Pretender,SBjQ9tuuTJQ,The Pretender,Foo Fighters,7x8dCjCr0x6x2lXKujYD34,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Fountains of Wayne,Stacy's Mom,dZLfasMPOU4,Stacy's Mom,Fountains Of Wayne,27L8sESb3KR79asDUBu8nW,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Eminem,Lose Yourself,xFYQQPAOz7Y,Lose Yourself,Eminem,7MJQ9Nfxzh8LPZ9e9u68Fq,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Leona Lewis,Bleeding Love,7_weSk0BonM,Bleeding Love,Leona Lewis,7wZUrN8oemZfsEd1CGkbXE,a1.00 t1.00,auto-ok
+G1,official-pl-2000s-mix,Red Hot Chili Peppers,Scar Tissue,mzJj5-lubeM,Scar Tissue,Red Hot Chili Peppers,1G391cbiT3v3Cywg8T7DM1,a1.00 t1.00,auto-ok

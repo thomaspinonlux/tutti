@@ -1,0 +1,97 @@
+[
+  {
+    "id": "89f3e07b-60c2-4988-a9fe-b391c548837c",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "3a1a9d3f-e789-480e-8d96-0bcfe4dfbbd2",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "ea27b350-bf24-4207-a83a-3b9ed0de3d51",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "e1e6282c-d4a8-4df5-99a9-5a79463abb8f",
+    "is_playable": true,
+    "playability_reason": null
+  },
+  {
+    "id": "ba75a0ad-c36f-46c9-8a0c-a1fee59c254a",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "b13e162e-5856-45d8-940e-933ac513ad79",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "77fc683a-9583-4b2e-8d1c-f707f0a844c9",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "e1544894-7b51-4b38-921e-17453c4bf5cd",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "e3366607-89a7-4ee3-9ca8-91052afc653b",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "2045b1b6-541b-43f6-a77a-87f309148735",
+    "is_playable": true,
+    "playability_reason": null
+  },
+  {
+    "id": "77ea8c36-b120-42a3-a8a8-392e858b8a49",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "920f97aa-b72e-4632-bbea-813e6044c8f4",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "8b7fd631-d86c-427a-9191-f590e6fe30b5",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "1e56bf42-b2d0-4fed-a429-1702a4aef22a",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "dcd6a4b8-a5f0-4ce5-889c-cf2660ccdadb",
+    "is_playable": false,
+    "playability_reason": null
+  },
+  {
+    "id": "6767e857-3c5a-460c-9fa1-a15ba863f934",
+    "is_playable": true,
+    "playability_reason": null
+  },
+  {
+    "id": "85436c0a-83c6-4c1b-8438-0fe798f829c9",
+    "is_playable": true,
+    "playability_reason": null
+  },
+  {
+    "id": "f3d7534e-89b5-4431-acc5-4af087f01ffe",
+    "is_playable": true,
+    "playability_reason": null
+  },
+  {
+    "id": "9a976fd7-4e91-4c1e-92f3-bd656a77b7c6",
+    "is_playable": true,
+    "playability_reason": null
+  }
+]

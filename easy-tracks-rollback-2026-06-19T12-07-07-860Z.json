@@ -1,0 +1,292 @@
+{
+  "created_at": "2026-06-19T12:07:32.411Z",
+  "count": 30,
+  "track_ids": [
+    "f258f69f-701d-4b67-9e97-9168d9d334d2",
+    "03b021be-df01-43d4-acd2-61205bcb524b",
+    "008b98ed-df7a-4289-9ab5-2ce44494236b",
+    "d221bc3b-eeb7-477b-84d8-197a241d532a",
+    "26de1295-8a9f-49e3-b93d-88c5ed037dc1",
+    "78ebfb72-e2bd-443e-bf6b-34072e344e37",
+    "b377c36c-69eb-482c-94c0-e2f0cfff3301",
+    "295a8697-bcab-4c21-86ef-46fc1064a112",
+    "d399f2af-dc07-472b-8358-fd8393807290",
+    "c4e663f5-40e9-47bd-b832-7c84e4181fce",
+    "cfd8a6b4-3b09-43d0-8a9a-61933a634c9d",
+    "2352d876-9e57-476f-b518-4a237105245c",
+    "8b988592-3f93-4649-9195-cadb369d12bd",
+    "394decb4-2966-4d30-8161-57ee37f224bd",
+    "a3262b46-c192-463e-9dcd-6e8eb9c43009",
+    "87149ea8-06e5-4a9b-8625-2d708cf0e9f0",
+    "41bbe5de-c00d-4546-bbfe-f5d03799fc74",
+    "9dd3b1c5-9ed9-4be8-b54e-069993998373",
+    "51fa66d4-d4bc-4b09-a79b-3488de050909",
+    "41850c17-7e07-45f0-ae77-1ccbb5c17d5f",
+    "b636f904-08fb-4c27-bb46-2bf48a5db434",
+    "6b73351b-1edb-499b-905d-861b881e132f",
+    "71409282-c85e-4932-8a9d-51654335b020",
+    "0cd1fb81-5471-4097-84d4-a5eaa03ee89a",
+    "29df5679-9a2a-4341-b7ca-755366fb238d",
+    "ea39ea90-7acd-4ace-b864-2a9d164c576a",
+    "e5f26c2c-acbf-4fce-b8de-09a2f73f2b21",
+    "57dfd066-896f-42d2-90fa-864515377cbf",
+    "a15255cd-6ff3-412e-aa80-23a8df147f3f",
+    "2e63fe9a-3a9e-46c2-83bb-7d5f5a22277e"
+  ],
+  "touched_playlist_ids": [
+    "2234f241-1521-4ab5-866e-c38ae13ce40e",
+    "890d8ca4-20df-47c0-b00f-bcb9a4921fc0",
+    "4b19b769-6c2b-473d-9e2f-5b0baeb788e3",
+    "26c7dde1-b279-468f-a012-cba0a23794de",
+    "9b6bdb0d-d8b8-433f-bd5e-307aad1573b7",
+    "9c99b56f-e99f-4f2e-b5e3-12eeae2b1a86",
+    "a97e94c2-cf70-45d9-997d-e67e2c456b79",
+    "7c358c4b-6707-432c-be39-c12a33ff4bbe",
+    "4f622de8-2d9a-4fd0-ac8e-a695137e4de9",
+    "12dde41c-5060-4edb-a700-b4bfd696a336",
+    "0e9eabb6-5dba-4ce6-ad34-2d206208cbf2",
+    "c04fbf18-b44d-49ce-85ff-27bda20b9286"
+  ],
+  "items": [
+    {
+      "id": "f258f69f-701d-4b67-9e97-9168d9d334d2",
+      "slug": "official-pl-disco-funk",
+      "artist": "Diana Ross",
+      "title": "I'm Coming Out",
+      "youtube_id": "vqUVFukbrbU",
+      "videoTitle": "I&#39;m Coming Out"
+    },
+    {
+      "id": "03b021be-df01-43d4-acd2-61205bcb524b",
+      "slug": "official-pl-soul-rnb",
+      "artist": "James Brown",
+      "title": "I Got You (I Feel Good)",
+      "youtube_id": "inNTZTINTtM",
+      "videoTitle": "I Got You (I Feel Good)"
+    },
+    {
+      "id": "008b98ed-df7a-4289-9ab5-2ce44494236b",
+      "slug": "official-pl-electro-edm",
+      "artist": "Robin Schulz",
+      "title": "Prayer in C",
+      "youtube_id": "J1oKxRCghr4",
+      "videoTitle": "Prayer in C (Robin Schulz Radio Edit)"
+    },
+    {
+      "id": "d221bc3b-eeb7-477b-84d8-197a241d532a",
+      "slug": "official-pl-french-touch",
+      "artist": "Bob Sinclar",
+      "title": "Love Generation",
+      "youtube_id": "avCcCEB2jmg",
+      "videoTitle": "Bob Sinclar - &quot;Love Generation&quot;"
+    },
+    {
+      "id": "26de1295-8a9f-49e3-b93d-88c5ed037dc1",
+      "slug": "official-pl-french-touch",
+      "artist": "David Guetta",
+      "title": "Love Don't Let Me Go",
+      "youtube_id": "QUdAT5Fwnvk",
+      "videoTitle": "David Guetta - Love Don&#39;t Let Me Go"
+    },
+    {
+      "id": "78ebfb72-e2bd-443e-bf6b-34072e344e37",
+      "slug": "official-pl-french-touch",
+      "artist": "Cassius",
+      "title": "1999",
+      "youtube_id": "Y-tDlBEQUf0",
+      "videoTitle": "Cassius - Cassius 1999 (Official Audio)"
+    },
+    {
+      "id": "b377c36c-69eb-482c-94c0-e2f0cfff3301",
+      "slug": "official-pl-french-touch",
+      "artist": "Bob Sinclar",
+      "title": "World Hold On",
+      "youtube_id": "1iwSRFpKFsc",
+      "videoTitle": "Bob Sinclar - World Hold On"
+    },
+    {
+      "id": "295a8697-bcab-4c21-86ef-46fc1064a112",
+      "slug": "official-pl-french-touch",
+      "artist": "Martin Solveig",
+      "title": "Hello",
+      "youtube_id": "jNm_wrWquPs",
+      "videoTitle": "Martin Solveig - Hello"
+    },
+    {
+      "id": "d399f2af-dc07-472b-8358-fd8393807290",
+      "slug": "official-pl-reggae",
+      "artist": "Bob Marley",
+      "title": "No Woman No Cry",
+      "youtube_id": "IT8XvzIfi4U",
+      "videoTitle": "Bob Marley - No Woman, No Cry (Official Video)"
+    },
+    {
+      "id": "c4e663f5-40e9-47bd-b832-7c84e4181fce",
+      "slug": "official-pl-reggae",
+      "artist": "Bob Marley",
+      "title": "Could You Be Loved",
+      "youtube_id": "Uv6VnSrgvec",
+      "videoTitle": "Bob Marley - Could You Be Loved"
+    },
+    {
+      "id": "cfd8a6b4-3b09-43d0-8a9a-61933a634c9d",
+      "slug": "official-pl-reggae",
+      "artist": "Bob Marley",
+      "title": "Three Little Birds",
+      "youtube_id": "CoabDBD1N2Q",
+      "videoTitle": "Bob Marley - Three Little Birds"
+    },
+    {
+      "id": "2352d876-9e57-476f-b518-4a237105245c",
+      "slug": "official-pl-reggae",
+      "artist": "Bob Marley",
+      "title": "Jamming",
+      "youtube_id": "_qRN8HoZtbo",
+      "videoTitle": "Bob Marley - Jamming"
+    },
+    {
+      "id": "8b988592-3f93-4649-9195-cadb369d12bd",
+      "slug": "official-pl-reggae",
+      "artist": "Inner Circle",
+      "title": "Sweat (A La La La La Long)",
+      "youtube_id": "AdIer7rKyq0",
+      "videoTitle": "Sweat (A La La La La Long)"
+    },
+    {
+      "id": "394decb4-2966-4d30-8161-57ee37f224bd",
+      "slug": "official-pl-reggae",
+      "artist": "Desmond Dekker",
+      "title": "Israelites",
+      "youtube_id": "r5JHGi0awgc",
+      "videoTitle": "Desmond Dekker-Israelites"
+    },
+    {
+      "id": "a3262b46-c192-463e-9dcd-6e8eb9c43009",
+      "slug": "official-pl-country",
+      "artist": "Johnny Cash",
+      "title": "I Walk the Line",
+      "youtube_id": "J-6fW66IUY4",
+      "videoTitle": "I Walk the Line"
+    },
+    {
+      "id": "87149ea8-06e5-4a9b-8625-2d708cf0e9f0",
+      "slug": "official-pl-metal",
+      "artist": "Motörhead",
+      "title": "Ace of Spades",
+      "youtube_id": "86Iwytfa6ms",
+      "videoTitle": "Ace of Spades"
+    },
+    {
+      "id": "41bbe5de-c00d-4546-bbfe-f5d03799fc74",
+      "slug": "official-pl-latino",
+      "artist": "Manu Chao",
+      "title": "Me Gustas Tú",
+      "youtube_id": "AmoBIMjRgKQ",
+      "videoTitle": "Manu Chao - Me Gustas Tu"
+    },
+    {
+      "id": "9dd3b1c5-9ed9-4be8-b54e-069993998373",
+      "slug": "official-pl-rap-fr",
+      "artist": "IAM",
+      "title": "Je danse le Mia",
+      "youtube_id": "4a1-1qlhb5g",
+      "videoTitle": "Je danse le Mia"
+    },
+    {
+      "id": "51fa66d4-d4bc-4b09-a79b-3488de050909",
+      "slug": "official-pl-rap-fr",
+      "artist": "NTM",
+      "title": "Laisse pas traîner ton fils",
+      "youtube_id": "biYdUZXfz9I",
+      "videoTitle": "Suprême NTM - Laisse pas traîner ton fils (Clip officiel)"
+    },
+    {
+      "id": "41850c17-7e07-45f0-ae77-1ccbb5c17d5f",
+      "slug": "official-pl-rap-fr",
+      "artist": "Soprano",
+      "title": "Cosmo",
+      "youtube_id": "Z3PTfGsh7Hw",
+      "videoTitle": "Soprano - Cosmo"
+    },
+    {
+      "id": "b636f904-08fb-4c27-bb46-2bf48a5db434",
+      "slug": "official-pl-rap-fr",
+      "artist": "Booba",
+      "title": "Tombé pour elle",
+      "youtube_id": "1z2KJK0cVNo",
+      "videoTitle": "Booba - Tombé pour elle"
+    },
+    {
+      "id": "6b73351b-1edb-499b-905d-861b881e132f",
+      "slug": "official-pl-afrobeats",
+      "artist": "Master KG",
+      "title": "Jerusalema",
+      "youtube_id": "dD7TtmFmNRQ",
+      "videoTitle": "Master KG - Jerusalema"
+    },
+    {
+      "id": "71409282-c85e-4932-8a9d-51654335b020",
+      "slug": "official-pl-afrobeats",
+      "artist": "Davido",
+      "title": "Fall",
+      "youtube_id": "3Iyuym-Gci0",
+      "videoTitle": "Davido - Fall (Official Video)"
+    },
+    {
+      "id": "0cd1fb81-5471-4097-84d4-a5eaa03ee89a",
+      "slug": "official-pl-afrobeats",
+      "artist": "Yemi Alade",
+      "title": "Johnny",
+      "youtube_id": "oZoWlTFJiGg",
+      "videoTitle": "Yemi Alade - Johnny"
+    },
+    {
+      "id": "29df5679-9a2a-4341-b7ca-755366fb238d",
+      "slug": "official-pl-afrobeats",
+      "artist": "Fireboy DML",
+      "title": "Peru",
+      "youtube_id": "GP_LpUoNx-I",
+      "videoTitle": "Fireboy DML - Peru (Audio)"
+    },
+    {
+      "id": "ea39ea90-7acd-4ace-b864-2a9d164c576a",
+      "slug": "official-pl-afrobeats",
+      "artist": "Burna Boy",
+      "title": "Ye",
+      "youtube_id": "Y1jiNNqDxsE",
+      "videoTitle": "Burna Boy - Ye"
+    },
+    {
+      "id": "e5f26c2c-acbf-4fce-b8de-09a2f73f2b21",
+      "slug": "official-pl-films-easy",
+      "artist": "Vangelis",
+      "title": "Chariots of Fire",
+      "youtube_id": "8a-HfNE3EIo",
+      "videoTitle": "Vangelis - Chariots Of Fire"
+    },
+    {
+      "id": "57dfd066-896f-42d2-90fa-864515377cbf",
+      "slug": "official-pl-disney-en",
+      "artist": "Nathan Lane & Ernie Sabella",
+      "title": "Hakuna Matata",
+      "youtube_id": "0MxulhivCvI",
+      "videoTitle": "Billy Eichner, Seth Rogen, JD McCrary, Donald Glover - Hakuna Matata (From &quot;The Lion King&quot;)"
+    },
+    {
+      "id": "a15255cd-6ff3-412e-aa80-23a8df147f3f",
+      "slug": "official-pl-disney-en",
+      "artist": "Phil Harris",
+      "title": "The Bare Necessities",
+      "youtube_id": "pi0ggakR8po",
+      "videoTitle": "The Bare Necesities"
+    },
+    {
+      "id": "2e63fe9a-3a9e-46c2-83bb-7d5f5a22277e",
+      "slug": "official-pl-disney-en",
+      "artist": "Robin Williams",
+      "title": "Friend Like Me",
+      "youtube_id": "pF4OH-6NgFY",
+      "videoTitle": "Friend Like Me"
+    }
+  ]
+}

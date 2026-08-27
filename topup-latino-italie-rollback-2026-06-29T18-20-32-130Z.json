@@ -1,0 +1,373 @@
+{
+  "created_at": "2026-06-29T18:22:12.111Z",
+  "campaign": "topup-latino-italie",
+  "created_playlist_ids": [],
+  "track_ids": [
+    "15f8dde8-b24e-478e-a98e-a588d5dbe9b9",
+    "26be2902-0b81-4707-b40d-f3b982d6588c",
+    "e2b172e1-da45-4139-b412-11ce7a963849",
+    "a19c1e0c-4219-432b-baaf-f0c36e5f7008",
+    "e7e05cfa-9e24-431d-8288-d4fcd13af2e2",
+    "0d78e335-213c-42d0-96a0-34cb903067aa",
+    "202ccdcf-ce46-455b-a188-fb98307669e8",
+    "b2d34287-feff-4489-9699-a7f6232b364c",
+    "596b42a1-203d-4f76-8620-8e31502b6315",
+    "6109acef-5eec-4aae-9c5d-43f2d9436cf5",
+    "4ae7b171-5693-43c9-804d-c759e90c43e6",
+    "ebfb7782-69a0-4601-90bc-a04f15f4101a",
+    "9ef5eb04-eb0c-4f8e-8eca-a614ee20910d",
+    "3cfa7d8b-4c0a-463c-855d-ac634f42c5e3",
+    "03dafc3b-21ab-4912-bd34-8fad7c788e4d",
+    "9f0bc4d9-e574-430a-9334-018e2c4cefb0",
+    "4c7f3e6f-611e-4c18-9ca2-d31b32da39ec",
+    "26a9642a-0176-4d19-9633-98479a01b1b5",
+    "329fa942-51f5-41de-895b-9fd13488005a",
+    "7e96179c-26b2-4d58-bbcc-aeecc9363fca",
+    "0af11e1a-c207-4af2-bb58-6edc58f3e863",
+    "a2c8d541-f12f-4f62-94fa-af614ed83005",
+    "cddcb559-ad5f-4804-9596-c4d7c2c3fea0",
+    "e851e2bd-fcae-47d6-bd98-e4c4041b9b2c",
+    "b5c6f0b1-cc28-4432-91ed-b7d9d92019f3",
+    "420d7084-df81-4004-a2e0-f8f06fa050c9",
+    "b31029b0-af0e-4c5a-955a-af89d3434834",
+    "048828ed-e8dd-48d0-a362-af1ebd3f2778",
+    "622f3cf4-6f45-415a-8b40-76f80a1e8be8",
+    "04c01c52-0906-4ea6-bee5-4b197bd205b8",
+    "bb695033-1664-49ad-8c00-95f7093d3f98",
+    "d035cb60-0b41-484a-b10d-15ebe727ba8f",
+    "6335e6ee-46a9-46a3-9d68-8aa0472a3175"
+  ],
+  "count": 33,
+  "items": [
+    {
+      "id": "15f8dde8-b24e-478e-a98e-a588d5dbe9b9",
+      "playlist": "Italie",
+      "artist": "Francesco De Gregori",
+      "title": "La donna cannone",
+      "youtube_id": "MVcaHiCnR-w",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "26be2902-0b81-4707-b40d-f3b982d6588c",
+      "playlist": "Italie",
+      "artist": "Ornella Vanoni",
+      "title": "L'appuntamento",
+      "youtube_id": "Y3qTqJnI88s",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "e2b172e1-da45-4139-b412-11ce7a963849",
+      "playlist": "Latino",
+      "artist": "Ricky Martin",
+      "title": "Vente Pa' Ca",
+      "youtube_id": "e9XimiSWhp4",
+      "level": "EASY",
+      "videoTitle": "Ricky Martin - Vente Pa&#39; Ca (Premio Lo Nuestro 2017)",
+      "reused": false
+    },
+    {
+      "id": "a19c1e0c-4219-432b-baaf-f0c36e5f7008",
+      "playlist": "Latino",
+      "artist": "Shakira",
+      "title": "Loca",
+      "youtube_id": "KewfYKJy8YU",
+      "level": "EASY",
+      "videoTitle": "Shakira - Loca ft. Dizzee Rascal",
+      "reused": false
+    },
+    {
+      "id": "e7e05cfa-9e24-431d-8288-d4fcd13af2e2",
+      "playlist": "Latino",
+      "artist": "Shakira",
+      "title": "Te Felicito",
+      "youtube_id": "4I25nV9hXGA",
+      "level": "EASY",
+      "videoTitle": "Shakira, Rauw Alejandro - Te Felicito (Official Video)",
+      "reused": false
+    },
+    {
+      "id": "0d78e335-213c-42d0-96a0-34cb903067aa",
+      "playlist": "Latino",
+      "artist": "Jhayco",
+      "title": "Tarot",
+      "youtube_id": "F2E9K9w3KDc",
+      "level": "EASY",
+      "videoTitle": "JHAYCO - SCORPIO (Official Video)",
+      "reused": false
+    },
+    {
+      "id": "202ccdcf-ce46-455b-a188-fb98307669e8",
+      "playlist": "Latino",
+      "artist": "Sin Bandera",
+      "title": "Kilómetros",
+      "youtube_id": "oR5rpFzaBaA",
+      "level": "MEDIUM",
+      "videoTitle": "Sin Bandera - Kilometros",
+      "reused": false
+    },
+    {
+      "id": "b2d34287-feff-4489-9699-a7f6232b364c",
+      "playlist": "Latino",
+      "artist": "Café Tacvba",
+      "title": "Chilanga Banda",
+      "youtube_id": "eV_fsDWKtbs",
+      "level": "MEDIUM",
+      "videoTitle": "Café Tacvba - Chilanga Banda (MTV Unplugged)",
+      "reused": false
+    },
+    {
+      "id": "596b42a1-203d-4f76-8620-8e31502b6315",
+      "playlist": "Latino",
+      "artist": "Víctor Jara",
+      "title": "Te Recuerdo Amanda",
+      "youtube_id": "ryJgJtETFjU",
+      "level": "EXPERT",
+      "videoTitle": "Mercedes Sosa - Te Recuerdo, Amanda",
+      "reused": false
+    },
+    {
+      "id": "6109acef-5eec-4aae-9c5d-43f2d9436cf5",
+      "playlist": "Latino",
+      "artist": "Sui Generis",
+      "title": "Canción para Mi Muerte",
+      "youtube_id": "1Zjm0uh8oeA",
+      "level": "EXPERT",
+      "videoTitle": "Sui Generis - Canción para Mi Muerte (Official Audio)",
+      "reused": false
+    },
+    {
+      "id": "4ae7b171-5693-43c9-804d-c759e90c43e6",
+      "playlist": "Latino",
+      "artist": "Soda Stereo",
+      "title": "Cuando Pase el Temblor",
+      "youtube_id": "ZNzYr4U7Zs8",
+      "level": "EXPERT",
+      "videoTitle": "Soda Stereo - Cuando Pase el Temblor (Official Video)",
+      "reused": false
+    },
+    {
+      "id": "ebfb7782-69a0-4601-90bc-a04f15f4101a",
+      "playlist": "Italie",
+      "artist": "Eros Ramazzotti",
+      "title": "Un'altra te",
+      "youtube_id": "Ryx-GavaRw0",
+      "level": "EASY",
+      "videoTitle": "Eros Ramazzotti - Un&#39;Altra Te",
+      "reused": false
+    },
+    {
+      "id": "9ef5eb04-eb0c-4f8e-8eca-a614ee20910d",
+      "playlist": "Italie",
+      "artist": "Sangiovanni",
+      "title": "Farfalle",
+      "youtube_id": "75fwUd-lX_o",
+      "level": "EASY",
+      "videoTitle": "sangiovanni - farfalle",
+      "reused": false
+    },
+    {
+      "id": "3cfa7d8b-4c0a-463c-855d-ac634f42c5e3",
+      "playlist": "Italie",
+      "artist": "Annalisa",
+      "title": "Mon Amour",
+      "youtube_id": "Cn9OyUDg22M",
+      "level": "EASY",
+      "videoTitle": "Tananai, Annalisa - STORIE BREVI",
+      "reused": false
+    },
+    {
+      "id": "03dafc3b-21ab-4912-bd34-8fad7c788e4d",
+      "playlist": "Italie",
+      "artist": "Pinguini Tattici Nucleari",
+      "title": "Scrivile scemo",
+      "youtube_id": "RVqTYJ-PCCQ",
+      "level": "EASY",
+      "videoTitle": "Pinguini Tattici Nucleari - Scrivile Scemo",
+      "reused": false
+    },
+    {
+      "id": "9f0bc4d9-e574-430a-9334-018e2c4cefb0",
+      "playlist": "Italie",
+      "artist": "Lucio Battisti",
+      "title": "Una donna per amico",
+      "youtube_id": "jHjS1vRYjtY",
+      "level": "MEDIUM",
+      "videoTitle": "Lucio Battisti - Una donna per amico (Official Audio)",
+      "reused": false
+    },
+    {
+      "id": "4c7f3e6f-611e-4c18-9ca2-d31b32da39ec",
+      "playlist": "Italie",
+      "artist": "Vasco Rossi",
+      "title": "Siamo solo noi",
+      "youtube_id": "KyUMRz1-JFo",
+      "level": "MEDIUM",
+      "videoTitle": "Vasco Rossi - Siamo Soli",
+      "reused": false
+    },
+    {
+      "id": "26a9642a-0176-4d19-9633-98479a01b1b5",
+      "playlist": "Italie",
+      "artist": "Vasco Rossi",
+      "title": "Un senso",
+      "youtube_id": "StRtFh01XUo",
+      "level": "MEDIUM",
+      "videoTitle": "Vasco Rossi - Un Senso",
+      "reused": false
+    },
+    {
+      "id": "329fa942-51f5-41de-895b-9fd13488005a",
+      "playlist": "Italie",
+      "artist": "Lucio Dalla",
+      "title": "Piazza Grande",
+      "youtube_id": "4E-1rkj60Z0",
+      "level": "MEDIUM",
+      "videoTitle": "Lucio Dalla - Piazza Grande",
+      "reused": false
+    },
+    {
+      "id": "7e96179c-26b2-4d58-bbcc-aeecc9363fca",
+      "playlist": "Italie",
+      "artist": "Lucio Dalla",
+      "title": "Com'è profondo il mare",
+      "youtube_id": "ThA3luuqefg",
+      "level": "MEDIUM",
+      "videoTitle": "Lucio Dalla - Come è profondo il mare",
+      "reused": false
+    },
+    {
+      "id": "0af11e1a-c207-4af2-bb58-6edc58f3e863",
+      "playlist": "Italie",
+      "artist": "Antonello Venditti",
+      "title": "Notte prima degli esami",
+      "youtube_id": "KwPG6HvY9PQ",
+      "level": "MEDIUM",
+      "videoTitle": "Antonello Venditti - Notte prima degli esami",
+      "reused": false
+    },
+    {
+      "id": "a2c8d541-f12f-4f62-94fa-af614ed83005",
+      "playlist": "Italie",
+      "artist": "Francesco De Gregori",
+      "title": "Rimmel",
+      "youtube_id": "Ydo-yfPze30",
+      "level": "MEDIUM",
+      "videoTitle": "Francesco De Gregori - Rimmel (Official Audio)",
+      "reused": false
+    },
+    {
+      "id": "cddcb559-ad5f-4804-9596-c4d7c2c3fea0",
+      "playlist": "Italie",
+      "artist": "Pino Daniele",
+      "title": "Quando",
+      "youtube_id": "hLulFZMfYmY",
+      "level": "MEDIUM",
+      "videoTitle": "Pino Daniele - Quando",
+      "reused": false
+    },
+    {
+      "id": "e851e2bd-fcae-47d6-bd98-e4c4041b9b2c",
+      "playlist": "Italie",
+      "artist": "Eros Ramazzotti",
+      "title": "Dolce Barbara",
+      "youtube_id": "ueHtee_rUik",
+      "level": "MEDIUM",
+      "videoTitle": "Eros Ramazzotti - Dolce Barbara",
+      "reused": false
+    },
+    {
+      "id": "b5c6f0b1-cc28-4432-91ed-b7d9d92019f3",
+      "playlist": "Italie",
+      "artist": "Biagio Antonacci",
+      "title": "Sognami",
+      "youtube_id": "9hdECj67Pow",
+      "level": "MEDIUM",
+      "videoTitle": "Sognami",
+      "reused": false
+    },
+    {
+      "id": "420d7084-df81-4004-a2e0-f8f06fa050c9",
+      "playlist": "Italie",
+      "artist": "Domenico Modugno",
+      "title": "Vecchio frac",
+      "youtube_id": "kk332D00vuY",
+      "level": "EXPERT",
+      "videoTitle": "Vecchio Frac",
+      "reused": false
+    },
+    {
+      "id": "b31029b0-af0e-4c5a-955a-af89d3434834",
+      "playlist": "Italie",
+      "artist": "Renato Carosone",
+      "title": "'O sarracino",
+      "youtube_id": "gyt8xs_6MrE",
+      "level": "EXPERT",
+      "videoTitle": "Renato Carosone - O Sarracino",
+      "reused": false
+    },
+    {
+      "id": "048828ed-e8dd-48d0-a362-af1ebd3f2778",
+      "playlist": "Italie",
+      "artist": "Sergio Endrigo",
+      "title": "Canzone per te",
+      "youtube_id": "zBQ3JKNxIFI",
+      "level": "EXPERT",
+      "videoTitle": "Canzone per te",
+      "reused": false
+    },
+    {
+      "id": "622f3cf4-6f45-415a-8b40-76f80a1e8be8",
+      "playlist": "Italie",
+      "artist": "Gino Paoli",
+      "title": "Senza fine",
+      "youtube_id": "iyA3GntCNHI",
+      "level": "EXPERT",
+      "videoTitle": "GINO PAOLI - SENZA FINE",
+      "reused": false
+    },
+    {
+      "id": "04c01c52-0906-4ea6-bee5-4b197bd205b8",
+      "playlist": "Italie",
+      "artist": "Bruno Lauzi",
+      "title": "Ritornerai",
+      "youtube_id": "DYvfCLMGw9g",
+      "level": "EXPERT",
+      "videoTitle": "Bruno Lauzi - Ritornerai",
+      "reused": false
+    },
+    {
+      "id": "bb695033-1664-49ad-8c00-95f7093d3f98",
+      "playlist": "Italie",
+      "artist": "Francesco Guccini",
+      "title": "Auschwitz (La canzone del bambino nel vento)",
+      "youtube_id": "rVBWif3gfdY",
+      "level": "EXPERT",
+      "videoTitle": "Francesco Guccini - Auschwitz (Canzone del bambino nel vento)",
+      "reused": false
+    },
+    {
+      "id": "d035cb60-0b41-484a-b10d-15ebe727ba8f",
+      "playlist": "Italie",
+      "artist": "Angelo Branduardi",
+      "title": "Alla fiera dell'est",
+      "youtube_id": "n1oKv_Yaaeo",
+      "level": "EXPERT",
+      "videoTitle": "Alla Fiera Dell&#39;Est",
+      "reused": false
+    },
+    {
+      "id": "6335e6ee-46a9-46a3-9d68-8aa0472a3175",
+      "playlist": "Italie",
+      "artist": "Afterhours",
+      "title": "Quello che non c'è",
+      "youtube_id": "DVRf6zoFbyE",
+      "level": "EXPERT",
+      "videoTitle": "Afterhours - Quello Che Non C&#39;è",
+      "reused": false
+    }
+  ]
+}

@@ -39,6 +39,35 @@ export type ProviderChoice =
 /** feat/forced-source — source imposée par la playlist (colonne forced_source). */
 export type ForcedSource = 'spotify' | 'youtube' | 'apple_music' | null | undefined;
 
+/**
+ * fix/source-tabs-forced-source — une playlist officielle appartient à UNE
+ * source, déclarée par `forced_source`. Les onglets de source (Apple Music /
+ * YouTube / Spotify) affichent donc exactement les playlists de cette source :
+ * une playlist Apple n'apparaît plus sous YouTube, qui ne sert qu'aux
+ * playlists absentes d'Apple Music (dessins animés / films / séries).
+ *
+ * Legacy : `forced_source` NULL → repli sur le compteur de la source (une
+ * playlist est listée si elle a au moins une track jouable avec elle).
+ */
+export function playlistMatchesSource(
+  p: {
+    forced_source?: string | null;
+    spotify_count?: number;
+    youtube_count?: number;
+    apple_music_count?: number;
+  },
+  provider: 'youtube' | 'spotify' | 'apple_music',
+): boolean {
+  if (p.forced_source) return p.forced_source === provider;
+  const count =
+    provider === 'youtube'
+      ? (p.youtube_count ?? 0)
+      : provider === 'spotify'
+        ? (p.spotify_count ?? 0)
+        : (p.apple_music_count ?? 0);
+  return count > 0;
+}
+
 export function selectProvider(
   track: LibraryTrackProviderIds,
   host: HostProviders,

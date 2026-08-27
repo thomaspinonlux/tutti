@@ -1,0 +1,383 @@
+{
+  "created_at": "2026-06-21T01:18:37.096Z",
+  "created_playlist_ids": [],
+  "track_ids": [
+    "08854983-62b9-4d6c-b071-27b90f51d1db",
+    "ddee5e53-fe4e-4fb3-b6e1-1a4883f557b5",
+    "427c65b2-444b-4c92-99b4-1d5a12d96557",
+    "a0d395f3-637d-4e7f-8f6a-7aee4e4fbe49",
+    "8e3034a8-c54b-4a54-955b-280d9a5bc885",
+    "66466158-0f92-4cea-aeeb-2bb3bd9e92ba",
+    "7abfa5a5-645d-4c27-ae59-30be054895b8",
+    "0a910a8f-7522-4bf5-a846-6930eb18e3e1",
+    "ef64b2dd-3181-4e9d-9bcb-ebf8cef7fc0b",
+    "11fefc1b-b304-4398-a5a5-f55496b3b0d4",
+    "399b69ea-bcfb-44e6-a0e5-d9bb01a90344",
+    "257380b1-f4d6-488e-bf0c-9fdf53c0ce3c",
+    "a25152e1-9d2b-4d77-87c7-7721a045d1ab",
+    "75bc8d6c-fc49-43d3-97f7-00af4a211c8a",
+    "22dd44aa-97c2-478d-ad05-de491e60de0d",
+    "d9b95cbb-4d3b-4388-8f44-fc26c279c0fc",
+    "d52d0432-3ba5-4cb0-bcb7-887069d86b3b",
+    "5e0ea9af-a1d3-468e-a168-a0b7533c3b18",
+    "130a9ac1-6377-45e3-b861-dc1fafe680a1",
+    "fb9b5058-de64-4e64-9201-abee64444a8c",
+    "8c9b535e-40c3-4f16-8988-2a847af08d45",
+    "ef4f9262-6269-4af7-a758-c767ea81e92b",
+    "b7c8c546-0cb9-4ec0-bbd3-736f6df3cf00",
+    "17cb8150-07df-43f4-9e38-49d3f6413475",
+    "e7ac198b-c4cb-4f00-a152-e783b549672b",
+    "00833ece-f630-4162-9160-cb262906756e",
+    "9fb193fe-2c3e-4074-a226-80d717dcbff0",
+    "c480e3df-f894-4727-a374-5caef848e3d3",
+    "fa204f12-d2a0-476f-b8a5-d9202510616b",
+    "f1c757d3-c4c6-4d5b-a3e0-5ec87de36a26",
+    "2159000f-0d1e-4f80-b161-0658c3b11c10",
+    "9dc5377d-b211-4518-8b86-df9f3e9f54cd",
+    "107afb45-91d8-47d2-b5bb-090506b2d538",
+    "2a0a82b4-7d8f-4c1e-bb3c-be36a2a209df"
+  ],
+  "count": 34,
+  "items": [
+    {
+      "id": "08854983-62b9-4d6c-b071-27b90f51d1db",
+      "playlist": "Un seul tube",
+      "artist": "Anita Ward",
+      "title": "Ring My Bell",
+      "youtube_id": "r1UkZLT20TI",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "ddee5e53-fe4e-4fb3-b6e1-1a4883f557b5",
+      "playlist": "Latino Fiesta",
+      "artist": "Shakira",
+      "title": "La Tortura",
+      "youtube_id": "Dsp_8Lm1eSk",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "427c65b2-444b-4c92-99b4-1d5a12d96557",
+      "playlist": "Latino Fiesta",
+      "artist": "Juanes",
+      "title": "A Dios le Pido",
+      "youtube_id": "kMIaYXxLnUA",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "a0d395f3-637d-4e7f-8f6a-7aee4e4fbe49",
+      "playlist": "Latino Fiesta",
+      "artist": "Gipsy Kings",
+      "title": "Volare",
+      "youtube_id": "aQGYY6KFjb0",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "8e3034a8-c54b-4a54-955b-280d9a5bc885",
+      "playlist": "Latino Fiesta",
+      "artist": "Carlos Santana",
+      "title": "Smooth",
+      "youtube_id": "QcUxrpIwuQ4",
+      "level": "EASY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "66466158-0f92-4cea-aeeb-2bb3bd9e92ba",
+      "playlist": "Latino Fiesta",
+      "artist": "Carlos Santana",
+      "title": "Maria Maria",
+      "youtube_id": "DE-9mwfTXlc",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "7abfa5a5-645d-4c27-ae59-30be054895b8",
+      "playlist": "Latino Fiesta",
+      "artist": "Chayanne",
+      "title": "Torero",
+      "youtube_id": "GuZzuQvv7uc",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "0a910a8f-7522-4bf5-a846-6930eb18e3e1",
+      "playlist": "Latino Fiesta",
+      "artist": "Chayanne",
+      "title": "Salomé",
+      "youtube_id": "Z2BMBrCKMcY",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "ef64b2dd-3181-4e9d-9bcb-ebf8cef7fc0b",
+      "playlist": "Latino Fiesta",
+      "artist": "Thalía",
+      "title": "Arrasando",
+      "youtube_id": "Fn1h3AQk_TQ",
+      "level": "EXPERT",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "11fefc1b-b304-4398-a5a5-f55496b3b0d4",
+      "playlist": "Latino Fiesta",
+      "artist": "Paulina Rubio",
+      "title": "Ni una sola palabra",
+      "youtube_id": "Kkdhtb9DVWQ",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "399b69ea-bcfb-44e6-a0e5-d9bb01a90344",
+      "playlist": "Latino Fiesta",
+      "artist": "Pitbull",
+      "title": "Give Me Everything",
+      "youtube_id": "EPo5wWmKEaI",
+      "level": "EASY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "257380b1-f4d6-488e-bf0c-9fdf53c0ce3c",
+      "playlist": "Latino Fiesta",
+      "artist": "Pitbull",
+      "title": "Timber",
+      "youtube_id": "EQzXwcZS-FU",
+      "level": "EASY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "a25152e1-9d2b-4d77-87c7-7721a045d1ab",
+      "playlist": "Latino Fiesta",
+      "artist": "Nicky Jam",
+      "title": "El Perdón",
+      "youtube_id": "LQ6UwPMCwco",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "75bc8d6c-fc49-43d3-97f7-00af4a211c8a",
+      "playlist": "Latino Fiesta",
+      "artist": "Ozuna",
+      "title": "Taki Taki",
+      "youtube_id": "iH3uetMaaUc",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "22dd44aa-97c2-478d-ad05-de491e60de0d",
+      "playlist": "Latino Fiesta",
+      "artist": "Karol G",
+      "title": "Bichota",
+      "youtube_id": "_BoGdzGTn8Y",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "d9b95cbb-4d3b-4388-8f44-fc26c279c0fc",
+      "playlist": "Latino Fiesta",
+      "artist": "Bad Bunny",
+      "title": "Tití Me Preguntó",
+      "youtube_id": "XxQgfs2eRKY",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "d52d0432-3ba5-4cb0-bcb7-887069d86b3b",
+      "playlist": "Latino Fiesta",
+      "artist": "Bad Bunny",
+      "title": "Dakiti",
+      "youtube_id": "TmKh7lAwnBI",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "5e0ea9af-a1d3-468e-a168-a0b7533c3b18",
+      "playlist": "Latino Fiesta",
+      "artist": "Rosalía",
+      "title": "Despechá",
+      "youtube_id": "5g2hT4GmAGU",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "130a9ac1-6377-45e3-b861-dc1fafe680a1",
+      "playlist": "Latino Fiesta",
+      "artist": "Wisin & Yandel",
+      "title": "Rakata",
+      "youtube_id": "dpH2TZ1261Y",
+      "level": "EXPERT",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "fb9b5058-de64-4e64-9201-abee64444a8c",
+      "playlist": "Latino Fiesta",
+      "artist": "Tego Calderón",
+      "title": "Pa' que retozen",
+      "youtube_id": "9hKtfKaS3zI",
+      "level": "EXPERT",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "8c9b535e-40c3-4f16-8988-2a847af08d45",
+      "playlist": "Latino Fiesta",
+      "artist": "Camila Cabello",
+      "title": "Havana",
+      "youtube_id": "HCjNJDNzw8Y",
+      "level": "EASY",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "ef4f9262-6269-4af7-a758-c767ea81e92b",
+      "playlist": "Latino Fiesta",
+      "artist": "Jennifer Lopez",
+      "title": "Let's Get Loud",
+      "youtube_id": "Q91hydQRGyM",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "b7c8c546-0cb9-4ec0-bbd3-736f6df3cf00",
+      "playlist": "Latino Fiesta",
+      "artist": "Gloria Estefan",
+      "title": "Conga",
+      "youtube_id": "54ItEmCnP80",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "17cb8150-07df-43f4-9e38-49d3f6413475",
+      "playlist": "Latino Fiesta",
+      "artist": "Gloria Estefan",
+      "title": "Rhythm Is Gonna Get You",
+      "youtube_id": "zZx53etCFYY",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "e7ac198b-c4cb-4f00-a152-e783b549672b",
+      "playlist": "Latino Fiesta",
+      "artist": "Buena Vista Social Club",
+      "title": "Chan Chan",
+      "youtube_id": "INkLVwtIr_I",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "00833ece-f630-4162-9160-cb262906756e",
+      "playlist": "Latino Fiesta",
+      "artist": "Celia Cruz",
+      "title": "La Vida Es un Carnaval",
+      "youtube_id": "7Ho86ggAVrY",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "9fb193fe-2c3e-4074-a226-80d717dcbff0",
+      "playlist": "Latino Fiesta",
+      "artist": "Aventura",
+      "title": "Obsesión",
+      "youtube_id": "SEjw5rdyvVg",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "c480e3df-f894-4727-a374-5caef848e3d3",
+      "playlist": "Latino Fiesta",
+      "artist": "Álvaro Soler",
+      "title": "El Mismo Sol",
+      "youtube_id": "aNHwNreDp3A",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "fa204f12-d2a0-476f-b8a5-d9202510616b",
+      "playlist": "Latino Fiesta",
+      "artist": "Maná",
+      "title": "Rayando el Sol",
+      "youtube_id": "9mBkBhCOUN0",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "f1c757d3-c4c6-4d5b-a3e0-5ec87de36a26",
+      "playlist": "Latino Fiesta",
+      "artist": "Maná",
+      "title": "Oye Mi Amor",
+      "youtube_id": "OhXeBoTlCr4",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "2159000f-0d1e-4f80-b161-0658c3b11c10",
+      "playlist": "Latino Fiesta",
+      "artist": "Café Tacvba",
+      "title": "Eres",
+      "youtube_id": "2bgpYddTD6Q",
+      "level": "EXPERT",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "9dc5377d-b211-4518-8b86-df9f3e9f54cd",
+      "playlist": "Latino Fiesta",
+      "artist": "Bomba Estéreo",
+      "title": "Soy Yo",
+      "youtube_id": "X1C2H26huWM",
+      "level": "EXPERT",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "107afb45-91d8-47d2-b5bb-090506b2d538",
+      "playlist": "Latino Fiesta",
+      "artist": "Inna",
+      "title": "Hot",
+      "youtube_id": "_el0NVICO-4",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    },
+    {
+      "id": "2a0a82b4-7d8f-4c1e-bb3c-be36a2a209df",
+      "playlist": "Latino Fiesta",
+      "artist": "King Africa",
+      "title": "La Bomba",
+      "youtube_id": "P9wB0MCu1-g",
+      "level": "MEDIUM",
+      "videoTitle": null,
+      "reused": true
+    }
+  ]
+}

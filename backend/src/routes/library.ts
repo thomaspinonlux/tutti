@@ -78,9 +78,13 @@ router.get('/playlists-by-category', async (req: Request, res: Response): Promis
   try {
     const { PLAYLIST_CATEGORIES, UNCATEGORIZED_CATEGORY, getCategoryDef } =
       await import('../lib/playlistCategories.js');
-    // feat/two-provider-libraries — onglet provider. 'spotify' / 'apple_music'
-    // ne gardent que les playlists ayant ≥15 tracks avec l'id de la source
-    // (1 manche = 15 → jouable). 'youtube' = tout (défaut).
+    // fix/source-tabs-forced-source — l'onglet de source affiche EXACTEMENT les
+    // playlists de cette source, telle que la déclare `forced_source` (colonne
+    // official_playlists). Une playlist Apple Music n'apparaît donc plus sous
+    // l'onglet YouTube : YouTube ne sert qu'aux playlists absentes d'Apple
+    // (dessins animés / films / séries). Legacy : `forced_source` NULL → repli
+    // sur les compteurs de la source. Dans les deux cas on exige ≥15 tracks
+    // jouables avec cette source (1 manche = 15).
     const provider =
       req.query.provider === 'spotify'
         ? 'spotify'
@@ -89,15 +93,20 @@ router.get('/playlists-by-category', async (req: Request, res: Response): Promis
           : 'youtube';
     const MIN_TRACKS = 15;
     const all = (await listVisiblePlaylists(req.userId, {})).filter((p) => {
-      if (provider === 'spotify') {
-        return ((p as unknown as { spotify_count?: number }).spotify_count ?? 0) >= MIN_TRACKS;
-      }
-      if (provider === 'apple_music') {
-        return (
-          ((p as unknown as { apple_music_count?: number }).apple_music_count ?? 0) >= MIN_TRACKS
-        );
-      }
-      return true;
+      const row = p as unknown as {
+        forced_source?: string | null;
+        spotify_count?: number;
+        youtube_count?: number;
+        apple_music_count?: number;
+      };
+      const count =
+        provider === 'spotify'
+          ? (row.spotify_count ?? 0)
+          : provider === 'apple_music'
+            ? (row.apple_music_count ?? 0)
+            : (row.youtube_count ?? 0);
+      if (row.forced_source) return row.forced_source === provider && count >= MIN_TRACKS;
+      return count >= MIN_TRACKS;
     });
 
     // Group by category slug. Garde l'ordre de tri retourné par

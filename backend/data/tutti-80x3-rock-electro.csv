@@ -1,0 +1,472 @@
+slug,playlist,artist,title,level
+rock,Rock,Queen,Bohemian Rhapsody,EASY
+rock,Rock,Queen,We Will Rock You,EASY
+rock,Rock,Queen,We Are the Champions,EASY
+rock,Rock,Queen,Don't Stop Me Now,EASY
+rock,Rock,Queen,Another One Bites the Dust,EASY
+rock,Rock,AC/DC,Highway to Hell,EASY
+rock,Rock,AC/DC,Back in Black,EASY
+rock,Rock,AC/DC,Thunderstruck,EASY
+rock,Rock,AC/DC,T.N.T.,EASY
+rock,Rock,Guns N' Roses,Sweet Child O' Mine,EASY
+rock,Rock,Guns N' Roses,November Rain,EASY
+rock,Rock,Guns N' Roses,Welcome to the Jungle,EASY
+rock,Rock,Guns N' Roses,Paradise City,EASY
+rock,Rock,Nirvana,Smells Like Teen Spirit,EASY
+rock,Rock,Nirvana,Come as You Are,EASY
+rock,Rock,Led Zeppelin,Stairway to Heaven,EASY
+rock,Rock,Led Zeppelin,Whole Lotta Love,EASY
+rock,Rock,Led Zeppelin,Immigrant Song,EASY
+rock,Rock,The Beatles,Hey Jude,EASY
+rock,Rock,The Beatles,Come Together,EASY
+rock,Rock,The Beatles,Let It Be,EASY
+rock,Rock,The Rolling Stones,(I Can't Get No) Satisfaction,EASY
+rock,Rock,The Rolling Stones,Paint It Black,EASY
+rock,Rock,The Rolling Stones,Angie,EASY
+rock,Rock,The Rolling Stones,Start Me Up,EASY
+rock,Rock,Bon Jovi,Livin' on a Prayer,EASY
+rock,Rock,Bon Jovi,It's My Life,EASY
+rock,Rock,Bon Jovi,You Give Love a Bad Name,EASY
+rock,Rock,Survivor,Eye of the Tiger,EASY
+rock,Rock,Europe,The Final Countdown,EASY
+rock,Rock,Journey,Don't Stop Believin',EASY
+rock,Rock,Eagles,Hotel California,EASY
+rock,Rock,Lynyrd Skynyrd,Sweet Home Alabama,EASY
+rock,Rock,Deep Purple,Smoke on the Water,EASY
+rock,Rock,The Police,Every Breath You Take,EASY
+rock,Rock,The Police,Roxanne,EASY
+rock,Rock,U2,With or Without You,EASY
+rock,Rock,U2,Sunday Bloody Sunday,EASY
+rock,Rock,U2,Beautiful Day,EASY
+rock,Rock,The Who,Baba O'Riley,EASY
+rock,Rock,Aerosmith,Walk This Way,EASY
+rock,Rock,Aerosmith,Dream On,EASY
+rock,Rock,Aerosmith,I Don't Want to Miss a Thing,EASY
+rock,Rock,Metallica,Enter Sandman,EASY
+rock,Rock,Metallica,Nothing Else Matters,EASY
+rock,Rock,Red Hot Chili Peppers,Californication,EASY
+rock,Rock,Red Hot Chili Peppers,Under the Bridge,EASY
+rock,Rock,Red Hot Chili Peppers,By the Way,EASY
+rock,Rock,The White Stripes,Seven Nation Army,EASY
+rock,Rock,The Killers,Mr. Brightside,EASY
+rock,Rock,Oasis,Wonderwall,EASY
+rock,Rock,Oasis,Don't Look Back in Anger,EASY
+rock,Rock,Green Day,American Idiot,EASY
+rock,Rock,Green Day,Boulevard of Broken Dreams,EASY
+rock,Rock,Linkin Park,In the End,EASY
+rock,Rock,Linkin Park,Numb,EASY
+rock,Rock,Foo Fighters,Everlong,EASY
+rock,Rock,Foo Fighters,Learn to Fly,EASY
+rock,Rock,Pearl Jam,Alive,EASY
+rock,Rock,Blur,Song 2,EASY
+rock,Rock,Toto,Africa,EASY
+rock,Rock,Dire Straits,Sultans of Swing,EASY
+rock,Rock,Dire Straits,Money for Nothing,EASY
+rock,Rock,David Bowie,Heroes,EASY
+rock,Rock,David Bowie,Let's Dance,EASY
+rock,Rock,The Cranberries,Zombie,EASY
+rock,Rock,Scorpions,Wind of Change,EASY
+rock,Rock,Scorpions,Rock You Like a Hurricane,EASY
+rock,Rock,Kiss,I Was Made for Lovin' You,EASY
+rock,Rock,Twisted Sister,We're Not Gonna Take It,EASY
+rock,Rock,Joan Jett & the Blackhearts,I Love Rock 'n' Roll,EASY
+rock,Rock,The Clash,Should I Stay or Should I Go,EASY
+rock,Rock,Ramones,Blitzkrieg Bop,EASY
+rock,Rock,Bruce Springsteen,Born to Run,EASY
+rock,Rock,Bruce Springsteen,Dancing in the Dark,EASY
+rock,Rock,Bryan Adams,Summer of '69,EASY
+rock,Rock,Creedence Clearwater Revival,Have You Ever Seen the Rain,EASY
+rock,Rock,Jimi Hendrix,Purple Haze,EASY
+rock,Rock,Van Halen,Jump,EASY
+rock,Rock,ZZ Top,Gimme All Your Lovin',EASY
+rock,Rock,Pink Floyd,"Another Brick in the Wall, Part 2",MEDIUM
+rock,Rock,Pink Floyd,Wish You Were Here,MEDIUM
+rock,Rock,Pink Floyd,Comfortably Numb,MEDIUM
+rock,Rock,Pink Floyd,Money,MEDIUM
+rock,Rock,The Doors,Light My Fire,MEDIUM
+rock,Rock,The Doors,Riders on the Storm,MEDIUM
+rock,Rock,The Doors,Break On Through (To the Other Side),MEDIUM
+rock,Rock,Fleetwood Mac,Go Your Own Way,MEDIUM
+rock,Rock,Fleetwood Mac,Dreams,MEDIUM
+rock,Rock,Fleetwood Mac,The Chain,MEDIUM
+rock,Rock,The Beach Boys,Good Vibrations,MEDIUM
+rock,Rock,The Beach Boys,God Only Knows,MEDIUM
+rock,Rock,Bob Dylan,Like a Rolling Stone,MEDIUM
+rock,Rock,Bob Dylan,Knockin' on Heaven's Door,MEDIUM
+rock,Rock,Neil Young,Heart of Gold,MEDIUM
+rock,Rock,Neil Young,Rockin' in the Free World,MEDIUM
+rock,Rock,The Animals,The House of the Rising Sun,MEDIUM
+rock,Rock,Steppenwolf,Born to Be Wild,MEDIUM
+rock,Rock,Boston,More Than a Feeling,MEDIUM
+rock,Rock,Kansas,Carry On Wayward Son,MEDIUM
+rock,Rock,Kansas,Dust in the Wind,MEDIUM
+rock,Rock,Heart,Barracuda,MEDIUM
+rock,Rock,Heart,Alone,MEDIUM
+rock,Rock,Whitesnake,Here I Go Again,MEDIUM
+rock,Rock,Def Leppard,Pour Some Sugar on Me,MEDIUM
+rock,Rock,Mötley Crüe,Kickstart My Heart,MEDIUM
+rock,Rock,Poison,Every Rose Has Its Thorn,MEDIUM
+rock,Rock,Bon Jovi,Always,MEDIUM
+rock,Rock,Cheap Trick,I Want You to Want Me,MEDIUM
+rock,Rock,Foreigner,I Want to Know What Love Is,MEDIUM
+rock,Rock,Foreigner,Cold as Ice,MEDIUM
+rock,Rock,Styx,Come Sail Away,MEDIUM
+rock,Rock,REO Speedwagon,Can't Fight This Feeling,MEDIUM
+rock,Rock,Rush,Tom Sawyer,MEDIUM
+rock,Rock,Rush,The Spirit of Radio,MEDIUM
+rock,Rock,Yes,Owner of a Lonely Heart,MEDIUM
+rock,Rock,Genesis,Land of Confusion,MEDIUM
+rock,Rock,Genesis,Invisible Touch,MEDIUM
+rock,Rock,Phil Collins,In the Air Tonight,MEDIUM
+rock,Rock,Tears for Fears,Everybody Wants to Rule the World,MEDIUM
+rock,Rock,Tears for Fears,Shout,MEDIUM
+rock,Rock,Simple Minds,Don't You (Forget About Me),MEDIUM
+rock,Rock,INXS,Need You Tonight,MEDIUM
+rock,Rock,INXS,Never Tear Us Apart,MEDIUM
+rock,Rock,The Cure,Friday I'm in Love,MEDIUM
+rock,Rock,The Cure,Boys Don't Cry,MEDIUM
+rock,Rock,The Smiths,This Charming Man,MEDIUM
+rock,Rock,The Smiths,There Is a Light That Never Goes Out,MEDIUM
+rock,Rock,Depeche Mode,Personal Jesus,MEDIUM
+rock,Rock,Depeche Mode,Enjoy the Silence,MEDIUM
+rock,Rock,Joy Division,Love Will Tear Us Apart,MEDIUM
+rock,Rock,Talking Heads,Once in a Lifetime,MEDIUM
+rock,Rock,Talking Heads,Psycho Killer,MEDIUM
+rock,Rock,Blondie,Heart of Glass,MEDIUM
+rock,Rock,Blondie,Call Me,MEDIUM
+rock,Rock,Blondie,One Way or Another,MEDIUM
+rock,Rock,The Cars,Just What I Needed,MEDIUM
+rock,Rock,Radiohead,Creep,MEDIUM
+rock,Rock,Radiohead,Karma Police,MEDIUM
+rock,Rock,Muse,Uprising,MEDIUM
+rock,Rock,Muse,Supermassive Black Hole,MEDIUM
+rock,Rock,Muse,Hysteria,MEDIUM
+rock,Rock,Arctic Monkeys,Do I Wanna Know?,MEDIUM
+rock,Rock,Arctic Monkeys,R U Mine?,MEDIUM
+rock,Rock,Franz Ferdinand,Take Me Out,MEDIUM
+rock,Rock,The Strokes,Last Nite,MEDIUM
+rock,Rock,The Strokes,Reptilia,MEDIUM
+rock,Rock,Kings of Leon,Sex on Fire,MEDIUM
+rock,Rock,Kings of Leon,Use Somebody,MEDIUM
+rock,Rock,The Black Keys,Lonely Boy,MEDIUM
+rock,Rock,Jet,Are You Gonna Be My Girl,MEDIUM
+rock,Rock,Kasabian,Fire,MEDIUM
+rock,Rock,The Verve,Bitter Sweet Symphony,MEDIUM
+rock,Rock,R.E.M.,Losing My Religion,MEDIUM
+rock,Rock,R.E.M.,Everybody Hurts,MEDIUM
+rock,Rock,The Pretenders,Brass in Pocket,MEDIUM
+rock,Rock,Pat Benatar,Heartbreaker,MEDIUM
+rock,Rock,Survivor,Burning Heart,MEDIUM
+rock,Rock,Roxette,The Look,MEDIUM
+rock,Rock,The Velvet Underground,Sweet Jane,EXPERT
+rock,Rock,Cream,Sunshine of Your Love,EXPERT
+rock,Rock,Cream,White Room,EXPERT
+rock,Rock,The Yardbirds,For Your Love,EXPERT
+rock,Rock,Free,All Right Now,EXPERT
+rock,Rock,Bad Company,Feel Like Makin' Love,EXPERT
+rock,Rock,Thin Lizzy,The Boys Are Back in Town,EXPERT
+rock,Rock,Thin Lizzy,Whiskey in the Jar,EXPERT
+rock,Rock,UFO,Doctor Doctor,EXPERT
+rock,Rock,Rainbow,Since You Been Gone,EXPERT
+rock,Rock,Dio,Holy Diver,EXPERT
+rock,Rock,Black Sabbath,Paranoid,EXPERT
+rock,Rock,Black Sabbath,Iron Man,EXPERT
+rock,Rock,Black Sabbath,War Pigs,EXPERT
+rock,Rock,Judas Priest,Breaking the Law,EXPERT
+rock,Rock,Judas Priest,Painkiller,EXPERT
+rock,Rock,Iron Maiden,The Trooper,EXPERT
+rock,Rock,Iron Maiden,Run to the Hills,EXPERT
+rock,Rock,Iron Maiden,Fear of the Dark,EXPERT
+rock,Rock,Motörhead,Ace of Spades,EXPERT
+rock,Rock,Mr. Big,To Be with You,EXPERT
+rock,Rock,Extreme,More Than Words,EXPERT
+rock,Rock,Skid Row,18 and Life,EXPERT
+rock,Rock,Tesla,Love Song,EXPERT
+rock,Rock,Cinderella,Don't Know What You Got (Till It's Gone),EXPERT
+rock,Rock,Ratt,Round and Round,EXPERT
+rock,Rock,Blue Öyster Cult,(Don't Fear) The Reaper,EXPERT
+rock,Rock,Steppenwolf,Magic Carpet Ride,EXPERT
+rock,Rock,Mountain,Mississippi Queen,EXPERT
+rock,Rock,Grand Funk Railroad,We're an American Band,EXPERT
+rock,Rock,Bachman-Turner Overdrive,You Ain't Seen Nothing Yet,EXPERT
+rock,Rock,Foghat,Slow Ride,EXPERT
+rock,Rock,Ten Years After,I'd Love to Change the World,EXPERT
+rock,Rock,MC5,Kick Out the Jams,EXPERT
+rock,Rock,The Pixies,Where Is My Mind?,EXPERT
+rock,Rock,The Pixies,Here Comes Your Man,EXPERT
+rock,Rock,Sonic Youth,Teen Age Riot,EXPERT
+rock,Rock,Dinosaur Jr.,Feel the Pain,EXPERT
+rock,Rock,Soundgarden,Black Hole Sun,EXPERT
+rock,Rock,Soundgarden,Spoonman,EXPERT
+rock,Rock,Alice in Chains,Man in the Box,EXPERT
+rock,Rock,Alice in Chains,Would?,EXPERT
+rock,Rock,Stone Temple Pilots,Plush,EXPERT
+rock,Rock,Stone Temple Pilots,Interstate Love Song,EXPERT
+rock,Rock,Bush,Glycerine,EXPERT
+rock,Rock,Bush,Machinehead,EXPERT
+rock,Rock,Live,Lightning Crashes,EXPERT
+rock,Rock,Collective Soul,Shine,EXPERT
+rock,Rock,Counting Crows,Mr. Jones,EXPERT
+rock,Rock,Gin Blossoms,Hey Jealousy,EXPERT
+rock,Rock,The Wallflowers,One Headlight,EXPERT
+rock,Rock,Cake,The Distance,EXPERT
+rock,Rock,Weezer,Buddy Holly,EXPERT
+rock,Rock,Weezer,Say It Ain't So,EXPERT
+rock,Rock,The Smashing Pumpkins,1979,EXPERT
+rock,Rock,The Smashing Pumpkins,Bullet with Butterfly Wings,EXPERT
+rock,Rock,Rage Against the Machine,Killing in the Name,EXPERT
+rock,Rock,Rage Against the Machine,Bulls on Parade,EXPERT
+rock,Rock,System of a Down,Chop Suey!,EXPERT
+rock,Rock,System of a Down,Toxicity,EXPERT
+rock,Rock,Tool,Schism,EXPERT
+rock,Rock,Deftones,Change (In the House of Flies),EXPERT
+rock,Rock,Queens of the Stone Age,No One Knows,EXPERT
+rock,Rock,Audioslave,Like a Stone,EXPERT
+rock,Rock,Interpol,Evil,EXPERT
+rock,Rock,Yeah Yeah Yeahs,Maps,EXPERT
+rock,Rock,Bloc Party,Banquet,EXPERT
+rock,Rock,The Libertines,Can't Stand Me Now,EXPERT
+rock,Rock,Kaiser Chiefs,I Predict a Riot,EXPERT
+rock,Rock,Tame Impala,The Less I Know the Better,EXPERT
+rock,Rock,Tame Impala,Elephant,EXPERT
+rock,Rock,Royal Blood,Figure It Out,EXPERT
+rock,Rock,Wolfmother,Joker and the Thief,EXPERT
+rock,Rock,Greta Van Fleet,Highway Tune,EXPERT
+rock,Rock,Placebo,Every You Every Me,EXPERT
+rock,Rock,Garbage,Only Happy When It Rains,EXPERT
+rock,Rock,Hole,Celebrity Skin,EXPERT
+rock,Rock,The Offspring,Self Esteem,EXPERT
+rock,Rock,Faith No More,Epic,EXPERT
+rock,Rock,Living Colour,Cult of Personality,EXPERT
+electro-edm,Electro & EDM,Daft Punk,Get Lucky,EASY
+electro-edm,Electro & EDM,Daft Punk,One More Time,EASY
+electro-edm,Electro & EDM,Daft Punk,Around the World,EASY
+electro-edm,Electro & EDM,Daft Punk,"Harder, Better, Faster, Stronger",EASY
+electro-edm,Electro & EDM,David Guetta,Titanium,EASY
+electro-edm,Electro & EDM,David Guetta,Sexy Bitch,EASY
+electro-edm,Electro & EDM,David Guetta,When Love Takes Over,EASY
+electro-edm,Electro & EDM,David Guetta,Memories,EASY
+electro-edm,Electro & EDM,David Guetta,Without You,EASY
+electro-edm,Electro & EDM,David Guetta,Hey Mama,EASY
+electro-edm,Electro & EDM,Avicii,Wake Me Up,EASY
+electro-edm,Electro & EDM,Avicii,Levels,EASY
+electro-edm,Electro & EDM,Avicii,Hey Brother,EASY
+electro-edm,Electro & EDM,Avicii,The Nights,EASY
+electro-edm,Electro & EDM,Avicii,Waiting for Love,EASY
+electro-edm,Electro & EDM,Calvin Harris,Summer,EASY
+electro-edm,Electro & EDM,Calvin Harris,This Is What You Came For,EASY
+electro-edm,Electro & EDM,Calvin Harris,Feel So Close,EASY
+electro-edm,Electro & EDM,Calvin Harris,We Found Love,EASY
+electro-edm,Electro & EDM,Swedish House Mafia,Don't You Worry Child,EASY
+electro-edm,Electro & EDM,Swedish House Mafia,Save the World,EASY
+electro-edm,Electro & EDM,Martin Garrix,Animals,EASY
+electro-edm,Electro & EDM,Martin Garrix,In the Name of Love,EASY
+electro-edm,Electro & EDM,Tiësto,Red Lights,EASY
+electro-edm,Electro & EDM,Tiësto,The Business,EASY
+electro-edm,Electro & EDM,Alan Walker,Faded,EASY
+electro-edm,Electro & EDM,Alan Walker,Alone,EASY
+electro-edm,Electro & EDM,Marshmello,Alone,EASY
+electro-edm,Electro & EDM,Marshmello,Happier,EASY
+electro-edm,Electro & EDM,Marshmello,Friends,EASY
+electro-edm,Electro & EDM,The Chainsmokers,Closer,EASY
+electro-edm,Electro & EDM,The Chainsmokers,Don't Let Me Down,EASY
+electro-edm,Electro & EDM,The Chainsmokers,Roses,EASY
+electro-edm,Electro & EDM,Major Lazer,Lean On,EASY
+electro-edm,Electro & EDM,Major Lazer,Light It Up,EASY
+electro-edm,Electro & EDM,Skrillex,Bangarang,EASY
+electro-edm,Electro & EDM,Deadmau5,Strobe,EASY
+electro-edm,Electro & EDM,Deadmau5,Ghosts 'n' Stuff,EASY
+electro-edm,Electro & EDM,Kygo,Firestone,EASY
+electro-edm,Electro & EDM,Kygo,It Ain't Me,EASY
+electro-edm,Electro & EDM,Kygo,Stole the Show,EASY
+electro-edm,Electro & EDM,Robin Schulz,Sugar,EASY
+electro-edm,Electro & EDM,Robin Schulz,Prayer in C,EASY
+electro-edm,Electro & EDM,Lost Frequencies,Are You with Me,EASY
+electro-edm,Electro & EDM,Lost Frequencies,Reality,EASY
+electro-edm,Electro & EDM,Clean Bandit,Rather Be,EASY
+electro-edm,Electro & EDM,Clean Bandit,Symphony,EASY
+electro-edm,Electro & EDM,Clean Bandit,Rockabye,EASY
+electro-edm,Electro & EDM,Disclosure,Latch,EASY
+electro-edm,Electro & EDM,Zedd,Clarity,EASY
+electro-edm,Electro & EDM,Zedd,Stay,EASY
+electro-edm,Electro & EDM,Zedd,The Middle,EASY
+electro-edm,Electro & EDM,Axwell Λ Ingrosso,More Than You Know,EASY
+electro-edm,Electro & EDM,Afrojack,Take Over Control,EASY
+electro-edm,Electro & EDM,Eric Prydz,Call on Me,EASY
+electro-edm,Electro & EDM,Benny Benassi,Satisfaction,EASY
+electro-edm,Electro & EDM,Stardust,Music Sounds Better with You,EASY
+electro-edm,Electro & EDM,Modjo,Lady (Hear Me Tonight),EASY
+electro-edm,Electro & EDM,Gigi D'Agostino,L'Amour Toujours,EASY
+electro-edm,Electro & EDM,Darude,Sandstorm,EASY
+electro-edm,Electro & EDM,Faithless,Insomnia,EASY
+electro-edm,Electro & EDM,ATB,9 PM (Till I Come),EASY
+electro-edm,Electro & EDM,Alice Deejay,Better Off Alone,EASY
+electro-edm,Electro & EDM,Fatboy Slim,Praise You,EASY
+electro-edm,Electro & EDM,Fatboy Slim,"Right Here, Right Now",EASY
+electro-edm,Electro & EDM,The Prodigy,Firestarter,EASY
+electro-edm,Electro & EDM,The Prodigy,Breathe,EASY
+electro-edm,Electro & EDM,Moby,Why Does My Heart Feel So Bad?,EASY
+electro-edm,Electro & EDM,Moby,Porcelain,EASY
+electro-edm,Electro & EDM,Basshunter,Now You're Gone,EASY
+electro-edm,Electro & EDM,Sigala,Sweet Lovin',EASY
+electro-edm,Electro & EDM,Jonas Blue,Fast Car,EASY
+electro-edm,Electro & EDM,Kungs,This Girl,EASY
+electro-edm,Electro & EDM,Felix Jaehn,Ain't Nobody (Loves Me Better),EASY
+electro-edm,Electro & EDM,Duke Dumont,Need U (100%),EASY
+electro-edm,Electro & EDM,Galantis,Runaway (U & I),EASY
+electro-edm,Electro & EDM,DJ Snake,Turn Down for What,EASY
+electro-edm,Electro & EDM,DJ Snake,Let Me Love You,EASY
+electro-edm,Electro & EDM,Justice,D.A.N.C.E.,MEDIUM
+electro-edm,Electro & EDM,Justice,Genesis,MEDIUM
+electro-edm,Electro & EDM,Cassius,1999,MEDIUM
+electro-edm,Electro & EDM,Cassius,Feeling for You,MEDIUM
+electro-edm,Electro & EDM,Mr. Oizo,Flat Beat,MEDIUM
+electro-edm,Electro & EDM,Bob Sinclar,Love Generation,MEDIUM
+electro-edm,Electro & EDM,Bob Sinclar,"World, Hold On",MEDIUM
+electro-edm,Electro & EDM,Bob Sinclar,Rock This Party (Everybody Dance Now),MEDIUM
+electro-edm,Electro & EDM,Martin Solveig,Hello,MEDIUM
+electro-edm,Electro & EDM,Martin Solveig,Intoxicated,MEDIUM
+electro-edm,Electro & EDM,Étienne de Crécy,Am I Wrong,MEDIUM
+electro-edm,Electro & EDM,Vitalic,La Rock 01,MEDIUM
+electro-edm,Electro & EDM,Breakbot,Baby I'm Yours,MEDIUM
+electro-edm,Electro & EDM,Gesaffelstein,Pursuit,MEDIUM
+electro-edm,Electro & EDM,Madeon,Pop Culture,MEDIUM
+electro-edm,Electro & EDM,Madeon,Icarus,MEDIUM
+electro-edm,Electro & EDM,Porter Robinson,Language,MEDIUM
+electro-edm,Electro & EDM,Porter Robinson,Shelter,MEDIUM
+electro-edm,Electro & EDM,Flume,Never Be Like You,MEDIUM
+electro-edm,Electro & EDM,Odesza,Say My Name,MEDIUM
+electro-edm,Electro & EDM,Rüfüs Du Sol,Innerbloom,MEDIUM
+electro-edm,Electro & EDM,Bonobo,Kerala,MEDIUM
+electro-edm,Electro & EDM,Caribou,Can't Do Without You,MEDIUM
+electro-edm,Electro & EDM,Jamie xx,Loud Places,MEDIUM
+electro-edm,Electro & EDM,Disclosure,White Noise,MEDIUM
+electro-edm,Electro & EDM,Disclosure,Omen,MEDIUM
+electro-edm,Electro & EDM,Duke Dumont,I Got U,MEDIUM
+electro-edm,Electro & EDM,Gorgon City,Ready for Your Love,MEDIUM
+electro-edm,Electro & EDM,Rudimental,Feel the Love,MEDIUM
+electro-edm,Electro & EDM,Rudimental,Waiting All Night,MEDIUM
+electro-edm,Electro & EDM,Sigma,Nobody to Love,MEDIUM
+electro-edm,Electro & EDM,Chase & Status,Blind Faith,MEDIUM
+electro-edm,Electro & EDM,Wilkinson,Afterglow,MEDIUM
+electro-edm,Electro & EDM,Pendulum,Watercolour,MEDIUM
+electro-edm,Electro & EDM,Pendulum,The Island,MEDIUM
+electro-edm,Electro & EDM,Baauer,Harlem Shake,MEDIUM
+electro-edm,Electro & EDM,Jack Ü,Where Are Ü Now,MEDIUM
+electro-edm,Electro & EDM,DJ Snake,Lean On,MEDIUM
+electro-edm,Electro & EDM,DJ Snake,Taki Taki,MEDIUM
+electro-edm,Electro & EDM,Major Lazer,Cold Water,MEDIUM
+electro-edm,Electro & EDM,Major Lazer,Get Free,MEDIUM
+electro-edm,Electro & EDM,Hardwell,Spaceman,MEDIUM
+electro-edm,Electro & EDM,Nicky Romero,Toulouse,MEDIUM
+electro-edm,Electro & EDM,Showtek,Booyah,MEDIUM
+electro-edm,Electro & EDM,Oliver Heldens,Gecko (Overdrive),MEDIUM
+electro-edm,Electro & EDM,MK,17,MEDIUM
+electro-edm,Electro & EDM,CamelPhat,Cola,MEDIUM
+electro-edm,Electro & EDM,Fisher,Losing It,MEDIUM
+electro-edm,Electro & EDM,Meduza,Piece of Your Heart,MEDIUM
+electro-edm,Electro & EDM,Meduza,Lose Control,MEDIUM
+electro-edm,Electro & EDM,Regard,Ride It,MEDIUM
+electro-edm,Electro & EDM,Acraze,Do It to It,MEDIUM
+electro-edm,Electro & EDM,Sub Focus,Turn Back Time,MEDIUM
+electro-edm,Electro & EDM,Netsky,Rio,MEDIUM
+electro-edm,Electro & EDM,Flux Pavilion,I Can't Stop,MEDIUM
+electro-edm,Electro & EDM,Knife Party,Internet Friends,MEDIUM
+electro-edm,Electro & EDM,Dillon Francis,Get Low,MEDIUM
+electro-edm,Electro & EDM,RL Grime,Core,MEDIUM
+electro-edm,Electro & EDM,Galantis,No Money,MEDIUM
+electro-edm,Electro & EDM,Kshmr,Secrets,MEDIUM
+electro-edm,Electro & EDM,Don Diablo,On My Mind,MEDIUM
+electro-edm,Electro & EDM,Dimitri Vegas & Like Mike,Tremor,MEDIUM
+electro-edm,Electro & EDM,W&W,Bigfoot,MEDIUM
+electro-edm,Electro & EDM,Steve Aoki,Pursuit of Happiness (remix),MEDIUM
+electro-edm,Electro & EDM,Afrojack,Ten Feet Tall,MEDIUM
+electro-edm,Electro & EDM,Tujamo,Booty Bounce,MEDIUM
+electro-edm,Electro & EDM,Quintino,Epic,MEDIUM
+electro-edm,Electro & EDM,Ummet Ozcan,Smash!,MEDIUM
+electro-edm,Electro & EDM,Robin Schulz,OK,MEDIUM
+electro-edm,Electro & EDM,Felix Jaehn,Cool,MEDIUM
+electro-edm,Electro & EDM,Sigala,Easy Love,MEDIUM
+electro-edm,Electro & EDM,Jonas Blue,Mama,MEDIUM
+electro-edm,Electro & EDM,Lost Frequencies,Where Are You Now,MEDIUM
+electro-edm,Electro & EDM,Purple Disco Machine,Hypnotized,MEDIUM
+electro-edm,Electro & EDM,Joel Corry,Head & Heart,MEDIUM
+electro-edm,Electro & EDM,Tiësto,Adagio for Strings,MEDIUM
+electro-edm,Electro & EDM,Kraftwerk,The Robots,EXPERT
+electro-edm,Electro & EDM,Kraftwerk,Trans-Europe Express,EXPERT
+electro-edm,Electro & EDM,Kraftwerk,Autobahn,EXPERT
+electro-edm,Electro & EDM,Kraftwerk,The Model,EXPERT
+electro-edm,Electro & EDM,Giorgio Moroder,The Chase,EXPERT
+electro-edm,Electro & EDM,Jean-Michel Jarre,"Oxygène, Pt. IV",EXPERT
+electro-edm,Electro & EDM,Jean-Michel Jarre,"Équinoxe, Pt. V",EXPERT
+electro-edm,Electro & EDM,Aphex Twin,Windowlicker,EXPERT
+electro-edm,Electro & EDM,Aphex Twin,Xtal,EXPERT
+electro-edm,Electro & EDM,Boards of Canada,Roygbiv,EXPERT
+electro-edm,Electro & EDM,The Orb,Little Fluffy Clouds,EXPERT
+electro-edm,Electro & EDM,Orbital,Chime,EXPERT
+electro-edm,Electro & EDM,Orbital,Halcyon and on and on,EXPERT
+electro-edm,Electro & EDM,Underworld,Born Slippy .NUXX,EXPERT
+electro-edm,Electro & EDM,Leftfield,Phat Planet,EXPERT
+electro-edm,Electro & EDM,The Chemical Brothers,Block Rockin' Beats,EXPERT
+electro-edm,Electro & EDM,The Chemical Brothers,Hey Boy Hey Girl,EXPERT
+electro-edm,Electro & EDM,The Chemical Brothers,Galvanize,EXPERT
+electro-edm,Electro & EDM,Massive Attack,Teardrop,EXPERT
+electro-edm,Electro & EDM,Massive Attack,Unfinished Sympathy,EXPERT
+electro-edm,Electro & EDM,Massive Attack,Angel,EXPERT
+electro-edm,Electro & EDM,Portishead,Glory Box,EXPERT
+electro-edm,Electro & EDM,Portishead,Roads,EXPERT
+electro-edm,Electro & EDM,Air,Sexy Boy,EXPERT
+electro-edm,Electro & EDM,Air,La Femme d'Argent,EXPERT
+electro-edm,Electro & EDM,Air,Kelly Watch the Stars,EXPERT
+electro-edm,Electro & EDM,Röyksopp,Eple,EXPERT
+electro-edm,Electro & EDM,Röyksopp,Remind Me,EXPERT
+electro-edm,Electro & EDM,Bonobo,Black Sands,EXPERT
+electro-edm,Electro & EDM,Groove Armada,At the River,EXPERT
+electro-edm,Electro & EDM,Groove Armada,Superstylin',EXPERT
+electro-edm,Electro & EDM,Basement Jaxx,Where's Your Head At,EXPERT
+electro-edm,Electro & EDM,Basement Jaxx,Red Alert,EXPERT
+electro-edm,Electro & EDM,Daft Punk,Da Funk,EXPERT
+electro-edm,Electro & EDM,Daft Punk,Veridis Quo,EXPERT
+electro-edm,Electro & EDM,Daft Punk,Aerodynamic,EXPERT
+electro-edm,Electro & EDM,Laurent Garnier,The Man with the Red Face,EXPERT
+electro-edm,Electro & EDM,DJ Mehdi,Signatune,EXPERT
+electro-edm,Electro & EDM,Boys Noize,& Down,EXPERT
+electro-edm,Electro & EDM,Kavinsky,Nightcall,EXPERT
+electro-edm,Electro & EDM,College,A Real Hero,EXPERT
+electro-edm,Electro & EDM,The Bloody Beetroots,Warp 1.9,EXPERT
+electro-edm,Electro & EDM,Crystal Castles,Crimewave,EXPERT
+electro-edm,Electro & EDM,Crystal Castles,Not in Love,EXPERT
+electro-edm,Electro & EDM,Digitalism,Pogo,EXPERT
+electro-edm,Electro & EDM,Justice,Stress,EXPERT
+electro-edm,Electro & EDM,Justice,Phantom Pt. II,EXPERT
+electro-edm,Electro & EDM,Jeff Mills,The Bells,EXPERT
+electro-edm,Electro & EDM,Plastikman,Spastik,EXPERT
+electro-edm,Electro & EDM,Derrick May,Strings of Life,EXPERT
+electro-edm,Electro & EDM,Frankie Knuckles,Your Love,EXPERT
+electro-edm,Electro & EDM,Marshall Jefferson,Move Your Body,EXPERT
+electro-edm,Electro & EDM,Mr. Fingers,Can You Feel It,EXPERT
+electro-edm,Electro & EDM,Jon Hopkins,Open Eye Signal,EXPERT
+electro-edm,Electro & EDM,Moderat,A New Error,EXPERT
+electro-edm,Electro & EDM,Âme,Rej,EXPERT
+electro-edm,Electro & EDM,Floating Points,Last Bloom,EXPERT
+electro-edm,Electro & EDM,Trentemøller,Moan,EXPERT
+electro-edm,Electro & EDM,Stephan Bodzin,Singularity,EXPERT
+electro-edm,Electro & EDM,Tale of Us,Time,EXPERT
+electro-edm,Electro & EDM,Maceo Plex,Mutant Series,EXPERT
+electro-edm,Electro & EDM,Charlotte de Witte,Doppler,EXPERT
+electro-edm,Electro & EDM,Amelie Lens,Contradiction,EXPERT
+electro-edm,Electro & EDM,Boris Brejcha,Gravity,EXPERT
+electro-edm,Electro & EDM,Adam Beyer,Your Mind,EXPERT
+electro-edm,Electro & EDM,Nina Kraviz,Ghetto Kraviz,EXPERT
+electro-edm,Electro & EDM,Solomun,After Dark,EXPERT
+electro-edm,Electro & EDM,Dixon,Where We Start,EXPERT
+electro-edm,Electro & EDM,Maya Jane Coles,What They Say,EXPERT
+electro-edm,Electro & EDM,Carl Cox,I Want You (Forever),EXPERT
+electro-edm,Electro & EDM,Sven Väth,L'Esperanza,EXPERT
+electro-edm,Electro & EDM,Paul Kalkbrenner,Sky and Sand,EXPERT
+electro-edm,Electro & EDM,Booka Shade,Body Language,EXPERT
+electro-edm,Electro & EDM,Modeselektor,Blue Clouds,EXPERT
+electro-edm,Electro & EDM,Apparat,Goodbye,EXPERT
+electro-edm,Electro & EDM,Rone,Bora,EXPERT
+electro-edm,Electro & EDM,Vitalic,My Friend Dario,EXPERT
+electro-edm,Electro & EDM,Gesaffelstein,Aleph,EXPERT
