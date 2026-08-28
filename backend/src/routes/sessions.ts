@@ -426,7 +426,7 @@ router.get(
       }
       const track = await prisma.track.findUnique({
         where: { id: active.track_id },
-        select: { provider: true, provider_track_id: true },
+        select: { provider: true, provider_track_id: true, duration_ms: true },
       });
       if (!track) {
         res
@@ -437,6 +437,26 @@ router.get(
       const lyrics = await getUsableLyrics(track.provider, track.provider_track_id);
       if (!lyrics) {
         res.status(404).json({ error: { code: 'LYRICS_UNAVAILABLE', message: 'Pas de paroles' } });
+        return;
+      }
+      // fix/lyrics-duration-check — CONTRÔLE DE SYNCHRO au moment de servir :
+      // les paroles ont été validées pour une version d'une durée précise. Si
+      // le morceau réellement JOUÉ a une durée qui s'en écarte de plus de 3 s
+      // (autre édit, autre version), la synchro serait fausse du début à la
+      // fin → on refuse de les afficher plutôt que d'afficher faux.
+      if (
+        typeof lyrics.providerDurationMs === 'number' &&
+        lyrics.providerDurationMs > 0 &&
+        typeof track.duration_ms === 'number' &&
+        track.duration_ms > 0 &&
+        Math.abs(lyrics.providerDurationMs - track.duration_ms) > 3000
+      ) {
+        console.warn(
+          `[lyrics/current] durée paroles (${lyrics.providerDurationMs}ms) ≠ morceau joué (${track.duration_ms}ms) → refus`,
+        );
+        res
+          .status(404)
+          .json({ error: { code: 'LYRICS_VERSION_MISMATCH', message: 'Version différente' } });
         return;
       }
       res.json({ provider_track_id: track.provider_track_id, lrc: lyrics.lrc });

@@ -10,6 +10,9 @@
 import { prisma } from '../prisma.js';
 
 export interface UsableLyrics {
+  /** fix/lyrics-duration-check — durée de la version pour laquelle les paroles
+   *  ont été validées (référence de synchro, comparée au morceau JOUÉ). */
+  providerDurationMs?: number;
   provider: string;
   providerTrackId: string;
   lrc: string;
@@ -30,7 +33,7 @@ export async function getUsableLyrics(
   if (!provider || !providerTrackId) return null;
   const row = await prisma.trackLyrics.findUnique({
     where: { provider_provider_track_id: { provider, provider_track_id: providerTrackId } },
-    select: { status: true, synced_lrc: true, line_count: true },
+    select: { status: true, synced_lrc: true, line_count: true, provider_duration_ms: true },
   });
   if (!row || row.status !== 'ok' || !row.synced_lrc) return null;
   return {
@@ -38,6 +41,7 @@ export async function getUsableLyrics(
     providerTrackId,
     lrc: row.synced_lrc,
     lineCount: row.line_count,
+    providerDurationMs: row.provider_duration_ms,
   };
 }
 
