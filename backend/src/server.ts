@@ -75,6 +75,22 @@ const STATIC_ALLOWED_ORIGINS = [
   'https://localhost',
 ];
 
+/**
+ * fix/native-origin-hostname — la coque iOS peut servir la WebView sous un
+ * hostname personnalisé (`server.hostname` de capacitor.config.ts) : l'origine
+ * devient alors `capacitor://<hostname>` et non plus `capacitor://localhost`.
+ * ⚠️ Sur iOS le schéma reste TOUJOURS `capacitor` : WKWebView interdit
+ * d'enregistrer un gestionnaire pour http/https, donc `iosScheme: 'https'` est
+ * ignoré en silence. On accepte donc tout `capacitor://` / `ionic://` dont
+ * l'hôte est un de NOS domaines — c'est notre propre client, jamais un site
+ * tiers (un navigateur ne peut pas forger une origine à schéma custom).
+ */
+const NATIVE_SCHEMES = ['capacitor', 'ionic'];
+const NATIVE_HOSTS = ['localhost', 'tuttiparty.app', 'www.tuttiparty.app', 'app.tuttiparty'];
+for (const scheme of NATIVE_SCHEMES) {
+  for (const host of NATIVE_HOSTS) STATIC_ALLOWED_ORIGINS.push(`${scheme}://${host}`);
+}
+
 const allowedOrigins = new Set(STATIC_ALLOWED_ORIGINS);
 if (FRONTEND_URL) allowedOrigins.add(FRONTEND_URL);
 
