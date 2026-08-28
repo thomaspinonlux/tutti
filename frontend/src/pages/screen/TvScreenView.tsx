@@ -187,10 +187,13 @@ function CoralRingTimer({
   startedAt,
   durationMs,
   isPaused,
+  size = 160,
 }: {
   startedAt: string;
   durationMs: number;
   isPaused: boolean;
+  /** Diamètre en px (fix/tv-phase2-countdown : 340 en plein centre). */
+  size?: number;
 }): JSX.Element {
   const remaining = useTimeRemaining(startedAt, durationMs, isPaused);
   const seconds = Math.max(0, Math.ceil(remaining / 1000));
@@ -199,7 +202,7 @@ function CoralRingTimer({
   const C = 2 * Math.PI * R;
   const low = seconds <= 3;
   return (
-    <div className="relative h-40 w-40">
+    <div className="relative mx-auto" style={{ width: size, height: size }}>
       <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
         <circle cx="60" cy="60" r={R} fill="none" stroke="#ffffff12" strokeWidth="9" />
         <circle
@@ -220,7 +223,8 @@ function CoralRingTimer({
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <span
-          className={`font-mono text-[52px] font-bold tabular-nums text-white ${low ? 'animate-tick-pulse' : ''}`}
+          className={`font-mono font-bold tabular-nums text-white ${low ? 'animate-tick-pulse' : ''}`}
+          style={{ fontSize: Math.round(size * 0.33) }}
         >
           {seconds}
         </span>
@@ -262,14 +266,14 @@ function ListeningProgress({
 // ── Pochette révélée (reveal) — élément star, éclairée ─────────────────────
 function RevealCoverDark({
   track,
-  title,
 }: {
   track: CurrentTrackState;
-  title: string;
+  /** Conservé pour compat des appelants — plus affiché (doublon illisible). */
+  title?: string;
 }): JSX.Element {
   const cover = track.cover_url;
   return (
-    <div className="relative aspect-square w-full max-w-[min(60vh,600px)] tv-cover-in">
+    <div className="relative aspect-square w-full max-w-[min(40vh,400px)] tv-cover-in">
       <div
         aria-hidden
         className="absolute -inset-10 -z-10 rounded-[40%] blur-[70px]"
@@ -288,8 +292,8 @@ function RevealCoverDark({
         }
       >
         {!cover && (
-          <span className="px-8 text-center font-display text-4xl leading-tight text-white lg:text-5xl">
-            {title}
+          <span aria-hidden className="text-[8rem] leading-none text-white/25">
+            ♪
           </span>
         )}
       </div>
@@ -493,7 +497,10 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
     if (!showConfetti || !trackKey) return;
     if (lastConfettiTrackRef.current === trackKey) return;
     lastConfettiTrackRef.current = trackKey;
-    fireConfetti({ x: 0.5, y: 0.42, particleCount: 90 });
+    // fix/tv-confetti-perf — 90 particules figeaient à mi-course sur le
+    // navigateur TV (GPU faible). 45 particules à durée de vie courte : la
+    // salve reste visible et se termine toujours proprement.
+    fireConfetti({ x: 0.5, y: 0.42, particleCount: 45 });
   }, [showConfetti, trackKey]);
 
   const phaseLabel = useMemo(() => {
@@ -511,7 +518,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
   const ambientCover = isRevealed ? (currentTrack?.cover_url ?? null) : null;
 
   return (
-    <div className="relative flex min-h-screen flex-col text-white">
+    <div className="relative flex min-h-screen flex-col text-white px-[2.5vmin] pt-[1.5vmin] pb-[3vmin]">
       <style>{TV_STYLE}</style>
       <AmbientBackdrop cover={ambientCover} />
       <TopRibbon
@@ -562,16 +569,25 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
               >
                 {t('screen.phaseLabel3')}
               </span>
+              {/* fix/tv-reveal-legibility — taille de police ADAPTÉE à la
+                  longueur du titre : un titre long descend en corps au lieu de
+                  se faire découper en colonne étroite derrière le classement. */}
               <h1
-                className="tv-rise mt-6 font-display text-6xl font-bold leading-[0.92] text-white lg:text-7xl xl:text-8xl"
-                style={{ textShadow: '0 12px 60px rgba(0,0,0,0.6)' }}
+                className={`tv-rise mt-6 break-words font-display font-bold leading-[0.95] text-white ${
+                  title.length <= 14
+                    ? 'text-6xl lg:text-7xl xl:text-8xl'
+                    : title.length <= 26
+                      ? 'text-5xl lg:text-6xl xl:text-7xl'
+                      : 'text-4xl lg:text-5xl xl:text-6xl'
+                }`}
+                style={{ textShadow: '0 12px 60px rgba(0,0,0,0.6)', textWrap: 'balance' }}
                 title={title}
               >
                 {title}
               </h1>
               <p
-                className="tv-rise mt-4 font-editorial text-3xl font-semibold italic lg:text-4xl xl:text-5xl"
-                style={{ color: CORAL, animationDelay: '110ms' }}
+                className="tv-rise mt-4 break-words font-editorial text-3xl font-semibold italic lg:text-4xl"
+                style={{ color: CORAL, animationDelay: '110ms', textWrap: 'balance' }}
               >
                 {artist}
               </p>
@@ -615,22 +631,28 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
                     {t('screen.buzzCounter', { count: props.activeBuzzCount })}
                   </div>
                 )}
-                {isPhase2 && phase2StartedAt && (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 text-center">
-                    <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.28em] text-white/60">
+                {/* fix/tv-phase2-countdown — dès qu'un joueur a trouvé, le
+                    compte à rebours devient L'ÉLÉMENT CENTRAL, en très grand :
+                    c'est l'info que toute la salle attend. La pochette mystère
+                    s'efface pendant cette fenêtre. */}
+                {isPhase2 && phase2StartedAt ? (
+                  <div className="text-center tv-rise">
+                    <p className="mb-6 font-mono text-lg font-bold uppercase tracking-[0.34em] text-white/70">
                       {t('screen.phase2TimerLabel')}
                     </p>
                     <CoralRingTimer
                       startedAt={phase2StartedAt}
                       durationMs={10_000}
                       isPaused={session.is_paused}
+                      size={340}
                     />
-                    <p className="mt-3 font-editorial text-sm italic text-white/45">
+                    <p className="mt-6 font-editorial text-2xl italic text-white/55">
                       {t('screen.phase2TimerSub')}
                     </p>
                   </div>
+                ) : (
+                  <MysteryCoverDark track={currentTrack} size="min(44vh,440px)" />
                 )}
-                <MysteryCoverDark track={currentTrack} size="min(44vh,440px)" />
                 {isPhase1 && (
                   <ListeningProgress track={currentTrack} isPaused={session.is_paused} />
                 )}

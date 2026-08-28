@@ -34,10 +34,12 @@ import {
   masterEndSession,
   masterGiveAnswer,
   masterListScores,
+  masterLyricsOverlay,
   masterNextTrack,
   masterPause,
   masterPickRound,
   masterLaunchOfficial,
+  masterRejectLyrics,
   masterRestartTrack,
   masterResume,
   masterSeek,
@@ -154,6 +156,8 @@ export function PlayPage(): JSX.Element {
     is_paused: boolean;
     at: number;
   } | null>(null);
+  // feat/synced-lyrics — overlay paroles actif (source de vérité : broadcast serveur).
+  const [lyricsOn, setLyricsOn] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [masterPickerOpen, setMasterPickerOpen] = useState(false);
   const [adjustSheetOpen, setAdjustSheetOpen] = useState(false);
@@ -381,7 +385,11 @@ export function PlayPage(): JSX.Element {
       setLastReveal(null);
       setPhase2StartedAt(null);
       setMasterProgress(null);
+      // Nouveau morceau → l'overlay paroles est éteint côté serveur.
+      setLyricsOn(false);
     });
+    // feat/synced-lyrics — état du bouton Paroles piloté par le serveur.
+    sock.on('lyrics:overlay', (p: { on: boolean }) => setLyricsOn(!!p.on));
     // feat/multi-animator-roles — canal PRIVILÉGIÉ (reçu uniquement si
     // ANIMATOR_FULL). Fusionne la réponse dans currentTrack. Un ANIMATOR_PLAYING
     // n'est jamais dans la room answers → n'entre jamais ici (anti-triche).
@@ -572,14 +580,22 @@ export function PlayPage(): JSX.Element {
       if (!identity || !currentRound) return;
       await masterGiveAnswer(identity.sessionId, currentRound.id, identity.token);
     });
+  // fix/master-timeline-optimistic — au tap Suivant/Passer/Rejouer, la barre
+  // repart à 0:00 IMMÉDIATEMENT (gelée) au lieu de continuer sur l'ancien
+  // morceau pendant le chargement (1-3 s). Le vrai track:progress reprend la
+  // main dès que la console joue le nouveau titre.
+  const resetTimelineOptimistic = (): void =>
+    setMasterProgress({ position_ms: 0, duration_ms: null, is_paused: true, at: Date.now() });
   const handleMasterSkip = (): Promise<void> =>
     masterCall(async () => {
       if (!identity || !currentRound) return;
+      resetTimelineOptimistic();
       await masterSkipTrack(identity.sessionId, currentRound.id, identity.token);
     });
   const handleMasterNext = (): Promise<void> =>
     masterCall(async () => {
       if (!identity || !currentRound) return;
+      resetTimelineOptimistic();
       await masterNextTrack(identity.sessionId, currentRound.id, identity.token);
     });
   const handleMasterPause = (): Promise<void> =>
@@ -595,7 +611,20 @@ export function PlayPage(): JSX.Element {
   const handleMasterRestart = (): Promise<void> =>
     masterCall(async () => {
       if (!identity || !currentRound) return;
+      resetTimelineOptimistic();
       await masterRestartTrack(identity.sessionId, currentRound.id, identity.token);
+    });
+  // feat/synced-lyrics — bouton Paroles (affichage MANUEL, morceau révélé).
+  const handleToggleLyrics = (on: boolean): Promise<void> =>
+    masterCall(async () => {
+      if (!identity) return;
+      await masterLyricsOverlay(identity.sessionId, identity.token, on);
+    });
+  const handleRejectLyrics = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity) return;
+      await masterRejectLyrics(identity.sessionId, identity.token);
+      setCurrentTrack((prev) => (prev ? { ...prev, lyrics_available: false } : prev));
     });
   // feat/manette-console-master — position de lecture RÉELLE : la console diffuse
   // sa position (track:progress). On l'interpole avec l'horloge locale. Fallback
@@ -959,6 +988,13 @@ export function PlayPage(): JSX.Element {
                     onSeekTo={handleMasterSeekTo}
                     onSetVolume={handleMasterSetVolume}
                     progress={masterProgress}
+                    lyricsAvailable={
+                      !!currentTrack?.lyrics_available &&
+                      (currentTrack.phase === 'phase3' || currentTrack.phase === 'phase3-revealed')
+                    }
+                    lyricsOn={lyricsOn}
+                    onToggleLyrics={(on) => void handleToggleLyrics(on)}
+                    onRejectLyrics={() => void handleRejectLyrics()}
                     onEndRound={handleMasterEndRound}
                     onEndSession={handleMasterEndSession}
                     onPickRound={() => setMasterPickerOpen(true)}

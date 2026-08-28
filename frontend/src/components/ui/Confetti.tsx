@@ -27,6 +27,10 @@ export function fireConfetti(opts?: { x?: number; y?: number; particleCount?: nu
     origin: { x, y },
     colors: POP_COLORS,
     scalar: 1.1,
+    // fix/tv-confetti-perf — vie raccourcie (défaut 200 ticks) : sur un
+    // navigateur TV lent, les particules longues finissaient figées à l'écran.
+    ticks: 130,
+    disableForReducedMotion: true,
   });
 }
 

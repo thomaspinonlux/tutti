@@ -52,7 +52,9 @@ import { ThemeLevelCards } from '../components/host/library/ThemeLevelCards.js';
 import { buildThemeSections, flattenThemes } from '../lib/officialThemes.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 
-const POLL_FAST_MS = 2000;
+// fix/tv-1s-poll — 1 s en partie : l'écran ne peut jamais avoir plus d'une
+// seconde de retard sur le serveur, même si le canal temps réel est mort.
+const POLL_FAST_MS = 1000;
 const POLL_SLOW_MS = 5000;
 const SLOW_THRESHOLD_IDLE_TICKS = 10;
 
@@ -89,6 +91,13 @@ export function ScreenPage(): JSX.Element {
   // on interpole entre deux messages, sinon les paroles avanceraient par à-coups.
   const progressRef = useRef<{ position_ms: number; at: number; is_paused: boolean } | null>(null);
   const [lyricsLines, setLyricsLines] = useState<LrcLine[] | null>(null);
+  // fix/tv-watchdog — horodatage du dernier poll RÉUSSI. La TV interroge le
+  // serveur toutes les 1 s ; si elle reste 6 s sans réponse (boucle morte,
+  // réseau tombé, onglet gelé par le navigateur TV), on recharge la page :
+  // une TV de bar doit se rattraper TOUTE SEULE, jamais rester figée sur
+  // Pause ou sur une erreur. 6 s = 6 polls manqués d'affilée — jamais un
+  // simple ralentissement, toujours une vraie panne.
+  const lastPollOkRef = useRef<number>(Date.now());
 
   // Polling state machine
   useEffect(() => {
@@ -113,6 +122,7 @@ export function ScreenPage(): JSX.Element {
         if (cancelled) return;
         setScreenState(next);
         setError(null);
+        lastPollOkRef.current = Date.now();
         // Polling adaptatif : ralenti après 10 IDLE consécutifs
         idleStreakRef.current = next.state === 'IDLE' ? idleStreakRef.current + 1 : 0;
       } catch (err) {
@@ -148,10 +158,29 @@ export function ScreenPage(): JSX.Element {
     };
 
     void poll();
+
+    // fix/tv-watchdog — filet ultime : 6 s sans poll réussi → reload complet
+    // (le reload lui-même prend ~2 s). Couvre TOUS les cas de blocage (Pause
+    // figée, socket mort + boucle morte, navigateur TV qui a gelé les timers)
+    // sans intervention humaine.
+    const watchdogId = window.setInterval(() => {
+      if (Date.now() - lastPollOkRef.current > 6_000) {
+        console.warn('[Screen watchdog] 6s sans réponse serveur → reload');
+        window.location.reload();
+      }
+    }, 1_000);
+    // Retour réseau / onglet redevenu visible → re-poll immédiat.
+    const kick = (): void => triggerPollRef.current?.();
+    window.addEventListener('online', kick);
+    document.addEventListener('visibilitychange', kick);
+
     return () => {
       cancelled = true;
       triggerPollRef.current = null;
       if (timeoutId !== null) window.clearTimeout(timeoutId);
+      window.clearInterval(watchdogId);
+      window.removeEventListener('online', kick);
+      document.removeEventListener('visibilitychange', kick);
     };
   }, [workspaceId]);
 
@@ -240,6 +269,14 @@ export function ScreenPage(): JSX.Element {
     ];
     events.forEach((ev) => socket.on(ev, trigger));
 
+    // fix/tv-timeline-reset — nouveau morceau : on jette la position du
+    // précédent. Sans ça, la barre/paroles continuaient sur l'ancienne
+    // position jusqu'au premier track:progress du nouveau titre (~1-2 s).
+    const onTrackStart = (): void => {
+      progressRef.current = null;
+    };
+    socket.on('track:start', onTrackStart);
+
     // feat/synced-lyrics — position audio réelle diffusée par la console.
     // Mémorisée avec son horodatage local pour interpoler entre deux messages.
     const onProgress = (p: { position_ms: number; is_paused?: boolean }): void => {
@@ -253,6 +290,7 @@ export function ScreenPage(): JSX.Element {
 
     return () => {
       events.forEach((ev) => socket.off(ev, trigger));
+      socket.off('track:start', onTrackStart);
       socket.off('track:progress', onProgress);
       socket.disconnect();
     };
