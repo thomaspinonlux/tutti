@@ -10,13 +10,19 @@ import WebKit
  * L'iPad rend lui-même la TV dans une seconde fenêtre → aucune latence réseau
  * côté écran joueurs (contrairement au /screen web qui interroge le serveur).
  *
- * ⚠️ Non compilable hors Xcode/iOS. La gestion des écrans externes est
- *    sensible à la version d'iOS (UIScreen classique vs UIWindowScene). Cette
- *    implémentation UIScreen couvre le cas courant ; à valider sur device et à
- *    adapter si besoin en scènes (iPadOS récent). Cf. native/README.md.
+ * fix/tv-freeze — armure anti-gel, deux mécanismes NATIFS (hors de la page,
+ * donc insensibles à sa mort) :
+ *  1. webViewWebContentProcessDidTerminate : iOS tue le processus de la
+ *     WebView TV sous pression mémoire → l'image reste figée à jamais si on
+ *     ne fait rien (c'était LE bug). On reconstruit la fenêtre immédiatement.
+ *  2. Chien de garde natif : toutes les 5 s on ping le JS de la vue TV
+ *     (evaluateJavaScript). 2 échecs consécutifs → reconstruction. Couvre les
+ *     gels que l'iOS ne signale pas (JS bloqué, page morte silencieusement).
+ *
+ * ⚠️ Non compilable hors Xcode/iOS. Cf. native/README.md.
  */
 @objc(TuttiExternalScreenPlugin)
-public class TuttiExternalScreenPlugin: CAPPlugin {
+public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
 
     // NB: on nomme la propriété `externalWebView` (pas `webView`) car CAPPlugin
     // expose déjà une propriété `webView` (la WebView Capacitor) → "ambiguous
@@ -24,6 +30,8 @@ public class TuttiExternalScreenPlugin: CAPPlugin {
     private var externalWindow: UIWindow?
     private var externalWebView: WKWebView?
     private var pendingURL: URL?
+    private var watchdogTimer: Timer?
+    private var pingFailures = 0
 
     public override func load() {
         NotificationCenter.default.addObserver(
@@ -70,8 +78,11 @@ public class TuttiExternalScreenPlugin: CAPPlugin {
         tearDown()
         let window = UIWindow(frame: screen.bounds)
         window.screen = screen
-        let web = WKWebView(frame: window.bounds)
+        let config = WKWebViewConfiguration()
+        config.allowsInlineMediaPlayback = true
+        let web = WKWebView(frame: window.bounds, configuration: config)
         web.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        web.navigationDelegate = self
         web.load(URLRequest(url: url))
         let controller = UIViewController()
         controller.view = web
@@ -79,12 +90,68 @@ public class TuttiExternalScreenPlugin: CAPPlugin {
         window.isHidden = false
         self.externalWindow = window
         self.externalWebView = web
+        startWatchdog()
     }
 
     private func tearDown() {
+        stopWatchdog()
+        externalWebView?.navigationDelegate = nil
         externalWebView = nil
         externalWindow?.isHidden = true
         externalWindow = nil
+    }
+
+    /// Reconstruit intégralement fenêtre + WebView sur l'écran externe courant.
+    private func rebuild(reason: String) {
+        CAPLog.print("TuttiExternalScreen: rebuild (\(reason))")
+        guard let url = pendingURL,
+              let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) else {
+            tearDown()
+            return
+        }
+        showWindow(on: screen, url: url)
+    }
+
+    // MARK: - Mécanisme 1 : mort du processus WebView (pression mémoire iOS)
+
+    public func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        DispatchQueue.main.async {
+            guard webView === self.externalWebView else { return }
+            self.rebuild(reason: "content process terminated")
+        }
+    }
+
+    // MARK: - Mécanisme 2 : chien de garde natif (ping JS toutes les 5 s)
+
+    private func startWatchdog() {
+        stopWatchdog()
+        pingFailures = 0
+        let timer = Timer(timeInterval: 5.0, repeats: true) { [weak self] _ in
+            self?.pingExternal()
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        watchdogTimer = timer
+    }
+
+    private func stopWatchdog() {
+        watchdogTimer?.invalidate()
+        watchdogTimer = nil
+        pingFailures = 0
+    }
+
+    private func pingExternal() {
+        guard let web = externalWebView else { return }
+        web.evaluateJavaScript("1") { [weak self] _, error in
+            guard let self = self else { return }
+            if error == nil {
+                self.pingFailures = 0
+                return
+            }
+            self.pingFailures += 1
+            if self.pingFailures >= 2 {
+                self.rebuild(reason: "watchdog ping failed ×\(self.pingFailures)")
+            }
+        }
     }
 
     @objc private func screenDidConnect() {

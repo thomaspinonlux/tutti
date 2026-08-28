@@ -177,8 +177,10 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         // La console la compare en continu au morceau attendu par le jeu :
         // divergence = resynchronisation automatique.
         var nowPlayingId = ""
-        if let entry = player.queue.currentEntry, case let .song(song) = entry.item {
-            nowPlayingId = song.id.rawValue
+        if let entry = player.queue.currentEntry, let item = entry.item {
+            if case let .song(song) = item {
+                nowPlayingId = song.id.rawValue
+            }
         }
         call.resolve([
             "isPlaying": isPlaying,

@@ -6,18 +6,32 @@
  * L'animateur garde la console sur l'iPad, les joueurs voient la TV — un seul
  * appareil, deux affichages.
  *
- * Sécurité : `supportsExternalPlayerScreen()` est faux hors iPad natif → le hook
- * est un no-op total sur web / desktop (aucun effet, aucun risque).
+ * fix/tv-freeze — SUPERVISION DEPUIS LA CONSOLE. Le chien de garde interne à
+ * la page TV ne peut rien si iOS tue/gèle la WebView externe (son JS meurt
+ * avec elle). La page TV interroge le serveur ~1×/s ; le serveur horodate
+ * chaque interrogation (route publique /screen-state/alive/:workspaceId). Ici,
+ * la CONSOLE vérifie ce signe de vie toutes les 5 s : TV muette ≥ 3 contrôles
+ * d'affilée → on re-`present()` l'écran externe, ce qui détruit et reconstruit
+ * intégralement la fenêtre TV (le plugin fait tearDown + recreate). La TV
+ * revit donc toute seule en ~15-20 s quoi qu'il arrive, sans toucher à l'iPad.
  *
- * Nuance honnête : la fenêtre externe charge l'URL /screen hébergée. Le gain
- * immédiat est opérationnel (plus besoin d'un 2ᵉ appareil / cast) ; elle
- * bénéficie déjà du correctif socket TV. Le rendu 100 % local (latence nulle)
- * demanderait de servir le bundle à la WebView externe — étape ultérieure.
+ * Sécurité : `supportsExternalPlayerScreen()` est faux hors iPad natif → le
+ * hook est un no-op total sur web / desktop (aucun effet, aucun risque).
  */
 
 import { useEffect } from 'react';
 import { supportsExternalPlayerScreen } from './platform.js';
 import { externalScreen } from './externalScreen.js';
+import { api } from './api.js';
+
+/** Contrôle du signe de vie toutes les 5 s. */
+const SUPERVISE_EVERY_MS = 5_000;
+/** TV considérée gelée après 3 contrôles muets d'affilée (~15 s). */
+const STALE_CHECKS_BEFORE_REVIVE = 3;
+/** Silence toléré par contrôle : la TV interroge ~1×/s, 12 s = vraiment morte. */
+const STALE_THRESHOLD_MS = 12_000;
+/** Après une relance, on laisse la TV redémarrer avant de rejuger. */
+const REVIVE_COOLDOWN_MS = 25_000;
 
 interface Options {
   /** Origine web hébergée à charger sur l'écran externe (ex: https://app.tutti…). */
@@ -31,13 +45,47 @@ interface Options {
 export function useExternalPlayerScreen({ webOrigin, workspaceId, active }: Options): void {
   useEffect(() => {
     if (!supportsExternalPlayerScreen() || !externalScreen.isAvailable()) return;
-    if (active && workspaceId) {
-      const url = `${webOrigin.replace(/\/$/, '')}/screen?workspace=${encodeURIComponent(workspaceId)}`;
-      void externalScreen.present(url);
-    } else {
+    if (!(active && workspaceId)) {
       void externalScreen.dismiss();
+      return () => {
+        void externalScreen.dismiss();
+      };
     }
+
+    const url = `${webOrigin.replace(/\/$/, '')}/screen?workspace=${encodeURIComponent(workspaceId)}`;
+    void externalScreen.present(url);
+
+    let staleChecks = 0;
+    let lastReviveAt = Date.now(); // le present() initial compte comme relance
+    const supervise = window.setInterval(() => {
+      void (async () => {
+        try {
+          const { last_seen_ms_ago } = await api<{ last_seen_ms_ago: number | null }>(
+            `/api/workspace/screen-state/alive/${encodeURIComponent(workspaceId)}`,
+          );
+          const alive = last_seen_ms_ago !== null && last_seen_ms_ago < STALE_THRESHOLD_MS;
+          if (alive) {
+            staleChecks = 0;
+            return;
+          }
+          staleChecks += 1;
+          if (
+            staleChecks >= STALE_CHECKS_BEFORE_REVIVE &&
+            Date.now() - lastReviveAt > REVIVE_COOLDOWN_MS
+          ) {
+            console.warn('[externalScreen] TV muette — relance de la fenêtre externe');
+            staleChecks = 0;
+            lastReviveAt = Date.now();
+            void externalScreen.present(url);
+          }
+        } catch {
+          // Serveur injoignable depuis la console : on ne juge pas la TV là-dessus.
+        }
+      })();
+    }, SUPERVISE_EVERY_MS);
+
     return () => {
+      window.clearInterval(supervise);
       void externalScreen.dismiss();
     };
   }, [webOrigin, workspaceId, active]);

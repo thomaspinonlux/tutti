@@ -35,6 +35,24 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 90
 
+    # feat/auto-testflight — DÉCLENCHEMENT AUTOMATIQUE sur push main quand la
+    # partie NATIVE change (plugins Swift, config Capacitor, ce fichier). Le
+    # site web, lui, se déploie par Vercel et l'app le charge en direct : un
+    # push purement frontend/backend ne déclenche PAS de build TestFlight.
+    # Le bouton « Start new build » manuel continue de marcher en plus.
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+      cancel_previous_builds: true
+    when:
+      changeset:
+        includes:
+          - 'native/**'
+          - 'codemagic.yaml'
+
     # Intégration App Store Connect (créée dans le dashboard Codemagic).
     # Fournit la clé API pour : signature auto, incrément de build, publication.
     integrations:

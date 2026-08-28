@@ -39,6 +39,18 @@ router.get(
   },
 );
 
+// fix/tv-supervision — SIGNE DE VIE de la TV. La page /screen interroge le
+// serveur ~1×/s : on horodate chaque interrogation par workspace. La CONSOLE
+// lit cet horodatage : si la TV s'est tue (WebView gelée par iOS, réseau
+// mort), la console la RELANCE elle-même (re-present de l'écran externe).
+const screenLastSeen = new Map<string, number>();
+
+router.get('/screen-state/alive/:workspaceId', (req: Request, res: Response): void => {
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  const last = screenLastSeen.get(req.params.workspaceId as string);
+  res.json({ last_seen_ms_ago: last ? Date.now() - last : null });
+});
+
 // ── GET /screen-state/:workspaceId (public, cross-browser TV) ─────────────
 // Exposé public sans auth pour permettre à un écran TV (ex: iPad bar) ouvert
 // dans un browser sans cookies admin de lire l'état du workspace via param URL.
@@ -49,6 +61,7 @@ router.get(
   '/screen-state/:workspaceId',
   async (req: Request<{ workspaceId: string }>, res: Response): Promise<void> => {
     try {
+      screenLastSeen.set(req.params.workspaceId as string, Date.now());
       const state = await computeScreenState(req.params.workspaceId);
       res.setHeader('Cache-Control', 'no-store, max-age=0');
       res.json(state);
