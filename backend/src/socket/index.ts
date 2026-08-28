@@ -35,6 +35,7 @@ import {
   type TrackAnswerPayload,
 } from '../lib/gameplayCore.js';
 import { getCumulativeScores } from '../lib/scores.js';
+import { isOriginAllowed } from '../lib/allowedOrigins.js';
 
 type SocketIdentity =
   | { kind: 'host'; userId: string; userEmail: string | null }
@@ -127,45 +128,12 @@ interface AuthedSocket extends Socket {
   identity?: SocketIdentity;
 }
 
-/**
- * CORS Socket.IO — même whitelist que l'API REST. Cf. server.ts.
- * On duplique ici car ce module est importé en premier par server.ts et on
- * évite l'import circulaire.
- */
-const STATIC_ALLOWED_ORIGINS = [
-  'https://tuttiparty.app',
-  'https://www.tuttiparty.app',
-  'https://tutti-brown.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  // Coques natives (Capacitor) — cf. server.ts. iOS = capacitor://localhost,
-  // Android = http(s)://localhost. Requis pour le Socket.IO en session native.
-  'capacitor://localhost',
-  'ionic://localhost',
-  'http://localhost',
-  'https://localhost',
-];
-
-// fix/native-origin-hostname — MÊME extension que server.ts : la coque iOS
-// peut servir la WebView sous `capacitor://tuttiparty.app` (server.hostname).
-// Cette liste est DUPLIQUÉE de server.ts (import circulaire) : l'oubli de ce
-// côté-ci laissait l'API accessible mais le Socket.IO en « Bad request » →
-// « Socket: websocket error » plein écran dans l'app native.
-for (const scheme of ['capacitor', 'ionic']) {
-  for (const host of ['tuttiparty.app', 'www.tuttiparty.app', 'app.tuttiparty']) {
-    STATIC_ALLOWED_ORIGINS.push(`${scheme}://${host}`);
-  }
-}
-const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
-const allowedOrigins = new Set([...STATIC_ALLOWED_ORIGINS, FRONTEND_URL]);
-
-function isOriginAllowed(origin: string | undefined): boolean {
-  if (!origin) return true;
-  if (allowedOrigins.has(origin)) return true;
-  if (/^https:\/\/tutti-[a-z0-9-]+\.vercel\.app$/.test(origin)) return true;
-  return false;
-}
-
+// refactor/single-cors-list — l'ancienne copie locale de la whitelist CORS
+// (« on duplique pour éviter l'import circulaire ») est remplacée par le
+// module partagé lib/allowedOrigins.ts, qui n'importe rien du backend et ne
+// crée donc AUCUN cycle. C'est cette duplication qui a produit le bug
+// « Socket: websocket error » de l'app native : une copie corrigée, pas
+// l'autre.
 let io: SocketIOServer | null = null;
 
 export function initSocketIO(httpServer: HttpServer): SocketIOServer {
