@@ -838,7 +838,7 @@ function RevealResultMain({
   return (
     <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-6 p-6 relative z-10">
       {/* Gauche — pochette dominante + infos */}
-      <section className="relative bg-[#15151d]/80 border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl flex flex-col p-6 lg:p-8 overflow-hidden min-h-[500px]">
+      <section className="relative bg-[#191922] border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] flex flex-col p-6 lg:p-8 overflow-hidden min-h-[500px]">
         {/* Haut : chip playlist (gauche) + MINI QR rejoindre en coin (droite) */}
         <div className="shrink-0 flex items-start justify-between gap-3">
           <span className="inline-flex items-center gap-2 font-mono text-xs sm:text-sm uppercase tracking-[0.2em] text-[#FF5C4D] bg-white/[0.06] border border-white/15 rounded-full px-4 py-1.5">
@@ -1010,7 +1010,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
       ) : (
         <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 p-6 relative z-10">
           {/* Center stage */}
-          <section className="relative bg-[#15151d]/80 border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl flex flex-col items-center justify-center p-8 overflow-hidden min-h-[500px]">
+          <section className="relative bg-[#191922] border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] flex flex-col items-center justify-center p-8 overflow-hidden min-h-[500px]">
             {!playingRound ? (
               <BetweenRoundsContent lastEnded={lastEnded} master={master} />
             ) : !currentTrack ? (
@@ -1130,7 +1130,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
 
       {/* Overlay PAUSE master */}
       {session.is_paused && (
-        <div className="fixed inset-0 z-30 bg-black/70 backdrop-blur-md flex items-center justify-center animate-fade-in">
+        <div className="fixed inset-0 z-30 bg-black/85 flex items-center justify-center animate-fade-in">
           <div className="rounded-[24px] border border-white/10 bg-[#15151d]/90 shadow-[0_24px_70px_rgba(0,0,0,0.6)] px-16 py-12 text-center">
             <p className="text-7xl mb-2">⏸</p>
             <h2 className="font-display text-4xl text-white">{t('screen.pauseTitle')}</h2>

@@ -69,6 +69,20 @@ export function ScreenPage(): JSX.Element {
   const idleStreakRef = useRef(0);
 
   // Auto-detect workspaceId via cookies Supabase si pas en param URL
+  // fix/tv-freeze — BATTEMENT DE COEUR pour le chien de garde NATIF.
+  // La page publie window.__tuttiBeat = Date.now() chaque seconde. Le plugin
+  // natif (iPad) le lit toutes les 4 s : battement arrêté ~8 s → il détruit et
+  // reconstruit la fenêtre TV. Détecte les gels que rien d'autre ne voit
+  // (timers suspendus par iOS, deadlock JS, boucle de rechargement).
+  useEffect(() => {
+    const w = window as unknown as { __tuttiBeat?: number };
+    w.__tuttiBeat = Date.now();
+    const beat = window.setInterval(() => {
+      w.__tuttiBeat = Date.now();
+    }, 1_000);
+    return () => window.clearInterval(beat);
+  }, []);
+
   useEffect(() => {
     if (workspaceParam) return;
     void getMe()

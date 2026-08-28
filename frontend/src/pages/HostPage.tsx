@@ -64,6 +64,7 @@ import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
 import { useAppleMusicPlayer } from '../lib/useAppleMusicPlayer.js';
 import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
 import { useExternalPlayerScreen } from '../lib/useExternalPlayerScreen.js';
+import { useSelectionBackgroundMusic } from '../lib/useSelectionBackgroundMusic.js';
 import { isCapacitorNative, getShareableOrigin } from '../lib/platform.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
 import { unlockAudioSync } from '../lib/audioUnlock.js';
@@ -677,6 +678,15 @@ function HostPageInner(): JSX.Element {
 
   const effectivePhase: Phase =
     forcedSelection && phase === 'intermission' ? 'roundSelection' : phase;
+
+  // feat/attente-musique-intermission — la musique d'attente joue dès que
+  // l'animateur clique "Terminer la manche" (mini-podium) ET pendant la grille
+  // de sélection, en continu, sans coupure entre les deux écrans. Elle
+  // s'arrête au lancement d'un morceau (phase roundPlaying). Le hook vivait
+  // dans RoundSelectionScreen (sélection uniquement) → remonté ici.
+  useSelectionBackgroundMusic({
+    enabled: effectivePhase === 'intermission' || effectivePhase === 'roundSelection',
+  });
 
   // feat/tv-join-qr-codes (D) — toggle overlay QR géant sur la TV pendant la
   // partie. Flag piloté par l'animateur, lu par la TV via screen-state.

@@ -27,7 +27,7 @@ import { LyricsOverlay } from '../../components/screen/LyricsOverlay.js';
 
 const CORAL = '#FF5C4D';
 const PANEL =
-  'rounded-[20px] bg-[#15151d]/80 backdrop-blur-xl border border-white/[0.07] shadow-[0_24px_70px_rgba(0,0,0,0.55)]';
+  'rounded-[20px] bg-[#191922] border border-white/[0.07] shadow-[0_24px_70px_rgba(0,0,0,0.55)]';
 
 // Keyframes locaux à la TV (préfixe tv-) — n'affectent pas la console.
 const TV_STYLE = `
@@ -614,7 +614,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
             ) : (
               <>
                 {isPhase1 && (
-                  <div className="absolute left-0 top-0 flex items-center gap-2 rounded-2xl bg-white/[0.06] px-4 py-3 text-sm font-bold text-white ring-1 ring-white/10 backdrop-blur-md">
+                  <div className="absolute left-0 top-0 flex items-center gap-2 rounded-2xl bg-[#23232e] px-4 py-3 text-sm font-bold text-white ring-1 ring-white/10">
                     <span
                       aria-hidden
                       className="h-3 w-3 rounded-full animate-pulse-buzz"
@@ -660,7 +660,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
 
       {/* Overlay PAUSE */}
       {session.is_paused && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/85 animate-fade-in">
           <div className={`${PANEL} px-16 py-12 text-center`}>
             <p className="text-7xl">⏸</p>
             <h2 className="mt-3 font-display text-5xl text-white">{t('screen.pauseTitle')}</h2>

@@ -121,13 +121,24 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
         }
     }
 
-    // MARK: - Mécanisme 2 : chien de garde natif (ping JS toutes les 5 s)
+    // MARK: - Mécanisme 2 : chien de garde natif par BATTEMENT DE COEUR
+    //
+    // La page /screen écrit window.__tuttiBeat = Date.now() ~1×/s. On le lit
+    // toutes les 4 s : s'il ne bouge plus sur 2 lectures (~8 s), la page est
+    // morte MEME si le moteur JS répond (timers suspendus par iOS, boucle de
+    // rechargement, deadlock) → reconstruction. Un simple eval("1") raterait
+    // ces cas : il répond tant que le processus vit.
+    // Grâce de démarrage : tant que __tuttiBeat n'existe pas (page en cours de
+    // chargement), on tolère jusqu'à 5 lectures (~20 s) avant de reconstruire.
+
+    private var lastBeat: Double = -1
+    private var stalledChecks = 0
+    private var noBeatChecks = 0
 
     private func startWatchdog() {
         stopWatchdog()
-        pingFailures = 0
-        let timer = Timer(timeInterval: 5.0, repeats: true) { [weak self] _ in
-            self?.pingExternal()
+        let timer = Timer(timeInterval: 4.0, repeats: true) { [weak self] _ in
+            self?.checkHeartbeat()
         }
         RunLoop.main.add(timer, forMode: .common)
         watchdogTimer = timer
@@ -137,19 +148,43 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
         watchdogTimer?.invalidate()
         watchdogTimer = nil
         pingFailures = 0
+        lastBeat = -1
+        stalledChecks = 0
+        noBeatChecks = 0
     }
 
-    private func pingExternal() {
+    private func checkHeartbeat() {
         guard let web = externalWebView else { return }
-        web.evaluateJavaScript("1") { [weak self] _, error in
+        web.evaluateJavaScript("window.__tuttiBeat || 0") { [weak self] result, error in
             guard let self = self else { return }
-            if error == nil {
-                self.pingFailures = 0
+            if error != nil {
+                // Moteur injoignable (processus mort sans notification) :
+                // 2 échecs d'affilée → reconstruction.
+                self.pingFailures += 1
+                if self.pingFailures >= 2 {
+                    self.rebuild(reason: "eval failed ×\(self.pingFailures)")
+                }
                 return
             }
-            self.pingFailures += 1
-            if self.pingFailures >= 2 {
-                self.rebuild(reason: "watchdog ping failed ×\(self.pingFailures)")
+            self.pingFailures = 0
+            let beat = (result as? Double) ?? ((result as? NSNumber)?.doubleValue ?? 0)
+            if beat <= 0 {
+                // Page pas encore prête (pas de battement publié).
+                self.noBeatChecks += 1
+                if self.noBeatChecks >= 5 {
+                    self.rebuild(reason: "page sans battement (~20 s)")
+                }
+                return
+            }
+            self.noBeatChecks = 0
+            if beat == self.lastBeat {
+                self.stalledChecks += 1
+                if self.stalledChecks >= 2 {
+                    self.rebuild(reason: "battement arrêté (~8 s)")
+                }
+            } else {
+                self.lastBeat = beat
+                self.stalledChecks = 0
             }
         }
     }

@@ -28,7 +28,6 @@ import { ThemeLevelCards } from './library/ThemeLevelCards.js';
 import { buildThemeSections, flattenThemes } from '../../lib/officialThemes.js';
 import { JoinQrCorner } from './JoinQrCorner.js';
 import { useFocusedPlaylistSync } from '../../lib/useFocusedPlaylistSync.js';
-import { useSelectionBackgroundMusic } from '../../lib/useSelectionBackgroundMusic.js';
 import { getProposals, type ProposalSummaryRow } from '../../lib/playlistProposals.js';
 
 // F1 (feat/playlist-search-and-host-improvements) — normalize pour
@@ -178,7 +177,8 @@ export function RoundSelectionScreen({
   // feat/selection-ui-mirroring (item 4) — musique d'ambiance pendant toute la
   // sélection (joue au montage du composant, stop au choix d'une playlist ou à
   // la sortie = unmount). No-op tant que VITE_SELECTION_MUSIC_URL n'est pas set.
-  useSelectionBackgroundMusic({ enabled: true });
+  // feat/attente-musique-intermission — musique d'attente remontée dans
+  // HostPage (couvre intermission + sélection sans double lecteur).
   const [playlists, setPlaylists] = useState<Playlist[] | null>(null);
   // feat/host-playlist-selection-redesign — playlists groupées par catégorie
   // (PR 2/4 #59 + PR 2/4). Remplace l'ancien grid `official` plat.
