@@ -2214,7 +2214,7 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
     setLoading(true);
     setError(null);
     void import('../lib/playlistProposals.js')
-      .then(({ getLibraryCatalogForSession }) => getLibraryCatalogForSession(props.shortCode))
+      .then(({ getLibraryCatalogForSession }) => getLibraryCatalogForSession(props.shortCode, 400))
       .then((rows) => {
         const isFr = i18n.language?.toLowerCase().startsWith('fr');
         setCatalog(

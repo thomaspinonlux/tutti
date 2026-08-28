@@ -521,7 +521,12 @@
     "roleAnimatorPlaying": "Animateur joueur",
     "rolePlayerHint": "Joue, ne pilote pas",
     "roleAnimatorFullHint": "Pilote et voit les réponses en avance",
-    "roleAnimatorPlayingHint": "Pilote mais ne voit pas les réponses avant le reveal (peut jouer)"
+    "roleAnimatorPlayingHint": "Pilote mais ne voit pas les réponses avant le reveal (peut jouer)",
+    "proposals": {
+      "title": "Playlists demandées par les joueurs",
+      "empty": "Aucune demande pour le moment",
+      "votes": "demande(s)"
+    }
   },
   "tv": {
     "title": "Rejoindre l'écran TV",
@@ -654,7 +659,7 @@
     "youAreIn": "Tu es dans la partie",
     "waitingMessage": "Patience, ça va démarrer dès que l'animateur lance la partie.",
     "participantsConnected": "joueurs connectés",
-    "proposePlaylistCta": "Proposer une playlist",
+    "proposePlaylistCta": "Voir les playlists",
     "proposePlaylistTitle": "Quelle playlist te tente ?",
     "proposePlaylistSearch": "Rechercher…",
     "proposePlaylistEmpty": "Aucune playlist ne correspond.",

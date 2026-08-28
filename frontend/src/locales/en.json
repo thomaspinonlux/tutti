@@ -521,7 +521,12 @@
     "roleAnimatorPlaying": "Playing animator",
     "rolePlayerHint": "Plays, does not host",
     "roleAnimatorFullHint": "Hosts and sees answers in advance",
-    "roleAnimatorPlayingHint": "Hosts but doesn't see answers before reveal (can play)"
+    "roleAnimatorPlayingHint": "Hosts but doesn't see answers before reveal (can play)",
+    "proposals": {
+      "title": "Playlists requested by players",
+      "empty": "No requests yet",
+      "votes": "request(s)"
+    }
   },
   "tv": {
     "title": "Join the TV screen",
@@ -654,7 +659,7 @@
     "youAreIn": "You're in",
     "waitingMessage": "Hang tight — the host will start the game soon.",
     "participantsConnected": "players connected",
-    "proposePlaylistCta": "Suggest a playlist",
+    "proposePlaylistCta": "Browse playlists",
     "proposePlaylistTitle": "Which playlist do you fancy?",
     "proposePlaylistSearch": "Search…",
     "proposePlaylistEmpty": "No matching playlist.",

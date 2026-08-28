@@ -29,6 +29,7 @@ import { buildThemeSections, flattenThemes } from '../../lib/officialThemes.js';
 import { JoinQrCorner } from './JoinQrCorner.js';
 import { useFocusedPlaylistSync } from '../../lib/useFocusedPlaylistSync.js';
 import { useSelectionBackgroundMusic } from '../../lib/useSelectionBackgroundMusic.js';
+import { getProposals, type ProposalSummaryRow } from '../../lib/playlistProposals.js';
 
 // F1 (feat/playlist-search-and-host-improvements) — normalize pour
 // matcher insensible casse + accents. "été" → "ete", "Été" → "ete".
@@ -82,6 +83,59 @@ interface Props {
   loading?: boolean;
   /** feat/tv-join-qr-codes — short_code session → QR de rejoindre en coin. */
   joinCode?: string;
+  /** feat/player-browse-library — id session pour afficher les playlists
+   *  demandées par les joueurs (💡 sur leur téléphone). Optionnel : sans id,
+   *  le panneau n'apparaît pas. */
+  sessionId?: string;
+}
+
+/**
+ * feat/player-browse-library — demandes des joueurs (bouton « Voir les
+ * playlists » sur leur téléphone → 💡). Rafraîchi au montage puis toutes les
+ * 20 s : le POST joueur broadcast `proposal:received`, mais cet écran n'a pas
+ * le socket sous la main — le polling léger suffit pour un écran de sélection.
+ */
+function PlayerProposalsPanel({ sessionId }: { sessionId: string }): JSX.Element | null {
+  const { t } = useTranslation();
+  const [rows, setRows] = useState<ProposalSummaryRow[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const load = (): void => {
+      getProposals(sessionId)
+        .then((r) => {
+          if (!cancelled) setRows(r.summary);
+        })
+        .catch(() => {
+          /* silencieux : panneau optionnel, jamais bloquant */
+        });
+    };
+    load();
+    const id = window.setInterval(load, 20_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [sessionId]);
+  if (!rows || rows.length === 0) return null;
+  return (
+    <div className="mb-4 rounded-2xl border border-white/15 bg-white/[0.04] p-4">
+      <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-white/50 mb-2">
+        💡 {t('host.proposals.title')}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {rows.slice(0, 10).map((r) => (
+          <span
+            key={r.official_playlist_id}
+            title={r.participants.join(', ')}
+            className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] px-3 py-1.5 text-sm text-white/85"
+          >
+            {r.playlist_name}
+            <span className="font-mono text-xs font-bold text-spritz">×{r.count}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function RoundSelectionScreen({
@@ -94,6 +148,7 @@ export function RoundSelectionScreen({
   onEndSession,
   loading,
   joinCode,
+  sessionId,
   appleLibraryAvailable,
 }: Props): JSX.Element {
   const { t } = useTranslation();
@@ -261,6 +316,11 @@ export function RoundSelectionScreen({
           </Button>
         )}
       </header>
+
+      {/* feat/player-browse-library — demandes 💡 des joueurs, au-dessus de la
+          bibliothèque : l'animateur voit les playlists les plus réclamées au
+          moment où il choisit la prochaine manche. */}
+      {sessionId && <PlayerProposalsPanel sessionId={sessionId} />}
 
       {/* F1 — search input partagé entre les 2 onglets */}
       <div className="mb-3">

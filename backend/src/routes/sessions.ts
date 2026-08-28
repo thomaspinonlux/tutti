@@ -554,11 +554,18 @@ router.get(
         return;
       }
       // Catalogue public : visibility public, ordered by updated_at.
-      // Limit à 30 pour le carrousel TV (UI plus light, plus visuel).
+      // Limit 30 par défaut (carrousel TV). feat/player-browse-library — la
+      // modale joueur « Voir les playlists » demande ?limit=400 pour parcourir
+      // TOUTE la bibliothèque officielle (jamais les playlists perso : cette
+      // route ne lit que official_playlists).
+      const rawLimit = Number(req.query.limit);
+      const take = Number.isFinite(rawLimit)
+        ? Math.min(Math.max(Math.trunc(rawLimit), 1), 400)
+        : 30;
       const playlists = await prisma.officialPlaylist.findMany({
         where: { visibility: 'public' },
         orderBy: { updated_at: 'desc' },
-        take: 30,
+        take,
         include: { _count: { select: { tracks: true } } },
       });
       res.json({

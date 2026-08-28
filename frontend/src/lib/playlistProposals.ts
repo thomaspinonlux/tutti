@@ -37,8 +37,9 @@ const apiBase = (): string =>
  */
 export async function getLibraryCatalogForSession(
   shortCode: string,
+  limit?: number,
 ): Promise<LibraryCatalogPlaylist[]> {
-  const url = `${apiBase()}/api/sessions/by-code/${encodeURIComponent(shortCode)}/library-playlists`;
+  const url = `${apiBase()}/api/sessions/by-code/${encodeURIComponent(shortCode)}/library-playlists${limit ? `?limit=${limit}` : ''}`;
   const res = await fetch(url);
   if (!res.ok) {
     const text = await res.text().catch(() => '');

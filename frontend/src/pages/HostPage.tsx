@@ -2178,6 +2178,7 @@ function HostPageInner(): JSX.Element {
                 onEndSession={handleEndSession}
                 loading={busy}
                 joinCode={session.short_code}
+                sessionId={session.id}
               />
             )}
 
