@@ -23,6 +23,14 @@ interface Options {
   isPaused: boolean;
   /** Hook désactivé si false (ex : round pas en PLAYING, autre device actif). */
   enabled?: boolean;
+  /**
+   * feat/next-track-preload — apple_music_id du MORCEAU SUIVANT du tirage
+   * (canal privilégié track:answer). Quand présent, il est mis en file
+   * d'attente du lecteur PENDANT le morceau courant ; au changement de piste,
+   * si le nouveau morceau est celui préchargé → bascule instantanée
+   * (playPrepared) au lieu d'un chargement complet.
+   */
+  nextPreloadId?: string | null;
 }
 
 export function useAppleMusicAudioSync({
@@ -30,10 +38,12 @@ export function useAppleMusicAudioSync({
   currentTrack,
   isPaused,
   enabled = true,
+  nextPreloadId = null,
 }: Options): void {
   const prevTrackIdRef = useRef<string | null>(null);
   const prevStartedAtRef = useRef<string | null>(null);
   const prevIsPausedRef = useRef<boolean>(false);
+  const lastPreparedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!enabled) {
@@ -82,9 +92,15 @@ export function useAppleMusicAudioSync({
     const trackIdChanged = trackId !== prevTrackIdRef.current;
     const startedAtChanged = startedAt !== prevStartedAtRef.current;
 
-    // Cas 4 : nouveau track ou restart (started_at change) → play
+    // Cas 4 : nouveau track → bascule INSTANTANÉE si préchargé, sinon play.
+    // Restart du même track (started_at change) → toujours un play complet.
     if (trackIdChanged || startedAtChanged) {
-      void apple.play(currentTrack.provider_track_id);
+      const target = currentTrack.provider_track_id;
+      void (async () => {
+        const instant = trackIdChanged && (await apple.playPrepared(target));
+        if (!instant) await apple.play(target);
+        lastPreparedRef.current = null;
+      })();
       prevTrackIdRef.current = trackId;
       prevStartedAtRef.current = startedAt;
       prevIsPausedRef.current = isPaused;
@@ -97,6 +113,14 @@ export function useAppleMusicAudioSync({
       else void apple.resume();
       prevIsPausedRef.current = isPaused;
     }
+
+    // Cas 6 — feat/next-track-preload : le suivant est connu et pas encore en
+    // file → on le précharge maintenant, pendant que le courant joue.
+    if (nextPreloadId && lastPreparedRef.current !== nextPreloadId) {
+      void apple.prepareNext(nextPreloadId).then((ok) => {
+        if (ok) lastPreparedRef.current = nextPreloadId;
+      });
+    }
   }, [
     enabled,
     apple,
@@ -108,5 +132,6 @@ export function useAppleMusicAudioSync({
     currentTrack?.provider,
     currentTrack?.provider_track_id,
     isPaused,
+    nextPreloadId,
   ]);
 }

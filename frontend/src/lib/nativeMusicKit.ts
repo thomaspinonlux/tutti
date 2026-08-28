@@ -13,6 +13,9 @@ interface NativeMusicKitBridge {
   authorize(): Promise<{ authorized: boolean }>;
   getUserToken(options: { developerToken: string }): Promise<{ userToken: string }>;
   play(options: { catalogId: string }): Promise<{ ok: boolean }>;
+  /** feat/next-track-preload — absents des binaires < build 34 : appels gardés try/catch. */
+  queueNext?(options: { catalogId: string }): Promise<{ ok: boolean }>;
+  skipToNext?(): Promise<{ ok: boolean }>;
   pause(): Promise<void>;
   resume(): Promise<void>;
   seek(options: { ms: number }): Promise<void>;
@@ -57,5 +60,23 @@ export const nativeMusicKit = {
     return (
       bridge()?.getStatus() ?? Promise.resolve({ isPlaying: false, positionMs: 0, durationMs: 0 })
     );
+  },
+  /** feat/next-track-preload — précharge le morceau suivant. false si binaire trop ancien. */
+  async queueNext(catalogId: string): Promise<boolean> {
+    try {
+      const r = await bridge()?.queueNext?.({ catalogId });
+      return r?.ok === true;
+    } catch {
+      return false;
+    }
+  },
+  /** feat/next-track-preload — saute sur le morceau préchargé. false → fallback play(). */
+  async skipToNext(): Promise<boolean> {
+    try {
+      const r = await bridge()?.skipToNext?.();
+      return r?.ok === true;
+    } catch {
+      return false;
+    }
   },
 };

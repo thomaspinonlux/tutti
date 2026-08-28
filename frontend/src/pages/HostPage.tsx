@@ -236,6 +236,12 @@ function HostPageInner(): JSX.Element {
   const [expressModalOpen, setExpressModalOpen] = useState(false);
   const [forcedSelection, setForcedSelection] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
+  // feat/next-track-preload — morceau SUIVANT du tirage (canal privilégié) :
+  // préchargé dans le lecteur pendant le morceau courant → « Suivant » instantané.
+  const [nextPreload, setNextPreload] = useState<{
+    provider: string;
+    provider_track_id: string;
+  } | null>(null);
   // recentBuzzes : conservé pour l'ancien BuzzFeed du mode A. Il sera
   // alimenté par track:correct_answer (mappé en BuzzResult-like) en commit
   // ultérieur — pour l'instant vide, le BuzzFeed restera "Pas encore de buzz".
@@ -463,7 +469,10 @@ function HostPageInner(): JSX.Element {
             album: string | null;
             year: number | null;
             cover_url: string | null;
+            /** feat/next-track-preload — morceau suivant du tirage (privilégié). */
+            next_preload?: { provider: string; provider_track_id: string } | null;
           }) => {
+            setNextPreload(a.next_preload ?? null);
             setCurrentTrack((prev) =>
               prev && prev.round_id === a.round_id && prev.track_index === a.track_index
                 ? {
@@ -900,6 +909,9 @@ function HostPageInner(): JSX.Element {
     currentTrack,
     isPaused: session?.is_paused ?? false,
     enabled: appleConnected && audioProvider === 'apple_music' && phase === 'roundPlaying',
+    // feat/next-track-preload — uniquement si le suivant est aussi un titre
+    // Apple (pas de préchargement croisé Apple↔YouTube).
+    nextPreloadId: nextPreload?.provider === 'apple_music' ? nextPreload.provider_track_id : null,
   });
 
   // feat/native (phase 2) — sur iPad natif uniquement, pousse l'écran joueurs
@@ -935,6 +947,22 @@ function HostPageInner(): JSX.Element {
     prevPhaseRef.current = phase;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
+
+  // feat/next-track-preload — GARDE-FOU : un titre préchargé en file ferait
+  // enchaîner le lecteur TOUT SEUL à la fin naturelle du morceau courant (le
+  // son de la prochaine réponse fuirait). On met en pause ~500 ms avant la fin.
+  const endGuardTrackRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!currentTrack || currentTrack.provider !== 'apple_music') return;
+    const dur = apple.durationMs;
+    const pos = apple.positionMs;
+    if (!dur || dur < 2000) return;
+    if (pos >= dur - 500 && endGuardTrackRef.current !== currentTrack.track_id) {
+      endGuardTrackRef.current = currentTrack.track_id;
+      void apple.pause();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apple.positionMs, apple.durationMs, currentTrack?.track_id, currentTrack?.provider]);
 
   // Position/durée = lecteur LOCAL de la console (elle joue toujours le son).
   const isYouTubeTrack = currentTrack?.provider === 'youtube';

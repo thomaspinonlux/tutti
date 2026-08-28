@@ -62,6 +62,10 @@ export interface UseAppleMusicPlayerResult {
   durationMs: number;
   /** Joue un morceau par son catalog id Apple Music. */
   play: (catalogId: string) => Promise<boolean>;
+  /** feat/next-track-preload — met le morceau SUIVANT en tampon pendant la lecture. */
+  prepareNext: (catalogId: string) => Promise<boolean>;
+  /** feat/next-track-preload — bascule instantanée sur le morceau préchargé. */
+  playPrepared: (catalogId: string) => Promise<boolean>;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
   seek: (ms: number) => Promise<void>;
@@ -108,6 +112,9 @@ export function useAppleMusicPlayer({
   const musicRef = useRef<MusicKitInstance | null>(null);
   // Dernier morceau demandé — rejoué par unblockAudio() depuis un geste frais.
   const lastCatalogIdRef = useRef<string | null>(null);
+  // feat/next-track-preload — id du morceau actuellement PRÉCHARGÉ dans la
+  // file du lecteur (web : setQueue/playLater ; natif : queueNext Swift).
+  const preparedNextRef = useRef<string | null>(null);
   // Vérifie 1,5 s après play() que la lecture a bien démarré (sinon → bloqué).
   const unlockCheckRef = useRef<number | null>(null);
   const enabledRef = useRef(enabled);
@@ -274,6 +281,7 @@ export function useAppleMusicPlayer({
           return false;
         }
         const r = await nativeMusicKit.play(catalogId);
+        preparedNextRef.current = null; // nouvelle file → l'ancien préchargé est perdu
         if (!r.ok) {
           setAudioBlocked(true);
           return false;
@@ -295,6 +303,7 @@ export function useAppleMusicPlayer({
         return false;
       }
       try {
+        preparedNextRef.current = null; // nouvelle file → l'ancien préchargé est perdu
         await music.setQueue({ song: catalogId });
         await music.play();
         // La lecture peut échouer silencieusement (autoplay policy) sans throw :
@@ -312,6 +321,55 @@ export function useAppleMusicPlayer({
     },
     [scheduleUnlockCheck],
   );
+
+  /**
+   * feat/next-track-preload — met le morceau SUIVANT en file d'attente du
+   * lecteur PENDANT le morceau courant. Le lecteur le met en tampon : le
+   * moment venu, playPrepared() démarre quasi instantanément.
+   * Best-effort : false = pas préchargé (binaire natif trop ancien, API web
+   * absente…) — le flux normal play() reste le repli, rien ne casse.
+   */
+  const prepareNext = useCallback(async (catalogId: string): Promise<boolean> => {
+    if (preparedNextRef.current === catalogId) return true;
+    if (useNativeRef.current) {
+      const ok = await nativeMusicKit.queueNext(catalogId);
+      if (ok) preparedNextRef.current = catalogId;
+      return ok;
+    }
+    const music = musicRef.current;
+    if (!music) return false;
+    try {
+      // MusicKit JS : ajoute en fin de file sans toucher à la lecture en cours.
+      await music.playLater({ songs: [catalogId] });
+      preparedNextRef.current = catalogId;
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  /**
+   * feat/next-track-preload — démarre le morceau attendu s'il est déjà
+   * préchargé (saut de file instantané). false → l'appelant fait play().
+   */
+  const playPrepared = useCallback(async (catalogId: string): Promise<boolean> => {
+    if (preparedNextRef.current !== catalogId) return false;
+    preparedNextRef.current = null;
+    lastCatalogIdRef.current = catalogId;
+    if (useNativeRef.current) {
+      return nativeMusicKit.skipToNext();
+    }
+    const music = musicRef.current;
+    if (!music) return false;
+    try {
+      await music.skipToNextItem();
+      if (!music.isPlaying) await music.play();
+      scheduleUnlockCheck();
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
 
   const pause = useCallback(async (): Promise<void> => {
     if (useNativeRef.current) {
@@ -471,6 +529,8 @@ export function useAppleMusicPlayer({
     resume,
     seek,
     setVolume,
+    prepareNext,
+    playPrepared,
     activate,
     audioBlocked,
     unblockAudio,

@@ -12,6 +12,10 @@ export interface MusicKitSetQueueOptions {
   songs?: string[];
 }
 export interface MusicKitInstance {
+  /** feat/next-track-preload — ajoute des titres en fin de file sans couper la lecture. */
+  playLater(descriptor: { songs: string[] }): Promise<void>;
+  /** feat/next-track-preload — passe à l'entrée suivante de la file (préchargée). */
+  skipToNextItem(): Promise<void>;
   isAuthorized: boolean;
   volume: number;
   currentPlaybackTime: number;

@@ -68,6 +68,13 @@ export interface TrackAnswerPayload {
   round_id: string;
   track_index: number;
   phase: GameTrackPhase;
+  /**
+   * feat/next-track-preload — identité du MORCEAU SUIVANT du tirage, pour que
+   * la console le PRÉCHARGE pendant le morceau courant (démarrage instantané
+   * au « Suivant »). CANAL PRIVILÉGIÉ UNIQUEMENT (host + ANIMATOR_FULL) : cette
+   * info trahit la prochaine réponse, elle ne passe JAMAIS dans l'état public.
+   */
+  next_preload?: { provider: string; provider_track_id: string } | null;
   artist: string;
   title: string;
   album: string | null;
@@ -197,6 +204,20 @@ export async function buildAndBroadcastTrack(
   if (!playlistTrack) return null;
   const track = playlistTrack.track;
 
+  // feat/next-track-preload — identité du morceau SUIVANT du tirage (s'il
+  // existe), poussée sur le canal privilégié pour que la console mette le
+  // titre en file d'attente du lecteur pendant le morceau courant.
+  const nextTargetId = selected[trackIndex + 1] ?? null;
+  const nextPlaylistTrack = nextTargetId
+    ? round.playlist.playlist_tracks.find((pt) => pt.track.id === nextTargetId)
+    : undefined;
+  const nextPreload = nextPlaylistTrack
+    ? {
+        provider: nextPlaylistTrack.track.provider,
+        provider_track_id: nextPlaylistTrack.track.provider_track_id,
+      }
+    : null;
+
   // feat/synced-lyrics — des paroles vérifiées existent-elles pour ce morceau ?
   // Simple booléen : le TEXTE n'est jamais dans l'état (il trahirait la
   // réponse). Il n'est servi qu'après révélation, par la route dédiée.
@@ -257,7 +278,7 @@ export async function buildAndBroadcastTrack(
   // ANTI-TRICHE — le broadcast public ne porte JAMAIS la réponse en phase1.
   // La réponse part uniquement sur le canal privilégié (host + ANIMATOR_FULL).
   broadcastToSession(sessionId, 'track:start', { state: stripTrackAnswer(state) });
-  emitTrackAnswer(sessionId, trackAnswerFromState(state));
+  emitTrackAnswer(sessionId, { ...trackAnswerFromState(state), next_preload: nextPreload });
   // NB : on retourne le state COMPLET. Les routes mode B (sessionMaster) qui le
   // renvoient en HTTP doivent le filtrer via trackStateForRole(req.master.role).
   return state;

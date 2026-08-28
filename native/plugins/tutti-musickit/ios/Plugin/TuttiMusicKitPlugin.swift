@@ -22,6 +22,18 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     private let player = ApplicationMusicPlayer.shared
     /// Durée du morceau courant (s), mémorisée au play() pour getStatus().
     private var currentDurationSec: Double = 0
+    /// feat/next-track-preload — durée du morceau PRÉCHARGÉ (prochain de la
+    /// file), promue dans currentDurationSec au skipToNext().
+    private var nextDurationSec: Double = 0
+
+    /// Fetch d'un Song du catalogue par id. Factorisé play/queueNext.
+    private func fetchSong(_ catalogId: String) async throws -> Song? {
+        var request = MusicCatalogResourceRequest<Song>(
+            matching: \.id, equalTo: MusicItemID(catalogId))
+        request.limit = 1
+        let response = try await request.response()
+        return response.items.first
+    }
 
     @objc func authorize(_ call: CAPPluginCall) {
         Task {
@@ -74,20 +86,59 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         }
         Task {
             do {
-                var request = MusicCatalogResourceRequest<Song>(
-                    matching: \.id, equalTo: MusicItemID(catalogId))
-                request.limit = 1
-                let response = try await request.response()
-                guard let song = response.items.first else {
+                guard let song = try await self.fetchSong(catalogId) else {
                     call.reject("Morceau introuvable pour l'id \(catalogId)")
                     return
                 }
                 self.currentDurationSec = song.duration ?? 0
+                self.nextDurationSec = 0
                 self.player.queue = [song]
                 try await self.player.play()
                 call.resolve(["ok": true])
             } catch {
                 call.reject("Lecture échouée : \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /**
+     * feat/next-track-preload — ajoute le morceau SUIVANT en file d'attente
+     * pendant que le courant joue : ApplicationMusicPlayer le met en tampon,
+     * et skipToNext() démarre alors quasi instantanément.
+     */
+    @objc func queueNext(_ call: CAPPluginCall) {
+        guard let catalogId = call.getString("catalogId") else {
+            call.reject("catalogId requis")
+            return
+        }
+        Task {
+            do {
+                guard let song = try await self.fetchSong(catalogId) else {
+                    call.reject("Morceau introuvable pour l'id \(catalogId)")
+                    return
+                }
+                try await self.player.queue.insert(song, position: .tail)
+                self.nextDurationSec = song.duration ?? 0
+                call.resolve(["ok": true])
+            } catch {
+                call.reject("File d'attente échouée : \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /** feat/next-track-preload — saute sur le morceau préchargé (instantané). */
+    @objc func skipToNext(_ call: CAPPluginCall) {
+        Task {
+            do {
+                try await self.player.skipToNextEntry()
+                try await self.player.play()
+                if self.nextDurationSec > 0 {
+                    self.currentDurationSec = self.nextDurationSec
+                    self.nextDurationSec = 0
+                }
+                call.resolve(["ok": true])
+            } catch {
+                call.reject("Saut échoué : \(error.localizedDescription)")
             }
         }
     }
