@@ -20,7 +20,12 @@ interface NativeMusicKitBridge {
   resume(): Promise<void>;
   seek(options: { ms: number }): Promise<void>;
   setVolume(options: { value: number }): Promise<void>;
-  getStatus(): Promise<{ isPlaying: boolean; positionMs: number; durationMs: number }>;
+  getStatus(): Promise<{
+    isPlaying: boolean;
+    positionMs: number;
+    durationMs: number;
+    nowPlayingId?: string;
+  }>;
 }
 
 function bridge(): NativeMusicKitBridge | null {
@@ -56,7 +61,12 @@ export const nativeMusicKit = {
   setVolume(value: number): Promise<void> {
     return bridge()?.setVolume({ value }) ?? Promise.resolve();
   },
-  getStatus(): Promise<{ isPlaying: boolean; positionMs: number; durationMs: number }> {
+  getStatus(): Promise<{
+    isPlaying: boolean;
+    positionMs: number;
+    durationMs: number;
+    nowPlayingId?: string;
+  }> {
     return (
       bridge()?.getStatus() ?? Promise.resolve({ isPlaying: false, positionMs: 0, durationMs: 0 })
     );

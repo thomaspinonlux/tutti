@@ -20,7 +20,12 @@ export interface TuttiMusicKitPlugin {
   /** Volume 0..1 (best-effort — ApplicationMusicPlayer suit le volume système). */
   setVolume(options: { value: number }): Promise<void>;
   /** État courant pour l'interpolation UI (position / lecture). */
-  getStatus(): Promise<{ isPlaying: boolean; positionMs: number; durationMs: number }>;
+  getStatus(): Promise<{
+    isPlaying: boolean;
+    positionMs: number;
+    durationMs: number;
+    nowPlayingId?: string;
+  }>;
   /** feat/next-track-preload — met le morceau SUIVANT en tampon pendant la lecture. */
   queueNext(options: { catalogId: string }): Promise<{ ok: boolean }>;
   /** feat/next-track-preload — saute sur le morceau préchargé (démarrage instantané). */

@@ -173,10 +173,18 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     @objc func getStatus(_ call: CAPPluginCall) {
         let isPlaying = player.state.playbackStatus == .playing
+        // fix/live-sync-check — identité du morceau RÉELLEMENT en lecture.
+        // La console la compare en continu au morceau attendu par le jeu :
+        // divergence = resynchronisation automatique.
+        var nowPlayingId = ""
+        if let entry = player.queue.currentEntry, case let .song(song) = entry.item {
+            nowPlayingId = song.id.rawValue
+        }
         call.resolve([
             "isPlaying": isPlaying,
             "positionMs": player.playbackTime * 1000.0,
             "durationMs": currentDurationSec * 1000.0,
+            "nowPlayingId": nowPlayingId,
         ])
     }
 }

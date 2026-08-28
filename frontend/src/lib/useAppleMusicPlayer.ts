@@ -66,6 +66,8 @@ export interface UseAppleMusicPlayerResult {
   prepareNext: (catalogId: string) => Promise<boolean>;
   /** feat/next-track-preload — bascule instantanée sur le morceau préchargé. */
   playPrepared: (catalogId: string) => Promise<boolean>;
+  /** fix/live-sync-check — id du morceau réellement en lecture ('' = inconnu). */
+  readNowPlayingId: () => string;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
   seek: (ms: number) => Promise<void>;
@@ -115,6 +117,14 @@ export function useAppleMusicPlayer({
   // feat/next-track-preload — id du morceau actuellement PRÉCHARGÉ dans la
   // file du lecteur (web : setQueue/playLater ; natif : queueNext Swift).
   const preparedNextRef = useRef<string | null>(null);
+  // fix/live-sync-check — identité du morceau RÉELLEMENT en lecture (sonde
+  // native 250 ms / nowPlayingItem web). '' = inconnue (vieux binaire).
+  const nowPlayingIdRef = useRef<string>('');
+  // fix/no-auto-advance — fenêtre pendant laquelle un changement de file est
+  // LÉGITIME (play/playPrepared viennent de l'ordonner). Hors fenêtre, un
+  // changement = le lecteur a enchaîné TOUT SEUL sur le titre préchargé → on
+  // coupe : ce son est celui de la PROCHAINE réponse.
+  const queueChangeAllowedUntilRef = useRef<number>(0);
   // Vérifie 1,5 s après play() que la lecture a bien démarré (sinon → bloqué).
   const unlockCheckRef = useRef<number | null>(null);
   const enabledRef = useRef(enabled);
@@ -193,6 +203,13 @@ export function useAppleMusicPlayer({
         };
         music.addEventListener('playbackStateDidChange', onPlayback);
         music.addEventListener('playbackTimeDidChange', onTime);
+        // fix/no-auto-advance — cf. queueChangeAllowedUntilRef.
+        music.addEventListener('queuePositionDidChange', () => {
+          if (Date.now() > queueChangeAllowedUntilRef.current) {
+            console.warn('[Apple] avance de file NON demandée → pause immédiate');
+            void musicRef.current?.pause();
+          }
+        });
 
         setStatus('ready');
       } catch (err: unknown) {
@@ -229,6 +246,7 @@ export function useAppleMusicPlayer({
           setIsPlaying(s.isPlaying);
           setPositionMs(Math.round(s.positionMs));
           setDurationMs(Math.round(s.durationMs));
+          nowPlayingIdRef.current = s.nowPlayingId ?? '';
           if (s.isPlaying) setAudioBlocked(false);
         });
       }, 250);
@@ -280,6 +298,7 @@ export function useAppleMusicPlayer({
           setAudioBlocked(true);
           return false;
         }
+        queueChangeAllowedUntilRef.current = Date.now() + 4000;
         const r = await nativeMusicKit.play(catalogId);
         preparedNextRef.current = null; // nouvelle file → l'ancien préchargé est perdu
         if (!r.ok) {
@@ -304,6 +323,7 @@ export function useAppleMusicPlayer({
       }
       try {
         preparedNextRef.current = null; // nouvelle file → l'ancien préchargé est perdu
+        queueChangeAllowedUntilRef.current = Date.now() + 4000;
         await music.setQueue({ song: catalogId });
         await music.play();
         // La lecture peut échouer silencieusement (autoplay policy) sans throw :
@@ -356,6 +376,7 @@ export function useAppleMusicPlayer({
     if (preparedNextRef.current !== catalogId) return false;
     preparedNextRef.current = null;
     lastCatalogIdRef.current = catalogId;
+    queueChangeAllowedUntilRef.current = Date.now() + 4000;
     if (useNativeRef.current) {
       return nativeMusicKit.skipToNext();
     }
@@ -509,6 +530,16 @@ export function useAppleMusicPlayer({
 
   // feat/synced-lyrics — lecture directe de la position MusicKit (pas l'état
   // React) : l'overlay paroles l'appelle à chaque frame d'animation.
+  /**
+   * fix/live-sync-check — identité du morceau réellement en lecture.
+   * '' = indisponible (binaire natif ancien, lecteur pas prêt) → contrôle sauté.
+   */
+  const readNowPlayingId = useCallback((): string => {
+    if (useNativeRef.current) return nowPlayingIdRef.current;
+    const m = musicRef.current as unknown as { nowPlayingItem?: { id?: string } } | null;
+    return m?.nowPlayingItem?.id ?? '';
+  }, []);
+
   const readPositionMs = useCallback((): number => {
     const m = musicRef.current;
     if (!m) return 0;
@@ -531,6 +562,7 @@ export function useAppleMusicPlayer({
     setVolume,
     prepareNext,
     playPrepared,
+    readNowPlayingId,
     activate,
     audioBlocked,
     unblockAudio,

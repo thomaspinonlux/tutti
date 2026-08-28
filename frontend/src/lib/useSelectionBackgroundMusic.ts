@@ -51,23 +51,21 @@ export function useSelectionBackgroundMusic({ enabled }: Options): void {
     audio.preload = 'auto';
     audioRef.current = audio;
 
-    let gestureCleanup: (() => void) | null = null;
-
     const attemptPlay = (): void => {
-      audio.play().catch(() => {
-        // Autoplay bloqué → démarre au premier geste user, une seule fois.
-        const onGesture = (): void => {
-          audio.play().catch(() => undefined);
-        };
-        window.addEventListener('pointerdown', onGesture, { once: true });
-        gestureCleanup = () => window.removeEventListener('pointerdown', onGesture);
-      });
+      if (!audio.paused) return;
+      audio.play().catch(() => undefined);
     };
 
     attemptPlay();
+    // fix/selection-music-mode-b — en Mode B, PERSONNE ne touche l'iPad entre
+    // deux manches (l'animateur pilote depuis son téléphone) : le « premier
+    // geste utilisateur » n'arrive jamais. Réessai toutes les 2 s + au geste.
+    const retryId = window.setInterval(attemptPlay, 2000);
+    window.addEventListener('pointerdown', attemptPlay);
 
     return () => {
-      gestureCleanup?.();
+      window.clearInterval(retryId);
+      window.removeEventListener('pointerdown', attemptPlay);
       try {
         audio.pause();
         audio.currentTime = 0;

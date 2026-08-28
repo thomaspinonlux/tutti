@@ -952,17 +952,66 @@ function HostPageInner(): JSX.Element {
   // enchaîner le lecteur TOUT SEUL à la fin naturelle du morceau courant (le
   // son de la prochaine réponse fuirait). On met en pause ~500 ms avant la fin.
   const endGuardTrackRef = useRef<string | null>(null);
+  const appleTrackChangedAtRef = useRef<number>(0);
+  const appleGuardTrackRef = useRef<string | null>(null);
   useEffect(() => {
     if (!currentTrack || currentTrack.provider !== 'apple_music') return;
+    // Changement de morceau : réarme la période de grâce (le lecteur met
+    // 1-2 s à refléter le nouveau titre — aucun garde pendant ce temps).
+    if (appleGuardTrackRef.current !== currentTrack.track_id) {
+      appleGuardTrackRef.current = currentTrack.track_id;
+      appleTrackChangedAtRef.current = Date.now();
+      return;
+    }
+    if (Date.now() - appleTrackChangedAtRef.current < 4000) return;
     const dur = apple.durationMs;
     const pos = apple.positionMs;
     if (!dur || dur < 2000) return;
-    if (pos >= dur - 500 && endGuardTrackRef.current !== currentTrack.track_id) {
+    // Garde de fin : un titre préchargé en file ferait enchaîner le lecteur
+    // TOUT SEUL à la fin naturelle → pause ~900 ms avant la fin.
+    if (pos >= dur - 900 && endGuardTrackRef.current !== currentTrack.track_id) {
       endGuardTrackRef.current = currentTrack.track_id;
       void apple.pause();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apple.positionMs, apple.durationMs, currentTrack?.track_id, currentTrack?.provider]);
+
+  // fix/live-sync-check — CONTRÔLE PERMANENT DE SYNCHRO (toutes les 2 s) :
+  // compare l'identité du morceau RÉELLEMENT en lecture (sonde du lecteur)
+  // avec le morceau attendu par le jeu (titre/artiste/film/paroles affichés).
+  // Divergence = le lecteur joue autre chose que ce que l'écran raconte →
+  // RESYNCHRONISATION AUTOMATIQUE : on relance le bon morceau, sans attendre
+  // une intervention humaine. C'est le filet qui rend impossible le
+  // « décalage d'une chanson » entre musique, titre et paroles.
+  const resyncCountRef = useRef(0);
+  useEffect(() => {
+    if (!currentTrack || currentTrack.provider !== 'apple_music') return;
+    const expected = currentTrack.provider_track_id;
+    const id = window.setInterval(() => {
+      if (Date.now() - appleTrackChangedAtRef.current < 5000) return; // grâce
+      if (!apple.isPlaying) return; // pause volontaire : rien à corriger
+      const actual = apple.readNowPlayingId();
+      if (!actual || actual === expected) {
+        resyncCountRef.current = 0;
+        return;
+      }
+      // Deux constats consécutifs (4 s) avant d'agir : évite les faux positifs
+      // pendant une transition.
+      resyncCountRef.current += 1;
+      if (resyncCountRef.current >= 2) {
+        console.warn(
+          `[SyncCheck] lecteur=${actual} ≠ attendu=${expected} → resynchronisation auto`,
+        );
+        resyncCountRef.current = 0;
+        void apple.play(expected);
+      }
+    }, 2000);
+    return () => {
+      window.clearInterval(id);
+      resyncCountRef.current = 0;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrack?.provider_track_id, currentTrack?.provider, apple.isPlaying]);
 
   // Position/durée = lecteur LOCAL de la console (elle joue toujours le son).
   const isYouTubeTrack = currentTrack?.provider === 'youtube';
