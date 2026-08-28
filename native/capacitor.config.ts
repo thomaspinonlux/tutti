@@ -19,26 +19,30 @@ const config: CapacitorConfig = {
     // (voir aussi la capability UIBackgroundModes=audio à ajouter dans Xcode).
     contentInset: 'always',
   },
-  // fix/native-youtube-origin — ORIGINE DE LA WEBVIEW.
+  // fix/native-youtube-origin (v2) — LA WEBVIEW CHARGE LE SITE EN LIGNE.
   //
-  // Par défaut Capacitor sert le bundle local sous `capacitor://localhost`.
-  // YouTube REFUSE d'embarquer une vidéo depuis une origine qui n'est pas
-  // http(s) (erreurs 150/153, « Video not allowed in embedded players ») : le
-  // lecteur YouTube ne s'initialisait donc jamais dans l'app iPad, et seule
-  // Apple Music fonctionnait en natif. `hostname` + `iosScheme` font servir le
-  // MÊME bundle local sous l'origine `https://tuttiparty.app`, que YouTube
-  // accepte — aucun contenu n'est chargé depuis le réseau pour autant.
+  // Historique du problème : par défaut Capacitor sert le bundle local sous
+  // `capacitor://localhost`. YouTube refuse d'embarquer une vidéo depuis une
+  // origine qui n'est pas http(s) (erreurs 150/153) → le lecteur YouTube ne
+  // s'initialisait JAMAIS dans l'app, seule Apple Music fonctionnait.
   //
-  // Sans effet de bord sur les appels réseau : l'API et le socket passent par
-  // VITE_API_URL / VITE_SOCKET_URL (Railway), jamais par une URL relative.
-  // Côté backend, l'origine envoyée devient celle du site web déjà autorisé.
+  // Tentative écartée : `hostname` + `iosScheme: 'https'`. Sur iOS le schéma
+  // reste `capacitor` quoi qu'il arrive — WKWebView interdit d'enregistrer un
+  // gestionnaire pour http/https. On obtenait `capacitor://tuttiparty.app`,
+  // toujours refusé par YouTube, et en prime bloqué par le CORS du backend.
   //
-  // ⚠️ Changer l'origine RÉINITIALISE le stockage local de l'app : l'animateur
-  // devra reconnecter Apple Music une fois après la mise à jour.
+  // Solution retenue : `server.url` — la WebView charge le site déployé. L'app
+  // tourne alors sous l'origine RÉELLE `https://tuttiparty.app`, acceptée par
+  // YouTube comme par le backend. `window.Capacitor` reste injecté, donc les
+  // plugins natifs (MusicKit, écran externe) continuent de fonctionner.
+  //
+  // Effet de bord assumé : l'app a besoin du réseau au démarrage (elle en a
+  // besoin de toute façon : API, streaming Apple Music et YouTube). En
+  // contrepartie, une mise à jour du site met l'app à jour immédiatement,
+  // sans passer par TestFlight.
   server: {
-    hostname: 'tuttiparty.app',
-    iosScheme: 'https',
-    androidScheme: 'https',
+    url: 'https://tuttiparty.app',
+    cleartext: false,
   },
 
   // Dev à chaud (optionnel) : décommenter et pointer sur le serveur Vite pour
