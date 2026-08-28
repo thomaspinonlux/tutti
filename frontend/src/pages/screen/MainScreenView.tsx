@@ -57,13 +57,25 @@ export function useTimeRemaining(
   durationMs: number,
   isPaused = false,
 ): number {
-  const [remaining, setRemaining] = useState(durationMs);
+  // fix/countdown-clock-anchor — le décompte part de l'HORODATAGE SERVEUR, pas
+  // du montage du composant. Avant : chaque écran démarrait à durationMs au
+  // moment où IL apprenait la phase — la TV (poll 1 s) partait donc ~1 s après
+  // la console et restait décalée d'une seconde tout le long. Maintenant les
+  // deux écrans calculent le même « temps déjà écoulé » depuis started_at et
+  // affichent le même chiffre au même instant.
+  const anchoredRemaining = (): number => {
+    const started = Date.parse(startedAtIso);
+    if (!Number.isFinite(started)) return durationMs;
+    return Math.max(0, Math.min(durationMs, durationMs - (Date.now() - started)));
+  };
+  const [remaining, setRemaining] = useState(anchoredRemaining);
   const lastTickRef = useRef<number>(Date.now());
 
   // Reset à chaque nouveau started_at (= nouveau morceau ou phase)
   useEffect(() => {
-    setRemaining(durationMs);
+    setRemaining(anchoredRemaining());
     lastTickRef.current = Date.now();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startedAtIso, durationMs]);
 
   useEffect(() => {

@@ -790,7 +790,9 @@ function ScreenRoundPodiumView({
   roundPosition: number;
 }): JSX.Element {
   const { t } = useTranslation();
-  const cumulTop = cumulative.slice(0, 10);
+  // fix/tv-podium-legibility — la liste défile (AutoScrollList) : on affiche
+  // TOUT le classement, pas seulement le top 10.
+  const cumulTop = cumulative;
   const fastestAvgSec =
     fastest && typeof fastest.avg_buzz_ms === 'number'
       ? (fastest.avg_buzz_ms / 1000).toFixed(2)
@@ -822,21 +824,21 @@ function ScreenRoundPodiumView({
                   {roundRanking.map((e, idx) => (
                     <li
                       key={e.participant_id}
-                      className="flex items-center gap-4 px-4 py-3 rounded-2xl"
+                      className="flex items-center gap-5 px-6 py-4 rounded-2xl"
                       style={{
                         backgroundColor: idx === 0 ? '#FF5C4D1f' : '#ffffff08',
                         border: `1px solid ${idx === 0 ? '#FF5C4D66' : '#ffffff12'}`,
                       }}
                     >
-                      <span aria-hidden className="text-2xl w-9 text-center">
+                      <span aria-hidden className="text-4xl w-14 text-center">
                         {['🥇', '🥈', '🥉'][idx] ?? (
-                          <span className="font-mono text-lg text-[#B8B8C4]">{idx + 1}</span>
+                          <span className="font-mono text-2xl text-[#B8B8C4]">{idx + 1}</span>
                         )}
                       </span>
-                      <span className="font-display text-2xl lg:text-3xl flex-1 truncate text-white">
+                      <span className="font-display text-4xl lg:text-5xl flex-1 truncate text-white">
                         {e.pseudo}
                       </span>
-                      <span className="font-mono text-2xl font-bold tabular-nums text-white">
+                      <span className="font-mono text-4xl lg:text-5xl font-bold tabular-nums text-white">
                         +{e.points}
                       </span>
                     </li>
@@ -880,17 +882,17 @@ function ScreenRoundPodiumView({
                   {cumulTop.map((e, idx) => (
                     <li
                       key={e.id}
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                      className="flex items-center gap-4 px-5 py-3 rounded-xl"
                       style={{
                         backgroundColor: idx === 0 ? '#FF5C4D1a' : '#ffffff08',
                         border: `1px solid ${idx === 0 ? '#FF5C4D55' : '#ffffff10'}`,
                       }}
                     >
-                      <span className="font-mono text-sm w-6 text-[#B8B8C4]">{idx + 1}.</span>
-                      <span className="font-display text-xl flex-1 truncate text-white">
+                      <span className="font-mono text-xl w-10 text-[#B8B8C4]">{idx + 1}.</span>
+                      <span className="font-display text-3xl lg:text-4xl flex-1 truncate text-white">
                         {e.label}
                       </span>
-                      <span className="font-mono text-xl font-bold tabular-nums text-white">
+                      <span className="font-mono text-3xl lg:text-4xl font-bold tabular-nums text-white">
                         {e.total_points}
                       </span>
                     </li>

@@ -10,7 +10,7 @@
  * equalizer à l'écoute, noms de joueurs agrandis, transitions fluides.
  */
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { getShareableOrigin } from '../../lib/platform.js';
 import { useTranslation } from 'react-i18next';
 import type {
@@ -21,7 +21,6 @@ import type {
   SessionRoundWithPlaylist,
 } from '@tutti/shared';
 import { QRCode } from '../../components/host/QRCode.js';
-import { fireConfetti } from '../../components/ui/Confetti.js';
 import { useTimeElapsed, useTimeRemaining } from './MainScreenView.js';
 import type { MainScreenViewProps } from './MainScreenView.js';
 import { LyricsOverlay } from '../../components/screen/LyricsOverlay.js';
@@ -491,17 +490,10 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
   const hadWinner = correctAnswers.length > 0;
   const showConfetti = isRevealed && hadWinner;
 
-  const lastConfettiTrackRef = useRef<string | null>(null);
-  const trackKey = currentTrack?.track_id ?? null;
-  useEffect(() => {
-    if (!showConfetti || !trackKey) return;
-    if (lastConfettiTrackRef.current === trackKey) return;
-    lastConfettiTrackRef.current = trackKey;
-    // fix/tv-confetti-perf — 90 particules figeaient à mi-course sur le
-    // navigateur TV (GPU faible). 45 particules à durée de vie courte : la
-    // salve reste visible et se termine toujours proprement.
-    fireConfetti({ x: 0.5, y: 0.42, particleCount: 45 });
-  }, [showConfetti, trackKey]);
+  // fix/tv-no-confetti — confettis RETIRÉS de la TV : même réduits, ils
+  // figeaient sur le rendu de l'écran externe. Décision : zéro animation
+  // canvas sur la TV. (`showConfetti` reste calculé pour la compat des props.)
+  void showConfetti;
 
   const phaseLabel = useMemo(() => {
     if (phase === 'phase1') return t('screen.phaseLabel1');

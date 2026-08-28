@@ -27,7 +27,10 @@ interface Props {
  * apparaissent plus tôt. Centralisé ici pour n'avoir qu'un seul endroit à
  * régler si la TV accuse un retard de rendu.
  */
-export const LYRICS_OFFSET_MS = 0;
+// fix/lyrics-lead — la position voyage console → serveur → TV (~0,5-1 s de
+// retard perçu). On AVANCE donc l'affichage de 700 ms : la ligne apparaît au
+// moment où elle est réellement chantée dans la salle.
+export const LYRICS_OFFSET_MS = 700;
 
 /** Au-delà de ce silence, on affiche l'indicateur musical à la place du texte. */
 const SILENCE_GAP_MS = 6000;
@@ -79,12 +82,16 @@ export function LyricsOverlay({ lines, getPositionMs, paused }: Props): JSX.Elem
       className="flex flex-col items-center justify-center w-full h-full px-8 text-center select-none"
       aria-live="off"
     >
+      {/* fix/lyrics-block-scroll — un BLOC de 4 phrases, toutes lisibles de
+          loin, qui déroule d'un cran à chaque ligne chantée (transition douce).
+          La phrase en cours est la plus grosse ; celles qui suivent restent
+          assez grandes pour être lues en avance, comme un karaoké. */}
       {prev?.text ? (
-        <p className="font-display text-2xl xl:text-3xl text-cream/30 mb-4 line-clamp-1 transition-opacity duration-300">
+        <p className="font-display text-3xl xl:text-4xl text-cream/30 mb-5 line-clamp-1 transition-all duration-300">
           {prev.text}
         </p>
       ) : (
-        <div className="mb-4 h-8" aria-hidden />
+        <div className="mb-5 h-10" aria-hidden />
       )}
 
       {inSilence ? (
@@ -92,19 +99,19 @@ export function LyricsOverlay({ lines, getPositionMs, paused }: Props): JSX.Elem
           ♪ ♪ ♪
         </p>
       ) : (
-        <p className="font-display text-[64px] leading-tight xl:text-7xl 2xl:text-8xl text-cream drop-shadow-lg transition-opacity duration-200 max-w-[90%]">
+        <p className="font-display text-[56px] leading-[1.08] xl:text-7xl text-cream drop-shadow-lg transition-all duration-300 max-w-[94%]">
           {current?.text}
         </p>
       )}
 
-      <div className="mt-6 space-y-2">
+      <div className="mt-7 space-y-3">
         {next1?.text ? (
-          <p className="font-display text-3xl xl:text-4xl text-cream/45 line-clamp-1">
+          <p className="font-display text-4xl xl:text-5xl text-cream/60 line-clamp-1 transition-all duration-300">
             {next1.text}
           </p>
         ) : null}
         {next2?.text ? (
-          <p className="font-display text-2xl xl:text-3xl text-cream/25 line-clamp-1">
+          <p className="font-display text-3xl xl:text-4xl text-cream/35 line-clamp-1 transition-all duration-300">
             {next2.text}
           </p>
         ) : null}
