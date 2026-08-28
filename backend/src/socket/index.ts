@@ -145,6 +145,17 @@ const STATIC_ALLOWED_ORIGINS = [
   'http://localhost',
   'https://localhost',
 ];
+
+// fix/native-origin-hostname — MÊME extension que server.ts : la coque iOS
+// peut servir la WebView sous `capacitor://tuttiparty.app` (server.hostname).
+// Cette liste est DUPLIQUÉE de server.ts (import circulaire) : l'oubli de ce
+// côté-ci laissait l'API accessible mais le Socket.IO en « Bad request » →
+// « Socket: websocket error » plein écran dans l'app native.
+for (const scheme of ['capacitor', 'ionic']) {
+  for (const host of ['tuttiparty.app', 'www.tuttiparty.app', 'app.tuttiparty']) {
+    STATIC_ALLOWED_ORIGINS.push(`${scheme}://${host}`);
+  }
+}
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
 const allowedOrigins = new Set([...STATIC_ALLOWED_ORIGINS, FRONTEND_URL]);
 
