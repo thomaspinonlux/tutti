@@ -39,7 +39,6 @@ import type {
   SessionWithParticipants,
 } from '@tutti/shared';
 import { Button, Card } from '../../components/ui/index.js';
-import { fireConfetti } from '../../components/ui/Confetti.js';
 import { QRCode } from '../../components/host/QRCode.js';
 
 // ── Hooks utilitaires ─────────────────────────────────────────────────────
@@ -145,6 +144,8 @@ export function formatTime(ms: number): string {
 // ── Background ambient (color pulse continu, confettis seulement phase 3) ──
 
 function FestiveBackground({ confettiActive }: { confettiActive: boolean }): JSX.Element {
+  // fix/no-confetti-console — confettis retirés partout (économie CPU/GPU iPad).
+  void confettiActive;
   return (
     <div aria-hidden className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
       {/* feat/console-dark — fond sombre premium (cohérent TV + console mode A). */}
@@ -153,50 +154,10 @@ function FestiveBackground({ confettiActive }: { confettiActive: boolean }): JSX
         className="absolute left-1/2 top-[-10%] h-[55vh] w-[55vh] -translate-x-1/2 rounded-full blur-[130px] opacity-15"
         style={{ backgroundColor: '#FF5C4D' }}
       />
-      {confettiActive && <ConfettiBurst />}
     </div>
   );
 }
 
-/**
- * Confettis confinés au panneau central (cf. maquette : pas tout l'écran).
- * Spawn ~12 morceaux en burst, animation 5-9s, couleurs Pop Cocktail.
- */
-function ConfettiBurst(): JSX.Element {
-  const [pieces] = useState(() =>
-    Array.from({ length: 14 }, (_, i) => ({
-      id: i,
-      left: `${Math.round(Math.random() * 100)}%`,
-      delay: `${Math.round(Math.random() * 2000)}ms`,
-      duration: `${4 + Math.round(Math.random() * 3)}s`,
-      color: ['#ee6c2a', '#4a8b3f', '#c8336e', '#e8c547', '#6e3a6e', '#e89a64'][i % 6],
-      width: 10 + Math.round(Math.random() * 6),
-      height: 14 + Math.round(Math.random() * 6),
-      rotate: Math.round(Math.random() * 360),
-      isCircle: i % 3 === 0,
-    })),
-  );
-  return (
-    <>
-      {pieces.map((c) => (
-        <span
-          key={c.id}
-          className="absolute top-0 animate-confetti-fall border-2 border-ink"
-          style={{
-            left: c.left,
-            width: `${c.width}px`,
-            height: `${c.height}px`,
-            backgroundColor: c.color,
-            animationDelay: c.delay,
-            animationDuration: c.duration,
-            transform: `rotate(${c.rotate}deg)`,
-            borderRadius: c.isCircle ? '50%' : '0',
-          }}
-        />
-      ))}
-    </>
-  );
-}
 
 // ── Pochette mystère / révélée ────────────────────────────────────────────
 
@@ -832,6 +793,7 @@ function RevealResultMain({
   joinCode: string;
   showConfetti: boolean;
 }): JSX.Element {
+  void showConfetti; // fix/no-confetti-console — plus aucun rendu de confettis.
   const title = reveal?.title ?? track.title;
   const artist = reveal?.artist ?? track.artist;
   const joinUrl = `${getShareableOrigin()}/play?session=${joinCode}`;
@@ -871,11 +833,6 @@ function RevealResultMain({
             {artist}
           </div>
         </div>
-        {showConfetti && (
-          <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
-            <ConfettiBurst />
-          </div>
-        )}
       </section>
 
       {/* Droite — classement CUMUL DE LA PARTIE, large, leader doré */}
@@ -952,20 +909,8 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
   const hadWinner = correctAnswers.length > 0;
   const showConfetti = isRevealed && hadWinner;
 
-  // Burst canvas-confetti plein-écran quand on bascule en phase reveal+gagnant.
-  // Un burst PAR track (key = track_id) — pas de double-tir si re-render.
-  // Tir multi-points pour effet plus impressionnant que la salve unique au centre.
-  const lastConfettiTrackRef = useRef<string | null>(null);
-  const trackKey = currentTrack?.track_id ?? null;
-  useEffect(() => {
-    if (!showConfetti || !trackKey) return;
-    if (lastConfettiTrackRef.current === trackKey) return;
-    lastConfettiTrackRef.current = trackKey;
-    // Triple burst : centre + 2 côtés
-    fireConfetti({ x: 0.5, y: 0.5, particleCount: 100 });
-    window.setTimeout(() => fireConfetti({ x: 0.2, y: 0.4, particleCount: 60 }), 200);
-    window.setTimeout(() => fireConfetti({ x: 0.8, y: 0.4, particleCount: 60 }), 400);
-  }, [showConfetti, trackKey]);
+  // fix/no-confetti-console — les tirs canvas-confetti du reveal sont RETIRÉS
+  // (comme sur la TV) : économie CPU/GPU et de batterie sur l'iPad.
 
   const phaseLabel = useMemo(() => {
     if (phase === 'phase1') return t('screen.phaseLabel1');
@@ -1087,12 +1032,6 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
                     <Phase3DanceCall />
                   ))}
 
-                {/* Confettis confinés au stage — seulement si gagnant. */}
-                {showConfetti && (
-                  <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
-                    <ConfettiBurst />
-                  </div>
-                )}
               </>
             )}
           </section>
