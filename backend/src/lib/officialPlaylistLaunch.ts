@@ -414,8 +414,22 @@ export async function launchOfficialPlaylistForSession(
     },
     select: { id: true, default_session_size: true },
   });
+  // fix/launch-duplicate-tracks — `playlist_tracks` porte un index UNIQUE
+  // (playlist_id, track_id). Or le catalogue officiel contient des entrées
+  // distinctes qui pointent sur le MÊME id provider (même clip YouTube ou même
+  // titre Apple sous deux orthographes d'artiste). Sans dédoublonnage, le
+  // createMany levait P2002 et TOUT le lancement échouait — la playlist était
+  // impossible à démarrer. On garde la première occurrence : l'ordre des
+  // positions est conservé, le doublon est simplement ignoré.
+  const uniqueTrackIds = [...new Set(trackIds)];
+  const duplicateCount = trackIds.length - uniqueTrackIds.length;
+  if (duplicateCount > 0) {
+    console.info(
+      `[Launch] Playlist ${detail.slug}: ${duplicateCount} doublon(s) de track ignoré(s) au clone`,
+    );
+  }
   await prisma.playlistTrack.createMany({
-    data: trackIds.map((trackId, idx) => ({
+    data: uniqueTrackIds.map((trackId, idx) => ({
       playlist_id: playlist.id,
       track_id: trackId,
       position: idx + 1,
