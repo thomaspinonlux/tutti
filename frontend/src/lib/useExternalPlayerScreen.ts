@@ -10,10 +10,12 @@
  * la page TV ne peut rien si iOS tue/gèle la WebView externe (son JS meurt
  * avec elle). La page TV interroge le serveur ~1×/s ; le serveur horodate
  * chaque interrogation (route publique /screen-state/alive/:workspaceId). Ici,
- * la CONSOLE vérifie ce signe de vie toutes les 5 s : TV muette ≥ 3 contrôles
- * d'affilée → on re-`present()` l'écran externe, ce qui détruit et reconstruit
+ * la CONSOLE vérifie ce signe de vie toutes les 2 s : TV muette ≥ 2 contrôles
+ * d'affilée (~6-8 s) → on re-`present()` l'écran externe, ce qui détruit et reconstruit
  * intégralement la fenêtre TV (le plugin fait tearDown + recreate). La TV
- * revit donc toute seule en ~15-20 s quoi qu'il arrive, sans toucher à l'iPad.
+ * revit donc toute seule en ~10 s au pire, sans toucher à l'iPad. (Avec le
+ * build natif qui embarque l'armure, la cause principale — processus tué par
+ * iOS — est détectée par le natif lui-même et reconstruite en 1-2 s.)
  *
  * Sécurité : `supportsExternalPlayerScreen()` est faux hors iPad natif → le
  * hook est un no-op total sur web / desktop (aucun effet, aucun risque).
@@ -24,14 +26,14 @@ import { supportsExternalPlayerScreen } from './platform.js';
 import { externalScreen } from './externalScreen.js';
 import { api } from './api.js';
 
-/** Contrôle du signe de vie toutes les 5 s. */
-const SUPERVISE_EVERY_MS = 5_000;
-/** TV considérée gelée après 3 contrôles muets d'affilée (~15 s). */
-const STALE_CHECKS_BEFORE_REVIVE = 3;
-/** Silence toléré par contrôle : la TV interroge ~1×/s, 12 s = vraiment morte. */
-const STALE_THRESHOLD_MS = 12_000;
+/** Contrôle du signe de vie toutes les 2 s. */
+const SUPERVISE_EVERY_MS = 2_000;
+/** TV considérée gelée après 2 contrôles muets d'affilée (~4-6 s). */
+const STALE_CHECKS_BEFORE_REVIVE = 2;
+/** Silence toléré : la TV interroge ~1×/s, 6 s sans nouvelle = vraiment morte. */
+const STALE_THRESHOLD_MS = 6_000;
 /** Après une relance, on laisse la TV redémarrer avant de rejuger. */
-const REVIVE_COOLDOWN_MS = 25_000;
+const REVIVE_COOLDOWN_MS = 15_000;
 
 interface Options {
   /** Origine web hébergée à charger sur l'écran externe (ex: https://app.tutti…). */
