@@ -378,11 +378,38 @@ export function useAppleMusicPlayer({
     lastCatalogIdRef.current = catalogId;
     queueChangeAllowedUntilRef.current = Date.now() + 4000;
     if (useNativeRef.current) {
-      return nativeMusicKit.skipToNext();
+      // fix/skip-sans-fuite-audio — le saut natif est VÉRIFIÉ : après
+      // skipToNext (qui coupe d'abord l'ancien titre côté natif), on sonde le
+      // lecteur jusqu'à 1.5 s pour confirmer que le morceau EN LECTURE est bien
+      // la cible. Pas confirmé → return false → l'appelant fait un play()
+      // complet (setQueue). Résultat : soit bascule instantanée confirmée,
+      // soit rechargement franc — jamais l'ancien titre qui continue.
+      const jumped = await nativeMusicKit.skipToNext();
+      if (!jumped) return false;
+      for (let i = 0; i < 10; i += 1) {
+        await new Promise((r) => setTimeout(r, 150));
+        try {
+          const st = await nativeMusicKit.getStatus();
+          if (st?.nowPlayingId === catalogId) {
+            nowPlayingIdRef.current = st.nowPlayingId ?? '';
+            return true;
+          }
+        } catch {
+          /* sonde indisponible → on laisse la boucle finir */
+        }
+      }
+      console.warn('[ApplePlayer] playPrepared non confirmé en 1.5s → fallback play()');
+      return false;
     }
     const music = musicRef.current;
     if (!music) return false;
     try {
+      // Même principe côté web : on coupe l'ancien titre avant le saut.
+      try {
+        await music.pause();
+      } catch {
+        /* noop */
+      }
       await music.skipToNextItem();
       if (!music.isPlaying) await music.play();
       scheduleUnlockCheck();

@@ -994,34 +994,88 @@ function HostPageInner(): JSX.Element {
   // une intervention humaine. C'est le filet qui rend impossible le
   // « décalage d'une chanson » entre musique, titre et paroles.
   const resyncCountRef = useRef(0);
+  // fix/skip-sans-fuite-audio — mémorise le titre PRÉCÉDENT : si la sonde
+  // détecte que le lecteur joue encore l'ANCIEN morceau (le cas exact vu en
+  // soirée), on resynchronise dès le 1er constat au lieu d'attendre deux.
+  const prevAppleTrackRef = useRef<string>('');
+  useEffect(() => {
+    return () => {
+      if (currentTrack?.provider === 'apple_music') {
+        prevAppleTrackRef.current = currentTrack.provider_track_id;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrack?.provider_track_id]);
   useEffect(() => {
     if (!currentTrack || currentTrack.provider !== 'apple_music') return;
     const expected = currentTrack.provider_track_id;
     const id = window.setInterval(() => {
-      if (Date.now() - appleTrackChangedAtRef.current < 5000) return; // grâce
+      if (Date.now() - appleTrackChangedAtRef.current < 3000) return; // grâce
       if (!apple.isPlaying) return; // pause volontaire : rien à corriger
       const actual = apple.readNowPlayingId();
       if (!actual || actual === expected) {
         resyncCountRef.current = 0;
         return;
       }
-      // Deux constats consécutifs (4 s) avant d'agir : évite les faux positifs
-      // pendant une transition.
       resyncCountRef.current += 1;
-      if (resyncCountRef.current >= 2) {
+      // Voie RAPIDE : le lecteur joue l'ANCIEN titre → correction immédiate.
+      // Voie normale : autre divergence → 2 constats (2 s) anti-faux-positif.
+      const isStaleOldTrack = actual === prevAppleTrackRef.current;
+      if (isStaleOldTrack || resyncCountRef.current >= 2) {
         console.warn(
-          `[SyncCheck] lecteur=${actual} ≠ attendu=${expected} → resynchronisation auto`,
+          `[SyncCheck] lecteur=${actual} ≠ attendu=${expected}${isStaleOldTrack ? ' (ANCIEN titre)' : ''} → resynchronisation auto`,
         );
         resyncCountRef.current = 0;
         void apple.play(expected);
       }
-    }, 2000);
+    }, 1000);
     return () => {
       window.clearInterval(id);
       resyncCountRef.current = 0;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTrack?.provider_track_id, currentTrack?.provider, apple.isPlaying]);
+
+  // fix/premier-lancement-muet — DÉTECTEUR DE LECTEUR MUET. Si un morceau est
+  // censé jouer (pas en pause) mais que la position ne bouge pas pendant 3.5 s
+  // (autoplay bloqué par iOS/Safari au premier lancement, ou lecteur coincé),
+  // on affiche un GROS bouton « Relancer le son » : le tap est un geste
+  // utilisateur → iOS autorise TOUJOURS la lecture depuis ce contexte.
+  const [audioNeedsTap, setAudioNeedsTap] = useState(false);
+  const stallSampleRef = useRef<{ pos: number; t: number }>({ pos: -1, t: 0 });
+  useEffect(() => {
+    if (!currentTrack || currentTrack.provider !== 'apple_music') {
+      setAudioNeedsTap(false);
+      return;
+    }
+    const id = window.setInterval(() => {
+      if (session?.is_paused) {
+        stallSampleRef.current = { pos: -1, t: 0 };
+        setAudioNeedsTap(false);
+        return;
+      }
+      const pos = apple.positionMs;
+      const sample = stallSampleRef.current;
+      if (sample.pos !== pos) {
+        stallSampleRef.current = { pos, t: Date.now() };
+        setAudioNeedsTap(false);
+        return;
+      }
+      if (Date.now() - sample.t > 3500) setAudioNeedsTap(true);
+    }, 1000);
+    return () => {
+      window.clearInterval(id);
+      stallSampleRef.current = { pos: -1, t: 0 };
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrack?.provider_track_id, currentTrack?.provider, session?.is_paused]);
+  const handleAudioUnlockTap = (): void => {
+    setAudioNeedsTap(false);
+    stallSampleRef.current = { pos: -1, t: 0 };
+    if (currentTrack?.provider === 'apple_music') {
+      void apple.play(currentTrack.provider_track_id);
+    }
+  };
 
   // Position/durée = lecteur LOCAL de la console (elle joue toujours le son).
   const isYouTubeTrack = currentTrack?.provider === 'youtube';
@@ -1934,7 +1988,17 @@ function HostPageInner(): JSX.Element {
           onGiveAnswer={handleGiveAnswer}
           onNextTrack={handleNextTrack}
         />
-        <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-xs">
+        {audioNeedsTap && (
+        <button
+          type="button"
+          onClick={handleAudioUnlockTap}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] rounded-3xl border-4 border-ink bg-spritz px-8 py-4 font-display text-2xl shadow-xl animate-fade-in active:translate-y-0.5"
+        >
+          🔊 RELANCER LE SON
+        </button>
+      )}
+
+      <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-xs">
           {toasts.map((toast) => (
             <div
               key={toast.id}

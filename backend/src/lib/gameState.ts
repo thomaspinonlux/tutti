@@ -74,7 +74,8 @@ export interface ActiveTrackState {
 
 const activeTracks = new Map<string /* round_id */, ActiveTrackState>();
 
-const PER_PARTICIPANT_BUZZ_COOLDOWN_MS = 1000;
+// fix/rebuzz-rapide — 1000 → 400 ms : re-buzz quasi immédiat après un raté.
+const PER_PARTICIPANT_BUZZ_COOLDOWN_MS = 400;
 // fix/reveal-timer-mismatch — exporté pour que le timer de révélation auto
 // (schedulePhase3Transition) utilise la MÊME durée que le compte à rebours
 // affiché, au lieu d'un 15 s codé en dur (→ ~5 s de blanc avant la réponse).

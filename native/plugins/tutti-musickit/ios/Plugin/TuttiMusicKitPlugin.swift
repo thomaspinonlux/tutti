@@ -130,6 +130,13 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     @objc func skipToNext(_ call: CAPPluginCall) {
         Task {
             do {
+                // fix/skip-sans-fuite-audio — COUPER l'ancien titre AVANT le
+                // saut : si l'entrée suivante doit encore se buffériser, le
+                // player continuait de jouer l'ANCIEN morceau pendant ce temps
+                // (l'écran affichait déjà le nouveau → « décalage » et titre
+                // révélé à l'oreille). Un blanc de quelques centaines de ms
+                // est invisible ; l'ancien titre audible est inacceptable.
+                self.player.pause()
                 try await self.player.skipToNextEntry()
                 try await self.player.play()
                 if self.nextDurationSec > 0 {

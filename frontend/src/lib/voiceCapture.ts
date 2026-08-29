@@ -164,27 +164,72 @@ export async function startVoiceCapture(opts: VoiceCaptureOptions): Promise<Voic
   let silenceStartedAt: number | null = null;
   let silenceFired = false;
 
+  // fix/vad-bar-bruyant — VAD ADAPTATIF. Les seuils ABSOLUS (0.01/0.02)
+  // échouent dans un bar : le bruit ambiant dépasse le seuil de silence en
+  // permanence → la coupure ne se déclenchait jamais et les joueurs devaient
+  // appuyer sur Envoyer. Correctif en 3 volets :
+  //  1. Calibration du PLANCHER DE BRUIT sur les 400 premières ms (médiane des
+  //     RMS avant que le joueur parle) → seuils relatifs au lieu d'absolus :
+  //     parole = nettement AU-DESSUS du bruit, silence = retour PRÈS du bruit.
+  //  2. Cap dur : 4 s de parole suffisent pour titre+artiste → coupe et envoie.
+  //  3. Cap sans parole : rien détecté en 5 s → coupe (au lieu d'attendre 10 s).
+  const startedAtMs = performance.now();
+  const CALIBRATION_MS = 400;
+  const SPEECH_HARD_CAP_MS = 4_000;
+  const NO_SPEECH_CAP_MS = 5_000;
+  const noiseSamples: number[] = [];
+  let noiseFloor: number | null = null;
+  let speechStartedAt: number | null = null;
+
   const intervalId = window.setInterval(() => {
     analyser.getFloatTimeDomainData(buffer);
     const rms = computeRms(buffer);
     opts.onLevel?.(rms);
+    const now = performance.now();
 
-    if (rms >= SPEECH_RMS_THRESHOLD) {
-      // Speech détecté
-      if (!hasDetectedSpeech) hasDetectedSpeech = true;
-      silenceStartedAt = null;
-      opts.onSpeech?.(rms);
+    // Phase de calibration : on échantillonne le bruit ambiant.
+    if (noiseFloor === null) {
+      noiseSamples.push(rms);
+      if (now - startedAtMs >= CALIBRATION_MS) {
+        const sorted = [...noiseSamples].sort((a, b) => a - b);
+        noiseFloor = sorted[Math.floor(sorted.length / 2)] ?? 0;
+        console.info(`[Voice] VAD noise floor calibré: ${noiseFloor.toFixed(4)}`);
+      }
       return;
     }
-    if (rms < SILENCE_RMS_THRESHOLD && hasDetectedSpeech && !silenceFired) {
-      // Silence : on démarre le compteur si pas déjà fait
-      const now = performance.now();
+
+    const speechThr = Math.max(SPEECH_RMS_THRESHOLD, noiseFloor * 2.2);
+    const silenceThr = Math.max(SILENCE_RMS_THRESHOLD, noiseFloor * 1.4);
+
+    if (!silenceFired && rms >= speechThr) {
+      if (!hasDetectedSpeech) {
+        hasDetectedSpeech = true;
+        speechStartedAt = now;
+      }
+      silenceStartedAt = null;
+      opts.onSpeech?.(rms);
+    } else if (rms < silenceThr && hasDetectedSpeech && !silenceFired) {
       if (silenceStartedAt === null) {
         silenceStartedAt = now;
       } else if (now - silenceStartedAt >= silenceDurationMs) {
         silenceFired = true;
+        console.info('[Voice] VAD silence (adaptatif) → cut');
         opts.onSilence?.();
       }
+    }
+
+    // Caps durs — indépendants des seuils (le bruit ne peut pas les bloquer).
+    if (!silenceFired && hasDetectedSpeech && speechStartedAt !== null
+        && now - speechStartedAt >= SPEECH_HARD_CAP_MS) {
+      silenceFired = true;
+      console.info('[Voice] VAD cap 4s de parole → cut + envoi auto');
+      opts.onSilence?.();
+      return;
+    }
+    if (!silenceFired && !hasDetectedSpeech && now - startedAtMs >= NO_SPEECH_CAP_MS) {
+      silenceFired = true;
+      console.info('[Voice] VAD cap 5s sans parole détectée → cut');
+      opts.onSilence?.();
     }
   }, ANALYSER_INTERVAL_MS);
 

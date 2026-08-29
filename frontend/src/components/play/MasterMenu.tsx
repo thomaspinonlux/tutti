@@ -37,6 +37,8 @@ export interface MasterMenuProps {
   isPaused: boolean;
   currentTrack: CurrentTrackState | null;
   hasActiveRound: boolean;
+  /** feat/master-titres-restants — total de titres de la manche en cours. */
+  tracksTotal?: number | null;
   busy: boolean;
   onReveal: () => Promise<void>;
   onSkipTrack: () => Promise<void>;
@@ -192,6 +194,12 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
       {/* feat/manette-console-master — titre + artiste + timeline exacte + scrub */}
       {props.hasActiveRound && track && (
         <div className="mb-3">
+          {typeof props.tracksTotal === 'number' && props.tracksTotal > 0 && (
+            <p className="font-mono text-[11px] uppercase tracking-widest text-ink-soft mb-1">
+              Titre {track.track_index + 1}/{props.tracksTotal} · reste{' '}
+              {Math.max(0, props.tracksTotal - (track.track_index + 1))}
+            </p>
+          )}
           <p className="font-medium text-sm truncate">
             {hasMeta ? (
               <>

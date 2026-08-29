@@ -158,6 +158,18 @@ export function PlayPage(): JSX.Element {
   } | null>(null);
   // feat/synced-lyrics — overlay paroles actif (source de vérité : broadcast serveur).
   const [lyricsOn, setLyricsOn] = useState(false);
+  // feat/instructions-debut-partie — pop-in de consignes affiché UNE fois
+  // quand la partie démarre (comment répondre, micro, bouton Envoyer).
+  const [showRules, setShowRules] = useState(false);
+  const rulesShownRef = useRef(false);
+
+  useEffect(() => {
+    if (step === 'playing' && !rulesShownRef.current) {
+      rulesShownRef.current = true;
+      setShowRules(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
   const [isPaused, setIsPaused] = useState(false);
   const [masterPickerOpen, setMasterPickerOpen] = useState(false);
   const [adjustSheetOpen, setAdjustSheetOpen] = useState(false);
@@ -976,6 +988,7 @@ export function PlayPage(): JSX.Element {
                     isPaused={isPaused}
                     currentTrack={currentTrack}
                     hasActiveRound={!!currentRound}
+                    tracksTotal={currentRound?.playlist?.tracks_count ?? null}
                     busy={busy}
                     onReveal={handleMasterReveal}
                     onSkipTrack={handleMasterSkip}
@@ -1025,6 +1038,27 @@ export function PlayPage(): JSX.Element {
           )}
         </div>
       </main>
+
+      {showRules && step === 'playing' && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/80 p-5 animate-fade-in">
+          <div className="bg-cream rounded-3xl border-4 border-ink shadow-xl max-w-sm w-full p-6">
+            <p className="font-display text-2xl mb-4 text-center">Comment répondre 🎤</p>
+            <ul className="space-y-3 font-editorial text-base leading-snug">
+              <li>🎵 Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux = plus de points).</li>
+              <li>📱 Parle <strong>près du micro</strong> de ton téléphone, bien fort.</li>
+              <li>🔊 S'il y a du bruit autour, appuie sur <strong>ENVOYER</strong> dès que tu as fini de parler — n'attends pas.</li>
+              <li>⚡ Raté ? Tu peux <strong>re-buzzer aussitôt</strong>.</li>
+            </ul>
+            <button
+              type="button"
+              onClick={() => setShowRules(false)}
+              className="mt-5 w-full rounded-2xl border-4 border-ink bg-spritz py-3 font-display text-xl active:translate-y-0.5"
+            >
+              C'EST PARTI !
+            </button>
+          </div>
+        </div>
+      )}
 
       {identity && (
         <MasterPlaylistPicker
@@ -1228,7 +1262,8 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     if (Date.now() < buzzCooldownUntil) return;
 
     setError(null);
-    setBuzzCooldownUntil(Date.now() + 1000);
+    // fix/rebuzz-rapide — aligné sur le serveur (400 ms).
+    setBuzzCooldownUntil(Date.now() + 400);
 
     try {
       const buzzRes = await postBuzz(identity.sessionId, currentTrack.round_id, identity.token);
