@@ -438,6 +438,13 @@ function HostPageInner(): JSX.Element {
               : prev,
           );
         });
+        // feat/relancer-le-son-telecommande — l'animateur au téléphone demande
+        // une relance du son : la console relance le morceau sur SON lecteur.
+        socket.on('audio:kick', () => {
+          console.info('[HostPage] audio:kick reçu → relance du son');
+          audioUnlockRef.current();
+        });
+
         socket.on('round:ended', ({ round }: { round: SessionRoundWithPlaylist }) => {
           console.info(
             `[HostPage] Socket event round:ended at ${Date.now()} roundId=${round.id} position=${round.position} status=${round.status}`,
@@ -1069,6 +1076,7 @@ function HostPageInner(): JSX.Element {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTrack?.provider_track_id, currentTrack?.provider, session?.is_paused]);
+  const audioUnlockRef = useRef<() => void>(() => undefined);
   const handleAudioUnlockTap = (): void => {
     setAudioNeedsTap(false);
     stallSampleRef.current = { pos: -1, t: 0 };
@@ -1076,6 +1084,7 @@ function HostPageInner(): JSX.Element {
       void apple.play(currentTrack.provider_track_id);
     }
   };
+  audioUnlockRef.current = handleAudioUnlockTap;
 
   // Position/durée = lecteur LOCAL de la console (elle joue toujours le son).
   const isYouTubeTrack = currentTrack?.provider === 'youtube';

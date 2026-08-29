@@ -487,6 +487,19 @@ export async function masterPause(sessionId: string, token: string): Promise<voi
   });
 }
 
+/**
+ * feat/relancer-le-son-telecommande — demande à la CONSOLE de relancer le son
+ * du morceau en cours (blocage autoplay iOS, lecteur muet). N'altère aucun
+ * état de jeu : ni position, ni phase, ni score.
+ */
+export async function masterAudioKick(sessionId: string, token: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/audio-kick`, {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}
+
 export async function masterResume(sessionId: string, token: string): Promise<void> {
   await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/resume`, {
     method: 'POST',

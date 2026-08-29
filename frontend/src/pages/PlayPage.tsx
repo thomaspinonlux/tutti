@@ -41,6 +41,7 @@ import {
   masterLaunchOfficial,
   masterRejectLyrics,
   masterRestartTrack,
+  masterAudioKick,
   masterResume,
   masterSeek,
   masterSetVolume,
@@ -626,6 +627,14 @@ export function PlayPage(): JSX.Element {
       resetTimelineOptimistic();
       await masterRestartTrack(identity.sessionId, currentRound.id, identity.token);
     });
+  // feat/relancer-le-son-telecommande — demande à la console de relancer le
+  // son du morceau en cours (autoplay iOS bloqué, lecteur muet). N'altère
+  // aucun état de jeu : ni position, ni phase, ni score.
+  const handleMasterAudioKick = (): Promise<void> =>
+    masterCall(async () => {
+      if (!identity) return;
+      await masterAudioKick(identity.sessionId, identity.token);
+    });
   // feat/synced-lyrics — bouton Paroles (affichage MANUEL, morceau révélé).
   const handleToggleLyrics = (on: boolean): Promise<void> =>
     masterCall(async () => {
@@ -996,6 +1005,7 @@ export function PlayPage(): JSX.Element {
                     onPause={handleMasterPause}
                     onResume={handleMasterResume}
                     onRestartTrack={handleMasterRestart}
+                    onAudioKick={() => void handleMasterAudioKick()}
                     onSeekBack={() => handleMasterSeek(-10_000)}
                     onSeekForward={() => handleMasterSeek(10_000)}
                     onSeekTo={handleMasterSeekTo}
@@ -1046,7 +1056,7 @@ export function PlayPage(): JSX.Element {
             <ul className="space-y-3 font-editorial text-base leading-snug">
               <li>🎵 Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux = plus de points).</li>
               <li>📱 Parle <strong>près du micro</strong> de ton téléphone, bien fort.</li>
-              <li>🔊 S'il y a du bruit autour, appuie sur <strong>ENVOYER</strong> dès que tu as fini de parler — n'attends pas.</li>
+              <li>🤫 Arrête de parler quand tu as fini : l'envoi part <strong>tout seul</strong>. Tu peux aussi appuyer sur <strong>ENVOYER</strong>.</li>
               <li>⚡ Raté ? Tu peux <strong>re-buzzer aussitôt</strong>.</li>
             </ul>
             <button

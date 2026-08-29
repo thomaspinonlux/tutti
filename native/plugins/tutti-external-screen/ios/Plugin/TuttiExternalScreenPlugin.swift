@@ -40,10 +40,24 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
         NotificationCenter.default.addObserver(
             self, selector: #selector(screenDidDisconnect),
             name: UIScreen.didDisconnectNotification, object: nil)
+        // fix/tv-plein-ecran — la TV peut annoncer sa résolution définitive
+        // APRÈS l'ouverture de la fenêtre : on recadre à chaque changement.
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(screenModeDidChange),
+            name: UIScreen.modeDidChangeNotification, object: nil)
     }
 
     @objc func isConnected(_ call: CAPPluginCall) {
-        call.resolve(["connected": UIScreen.screens.count > 1])
+        let external = UIScreen.screens.first { $0 != UIScreen.main }
+        var payload: [String: Any] = ["connected": external != nil]
+        if let screen = external {
+            payload["width"] = Int(screen.bounds.width)
+            payload["height"] = Int(screen.bounds.height)
+            payload["scale"] = screen.scale
+            payload["windowWidth"] = Int(externalWindow?.frame.width ?? 0)
+            payload["windowHeight"] = Int(externalWindow?.frame.height ?? 0)
+        }
+        call.resolve(payload)
     }
 
     @objc func present(_ call: CAPPluginCall) {
@@ -76,21 +90,90 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
 
     private func showWindow(on screen: UIScreen, url: URL) {
         tearDown()
-        let window = UIWindow(frame: screen.bounds)
-        window.screen = screen
+
+        // fix/tv-plein-ecran — GÉOMÉTRIE DE L'ÉCRAN EXTERNE.
+        // Symptôme corrigé : l'image n'occupait qu'une partie de la TV (bande
+        // noire sur le côté). Trois causes possibles, toutes traitées ici :
+        //  1. iPadOS choisit par défaut un MODE d'affichage réduit sur la TV →
+        //     on force explicitement le mode de plus grande résolution.
+        //  2. L'overscan : on demande une mise à l'échelle propre.
+        //  3. `screen.bounds` n'est pas encore définitif à la connexion HDMI →
+        //     la fenêtre était dimensionnée sur une valeur provisoire. On
+        //     ré-applique donc la géométrie plusieurs fois après l'ouverture,
+        //     et à chaque changement de mode de l'écran.
+        if let best = screen.availableModes.max(by: {
+            ($0.size.width * $0.size.height) < ($1.size.width * $1.size.height)
+        }) {
+            screen.currentMode = best
+        }
+        screen.overscanCompensation = .scale
+
+        // Fenêtre rattachée à l'écran externe. Sur les iPadOS récents la scène
+        // dédiée à l'affichage externe existe parfois : on l'utilise en
+        // priorité (géométrie fiable), sinon on retombe sur `window.screen`.
+        let window: UIWindow
+        if let scene = externalWindowScene(for: screen) {
+            window = UIWindow(windowScene: scene)
+        } else {
+            window = UIWindow(frame: screen.bounds)
+            window.screen = screen
+        }
+        window.backgroundColor = .black
+        window.frame = screen.bounds
+
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
         let web = WKWebView(frame: window.bounds, configuration: config)
         web.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         web.navigationDelegate = self
+        web.backgroundColor = .black
+        web.isOpaque = false
+        web.scrollView.contentInsetAdjustmentBehavior = .never
+        web.scrollView.isScrollEnabled = false
+        web.insetsLayoutMarginsFromSafeArea = false
         web.load(URLRequest(url: url))
+
         let controller = UIViewController()
         controller.view = web
+        controller.view.backgroundColor = .black
         window.rootViewController = controller
         window.isHidden = false
+
         self.externalWindow = window
         self.externalWebView = web
+
+        CAPLog.print("TuttiExternalScreen: fenêtre ouverte, bounds=\(screen.bounds)")
+
+        // Ré-application différée de la géométrie (bounds définitifs).
+        for delay in [0.3, 1.0, 2.5, 5.0] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.applyLayout()
+            }
+        }
         startWatchdog()
+    }
+
+    /// Scène dédiée à un affichage externe, si iPadOS en a créé une.
+    private func externalWindowScene(for screen: UIScreen) -> UIWindowScene? {
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            if windowScene.screen === screen { return windowScene }
+        }
+        return nil
+    }
+
+    /// Recolle fenêtre + WebView aux dimensions RÉELLES de l'écran externe.
+    private func applyLayout() {
+        guard let window = externalWindow,
+              let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) else { return }
+        let bounds = screen.bounds
+        guard bounds.width > 0, bounds.height > 0 else { return }
+        if window.frame != bounds {
+            CAPLog.print("TuttiExternalScreen: recadrage \(window.frame) → \(bounds)")
+            window.frame = bounds
+        }
+        window.rootViewController?.view.frame = window.bounds
+        externalWebView?.frame = window.bounds
     }
 
     private func tearDown() {
@@ -187,6 +270,10 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
                 self.stalledChecks = 0
             }
         }
+    }
+
+    @objc private func screenModeDidChange() {
+        applyLayout()
     }
 
     @objc private func screenDidConnect() {

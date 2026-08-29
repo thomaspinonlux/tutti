@@ -535,6 +535,25 @@ router.post('/resume', async (req: Request<{ id: string }>, res: Response): Prom
   }
 });
 
+// ── POST /audio-kick ──────────────────────────────────────────────────────
+// feat/relancer-le-son-telecommande — l'animateur au téléphone constate que le
+// son ne part pas (blocage autoplay iOS au 1er lancement, lecteur coincé). Il
+// appuie sur « Relancer le son » : on ne touche à RIEN côté état de jeu, on
+// demande simplement à la CONSOLE (seule à émettre du son) de relancer le
+// morceau en cours sur son lecteur.
+router.post('/audio-kick', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  try {
+    broadcastToSession(req.params.id, 'audio:kick', {
+      session_id: req.params.id,
+      requested_by: req.master!.pseudo,
+    });
+    res.json({ ok: true });
+  } catch (err: unknown) {
+    console.error('[POST master/audio-kick] error:', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur relance son' } });
+  }
+});
+
 // ── POST /seek ────────────────────────────────────────────────────────────
 // feat/sans-animateur — la télécommande (master) demande un seek (avance/recul
 // ±10s → position absolue). On NE touche PAS started_at (ancre buzz/scoring) :

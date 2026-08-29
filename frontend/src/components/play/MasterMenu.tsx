@@ -39,6 +39,8 @@ export interface MasterMenuProps {
   hasActiveRound: boolean;
   /** feat/master-titres-restants — total de titres de la manche en cours. */
   tracksTotal?: number | null;
+  /** feat/relancer-le-son-telecommande — relance le son sur la console. */
+  onAudioKick?: () => void;
   busy: boolean;
   onReveal: () => Promise<void>;
   onSkipTrack: () => Promise<void>;
@@ -233,6 +235,17 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
       )}
 
       {/* feat/master-volume — réglage du volume de la console depuis la manette. */}
+      {props.hasActiveRound && track && props.onAudioKick && (
+        <button
+          type="button"
+          onClick={props.onAudioKick}
+          disabled={props.busy}
+          className="mb-3 w-full rounded-2xl border-4 border-ink bg-spritz py-3 font-display text-lg active:translate-y-0.5 disabled:opacity-50"
+        >
+          🔊 RELANCER LE SON
+        </button>
+      )}
+
       {props.hasActiveRound && track && props.onSetVolume && (
         <div className="mb-3 flex items-center gap-2">
           <span aria-hidden className="text-base">
