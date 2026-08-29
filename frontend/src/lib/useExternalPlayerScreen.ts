@@ -55,6 +55,26 @@ export function useExternalPlayerScreen({ webOrigin, workspaceId, active }: Opti
     }
 
     const url = `${webOrigin.replace(/\/$/, '')}/screen?workspace=${encodeURIComponent(workspaceId)}`;
+
+    // feat/tv-native — MODE PRÉFÉRÉ : écran joueurs dessiné par l'app (UIKit).
+    // Aucune WebView sur la TV → rien qu'iOS puisse geler, et la vue lit le
+    // lecteur de l'app pour ne jamais afficher un morceau que la salle
+    // n'entend pas encore. La supervision « signe de vie » ne s'applique PAS
+    // ici : elle mesure les interrogations de la page web, qui n'existe plus.
+    if (externalScreen.supportsNative()) {
+      const apiBase =
+        (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
+      void externalScreen.presentNative(apiBase, workspaceId).then((ok) => {
+        if (!ok) {
+          console.warn('[externalScreen] TV native indisponible → repli WebView');
+          void externalScreen.present(url);
+        }
+      });
+      return () => {
+        void externalScreen.dismiss();
+      };
+    }
+
     void externalScreen.present(url);
 
     let staleChecks = 0;

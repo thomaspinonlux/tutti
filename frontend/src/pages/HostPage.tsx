@@ -64,6 +64,7 @@ import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
 import { useAppleMusicPlayer } from '../lib/useAppleMusicPlayer.js';
 import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
 import { useExternalPlayerScreen } from '../lib/useExternalPlayerScreen.js';
+import { externalScreen } from '../lib/externalScreen.js';
 import { useSelectionBackgroundMusic } from '../lib/useSelectionBackgroundMusic.js';
 import { isCapacitorNative, getShareableOrigin } from '../lib/platform.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
@@ -1086,6 +1087,57 @@ function HostPageInner(): JSX.Element {
   };
   audioUnlockRef.current = handleAudioUnlockTap;
 
+  // feat/tv-native — VÉRITÉ DU LECTEUR poussée à la TV native, 5×/s, sans
+  // réseau (même app, même processus).
+  //
+  // Règle anti-décalage : on ne déclare un morceau à la TV que lorsque le
+  // LECTEUR confirme le jouer — identité vérifiée pour Apple Music
+  // (readNowPlayingId), position > 0 pour YouTube. Tant que la confirmation
+  // n'arrive pas, la TV reste sur le morceau précédent : elle ne peut donc
+  // jamais afficher un titre que la salle n'entend pas encore.
+  //
+  // Soupape : au-delà de 3 s sans confirmation (lecteur muet, source exotique)
+  // on laisse passer l'état serveur, pour qu'une TV ne reste jamais bloquée.
+  const currentTrackRef = useRef<CurrentTrackState | null>(null);
+  const appleRef = useRef(apple);
+  const audioPositionRef = useRef(0);
+  const audioDurationRef = useRef(0);
+  const audioPausedRef = useRef(true);
+  const confirmedTvTrackRef = useRef<string>('');
+  useEffect(() => {
+    if (!externalScreen.isAvailable() || !externalScreen.supportsNative()) return;
+    const id = window.setInterval(() => {
+      const track = currentTrackRef.current;
+      if (!track) {
+        void externalScreen.updatePlayback({
+          trackId: '',
+          positionMs: 0,
+          durationMs: 0,
+          isPaused: true,
+        });
+        return;
+      }
+      let confirmed = false;
+      if (track.provider === 'apple_music') {
+        confirmed = appleRef.current.readNowPlayingId() === track.provider_track_id;
+      } else {
+        confirmed = audioPositionRef.current > 0;
+      }
+      const graceExpired = Date.now() - appleTrackChangedAtRef.current > 3000;
+      if (confirmed || graceExpired) {
+        confirmedTvTrackRef.current = track.track_id;
+      }
+      void externalScreen.updatePlayback({
+        trackId: confirmedTvTrackRef.current,
+        positionMs: audioPositionRef.current,
+        durationMs: audioDurationRef.current,
+        isPaused: audioPausedRef.current,
+      });
+    }, 200);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Position/durée = lecteur LOCAL de la console (elle joue toujours le son).
   const isYouTubeTrack = currentTrack?.provider === 'youtube';
   const isAppleTrack = currentTrack?.provider === 'apple_music';
@@ -1099,6 +1151,15 @@ function HostPageInner(): JSX.Element {
     : isAppleTrack
       ? apple.durationMs
       : spotify.durationMs;
+
+  // feat/tv-native — tient à jour les refs lues par la boucle de poussée TV.
+  useEffect(() => {
+    currentTrackRef.current = currentTrack;
+    appleRef.current = apple;
+    audioPositionRef.current = audioPositionMs;
+    audioDurationRef.current = audioDurationMs;
+    audioPausedRef.current = session?.is_paused ?? false;
+  });
 
   // feat/sans-animateur — seek demandé par la télécommande (broadcast track:seek).
   // Appliqué sur le lecteur LOCAL de la console (seule à émettre du son). State +

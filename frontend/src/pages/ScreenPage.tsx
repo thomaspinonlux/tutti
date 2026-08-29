@@ -69,22 +69,6 @@ export function ScreenPage(): JSX.Element {
   const idleStreakRef = useRef(0);
 
   // Auto-detect workspaceId via cookies Supabase si pas en param URL
-  // fix/tv-plein-ecran — badge de diagnostic : taille RÉELLE de la fenêtre TV,
-  // affiché 8 s au démarrage. Si la TV n'occupe pas tout l'écran, ces chiffres
-  // disent exactement quelle surface la fenêtre externe a reçue.
-  const [viewportBadge, setViewportBadge] = useState<string | null>(null);
-  useEffect(() => {
-    const show = (): void =>
-      setViewportBadge(`${window.innerWidth}×${window.innerHeight}`);
-    show();
-    window.addEventListener('resize', show);
-    const hide = window.setTimeout(() => setViewportBadge(null), 8_000);
-    return () => {
-      window.removeEventListener('resize', show);
-      window.clearTimeout(hide);
-    };
-  }, []);
-
   // fix/tv-freeze — BATTEMENT DE COEUR pour le chien de garde NATIF.
   // La page publie window.__tuttiBeat = Date.now() chaque seconde. Le plugin
   // natif (iPad) le lit toutes les 4 s : battement arrêté ~8 s → il détruit et
@@ -482,11 +466,6 @@ function ScreenIdleView(): JSX.Element {
   const { t } = useTranslation();
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white relative overflow-hidden">
-      {viewportBadge && (
-        <div className="fixed bottom-2 right-2 z-[80] rounded bg-black/70 px-2 py-1 font-mono text-[11px] text-white/70">
-          {viewportBadge}
-        </div>
-      )}
       <MultiColorBar height="md" />
       <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden opacity-70">
         <FloatingVinyl size={140} top="12%" left="8%" delay="0s" />

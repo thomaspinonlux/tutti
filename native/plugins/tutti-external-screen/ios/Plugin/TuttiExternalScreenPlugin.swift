@@ -30,6 +30,10 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     private var externalWindow: UIWindow?
     private var externalWebView: WKWebView?
     private var pendingURL: URL?
+    /// feat/tv-native — écran joueurs rendu NATIVEMENT (aucune WebView).
+    private var nativeTv: TuttiTvViewController?
+    private var pendingNativeApiBase: String?
+    private var pendingNativeWorkspaceId: String?
     private var watchdogTimer: Timer?
     private var pingFailures = 0
 
@@ -66,6 +70,8 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
             return
         }
         pendingURL = url
+        pendingNativeApiBase = nil
+        pendingNativeWorkspaceId = nil
         DispatchQueue.main.async {
             let external = UIScreen.screens.first { $0 != UIScreen.main }
             guard let screen = external else {
@@ -79,7 +85,58 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
         }
     }
 
+    /**
+     * feat/tv-native — ouvre l'écran joueurs en rendu NATIF sur la TV.
+     *
+     * Aucune WebView : plus rien qu'iOS puisse tuer sous pression mémoire, et
+     * la vue lit directement le lecteur de l'app pour ne jamais afficher un
+     * morceau que la salle n'entend pas encore.
+     */
+    @objc func presentNative(_ call: CAPPluginCall) {
+        guard let apiBase = call.getString("apiBase"),
+              let workspaceId = call.getString("workspaceId"),
+              !apiBase.isEmpty, !workspaceId.isEmpty else {
+            call.reject("apiBase et workspaceId requis")
+            return
+        }
+        pendingURL = nil
+        pendingNativeApiBase = apiBase
+        pendingNativeWorkspaceId = workspaceId
+        DispatchQueue.main.async {
+            guard let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) else {
+                call.resolve(["presented": false])
+                return
+            }
+            self.showNativeWindow(on: screen, apiBase: apiBase, workspaceId: workspaceId)
+            call.resolve(["presented": true])
+        }
+    }
+
+    /**
+     * feat/tv-native — VÉRITÉ DU LECTEUR poussée par la console, sans réseau.
+     * `trackId` est l'identifiant du morceau RÉELLEMENT en cours de lecture :
+     * la TV ne bascule sur un nouveau morceau que lorsqu'il arrive ici. C'est
+     * ce qui rend tout décalage image/son structurellement impossible.
+     */
+    @objc func updatePlayback(_ call: CAPPluginCall) {
+        let trackId = call.getString("trackId") ?? ""
+        let positionMs = call.getDouble("positionMs") ?? 0
+        let durationMs = call.getDouble("durationMs") ?? 0
+        let isPaused = call.getBool("isPaused") ?? false
+        DispatchQueue.main.async {
+            self.nativeTv?.updatePlayback(
+                trackId: trackId,
+                positionMs: positionMs,
+                durationMs: durationMs,
+                isPaused: isPaused)
+            call.resolve()
+        }
+    }
+
     @objc func dismiss(_ call: CAPPluginCall) {
+        pendingURL = nil
+        pendingNativeApiBase = nil
+        pendingNativeWorkspaceId = nil
         DispatchQueue.main.async {
             self.tearDown()
             call.resolve()
@@ -153,6 +210,45 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
         startWatchdog()
     }
 
+    /// feat/tv-native — même géométrie que la version web, mais la fenêtre
+    /// héberge le contrôleur natif au lieu d'une WebView.
+    private func showNativeWindow(on screen: UIScreen, apiBase: String, workspaceId: String) {
+        tearDown()
+
+        if let best = screen.availableModes.max(by: {
+            ($0.size.width * $0.size.height) < ($1.size.width * $1.size.height)
+        }) {
+            screen.currentMode = best
+        }
+        screen.overscanCompensation = .scale
+
+        let window: UIWindow
+        if let scene = externalWindowScene(for: screen) {
+            window = UIWindow(windowScene: scene)
+        } else {
+            window = UIWindow(frame: screen.bounds)
+            window.screen = screen
+        }
+        window.backgroundColor = .black
+        window.frame = screen.bounds
+
+        let tv = TuttiTvViewController(apiBase: apiBase, workspaceId: workspaceId)
+        window.rootViewController = tv
+        window.isHidden = false
+
+        self.externalWindow = window
+        self.nativeTv = tv
+        self.externalWebView = nil
+
+        CAPLog.print("TuttiExternalScreen: TV NATIVE ouverte, bounds=\(screen.bounds)")
+
+        for delay in [0.3, 1.0, 2.5, 5.0] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.applyLayout()
+            }
+        }
+    }
+
     /// Scène dédiée à un affichage externe, si iPadOS en a créé une.
     private func externalWindowScene(for screen: UIScreen) -> UIWindowScene? {
         for scene in UIApplication.shared.connectedScenes {
@@ -178,6 +274,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
 
     private func tearDown() {
         stopWatchdog()
+        nativeTv = nil
         externalWebView?.navigationDelegate = nil
         externalWebView = nil
         externalWindow?.isHidden = true
@@ -187,8 +284,15 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     /// Reconstruit intégralement fenêtre + WebView sur l'écran externe courant.
     private func rebuild(reason: String) {
         CAPLog.print("TuttiExternalScreen: rebuild (\(reason))")
-        guard let url = pendingURL,
-              let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) else {
+        guard let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) else {
+            tearDown()
+            return
+        }
+        if let apiBase = pendingNativeApiBase, let workspaceId = pendingNativeWorkspaceId {
+            showNativeWindow(on: screen, apiBase: apiBase, workspaceId: workspaceId)
+            return
+        }
+        guard let url = pendingURL else {
             tearDown()
             return
         }
@@ -277,8 +381,12 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     }
 
     @objc private func screenDidConnect() {
-        guard let url = pendingURL else { return }
-        if let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) {
+        guard let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) else { return }
+        if let apiBase = pendingNativeApiBase, let workspaceId = pendingNativeWorkspaceId {
+            showNativeWindow(on: screen, apiBase: apiBase, workspaceId: workspaceId)
+            return
+        }
+        if let url = pendingURL {
             showWindow(on: screen, url: url)
         }
     }
