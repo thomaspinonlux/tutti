@@ -63,7 +63,7 @@ import { useYouTubePlayer } from '../lib/useYouTubePlayer.js';
 import { useYouTubeAudioSync } from '../lib/useYouTubeAudioSync.js';
 import { useAppleMusicPlayer } from '../lib/useAppleMusicPlayer.js';
 import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
-import { useExternalPlayerScreen } from '../lib/useExternalPlayerScreen.js';
+import { useExternalPlayerScreen, USE_NATIVE_TV } from '../lib/useExternalPlayerScreen.js';
 import { externalScreen } from '../lib/externalScreen.js';
 import { useSelectionBackgroundMusic } from '../lib/useSelectionBackgroundMusic.js';
 import { isCapacitorNative, getShareableOrigin } from '../lib/platform.js';
@@ -1074,6 +1074,14 @@ function HostPageInner(): JSX.Element {
   const audioPausedRef = useRef(true);
   const confirmedTvTrackRef = useRef<string>('');
   useEffect(() => {
+    // fix/console-figee — GARDE CAPITALE. Sans `USE_NATIVE_TV`, cette boucle
+    // envoyait 5 messages par seconde au code natif sur tout iPad dont le
+    // binaire connaît la TV native — alors même que la TV native est ÉTEINTE.
+    // Sur l'écran de sélection (des centaines de vignettes déjà lourdes), ce
+    // flux saturait le pont JS↔natif et figeait la console : impossible de
+    // lancer une playlist. La boucle ne tourne désormais QUE si la TV native
+    // est réellement active.
+    if (!USE_NATIVE_TV) return;
     if (!externalScreen.isAvailable() || !externalScreen.supportsNative()) return;
     const id = window.setInterval(() => {
       const track = currentTrackRef.current;

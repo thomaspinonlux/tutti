@@ -42,7 +42,7 @@ const REVIVE_COOLDOWN_MS = 15_000;
  * Le code natif reste en place, prêt à être réactivé quand il rendra
  * strictement tout ce que la version web affiche.
  */
-const USE_NATIVE_TV = false;
+export const USE_NATIVE_TV = false;
 
 interface Options {
   /** Origine web hébergée à charger sur l'écran externe (ex: https://app.tutti…). */

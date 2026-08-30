@@ -59,9 +59,22 @@ export function useSelectionBackgroundMusic({ enabled }: Options): void {
     attemptPlay();
     // fix/selection-music-mode-b — en Mode B, PERSONNE ne touche l'iPad entre
     // deux manches (l'animateur pilote depuis son téléphone) : le « premier
-    // geste utilisateur » n'arrive jamais. Réessai toutes les 2 s + au geste.
-    const retryId = window.setInterval(attemptPlay, 2000);
-    window.addEventListener('pointerdown', attemptPlay);
+    // geste utilisateur » n'arrive jamais. D'où un réessai périodique.
+    //
+    // fix/console-figee — le réessai S'ARRÊTE dès que la musique démarre, et
+    // le rattrapage au premier toucher est en `once` : avant, chaque tap sur
+    // une vignette de playlist déclenchait un appel audio supplémentaire, ce
+    // qui alourdissait l'écran de sélection au pire moment.
+    let retryId = 0;
+    const tick = (): void => {
+      if (!audio.paused) {
+        window.clearInterval(retryId);
+        return;
+      }
+      attemptPlay();
+    };
+    retryId = window.setInterval(tick, 2000);
+    window.addEventListener('pointerdown', attemptPlay, { once: true });
 
     return () => {
       window.clearInterval(retryId);
