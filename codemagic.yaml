@@ -157,6 +157,17 @@ workflows:
           sed -i '' "s/platform :ios, '[0-9.]*'/platform :ios, '15.0'/" ios/App/Podfile
           sed -i '' "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 15.0;/g" ios/App/App.xcodeproj/project.pbxproj
           pnpm exec cap sync ios
+          # feat/logo-app — ICÔNE DE L'APP. Le projet iOS est régénéré à chaque
+          # build par `cap add ios`, avec l'icône par défaut de Capacitor. On
+          # installe donc la nôtre APRÈS la génération, depuis le fichier
+          # versionné native/assets/AppIcon-1024.png (1024x1024, SANS canal
+          # alpha : l'App Store refuse les icônes transparentes).
+          ICONSET="ios/App/App/Assets.xcassets/AppIcon.appiconset"
+          mkdir -p "$ICONSET"
+          cp assets/AppIcon-1024.png "$ICONSET/AppIcon-512@2x.png"
+          printf '%s' '{"images":[{"filename":"AppIcon-512@2x.png","idiom":"universal","platform":"ios","size":"1024x1024"}],"info":{"author":"xcode","version":1}}' > "$ICONSET/Contents.json"
+          echo "Icone Tutti installee :"
+          ls -la "$ICONSET"
           # Export compliance : Tutti n'utilise que du HTTPS standard (chiffrement
           # EXEMPTÉ). On déclare `ITSAppUsesNonExemptEncryption=false` dans
           # l'Info.plist → chaque build est auto-conforme, plus de blocage
