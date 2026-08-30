@@ -398,6 +398,16 @@ function IPadFooter({
   onSkipTrack,
   onGiveAnswer,
   onNextTrack,
+  onPause,
+  onResume,
+  onRestartTrack,
+  onSeekBack,
+  onSeekForward,
+  onAudioKick,
+  onEndRound,
+  lyricsAvailable,
+  lyricsOn,
+  onToggleLyrics,
 }: {
   participantsCount: number;
   currentTrack: CurrentTrackState | null;
@@ -409,6 +419,17 @@ function IPadFooter({
   onSkipTrack?: () => void;
   onGiveAnswer?: () => void;
   onNextTrack?: () => void;
+  /** fix/boutons-identiques — parité complète avec la télécommande animateur. */
+  onPause?: () => void;
+  onResume?: () => void;
+  onRestartTrack?: () => void;
+  onSeekBack?: () => void;
+  onSeekForward?: () => void;
+  onAudioKick?: () => void;
+  onEndRound?: () => void;
+  lyricsAvailable?: boolean;
+  lyricsOn?: boolean;
+  onToggleLyrics?: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const fallbackElapsed = useTimeElapsed(currentTrack?.started_at ?? null, isPaused);
@@ -425,8 +446,8 @@ function IPadFooter({
 
   return (
     <footer
-      className="relative bg-ink text-cream px-8 flex items-center gap-6"
-      style={{ height: 100 }}
+      className="relative bg-ink text-cream px-8 py-3 flex items-center gap-6"
+      style={{ minHeight: 100 }}
     >
       <div className="flex items-center gap-2 font-bold text-sm">
         <span className="w-2.5 h-2.5 rounded-full bg-basil animate-pulse-buzz" aria-hidden />
@@ -455,7 +476,49 @@ function IPadFooter({
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      {/* fix/boutons-identiques — la console iPad expose EXACTEMENT les mêmes
+          actions que la télécommande animateur : pause/reprise, recommencer,
+          ±10 s, révéler, sauter, suivant, paroles, relancer le son, terminer
+          la manche. Avant, elle n'en avait que trois. */}
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {isPaused ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onResume}
+            disabled={busy || !onResume}
+          >
+            ▶ {t('screen.btnResume')}
+          </Button>
+        ) : (
+          <Button variant="secondary" size="sm" onClick={onPause} disabled={busy || !onPause}>
+            ⏸ {t('screen.btnPause')}
+          </Button>
+        )}
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onRestartTrack}
+          disabled={busy || !currentTrack || !onRestartTrack}
+        >
+          ↺ {t('screen.btnRestart')}
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onSeekBack}
+          disabled={busy || !currentTrack || !onSeekBack}
+        >
+          −10s
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onSeekForward}
+          disabled={busy || !currentTrack || !onSeekForward}
+        >
+          +10s
+        </Button>
         <Button
           variant="secondary"
           size="sm"
@@ -472,6 +535,26 @@ function IPadFooter({
         >
           💡 {t('screen.btnGiveAnswer')}
         </Button>
+        {lyricsAvailable && onToggleLyrics && (
+          <Button variant="secondary" size="sm" onClick={onToggleLyrics} disabled={busy}>
+            🎤 {lyricsOn ? t('screen.btnLyricsHide') : t('screen.btnLyricsShow')}
+          </Button>
+        )}
+        {onAudioKick && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onAudioKick}
+            disabled={busy || !currentTrack}
+          >
+            🔊 {t('screen.btnAudioKick')}
+          </Button>
+        )}
+        {onEndRound && (
+          <Button variant="secondary" size="sm" onClick={onEndRound} disabled={busy}>
+            ⏹ {t('screen.btnEndRound')}
+          </Button>
+        )}
         <Button
           variant="primary"
           size="sm"
@@ -870,6 +953,17 @@ export interface MainScreenViewProps {
   onSkipTrack?: () => void;
   onGiveAnswer?: () => void;
   onNextTrack?: () => void;
+  /** fix/boutons-identiques — parité complète avec la télécommande animateur. */
+  onPause?: () => void;
+  onResume?: () => void;
+  onRestartTrack?: () => void;
+  onSeekBack?: () => void;
+  onSeekForward?: () => void;
+  onAudioKick?: () => void;
+  onEndRound?: () => void;
+  lyricsAvailable?: boolean;
+  lyricsOn?: boolean;
+  onToggleLyrics?: () => void;
 }
 
 export function MainScreenView(props: MainScreenViewProps): JSX.Element {
@@ -888,6 +982,16 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
     onSkipTrack,
     onGiveAnswer,
     onNextTrack,
+    onPause,
+    onResume,
+    onRestartTrack,
+    onSeekBack,
+    onSeekForward,
+    onAudioKick,
+    onEndRound,
+    lyricsAvailable,
+    lyricsOn,
+    onToggleLyrics,
   } = props;
   const { t } = useTranslation();
 
@@ -1065,6 +1169,16 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
         onSkipTrack={onSkipTrack}
         onGiveAnswer={onGiveAnswer}
         onNextTrack={onNextTrack}
+        onPause={onPause}
+        onResume={onResume}
+        onRestartTrack={onRestartTrack}
+        onSeekBack={onSeekBack}
+        onSeekForward={onSeekForward}
+        onAudioKick={onAudioKick}
+        onEndRound={onEndRound}
+        lyricsAvailable={lyricsAvailable}
+        lyricsOn={lyricsOn}
+        onToggleLyrics={onToggleLyrics}
       />
 
       {/* Overlay PAUSE master */}

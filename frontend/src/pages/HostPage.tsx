@@ -1049,6 +1049,13 @@ function HostPageInner(): JSX.Element {
   // plein écran. La relance du son reste possible, mais UNIQUEMENT à la
   // demande explicite de l'animateur (bouton de la télécommande).
   const audioUnlockRef = useRef<() => void>(() => undefined);
+  // fix/boutons-identiques — ±10 s depuis la console, via le MÊME mécanisme
+  // que la télécommande (pendingSeek → lecteur local). Aucun nouveau chemin.
+  const handleConsoleSeek = (deltaMs: number): void => {
+    const target = Math.max(0, (audioPositionRef.current || 0) + deltaMs);
+    setPendingSeek({ ms: target, at: Date.now() });
+  };
+
   const handleAudioUnlockTap = (): void => {
     if (currentTrack?.provider === 'apple_music') {
       void apple.play(currentTrack.provider_track_id);
@@ -2034,6 +2041,16 @@ function HostPageInner(): JSX.Element {
           onSkipTrack={handleSkipTrack}
           onGiveAnswer={handleGiveAnswer}
           onNextTrack={handleNextTrack}
+          onPause={() => void handlePauseAudio()}
+          onResume={() => void handleResumeAudio()}
+          onRestartTrack={() => void handleRestartTrack()}
+          onSeekBack={() => handleConsoleSeek(-10_000)}
+          onSeekForward={() => handleConsoleSeek(10_000)}
+          onAudioKick={handleAudioUnlockTap}
+          onEndRound={() => void handleEndCurrentRound()}
+          lyricsAvailable={canShowLyrics}
+          lyricsOn={lyricsOn}
+          onToggleLyrics={toggleLyrics}
         />
         <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-xs">
           {toasts.map((toast) => (

@@ -641,7 +641,14 @@
     "roundPodiumTitle": "Top du moment",
     "roundRankingTitle": "Classement de la manche",
     "generalRankingTitle": "Classement général",
-    "roundPodiumWaiting": "L'animateur prépare la prochaine manche…"
+    "roundPodiumWaiting": "L'animateur prépare la prochaine manche…",
+    "btnPause": "Pause",
+    "btnResume": "Reprendre",
+    "btnRestart": "Recommencer",
+    "btnLyricsShow": "Paroles",
+    "btnLyricsHide": "Masquer paroles",
+    "btnAudioKick": "Relancer le son",
+    "btnEndRound": "Terminer la manche"
   },
   "play": {
     "missingCode": "Lien invalide. Demande à l'animateur de te scanner le QR code.",

@@ -641,7 +641,14 @@
     "roundPodiumTitle": "Top of the moment",
     "roundRankingTitle": "Round ranking",
     "generalRankingTitle": "Overall ranking",
-    "roundPodiumWaiting": "The animator is preparing the next round…"
+    "roundPodiumWaiting": "The animator is preparing the next round…",
+    "btnPause": "Pause",
+    "btnResume": "Resume",
+    "btnRestart": "Restart",
+    "btnLyricsShow": "Lyrics",
+    "btnLyricsHide": "Hide lyrics",
+    "btnAudioKick": "Restart sound",
+    "btnEndRound": "End round"
   },
   "play": {
     "missingCode": "Invalid link. Ask the host to scan the QR code.",

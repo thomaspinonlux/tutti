@@ -202,16 +202,28 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               {Math.max(0, props.tracksTotal - (track.track_index + 1))}
             </p>
           )}
-          <p className="font-medium text-sm truncate">
-            {hasMeta ? (
-              <>
-                {track.title}
-                {track.artist ? <span className="text-ink-soft"> — {track.artist}</span> : null}
-              </>
-            ) : (
-              <span className="text-ink-soft">♪ Lecture en cours…</span>
+          {/* feat/pochettes-album — pochette du morceau en cours, à côté du
+              titre. Rendue seulement si le serveur l'a fournie : avant la
+              révélation elle est nulle pour un animateur-joueur (anti-triche). */}
+          <div className="flex items-center gap-2.5">
+            {track.cover_url && (
+              <img
+                src={track.cover_url}
+                alt=""
+                className="h-11 w-11 shrink-0 rounded-md border-2 border-ink object-cover"
+              />
             )}
-          </p>
+            <p className="min-w-0 flex-1 font-medium text-sm truncate">
+              {hasMeta ? (
+                <>
+                  {track.title}
+                  {track.artist ? <span className="text-ink-soft"> — {track.artist}</span> : null}
+                </>
+              ) : (
+                <span className="text-ink-soft">♪ Lecture en cours…</span>
+              )}
+            </p>
+          </div>
           <div className="flex items-center justify-between font-mono text-xs text-ink-soft mt-1 mb-1">
             <span className="tabular-nums">{fmtTime(displayLeftMs)}</span>
             {durationMs ? (
@@ -353,7 +365,12 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           )}
 
         {/* Réponse (action clé, plus large) / Morceau suivant — phase1 */}
-        {phase === 'phase1' && !props.isPaused && (
+        {/* fix/boutons-identiques — RÉVÉLER + SAUTER : mêmes conditions que la
+            console iPad (phase 1 ET phase 2, y compris en pause). Avant, la
+            télécommande n'affichait ces boutons qu'en phase 1 hors pause :
+            dès qu'un joueur avait trouvé, « Révéler la réponse » disparaissait
+            et semblait « ne pas réagir ». */}
+        {(phase === 'phase1' || phase === 'phase2') && (
           <div className="col-span-2 grid grid-cols-[1.4fr_1fr] gap-2.5">
             <CtrlButton
               tone="key"
