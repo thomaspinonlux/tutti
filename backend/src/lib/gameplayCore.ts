@@ -756,7 +756,11 @@ export async function revealCurrentTrack(
 
   const track = await prisma.track.findUnique({
     where: { id: active.track_id },
-    select: { canonical_title: true, artist: { select: { canonical_name: true } } },
+    select: {
+      canonical_title: true,
+      cover_url: true,
+      artist: { select: { canonical_name: true } },
+    },
   });
   if (!track) return null;
 
@@ -766,6 +770,10 @@ export async function revealCurrentTrack(
     track_index: active.track_index,
     artist: track.artist.canonical_name,
     title: track.canonical_title,
+    // feat/pochette-ecran-joueur — la pochette accompagne la RÉVÉLATION.
+    // Aucune fuite : ce broadcast n'a lieu qu'une fois le morceau révélé à
+    // tout le monde (avant, `stripTrackAnswer` la met à null pour les joueurs).
+    cover_url: track.cover_url,
   };
   // Bug fix — broadcast track:phase_changed AVANT track:revealed pour que
   // les clients (HostPage, ScreenPage, PlayPage) mettent à jour
@@ -777,6 +785,7 @@ export async function revealCurrentTrack(
     phase: 'phase3-revealed',
     artist: track.artist.canonical_name,
     title: track.canonical_title,
+    cover_url: track.cover_url,
   });
   broadcastToSession(sessionId, 'track:revealed', payload);
   return {

@@ -138,7 +138,13 @@ export function PlayPage(): JSX.Element {
   const [currentRound, setCurrentRound] = useState<SessionRoundWithPlaylist | null>(null);
   const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
-  const [lastReveal, setLastReveal] = useState<{ artist: string; title: string } | null>(null);
+  const [lastReveal, setLastReveal] = useState<{
+    artist: string;
+    title: string;
+    // feat/pochette-ecran-joueur — pochette du morceau, envoyée par le serveur
+    // AU MOMENT de la révélation uniquement.
+    cover_url?: string | null;
+  } | null>(null);
   const [phase2StartedAt, setPhase2StartedAt] = useState<string | null>(null);
   const [myScore, setMyScore] = useState(0);
   const [micRequesting, setMicRequesting] = useState(false);
@@ -481,11 +487,23 @@ export function PlayPage(): JSX.Element {
         }
       },
     );
-    sock.on('track:revealed', (payload: { round_id: string; artist: string; title: string }) => {
-      // Cohérent avec phase_changed → phase3-revealed mais conservé pour
-      // compat ascendante.
-      setLastReveal({ artist: payload.artist, title: payload.title });
-    });
+    sock.on(
+      'track:revealed',
+      (payload: {
+        round_id: string;
+        artist: string;
+        title: string;
+        cover_url?: string | null;
+      }) => {
+        // Cohérent avec phase_changed → phase3-revealed mais conservé pour
+        // compat ascendante.
+        setLastReveal({
+          artist: payload.artist,
+          title: payload.title,
+          cover_url: payload.cover_url ?? null,
+        });
+      },
+    );
     sock.on('session:paused', () => setIsPaused(true));
     sock.on('session:resumed', () => setIsPaused(false));
     sock.on('scores:invalidated', () => {
@@ -1163,7 +1181,7 @@ interface PlayingViewProps {
   /** Réponses correctes accumulées sur le track courant (broadcast track:correct_answer). */
   correctAnswers: CorrectAnswerEntry[];
   /** Reveal master (phase3-revealed) ou null si phase3 normale. */
-  lastReveal: { artist: string; title: string } | null;
+  lastReveal: { artist: string; title: string; cover_url?: string | null } | null;
   /** Phase 2 a démarré à cette date — pour calculer le chrono côté UI. */
   phase2StartedAt: string | null;
   busy: boolean;
@@ -1716,6 +1734,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         <ResultPanel
           artist={lastReveal?.artist ?? currentTrack?.artist ?? '???'}
           title={lastReveal?.title ?? currentTrack?.title ?? '???'}
+          coverUrl={lastReveal?.cover_url ?? currentTrack?.cover_url ?? null}
         />
       )}
 
@@ -1922,7 +1941,16 @@ function LateBanner({
   );
 }
 
-function ResultPanel({ artist, title }: { artist: string; title: string }): JSX.Element {
+function ResultPanel({
+  artist,
+  title,
+  coverUrl,
+}: {
+  artist: string;
+  title: string;
+  /** feat/pochette-ecran-joueur — pochette affichée à la révélation. */
+  coverUrl?: string | null;
+}): JSX.Element {
   const { t } = useTranslation();
   return (
     <div
@@ -1932,6 +1960,14 @@ function ResultPanel({ artist, title }: { artist: string; title: string }): JSX.
       <p className="text-[10px] uppercase tracking-widest font-bold opacity-70 mb-1">
         {t('play.resultPanelLabel')}
       </p>
+      {coverUrl && (
+        <img
+          src={coverUrl}
+          alt=""
+          className="mx-auto mb-2 h-28 w-28 rounded-lg border-2 border-ink object-cover"
+          style={{ boxShadow: '3px 3px 0 #ee6c2a' }}
+        />
+      )}
       <p className="font-display text-2xl text-ink leading-none mb-1">{artist}</p>
       <p className="font-editorial italic text-sm text-raspberry font-semibold">{title}</p>
     </div>

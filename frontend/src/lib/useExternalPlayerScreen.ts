@@ -35,6 +35,15 @@ const STALE_THRESHOLD_MS = 6_000;
 /** Après une relance, on laisse la TV redémarrer avant de rejuger. */
 const REVIVE_COOLDOWN_MS = 15_000;
 
+/**
+ * fix/retour-ecran-web — DÉSACTIVÉ. La TV native (phase 1) n'affichait pas
+ * encore la grille de playlists ni les écrans complets : régression visuelle
+ * en exploitation. On repasse donc à l'écran joueurs WEB, complet et connu.
+ * Le code natif reste en place, prêt à être réactivé quand il rendra
+ * strictement tout ce que la version web affiche.
+ */
+const USE_NATIVE_TV = false;
+
 interface Options {
   /** Origine web hébergée à charger sur l'écran externe (ex: https://app.tutti…). */
   webOrigin: string;
@@ -61,7 +70,7 @@ export function useExternalPlayerScreen({ webOrigin, workspaceId, active }: Opti
     // lecteur de l'app pour ne jamais afficher un morceau que la salle
     // n'entend pas encore. La supervision « signe de vie » ne s'applique PAS
     // ici : elle mesure les interrogations de la page web, qui n'existe plus.
-    if (externalScreen.supportsNative()) {
+    if (USE_NATIVE_TV && externalScreen.supportsNative()) {
       const apiBase =
         (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
       void externalScreen.presentNative(apiBase, workspaceId).then((ok) => {

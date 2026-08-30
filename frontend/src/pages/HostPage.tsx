@@ -1044,43 +1044,12 @@ function HostPageInner(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTrack?.provider_track_id, currentTrack?.provider, apple.isPlaying]);
 
-  // fix/premier-lancement-muet — DÉTECTEUR DE LECTEUR MUET. Si un morceau est
-  // censé jouer (pas en pause) mais que la position ne bouge pas pendant 3.5 s
-  // (autoplay bloqué par iOS/Safari au premier lancement, ou lecteur coincé),
-  // on affiche un GROS bouton « Relancer le son » : le tap est un geste
-  // utilisateur → iOS autorise TOUJOURS la lecture depuis ce contexte.
-  const [audioNeedsTap, setAudioNeedsTap] = useState(false);
-  const stallSampleRef = useRef<{ pos: number; t: number }>({ pos: -1, t: 0 });
-  useEffect(() => {
-    if (!currentTrack || currentTrack.provider !== 'apple_music') {
-      setAudioNeedsTap(false);
-      return;
-    }
-    const id = window.setInterval(() => {
-      if (session?.is_paused) {
-        stallSampleRef.current = { pos: -1, t: 0 };
-        setAudioNeedsTap(false);
-        return;
-      }
-      const pos = apple.positionMs;
-      const sample = stallSampleRef.current;
-      if (sample.pos !== pos) {
-        stallSampleRef.current = { pos, t: Date.now() };
-        setAudioNeedsTap(false);
-        return;
-      }
-      if (Date.now() - sample.t > 3500) setAudioNeedsTap(true);
-    }, 1000);
-    return () => {
-      window.clearInterval(id);
-      stallSampleRef.current = { pos: -1, t: 0 };
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTrack?.provider_track_id, currentTrack?.provider, session?.is_paused]);
+  // fix/retour-ecran-web — DÉTECTEUR AUTOMATIQUE SUPPRIMÉ. Il se déclenchait
+  // sur des lectures parfaitement normales et affichait un bouton bloquant en
+  // plein écran. La relance du son reste possible, mais UNIQUEMENT à la
+  // demande explicite de l'animateur (bouton de la télécommande).
   const audioUnlockRef = useRef<() => void>(() => undefined);
   const handleAudioUnlockTap = (): void => {
-    setAudioNeedsTap(false);
-    stallSampleRef.current = { pos: -1, t: 0 };
     if (currentTrack?.provider === 'apple_music') {
       void apple.play(currentTrack.provider_track_id);
     }
@@ -2058,17 +2027,7 @@ function HostPageInner(): JSX.Element {
           onGiveAnswer={handleGiveAnswer}
           onNextTrack={handleNextTrack}
         />
-        {audioNeedsTap && (
-        <button
-          type="button"
-          onClick={handleAudioUnlockTap}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] rounded-3xl border-4 border-ink bg-spritz px-8 py-4 font-display text-2xl shadow-xl animate-fade-in active:translate-y-0.5"
-        >
-          🔊 RELANCER LE SON
-        </button>
-      )}
-
-      <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-xs">
+        <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-xs">
           {toasts.map((toast) => (
             <div
               key={toast.id}
