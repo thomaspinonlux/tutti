@@ -19,6 +19,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isCapacitorNative } from './platform.js';
 
 /** Type minimal de l'event beforeinstallprompt (pas standard TS). */
 interface BeforeInstallPromptEvent extends Event {
@@ -84,6 +85,55 @@ export function usePwa(): PwaApi {
   // pour ne pas casser le build si le plugin est absent.
   useEffect(() => {
     let cancelled = false;
+
+    // fix/app-native-jamais-perimee — AUCUN SERVICE WORKER DANS L'APP NATIVE.
+    //
+    // L'app iPad charge le site en direct : le cache hors-ligne ne lui apporte
+    // rien (sans réseau, aucune partie n'est possible de toute façon) mais il
+    // lui apporte un vrai problème — elle continuait de servir un ANCIEN
+    // paquet JavaScript après un déploiement. C'est ce qui a fait croire que
+    // des correctifs livrés n'existaient pas, et c'est ce qui remettait en
+    // service une version buguée déjà corrigée.
+    //
+    // On désinstalle donc tout service worker et on vide tous les caches, puis
+    // on recharge UNE seule fois (drapeau de session, jamais de boucle).
+    // Sur le web des joueurs, le service worker reste : l'installation
+    // hors-ligne y est une fonctionnalité.
+    if (isCapacitorNative()) {
+      void (async () => {
+        try {
+          let hadWorker = false;
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            hadWorker = regs.length > 0;
+            await Promise.all(regs.map((r) => r.unregister()));
+          }
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+          }
+          if (!hadWorker) return;
+          let alreadyPurged = false;
+          try {
+            alreadyPurged = window.sessionStorage.getItem('tutti_sw_purge_v1') === '1';
+            window.sessionStorage.setItem('tutti_sw_purge_v1', '1');
+          } catch {
+            /* stockage indisponible : on ne recharge pas, pas de boucle possible */
+            return;
+          }
+          if (!alreadyPurged) {
+            console.info('[PWA] cache natif purgé → rechargement unique');
+            window.location.reload();
+          }
+        } catch (err: unknown) {
+          console.warn('[PWA] purge du cache natif impossible', err);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }
+
     void import('virtual:pwa-register')
       .then(({ registerSW }) => {
         if (cancelled) return;
