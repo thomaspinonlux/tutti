@@ -22,7 +22,7 @@
 import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CurrentTrackState } from '@tutti/shared';
-import { Badge, Button, Card } from '../ui/index.js';
+import { Button } from '../ui/index.js';
 import { PwaInstallButton } from '../PwaInstallButton.js';
 
 export interface MasterProgress {
@@ -94,14 +94,17 @@ function fmtTime(ms: number): string {
  */
 type CtrlTone = 'coral' | 'go' | 'key' | 'neutral' | 'endRound' | 'danger';
 
+// feat/telecommande-look-console — MÊME HABILLAGE QUE LA CONSOLE iPad.
+// Fond sombre #191922, filets blancs à 10 %, accent corail #FF5C4D : les
+// valeurs sont copiées de MainScreenView/TvScreenView pour que l'animateur
+// retrouve exactement la même lecture visuelle sur son téléphone et sur l'iPad.
 const CTRL_TONES: Record<CtrlTone, string> = {
-  coral: 'bg-spritz text-cream border-ink',
-  go: 'bg-basil text-cream border-ink',
-  key: 'bg-rose text-ink border-ink',
-  neutral: 'bg-cream text-ink border-ink',
-  // Bleu doux (accent one-off) : calme, non-alarmant, distinct du danger.
-  endRound: 'bg-[#d9e8f0] text-[#2f5468] border-[#2f5468]/45',
-  danger: 'bg-raspberry text-cream border-ink',
+  coral: 'bg-[#FF5C4D] text-[#0B0B0F] border-transparent',
+  go: 'bg-basil text-white border-transparent',
+  key: 'bg-[#FF5C4D] text-[#0B0B0F] border-transparent',
+  neutral: 'bg-white/[0.07] text-white border-white/15',
+  endRound: 'bg-white/[0.07] text-[#9FC6DA] border-[#9FC6DA]/35',
+  danger: 'bg-raspberry text-white border-transparent',
 };
 
 interface CtrlButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -124,11 +127,10 @@ function CtrlButton({
     <button
       type="button"
       className={[
-        'flex items-center justify-center min-h-[60px] rounded-xl border-2 px-2 text-center',
+        'flex items-center justify-center min-h-[60px] rounded-2xl border px-2 text-center',
         'font-bold text-sm leading-tight select-none touch-manipulation',
-        'shadow-arcade-sm transition-all duration-[80ms] ease-out',
-        'active:translate-x-[2px] active:translate-y-[2px] active:shadow-arcade-flat',
-        'disabled:opacity-40 disabled:active:translate-x-0 disabled:active:translate-y-0',
+        'transition-all duration-[80ms] ease-out active:translate-y-[2px]',
+        'disabled:opacity-40 disabled:active:translate-y-0',
         row ? 'flex-row gap-2' : 'flex-col gap-1',
         CTRL_TONES[tone],
         className ?? '',
@@ -185,19 +187,21 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
   const hasMeta = !!track && (!!track.title || !!track.artist);
 
   return (
-    <Card tone="cream" size="md" className="!border-3 border-spritz-deep">
-      <div className="flex items-center gap-2 mb-3">
-        <span aria-hidden className="text-lg">
-          👑
-        </span>
-        <p className="font-display text-base">{t('play.masterMenuTitle')}</p>
+    <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#191922] p-4 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+      <div className="mb-3">
+        <p
+          className="font-mono text-[11px] uppercase tracking-[0.3em]"
+          style={{ color: '#FF5C4D' }}
+        >
+          👑 {t('play.masterMenuTitle')}
+        </p>
       </div>
 
       {/* feat/manette-console-master — titre + artiste + timeline exacte + scrub */}
       {props.hasActiveRound && track && (
         <div className="mb-3">
           {typeof props.tracksTotal === 'number' && props.tracksTotal > 0 && (
-            <p className="font-mono text-[11px] uppercase tracking-widest text-ink-soft mb-1">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/45 mb-1">
               Titre {track.track_index + 1}/{props.tracksTotal} · reste{' '}
               {Math.max(0, props.tracksTotal - (track.track_index + 1))}
             </p>
@@ -210,21 +214,23 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               <img
                 src={track.cover_url}
                 alt=""
-                className="h-11 w-11 shrink-0 rounded-md border-2 border-ink object-cover"
+                className="h-11 w-11 shrink-0 rounded-lg object-cover ring-1 ring-white/15"
               />
             )}
-            <p className="min-w-0 flex-1 font-medium text-sm truncate">
+            <p className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
               {hasMeta ? (
                 <>
                   {track.title}
-                  {track.artist ? <span className="text-ink-soft"> — {track.artist}</span> : null}
+                  {track.artist ? (
+                    <span className="text-white/55"> — {track.artist}</span>
+                  ) : null}
                 </>
               ) : (
-                <span className="text-ink-soft">♪ Lecture en cours…</span>
+                <span className="text-white/55">♪ Lecture en cours…</span>
               )}
             </p>
           </div>
-          <div className="flex items-center justify-between font-mono text-xs text-ink-soft mt-1 mb-1">
+          <div className="mt-1 mb-1 flex items-center justify-between font-mono text-xs text-white/45">
             <span className="tabular-nums">{fmtTime(displayLeftMs)}</span>
             {durationMs ? (
               <span className="tabular-nums">{fmtTime(durationMs)}</span>
@@ -236,10 +242,14 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               (non tactile) : plus de scrub accidental. Pas de handlers pointer,
               pas de poignée, pas de role="slider". */}
           <div className="-mx-1 px-1 py-2">
-            <div className="relative h-2 bg-ink/10 rounded-full">
+            <div className="relative h-2 rounded-full bg-white/12">
               <div
-                className="absolute inset-y-0 left-0 bg-spritz rounded-full transition-[width] duration-200 ease-linear"
-                style={{ width: `${Math.round(displayFrac * 100)}%` }}
+                className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-200 ease-linear"
+                style={{
+                  width: `${Math.round(displayFrac * 100)}%`,
+                  // Corail de la console iPad.
+                  backgroundColor: '#FF5C4D',
+                }}
               />
             </div>
           </div>
@@ -252,7 +262,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           type="button"
           onClick={props.onAudioKick}
           disabled={props.busy}
-          className="mb-3 w-full rounded-2xl border-4 border-ink bg-spritz py-3 font-display text-lg active:translate-y-0.5 disabled:opacity-50"
+          className="mb-3 w-full rounded-2xl border border-white/15 bg-white/[0.07] py-3 text-sm font-bold text-white active:translate-y-[2px] disabled:opacity-40"
         >
           🔊 RELANCER LE SON
         </button>
@@ -275,9 +285,9 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               props.onSetVolume!(v);
             }}
             aria-label={t('play.masterVolume')}
-            className="flex-1 accent-spritz-deep touch-none"
+            className="flex-1 touch-none accent-[#FF5C4D]"
           />
-          <span className="font-mono text-xs text-ink-soft tabular-nums w-9 text-right">
+          <span className="w-9 text-right font-mono text-xs tabular-nums text-white/45">
             {Math.round(volume * 100)}%
           </span>
         </div>
@@ -300,7 +310,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               type="button"
               onClick={() => props.onRejectLyrics!()}
               disabled={props.busy}
-              className="shrink-0 px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-ink-soft underline underline-offset-2 disabled:opacity-40"
+              className="shrink-0 px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-white/45 underline underline-offset-2 disabled:opacity-40"
             >
               {t('host.session.lyricsWrong')}
             </button>
@@ -436,7 +446,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
             <button
               type="button"
               onClick={() => setShowScores((s) => !s)}
-              className="w-full text-xs font-mono text-ink-soft hover:text-ink py-1"
+              className="w-full py-1 font-mono text-xs text-white/45 hover:text-white"
             >
               🏆 Scores {showScores ? '▲' : '▼'}
             </button>
@@ -445,10 +455,10 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
                 {props.players.map((pl) => (
                   <li
                     key={pl.id}
-                    className="flex items-center gap-1.5 bg-white/70 border border-ink/10 rounded px-2 py-1"
+                    className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.05] px-2 py-1"
                   >
-                    <span className="flex-1 min-w-0 truncate text-sm">{pl.pseudo}</span>
-                    <span className="font-mono text-xs tabular-nums text-ink-soft w-8 text-right">
+                    <span className="min-w-0 flex-1 truncate text-sm text-white">{pl.pseudo}</span>
+                    <span className="w-8 text-right font-mono text-xs tabular-nums text-white/50">
                       {pl.score}
                     </span>
                     {[-5, 5, 10].map((d) => (
@@ -457,7 +467,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
                         type="button"
                         disabled={props.busy}
                         onClick={() => props.onQuickAdjust!(pl.id, d)}
-                        className="px-1.5 py-0.5 text-xs font-mono border-2 border-ink/20 rounded hover:bg-cream-2 disabled:opacity-50"
+                        className="rounded border border-white/15 px-1.5 py-0.5 font-mono text-xs text-white/80 hover:bg-white/10 disabled:opacity-50"
                       >
                         {d > 0 ? `+${d}` : d}
                       </button>
@@ -473,8 +483,8 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
             en pleine largeur. Fin manche = bleu doux (calme), Fin soirée =
             rouge (irréversible). ─────────────────────────────────────────── */}
         {confirmEndRound && props.onEndRound && (
-          <div className="col-span-2 mt-1 p-2.5 border-2 border-[#2f5468]/50 rounded-xl bg-[#d9e8f0]">
-            <p className="text-xs font-medium text-[#2f5468] mb-2">
+          <div className="col-span-2 mt-1 rounded-2xl border border-[#9FC6DA]/35 bg-white/[0.06] p-2.5">
+            <p className="mb-2 text-xs font-medium text-[#9FC6DA]">
               {t('play.masterEndRoundConfirm')}
             </p>
             <div className="flex gap-2">
@@ -497,8 +507,8 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         )}
 
         {confirmEnd && (
-          <div className="col-span-2 mt-1 p-2.5 border-2 border-raspberry rounded-xl bg-cream-2">
-            <p className="text-xs font-medium text-raspberry mb-2">
+          <div className="col-span-2 mt-1 rounded-2xl border border-raspberry/60 bg-white/[0.06] p-2.5">
+            <p className="mb-2 text-xs font-medium text-raspberry">
               {t('play.masterEndSessionConfirm')}
             </p>
             <div className="flex gap-2">
@@ -546,12 +556,21 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
       </div>
 
       {props.isPaused && (
-        <Badge tone="plum" tilt={1} className="mt-3">
+        <p className="mt-3 rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2 text-center font-mono text-xs uppercase tracking-[0.25em] text-white/70">
           ⏸ {t('play.masterPausedBadge')}
-        </Badge>
+        </p>
       )}
 
       <PwaInstallButton className="mt-3" />
-    </Card>
+
+      {/* Signature multicolore — identique au pied de la console iPad. */}
+      <div className="absolute bottom-0 left-0 right-0 flex h-1">
+        <div className="flex-1 bg-spritz" />
+        <div className="flex-1 bg-basil" />
+        <div className="flex-1 bg-raspberry" />
+        <div className="flex-1 bg-lemon" />
+        <div className="flex-1 bg-plum" />
+      </div>
+    </section>
   );
 }
