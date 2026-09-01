@@ -346,6 +346,56 @@ export interface RandomPickResult {
  * Si la table `session_played_tracks` n'existe pas ou erreur DB → dégrade
  * proprement en ignorant le filtre (pool complet).
  */
+/**
+ * feat/jamais-deux-fois-le-meme-titre — CANDIDATS RÉELLEMENT INÉDITS.
+ *
+ * Règle de jeu : dans UNE MÊME PARTIE, un titre ne repasse jamais — même s'il
+ * appartient à plusieurs playlists jouées dans la soirée.
+ *
+ * Le filtre par identifiant de morceau ne suffisait pas : un même titre peut
+ * exister en deux exemplaires dans la base, un côté Apple Music et un côté
+ * YouTube. Deux playlists de sources différentes pouvaient donc rejouer la
+ * même chanson. On écarte désormais aussi tout candidat qui partage l'ŒUVRE
+ * (`song_id`) d'un morceau déjà passé.
+ */
+async function filterAlreadyPlayed(
+  sessionId: string,
+  candidateIds: string[],
+): Promise<string[]> {
+  if (candidateIds.length === 0) return [];
+  try {
+    const playedRows = await prisma.sessionPlayedTrack.findMany({
+      where: { session_id: sessionId },
+      select: { track: { select: { id: true, song_id: true } } },
+    });
+    const playedTrackIds = new Set<string>();
+    const playedSongIds = new Set<string>();
+    for (const row of playedRows) {
+      if (!row.track) continue;
+      playedTrackIds.add(row.track.id);
+      if (row.track.song_id) playedSongIds.add(row.track.song_id);
+    }
+    if (playedTrackIds.size === 0) return candidateIds;
+
+    const candidateRows = await prisma.track.findMany({
+      where: { id: { in: candidateIds } },
+      select: { id: true, song_id: true },
+    });
+    const songByTrack = new Map<string, string | null>();
+    for (const row of candidateRows) songByTrack.set(row.id, row.song_id);
+
+    return candidateIds.filter((id) => {
+      if (playedTrackIds.has(id)) return false;
+      const songId = songByTrack.get(id);
+      if (songId && playedSongIds.has(songId)) return false;
+      return true;
+    });
+  } catch (err: unknown) {
+    console.warn('[filterAlreadyPlayed] lecture impossible, filtre ignoré:', err);
+    return candidateIds;
+  }
+}
+
 export async function pickRandomTrackIdsForRound(
   sessionId: string,
   playlistId: string,
@@ -370,17 +420,19 @@ export async function pickRandomTrackIdsForRound(
       return new Set<string>();
     });
 
-  let candidates = poolTracks.map((pt) => pt.track_id).filter((tid) => !playedTrackIds.has(tid));
+  let candidates = await filterAlreadyPlayed(
+    sessionId,
+    poolTracks.map((pt) => pt.track_id),
+  );
 
-  // feat/no-session-play-limit — quand TOUS les morceaux de la playlist ont
-  // déjà été joués dans la session, on RECYCLE le pool complet (répétitions
-  // autorisées) au lieu de renvoyer eligibleSize=0 (→ ex-EXHAUSTED_POOL qui
-  // bloquait le lancement d'une nouvelle manche). Objectif : jouer sans limite.
-  // L'anti-répétition reste actif TANT QU'il reste des morceaux inédits.
+  // feat/jamais-deux-fois-le-meme-titre — RECYCLAGE EN DERNIER RECOURS.
+  // Tant qu'il reste ne serait-ce qu'un inédit, on joue une manche PLUS COURTE
+  // plutôt que de répéter un titre. Le recyclage n'intervient que si la
+  // playlist est intégralement épuisée — sinon la manche serait vide.
   if (candidates.length === 0 && poolTracks.length > 0) {
     candidates = poolTracks.map((pt) => pt.track_id);
-    console.info(
-      `[pickRandomTrackIdsForRound] pool épuisé (playlist=${playlistId} session=${sessionId}) → recyclage du pool complet (${candidates.length} morceaux, répétitions autorisées)`,
+    console.warn(
+      `[pickRandomTrackIdsForRound] playlist ENTIÈREMENT jouée (playlist=${playlistId} session=${sessionId}) → recyclage inévitable de ${candidates.length} morceaux. Étoffer cette playlist.`,
     );
   }
 
@@ -400,12 +452,88 @@ export async function pickRandomTrackIdsForRound(
     const j = Math.floor(Math.random() * (i + 1));
     [candidates[i]!, candidates[j]!] = [candidates[j]!, candidates[i]!];
   }
+  // feat/varier-les-artistes — tourniquet par artiste : les premiers morceaux
+  // (ceux qu'on garde) portent des artistes différents.
+  const artistByTrackId = await loadArtistByTrackId(candidates);
+  const ordered = interleaveByArtist(candidates, artistByTrackId);
   return {
-    selectedTrackIds: candidates.slice(0, targetN),
+    selectedTrackIds: ordered.slice(0, targetN),
     poolSize: poolTracks.length,
     playedSize: playedTrackIds.size,
     eligibleSize,
   };
+}
+
+/**
+ * feat/varier-les-artistes — ÉVITE DE REVOIR LE MÊME ARTISTE dans une manche.
+ *
+ * Problème constaté en soirée : sur 15 titres tirés au hasard, le même artiste
+ * pouvait sortir trois ou quatre fois — les joueurs le vivent comme une manche
+ * pauvre, et le premier à l'avoir reconnu rafle tout.
+ *
+ * Principe : on ne filtre RIEN (aucun morceau n'est écarté), on RÉORDONNE. Les
+ * candidats sont groupés par artiste, chaque groupe est mélangé, puis on sert
+ * en tourniquet : un titre du premier artiste, un du deuxième, etc., et on
+ * recommence. Conséquence : les N premiers morceaux de la liste portent N
+ * artistes DIFFÉRENTS tant qu'il y a assez d'artistes. Un artiste ne revient
+ * qu'une fois tous les autres passés — et seulement si la playlist est trop
+ * étroite pour faire autrement (best-of d'un seul artiste, par exemple).
+ *
+ * Le tirage aval (slice ou quotas par niveau) est inchangé : il profite
+ * simplement d'un ordre déjà diversifié.
+ */
+export function interleaveByArtist(
+  ids: string[],
+  artistByTrackId: Map<string, string>,
+): string[] {
+  if (ids.length <= 1) return ids;
+  const groups = new Map<string, string[]>();
+  for (const id of ids) {
+    // Morceau sans artiste connu : on l'isole sous sa propre clé pour ne pas
+    // le regrouper à tort avec les autres inconnus.
+    const key = artistByTrackId.get(id) ?? `__inconnu__${id}`;
+    const bucket = groups.get(key);
+    if (bucket) bucket.push(id);
+    else groups.set(key, [id]);
+  }
+  const buckets = [...groups.values()];
+  for (const bucket of buckets) fisherYates(bucket);
+  fisherYates(buckets);
+
+  const out: string[] = [];
+  let depth = 0;
+  while (out.length < ids.length) {
+    let servedThisRound = false;
+    for (const bucket of buckets) {
+      if (depth < bucket.length) {
+        out.push(bucket[depth]!);
+        servedThisRound = true;
+      }
+    }
+    if (!servedThisRound) break;
+    depth += 1;
+  }
+  return out;
+}
+
+/** Artiste de chaque morceau — pour la répartition ci-dessus. */
+export async function loadArtistByTrackId(
+  trackIds: string[],
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  if (trackIds.length === 0) return map;
+  try {
+    const rows = await prisma.track.findMany({
+      where: { id: { in: trackIds } },
+      select: { id: true, artist_id: true },
+    });
+    for (const row of rows) map.set(row.id, row.artist_id);
+  } catch (err: unknown) {
+    // Dégradation propre : sans la carte des artistes, on garde l'ordre
+    // aléatoire d'origine plutôt que de faire échouer un lancement.
+    console.warn('[loadArtistByTrackId] lecture impossible, répartition ignorée:', err);
+  }
+  return map;
 }
 
 function fisherYates<T>(arr: T[]): void {
@@ -454,15 +582,17 @@ export async function pickWeightedTrackIdsForRound(
       return new Set<string>();
     });
 
-  let candidates = poolTracks.map((pt) => pt.track_id).filter((tid) => !playedTrackIds.has(tid));
+  let candidates = await filterAlreadyPlayed(
+    sessionId,
+    poolTracks.map((pt) => pt.track_id),
+  );
 
-  // feat/no-session-play-limit — recyclage du pool complet quand tout a été
-  // joué (cf. pickRandomTrackIdsForRound) : jeu sans limite, répétitions
-  // autorisées seulement une fois les inédits épuisés.
+  // feat/jamais-deux-fois-le-meme-titre — cf. tirage plat : manche plus courte
+  // plutôt que répétition ; recyclage seulement si la playlist est épuisée.
   if (candidates.length === 0 && poolTracks.length > 0) {
     candidates = poolTracks.map((pt) => pt.track_id);
-    console.info(
-      `[pickWeightedTrackIdsForRound] pool épuisé (playlist=${playlistId} session=${sessionId}) → recyclage du pool complet (${candidates.length} morceaux, répétitions autorisées)`,
+    console.warn(
+      `[pickWeightedTrackIdsForRound] playlist ENTIÈREMENT jouée (playlist=${playlistId} session=${sessionId}) → recyclage inévitable de ${candidates.length} morceaux. Étoffer cette playlist.`,
     );
   }
 
@@ -476,7 +606,11 @@ export async function pickWeightedTrackIdsForRound(
     };
   }
   const targetN = Math.min(sessionSize, eligibleSize);
-  const selected = weightedStratifiedSample(candidates, tierByTrackId, weights, targetN);
+  // feat/varier-les-artistes — la répartition s'applique DANS chaque niveau,
+  // pour ne pas fausser les proportions Facile/Moyen/Expert.
+  const artistByTrackId = await loadArtistByTrackId(candidates);
+  const selected = weightedStratifiedSample(
+    candidates, tierByTrackId, weights, targetN, artistByTrackId);
   return {
     selectedTrackIds: selected,
     poolSize: poolTracks.length,
@@ -499,12 +633,19 @@ export function weightedStratifiedSample(
   tierByTrackId: Map<string, Tier>,
   weights: Partial<Record<Tier, number>>,
   targetN: number,
+  /** feat/varier-les-artistes — optionnel : absent = comportement historique. */
+  artistByTrackId?: Map<string, string>,
 ): string[] {
   const byTier: Record<Tier, string[]> = { EASY: [], MEDIUM: [], EXPERT: [] };
   for (const tid of candidates) byTier[tierByTrackId.get(tid) ?? 'MEDIUM'].push(tid);
   fisherYates(byTier.EASY);
   fisherYates(byTier.MEDIUM);
   fisherYates(byTier.EXPERT);
+  if (artistByTrackId) {
+    byTier.EASY = interleaveByArtist(byTier.EASY, artistByTrackId);
+    byTier.MEDIUM = interleaveByArtist(byTier.MEDIUM, artistByTrackId);
+    byTier.EXPERT = interleaveByArtist(byTier.EXPERT, artistByTrackId);
+  }
 
   const tiers = (Object.keys(weights) as Tier[]).filter((t) => (weights[t] ?? 0) > 0);
   const totalWeight = tiers.reduce((s, t) => s + (weights[t] ?? 0), 0) || 1;
