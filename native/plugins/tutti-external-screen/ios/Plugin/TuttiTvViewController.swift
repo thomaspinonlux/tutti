@@ -2,66 +2,95 @@ import UIKit
 import CoreImage
 
 /**
- * TuttiTvViewController — ÉCRAN JOUEURS 100 % NATIF.
+ * TuttiTvViewController — ÉCRAN JOUEUR NATIF, RÉPLIQUE DE L'ÉCRAN ACTUEL.
  *
- * Remplace la seconde WebView (page /screen) par un rendu UIKit dessiné par
- * l'app elle-même. Deux gains structurels, impossibles en WebView :
+ * Reproduit `frontend/src/pages/screen/TvScreenView.tsx` : même structure
+ * (bandeau haut, scène centrale, colonne classement + QR), mêmes couleurs,
+ * mêmes polices (Caprasimo / Fraunces / Outfit / JetBrains Mono embarquées),
+ * mêmes proportions. Aucun élément n'est redessiné à ma façon.
  *
- *  1. AUCUN GEL. Il n'y a plus de navigateur sur la TV : iOS n'a plus de
- *     processus web à tuer sous pression mémoire. C'était la cause des gels.
+ * Deux gains, impossibles avec la WebView :
  *
- *  2. AUCUN DÉCALAGE SON / IMAGE. La console pousse ici, en direct et sans
- *     réseau (même app, même processus), ce que le lecteur joue RÉELLEMENT :
- *     identifiant du morceau + position. La règle d'affichage est stricte —
- *     `pendingConfirmation` : tant que le lecteur n'a pas confirmé jouer le
- *     morceau annoncé par le serveur, la TV NE BASCULE PAS. Elle ne peut donc
- *     jamais afficher un titre que la salle n'entend pas encore. C'est la
- *     réponse au « décalage d'une chanson ».
+ *  1. AUCUN GEL. Plus de navigateur sur la TV : iOS n'a plus de processus web
+ *     à tuer sous pression mémoire. C'était la cause des écrans figés.
  *
- * Le reste de l'état (scores, phases, podiums) vient du même endpoint public
- * que la version web, interrogé chaque seconde.
+ *  2. AUCUN DÉCALAGE SON / IMAGE. La console pousse ici, sans réseau, le
+ *     morceau RÉELLEMENT joué par le lecteur (`updatePlayback`). Tant que le
+ *     lecteur n'a pas confirmé, la TV NE BASCULE PAS : elle ne peut donc
+ *     jamais afficher un titre que la salle n'entend pas encore.
  */
 final class TuttiTvViewController: UIViewController {
-
-    // MARK: - Constantes de style
-
-    private let bg = UIColor(red: 0.043, green: 0.043, blue: 0.059, alpha: 1)
-    private let panel = UIColor(red: 0.098, green: 0.098, blue: 0.133, alpha: 1)
-    private let coral = UIColor(red: 1.0, green: 0.361, blue: 0.302, alpha: 1)
-    private let dim = UIColor(white: 0.72, alpha: 1)
-    private let phase2DurationMs: Double = 10_000
 
     // MARK: - État
 
     private var poller: TuttiTvPoller?
     private var state: TvScreenState?
     private var playback = TvPlayback()
-    /// Identifiant du morceau que le LECTEUR joue réellement (poussé par la
-    /// console). Vide tant qu'aucune confirmation n'est arrivée.
-    private var audioTrackId: String = ""
-    /// Dernier morceau réellement confirmé et affiché — la TV reste dessus
-    /// tant que le suivant n'est pas confirmé par le lecteur.
+    private var audioTrackId = ""
     private var displayedTrack: TvTrack?
     private var tickTimer: Timer?
-    private var coverCache = NSCache<NSString, UIImage>()
-    private var coverRequestedFor: String = ""
+    private let coverCache = NSCache<NSString, UIImage>()
+    private var coverRequested = Set<String>()
+    private var blurredCache = NSCache<NSString, UIImage>()
 
-    // MARK: - Vues
+    // MARK: - Vues (fond)
 
-    private let eyebrow = UILabel()
-    private let bigTitle = UILabel()
-    private let subTitle = UILabel()
-    private let coverView = UIImageView()
-    private let coverPlaceholder = UILabel()
-    private let countdownLabel = UILabel()
-    private let progressTrack = UIView()
-    private let progressFill = UIView()
+    private let backdropView = UIImageView()
+    private let scrimLayer = CAGradientLayer()
+    private let coralGlow = UIView()
+
+    // MARK: - Vues (bandeau haut)
+
+    private let brandLabel = UILabel()
+    private let brandDot = UIView()
+    private let roundPill = PaddedLabel()
+    private let trackCounter = UILabel()
+    private let playlistName = UILabel()
+    private let phasePill = PaddedLabel()
+
+    // MARK: - Vues (scène centrale)
+
+    private let buzzChip = PaddedLabel()
+    private let mysteryCover = UIImageView()
+    private let mysteryGlow = UIView()
+    private let mysteryMark = UILabel()
+    private let timerLabel = UILabel()
+    private let timerRing = CoralRingView()
+    private let timerSub = UILabel()
+    private let equalizer = EqualizerView()
+    private let listenLabel = UILabel()
+    private let listenTrack = UIView()
+    private let listenFill = UIView()
+    private let revealCover = UIImageView()
+    private let revealGlow = UIView()
+    private let revealPill = PaddedLabel()
+    private let revealTitle = UILabel()
+    private let revealArtist = UILabel()
+    private let revealMeta = UILabel()
+    private let centerMessage = UILabel()
+    private let centerSub = UILabel()
+
+    // MARK: - Vues (colonne latérale)
+
+    private let boardPanel = UIView()
+    private let boardIcon = UILabel()
     private let boardTitle = UILabel()
-    private let boardStack = UIStackView()
-    private let qrView = UIImageView()
-    private let joinLabel = UILabel()
-    private let pausedBadge = UILabel()
-    private let foundStack = UIStackView()
+    private let boardEmpty = UILabel()
+    private var boardRows: [LeaderRowView] = []
+    private let qrPanel = UIView()
+    private let qrWhite = UIView()
+    private let qrImage = UIImageView()
+    private let qrLabel = UILabel()
+    private let qrCode = UILabel()
+    private let qrHint = UILabel()
+
+    // MARK: - Pause
+
+    private let pauseOverlay = UIView()
+    private let pausePanel = UIView()
+    private let pauseIcon = UILabel()
+    private let pauseTitle = UILabel()
+    private let pauseHint = UILabel()
 
     // MARK: - Cycle de vie
 
@@ -72,18 +101,15 @@ final class TuttiTvViewController: UIViewController {
         }
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) non supporté")
-    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) non supporté") }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = bg
+        TvTheme.registerBundledFonts()
+        view.backgroundColor = TvTheme.background
         buildViews()
         poller?.start()
-        let t = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
-            self?.tick()
-        }
+        let t = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in self?.tick() }
         RunLoop.main.add(t, forMode: .common)
         tickTimer = t
     }
@@ -93,9 +119,8 @@ final class TuttiTvViewController: UIViewController {
         poller?.stop()
     }
 
-    // MARK: - API appelée par le plugin
+    // MARK: - Entrée depuis le plugin
 
-    /// Vérité du lecteur, poussée par la console (sans réseau).
     func updatePlayback(trackId: String, positionMs: Double, durationMs: Double, isPaused: Bool) {
         audioTrackId = trackId
         playback.positionMs = positionMs
@@ -105,86 +130,197 @@ final class TuttiTvViewController: UIViewController {
         reconcileDisplayedTrack()
     }
 
-    // MARK: - Construction des vues
+    // MARK: - Construction
 
     private func buildViews() {
-        eyebrow.font = UIFont.monospacedSystemFont(ofSize: 22, weight: .semibold)
-        eyebrow.textColor = coral
-        eyebrow.textAlignment = .center
+        // Fond : pochette floutée plein cadre + voile dégradé (comme le web).
+        backdropView.contentMode = .scaleAspectFill
+        backdropView.clipsToBounds = true
+        view.addSubview(backdropView)
 
-        bigTitle.font = UIFont.systemFont(ofSize: 84, weight: .heavy)
-        bigTitle.textColor = .white
-        bigTitle.textAlignment = .center
-        bigTitle.numberOfLines = 3
-        bigTitle.adjustsFontSizeToFitWidth = true
-        bigTitle.minimumScaleFactor = 0.4
+        scrimLayer.colors = [
+            UIColor(white: 0, alpha: 0.55).cgColor,
+            UIColor(white: 0, alpha: 0.35).cgColor,
+            UIColor(white: 0, alpha: 0.80).cgColor,
+        ]
+        scrimLayer.locations = [0, 0.5, 1]
+        view.layer.addSublayer(scrimLayer)
 
-        subTitle.font = UIFont.systemFont(ofSize: 46, weight: .medium)
-        subTitle.textColor = dim
-        subTitle.textAlignment = .center
-        subTitle.numberOfLines = 2
-        subTitle.adjustsFontSizeToFitWidth = true
-        subTitle.minimumScaleFactor = 0.5
+        coralGlow.backgroundColor = TvTheme.coral(0.16)
+        coralGlow.isUserInteractionEnabled = false
+        view.addSubview(coralGlow)
 
-        coverView.contentMode = .scaleAspectFill
-        coverView.clipsToBounds = true
-        coverView.layer.cornerRadius = 24
-        coverView.backgroundColor = panel
+        // ── Bandeau haut ────────────────────────────────────────────────
+        brandLabel.text = "Tutti"
+        brandLabel.font = TvTheme.display(32)
+        brandLabel.textColor = .white
+        brandDot.backgroundColor = TvTheme.coral
+        brandDot.layer.cornerRadius = 5
 
-        coverPlaceholder.text = "♪"
-        coverPlaceholder.font = UIFont.systemFont(ofSize: 150, weight: .light)
-        coverPlaceholder.textColor = UIColor(white: 1, alpha: 0.25)
-        coverPlaceholder.textAlignment = .center
-        coverPlaceholder.backgroundColor = panel
-        coverPlaceholder.layer.cornerRadius = 24
-        coverPlaceholder.clipsToBounds = true
+        roundPill.textColor = TvTheme.white(0.55)
+        roundPill.font = TvTheme.mono(11)
+        roundPill.insets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)
+        roundPill.layer.cornerRadius = 14
+        roundPill.layer.borderWidth = 1
+        roundPill.layer.borderColor = TvTheme.white(0.12).cgColor
 
-        countdownLabel.font = UIFont.systemFont(ofSize: 220, weight: .heavy)
-        countdownLabel.textColor = coral
-        countdownLabel.textAlignment = .center
+        trackCounter.font = TvTheme.mono(11)
+        trackCounter.textColor = TvTheme.white(0.9)
+        playlistName.font = TvTheme.mono(11)
+        playlistName.textColor = TvTheme.white(0.45)
+        playlistName.lineBreakMode = .byTruncatingTail
 
-        progressTrack.backgroundColor = UIColor(white: 1, alpha: 0.12)
-        progressTrack.layer.cornerRadius = 6
-        progressTrack.clipsToBounds = true
-        progressFill.backgroundColor = coral
-        progressTrack.addSubview(progressFill)
+        phasePill.font = TvTheme.mono(11, bold: true)
+        phasePill.textColor = TvTheme.background
+        phasePill.backgroundColor = TvTheme.coral
+        phasePill.insets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+        phasePill.layer.cornerRadius = 17
+        phasePill.layer.shadowColor = TvTheme.coral.cgColor
+        phasePill.layer.shadowOpacity = 0.33
+        phasePill.layer.shadowRadius = 15
+        phasePill.layer.shadowOffset = CGSize(width: 0, height: 8)
 
-        boardTitle.font = UIFont.monospacedSystemFont(ofSize: 20, weight: .bold)
-        boardTitle.textColor = dim
-        boardTitle.textAlignment = .left
+        // ── Scène centrale ──────────────────────────────────────────────
+        buzzChip.font = TvTheme.sans(15, bold: true)
+        buzzChip.textColor = .white
+        buzzChip.backgroundColor = TvTheme.chip
+        buzzChip.insets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        buzzChip.layer.cornerRadius = 16
+        buzzChip.layer.borderWidth = 1
+        buzzChip.layer.borderColor = TvTheme.white(0.10).cgColor
 
-        boardStack.axis = .vertical
-        boardStack.spacing = 10
-        boardStack.alignment = .fill
+        mysteryGlow.backgroundColor = TvTheme.coral(0.30)
+        mysteryCover.contentMode = .scaleAspectFill
+        mysteryCover.clipsToBounds = true
+        mysteryCover.backgroundColor = TvTheme.mysteryBase
+        mysteryCover.layer.cornerRadius = 26
+        mysteryCover.layer.borderWidth = 1
+        mysteryCover.layer.borderColor = TvTheme.white(0.12).cgColor
+        mysteryMark.text = "?"
+        mysteryMark.textColor = TvTheme.white(0.95)
+        mysteryMark.textAlignment = .center
 
-        foundStack.axis = .vertical
-        foundStack.spacing = 8
-        foundStack.alignment = .center
+        timerLabel.font = TvTheme.mono(18, bold: true)
+        timerLabel.textColor = TvTheme.white(0.7)
+        timerLabel.textAlignment = .center
+        timerSub.font = TvTheme.editorialItalic(24)
+        timerSub.textColor = TvTheme.white(0.55)
+        timerSub.textAlignment = .center
 
-        qrView.contentMode = .scaleAspectFit
-        qrView.backgroundColor = .white
-        qrView.layer.cornerRadius = 12
-        qrView.clipsToBounds = true
+        listenLabel.font = TvTheme.mono(12)
+        listenLabel.textColor = TvTheme.white(0.6)
+        listenLabel.textAlignment = .center
+        listenTrack.backgroundColor = TvTheme.white(0.12)
+        listenTrack.layer.cornerRadius = 3
+        listenTrack.clipsToBounds = true
+        listenFill.backgroundColor = TvTheme.coral
+        listenFill.layer.cornerRadius = 3
+        listenTrack.addSubview(listenFill)
 
-        joinLabel.font = UIFont.monospacedSystemFont(ofSize: 30, weight: .bold)
-        joinLabel.textColor = .white
-        joinLabel.textAlignment = .center
+        revealGlow.backgroundColor = TvTheme.coral(0.32)
+        revealCover.contentMode = .scaleAspectFill
+        revealCover.clipsToBounds = true
+        revealCover.backgroundColor = UIColor(red: 0.094, green: 0.094, blue: 0.125, alpha: 1)
+        revealCover.layer.cornerRadius = 28
+        revealCover.layer.borderWidth = 1
+        revealCover.layer.borderColor = TvTheme.white(0.20).cgColor
 
-        pausedBadge.text = "PAUSE"
-        pausedBadge.font = UIFont.systemFont(ofSize: 70, weight: .heavy)
-        pausedBadge.textColor = .white
-        pausedBadge.textAlignment = .center
-        pausedBadge.backgroundColor = UIColor(white: 0, alpha: 0.55)
-        pausedBadge.layer.cornerRadius = 20
-        pausedBadge.clipsToBounds = true
+        revealPill.font = TvTheme.mono(11, bold: true)
+        revealPill.textColor = TvTheme.background
+        revealPill.backgroundColor = TvTheme.coral
+        revealPill.insets = UIEdgeInsets(top: 6, left: 16, bottom: 6, right: 16)
+        revealPill.layer.cornerRadius = 15
 
-        let all: [UIView] = [coverPlaceholder, coverView, eyebrow, bigTitle, subTitle,
-                             countdownLabel, progressTrack, boardTitle, boardStack,
-                             foundStack, qrView, joinLabel, pausedBadge]
-        for v in all {
-            v.isHidden = true
-            view.addSubview(v)
-        }
+        revealTitle.numberOfLines = 3
+        revealTitle.textColor = .white
+        revealTitle.layer.shadowColor = UIColor.black.cgColor
+        revealTitle.layer.shadowOpacity = 0.6
+        revealTitle.layer.shadowRadius = 30
+        revealTitle.layer.shadowOffset = CGSize(width: 0, height: 12)
+        revealArtist.numberOfLines = 2
+        revealArtist.textColor = TvTheme.coral
+        revealMeta.font = TvTheme.mono(16)
+        revealMeta.textColor = TvTheme.white(0.55)
+
+        centerMessage.textAlignment = .center
+        centerMessage.numberOfLines = 2
+        centerMessage.textColor = .white
+        centerSub.textAlignment = .center
+        centerSub.numberOfLines = 2
+        centerSub.font = TvTheme.editorialItalic(24)
+        centerSub.textColor = TvTheme.white(0.6)
+
+        // ── Colonne latérale ────────────────────────────────────────────
+        stylePanel(boardPanel)
+        boardIcon.text = "🏆"
+        boardIcon.font = UIFont.systemFont(ofSize: 18)
+        boardTitle.font = TvTheme.mono(12, bold: true)
+        boardTitle.textColor = TvTheme.white(0.55)
+        boardEmpty.font = TvTheme.editorialItalic(18)
+        boardEmpty.textColor = TvTheme.white(0.45)
+        boardEmpty.textAlignment = .center
+        boardEmpty.numberOfLines = 2
+        boardPanel.addSubview(boardIcon)
+        boardPanel.addSubview(boardTitle)
+        boardPanel.addSubview(boardEmpty)
+
+        stylePanel(qrPanel)
+        qrWhite.backgroundColor = .white
+        qrWhite.layer.cornerRadius = 16
+        qrImage.contentMode = .scaleAspectFit
+        qrWhite.addSubview(qrImage)
+        qrLabel.font = TvTheme.mono(10)
+        qrLabel.textColor = TvTheme.coral
+        qrCode.font = TvTheme.mono(24, bold: true)
+        qrCode.textColor = .white
+        qrHint.font = TvTheme.editorialItalic(12)
+        qrHint.textColor = TvTheme.white(0.45)
+        qrPanel.addSubview(qrWhite)
+        qrPanel.addSubview(qrLabel)
+        qrPanel.addSubview(qrCode)
+        qrPanel.addSubview(qrHint)
+
+        // ── Pause ───────────────────────────────────────────────────────
+        pauseOverlay.backgroundColor = UIColor(white: 0, alpha: 0.85)
+        pauseOverlay.isHidden = true
+        stylePanel(pausePanel)
+        pauseIcon.text = "⏸"
+        pauseIcon.font = UIFont.systemFont(ofSize: 72)
+        pauseIcon.textAlignment = .center
+        pauseTitle.font = TvTheme.display(48)
+        pauseTitle.textColor = .white
+        pauseTitle.textAlignment = .center
+        pauseTitle.text = "Pause"
+        pauseHint.font = TvTheme.editorialItalic(20)
+        pauseHint.textColor = TvTheme.white(0.55)
+        pauseHint.textAlignment = .center
+        pauseHint.text = "L'animateur a mis la musique en pause"
+        pausePanel.addSubview(pauseIcon)
+        pausePanel.addSubview(pauseTitle)
+        pausePanel.addSubview(pauseHint)
+        pauseOverlay.addSubview(pausePanel)
+
+        let all: [UIView] = [
+            coralGlow, brandLabel, brandDot, roundPill, trackCounter, playlistName, phasePill,
+            buzzChip, mysteryGlow, mysteryCover, mysteryMark, timerLabel, timerRing, timerSub,
+            equalizer, listenLabel, listenTrack, revealGlow, revealCover, revealPill,
+            revealTitle, revealArtist, revealMeta, centerMessage, centerSub,
+            boardPanel, qrPanel, pauseOverlay,
+        ]
+        for v in all { view.addSubview(v) }
+        mysteryCover.addSubview(mysteryMark)
+        refresh()
+    }
+
+    private func stylePanel(_ v: UIView) {
+        v.backgroundColor = TvTheme.panel
+        v.layer.cornerRadius = TvTheme.panelRadius
+        v.layer.borderWidth = 1
+        v.layer.borderColor = TvTheme.panelBorder.cgColor
+        v.layer.shadowColor = UIColor.black.cgColor
+        v.layer.shadowOpacity = 0.55
+        v.layer.shadowRadius = 35
+        v.layer.shadowOffset = CGSize(width: 0, height: 24)
     }
 
     // MARK: - Réception d'état
@@ -195,337 +331,484 @@ final class TuttiTvViewController: UIViewController {
         reconcileDisplayedTrack()
     }
 
-    /// Décide QUEL morceau la TV a le droit d'afficher.
-    ///
-    /// Règle : on n'affiche le morceau annoncé par le serveur que si le lecteur
-    /// confirme le jouer. Sinon on reste sur le précédent. Zéro décalage
-    /// possible entre ce qu'on entend et ce qu'on voit.
-    ///
-    /// Exception : si aucune confirmation n'est jamais arrivée (console web,
-    /// lecteur non instrumenté), on affiche l'état serveur — sinon la TV
-    /// resterait vide.
+    /// Règle anti-décalage : on n'affiche un morceau que si le lecteur confirme
+    /// le jouer. Sinon on reste sur le précédent. Exception au tout premier
+    /// morceau (rien d'autre à montrer) et si aucune confirmation n'arrive
+    /// jamais (console web, lecteur non instrumenté).
     private func reconcileDisplayedTrack() {
         guard let serverTrack = state?.currentTrack else {
             displayedTrack = nil
             refresh()
             return
         }
-        if audioTrackId.isEmpty {
-            displayedTrack = serverTrack
-        } else if audioTrackId == serverTrack.trackId {
-            displayedTrack = serverTrack
-        } else if displayedTrack == nil {
-            // Premier morceau, lecteur pas encore confirmé : on l'affiche quand
-            // même (rien d'autre à montrer), la confirmation suivra.
+        if audioTrackId.isEmpty
+            || audioTrackId == serverTrack.trackId
+            || displayedTrack == nil {
             displayedTrack = serverTrack
         }
-        // Sinon : le lecteur joue encore l'ancien → on NE bascule PAS.
         refresh()
     }
 
     private func tick() {
-        // Rafraîchit uniquement ce qui bouge en continu (chrono + barre).
         guard let track = displayedTrack else { return }
-        if track.isPhase2, let startedIso = track.phase2StartedAt {
-            let started = TuttiTvViewController.parseIso(startedIso)
+        if track.isPhase2, let iso = track.phase2StartedAt {
+            let started = TuttiTvViewController.parseIso(iso)
             if started > 0 {
                 let elapsed = (Date().timeIntervalSince1970 - started) * 1000.0
-                let remaining = max(0, phase2DurationMs - elapsed)
-                countdownLabel.text = String(Int(ceil(remaining / 1000.0)))
+                let remaining = max(0, 10_000 - elapsed)
+                timerRing.update(remaining: remaining, total: 10_000)
             }
         }
-        layoutProgress()
+        layoutListeningProgress()
     }
 
     // MARK: - Rendu
 
+    private var stateName: String { state?.state ?? "IDLE" }
+    private var isPausedNow: Bool {
+        stateName == "PAUSED" || (state?.session?.isPaused ?? false)
+    }
+    private var playingRound: TvRoundLite? {
+        state?.session?.rounds?.first(where: { $0.status == "PLAYING" })
+    }
+
     private func refresh() {
-        let hideAll: [UIView] = [coverPlaceholder, coverView, eyebrow, bigTitle, subTitle,
-                                 countdownLabel, progressTrack, boardTitle, boardStack,
-                                 foundStack, qrView, joinLabel, pausedBadge]
-        for v in hideAll { v.isHidden = true }
+        let track = displayedTrack
+        let revealed = track?.isRevealed ?? false
+        let phase2 = track?.isPhase2 ?? false
+        let phase1 = track?.phase == "phase1"
+        let inGame = (stateName == "PLAYING" || stateName == "PAUSED")
 
-        guard let s = state else {
-            eyebrow.isHidden = false
-            eyebrow.text = "TUTTI"
-            bigTitle.isHidden = false
-            bigTitle.text = "Connexion…"
-            view.setNeedsLayout()
-            return
+        // Bandeau haut
+        let hasRound = playingRound != nil
+        roundPill.isHidden = !hasRound
+        trackCounter.isHidden = !hasRound
+        playlistName.isHidden = !hasRound
+        if let round = playingRound {
+            roundPill.text = "MANCHE \(round.position)"
+            let total = round.playlist.tracksCount ?? 0
+            trackCounter.isHidden = total == 0
+            if total > 0, let t = track {
+                trackCounter.text = "\(t.trackIndex + 1) / \(total)"
+            }
+            playlistName.text = round.playlist.name.uppercased()
+        }
+        phasePill.text = phaseLabel(track)
+
+        // Scène
+        buzzChip.isHidden = !(inGame && phase1)
+        buzzChip.text = "🔴 Buzzez !"
+
+        let showMystery = inGame && track != nil && !revealed && !phase2
+        mysteryCover.isHidden = !showMystery
+        mysteryGlow.isHidden = !showMystery
+        mysteryMark.isHidden = !showMystery
+        if showMystery, let t = track { loadCover(t, into: mysteryCover, blurred: true) }
+
+        let showTimer = inGame && phase2
+        timerLabel.isHidden = !showTimer
+        timerRing.isHidden = !showTimer
+        timerSub.isHidden = !showTimer
+        timerLabel.attributedText = TvTheme.tracked(
+            "QUELQU'UN A TROUVÉ", font: TvTheme.mono(18, bold: true), em: 0.34,
+            color: TvTheme.white(0.7))
+        timerSub.text = "Vite, les autres — buzzez !"
+
+        let showListening = inGame && phase1
+        equalizer.isHidden = !showListening
+        listenLabel.isHidden = !showListening
+        listenTrack.isHidden = !showListening
+        listenLabel.attributedText = TvTheme.tracked(
+            "ÉCOUTEZ ET BUZZEZ", font: TvTheme.mono(12), em: 0.34,
+            color: TvTheme.white(0.6))
+
+        revealCover.isHidden = !revealed
+        revealGlow.isHidden = !revealed
+        revealPill.isHidden = !revealed
+        revealTitle.isHidden = !revealed
+        revealArtist.isHidden = !revealed
+        revealMeta.isHidden = !revealed
+        if revealed, let t = track {
+            loadCover(t, into: revealCover, blurred: false)
+            revealPill.text = "RÉVÉLÉ"
+            revealTitle.text = t.title
+            revealTitle.font = TvTheme.display(titleSize(for: t.title))
+            revealArtist.text = t.artist
+            revealArtist.font = TvTheme.editorialItalic(36)
+            revealMeta.isHidden = true
+            updateBackdrop(t)
+        } else {
+            updateBackdrop(nil)
         }
 
-        switch s.state {
-        case "LOBBY":
-            renderLobby(s)
-        case "PLAYING", "PAUSED":
-            renderPlaying(s, paused: s.state == "PAUSED")
-        case "ROUND_PODIUM":
-            renderRoundPodium(s)
-        case "FINAL_PODIUM":
-            renderFinalPodium(s)
-        case "PLAYLIST_SELECTION":
-            renderSelection(s)
-        default:
-            eyebrow.isHidden = false
-            eyebrow.text = "TUTTI"
-            bigTitle.isHidden = false
-            bigTitle.text = "Prêt à jouer"
-            subTitle.isHidden = false
-            subTitle.text = "L'animateur prépare la partie"
+        // Message central hors jeu
+        let showMessage = !inGame || track == nil
+        centerMessage.isHidden = !showMessage
+        centerSub.isHidden = !showMessage
+        if showMessage {
+            switch stateName {
+            case "LOBBY":
+                centerMessage.font = TvTheme.display(64)
+                centerMessage.text = state?.sessionName ?? "Blind test"
+                let n = state?.players?.count ?? 0
+                centerSub.text = n == 0
+                    ? "En attente des joueurs…"
+                    : (n == 1 ? "1 joueur connecté" : "\(n) joueurs connectés")
+            case "ROUND_PODIUM":
+                centerMessage.font = TvTheme.display(64)
+                centerMessage.text = "Fin de la manche"
+                centerSub.text = "Classement général"
+            case "FINAL_PODIUM":
+                centerMessage.font = TvTheme.display(64)
+                let winner = state?.finalScores?.first?.label
+                centerMessage.text = winner.map { "\($0) gagne !" } ?? "Partie terminée"
+                centerSub.text = "Bravo à tous"
+            case "PLAYLIST_SELECTION":
+                centerMessage.font = TvTheme.display(56)
+                centerMessage.text = "Prochaine playlist…"
+                centerSub.text = "Préparez-vous"
+            default:
+                centerMessage.font = TvTheme.display(56)
+                centerMessage.text = "Tutti"
+                centerSub.text = "L'animateur prépare la partie"
+            }
         }
+
+        // Classement + QR
+        let scores = (stateName == "FINAL_PODIUM" ? state?.finalScores : state?.cumulative) ?? []
+        buildLeaderboard(scores: scores, compact: !revealed)
+        boardTitle.attributedText = TvTheme.tracked(
+            "CLASSEMENT", font: TvTheme.mono(12, bold: true), em: 0.3,
+            color: TvTheme.white(0.55))
+        if let code = state?.joinCode {
+            qrPanel.isHidden = false
+            qrCode.text = code
+            qrLabel.attributedText = TvTheme.tracked(
+                "REJOIGNEZ", font: TvTheme.mono(10), em: 0.28, color: TvTheme.coral)
+            qrHint.text = "Scannez pour jouer"
+            if qrImage.image == nil { qrImage.image = TuttiTvViewController.makeQr(from: code) }
+        } else {
+            qrPanel.isHidden = true
+        }
+
+        pauseOverlay.isHidden = !isPausedNow
+        if !pauseOverlay.isHidden { view.bringSubviewToFront(pauseOverlay) }
+
         view.setNeedsLayout()
     }
 
-    private func renderLobby(_ s: TvScreenState) {
-        eyebrow.isHidden = false
-        eyebrow.text = "REJOIGNEZ LA PARTIE"
-        bigTitle.isHidden = false
-        bigTitle.text = s.sessionName ?? "Blind test"
-        let count = s.players?.count ?? 0
-        subTitle.isHidden = false
-        if count == 0 {
-            subTitle.text = "En attente des joueurs…"
-        } else if count == 1 {
-            subTitle.text = "1 joueur connecté"
-        } else {
-            subTitle.text = "\(count) joueurs connectés"
+    private func phaseLabel(_ track: TvTrack?) -> String {
+        switch track?.phase {
+        case "phase1": return "À VOUS DE JOUER"
+        case "phase2": return "DERNIÈRE CHANCE"
+        case "phase3-skipped": return "MORCEAU PASSÉ"
+        case "phase3", "phase3-revealed": return "RÉVÉLÉ"
+        default: return "EN ATTENTE"
         }
-        if let code = s.joinCode {
-            joinLabel.isHidden = false
-            joinLabel.text = code
-            qrView.isHidden = false
-            qrView.image = TuttiTvViewController.makeQr(from: code)
-        }
-        fillBoard(names: (s.players ?? []).map { $0.pseudo }, values: [], title: "JOUEURS")
-        boardTitle.isHidden = (s.players?.isEmpty ?? true)
-        boardStack.isHidden = boardTitle.isHidden
     }
 
-    private func renderPlaying(_ s: TvScreenState, paused: Bool) {
-        guard let track = displayedTrack else {
-            eyebrow.isHidden = false
-            eyebrow.text = "TUTTI"
-            bigTitle.isHidden = false
-            bigTitle.text = "Chargement du morceau…"
+    /// Mêmes paliers que le web : le titre rétrécit avec sa longueur.
+    private func titleSize(for title: String) -> CGFloat {
+        let h = max(view.bounds.height, 1)
+        if title.count <= 14 { return h * 0.115 }
+        if title.count <= 26 { return h * 0.095 }
+        return h * 0.075
+    }
+
+    private func buildLeaderboard(scores: [TvScore], compact: Bool) {
+        var gains: [String: Int] = [:]
+        for a in state?.correctAnswers ?? [] {
+            if let pid = a.participantId { gains[pid, default: 0] += a.score }
+            if let tid = a.teamId { gains[tid, default: 0] += a.score }
+        }
+        let rows = Array(scores.prefix(compact ? 5 : 8))
+        boardEmpty.isHidden = !rows.isEmpty
+        boardEmpty.text = "Pas encore de score"
+        while boardRows.count > rows.count {
+            boardRows.removeLast().removeFromSuperview()
+        }
+        while boardRows.count < rows.count {
+            let r = LeaderRowView()
+            boardPanel.addSubview(r)
+            boardRows.append(r)
+        }
+        for (i, entry) in rows.enumerated() {
+            boardRows[i].configure(
+                rank: i, label: entry.label, points: entry.totalPoints,
+                delta: gains[entry.id] ?? 0, color: entry.color)
+        }
+    }
+
+    // MARK: - Pochettes
+
+    private func updateBackdrop(_ track: TvTrack?) {
+        guard let urlString = track?.coverUrl else {
+            backdropView.image = nil
+            coralGlow.isHidden = false
             return
         }
-
-        let round = s.roundPosition ?? 1
-        let total = s.roundsTotal ?? 1
-        eyebrow.isHidden = false
-        eyebrow.text = "MANCHE \(round)/\(total)  ·  TITRE \(track.trackIndex + 1)"
-
-        if track.isRevealed {
-            bigTitle.isHidden = false
-            bigTitle.text = track.title
-            subTitle.isHidden = false
-            subTitle.text = track.artist
-            showCover(track)
-        } else if track.isPhase2 {
-            countdownLabel.isHidden = false
-            bigTitle.isHidden = false
-            bigTitle.text = "Quelqu'un a trouvé !"
-            subTitle.isHidden = false
-            subTitle.text = "Vite, les autres — buzzez !"
-        } else {
-            coverPlaceholder.isHidden = false
-            bigTitle.isHidden = false
-            bigTitle.text = "À vous de jouer"
-            subTitle.isHidden = false
-            subTitle.text = "Buzzez dès que vous reconnaissez"
-        }
-
-        if paused {
-            pausedBadge.isHidden = false
-        }
-
-        progressTrack.isHidden = false
-        fillFound(track.correctAnswers ?? [])
-        fillBoard(
-            names: (s.cumulative ?? []).prefix(8).map { $0.label },
-            values: (s.cumulative ?? []).prefix(8).map { "\($0.totalPoints)" },
-            title: "CLASSEMENT")
-    }
-
-    private func renderRoundPodium(_ s: TvScreenState) {
-        eyebrow.isHidden = false
-        eyebrow.text = "FIN DE LA MANCHE \(s.lastEndedRoundPosition ?? 1)"
-        bigTitle.isHidden = false
-        let ranking = s.roundRanking ?? []
-        bigTitle.text = ranking.first.map { "\($0.pseudo) remporte la manche" } ?? "Manche terminée"
-        subTitle.isHidden = false
-        subTitle.text = "Classement général"
-        fillBoard(
-            names: (s.cumulative ?? []).prefix(10).map { $0.label },
-            values: (s.cumulative ?? []).prefix(10).map { "\($0.totalPoints)" },
-            title: "CLASSEMENT GÉNÉRAL")
-    }
-
-    private func renderFinalPodium(_ s: TvScreenState) {
-        eyebrow.isHidden = false
-        eyebrow.text = "C'EST FINI !"
-        let scores = s.finalScores ?? []
-        bigTitle.isHidden = false
-        bigTitle.text = scores.first.map { "\($0.label) gagne !" } ?? "Partie terminée"
-        subTitle.isHidden = false
-        subTitle.text = scores.first.map { "\($0.totalPoints) points" } ?? ""
-        fillBoard(
-            names: scores.prefix(10).map { $0.label },
-            values: scores.prefix(10).map { "\($0.totalPoints)" },
-            title: "CLASSEMENT FINAL")
-    }
-
-    private func renderSelection(_ s: TvScreenState) {
-        eyebrow.isHidden = false
-        eyebrow.text = "L'ANIMATEUR CHOISIT"
-        bigTitle.isHidden = false
-        bigTitle.text = "Prochaine playlist…"
-        subTitle.isHidden = false
-        subTitle.text = "Préparez-vous"
-        if let code = s.joinCode {
-            joinLabel.isHidden = false
-            joinLabel.text = code
-            qrView.isHidden = false
-            qrView.image = TuttiTvViewController.makeQr(from: code)
-        }
-    }
-
-    // MARK: - Sous-rendus
-
-    private func fillBoard(names: [String], values: [String], title: String) {
-        boardTitle.isHidden = names.isEmpty
-        boardStack.isHidden = names.isEmpty
-        boardTitle.text = title
-        for sub in boardStack.arrangedSubviews {
-            boardStack.removeArrangedSubview(sub)
-            sub.removeFromSuperview()
-        }
-        for (index, name) in names.enumerated() {
-            let row = UILabel()
-            let weight: UIFont.Weight = index == 0 ? UIFont.Weight.heavy : UIFont.Weight.medium
-            row.font = UIFont.systemFont(ofSize: 34, weight: weight)
-            row.textColor = index == 0 ? UIColor.white : dim
-            let value = index < values.count ? values[index] : ""
-            row.text = value.isEmpty ? name : "\(index + 1). \(name)   \(value)"
-            boardStack.addArrangedSubview(row)
-        }
-    }
-
-    private func fillFound(_ answers: [TvCorrectAnswer]) {
-        for sub in foundStack.arrangedSubviews {
-            foundStack.removeArrangedSubview(sub)
-            sub.removeFromSuperview()
-        }
-        if answers.isEmpty { return }
-        foundStack.isHidden = false
-        for a in answers.prefix(3) {
-            let row = UILabel()
-            row.font = UIFont.systemFont(ofSize: 30, weight: .semibold)
-            row.textColor = coral
-            row.textAlignment = .center
-            row.text = "\(a.position). \(a.pseudo)  +\(a.score)"
-            foundStack.addArrangedSubview(row)
-        }
-    }
-
-    private func showCover(_ track: TvTrack) {
-        guard let urlString = track.coverUrl, let url = URL(string: urlString) else {
-            coverPlaceholder.isHidden = false
+        coralGlow.isHidden = true
+        if let blurred = blurredCache.object(forKey: urlString as NSString) {
+            backdropView.image = blurred
             return
         }
-        coverView.isHidden = false
-        let key = urlString as NSString
-        if let cached = coverCache.object(forKey: key) {
-            coverView.image = cached
+        loadImage(urlString) { [weak self] image in
+            guard let self = self, let image = image else { return }
+            let blurred = TuttiTvViewController.blur(image, radius: 60) ?? image
+            self.blurredCache.setObject(blurred, forKey: urlString as NSString)
+            if self.displayedTrack?.coverUrl == urlString { self.backdropView.image = blurred }
+        }
+    }
+
+    private func loadCover(_ track: TvTrack, into target: UIImageView, blurred: Bool) {
+        guard let urlString = track.coverUrl else {
+            target.image = nil
             return
         }
-        if coverRequestedFor == urlString { return }
-        coverRequestedFor = urlString
-        URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
-            guard let self = self, let data = data, let image = UIImage(data: data) else { return }
-            self.coverCache.setObject(image, forKey: key)
+        let key = (blurred ? "b|" : "c|") + urlString
+        if let cached = coverCache.object(forKey: key as NSString) {
+            target.image = cached
+            return
+        }
+        loadImage(urlString) { [weak self] image in
+            guard let self = self, let image = image else { return }
+            let final = blurred ? (TuttiTvViewController.blur(image, radius: 22) ?? image) : image
+            self.coverCache.setObject(final, forKey: key as NSString)
+            if self.displayedTrack?.coverUrl == urlString { target.image = final }
+        }
+    }
+
+    private func loadImage(_ urlString: String, done: @escaping (UIImage?) -> Void) {
+        guard let url = URL(string: urlString) else { done(nil); return }
+        if coverRequested.contains(urlString) { return }
+        coverRequested.insert(urlString)
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            let image = data.flatMap { UIImage(data: $0) }
             DispatchQueue.main.async {
-                if self.displayedTrack?.coverUrl == urlString {
-                    self.coverView.image = image
-                }
+                self.coverRequested.remove(urlString)
+                done(image)
             }
         }.resume()
     }
 
-    // MARK: - Mise en page (frames explicites : aucun conflit possible)
+    private static func blur(_ image: UIImage, radius: Double) -> UIImage? {
+        guard let cg = image.cgImage else { return nil }
+        let context = CIContext()
+        let input = CIImage(cgImage: cg)
+        guard let filter = CIFilter(name: "CIGaussianBlur") else { return nil }
+        filter.setValue(input.clampedToExtent(), forKey: kCIInputImageKey)
+        filter.setValue(radius, forKey: kCIInputRadiusKey)
+        guard let out = filter.outputImage else { return nil }
+        guard let result = context.createCGImage(out, from: input.extent) else { return nil }
+        return UIImage(cgImage: result)
+    }
+
+    // MARK: - Mise en page
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        layoutViews()
+        layoutAll()
     }
 
-    private func layoutViews() {
+    private func layoutAll() {
         let b = view.bounds
-        let margin = b.width * 0.045
-        let contentWidth = b.width - margin * 2
-        let boardWidth = b.width * 0.30
-        let leftWidth = contentWidth - boardWidth - margin
+        backdropView.frame = b
+        scrimLayer.frame = b
+        let glowSide = b.height * 0.55
+        coralGlow.frame = CGRect(x: b.midX - glowSide / 2, y: -b.height * 0.12,
+                                 width: glowSide, height: glowSide)
+        coralGlow.layer.cornerRadius = glowSide / 2
 
-        eyebrow.frame = CGRect(x: margin, y: margin * 0.6, width: contentWidth, height: 34)
+        // Marge racine : px-[2.5vmin] pt-[1.5vmin] pb-[3vmin]
+        let vmin = min(b.width, b.height)
+        let rootX = vmin * 0.025
+        let rootTop = vmin * 0.015
+        let rootBottom = vmin * 0.03
 
-        let isGame = !progressTrack.isHidden
-        if isGame {
-            let coverSide = min(leftWidth * 0.62, b.height * 0.42)
-            let coverX = margin + (leftWidth - coverSide) / 2
-            let coverY = margin * 1.6 + 34
-            coverView.frame = CGRect(x: coverX, y: coverY, width: coverSide, height: coverSide)
-            coverPlaceholder.frame = coverView.frame
-            countdownLabel.frame = CGRect(x: margin, y: coverY, width: leftWidth, height: coverSide)
+        // Bandeau haut : px-12 py-7
+        let headX = rootX + 48
+        let headY = rootTop + 28
+        brandLabel.sizeToFit()
+        brandLabel.frame = CGRect(x: headX, y: headY, width: brandLabel.frame.width,
+                                  height: brandLabel.frame.height)
+        brandDot.frame = CGRect(x: brandLabel.frame.maxX + 4, y: headY + 4, width: 10, height: 10)
 
-            let textY = coverY + coverSide + margin * 0.5
-            bigTitle.frame = CGRect(x: margin, y: textY, width: leftWidth, height: b.height * 0.14)
-            subTitle.frame = CGRect(x: margin, y: bigTitle.frame.maxY + 6,
-                                    width: leftWidth, height: b.height * 0.08)
-            foundStack.frame = CGRect(x: margin, y: subTitle.frame.maxY + 10,
-                                      width: leftWidth, height: b.height * 0.16)
-
-            progressTrack.frame = CGRect(x: margin, y: b.height - margin - 12,
-                                         width: leftWidth, height: 12)
-            pausedBadge.frame = CGRect(x: margin + leftWidth / 2 - 160,
-                                       y: b.height / 2 - 60, width: 320, height: 120)
-
-            boardTitle.frame = CGRect(x: b.width - margin - boardWidth,
-                                      y: margin * 1.6 + 34, width: boardWidth, height: 28)
-            boardStack.frame = CGRect(x: b.width - margin - boardWidth,
-                                      y: boardTitle.frame.maxY + 14,
-                                      width: boardWidth, height: b.height * 0.7)
-        } else {
-            // Écrans pleine largeur (lobby, podiums, sélection).
-            let topY = b.height * 0.10
-            bigTitle.frame = CGRect(x: margin, y: topY, width: contentWidth, height: b.height * 0.20)
-            subTitle.frame = CGRect(x: margin, y: bigTitle.frame.maxY + 8,
-                                    width: contentWidth, height: b.height * 0.10)
-            let qrSide = min(b.width * 0.16, b.height * 0.26)
-            qrView.frame = CGRect(x: b.width - margin - qrSide, y: b.height - margin - qrSide - 52,
-                                  width: qrSide, height: qrSide)
-            joinLabel.frame = CGRect(x: b.width - margin - qrSide, y: qrView.frame.maxY + 8,
-                                     width: qrSide, height: 40)
-            boardTitle.frame = CGRect(x: margin, y: subTitle.frame.maxY + margin * 0.6,
-                                      width: contentWidth * 0.6, height: 28)
-            boardStack.frame = CGRect(x: margin, y: boardTitle.frame.maxY + 14,
-                                      width: contentWidth * 0.6,
-                                      height: b.height - boardTitle.frame.maxY - margin * 2)
+        var cursor = brandLabel.frame.maxX + 24
+        let pillH: CGFloat = 28
+        if !roundPill.isHidden {
+            roundPill.sizeToFit()
+            roundPill.frame = CGRect(x: cursor, y: brandLabel.frame.midY - pillH / 2,
+                                     width: roundPill.frame.width, height: pillH)
+            cursor = roundPill.frame.maxX + 12
         }
-        layoutProgress()
+        if !trackCounter.isHidden {
+            trackCounter.sizeToFit()
+            trackCounter.frame = CGRect(x: cursor, y: brandLabel.frame.midY - 8,
+                                        width: trackCounter.frame.width, height: 16)
+            cursor = trackCounter.frame.maxX + 12
+        }
+        if !playlistName.isHidden {
+            let maxW = max(0, b.width * 0.22)
+            playlistName.frame = CGRect(x: cursor, y: brandLabel.frame.midY - 8,
+                                        width: maxW, height: 16)
+        }
+        phasePill.sizeToFit()
+        let phaseH: CGFloat = 34
+        phasePill.frame = CGRect(x: b.width - rootX - 48 - phasePill.frame.width,
+                                 y: brandLabel.frame.midY - phaseH / 2,
+                                 width: phasePill.frame.width, height: phaseH)
+
+        // Zone principale : px-12 pb-12, gap-10
+        let mainTop = max(brandLabel.frame.maxY, phasePill.frame.maxY) + 28
+        let mainX = rootX + 48
+        let mainW = b.width - mainX * 2
+        let mainH = b.height - mainTop - rootBottom - 48
+        let gap: CGFloat = 40
+        let revealed = displayedTrack?.isRevealed ?? false
+        // grid lg:grid-cols-[1fr_360px] à l'écoute, [1.5fr_1fr] au reveal
+        let asideW: CGFloat = revealed ? (mainW - gap) / 2.5 : min(360, mainW * 0.28)
+        let stageW = mainW - gap - asideW
+        let stageRect = CGRect(x: mainX, y: mainTop, width: stageW, height: mainH)
+        let asideRect = CGRect(x: mainX + stageW + gap, y: mainTop, width: asideW, height: mainH)
+
+        layoutStage(stageRect, revealed: revealed)
+        layoutAside(asideRect, revealed: revealed)
+
+        pauseOverlay.frame = b
+        let pw = min(b.width * 0.5, 720)
+        let ph = min(b.height * 0.4, 380)
+        pausePanel.frame = CGRect(x: (b.width - pw) / 2, y: (b.height - ph) / 2,
+                                  width: pw, height: ph)
+        pauseIcon.frame = CGRect(x: 0, y: ph * 0.16, width: pw, height: 84)
+        pauseTitle.frame = CGRect(x: 0, y: pauseIcon.frame.maxY + 12, width: pw, height: 60)
+        pauseHint.frame = CGRect(x: 24, y: pauseTitle.frame.maxY + 8, width: pw - 48, height: 32)
     }
 
-    private func layoutProgress() {
-        if progressTrack.isHidden { return }
+    private func layoutStage(_ r: CGRect, revealed: Bool) {
+        if !buzzChip.isHidden {
+            buzzChip.sizeToFit()
+            buzzChip.frame = CGRect(x: r.minX, y: r.minY,
+                                    width: buzzChip.frame.width + 4, height: 44)
+        }
+
+        if revealed {
+            // section flex-row : pochette + bloc texte, centré verticalement
+            let coverSide = min(r.height * 0.52, min(r.width * 0.42, 400))
+            let textW = r.width - coverSide - 40
+            let coverY = r.midY - coverSide / 2
+            revealCover.frame = CGRect(x: r.minX, y: coverY, width: coverSide, height: coverSide)
+            revealGlow.frame = revealCover.frame.insetBy(dx: -40, dy: -40)
+            revealGlow.layer.cornerRadius = revealGlow.frame.width * 0.4
+
+            let textX = revealCover.frame.maxX + 40
+            revealPill.sizeToFit()
+            let titleH = ceil(revealTitle.sizeThatFits(
+                CGSize(width: textW, height: .greatestFiniteMagnitude)).height)
+            let artistH = ceil(revealArtist.sizeThatFits(
+                CGSize(width: textW, height: .greatestFiniteMagnitude)).height)
+            let blockH = 30 + 24 + titleH + 16 + artistH
+            var y = r.midY - blockH / 2
+            revealPill.frame = CGRect(x: textX, y: y, width: revealPill.frame.width, height: 30)
+            y += 30 + 24
+            revealTitle.frame = CGRect(x: textX, y: y, width: textW, height: titleH)
+            y += titleH + 16
+            revealArtist.frame = CGRect(x: textX, y: y, width: textW, height: artistH)
+            return
+        }
+
+        if !timerRing.isHidden {
+            let side: CGFloat = min(340, r.height * 0.5)
+            let blockH = 26 + 24 + side + 24 + 30
+            var y = r.midY - blockH / 2
+            timerLabel.frame = CGRect(x: r.minX, y: y, width: r.width, height: 26)
+            y += 26 + 24
+            timerRing.frame = CGRect(x: r.midX - side / 2, y: y, width: side, height: side)
+            y += side + 24
+            timerSub.frame = CGRect(x: r.minX, y: y, width: r.width, height: 30)
+            return
+        }
+
+        if !mysteryCover.isHidden {
+            let side = min(min(r.height * 0.44, 440), r.width * 0.8)
+            let progressH: CGFloat = listenTrack.isHidden ? 0 : 120
+            let totalH = side + progressH
+            let top = r.midY - totalH / 2
+            mysteryCover.frame = CGRect(x: r.midX - side / 2, y: top, width: side, height: side)
+            mysteryGlow.frame = mysteryCover.frame.insetBy(dx: -24, dy: -24)
+            mysteryGlow.layer.cornerRadius = mysteryGlow.frame.width * 0.4
+            mysteryMark.frame = mysteryCover.bounds
+            mysteryMark.font = TvTheme.display(side * 0.42)
+
+            if !listenTrack.isHidden {
+                let w = side
+                let x = r.midX - w / 2
+                var y = mysteryCover.frame.maxY + 44
+                equalizer.frame = CGRect(x: r.midX - 40, y: y, width: 80, height: 36)
+                y += 36 + 16
+                listenLabel.frame = CGRect(x: r.minX, y: y, width: r.width, height: 18)
+                y += 18 + 16
+                listenTrack.frame = CGRect(x: x, y: y, width: w, height: 6)
+                layoutListeningProgress()
+            }
+            return
+        }
+
+        if !centerMessage.isHidden {
+            let h1: CGFloat = 84
+            let h2: CGFloat = 36
+            let y = r.midY - (h1 + 16 + h2) / 2
+            centerMessage.frame = CGRect(x: r.minX, y: y, width: r.width, height: h1)
+            centerSub.frame = CGRect(x: r.minX, y: y + h1 + 16, width: r.width, height: h2)
+        }
+    }
+
+    private func layoutListeningProgress() {
+        if listenTrack.isHidden { return }
         let total = playback.durationMs > 0
             ? playback.durationMs
             : Double(displayedTrack?.durationMs ?? 0)
         var ratio: CGFloat = 0
         if total > 0 {
-            ratio = CGFloat(min(1.0, max(0.0, playback.currentPositionMs() / total)))
+            ratio = CGFloat(min(1, max(0, playback.currentPositionMs() / total)))
         }
-        progressFill.frame = CGRect(x: 0, y: 0,
-                                    width: progressTrack.bounds.width * ratio,
-                                    height: progressTrack.bounds.height)
+        listenFill.frame = CGRect(x: 0, y: 0,
+                                  width: listenTrack.bounds.width * ratio,
+                                  height: listenTrack.bounds.height)
+    }
+
+    private func layoutAside(_ r: CGRect, revealed: Bool) {
+        let qrH: CGFloat = 148
+        let gap: CGFloat = 20
+        boardPanel.frame = CGRect(x: r.minX, y: r.minY, width: r.width,
+                                  height: max(0, r.height - qrH - gap))
+        qrPanel.frame = CGRect(x: r.minX, y: boardPanel.frame.maxY + gap,
+                               width: r.width, height: qrH)
+
+        let pad: CGFloat = 24
+        boardIcon.frame = CGRect(x: pad, y: pad, width: 22, height: 22)
+        boardTitle.frame = CGRect(x: pad + 30, y: pad + 2,
+                                  width: boardPanel.bounds.width - pad - 30, height: 18)
+        boardEmpty.frame = CGRect(x: pad, y: boardPanel.bounds.height / 2 - 20,
+                                  width: boardPanel.bounds.width - pad * 2, height: 40)
+
+        var y = pad + 22 + 16
+        let rowH: CGFloat = revealed ? 62 : 54
+        for row in boardRows {
+            row.frame = CGRect(x: pad, y: y, width: boardPanel.bounds.width - pad * 2,
+                               height: rowH)
+            row.applyLayout(leaderBig: revealed)
+            y += rowH + 10
+        }
+
+        let qpad: CGFloat = 20
+        let qrSide = qrH - qpad * 2
+        qrWhite.frame = CGRect(x: qpad, y: qpad, width: qrSide, height: qrSide)
+        qrImage.frame = qrWhite.bounds.insetBy(dx: 8, dy: 8)
+        let tx = qrWhite.frame.maxX + 16
+        let tw = max(0, qrPanel.bounds.width - tx - qpad)
+        qrLabel.frame = CGRect(x: tx, y: qpad + 6, width: tw, height: 14)
+        qrCode.frame = CGRect(x: tx, y: qrLabel.frame.maxY + 6, width: tw, height: 30)
+        qrHint.frame = CGRect(x: tx, y: qrCode.frame.maxY + 4, width: tw, height: 18)
     }
 
     // MARK: - Utilitaires

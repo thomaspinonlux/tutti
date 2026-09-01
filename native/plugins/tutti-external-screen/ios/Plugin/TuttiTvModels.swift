@@ -16,9 +16,13 @@ struct TvCorrectAnswer: Decodable {
     let pseudo: String
     let position: Int
     let score: Int
+    let participantId: String?
+    let teamId: String?
 
     enum CodingKeys: String, CodingKey {
         case pseudo, position, score
+        case participantId = "participant_id"
+        case teamId = "team_id"
     }
 }
 
@@ -78,14 +82,45 @@ struct TvTrack: Decodable {
     }
 }
 
+/// Vue minimale de la session : manche en cours, playlist, état pause.
+struct TvPlaylistLite: Decodable {
+    let name: String
+    let tracksCount: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case tracksCount = "tracks_count"
+    }
+}
+
+struct TvRoundLite: Decodable {
+    let status: String
+    let position: Int
+    let playlist: TvPlaylistLite
+}
+
+struct TvSessionLite: Decodable {
+    let shortCode: String?
+    let isPaused: Bool?
+    let rounds: [TvRoundLite]?
+
+    enum CodingKeys: String, CodingKey {
+        case rounds
+        case shortCode = "short_code"
+        case isPaused = "is_paused"
+    }
+}
+
 struct TvScreenState: Decodable {
     let state: String
     let sessionId: String?
     let joinCode: String?
     let sessionName: String?
     let players: [TvPlayer]?
+    let session: TvSessionLite?
     let currentTrack: TvTrack?
     let cumulative: [TvScore]?
+    let correctAnswers: [TvCorrectAnswer]?
     let phase2StartedAt: String?
     let roundPosition: Int?
     let roundsTotal: Int?
@@ -95,8 +130,8 @@ struct TvScreenState: Decodable {
     let qrOverlay: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case state, sessionId, joinCode, sessionName, players, currentTrack
-        case cumulative, phase2StartedAt, roundPosition, roundsTotal
+        case state, sessionId, joinCode, sessionName, players, session, currentTrack
+        case cumulative, correctAnswers, phase2StartedAt, roundPosition, roundsTotal
         case roundRanking, finalScores, lastEndedRoundPosition
         case qrOverlay = "qr_overlay"
     }
