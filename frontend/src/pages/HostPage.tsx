@@ -65,6 +65,7 @@ import { useAppleMusicPlayer } from '../lib/useAppleMusicPlayer.js';
 import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
 import { useExternalPlayerScreen, USE_NATIVE_TV } from '../lib/useExternalPlayerScreen.js';
 import { externalScreen } from '../lib/externalScreen.js';
+import { remoteLog, installRemoteErrorCapture } from '../lib/remoteLog.js';
 import { useSelectionBackgroundMusic } from '../lib/useSelectionBackgroundMusic.js';
 import { isCapacitorNative, getShareableOrigin } from '../lib/platform.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
@@ -1048,6 +1049,12 @@ function HostPageInner(): JSX.Element {
   // sur des lectures parfaitement normales et affichait un bouton bloquant en
   // plein écran. La relance du son reste possible, mais UNIQUEMENT à la
   // demande explicite de l'animateur (bouton de la télécommande).
+  // fix/diagnostic-blocage — toute erreur non gérée de la console part au
+  // serveur : on saura ENFIN où ça casse quand l'iPad se fige.
+  useEffect(() => {
+    installRemoteErrorCapture();
+  }, []);
+
   const audioUnlockRef = useRef<() => void>(() => undefined);
   // fix/boutons-identiques — ±10 s depuis la console, via le MÊME mécanisme
   // que la télécommande (pendingSeek → lecteur local). Aucun nouveau chemin.
@@ -1579,9 +1586,27 @@ function HostPageInner(): JSX.Element {
   // est le user gesture qui débloque l'autoplay des deux SDK.
   const handleStartFirstPlay = async (): Promise<void> => {
     if (!session || !pendingFirstPlay) return;
+    const t0 = Date.now();
+    const step = (m: string, meta?: Record<string, unknown>): void =>
+      remoteLog('lancement', `${m} (+${Date.now() - t0}ms)`, meta);
+    step('clic Démarrer', {
+      source: pendingFirstPlay.source,
+      playlist:
+        pendingFirstPlay.source === 'official'
+          ? pendingFirstPlay.previewPlaylist.id
+          : pendingFirstPlay.playlistId,
+    });
+    // fix/diagnostic-blocage — les trois réveils audio ci-dessous sont
+    // PROTÉGÉS : une exception synchrone dans l'un d'eux empêchait la demande
+    // de lancement de partir, sans aucun message. Chacun est journalisé.
     // fix/pwa-safari-audio-unlock — voir handleStartSession. Doit être SYNC
     // avant tout await pour préserver le user gesture en PWA standalone.
-    unlockAudioSync('start-first-play-button');
+    try {
+      unlockAudioSync('start-first-play-button');
+      step('audio déverrouillé');
+    } catch (err: unknown) {
+      step('unlockAudioSync a échoué', { err: String(err) });
+    }
     // fix/ipad-pwa-audio-persistent-player — claim YouTube SYNC dans le
     // gesture, AVANT tout await. Asymétrie corrigée : handleStartSession le
     // faisait, pas ce handler. Avec le player persistant, à la manche 2+ le
@@ -1589,12 +1614,34 @@ function HostPageInner(): JSX.Element {
     // playVideo/pauseVideo qui re-claim l'audio iOS. (Manche 1 : player tout
     // neuf sans vidéo → no-op safe cf. #73, le claim passe par le flow
     // cueVideoById→CUED→playVideo de PreGameStartScreen.)
-    youtube.warmupSync();
+    try {
+      youtube.warmupSync();
+      step('youtube réveillé');
+    } catch (err: unknown) {
+      step('youtube.warmupSync a échoué', { err: String(err) });
+    }
     // fix/robust-autoplay-no-refresh (Apple) — déverrouille MusicKit dans le
     // geste du clic « Démarrer » (authorize + claim audio), symétrique
     // youtube.warmupSync. No-op sûr hors source Apple.
-    void apple.activate();
+    try {
+      void apple.activate().then(
+        (ok) => step('apple activé', { ok }),
+        (err: unknown) => step('apple.activate a échoué', { err: String(err) }),
+      );
+    } catch (err: unknown) {
+      step('apple.activate a levé', { err: String(err) });
+    }
     setBusy(true);
+    // fix/diagnostic-blocage — FILET, pas une attente : un lancement normal
+    // répond en 1 à 3 s. Si le serveur ne répond pas du tout, on libère la
+    // console après 12 s avec un message clair, au lieu d'un écran mort.
+    const withTimeout = <T,>(p: Promise<T>, label: string): Promise<T> =>
+      Promise.race([
+        p,
+        new Promise<T>((_, reject) =>
+          window.setTimeout(() => reject(new Error(`${label} : le serveur ne répond pas`)), 12_000),
+        ),
+      ]);
     try {
       // fix/ipad-pwa-audio-persistent-player — n'active QUE le pipeline du
       // provider qui va jouer. iOS = audio session singleton : activer
@@ -1609,22 +1656,33 @@ function HostPageInner(): JSX.Element {
         await spotify.activate();
       }
       let roundId: string;
+      step('envoi de la demande de lancement');
       if (pendingFirstPlay.source === 'perso') {
-        const round = await createRound(session.id, pendingFirstPlay.playlistId);
+        const round = await withTimeout(
+          createRound(session.id, pendingFirstPlay.playlistId),
+          'création de la manche',
+        );
         roundId = round.id;
       } else {
-        const result = await launchLibraryPlaylist(
-          pendingFirstPlay.previewPlaylist.id,
-          session.id,
-          pendingFirstPlay.prefer,
-          pendingFirstPlay.difficulty,
+        const result = await withTimeout(
+          launchLibraryPlaylist(
+            pendingFirstPlay.previewPlaylist.id,
+            session.id,
+            pendingFirstPlay.prefer,
+            pendingFirstPlay.difficulty,
+          ),
+          'lancement de la playlist',
         );
         roundId = result.round.id;
       }
-      await startRound(session.id, roundId);
-      await playTrack(session.id, roundId);
+      step('manche créée', { roundId });
+      await withTimeout(startRound(session.id, roundId), 'démarrage de la manche');
+      step('manche démarrée');
+      await withTimeout(playTrack(session.id, roundId), 'premier morceau');
+      step('premier morceau demandé');
       setPendingFirstPlay(null);
     } catch (err: unknown) {
+      step('ÉCHEC', { err: (err as Error).message });
       setError((err as Error).message);
     } finally {
       setBusy(false);

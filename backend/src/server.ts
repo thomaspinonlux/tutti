@@ -42,6 +42,7 @@ import libraryRouter from './routes/library.js';
 import libraryPublicRouter from './routes/libraryPublic.js';
 import youtubeAuthRouter from './routes/youtubeAuth.js';
 import screenStateRouter from './routes/screenState.js';
+import clientLogRouter from './routes/clientLog.js';
 import tvRouter from './routes/tv.js';
 import { prisma } from './lib/prisma.js';
 import { initSocketIO } from './socket/index.js';
@@ -180,6 +181,7 @@ app.use('/api/library', libraryRouter);
 app.use('/api/library-public', libraryPublicRouter);
 app.use('/api/auth/youtube', youtubeAuthRouter);
 app.use('/api/workspace', screenStateRouter);
+app.use('/api', clientLogRouter);
 app.use('/api/tv', tvRouter);
 
 // 404 par défaut

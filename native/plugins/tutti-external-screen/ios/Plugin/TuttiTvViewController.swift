@@ -30,7 +30,6 @@ final class TuttiTvViewController: UIViewController {
     private var displayedTrack: TvTrack?
     private var tickTimer: Timer?
     private let coverCache = NSCache<NSString, UIImage>()
-    private var coverRequested = Set<String>()
     private var blurredCache = NSCache<NSString, UIImage>()
 
     // MARK: - Vues (fond)
@@ -122,12 +121,16 @@ final class TuttiTvViewController: UIViewController {
     // MARK: - Entrée depuis le plugin
 
     func updatePlayback(trackId: String, positionMs: Double, durationMs: Double, isPaused: Bool) {
+        // fix/fil-principal — appelé 5×/s par la console. On ne reconstruit la
+        // vue QUE si le morceau confirmé change ; sinon on met à jour les
+        // nombres et la barre de progression se recale toute seule au tick.
+        let trackChanged = trackId != audioTrackId
         audioTrackId = trackId
         playback.positionMs = positionMs
         playback.durationMs = durationMs
         playback.isPaused = isPaused
         playback.receivedAt = Date().timeIntervalSince1970
-        reconcileDisplayedTrack()
+        if trackChanged { reconcileDisplayedTrack() }
     }
 
     // MARK: - Construction
@@ -325,9 +328,27 @@ final class TuttiTvViewController: UIViewController {
 
     // MARK: - Réception d'état
 
+    private var lastStateSignature = ""
+    private var qrPendingCode = ""
+
     private func apply(_ newState: TvScreenState?) {
         guard let newState = newState else { return }
+        // fix/fil-principal — l'interrogation revient chaque seconde ; on ne
+        // redessine que si quelque chose a changé (état, morceau, phase,
+        // scores, joueurs). Une signature courte suffit à le savoir.
+        let sig = [
+            newState.state,
+            newState.currentTrack?.trackId ?? "",
+            newState.currentTrack?.phase ?? "",
+            String(newState.currentTrack?.correctAnswers?.count ?? 0),
+            String(newState.cumulative?.map { "\($0.id):\($0.totalPoints)" }.joined() ?? ""),
+            String(newState.players?.count ?? 0),
+            String(newState.session?.isPaused ?? false),
+            newState.joinCode ?? "",
+        ].joined(separator: "|")
         state = newState
+        if sig == lastStateSignature { return }
+        lastStateSignature = sig
         reconcileDisplayedTrack()
     }
 
@@ -486,7 +507,13 @@ final class TuttiTvViewController: UIViewController {
             qrLabel.attributedText = TvTheme.tracked(
                 "REJOIGNEZ", font: TvTheme.mono(10), em: 0.28, color: TvTheme.coral)
             qrHint.text = "Scannez pour jouer"
-            if qrImage.image == nil { qrImage.image = TuttiTvViewController.makeQr(from: code) }
+            if qrImage.image == nil && qrPendingCode != code {
+                qrPendingCode = code
+                DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                    let img = TuttiTvViewController.makeQr(from: code)
+                    DispatchQueue.main.async { self?.qrImage.image = img }
+                }
+            }
         } else {
             qrPanel.isHidden = true
         }
@@ -553,10 +580,18 @@ final class TuttiTvViewController: UIViewController {
             return
         }
         loadImage(urlString) { [weak self] image in
-            guard let self = self, let image = image else { return }
-            let blurred = TuttiTvViewController.blur(image, radius: 60) ?? image
-            self.blurredCache.setObject(blurred, forKey: urlString as NSString)
-            if self.displayedTrack?.coverUrl == urlString { self.backdropView.image = blurred }
+            guard let image = image else { return }
+            // fix/fil-principal — le flou (rayon 60 sur 600×600) se calcule en
+            // arrière-plan : sur le fil principal il figeait TOUTE l'app,
+            // console comprise, pendant plusieurs centaines de millisecondes.
+            DispatchQueue.global(qos: .userInitiated).async {
+                let blurred = TuttiTvViewController.blur(image, radius: 60) ?? image
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    self.blurredCache.setObject(blurred, forKey: urlString as NSString)
+                    if self.displayedTrack?.coverUrl == urlString { self.backdropView.image = blurred }
+                }
+            }
         }
     }
 
@@ -571,29 +606,57 @@ final class TuttiTvViewController: UIViewController {
             return
         }
         loadImage(urlString) { [weak self] image in
-            guard let self = self, let image = image else { return }
-            let final = blurred ? (TuttiTvViewController.blur(image, radius: 22) ?? image) : image
-            self.coverCache.setObject(final, forKey: key as NSString)
-            if self.displayedTrack?.coverUrl == urlString { target.image = final }
+            guard let image = image else { return }
+            DispatchQueue.global(qos: .userInitiated).async {
+                let final = blurred ? (TuttiTvViewController.blur(image, radius: 22) ?? image) : image
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    self.coverCache.setObject(final, forKey: key as NSString)
+                    if self.displayedTrack?.coverUrl == urlString { target.image = final }
+                }
+            }
         }
     }
 
+    /// Images brutes déjà téléchargées (avant flou) + demandeurs en attente.
+    private let rawCache = NSCache<NSString, UIImage>()
+    private var waiters: [String: [(UIImage?) -> Void]] = [:]
+
+    /// fix/pochette-absente — plusieurs vues demandent la MÊME image (fond
+    /// flouté, pochette mystère, pochette révélée). L'ancien anti-doublon
+    /// ignorait purement le second demandeur : il ne recevait jamais l'image,
+    /// d'où des pochettes absentes à la révélation. Désormais : cache brut, et
+    /// tous les demandeurs d'une même URL sont servis à l'arrivée.
     private func loadImage(_ urlString: String, done: @escaping (UIImage?) -> Void) {
+        if let cached = rawCache.object(forKey: urlString as NSString) {
+            done(cached)
+            return
+        }
         guard let url = URL(string: urlString) else { done(nil); return }
-        if coverRequested.contains(urlString) { return }
-        coverRequested.insert(urlString)
-        URLSession.shared.dataTask(with: url) { data, _, _ in
+        if waiters[urlString] != nil {
+            waiters[urlString]?.append(done)
+            return
+        }
+        waiters[urlString] = [done]
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+            // Décodage sur le fil réseau, pas sur le fil principal.
             let image = data.flatMap { UIImage(data: $0) }
             DispatchQueue.main.async {
-                self.coverRequested.remove(urlString)
-                done(image)
+                guard let self = self else { return }
+                if let image = image { self.rawCache.setObject(image, forKey: urlString as NSString) }
+                let callbacks = self.waiters.removeValue(forKey: urlString) ?? []
+                for cb in callbacks { cb(image) }
             }
         }.resume()
     }
 
+    /// Un seul contexte CoreImage pour toute la vue : en créer un à chaque
+    /// flou coûtait plusieurs centaines de millisecondes.
+    private static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+
     private static func blur(_ image: UIImage, radius: Double) -> UIImage? {
         guard let cg = image.cgImage else { return nil }
-        let context = CIContext()
+        let context = ciContext
         let input = CIImage(cgImage: cg)
         guard let filter = CIFilter(name: "CIGaussianBlur") else { return nil }
         filter.setValue(input.clampedToExtent(), forKey: kCIInputImageKey)
