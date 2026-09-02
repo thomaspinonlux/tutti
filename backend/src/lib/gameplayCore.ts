@@ -277,6 +277,23 @@ export async function buildAndBroadcastTrack(
 
   // ANTI-TRICHE — le broadcast public ne porte JAMAIS la réponse en phase1.
   // La réponse part uniquement sur le canal privilégié (host + ANIMATOR_FULL).
+  // fix/silence-apres-manche — LA PAUSE EST RELÂCHÉE À CHAQUE DÉMARRAGE DE
+  // MORCEAU. Elle n'était remise à zéro que sur deux chemins ; en terminant
+  // une manche pendant une pause puis en en lançant une autre, la session
+  // restait marquée « en pause » en base : le morceau partait, la console le
+  // recevait, mais le lecteur restait muet — sans que le bouton « Reprendre »
+  // soit là où l'animateur le cherche. Ce point de passage est commun à TOUS
+  // les démarrages de morceau, c'est donc le bon endroit.
+  await prisma.session
+    .updateMany({ where: { id: sessionId, is_paused: true }, data: { is_paused: false } })
+    .then((r) => {
+      if (r.count > 0) {
+        console.info(`[gameplayCore] pause relâchée au démarrage du morceau (session=${sessionId})`);
+        broadcastToSession(sessionId, 'session:resumed', { session_id: sessionId });
+      }
+    })
+    .catch((err) => console.warn('[gameplayCore] relâchement de pause impossible :', err));
+
   broadcastToSession(sessionId, 'track:start', { state: stripTrackAnswer(state) });
   emitTrackAnswer(sessionId, { ...trackAnswerFromState(state), next_preload: nextPreload });
   // NB : on retourne le state COMPLET. Les routes mode B (sessionMaster) qui le

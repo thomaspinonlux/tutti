@@ -82,19 +82,28 @@ export async function transcribeAudio(args: TranscribeArgs): Promise<TranscribeR
     `[Whisper] ⏱  transcribe start | model=${WHISPER_MODEL} | size=${audioSizeKb}KB | lang=${args.language ?? 'auto'}`,
   );
 
+  // fix/requete-sans-fin — DÉLAI MAXIMAL DE 8 SECONDES.
+  // Sans lui, cet appel pouvait rester ouvert plusieurs minutes : le téléphone
+  // du joueur restait bloqué sur « analyse », son buzz n'était pas refermé, et
+  // le serveur retenait le fichier audio en mémoire. Les deux autres services
+  // de transcription étaient déjà bornés (8 s et 10 s), celui-ci ne l'était pas.
+  const controleur = new AbortController();
+  const minuteur = setTimeout(() => controleur.abort(), 8000);
   let res: Response;
   try {
     res = await fetch(OPENAI_TRANSCRIPTION_URL, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}` },
       body: form,
-      // 30s timeout via AbortController côté caller si besoin (V1 simple).
+      signal: controleur.signal,
     });
   } catch (err) {
     throw new WhisperError(
       'TIMEOUT',
-      `Whisper unreachable: ${err instanceof Error ? err.message : 'unknown'}`,
+      `Whisper injoignable : ${err instanceof Error ? err.message : 'inconnu'}`,
     );
+  } finally {
+    clearTimeout(minuteur);
   }
 
   if (res.status === 429) {

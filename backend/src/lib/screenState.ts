@@ -278,6 +278,25 @@ function serializeSession(
  * Calcule l'état screen actuel pour un workspace donné. Lit la DB à chaque
  * appel — déterministe, no cache.
  */
+/**
+ * fix/reponse-en-clair — L'ÉCRAN TV EST SERVI PAR UNE ROUTE PUBLIQUE.
+ *
+ * Le calcul d'état renvoyait titre, artiste, album, année et pochette DÈS LA
+ * PHASE 1. L'affichage les masquait bien, mais quiconque connaissait l'adresse
+ * de l'écran (elle est visible sur l'iPad, et dans l'historique du navigateur)
+ * pouvait lire la réponse avant tout le monde. On les retire tant que le
+ * morceau n'est pas révélé à toute la salle.
+ */
+function masquerReponseAvantRevelation(
+  track: CurrentTrackState | null,
+): CurrentTrackState | null {
+  if (!track) return null;
+  const revele =
+    track.phase === 'phase3' || track.phase === 'phase3-revealed' || track.phase === 'phase3-skipped';
+  if (revele) return track;
+  return { ...track, artist: '', title: '', album: null, year: null, cover_url: null };
+}
+
 export async function computeScreenState(workspaceId: string): Promise<ScreenState> {
   const lastUpdate = new Date().toISOString();
   const session = await findRepresentativeSession(workspaceId);
@@ -328,7 +347,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       joinCode: session.short_code,
       sessionName: session.name,
       session: serializeSession(session),
-      currentTrack,
+      currentTrack: masquerReponseAvantRevelation(currentTrack),
       qr_overlay: getQrOverlay(workspaceId),
       lyrics_overlay: getLyricsOverlay(session.id),
       lastUpdate,
@@ -353,7 +372,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       joinCode: session.short_code,
       sessionName: session.name,
       session: serializeSession(session),
-      currentTrack,
+      currentTrack: masquerReponseAvantRevelation(currentTrack),
       cumulative,
       correctAnswers: currentTrack?.correct_answers ?? [],
       phase2StartedAt: currentTrack?.phase2_started_at ?? null,

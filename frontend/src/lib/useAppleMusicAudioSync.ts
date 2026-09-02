@@ -44,16 +44,40 @@ export function useAppleMusicAudioSync({
   const prevStartedAtRef = useRef<string | null>(null);
   const prevIsPausedRef = useRef<boolean>(false);
   const lastPreparedRef = useRef<string | null>(null);
+  /**
+   * fix/console-figee — LE LECTEUR EST LU PAR RÉFÉRENCE, PAS PAR DÉPENDANCE.
+   *
+   * Le hook lecteur renvoie un objet NEUF à chaque rendu. Tant qu'il figurait
+   * dans les dépendances, cet effet se rejouait à chaque rendu — soit 4 fois
+   * par seconde à cause des sondes de position — et sa première instruction
+   * (`apple.pause()`) traversait le pont vers le code natif à cette cadence,
+   * en permanence. C'est cette saturation qui figeait la console.
+   *
+   * Désormais l'objet est lu via une référence toujours à jour, et l'effet ne
+   * se rejoue que sur un VRAI changement (morceau, phase, pause, disponibilité
+   * du lecteur).
+   */
+  const appleRef = useRef(apple);
+  appleRef.current = apple;
+  const appleStatus = apple.status;
+  /** Vrai tant que l'effet n'a pas encore coupé le son après désactivation. */
+  const wasEnabledRef = useRef(false);
 
   useEffect(() => {
+    const apple = appleRef.current;
     if (!enabled) {
-      // CUT SUR L'AUTRE : le device inactif coupe réellement le son.
-      void apple.pause();
+      // CUT SUR L'AUTRE : le device inactif coupe réellement le son — mais UNE
+      // SEULE FOIS, au passage à l'état désactivé, pas à chaque rendu.
+      if (wasEnabledRef.current) {
+        wasEnabledRef.current = false;
+        void apple.pause();
+      }
       prevTrackIdRef.current = null;
       prevStartedAtRef.current = null;
       prevIsPausedRef.current = false;
       return;
     }
+    wasEnabledRef.current = true;
     if (apple.status !== 'ready') {
       return; // MusicKit pas prêt : on attend le passage à 'ready'.
     }
@@ -123,8 +147,7 @@ export function useAppleMusicAudioSync({
     }
   }, [
     enabled,
-    apple,
-    apple.status,
+    appleStatus,
     currentTrack,
     currentTrack?.track_id,
     currentTrack?.started_at,

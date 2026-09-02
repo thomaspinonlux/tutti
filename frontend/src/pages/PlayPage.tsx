@@ -42,6 +42,7 @@ import {
   masterRejectLyrics,
   masterRestartTrack,
   masterAudioKick,
+  cancelVoiceBuzz,
   masterResume,
   masterSeek,
   masterSetVolume,
@@ -1254,13 +1255,40 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     return () => window.clearTimeout(id);
   }, [failToast]);
 
+  /** Minuteur de fin d'enregistrement, annulable. */
+  const autoStopRef = useRef<number | null>(null);
+
   // Reset le state d'enregistrement à chaque nouveau track.
   useEffect(() => {
-    setRecState({ kind: 'idle' });
+    // fix/micro-qui-fuit — ON ANNULE VRAIMENT LA CAPTURE EN COURS.
+    // Passer l'état à « repos » ne fermait ni le micro, ni l'analyseur audio,
+    // ni la mesure de niveau à 10 Hz : chaque morceau abandonné laissait
+    // derrière lui une boucle vivante qui perturbait l'enregistrement suivant
+    // et faisait chauffer le téléphone. Au bout de quelques morceaux, le
+    // navigateur refusait même d'ouvrir un nouvel analyseur.
+    if (autoStopRef.current !== null) {
+      window.clearTimeout(autoStopRef.current);
+      autoStopRef.current = null;
+    }
+    setRecState((prev) => {
+      if (prev.kind === 'recording') prev.capture.cancel();
+      return { kind: 'idle' };
+    });
     setError(null);
     setBuzzCooldownUntil(0);
     setFailToast(null);
   }, [currentTrack?.track_id]);
+
+  // Démontage (fin de partie, fermeture) : on relâche tout.
+  useEffect(() => {
+    return () => {
+      if (autoStopRef.current !== null) window.clearTimeout(autoStopRef.current);
+      setRecState((prev) => {
+        if (prev.kind === 'recording') prev.capture.cancel();
+        return { kind: 'idle' };
+      });
+    };
+  }, []);
 
   // À l'entrée en phase 3 (reveal global), on sort de l'écran "résultat" pour
   // laisser apparaître le reveal commun (artiste + titre + scores). Le branch
@@ -1349,7 +1377,13 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         level: 0,
       });
 
-      window.setTimeout(() => {
+      // fix/enregistrement-coupe — LE MINUTEUR EST MÉMORISÉ ET ANNULÉ.
+      // Il n'était stocké nulle part : celui du buzz précédent survivait au
+      // changement de morceau et coupait l'enregistrement du buzz suivant en
+      // pleine phrase, envoyant un extrait tronqué rejeté sans explication.
+      if (autoStopRef.current !== null) window.clearTimeout(autoStopRef.current);
+      autoStopRef.current = window.setTimeout(() => {
+        autoStopRef.current = null;
         void finalizeRecording();
       }, maxDurationMs + 200);
     } catch (err: unknown) {
@@ -1394,6 +1428,10 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
   }
 
   const finalizeRecording = async (): Promise<void> => {
+    if (autoStopRef.current !== null) {
+      window.clearTimeout(autoStopRef.current);
+      autoStopRef.current = null;
+    }
     setRecState((prev) => {
       if (prev.kind !== 'recording') return prev;
       void uploadAndShowResult(prev.capture);
@@ -1635,6 +1673,15 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
   };
 
   const handleCancelRec = (): void => {
+    // fix/rebuzz-refuse — on prévient le serveur, sinon la fenêtre de buzz
+    // reste ouverte 10 s et le joueur ne peut pas retenter tout de suite.
+    if (currentTrack) {
+      void cancelVoiceBuzz(identity.sessionId, currentTrack.round_id, identity.token);
+    }
+    if (autoStopRef.current !== null) {
+      window.clearTimeout(autoStopRef.current);
+      autoStopRef.current = null;
+    }
     setRecState((prev) => {
       if (prev.kind === 'recording') {
         prev.capture.cancel();

@@ -492,6 +492,21 @@ export async function masterPause(sessionId: string, token: string): Promise<voi
  * du morceau en cours (blocage autoplay iOS, lecteur muet). N'altère aucun
  * état de jeu : ni position, ni phase, ni score.
  */
+/**
+ * fix/rebuzz-refuse — prévient le serveur que le joueur abandonne son
+ * enregistrement, pour que sa fenêtre de buzz soit refermée tout de suite.
+ */
+export async function cancelVoiceBuzz(
+  sessionId: string,
+  roundId: string,
+  token: string,
+): Promise<void> {
+  await api(
+    `/api/sessions/${encodeURIComponent(sessionId)}/rounds/${encodeURIComponent(roundId)}/voice-cancel`,
+    { method: 'POST', body: { token }, anonymous: true },
+  ).catch(() => undefined);
+}
+
 export async function masterAudioKick(sessionId: string, token: string): Promise<void> {
   await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/audio-kick`, {
     method: 'POST',

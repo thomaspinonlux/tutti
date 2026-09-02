@@ -28,19 +28,35 @@ export function useYouTubeAudioSync({
   const prevTrackIdRef = useRef<string | null>(null);
   const prevStartedAtRef = useRef<string | null>(null);
   const prevIsPausedRef = useRef<boolean>(false);
+  /**
+   * fix/console-figee — cf. useAppleMusicAudioSync : le hook lecteur renvoie
+   * un objet neuf à chaque rendu. Le garder en dépendance rejouait l'effet à
+   * chaque rendu, donc `youtube.pause()` était envoyé plusieurs fois par
+   * seconde à l'iframe pendant toute une manche Apple Music. On lit le lecteur
+   * par référence, et on ne coupe qu'au passage à l'état désactivé.
+   */
+  const youtubeRef = useRef(youtube);
+  youtubeRef.current = youtube;
+  const youtubeStatus = youtube.status;
+  const wasEnabledRef = useRef(false);
 
   useEffect(() => {
+    const youtube = youtubeRef.current;
     if (!enabled) {
       // feat/audio-auto-routing — CUT SUR L'AUTRE : le device inactif doit
       // COUPER réellement le son, pas juste cesser de piloter. Sans ce pause,
       // le player continue de jouer là où il en était (bug "pause sur TV mais
       // continue sur iPad"). On pause AVANT de reset les refs.
-      youtube.pause();
+      if (wasEnabledRef.current) {
+        wasEnabledRef.current = false;
+        youtube.pause();
+      }
       prevTrackIdRef.current = null;
       prevStartedAtRef.current = null;
       prevIsPausedRef.current = false;
       return;
     }
+    wasEnabledRef.current = true;
     if (youtube.status !== 'ready') return;
 
     const trackId = currentTrack?.track_id ?? null;
@@ -106,12 +122,11 @@ export function useYouTubeAudioSync({
     }
   }, [
     enabled,
-    youtube,
     // feat/audio-auto-routing — BUG 1ère track : le player passe à 'ready'
     // APRÈS track:start ; sans youtube.status dans les deps, l'effet ne rejoue
     // pas et le 1er morceau ne démarre jamais. On l'ajoute pour re-déclencher
     // dès que le player devient ready.
-    youtube.status,
+    youtubeStatus,
     currentTrack,
     currentTrack?.track_id,
     currentTrack?.started_at,

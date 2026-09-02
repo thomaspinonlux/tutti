@@ -955,6 +955,27 @@ async function runMatchAndCommit(
 //   - transcript_normalized (string)
 //   - level ('L1') + threshold + give_up_threshold pour debug frontend
 
+/**
+ * POST /voice-cancel — le joueur abandonne son enregistrement.
+ *
+ * fix/rebuzz-refuse — sans cet appel, l'annulation laissait sa fenêtre de buzz
+ * ouverte jusqu'à expiration : il ne pouvait pas retenter tout de suite.
+ */
+router.post(
+  '/voice-cancel',
+  async (req: Request<{ id: string; roundId: string }>, res: Response): Promise<void> => {
+    const token = (req.body as { token?: string } | undefined)?.token;
+    if (!token) {
+      res.status(401).json({ error: { code: 'NO_TOKEN', message: 'Jeton manquant' } });
+      return;
+    }
+    const auth = verifyParticipantOrFail(req, res, token);
+    if (!auth) return;
+    closeBuzz(req.params.roundId, auth.participantId);
+    res.json({ ok: true });
+  },
+);
+
 const matchTextSchema = z.object({
   token: z.string().min(1),
   transcript: z.string().trim().min(1).max(500),
@@ -1005,11 +1026,13 @@ router.post(
       return;
     }
 
-    // Close buzz only if scored (sinon le joueur peut encore escalader L2 et
-    // tenter de récupérer son buzz).
-    if (result.scored) {
-      closeBuzz(req.params.roundId, auth.participantId);
-    }
+    // fix/rebuzz-refuse — ON REFERME LE BUZZ DANS TOUS LES CAS.
+    // Il n'était refermé que si le joueur marquait. Quand la reconnaissance
+    // échouait, le frontend renonçait sans escalader : la fenêtre de buzz
+    // restait ouverte jusqu'à expiration (10 s) et toute nouvelle tentative
+    // était refusée avec « tu es déjà en train de buzzer » — précisément au
+    // moment où le joueur veut retenter.
+    closeBuzz(req.params.roundId, auth.participantId);
 
     res.json({
       level: 'L1' as const,

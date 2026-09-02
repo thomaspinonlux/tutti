@@ -177,11 +177,32 @@ export function ScreenPage(): JSX.Element {
     // (le reload lui-même prend ~2 s). Couvre TOUS les cas de blocage (Pause
     // figée, socket mort + boucle morte, navigateur TV qui a gelé les timers)
     // sans intervention humaine.
+    // fix/tv-boucle-de-rechargement — LE RECHARGEMENT NE BOUCLE PLUS HORS RÉSEAU.
+    // Recharger alors que le réseau est coupé donnait une page d'erreur du
+    // navigateur : plus de code, donc plus de battement de cœur, donc le chien
+    // de garde natif reconstruisait la fenêtre, qui échouait à son tour. Trois
+    // superviseurs s'emballaient ensemble et la TV clignotait sans revenir.
+    // Désormais : on ne recharge que si l'appareil se dit connecté, et on
+    // espace les tentatives (6 s, 12 s, 24 s, puis 60 s au plus).
+    let echecsConsecutifs = 0;
     const watchdogId = window.setInterval(() => {
-      if (Date.now() - lastPollOkRef.current > 6_000) {
-        console.warn('[Screen watchdog] 6s sans réponse serveur → reload');
-        window.location.reload();
+      const silence = Date.now() - lastPollOkRef.current;
+      const seuil = Math.min(6_000 * Math.pow(2, echecsConsecutifs), 60_000);
+      if (silence <= seuil) {
+        echecsConsecutifs = 0;
+        return;
       }
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        console.warn('[Écran TV] appareil hors réseau — on garde l\'image et on attend');
+        return;
+      }
+      echecsConsecutifs += 1;
+      console.warn(
+        `[Écran TV] ${Math.round(silence / 1000)} s sans réponse du serveur → rechargement ` +
+          `(tentative ${echecsConsecutifs})`,
+      );
+      lastPollOkRef.current = Date.now();
+      window.location.reload();
     }, 1_000);
     // Retour réseau / onglet redevenu visible → re-poll immédiat.
     const kick = (): void => triggerPollRef.current?.();
@@ -360,7 +381,13 @@ export function ScreenPage(): JSX.Element {
     );
   }
 
-  if (error) {
+  // fix/ecran-tv-efface — UNE REQUÊTE RATÉE N'EFFACE PLUS LE JEU.
+  // La carte d'erreur passait AVANT l'état affiché : un seul 500 passager, ou
+  // un paquet perdu, remplaçait tout l'écran par une carte vide devant la
+  // salle. On ne montre désormais cette carte que si l'on n'a JAMAIS reçu
+  // d'état ; sinon on garde la dernière image et on signale discrètement la
+  // reconnexion en cours.
+  if (error && !screenState) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8">
         <Card size="lg" className="max-w-md text-center">

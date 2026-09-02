@@ -290,23 +290,34 @@ export function useAppleMusicPlayer({
       // full-track sans politique d'autoplay. En cas de non-autorisation, on
       // lève l'overlay de secours (identique web).
       if (useNativeRef.current) {
-        if (!enabledRef.current) return false;
-        const auth = await nativeMusicKit.authorize();
-        setIsAuthorized(auth.authorized);
-        if (!auth.authorized) {
-          setErrorCode('APPLE_NOT_AUTHORIZED');
+        // fix/silence-sans-message — le pont natif REJETTE quand le morceau est
+        // introuvable ou que la lecture échoue (abonnement expiré, identifiant
+        // mort, réseau). Sans ce filet l'exception se perdait : aucun son,
+        // aucun message, et pas d'overlay de secours pour l'animateur.
+        try {
+          if (!enabledRef.current) return false;
+          const auth = await nativeMusicKit.authorize();
+          setIsAuthorized(auth.authorized);
+          if (!auth.authorized) {
+            setErrorCode('APPLE_NOT_AUTHORIZED');
+            setAudioBlocked(true);
+            return false;
+          }
+          queueChangeAllowedUntilRef.current = Date.now() + 4000;
+          const r = await nativeMusicKit.play(catalogId);
+          preparedNextRef.current = null; // nouvelle file → l'ancien préchargé est perdu
+          if (!r.ok) {
+            setAudioBlocked(true);
+            return false;
+          }
+          setAudioBlocked(false);
+          return true;
+        } catch (err: unknown) {
+          console.warn('[Apple] lecture native refusée :', err);
+          setErrorCode('APPLE_PLAY_FAILED');
           setAudioBlocked(true);
           return false;
         }
-        queueChangeAllowedUntilRef.current = Date.now() + 4000;
-        const r = await nativeMusicKit.play(catalogId);
-        preparedNextRef.current = null; // nouvelle file → l'ancien préchargé est perdu
-        if (!r.ok) {
-          setAudioBlocked(true);
-          return false;
-        }
-        setAudioBlocked(false);
-        return true;
       }
       const music = musicRef.current;
       if (!music || !enabledRef.current) return false;

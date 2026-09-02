@@ -26,6 +26,8 @@ interface ApiOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
   /** Si true, n'inclut pas le header Authorization (endpoint public). */
   anonymous?: boolean;
+  /** Délai maximal en millisecondes. Défaut : 8 s. */
+  timeoutMs?: number;
 }
 
 async function buildHeaders(anonymous: boolean | undefined): Promise<Record<string, string>> {
@@ -42,17 +44,39 @@ async function buildHeaders(anonymous: boolean | undefined): Promise<Record<stri
 }
 
 export async function api<T = unknown>(path: string, opts: ApiOptions = {}): Promise<T> {
-  const { body, anonymous, headers: customHeaders, ...rest } = opts;
+  const { body, anonymous, headers: customHeaders, timeoutMs: _t, ...rest } = opts;
   const headers = {
     ...(await buildHeaders(anonymous)),
     ...(customHeaders as Record<string, string>),
   };
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...rest,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  // fix/requete-sans-fin — DÉLAI MAXIMAL SUR TOUTES LES REQUÊTES.
+  // Sur un réseau de bar qui « pend » (connexion ouverte mais morte), une
+  // requête sans délai reste bloquée plusieurs minutes. Conséquences vues en
+  // soirée : la télécommande de l'animateur se verrouillait entièrement (son
+  // garde « occupé » n'était jamais relâché), le téléphone du joueur restait
+  // sur « analyse », et la TV cessait d'interroger le serveur.
+  const delaiMs = opts.timeoutMs ?? 8_000;
+  const controleur = new AbortController();
+  const minuteur = setTimeout(() => controleur.abort(), delaiMs);
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...rest,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controleur.signal,
+    });
+  } catch (err: unknown) {
+    const interrompu = err instanceof DOMException && err.name === 'AbortError';
+    throw new ApiError(
+      0,
+      interrompu ? 'TIMEOUT' : 'NETWORK',
+      interrompu ? 'Le serveur ne répond pas' : 'Connexion impossible',
+    );
+  } finally {
+    clearTimeout(minuteur);
+  }
 
   const text = await response.text();
   const data: unknown = text ? JSON.parse(text) : null;

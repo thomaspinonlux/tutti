@@ -459,6 +459,14 @@ function HostPageInner(): JSX.Element {
           setCurrentTrack(null);
         });
         socket.on('track:start', ({ state }: { state: CurrentTrackState }) => {
+          // fix/ancien-morceau-qui-continue — OUBLIER LE PRÉCHARGÉ.
+          // Le serveur émet `track:start` AVANT `track:answer` : entre les
+          // deux, le morceau courant est déjà N+1 alors que `nextPreload`
+          // désigne encore N+1. Sans cette remise à zéro, on préparait le
+          // morceau EN COURS comme « suivant » : la file recevait un doublon,
+          // et au changement la salle entendait le morceau précédent pendant
+          // que l'écran affichait déjà le nouveau.
+          setNextPreload(null);
           setCurrentTrack(state);
           setCorrectAnswers([]);
           setPhase2StartedAt(null);
@@ -1026,16 +1034,24 @@ function HostPageInner(): JSX.Element {
         resyncCountRef.current = 0;
         return;
       }
-      resyncCountRef.current += 1;
-      // Voie RAPIDE : le lecteur joue l'ANCIEN titre → correction immédiate.
-      // Voie normale : autre divergence → 2 constats (2 s) anti-faux-positif.
-      const isStaleOldTrack = actual === prevAppleTrackRef.current;
-      if (isStaleOldTrack || resyncCountRef.current >= 2) {
-        console.warn(
-          `[SyncCheck] lecteur=${actual} ≠ attendu=${expected}${isStaleOldTrack ? ' (ANCIEN titre)' : ''} → resynchronisation auto`,
-        );
+      // fix/morceau-qui-begaye — ON NE RELANCE QUE SI LE LECTEUR JOUE L'ANCIEN
+      // TITRE. Apple Music substitue couramment un identifiant équivalent
+      // (autre édition, autre pays, remasterisation) : l'identifiant joué peut
+      // légitimement différer de celui demandé. L'ancienne règle « tout écart
+      // = relance » redémarrait alors le morceau toutes les 2 secondes, et il
+      // n'atteignait jamais le refrain. Un écart non identifié est désormais
+      // seulement journalisé.
+      const isStaleOldTrack =
+        !!prevAppleTrackRef.current && actual === prevAppleTrackRef.current;
+      if (isStaleOldTrack) {
+        console.warn(`[Synchro] le lecteur joue encore l'ancien titre → relance de ${expected}`);
         resyncCountRef.current = 0;
         void apple.play(expected);
+      } else if (resyncCountRef.current === 3) {
+        console.info(
+          `[Synchro] identifiant joué (${actual}) différent de celui demandé (${expected}) — ` +
+            `édition équivalente, aucune action`,
+        );
       }
     }, 1000);
     return () => {

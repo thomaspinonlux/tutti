@@ -40,19 +40,34 @@ export function useSpotifyAudioSync({
   const prevTrackIdRef = useRef<string | null>(null);
   const prevStartedAtRef = useRef<string | null>(null);
   const prevIsPausedRef = useRef<boolean>(false);
+  /**
+   * fix/console-figee — cf. useAppleMusicAudioSync : lecteur lu par référence
+   * plutôt que par dépendance, et coupure du son au SEUL passage à l'état
+   * désactivé. Sinon l'effet se rejouait à chaque rendu et envoyait une
+   * commande de pause plusieurs fois par seconde.
+   */
+  const spotifyRef = useRef(spotify);
+  spotifyRef.current = spotify;
+  const spotifyStatus = spotify.status;
+  const wasEnabledRef = useRef(false);
 
   useEffect(() => {
+    const spotify = spotifyRef.current;
     if (!enabled) {
       // feat/audio-auto-routing — CUT SUR L'AUTRE : le device inactif doit
       // COUPER réellement le son, pas juste cesser de piloter. Sans ce pause,
       // le player continue de jouer là où il en était (bug "pause sur TV mais
       // continue sur iPad"). On pause AVANT de reset les refs.
-      void spotify.pause();
+      if (wasEnabledRef.current) {
+        wasEnabledRef.current = false;
+        void spotify.pause();
+      }
       prevTrackIdRef.current = null;
       prevStartedAtRef.current = null;
       prevIsPausedRef.current = false;
       return;
     }
+    wasEnabledRef.current = true;
     if (spotify.status !== 'ready') {
       // SDK pas encore prêt : on attend. Le pendingPlayRef interne gérera
       // le déclenchement initial quand le device sera ready.
@@ -129,12 +144,11 @@ export function useSpotifyAudioSync({
     }
   }, [
     enabled,
-    spotify,
     // feat/audio-auto-routing — BUG 1ère track : le SDK passe à 'ready' APRÈS
     // track:start ; sans spotify.status dans les deps, l'effet ne rejoue pas
     // et le 1er morceau ne démarre jamais. On l'ajoute pour re-déclencher dès
     // que le SDK devient ready.
-    spotify.status,
+    spotifyStatus,
     currentTrack,
     currentTrack?.track_id,
     currentTrack?.started_at,
