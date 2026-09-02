@@ -35,8 +35,6 @@ import {
   Card,
   Input,
   MultiColorBar,
-  TitleHandwritten,
-  Underline,
 } from '../components/ui/index.js';
 import { QRCode } from '../components/host/QRCode.js';
 import { getScreenState, type ScreenState } from '../lib/screenState.js';
@@ -46,9 +44,11 @@ import { connectAsSpectator } from '../lib/socket.js';
 import { fetchCurrentLyrics, type LrcLine } from '../lib/lyrics.js';
 import { TvScreenView } from './screen/TvScreenView.js';
 import { screenStateToMainScreenProps } from './screen/adapters/screenStateToMainScreenProps.js';
-import { getPublicCatalog, type LibraryCategoryWithPlaylists } from '../lib/library.js';
-import { OfficialCatalogSections } from '../components/host/library/OfficialCatalogSections.js';
-import { ThemeLevelCards } from '../components/host/library/ThemeLevelCards.js';
+import {
+  getPublicCatalog,
+  type LibraryCategoryWithPlaylists,
+  type LibraryPlaylistSummary,
+} from '../lib/library.js';
 import { buildThemeSections, flattenThemes } from '../lib/officialThemes.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 
@@ -449,8 +449,6 @@ export function ScreenPage(): JSX.Element {
       return (
         <ScreenPlaylistGridView
           focusedId={screenState.focused_playlist_id}
-          scrollRatio={screenState.scroll_ratio}
-          hRatios={screenState.h_ratios}
           selectedThemeKey={screenState.selected_theme_key}
           joinCode={screenState.joinCode}
         />
@@ -579,35 +577,67 @@ function ScreenLobbyView({
 // dance pulse, reveal cover, phase eyebrow, etc. d'un coup.
 
 /**
- * feat/host-tv-catalog-parity-v2 — vue TV pendant la sélection de playlist.
- * Mirror READ-ONLY de l'écran de sélection de l'animateur :
- *   - MÊMES sections/cartes que le host via <OfficialCatalogSections> (source
- *     unique buildThemeSections), non-interactives, fetchée par la TV
- *     elle-même (endpoint public) à chaque entrée en PLAYLIST_SELECTION
- *     (remount) ;
- *   - la card centrée côté animateur est highlightée (focusedId) ;
- *   - la position de scroll de l'animateur (scrollRatio 0..1) est appliquée à
- *     la grille → la TV suit l'écran host en direct.
- * Aucun clic, aucune recherche, aucun onglet : affichage seul.
+ * Pochette d'une playlist : mosaïque servie par le backend, avec les mêmes
+ * replis que les cartes de l'animateur (cover de secours, puis vignette
+ * YouTube). Une seule source de vérité visuelle entre les deux écrans.
+ */
+function coverUrlFor(p: LibraryPlaylistSummary): string | null {
+  if (p.slug) return `/api/library-cover/${encodeURIComponent(p.slug)}.jpg`;
+  if (p.cover_fallback_url) return p.cover_fallback_url;
+  if (p.cover_fallback_youtube_id) {
+    return `https://img.youtube.com/vi/${p.cover_fallback_youtube_id}/hqdefault.jpg`;
+  }
+  return null;
+}
+
+/** Espace entre deux cartes du bandeau TV (px). */
+const RAIL_GAP = 26;
+/** Corail de l'identité écran (identique à TvScreenView). */
+const TV_CORAL = '#FF5C4D';
+/** Libellés des cinq niveaux, tels qu'affichés côté animateur. */
+const LEVEL_LABELS: Record<string, string> = {
+  easy: 'Facile',
+  medium: 'Moyen',
+  hard: 'Difficile',
+  mix_em: 'Mix Facile/Moyen',
+  mix: 'Mix complet',
+};
+
+/**
+ * feat/tv-rail-selection — VUE TV PENDANT LA SÉLECTION DE PLAYLIST.
+ *
+ * Remplace le miroir de grille verticale par un BANDEAU HORIZONTAL qui amène
+ * la playlist sélectionnée AU CENTRE. Raison : la console et la télécommande
+ * défilent verticalement (on les tient en main), la TV est un rectangle large
+ * regardé de loin. Recopier une position de défilement verticale sur un écran
+ * horizontal n'a aucune traduction fidèle — c'était la source du décalage.
+ *
+ * Ici on ne synchronise plus un DÉFILEMENT mais une SÉLECTION : l'identifiant
+ * de la carte centrée côté animateur suffit. La TV calcule elle-même le
+ * mouvement, en glissant vers la cible image par image (amorti). Un message en
+ * retard n'induit donc aucune erreur : la carte arrive au centre un instant
+ * plus tard, à la bonne place.
+ *
+ * `scrollRatio` / `hRatios` restent acceptés pour compatibilité avec les
+ * consoles pas encore mises à jour, mais ne sont plus utilisés.
  */
 function ScreenPlaylistGridView({
   focusedId,
-  scrollRatio,
-  hRatios,
   selectedThemeKey,
   joinCode,
 }: {
   focusedId: string;
-  scrollRatio: number;
-  hRatios: Record<string, number>;
+  scrollRatio?: number;
+  hRatios?: Record<string, number>;
   selectedThemeKey: string | null;
   joinCode: string;
 }): JSX.Element {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<LibraryCategoryWithPlaylists[] | null>(null);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const posRef = useRef(0);
+  const targetRef = useRef(0);
 
-  // Fetch du catalogue public une seule fois (la TV n'a pas de cookies admin).
   useEffect(() => {
     let cancelled = false;
     void getPublicCatalog()
@@ -622,86 +652,170 @@ function ScreenPlaylistGridView({
     };
   }, []);
 
-  // Scroll-sync : applique le ratio reçu de l'animateur à la grille TV.
-  // Double application : immédiate + rAF (le scrollHeight change après le
-  // chargement async des covers → max recalculé sur le vrai layout).
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const apply = (): void => {
-      const max = el.scrollHeight - el.clientHeight;
-      if (max <= 0) {
-        // Grille plus courte que le viewport TV → rien à scroller. Diagnostic
-        // explicite (vu en console TV) pour distinguer "max=0" d'un scroll figé.
-        console.info(`[GridMirror] no overflow (max=${max}) — grille tient à l'écran`);
-        return;
-      }
-      el.scrollTop = scrollRatio * max;
-      console.info(
-        `[GridMirror] apply ratio=${scrollRatio.toFixed(3)} max=${max} → top=${Math.round(el.scrollTop)}`,
-      );
-    };
-    apply();
-    const raf = window.requestAnimationFrame(apply);
-    return () => window.cancelAnimationFrame(raf);
-  }, [scrollRatio, categories]);
-
-  // Scroll-sync HORIZONTAL : applique chaque hRatio[catSlug] au carrousel
-  // matchant (même `data-carousel-cat` côté host et TV). Dimension en plus du
-  // vertical, indépendante. Log [GridMirror] hApply = preuve côté TV.
-  useEffect(() => {
-    const root = scrollRef.current;
-    if (!root) return;
-    const apply = (): void => {
-      const parts: string[] = [];
-      for (const [slug, r] of Object.entries(hRatios)) {
-        // Quoté + CSS.escape : robuste si un slug contient un jour espace/accent/&/quote.
-        const el = root.querySelector<HTMLElement>(`[data-carousel-cat="${CSS.escape(slug)}"]`);
-        if (!el) continue;
-        const max = el.scrollWidth - el.clientWidth;
-        if (max <= 0) continue;
-        el.scrollLeft = r * max;
-        parts.push(`${slug}:${r.toFixed(2)}→${Math.round(el.scrollLeft)}`);
-      }
-      if (parts.length) console.info(`[GridMirror] hApply ${parts.join(' ')}`);
-    };
-    apply();
-    const raf = window.requestAnimationFrame(apply);
-    return () => window.cancelAnimationFrame(raf);
-  }, [hRatios, categories]);
-
-  // feat/host-tv-catalog-parity-v2 — MÊME groupement que le host (source unique).
   const sections = useMemo(() => buildThemeSections(categories ?? []), [categories]);
-  // feat/host-tv-level-mirror — si le host est dans un thème (étape niveau),
-  // on mirrore ses cartes de niveau au lieu des sections de thèmes.
   const selectedTheme = useMemo(
     () => (selectedThemeKey ? (flattenThemes(sections).get(selectedThemeKey) ?? null) : null),
     [sections, selectedThemeKey],
   );
 
+  /** Liste plate des cartes affichées, dans l'ordre du catalogue animateur. */
+  const items = useMemo(() => {
+    if (selectedTheme) {
+      return selectedTheme.variants.map((v) => ({
+        id: v.variantId,
+        name: selectedTheme.name,
+        levelLabel: LEVEL_LABELS[v.level ?? 'mix'] ?? null,
+        count: v.count ?? v.playlist.track_count,
+        cover: coverUrlFor(v.playlist),
+        section: selectedTheme.name,
+      }));
+    }
+    const flat: {
+      id: string;
+      name: string;
+      levelLabel: string | null;
+      count: number;
+      cover: string | null;
+      section: string;
+    }[] = [];
+    for (const sec of sections) {
+      for (const theme of sec.themes) {
+        flat.push({
+          id: theme.variants[0]?.variantId ?? theme.cover.id,
+          name: theme.name,
+          levelLabel: theme.variants.length > 1 ? `${theme.variants.length} niveaux` : null,
+          count: theme.cover.track_count,
+          cover: coverUrlFor(theme.cover),
+          section: sec.label_fr,
+        });
+      }
+    }
+    return flat;
+  }, [sections, selectedTheme]);
+
+  /** Index de la carte désignée par l'animateur (id de variante OU de playlist). */
+  const focusIndex = useMemo(() => {
+    if (!focusedId) return 0;
+    const exact = items.findIndex((it) => it.id === focusedId);
+    if (exact >= 0) return exact;
+    // Repli : l'animateur a envoyé un id de playlist, nos cartes portent un
+    // variantId `${playlistId}::niveau` — on retrouve la carte par préfixe.
+    const base = focusedId.split('::')[0]!;
+    const loose = items.findIndex((it) => it.id.split('::')[0] === base);
+    return loose >= 0 ? loose : 0;
+  }, [items, focusedId]);
+
+  /** Glissade amortie : 18 % de la distance restante à chaque image. */
+  useEffect(() => {
+    let raf = 0;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const step = (): void => {
+      const el = trackRef.current;
+      if (el) {
+        const card = el.firstElementChild as HTMLElement | null;
+        if (card) {
+          const cardW = card.offsetWidth + RAIL_GAP;
+          targetRef.current = -(focusIndex * cardW) - cardW / 2;
+          posRef.current += (targetRef.current - posRef.current) * (reduce ? 1 : 0.18);
+          if (Math.abs(targetRef.current - posRef.current) < 0.4) {
+            posRef.current = targetRef.current;
+          }
+          el.style.transform = `translateX(${posRef.current}px)`;
+        }
+      }
+      raf = window.requestAnimationFrame(step);
+    };
+    raf = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(raf);
+  }, [focusIndex, items.length]);
+
+  const current = items[focusIndex] ?? null;
+
   return (
-    <div className="h-screen flex flex-col bg-cream">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-[#0B0B0F] text-white">
       <MultiColorBar height="md" />
-      <header className="px-10 pt-6 pb-2 shrink-0">
-        <p className="font-mono text-sm uppercase tracking-[0.3em] text-spritz-deep mb-1">
-          {t('screen.playlistSelection.eyebrow')}
-        </p>
-        <TitleHandwritten as="h1" className="text-5xl leading-none">
-          <Underline>{t('screen.playlistSelection.gridTitle')}</Underline>
-        </TitleHandwritten>
+      <header className="flex shrink-0 items-baseline justify-between px-12 pb-3 pt-7">
+        <div>
+          <p
+            className="mb-1 font-mono text-[11px] uppercase tracking-[0.3em]"
+            style={{ color: TV_CORAL }}
+          >
+            {t('screen.playlistSelection.eyebrow')}
+          </p>
+          <h1 className="font-display text-5xl leading-none text-white">
+            {current ? current.name : t('screen.playlistSelection.gridTitle')}
+          </h1>
+        </div>
+        {current && (
+          <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/45">
+            {current.section}
+          </span>
+        )}
       </header>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-10 pb-10 pt-4">
+
+      <div className="relative flex-1 overflow-hidden">
         {categories === null ? (
-          <p className="font-mono text-ink-soft animate-pulse">{t('common.loading')}</p>
-        ) : selectedTheme ? (
-          <ThemeLevelCards dark theme={selectedTheme} highlightId={focusedId} readOnly />
+          <p className="px-12 font-mono text-white/45">{t('common.loading')}</p>
         ) : (
-          <OfficialCatalogSections dark sections={sections} highlightId={focusedId} readOnly />
+          <div
+            ref={trackRef}
+            className="absolute left-1/2 top-1/2 flex -translate-y-1/2 items-stretch"
+            style={{ gap: RAIL_GAP }}
+          >
+            {items.map((it, i) => {
+              const on = i === focusIndex;
+              return (
+                <article
+                  key={it.id}
+                  className="flex w-[19vw] max-w-[300px] shrink-0 flex-col gap-3 rounded-[20px] border p-5 transition-[opacity,background-color,border-color,transform] duration-[420ms]"
+                  style={{
+                    opacity: on ? 1 : 0.38,
+                    transform: on ? 'scale(1.06)' : 'scale(0.92)',
+                    backgroundColor: on ? 'rgba(255,92,77,0.13)' : 'rgba(245,239,224,0.05)',
+                    borderColor: on ? 'rgba(255,92,77,0.52)' : 'rgba(245,239,224,0.10)',
+                  }}
+                >
+                  <div
+                    className="aspect-square w-full overflow-hidden rounded-[14px] ring-1 ring-white/10"
+                    style={{
+                      backgroundColor: '#15151D',
+                      backgroundImage: it.cover ? `url(${it.cover})` : undefined,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  />
+                  <p
+                    className="font-display leading-tight text-white"
+                    style={{ fontSize: on ? '1.6rem' : '1.35rem' }}
+                  >
+                    {it.name}
+                  </p>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+                    {it.count} {t('screen.playlistSelection.tracks', { defaultValue: 'titres' })}
+                    {it.levelLabel ? ` · ${it.levelLabel}` : ''}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
         )}
       </div>
+
+      <div className="flex shrink-0 items-center gap-3 px-12 pb-5">
+        {items.map((it, i) => (
+          <span
+            key={it.id}
+            aria-hidden
+            className="h-1.5 rounded-full transition-all duration-300"
+            style={{
+              width: i === focusIndex ? 26 : 6,
+              backgroundColor: i === focusIndex ? TV_CORAL : 'rgba(245,239,224,0.22)',
+            }}
+          />
+        ))}
+      </div>
+
       <MultiColorBar height="md" />
-      {/* feat/tv-join-qr-codes (C) — QR rejoindre en coin, mirroir de l'écran
-          animateur. Affichage seul (la TV ne pilote rien). */}
       <JoinQrCorner joinCode={joinCode} />
     </div>
   );
