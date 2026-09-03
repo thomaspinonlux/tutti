@@ -21,6 +21,7 @@ import { loadMusicKitSdk, type MusicKitInstance } from './musickitLoader.js';
 import { borner } from './borner.js';
 import { supportsNativeAppleMusic } from './platform.js';
 import { nativeMusicKit } from './nativeMusicKit.js';
+import { remoteLog } from './remoteLog.js';
 
 export type AppleMusicPlayerStatus =
   | 'idle'
@@ -324,6 +325,45 @@ export function useAppleMusicPlayer({
     }, 1500);
   }, []);
 
+  const verifierQueLeSonAvance = (catalogId: string): void => {
+    const lire = async (
+      etiquette: string,
+    ): Promise<{ isPlaying: boolean; positionMs: number; nowPlayingId?: string } | null> => {
+      try {
+        const s = await nativeMusicKit.getStatus();
+        return {
+          isPlaying: s.isPlaying,
+          positionMs: Math.round(s.positionMs),
+          nowPlayingId: s.nowPlayingId,
+        };
+      } catch (err: unknown) {
+        remoteLog(
+          'apple',
+          `${etiquette} : lecture d'état impossible`,
+          { err: String(err) },
+          'warn',
+        );
+        return null;
+      }
+    };
+    window.setTimeout(() => {
+      void lire('+1s').then((a) => {
+        window.setTimeout(() => {
+          void lire('+3s').then((b) => {
+            const avance = !!a && !!b && b.positionMs > a.positionMs;
+            const bonMorceau = !b?.nowPlayingId || b.nowPlayingId === catalogId;
+            remoteLog(
+              'apple',
+              avance && b?.isPlaying && bonMorceau ? 'son vérifié : avance' : 'SON NON VÉRIFIÉ',
+              { id: catalogId, a1s: a, a3s: b, avance, bonMorceau },
+              avance && b?.isPlaying && bonMorceau ? 'info' : 'warn',
+            );
+          });
+        }, 2000);
+      });
+    }, 1000);
+  };
+
   const play = useCallback(
     async (catalogId: string): Promise<boolean> => {
       lastCatalogIdRef.current = catalogId;
@@ -348,10 +388,17 @@ export function useAppleMusicPlayer({
           const r = await nativeMusicKit.play(catalogId);
           preparedNextRef.current = null; // nouvelle file → l'ancien préchargé est perdu
           if (!r.ok) {
+            remoteLog('apple', 'lecture native refusée par le pont', { id: catalogId }, 'error');
             setAudioBlocked(true);
             return false;
           }
           setAudioBlocked(false);
+          // diag/son-qui-ne-part-pas — ON VÉRIFIE QUE LE SON AVANCE VRAIMENT.
+          // « lecture acceptée » ne veut pas dire « on entend quelque chose ».
+          // On relit l'état du lecteur 1 s puis 3 s après : s'il n'est pas en
+          // lecture ou si la position n'avance pas, la ligne le dit noir sur
+          // blanc dans le journal serveur.
+          verifierQueLeSonAvance(catalogId);
           return true;
         } catch (err: unknown) {
           console.warn('[Apple] lecture native refusée :', err);
@@ -444,6 +491,8 @@ export function useAppleMusicPlayer({
           const st = await nativeMusicKit.getStatus();
           if (st?.nowPlayingId === catalogId) {
             nowPlayingIdRef.current = st.nowPlayingId ?? '';
+            remoteLog('apple', 'saut confirmé', { id: catalogId, apresMs: (i + 1) * 150 });
+            verifierQueLeSonAvance(catalogId);
             return true;
           }
         } catch {
@@ -451,6 +500,12 @@ export function useAppleMusicPlayer({
         }
       }
       console.warn('[ApplePlayer] playPrepared non confirmé en 1.5s → fallback play()');
+      remoteLog(
+        'apple',
+        'saut NON confirmé en 1,5 s → lecture complète',
+        { id: catalogId },
+        'warn',
+      );
       return false;
     }
     const music = musicRef.current;

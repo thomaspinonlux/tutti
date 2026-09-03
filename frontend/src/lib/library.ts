@@ -221,3 +221,17 @@ export async function getPublicCatalog(
   );
   return data.categories;
 }
+
+/**
+ * fix/pochettes-absentes-sur-la-tv — ADRESSE ABSOLUE DE LA MOSAÏQUE.
+ * La mosaïque est servie par le serveur d'API (api.tuttiparty.app), pas par
+ * le site. Écrite en relatif (`/api/library-cover/…`), l'adresse partait vers
+ * le site et répondait 404 : sur la console, un repli d'image masquait le
+ * problème ; sur la TV, il n'y avait pas de repli — donc aucune image dans la
+ * présentation des playlists. Vérifié par requête directe : 404 sur le site,
+ * 200 image/jpeg sur l'API.
+ */
+export function libraryCoverUrl(slug: string): string {
+  const base = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001').replace(/\/$/, '');
+  return `${base}/api/library-cover/${encodeURIComponent(slug)}.jpg`;
+}

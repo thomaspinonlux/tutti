@@ -3200,7 +3200,13 @@ function RoundPlayingScreen({
               🔊 {t('host.forceAudioOnDevice')}
             </Button>
           )}
-          {currentTrack?.provider === 'youtube' && (
+          {/* fix/bouton-relancer-le-son-absent-en-apple — VÉRIFIÉ dans le code : ce
+              bouton n'existait que pour YouTube et Spotify. Avec Apple Music
+              (la source de toutes les playlists musicales), la console iPad
+              n'avait donc AUCUN bouton pour relancer le son, alors que la
+              télécommande en avait un. Même bouton, même action, quel que soit
+              le fournisseur. */}
+          {(currentTrack?.provider === 'youtube' || currentTrack?.provider === 'apple_music') && (
             <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
               🔊 {t('host.forceAudioOnDevice')}
             </Button>

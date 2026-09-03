@@ -43,6 +43,7 @@ import {
   getPublicCatalog,
   type LibraryCategoryWithPlaylists,
   type LibraryPlaylistSummary,
+  libraryCoverUrl,
 } from '../lib/library.js';
 import { buildThemeSections, flattenThemes } from '../lib/officialThemes.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
@@ -684,7 +685,8 @@ function ScreenLobbyView({
  * YouTube). Une seule source de vérité visuelle entre les deux écrans.
  */
 function coverUrlFor(p: LibraryPlaylistSummary): string | null {
-  if (p.slug) return `/api/library-cover/${encodeURIComponent(p.slug)}.jpg`;
+  // fix/pochettes-absentes-sur-la-tv — adresse absolue vers l'API (cf. libraryCoverUrl).
+  if (p.slug) return libraryCoverUrl(p.slug);
   if (p.cover_fallback_url) return p.cover_fallback_url;
   if (p.cover_fallback_youtube_id) {
     return `https://img.youtube.com/vi/${p.cover_fallback_youtube_id}/hqdefault.jpg`;

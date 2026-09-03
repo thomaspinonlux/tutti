@@ -11,6 +11,7 @@
  * loading="lazy" — décodée à l'apparition seulement.
  */
 import { useState } from 'react';
+import { libraryCoverUrl } from '../../../lib/library.js';
 import type { LibraryPlaylistSummary } from '../../../lib/library.js';
 
 interface Props {
@@ -50,7 +51,7 @@ export function ThemeCard({
     : null;
   const url =
     step === 0
-      ? `/api/library-cover/${encodeURIComponent(cover.slug)}.jpg`
+      ? libraryCoverUrl(cover.slug)
       : step === 1
         ? (cover.cover_fallback_url ?? null)
         : step === 2

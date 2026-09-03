@@ -40,6 +40,46 @@ router.post('/client-log', requireAuth, (req: Request, res: Response): void => {
   res.json({ ok: true });
 });
 
+const debitParIp = new Map<string, { fenetre: number; n: number }>();
+const LIGNES_MAX_PAR_10S = 400;
+
+function debitAutorise(ip: string, lignes: number): boolean {
+  const fenetre = Math.floor(Date.now() / 10_000);
+  const compteur = debitParIp.get(ip);
+  const n = compteur && compteur.fenetre === fenetre ? compteur.n : 0;
+  if (n >= LIGNES_MAX_PAR_10S) return false;
+  debitParIp.set(ip, { fenetre, n: n + lignes });
+  if (debitParIp.size > 500) debitParIp.clear();
+  return true;
+}
+
+// ── POST /client-log/public — JOURNAL DES ÉCRANS SANS COMPTE (TV, joueurs) ──
+// L'écran TV n'a pas de compte : ses lignes de diagnostic partaient vers la
+// route authentifiée et étaient refusées en silence. Même corps, même
+// traitement, débit plafonné (cf. plus bas), aucune donnée personnelle.
+router.post('/client-log/public', (req: Request, res: Response): void => {
+  if (req.get('x-tutti-diag') !== '1') {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Journal invalide' } });
+    return;
+  }
+  const parsed = bodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Journal invalide' } });
+    return;
+  }
+  if (!debitAutorise(req.ip ?? 'inconnue', 1)) {
+    res.status(429).json({ error: { code: 'TROP_DE_LIGNES', message: 'Débit dépassé' } });
+    return;
+  }
+  const { tag, level, message, meta, device } = parsed.data;
+  const metaText = meta ? ` ${JSON.stringify(meta).slice(0, 400)}` : '';
+  const line = `[Appareil:${device ?? 'inconnu'}] [${tag}] ${message}${metaText}`;
+  if (level === 'error') console.error(line);
+  else if (level === 'warn') console.warn(line);
+  else console.info(line);
+  res.json({ ok: true });
+});
+
 // ── POST /client-log/natif — JOURNAL DES GREFFONS NATIFS (iPad) ─────────────
 // Les greffons Swift n'ont pas de jeton d'authentification sous la main, et
 // leur journal doit partir MÊME quand le fil principal de l'app est bloqué.
@@ -60,9 +100,6 @@ const corpsNatifSchema = z.object({
   lignes: z.array(ligneNativeSchema).max(200),
 });
 
-const debitParIp = new Map<string, { fenetre: number; n: number }>();
-const LIGNES_MAX_PAR_10S = 400;
-
 router.post('/client-log/natif', (req: Request, res: Response): void => {
   if (req.get('x-tutti-natif') !== '1') {
     res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Journal invalide' } });
@@ -73,16 +110,10 @@ router.post('/client-log/natif', (req: Request, res: Response): void => {
     res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Journal invalide' } });
     return;
   }
-  const ip = req.ip ?? 'inconnue';
-  const fenetre = Math.floor(Date.now() / 10_000);
-  const compteur = debitParIp.get(ip);
-  const n = compteur && compteur.fenetre === fenetre ? compteur.n : 0;
-  if (n >= LIGNES_MAX_PAR_10S) {
+  if (!debitAutorise(req.ip ?? 'inconnue', parsed.data.lignes.length)) {
     res.status(429).json({ error: { code: 'TROP_DE_LIGNES', message: 'Débit dépassé' } });
     return;
   }
-  debitParIp.set(ip, { fenetre, n: n + parsed.data.lignes.length });
-  if (debitParIp.size > 500) debitParIp.clear();
 
   const appareil = `${parsed.data.appareil ?? 'iPad'} iOS ${parsed.data.systeme ?? '?'}`;
   for (const l of parsed.data.lignes) {

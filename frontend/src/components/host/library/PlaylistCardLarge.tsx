@@ -16,6 +16,7 @@
  */
 
 import { motion } from 'framer-motion';
+import { libraryCoverUrl } from '../../../lib/library.js';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LibraryPlaylistSummary } from '../../../lib/library.js';
@@ -76,7 +77,7 @@ export function PlaylistCardLarge({
   const [coverStep, setCoverStep] = useState<0 | 1 | 2 | 3>(0);
   const hue = slugToHue(playlist.slug);
   const fallbackGradient = `linear-gradient(135deg, hsl(${hue}, 55%, 35%) 0%, hsl(${(hue + 40) % 360}, 60%, 22%) 100%)`;
-  const backendCoverUrl = `/api/library-cover/${encodeURIComponent(playlist.slug)}.jpg`;
+  const backendCoverUrl = libraryCoverUrl(playlist.slug);
   const ytFallbackUrl = playlist.cover_fallback_youtube_id
     ? `https://img.youtube.com/vi/${playlist.cover_fallback_youtube_id}/hqdefault.jpg`
     : null;

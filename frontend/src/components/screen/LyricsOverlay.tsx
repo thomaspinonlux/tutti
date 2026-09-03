@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { remoteLog } from '../../lib/remoteLog.js';
 import { findLineIndex, type LrcLine } from '../../lib/lyrics.js';
 
 interface Props {
@@ -44,12 +45,40 @@ export function LyricsOverlay({ lines, getPositionMs, paused }: Props): JSX.Elem
   useEffect(() => {
     if (lines.length === 0) return;
 
+    // diag/paroles-figees — ON MESURE, ON NE DEVINE PAS. Toutes les 10 s :
+    // nombre d'images dessinées, position lue, ligne affichée. Si les images
+    // continuent mais que la position n'avance pas → la SOURCE de position est
+    // figée ; si les images s'arrêtent → c'est la boucle d'affichage elle-même.
+    let images = 0;
+    let derniereMesure = performance.now();
+    let dernierePosition = -1;
     const tick = (): void => {
       const pos = getPositionMs() + LYRICS_OFFSET_MS;
       const next = findLineIndex(lines, pos);
       if (next !== lastIndexRef.current) {
         lastIndexRef.current = next;
         setIndex(next);
+      }
+      images += 1;
+      const maintenant = performance.now();
+      if (maintenant - derniereMesure >= 10_000) {
+        const positionFigee =
+          dernierePosition >= 0 && Math.abs(pos - dernierePosition) < 500 && !paused;
+        remoteLog(
+          'paroles',
+          positionFigee ? 'POSITION FIGÉE (boucle vivante)' : 'paroles vivantes',
+          {
+            imagesPar10s: images,
+            positionMs: Math.round(pos),
+            ligne: next,
+            lignes: lines.length,
+            enPause: paused,
+          },
+          positionFigee ? 'warn' : 'info',
+        );
+        images = 0;
+        derniereMesure = maintenant;
+        dernierePosition = pos;
       }
       rafRef.current = requestAnimationFrame(tick);
     };
