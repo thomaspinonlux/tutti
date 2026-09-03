@@ -59,6 +59,16 @@ export async function api<T = unknown>(path: string, opts: ApiOptions = {}): Pro
   const delaiMs = opts.timeoutMs ?? 8_000;
   const controleur = new AbortController();
   const minuteur = setTimeout(() => controleur.abort(), delaiMs);
+  // fix/annulation-ignoree — L'ANNULATION DEMANDÉE PAR L'APPELANT EST GARDÉE.
+  // Notre propre signal était placé APRÈS l'étalement des options : il écrasait
+  // systématiquement celui fourni par l'appelant. La recherche de morceaux, par
+  // exemple, croit annuler la requête précédente à chaque frappe — en réalité
+  // elles partaient toutes jusqu'au bout.
+  const signalAppelant = (rest as { signal?: AbortSignal }).signal;
+  if (signalAppelant) {
+    if (signalAppelant.aborted) controleur.abort();
+    else signalAppelant.addEventListener('abort', () => controleur.abort(), { once: true });
+  }
   let response: Response;
   try {
     response = await fetch(`${API_URL}${path}`, {
@@ -79,7 +89,23 @@ export async function api<T = unknown>(path: string, opts: ApiOptions = {}): Pro
   }
 
   const text = await response.text();
-  const data: unknown = text ? JSON.parse(text) : null;
+  // fix/erreur-illisible — UNE RÉPONSE NON JSON NE DOIT PAS EXPLOSER ICI.
+  // Une page d'erreur HTML renvoyée par un intermédiaire (portail captif du
+  // bar, passerelle en panne) faisait lever une erreur d'analyse AVANT même le
+  // contrôle du code de réponse : les appelants qui savent traiter nos erreurs
+  // ne la reconnaissaient pas et elle remontait brute jusqu'à l'écran.
+  let data: unknown = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new ApiError(
+        response.status,
+        response.ok ? 'REPONSE_INVALIDE' : 'ERREUR_SERVEUR',
+        'Réponse illisible du serveur',
+      );
+    }
+  }
 
   if (!response.ok) {
     const errPayload =

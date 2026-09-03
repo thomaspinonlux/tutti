@@ -9,7 +9,7 @@
  * Out of scope V1 : édition manuelle, ajout/suppression, drag & drop.
  */
 
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Playlist, QuestionSet } from '@tutti/shared';
@@ -547,16 +547,29 @@ function PlaylistsTab(): JSX.Element {
     return sortOrder === 'desc' ? sorted.reverse() : sorted;
   }, [playlists, sortKey, sortOrder]);
 
+  // fix/resultat-de-la-recherche-precedente — LA DERNIÈRE DEMANDE GAGNE, ET
+  // LE BOUTON DIT CE QU'IL FAIT. La recherche n'avait ni indicateur ni garde :
+  // rien ne changeait à l'écran, on relançait, et si la première réponse
+  // arrivait en dernier, le tableau affichait le résultat de la recherche
+  // PRÉCÉDENTE avec le nouveau texte dans le champ.
+  const numeroRechercheRef = useRef(0);
+  const [recherche, setRecherche] = useState(false);
   const fetchPlaylists = async (): Promise<void> => {
+    const numero = ++numeroRechercheRef.current;
+    setRecherche(true);
     try {
       const data = await listOfficialPlaylists({
         visibility: visibility === 'all' ? undefined : visibility,
         q: q.trim() || undefined,
       });
+      if (numero !== numeroRechercheRef.current) return;
       setPlaylists(data);
       setError(null);
     } catch (err) {
+      if (numero !== numeroRechercheRef.current) return;
       setError((err as Error).message);
+    } finally {
+      if (numero === numeroRechercheRef.current) setRecherche(false);
     }
   };
 
@@ -596,8 +609,8 @@ function PlaylistsTab(): JSX.Element {
             placeholder={t('library.searchPlaceholder')}
             className="w-64"
           />
-          <Button type="submit" variant="secondary" size="md">
-            🔍 {t('library.searchSubmit')}
+          <Button type="submit" variant="secondary" size="md" disabled={recherche}>
+            {recherche ? '⏳ …' : `🔍 ${t('library.searchSubmit')}`}
           </Button>
         </form>
         <div>

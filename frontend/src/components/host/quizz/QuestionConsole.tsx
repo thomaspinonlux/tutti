@@ -52,10 +52,17 @@ export function QuestionConsole({
 
   // Timer : tick chaque 200ms.
   const [now, setNow] = useState(Date.now());
+  // fix/console-quiz-qui-tourne-pour-rien — LE TIC S'ARRÊTE APRÈS LA RÉVÉLATION.
+  // Il tournait en permanence : une fois la réponse révélée, le chrono affiche
+  // un tiret mais toute la console — énoncé, grille de réponses, classement,
+  // média intégré — était redessinée cinq fois par seconde pour rien, tant que
+  // la question restait à l'écran.
+  const chronoActif = state.phase !== 'revealed';
   useEffect(() => {
+    if (!chronoActif) return;
     const id = window.setInterval(() => setNow(Date.now()), 200);
     return () => window.clearInterval(id);
-  }, []);
+  }, [chronoActif]);
 
   const startedAt = new Date(state.started_at).getTime();
   const elapsedMs = Math.max(0, now - startedAt);

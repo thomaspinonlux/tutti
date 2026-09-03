@@ -740,19 +740,29 @@ function ScreenPlaylistGridView({
   const posRef = useRef(0);
   const targetRef = useRef(0);
 
+  // fix/bandeau-vide-sans-explication — ON RÉESSAIE.
+  // Un seul échec transformait le catalogue en liste vide et l'effet n'était
+  // plus jamais rejoué : pendant toute la sélection, la TV affichait un bandeau
+  // vide, sans message ni indicateur. Ça arrivait typiquement quand la TV
+  // demandait le catalogue pendant un redéploiement du serveur.
+  const [tentativeCatalogue, setTentativeCatalogue] = useState(0);
   useEffect(() => {
     let cancelled = false;
+    let relance: number | null = null;
     void getPublicCatalog()
       .then((cats) => {
         if (!cancelled) setCategories(cats);
       })
-      .catch(() => {
-        if (!cancelled) setCategories([]);
+      .catch((err: unknown) => {
+        console.warn('[Écran TV] catalogue indisponible — nouvelle tentative :', err);
+        if (cancelled || tentativeCatalogue >= 5) return;
+        relance = window.setTimeout(() => setTentativeCatalogue((n) => n + 1), 4_000);
       });
     return () => {
       cancelled = true;
+      if (relance !== null) window.clearTimeout(relance);
     };
-  }, []);
+  }, [tentativeCatalogue]);
 
   const sections = useMemo(() => buildThemeSections(categories ?? []), [categories]);
   const selectedTheme = useMemo(
@@ -811,8 +821,15 @@ function ScreenPlaylistGridView({
   useEffect(() => {
     let raf = 0;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // fix/tv-qui-tourne-a-vide — LA GLISSADE S'ARRÊTE UNE FOIS ARRIVÉE.
+    // La boucle se replanifiait sans condition et mesurait la largeur d'une
+    // carte — donc forçait un recalcul de mise en page — soixante fois par
+    // seconde, même quand l'image était strictement immobile. L'animateur qui
+    // ouvre l'écran de sélection puis part servir au bar laissait la TV
+    // chauffer dix minutes pour rien.
     const step = (): void => {
       const el = trackRef.current;
+      let arrive = true;
       if (el) {
         const card = el.firstElementChild as HTMLElement | null;
         if (card) {
@@ -821,14 +838,26 @@ function ScreenPlaylistGridView({
           posRef.current += (targetRef.current - posRef.current) * (reduce ? 1 : 0.18);
           if (Math.abs(targetRef.current - posRef.current) < 0.4) {
             posRef.current = targetRef.current;
+          } else {
+            arrive = false;
           }
           el.style.transform = `translateX(${posRef.current}px)`;
+        } else {
+          arrive = false; // pas encore rendu : on retente à l'image suivante
         }
+      } else {
+        arrive = false;
+      }
+      if (arrive) {
+        raf = 0;
+        return;
       }
       raf = window.requestAnimationFrame(step);
     };
     raf = window.requestAnimationFrame(step);
-    return () => window.cancelAnimationFrame(raf);
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf);
+    };
   }, [focusIndex, items.length]);
 
   const current = items[focusIndex] ?? null;
@@ -975,8 +1004,22 @@ function AutoScrollList({
     let dir = 1;
     let pause = 90; // frames d'arrêt en haut/bas (~1.5s)
     let acc = 0;
+    // fix/tv-qui-saccade-sur-le-podium — ON NE MESURE PLUS À CHAQUE IMAGE.
+    // Lire la hauteur de contenu force le navigateur à recalculer toute la
+    // mise en page ; c'était fait soixante fois par seconde, et DEUX listes
+    // sont affichées en même temps sur le podium — soit cent vingt recalculs
+    // par seconde pendant tout l'entracte, sur un boîtier TV modeste. La
+    // hauteur ne change qu'au changement de contenu : on la relit dix fois par
+    // seconde, ce qui est déjà généreux, et on ne s'anime pas du tout quand
+    // rien ne dépasse.
+    let max = el.scrollHeight - el.clientHeight;
+    let prochaineMesure = 0;
     const step = (): void => {
-      const max = el.scrollHeight - el.clientHeight;
+      const maintenant = performance.now();
+      if (maintenant >= prochaineMesure) {
+        prochaineMesure = maintenant + 100;
+        max = el.scrollHeight - el.clientHeight;
+      }
       if (max > 2) {
         if (pause > 0) {
           pause -= 1;

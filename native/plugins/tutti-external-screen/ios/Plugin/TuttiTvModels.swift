@@ -189,6 +189,11 @@ final class TuttiTvPoller {
     func stop() {
         timer?.invalidate()
         timer = nil
+        // fix/connexions-qui-s-accumulent — la session réseau est fermée.
+        // Une nouvelle est créée à chaque affichage de la TV native, et donc à
+        // chaque branchement/débranchement HDMI de la soirée ; sans fermeture,
+        // elles s'empilaient avec leurs connexions ouvertes.
+        session.invalidateAndCancel()
     }
 
     private func fetchOnce() {
@@ -200,7 +205,12 @@ final class TuttiTvPoller {
         inFlight = true
         let task = session.dataTask(with: url) { [weak self] data, _, _ in
             guard let self = self else { return }
-            self.inFlight = false
+            // fix/interrogation-qui-s-arrete — LE DRAPEAU EST REMIS SUR LE FIL
+            // PRINCIPAL, celui-là même qui le lit. Écrit depuis le fil réseau,
+            // il pouvait rester bloqué à « en cours » : la TV native cessait
+            // alors DÉFINITIVEMENT d'interroger le serveur et se figeait sur
+            // son dernier état — précisément ce que ce fichier doit empêcher.
+            DispatchQueue.main.async { self.inFlight = false }
             var decoded: TvScreenState?
             if let data = data {
                 decoded = try? JSONDecoder().decode(TvScreenState.self, from: data)

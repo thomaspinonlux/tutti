@@ -382,7 +382,14 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
               <li key={p.id}>
                 <button
                   type="button"
-                  onClick={() => void props.onPick(p.id)}
+                  disabled={launching}
+                  onClick={() => {
+                    // fix/lancement-sans-retour — on verrouille et on le montre.
+                    // Rien ne changeait tant que la fenêtre ne se fermait pas :
+                    // l'animateur tapait plusieurs fois la même playlist.
+                    setLaunching(true);
+                    void Promise.resolve(props.onPick(p.id)).finally(() => setLaunching(false));
+                  }}
                   className="w-full text-left"
                 >
                   <Card className="hover:bg-cream-2 transition-colors">

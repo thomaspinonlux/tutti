@@ -311,6 +311,8 @@ final class TuttiTvViewController: UIViewController {
             boardPanel, qrPanel, pauseOverlay,
         ]
         for v in all { view.addSubview(v) }
+        // Note : mysteryMark figure aussi dans le tableau `all` ci-dessus ; c'est
+        // ce placement-ci qui fait foi (il le range dans la pochette mystère).
         mysteryCover.addSubview(mysteryMark)
         refresh()
     }
@@ -456,6 +458,8 @@ final class TuttiTvViewController: UIViewController {
             revealTitle.font = TvTheme.display(titleSize(for: t.title))
             revealArtist.text = t.artist
             revealArtist.font = TvTheme.editorialItalic(36)
+            // Volontairement masqué : aucun texte ne lui est jamais affecté.
+            // On le garde en place pour ne rien changer à la mise en page.
             revealMeta.isHidden = true
             updateBackdrop(t)
         } else {
@@ -881,14 +885,34 @@ final class TuttiTvViewController: UIViewController {
 
     // MARK: - Utilitaires
 
+    // fix/analyseurs-de-date-recrees-en-boucle — ILS SONT CRÉÉS UNE FOIS.
+    // Cette fonction est appelée dix fois par seconde pendant toute la phase de
+    // buzz et construisait un, voire deux analyseurs de date à chaque passage.
+    // C'est un objet coûteux à construire : de la charge permanente sur l'iPad
+    // pour un résultat identique. On mémorise aussi la dernière conversion,
+    // puisque la même date est relue à chaque battement.
+    private static let analyseurFraction: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+    private static let analyseurSimple: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+    private static var derniereDateLue: (iso: String, valeur: TimeInterval)?
+
     private static func parseIso(_ iso: String) -> TimeInterval {
-        let withFraction = ISO8601DateFormatter()
-        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let d = withFraction.date(from: iso) { return d.timeIntervalSince1970 }
-        let plain = ISO8601DateFormatter()
-        plain.formatOptions = [.withInternetDateTime]
-        if let d = plain.date(from: iso) { return d.timeIntervalSince1970 }
-        return 0
+        if let cache = derniereDateLue, cache.iso == iso { return cache.valeur }
+        var valeur: TimeInterval = 0
+        if let d = analyseurFraction.date(from: iso) {
+            valeur = d.timeIntervalSince1970
+        } else if let d = analyseurSimple.date(from: iso) {
+            valeur = d.timeIntervalSince1970
+        }
+        derniereDateLue = (iso, valeur)
+        return valeur
     }
 
     private static func makeQr(from code: String) -> UIImage? {

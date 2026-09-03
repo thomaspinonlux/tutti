@@ -308,6 +308,8 @@ const dernierEtatJournalise = new Map<string, string>();
 
 function journaliserSiChange(workspaceId: string, ligne: string): void {
   if (dernierEtatJournalise.get(workspaceId) === ligne) return;
+  // Plafond de sûreté : cette table est alimentée par un paramètre d'adresse.
+  if (dernierEtatJournalise.size > 200) dernierEtatJournalise.clear();
   dernierEtatJournalise.set(workspaceId, ligne);
   console.info(ligne);
 }

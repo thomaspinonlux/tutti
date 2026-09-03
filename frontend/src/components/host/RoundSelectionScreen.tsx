@@ -152,6 +152,8 @@ export function RoundSelectionScreen({
 }: Props): JSX.Element {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('mine');
+  // fix/boite-systeme-qui-gele-l-ipad — message affiché dans la page.
+  const [messagePremium, setMessagePremium] = useState<string | null>(null);
   const [librarySubTab, setLibrarySubTab] = useState<LibrarySubTab>('tracks');
   // feat/two-provider-libraries — provider de la bibliothèque officielle.
   // youtube | spotify | apple_music. BUG 3 — défaut APPLE MUSIC quand le
@@ -204,11 +206,31 @@ export function RoundSelectionScreen({
     setSelectedThemeKey(null);
   }, [provider]);
 
+  // Source réellement sélectionnée à l'instant t (cf. correctif ci-dessous).
+  const providerRef = useRef(provider);
+  providerRef.current = provider;
+
+  // fix/mauvaise-source-affichee — LA RÉPONSE PÉRIMÉE EST IGNORÉE.
+  // Deux changements de source rapprochés lançaient deux chargements sans
+  // aucune annulation : si la réponse de la PREMIÈRE source arrivait en
+  // dernier, la grille affichait son catalogue alors que la pastille indiquait
+  // l'autre — et lancer une manche partait avec une playlist qui n'existe pas
+  // dans la source choisie, donc pleine de trous.
   useEffect(() => {
     if (tab !== 'library' || librarySubTab !== 'tracks' || categorized !== null) return;
+    const sourceDemandee = provider;
+    let annule = false;
     getPlaylistsByCategory(provider)
-      .then((cats) => setCategorized(cats))
-      .catch((err: unknown) => setError((err as Error).message));
+      .then((cats) => {
+        if (annule || sourceDemandee !== providerRef.current) return;
+        setCategorized(cats);
+      })
+      .catch((err: unknown) => {
+        if (!annule) setError((err as Error).message);
+      });
+    return () => {
+      annule = true;
+    };
   }, [tab, librarySubTab, categorized, provider]);
 
   // Lazy-load la bibliothèque officielle Quizz quand sub-onglet ouvert.
@@ -306,6 +328,22 @@ export function RoundSelectionScreen({
       {/* feat/tv-join-qr-codes (C) — QR rejoindre en coin, visible pendant
           qu'on choisit la playlist. Mirroré sur la TV via ScreenPlaylistGridView. */}
       {joinCode && <JoinQrCorner joinCode={joinCode} />}
+      {/* fix/boite-systeme-qui-gele-l-ipad — message dans la page, non bloquant. */}
+      {messagePremium && (
+        <div
+          role="status"
+          className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/[0.08] px-4 py-3 text-white"
+        >
+          <span className="text-sm">🔒 {messagePremium}</span>
+          <button
+            type="button"
+            onClick={() => setMessagePremium(null)}
+            className="rounded-full border border-white/30 px-3 py-1 text-xs hover:bg-white/10"
+          >
+            Fermer
+          </button>
+        </div>
+      )}
       <header className="mb-6 flex items-center justify-between flex-wrap gap-3">
         <h2 className="font-display text-3xl text-white">
           {isFirstRound ? t('host.pickFirstRound') : t('host.pickNextRound')}
@@ -582,7 +620,14 @@ export function RoundSelectionScreen({
                   dark
                   pack={p}
                   onPick={() => void onPickQuizOfficial?.(p)}
-                  onLockedClick={() => alert(t('host.session.premiumRequired'))}
+                  // fix/boite-systeme-qui-gele-l-ipad — PLUS DE BOÎTE NATIVE.
+                  // Une boîte système bloque tout le fil d'exécution de la page
+                  // tant qu'on n'a pas appuyé sur OK : pendant ce temps, aucun
+                  // message de la partie n'était traité, les joueurs qui
+                  // rejoignaient n'apparaissaient pas et la TV cessait de se
+                  // mettre à jour. En plein écran sur iPad, elle est en plus
+                  // peu visible — l'animateur croyait l'application plantée.
+                  onLockedClick={() => setMessagePremium(t('host.session.premiumRequired'))}
                   disabled={loading}
                 />
               ))}

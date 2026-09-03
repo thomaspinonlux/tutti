@@ -183,6 +183,13 @@ export function HostQuizzView({
     try {
       const updated = await endSession(session.id);
       onSessionUpdate({ ...session, ...updated });
+    } catch (err: unknown) {
+      // fix/fin-de-quiz-sans-reponse — L'ÉCHEC SE DIT.
+      // Sans capture, terminer devant la salle et échouer laissait l'écran
+      // identique, sans message : l'animateur recliquait pendant que les
+      // joueurs attendaient le podium.
+      console.error('[Quiz] fin de session en échec :', err);
+      window.alert(`Impossible de terminer : ${(err as Error).message}`);
     } finally {
       setBusy(false);
     }

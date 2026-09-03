@@ -1,3 +1,5 @@
+import { borner } from './borner.js';
+
 /**
  * Onboarding et permissions micro pour les joueurs (étape 9.5+).
  *
@@ -56,7 +58,16 @@ export async function requestMicPermission(): Promise<MicPermissionResult> {
     return { kind: 'unsupported' };
   }
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // fix/ecran-d-accueil-fige — LA DEMANDE EST BORNÉE.
+    // Tant que la boîte de dialogue du système n'est pas tranchée, cette
+    // promesse reste en attente : le joueur qui repose son téléphone ou bascule
+    // d'application laissait le bouton « J'ai compris » désactivé sur
+    // « Autorisation… », sans aucune sortie possible hors rechargement.
+    const stream = await borner(
+      navigator.mediaDevices.getUserMedia({ audio: true }),
+      30_000,
+      'Autorisation du micro',
+    );
     // On ferme tout de suite — le vrai usage sera lors du buzz.
     for (const track of stream.getTracks()) track.stop();
     return { kind: 'granted' };

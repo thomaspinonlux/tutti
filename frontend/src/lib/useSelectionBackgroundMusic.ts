@@ -65,12 +65,21 @@ export function useSelectionBackgroundMusic({ enabled }: Options): void {
     // le rattrapage au premier toucher est en `once` : avant, chaque tap sur
     // une vignette de playlist déclenchait un appel audio supplémentaire, ce
     // qui alourdissait l'écran de sélection au pire moment.
+    // fix/reessai-sans-fin — LE RÉESSAI EST PLAFONNÉ.
+    // Il ne s'arrêtait que si la musique démarrait : quand le fichier est
+    // absent ou introuvable (déploiement, adresse de secours morte), la boucle
+    // tournait indéfiniment tant que l'animateur restait sur l'écran de
+    // sélection, avec un rejet avalé à chaque tour. Trente essais couvrent
+    // largement l'attente d'un premier geste ; au-delà, ce n'est pas le geste
+    // qui manque, c'est le fichier.
     let retryId = 0;
+    let essais = 0;
     const tick = (): void => {
-      if (!audio.paused) {
+      if (!audio.paused || essais >= 30) {
         window.clearInterval(retryId);
         return;
       }
+      essais += 1;
       attemptPlay();
     };
     retryId = window.setInterval(tick, 2000);

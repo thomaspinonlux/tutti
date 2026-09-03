@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getAppleDeveloperToken } from './appleMusic.js';
 import { loadMusicKitSdk, type MusicKitInstance } from './musickitLoader.js';
+import { borner } from './borner.js';
 import { supportsNativeAppleMusic } from './platform.js';
 import { nativeMusicKit } from './nativeMusicKit.js';
 
@@ -256,7 +257,27 @@ export function useAppleMusicPlayer({
     let poll: number | null = null;
     void (async () => {
       setStatus('configuring');
-      const { authorized } = await nativeMusicKit.authorize();
+      // fix/apple-bloque-en-configuration — L'AUTORISATION EST BORNÉE ET
+      // RATTRAPÉE. Sans limite ni capture d'erreur, si la boîte de dialogue
+      // iOS s'affichait derrière l'écran externe, ou si le pont refusait
+      // (abonnement expiré), le statut restait sur « configuration » pour
+      // toujours : plus aucun morceau ne pouvait être joué, sans le moindre
+      // message, et le refus partait en promesse non rattrapée.
+      let authorized = false;
+      try {
+        ({ authorized } = await borner(
+          nativeMusicKit.authorize(),
+          20_000,
+          'Autorisation Apple Music',
+        ));
+      } catch (err: unknown) {
+        if (cancelled) return;
+        console.error('[Apple natif] autorisation impossible :', err);
+        setError((err as Error).message);
+        setErrorCode('APPLE_INIT_FAILED');
+        setStatus('error');
+        return;
+      }
       if (cancelled) return;
       setIsAuthorized(authorized);
       setStatus('ready');

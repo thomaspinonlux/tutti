@@ -92,6 +92,11 @@ export async function getValidSpotifyAccessToken(workspaceId: string): Promise<S
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: body.toString(),
+    // fix/spotify-sans-reponse — c'était le seul appel externe du chemin de jeu
+    // sans limite de temps : quand le jeton expire en pleine soirée et que le
+    // service répond lentement, la requête de l'animateur restait ouverte sans
+    // borne, en occupant une connexion base pendant tout ce temps.
+    signal: AbortSignal.timeout(8_000),
   });
 
   if (!res.ok) {

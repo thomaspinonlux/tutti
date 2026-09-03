@@ -20,7 +20,7 @@ import type {
   SessionWithParticipants,
   Team,
 } from '@tutti/shared';
-import { api } from './api.js';
+import { api, ApiError } from './api.js';
 import type { LibraryPlaylistSummary } from './library.js';
 
 export interface CreateSessionInput {
@@ -73,7 +73,13 @@ export async function getCurrentSession(): Promise<CurrentActiveSession | null> 
   try {
     const data = await api<{ session: CurrentActiveSession } | null>('/api/sessions/current');
     return data?.session ?? null;
-  } catch {
+  } catch (err: unknown) {
+    // fix/panne-reseau-prise-pour-une-absence-de-partie — ON DISTINGUE LES DEUX.
+    // Tout était avalé, y compris un serveur qui ne répond pas : l'animateur
+    // qui rechargeait sa console pendant un creux réseau se voyait annoncer
+    // « aucune partie en cours » alors que la salle jouait toujours.
+    const code = err instanceof ApiError ? err.code : '';
+    if (code === 'TIMEOUT' || code === 'NETWORK') throw err;
     return null;
   }
 }

@@ -9,7 +9,15 @@
  *   - ended          : session terminée, podium final cumulé
  */
 
-import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  Component,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
@@ -269,6 +277,8 @@ function HostPageInner(): JSX.Element {
   // "Reconnexion..." discret en cas de coupure réseau. Connecté par défaut
   // (optimiste) pour éviter le flash au boot avant que socket.io ait acked.
   const [socketConnected, setSocketConnected] = useState(true);
+  // fix/minuteurs-de-buzz-qui-s-accumulent — annulés au démontage.
+  const minuteursBuzzRef = useRef<Set<number>>(new Set());
 
   // ── Bootstrap : socket + state initial ─────────────────────────────────
   useEffect(() => {
@@ -526,7 +536,13 @@ function HostPageInner(): JSX.Element {
               return next;
             });
             const remainingMs = Math.max(0, payload.expires_at_ms - Date.now());
-            window.setTimeout(() => {
+            // fix/minuteurs-de-buzz-qui-s-accumulent — ILS SONT MÉMORISÉS ET
+            // ANNULÉS. Un minuteur était créé à chaque buzz et jamais nettoyé :
+            // sur une manche à quarante joueurs, plusieurs centaines vivaient
+            // en parallèle, chacun retenant sa charge utile, et ils tiraient
+            // encore après la fin de la partie.
+            const idMinuteur = window.setTimeout(() => {
+              minuteursBuzzRef.current.delete(idMinuteur);
               setActiveBuzzers((prev) => {
                 if (!prev.has(payload.participant_id)) return prev;
                 const next = new Set(prev);
@@ -534,6 +550,7 @@ function HostPageInner(): JSX.Element {
                 return next;
               });
             }, remainingMs);
+            minuteursBuzzRef.current.add(idMinuteur);
           },
         );
         socket.on('track:correct_answer', (entry: CorrectAnswerEntry) => {
@@ -708,6 +725,8 @@ function HostPageInner(): JSX.Element {
     void init();
     return () => {
       cancelled = true;
+      minuteursBuzzRef.current.forEach((id) => window.clearTimeout(id));
+      minuteursBuzzRef.current.clear();
       socket?.disconnect();
       setHostSocket(null);
     };
@@ -969,6 +988,15 @@ function HostPageInner(): JSX.Element {
     isPaused: session?.is_paused ?? false,
     enabled: phase === 'roundPlaying',
   });
+  // fix/paroles-saccadees-cote-animateur — lue par la couche paroles ; on passe
+  // par des références pour que son identité ne change jamais.
+  const lecteursParolesRef = useRef({ audioProvider, apple, youtube });
+  lecteursParolesRef.current = { audioProvider, apple, youtube };
+  const lirePositionParoles = useCallback((): number => {
+    const { audioProvider: source, apple: a, youtube: y } = lecteursParolesRef.current;
+    return source === 'apple_music' ? a.readPositionMs() : y.readPositionMs();
+  }, []);
+
   useAppleMusicAudioSync({
     apple,
     currentTrack,
@@ -2175,10 +2203,11 @@ function HostPageInner(): JSX.Element {
                   lines: lyricsLines,
                   // Position RÉELLE du lecteur (mode B : le son sort d'ici),
                   // pas l'état React à 1 Hz — sinon les paroles saccadent.
-                  getPositionMs: () =>
-                    audioProvider === 'apple_music'
-                      ? apple.readPositionMs()
-                      : youtube.readPositionMs(),
+                  // fix/paroles-saccadees-cote-animateur — FONCTION STABLE.
+                  // Recréée à chaque rendu, elle faisait détruire et relancer
+                  // l'animation des paroles quatre fois par seconde : l'image
+                  // en attente était annulée avant même d'avoir été dessinée.
+                  getPositionMs: lirePositionParoles,
                   paused: session?.is_paused ?? false,
                 }
               : undefined
@@ -2508,12 +2537,26 @@ function HostPageInner(): JSX.Element {
                   hasAnimator={session.has_animator}
                   currentMasterId={currentMaster?.id ?? null}
                   onStart={handleStartSession}
+                  // fix/echec-silencieux-sur-les-joueurs — L'ÉCHEC SE VOIT.
+                  // Sans capture, un déplacement d'équipe qui échouait laissait
+                  // le menu revenir tout seul à sa valeur d'origine, sans un
+                  // mot : l'animateur recommençait en croyant à un bug de
+                  // l'iPad.
                   onMove={async (pid, tid) => {
-                    await moveParticipantTeam(session.id, pid, tid);
+                    try {
+                      await moveParticipantTeam(session.id, pid, tid);
+                    } catch (err: unknown) {
+                      console.error('[Équipe] déplacement en échec :', err);
+                      pushToast(setToasts, "Déplacement d'équipe non pris en compte", 'raspberry');
+                    }
                   }}
                   onKick={async (pid) => {
-                    if (window.confirm(t('host.kickConfirm'))) {
+                    if (!window.confirm(t('host.kickConfirm'))) return;
+                    try {
                       await kickParticipant(session.id, pid);
+                    } catch (err: unknown) {
+                      console.error('[Exclusion] échec :', err);
+                      pushToast(setToasts, 'Exclusion non prise en compte', 'raspberry');
                     }
                   }}
                   onToggleMaster={handleToggleMaster}

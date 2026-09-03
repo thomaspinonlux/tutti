@@ -11,7 +11,7 @@
  *     défaut, peuvent être affichées via toggle.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { TrackResult } from '@tutti/shared';
 import {
   getMyPlaylists,
@@ -85,7 +85,14 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
   const [tracksError, setTracksError] = useState<string | null>(null);
   const [showSpotifyOwned, setShowSpotifyOwned] = useState(false);
 
+  // fix/pages-melangees — LA DERNIÈRE DEMANDE GAGNE.
+  // « Charger plus » et une nouvelle recherche pouvaient être en vol en même
+  // temps, sans ordre garanti : la grille finissait avec la page 2 collée aux
+  // résultats de l'ancienne recherche.
+  const numeroPageRef = useRef(0);
+
   const fetchPage = async (queryStr: string, off: number, append: boolean): Promise<void> => {
+    const numero = ++numeroPageRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -93,13 +100,14 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
         mode === 'my'
           ? await getMyPlaylists({ limit: PAGE_SIZE, offset: off })
           : await searchPlaylists({ q: queryStr, market: 'FR', limit: PAGE_SIZE, offset: off });
+      if (numero !== numeroPageRef.current) return;
       setPlaylists((prev) => (append ? [...prev, ...res.items] : res.items));
       setTotal(res.total);
       setOffset(off);
     } catch (err: unknown) {
-      setError((err as Error).message);
+      if (numero === numeroPageRef.current) setError((err as Error).message);
     } finally {
-      setLoading(false);
+      if (numero === numeroPageRef.current) setLoading(false);
     }
   };
 
@@ -108,9 +116,9 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
     if (mode !== 'my') return;
     void fetchPage('', 0, false);
     return () => {
-      setPlaylists([]);
-      setOffset(0);
-      setTotal(0);
+      // On invalide les réponses en vol plutôt que d'écrire dans un composant
+      // en cours de démontage.
+      numeroPageRef.current += 1;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);

@@ -56,6 +56,15 @@ export function SeekBar({
     if (dragMs === null) return;
     setDragMs(msFromClientX(e.clientX));
   };
+  // fix/curseur-de-temps-bloque — LE GESTE INTERROMPU EST TRAITÉ.
+  // Le déplacement n'était relâché que par un relever de doigt normal. Un geste
+  // système sur iPad (balayage de bord, notification) émet une ANNULATION, pas
+  // un relever : la barre restait figée sur la position du glissement, cessait
+  // d'afficher le temps réel, et le déplacement n'était jamais envoyé.
+  const onPointerCancel = (): void => {
+    setDragMs(null);
+  };
+
   const onPointerUp = (e: ReactPointerEvent<HTMLDivElement>): void => {
     if (dragMs === null) return;
     const target = msFromClientX(e.clientX);
@@ -80,6 +89,8 @@ export function SeekBar({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onPointerCancel={onPointerCancel}
+        onLostPointerCapture={onPointerCancel}
         className={`group relative flex h-6 items-center ${seekable ? 'cursor-pointer touch-none' : ''}`}
       >
         {/* Rail */}

@@ -57,9 +57,22 @@ router.get('/screen-state/alive/:workspaceId', (req: Request, res: Response): vo
 // Pas de données sensibles : pseudo + score + cover/title (révélés en phase 3),
 // pas de tokens, pas d'emails.
 
+// fix/memoire-remplie-par-l-exterieur — L'IDENTIFIANT EST VALIDÉ.
+// Cette adresse est publique et son paramètre alimentait deux tables en
+// mémoire sans aucun contrôle ni expiration : une boucle d'appels avec des
+// identifiants inventés les faisait grossir jusqu'à épuiser la mémoire du
+// serveur — et un serveur qui redémarre perd la manche en cours.
+const IDENTIFIANT_VALIDE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 router.get(
   '/screen-state/:workspaceId',
   async (req: Request<{ workspaceId: string }>, res: Response): Promise<void> => {
+    if (!IDENTIFIANT_VALIDE.test(req.params.workspaceId)) {
+      res
+        .status(400)
+        .json({ error: { code: 'VALIDATION_ERROR', message: 'Identifiant invalide' } });
+      return;
+    }
     try {
       screenLastSeen.set(req.params.workspaceId as string, Date.now());
       const state = await computeScreenState(req.params.workspaceId);

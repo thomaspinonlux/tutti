@@ -83,6 +83,17 @@ export function setCachedPlaylist<T>(
 ): void {
   const playlist_updated_at =
     playlistUpdatedAt instanceof Date ? playlistUpdatedAt.toISOString() : playlistUpdatedAt;
+  // fix/memoire-qui-monte — CE CACHE EST PLAFONNÉ.
+  // La durée de validité n'était vérifiée qu'à la relecture d'une clé donnée :
+  // une playlist consultée une fois puis jamais reprise gardait son contenu
+  // complet en mémoire jusqu'au prochain redéploiement. Parcourir la
+  // bibliothèque d'administration en laissait des centaines derrière soi.
+  const PLAFOND = 80;
+  if (!store.has(key) && store.size >= PLAFOND) {
+    // On retire la plus ancienne entrée (les Map conservent l'ordre d'insertion).
+    const plusAncienne = store.keys().next().value;
+    if (plusAncienne !== undefined) store.delete(plusAncienne);
+  }
   store.set(key, {
     payload,
     cached_at: Date.now(),

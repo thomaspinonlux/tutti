@@ -61,9 +61,23 @@ export function Sidebar(): JSX.Element {
       });
   }, []);
 
+  // fix/deconnexion-sans-retour — GARDE ET MESSAGE.
+  // Aucun retour visuel pendant l'appel : on recliquait, deux déconnexions
+  // partaient, et en cas d'échec aucune erreur, aucune redirection — on se
+  // croyait déconnecté en étant toujours dans l'administration.
+  const [deconnexionEnCours, setDeconnexionEnCours] = useState(false);
   const handleSignOut = async (): Promise<void> => {
-    await signOut();
-    navigate('/', { replace: true });
+    if (deconnexionEnCours) return;
+    setDeconnexionEnCours(true);
+    try {
+      await signOut();
+      navigate('/', { replace: true });
+    } catch (err: unknown) {
+      console.error('[Compte] déconnexion en échec :', err);
+      window.alert(`Déconnexion impossible : ${(err as Error).message}`);
+    } finally {
+      setDeconnexionEnCours(false);
+    }
   };
 
   return (
@@ -148,7 +162,13 @@ export function Sidebar(): JSX.Element {
             {user.email}
           </p>
         )}
-        <Button variant="ghost" size="sm" onClick={() => void handleSignOut()} className="w-full">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => void handleSignOut()}
+          disabled={deconnexionEnCours}
+          className="w-full"
+        >
           {t('common.signOut')}
         </Button>
       </div>

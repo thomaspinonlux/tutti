@@ -113,6 +113,15 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             // la connexion Apple Music restait bloquée sans message d'erreur.
             // On le garde vivant jusqu'à la réponse, et un délai de 15 s tranche
             // si Apple ne répond pas du tout.
+            // fix/deux-demandes-de-jeton-en-meme-temps — UNE SEULE À LA FOIS.
+            // Cet emplacement est unique : une seconde demande écrasait la
+            // référence de la première, dont le contrôleur système était alors
+            // libéré AVANT la réponse d'Apple — exactement le défaut que ce
+            // correctif visait à supprimer.
+            if self.controleurJeton != nil {
+                call.reject("Une connexion Apple Music est déjà en cours")
+                return
+            }
             let controleur = SKCloudServiceController()
             self.controleurJeton = controleur
             let unique = ReponseUnique()
@@ -199,7 +208,13 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 self.player.pause()
                 try await self.player.skipToNextEntry()
                 try await self.player.play()
-                self.promouvoirDureeSuivante()
+                // fix/duree-du-morceau-precedent — on le signale si rien n'a été
+                // préchargé : la durée affichée resterait alors celle du titre
+                // précédent, donc une barre de progression fausse sur la console
+                // ET sur la TV.
+                if !self.promouvoirDureeSuivante() {
+                    print("[TuttiMusicKit] saut sans préchargement — durée à confirmer")
+                }
                 call.resolve(["ok": true])
             } catch {
                 // fix/silence-apres-un-saut-rate — LA MUSIQUE REPART.

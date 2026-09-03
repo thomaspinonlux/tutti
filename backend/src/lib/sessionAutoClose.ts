@@ -32,6 +32,10 @@
 
 import { prisma } from './prisma.js';
 import { SessionStatus } from '@prisma/client';
+import { clearActiveTrack } from './gameState.js';
+import { clearActiveQuestion } from './gameStateQuizz.js';
+import { clearAutoReveal } from './gameplayQuizzCore.js';
+import { cancelPhase2Timer } from '../routes/gameplayParticipant.js';
 
 /** Sessions inactives depuis plus de ça sont auto-fermées. Override via env. */
 const INACTIVITY_TIMEOUT_MS = Number.parseInt(
@@ -71,6 +75,20 @@ export async function runSessionAutoClose(
   //
   // On exclut désormais toute session ayant une manche récente ou un point
   // marqué récemment.
+  // fix/manche-fantome-en-memoire — on note quelles soirées vont être closes
+  // pour purger leur état mémoire juste après (buzz, minuteurs, questions).
+  const aFermer = await prisma.session.findMany({
+    where: {
+      status: { in: [SessionStatus.WAITING, SessionStatus.PLAYING] },
+      updated_at: { lt: threshold },
+      rounds: {
+        none: { OR: [{ started_at: { gte: threshold } }, { ended_at: { gte: threshold } }] },
+      },
+      score_events: { none: { created_at: { gte: threshold } } },
+    },
+    select: { id: true, rounds: { where: { status: 'PLAYING' }, select: { id: true } } },
+  });
+
   const result = await prisma.session.updateMany({
     where: {
       status: { in: [SessionStatus.WAITING, SessionStatus.PLAYING] },
@@ -85,6 +103,16 @@ export async function runSessionAutoClose(
       ended_at: new Date(),
     },
   });
+
+  // fix/manche-fantome-en-memoire — purge de l'état mémoire des soirées closes.
+  for (const soiree of aFermer) {
+    for (const manche of soiree.rounds) {
+      clearActiveTrack(manche.id);
+      cancelPhase2Timer(manche.id);
+    }
+    clearAutoReveal(soiree.id);
+    clearActiveQuestion(soiree.id);
+  }
 
   const elapsedMs = Date.now() - start;
   console.info(`[Cron][SessionAutoClose] done | closed=${result.count} | elapsed=${elapsedMs}ms`);

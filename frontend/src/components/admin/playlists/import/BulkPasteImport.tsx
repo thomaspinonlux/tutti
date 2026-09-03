@@ -172,6 +172,10 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
     }
   };
 
+  // fix/import-dans-la-mauvaise-source — source réellement choisie à l'instant t.
+  const providerRef = useRef(provider);
+  providerRef.current = provider;
+
   const searchOne = async (query: string): Promise<TrackResult | null> => {
     // Spotify : endpoint structuré (market FR). YouTube / Apple Music :
     // endpoint générique — le provider est écrit tel quel sur le TrackResult,
@@ -185,6 +189,8 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
   };
 
   const runMatching = async (): Promise<void> => {
+    // fix/import-dans-la-mauvaise-source — source au moment du lancement.
+    const sourceDemandee = providerRef.current;
     const todo = pending;
     if (lines.length === 0) {
       setError('Colle au moins un titre (un par ligne).');
@@ -222,6 +228,15 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
       }
     };
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, todo.length) }, worker));
+    // fix/import-dans-la-mauvaise-source — LA SOURCE EST REVÉRIFIÉE.
+    // Basculer de source pendant une recherche vidait les résultats, puis la
+    // recherche précédente écrivait les siens dans la nouvelle source : on
+    // envoyait des identifiants d'une source sous le nom d'une autre, donc un
+    // import corrompu ou en erreur, sans que rien n'explique pourquoi.
+    if (sourceDemandee !== providerRef.current) {
+      console.warn('[Import] source changée pendant la recherche — résultats ignorés');
+      return;
+    }
     setResultMap((prev) => ({ ...prev, ...local }));
     setMatching(false);
     setProgress(null);

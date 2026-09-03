@@ -17,6 +17,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { borner } from './borner.js';
 import { getSpotifyToken, type SpotifyTokenResponse } from './music.js';
 
 const SDK_SCRIPT_URL = 'https://sdk.scdn.co/spotify-player.js';
@@ -158,6 +159,12 @@ export function useSpotifyPlayer({
 
   const playerRef = useRef<SpotifyPlayer | null>(null);
   const tokenRef = useRef<string | null>(null);
+  // fix/boucle-de-transfert — empêche la relance en cascade après un 404.
+  const relanceApres404Ref = useRef(false);
+  // fix/message-de-blocage-fantome — minuteurs de vérification, annulables.
+  const verificationsRef = useRef<number[]>([]);
+  // fix/audio-qui-hoquete-entre-deux-appareils — un seul rattrapage programmé.
+  const rattrapageRef = useRef<number | null>(null);
   const tokenExpiresAtRef = useRef<number>(0);
   const pendingPlayRef = useRef<string | null>(null);
   // fix/disable-spotify-sdk-non-allowlist — garde l'état enabled à jour pour
@@ -351,11 +358,18 @@ export function useSpotifyPlayer({
             // Auto re-transfer pour récupérer le control sur le device Tutti.
             // Si un autre device a pris la main (téléphone, autre app), on
             // reprend ici. Délai 1s pour ne pas thrash en cas de transition.
-            if (deviceId && tokenRef.current) {
-              window.setTimeout(() => {
+            // fix/audio-qui-hoquete-entre-deux-appareils — UN SEUL RATTRAPAGE
+            // EN VOL. Ce signal arrive en rafale quand l'animateur ouvre
+            // Spotify sur son téléphone : une dizaine de reprises partaient en
+            // une seconde, chacune redonnant la main à Tutti que le téléphone
+            // reprenait aussitôt. Le son sautait entre les deux appareils
+            // jusqu'à ce que l'un soit fermé.
+            if (deviceId && tokenRef.current && rattrapageRef.current === null) {
+              rattrapageRef.current = window.setTimeout(() => {
+                rattrapageRef.current = null;
                 console.info('[Spotify SDK] Auto-recovery : re-transfer vers Tutti device');
                 void transferPlaybackInternal(deviceId, false);
-              }, 1000);
+              }, 1500);
             }
             return;
           }
@@ -426,7 +440,11 @@ export function useSpotifyPlayer({
           setAudioBlocked(true);
         });
 
-        const ok = await player.connect();
+        // fix/connexion-spotify-sans-issue — la connexion est bornée.
+        // Si la bibliothèque n'aboutit ni ne rejette (cadre bloqué par un
+        // filtre de contenu, cas déjà rencontré côté YouTube), le statut
+        // restait sur « connexion » sans erreur affichée, sans sortie.
+        const ok = await borner(player.connect(), 15_000, 'Connexion Spotify');
         if (!ok && !cancelled) fail('CONNECT_FAILED', 'Spotify Player.connect() refusé.');
       } catch (err) {
         fail('UNKNOWN', err instanceof Error ? err.message : 'Erreur inconnue');
@@ -443,6 +461,13 @@ export function useSpotifyPlayer({
       // throw NotFoundError "The object can not be found here" en cascade.
       // Un seul catch global évite les erreurs visibles en console + fallout
       // sur le rendu (page host vide après end-round/end-session).
+      // fix/message-de-blocage-fantome — on annule les vérifications en attente.
+      verificationsRef.current.forEach((id) => window.clearTimeout(id));
+      verificationsRef.current = [];
+      if (rattrapageRef.current !== null) {
+        window.clearTimeout(rattrapageRef.current);
+        rattrapageRef.current = null;
+      }
       if (player) {
         try {
           player.disconnect();
@@ -651,32 +676,40 @@ export function useSpotifyPlayer({
   const verifyPlayback = (uri: string): void => {
     const p = playerRef.current;
     if (!p) return;
+    // fix/message-de-blocage-fantome — les vérifications sont annulables.
+    // Ces trois minuteurs n'étaient stockés nulle part : un changement de
+    // morceau ou un démontage les laissait tirer, et l'écran « le navigateur a
+    // bloqué la lecture » s'affichait alors que rien n'était bloqué.
+    verificationsRef.current.forEach((id) => window.clearTimeout(id));
+    verificationsRef.current = [];
     [500, 1500, 3000].forEach((delayMs) => {
-      window.setTimeout(() => {
-        void p.getCurrentState().then((state) => {
-          if (!state) {
-            console.warn(
-              `[Spotify Verify] +${delayMs}ms state=null — device pas actif (control ailleurs ?)`,
+      verificationsRef.current.push(
+        window.setTimeout(() => {
+          void p.getCurrentState().then((state) => {
+            if (!state) {
+              console.warn(
+                `[Spotify Verify] +${delayMs}ms state=null — device pas actif (control ailleurs ?)`,
+              );
+              return;
+            }
+            const trackUri = state.track_window?.current_track?.uri;
+            const matches = trackUri === uri;
+            console.info(
+              `[Spotify Verify] +${delayMs}ms — paused: ${state.paused} | pos: ${state.position}ms | uri match: ${matches} (${trackUri})`,
             );
-            return;
-          }
-          const trackUri = state.track_window?.current_track?.uri;
-          const matches = trackUri === uri;
-          console.info(
-            `[Spotify Verify] +${delayMs}ms — paused: ${state.paused} | pos: ${state.position}ms | uri match: ${matches} (${trackUri})`,
-          );
-          if (delayMs === 3000 && state.paused && matches) {
-            console.error(
-              '[Spotify Verify] ❌ Toujours paused 3s après play() — autoplay bloqué OU device inactif',
-            );
-            setLastEvent('verify:still_paused_3s');
-            // Bug 2 — déclenche affichage du fallback UI (autoplay bloqué silencieusement)
-            setAudioBlocked(true);
-            setErrorCode('AUTOPLAY_BLOCKED');
-            setError('Le navigateur a bloqué la lecture. Clique pour activer.');
-          }
-        });
-      }, delayMs);
+            if (delayMs === 3000 && state.paused && matches) {
+              console.error(
+                '[Spotify Verify] ❌ Toujours paused 3s après play() — autoplay bloqué OU device inactif',
+              );
+              setLastEvent('verify:still_paused_3s');
+              // Bug 2 — déclenche affichage du fallback UI (autoplay bloqué silencieusement)
+              setAudioBlocked(true);
+              setErrorCode('AUTOPLAY_BLOCKED');
+              setError('Le navigateur a bloqué la lecture. Clique pour activer.');
+            }
+          });
+        }, delayMs),
+      );
     });
   };
 
@@ -759,9 +792,23 @@ export function useSpotifyPlayer({
       // Device perdu (pas dispo côté Spotify Connect) — peut arriver si
       // l'utilisateur a fermé un onglet ailleurs. On force un re-transfer.
       console.warn('[Spotify Play] Device 404 — re-transfer puis retry');
+      // fix/boucle-de-transfert — UNE SEULE NOUVELLE TENTATIVE.
+      // Cette fonction se rappelait elle-même sans compteur ni pause : quand le
+      // compte est repris par un autre appareil, le transfert répond « accepté »
+      // mais la lecture reste introuvable, et la boucle partait à deux requêtes
+      // par tour jusqu'à saturer l'onglet — console figée en pleine manche.
+      if (relanceApres404Ref.current) {
+        console.warn('[Spotify Play] déjà relancé une fois — on abandonne');
+        return false;
+      }
       const ok = await transferPlaybackInternal(deviceId, false);
-      if (ok) return play(spotifyUri);
-      return false;
+      if (!ok) return false;
+      relanceApres404Ref.current = true;
+      try {
+        return await play(spotifyUri);
+      } finally {
+        relanceApres404Ref.current = false;
+      }
     }
     const text = await res.text().catch(() => '');
     console.warn('[Spotify Play] Failed body:', text);

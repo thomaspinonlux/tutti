@@ -139,7 +139,11 @@ export async function generateLibraryCover(slug: string): Promise<CacheEntry> {
     console.warn(`[Cover] All ${urls.length} thumbnail fetches failed for slug=${slug}`);
     throw new Error('NO_COVERS');
   }
-  while (valid.length < 4) valid.push(valid[valid.length % valid.length]!);
+  // fix/mosaique-repetee — le reste d'un nombre par lui-même vaut toujours
+  // zéro : la première pochette était recopiée quatre fois au lieu d'alterner
+  // celles qui existent.
+  const disponibles = valid.length;
+  for (let i = 0; valid.length < 4; i += 1) valid.push(valid[i % disponibles]!);
 
   // Composite 2×2.
   const composite = await sharp({

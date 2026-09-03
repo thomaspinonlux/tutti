@@ -41,21 +41,29 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
     // Agrégats sessions : pour chaque workspace_id, count total + count
     // ce mois. Group by establishment.workspace_id via aggregations.
     const monthStart = startOfMonth(new Date());
-    const sessionsTotalByWorkspace = await prisma.session.groupBy({
-      by: ['establishment_id'],
-      _count: { _all: true },
-    });
-    const sessionsThisMonthByWorkspace = await prisma.session.groupBy({
-      by: ['establishment_id'],
-      where: { created_at: { gte: monthStart } },
-      _count: { _all: true },
-    });
-
-    // Map establishment_id → workspace_id pour rattacher les compteurs au
-    // user via workspace.
+    // perf/page-utilisateurs-qui-bloque-la-soiree — LES AGRÉGATS SONT LIMITÉS
+    // AUX ÉTABLISSEMENTS AFFICHÉS. Ils balayaient toute la table des soirées,
+    // sans aucun filtre, à chaque ouverture de la page.
+    const idsWorkspaces = [...new Set(members.map((m) => m.workspace.id))];
     const establishments = await prisma.establishment.findMany({
+      where: { workspace_id: { in: idsWorkspaces } },
       select: { id: true, workspace_id: true },
     });
+    const idsEtablissements = establishments.map((e) => e.id);
+    const sessionsTotalByWorkspace = idsEtablissements.length
+      ? await prisma.session.groupBy({
+          by: ['establishment_id'],
+          where: { establishment_id: { in: idsEtablissements } },
+          _count: { _all: true },
+        })
+      : [];
+    const sessionsThisMonthByWorkspace = idsEtablissements.length
+      ? await prisma.session.groupBy({
+          by: ['establishment_id'],
+          where: { establishment_id: { in: idsEtablissements }, created_at: { gte: monthStart } },
+          _count: { _all: true },
+        })
+      : [];
     const estToWs = new Map(establishments.map((e) => [e.id, e.workspace_id]));
 
     const totalByWs = new Map<string, number>();
@@ -78,24 +86,37 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
       string,
       { email?: string; first_name?: string; last_name?: string }
     >();
+    // perf/page-utilisateurs-qui-bloque-la-soiree — LES APPELS PARTENT PAR
+    // PAQUETS. Une requête réseau par compte était lancée d'un coup : avec
+    // quelques centaines de comptes, cela ouvrait autant de connexions
+    // simultanées vers le service d'authentification, saturait le serveur et
+    // faisait attendre les buzz des joueurs derrière. Par paquets de 10, la
+    // page met le même temps sans rien bloquer.
+    const TAILLE_PAQUET = 10;
     if (allUids.length > 0) {
-      await Promise.all(
-        allUids.map(async (uid) => {
-          try {
-            const { data } = await supabaseAdmin.auth.admin.getUserById(uid);
-            const meta = (data?.user?.user_metadata ?? {}) as Record<string, unknown>;
-            const fn = typeof meta.first_name === 'string' ? meta.first_name : undefined;
-            const ln = typeof meta.last_name === 'string' ? meta.last_name : undefined;
-            resolvedUserInfo.set(uid, {
-              ...(data?.user?.email ? { email: data.user.email } : {}),
-              ...(fn ? { first_name: fn } : {}),
-              ...(ln ? { last_name: ln } : {}),
-            });
-          } catch (err) {
-            console.warn(`[admin/users] getUserById fail uid=${uid}`, err);
-          }
-        }),
-      );
+      const paquets: string[][] = [];
+      for (let i = 0; i < allUids.length; i += TAILLE_PAQUET) {
+        paquets.push(allUids.slice(i, i + TAILLE_PAQUET));
+      }
+      for (const paquet of paquets) {
+        await Promise.all(
+          paquet.map(async (uid) => {
+            try {
+              const { data } = await supabaseAdmin.auth.admin.getUserById(uid);
+              const meta = (data?.user?.user_metadata ?? {}) as Record<string, unknown>;
+              const fn = typeof meta.first_name === 'string' ? meta.first_name : undefined;
+              const ln = typeof meta.last_name === 'string' ? meta.last_name : undefined;
+              resolvedUserInfo.set(uid, {
+                ...(data?.user?.email ? { email: data.user.email } : {}),
+                ...(fn ? { first_name: fn } : {}),
+                ...(ln ? { last_name: ln } : {}),
+              });
+            } catch (err) {
+              console.warn(`[admin/users] getUserById fail uid=${uid}`, err);
+            }
+          }),
+        );
+      }
     }
 
     const users = members.map((m) => {

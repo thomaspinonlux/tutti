@@ -875,6 +875,11 @@ model VoiceTranscript {
   @@index([session_id])
   @@index([track_id])
   @@index([level])
+  // perf/tableau-de-bord-vocal — les statistiques filtrent sur la date et cette
+  // table est la plus volumineuse du jeu (une ligne par tentative de chaque
+  // joueur sur chaque morceau) : sans cet index, ouvrir le tableau de bord en
+  // pleine soirée balayait toute la table et faisait attendre les buzz.
+  @@index([created_at])
   @@map("voice_transcripts")
 }
 

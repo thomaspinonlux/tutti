@@ -118,15 +118,19 @@ export async function transcribeWithDeepgram(
       `Deepgram unreachable: ${err instanceof Error ? err.message : 'unknown'}`,
     );
   }
-  clearTimeout(timeout);
-
+  // fix/reponse-qui-traine — LE DÉLAI DE GARDE COUVRE AUSSI LA LECTURE.
+  // Il était désarmé dès l'arrivée des en-têtes : un service qui répond puis
+  // laisse traîner le corps échappait à la limite, et le téléphone du joueur
+  // restait sur « analyse ».
   if (res.status === 400) {
-    const text = await res.text().catch(() => '');
-    throw new DeepgramError('INVALID_AUDIO', `Audio invalide: ${text.slice(0, 200)}`);
+    const detail = await res.text().catch(() => '');
+    clearTimeout(timeout);
+    throw new DeepgramError('INVALID_AUDIO', `Audio invalide: ${detail.slice(0, 200)}`);
   }
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new DeepgramError('API_ERROR', `Deepgram API ${res.status}: ${text.slice(0, 200)}`);
+    const detail = await res.text().catch(() => '');
+    clearTimeout(timeout);
+    throw new DeepgramError('API_ERROR', `Deepgram API ${res.status}: ${detail.slice(0, 200)}`);
   }
 
   // Réponse Deepgram : { results: { channels: [{ alternatives: [{ transcript, confidence }] }] } }
@@ -134,11 +138,13 @@ export async function transcribeWithDeepgram(
   try {
     json = await res.json();
   } catch (err) {
+    clearTimeout(timeout);
     throw new DeepgramError(
       'API_ERROR',
       `Deepgram JSON parse failed: ${err instanceof Error ? err.message : 'unknown'}`,
     );
   }
+  clearTimeout(timeout);
   const alt = (
     json as {
       results?: {

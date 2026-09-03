@@ -152,34 +152,69 @@ async function listVisiblePlaylistsCore(
   if (filters.theme) where.theme = filters.theme;
   if (filters.difficulty) where.difficulty = filters.difficulty.toUpperCase();
 
+  // perf/catalogue-trop-lourd — LES COMPTES SONT FAITS PAR LA BASE.
+  // On chargeait TOUTES les pistes de TOUTES les playlists (six colonnes par
+  // ligne, plusieurs milliers de lignes) uniquement pour en tirer quatre
+  // compteurs et une pochette de repli. Cette liste est servie par une adresse
+  // publique que la TV interroge : c'est un coût permanent, pour rien.
   const playlists = await prisma.officialPlaylist.findMany({
     where,
     orderBy: { updated_at: 'desc' },
-    include: {
-      _count: { select: { tracks: true } },
-      // fix/csp-meta-tag-and-cover-fallback — fetch position (pour trier 1ʳᵉ
-      // track) + cover_url + youtube_id pour permettre au frontend de servir
-      // un thumbnail YT direct si le backend /api/library-cover/:slug 404.
-      tracks: {
-        select: {
-          spotify_id: true,
-          youtube_id: true,
-          apple_music_id: true,
-          cover_url: true,
-          position: true,
-          difficulty: true,
-        },
-        orderBy: { position: 'asc' },
-      },
-    },
+    include: { _count: { select: { tracks: true } } },
   });
+  const idsPlaylists = playlists.map((p) => p.id);
+
+  // Un seul passage : nombre de pistes disposant de chaque source.
+  const comptesSources = idsPlaylists.length
+    ? await prisma.officialPlaylistTrack.groupBy({
+        by: ['playlist_id'],
+        where: { playlist_id: { in: idsPlaylists } },
+        _count: { spotify_id: true, youtube_id: true, apple_music_id: true },
+      })
+    : [];
+  const parSource = new Map(comptesSources.map((c) => [c.playlist_id, c._count]));
+
+  // Un seul passage : répartition par niveau.
+  const comptesNiveaux = idsPlaylists.length
+    ? await prisma.officialPlaylistTrack.groupBy({
+        by: ['playlist_id', 'difficulty'],
+        where: { playlist_id: { in: idsPlaylists } },
+        _count: { _all: true },
+      })
+    : [];
+  const parNiveau = new Map<string, { EASY: number; MEDIUM: number; EXPERT: number }>();
+  for (const ligne of comptesNiveaux) {
+    const courant = parNiveau.get(ligne.playlist_id) ?? { EASY: 0, MEDIUM: 0, EXPERT: 0 };
+    if (
+      ligne.difficulty === 'EASY' ||
+      ligne.difficulty === 'MEDIUM' ||
+      ligne.difficulty === 'EXPERT'
+    ) {
+      courant[ligne.difficulty] = ligne._count._all;
+    }
+    parNiveau.set(ligne.playlist_id, courant);
+  }
+
+  // Une seule ligne par playlist : la première piste porteuse d'une image.
+  const premieresImages = idsPlaylists.length
+    ? await prisma.officialPlaylistTrack.findMany({
+        where: {
+          playlist_id: { in: idsPlaylists },
+          OR: [{ cover_url: { not: null } }, { youtube_id: { not: null } }],
+        },
+        distinct: ['playlist_id'],
+        orderBy: [{ playlist_id: 'asc' }, { position: 'asc' }],
+        select: { playlist_id: true, cover_url: true, youtube_id: true },
+      })
+    : [];
+  const parImage = new Map(premieresImages.map((t) => [t.playlist_id, t]));
 
   return playlists.map((p) => {
-    const spotify_count = p.tracks.filter((t) => t.spotify_id !== null).length;
-    const youtube_count = p.tracks.filter((t) => t.youtube_id !== null).length;
-    const apple_music_count = p.tracks.filter((t) => t.apple_music_id !== null).length;
-    // 1ʳᵉ track avec cover_url OU youtube_id pour fallback frontend.
-    const firstWithMedia = p.tracks.find((t) => t.cover_url || t.youtube_id) ?? null;
+    const sources = parSource.get(p.id);
+    const spotify_count = sources?.spotify_id ?? 0;
+    const youtube_count = sources?.youtube_id ?? 0;
+    const apple_music_count = sources?.apple_music_id ?? 0;
+    const firstWithMedia = parImage.get(p.id) ?? null;
     return {
       id: p.id,
       slug: p.slug,
@@ -195,7 +230,7 @@ async function listVisiblePlaylistsCore(
       spotify_count,
       youtube_count,
       apple_music_count,
-      difficulty_counts: countDifficulties(p.tracks),
+      difficulty_counts: parNiveau.get(p.id) ?? { EASY: 0, MEDIUM: 0, EXPERT: 0 },
       locked: p.visibility === 'premium_only' && !premium,
       category: p.category,
       position_in_category: p.position_in_category,
@@ -245,58 +280,13 @@ export async function listVisiblePlaylistsForWorkspace(
  * détail tracks reste protégé). Pas de filtres : la TV affiche toute la grille.
  */
 export async function listPublicPlaylists(): Promise<LibraryPlaylistSummary[]> {
-  const playlists = await prisma.officialPlaylist.findMany({
-    where: { visibility: { in: ['public', 'premium_only'] } },
-    orderBy: { updated_at: 'desc' },
-    include: {
-      _count: { select: { tracks: true } },
-      tracks: {
-        select: {
-          spotify_id: true,
-          youtube_id: true,
-          apple_music_id: true,
-          cover_url: true,
-          position: true,
-          difficulty: true,
-        },
-        orderBy: { position: 'asc' },
-      },
-    },
-  });
-
-  return playlists.map((p) => {
-    const spotify_count = p.tracks.filter((t) => t.spotify_id !== null).length;
-    const youtube_count = p.tracks.filter((t) => t.youtube_id !== null).length;
-    const apple_music_count = p.tracks.filter((t) => t.apple_music_id !== null).length;
-    const firstWithMedia = p.tracks.find((t) => t.cover_url || t.youtube_id) ?? null;
-    return {
-      id: p.id,
-      slug: p.slug,
-      name_fr: p.name_fr,
-      name_en: p.name_en,
-      description_fr: p.description_fr,
-      description_en: p.description_en,
-      locale_primary: p.locale_primary,
-      theme: p.theme,
-      difficulty: p.difficulty,
-      visibility: p.visibility,
-      track_count: p._count.tracks,
-      spotify_count,
-      youtube_count,
-      apple_music_count,
-      difficulty_counts: countDifficulties(p.tracks),
-      // TV = vue anonyme (non-premium) → premium_only verrouillées.
-      locked: p.visibility === 'premium_only',
-      category: p.category,
-      position_in_category: p.position_in_category,
-      subtitle_fr: p.subtitle_fr,
-      subtitle_en: p.subtitle_en,
-      cover_fallback_url: firstWithMedia?.cover_url ?? null,
-      cover_fallback_youtube_id: firstWithMedia?.youtube_id ?? null,
-      guess_mode: p.guess_mode,
-      forced_source: p.forced_source,
-    };
-  });
+  // perf/catalogue-trop-lourd — CETTE LISTE ÉTAIT UNE COPIE DE LA PRÉCÉDENTE.
+  // Même requête, même projection, et le même défaut : toutes les pistes de
+  // toutes les playlists chargées pour en tirer quatre compteurs. Comme la
+  // vue publique est exactement celle d'un compte non-premium (les playlists
+  // réservées apparaissent verrouillées), on réutilise le cœur commun, qui
+  // fait désormais compter la base.
+  return listVisiblePlaylistsCore(false);
 }
 
 /**

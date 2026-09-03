@@ -41,18 +41,29 @@ export function VoiceAnalyticsPage(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // fix/chiffres-de-la-mauvaise-periode — LA RÉPONSE PÉRIMÉE EST IGNORÉE.
+  // Passer de 90 jours à 1 jour lançait deux requêtes ; la plus lourde
+  // répondait en dernier et écrasait l'affichage : le sélecteur indiquait
+  // « 1 j » et les coûts affichés étaient ceux de 90 jours. Des décisions de
+  // budget se prenaient sur ces chiffres.
   useEffect(() => {
+    let annule = false;
     setLoading(true);
     setError(null);
     void getVoiceAnalytics(days)
       .then((d) => {
+        if (annule) return;
         setData(d);
         setLoading(false);
       })
       .catch((err: unknown) => {
+        if (annule) return;
         setError((err as Error).message);
         setLoading(false);
       });
+    return () => {
+      annule = true;
+    };
   }, [days]);
 
   const fmtPct = (n: number): string => `${(n * 100).toFixed(1)}%`;

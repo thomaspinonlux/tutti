@@ -128,18 +128,42 @@ function MembersTab(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
-  const handleApprove = async (id: string): Promise<void> => {
-    await approveMember(id);
-    await refresh();
+  // fix/actions-admin-muettes — GARDE + MESSAGE.
+  // Ces actions n'avaient ni indicateur, ni verrou, ni capture d'erreur : un
+  // double clic envoyait deux demandes, et un échec (droits, réseau) ne se
+  // voyait nulle part — la liste ne bougeait pas et on croyait le clic ignoré.
+  const [actionEnCours, setActionEnCours] = useState(false);
+  const executer = async (quoi: string, action: () => Promise<unknown>): Promise<void> => {
+    if (actionEnCours) return;
+    setActionEnCours(true);
+    try {
+      await action();
+      await refresh();
+    } catch (err: unknown) {
+      console.error(`[super-admin] ${quoi} en échec :`, err);
+      window.setTimeout(() => setMessageAction(null), 6000);
+      setMessageAction(`${quoi} : ${(err as Error).message}`);
+    } finally {
+      setActionEnCours(false);
+    }
   };
+  const [messageAction, setMessageAction] = useState<string | null>(null);
+
+  const handleApprove = async (id: string): Promise<void> =>
+    executer('Approbation', () => approveMember(id));
   const handleReject = async (id: string): Promise<void> => {
     if (!window.confirm(t('admin.confirmReject'))) return;
-    await rejectMember(id);
-    await refresh();
+    return executer('Refus', () => rejectMember(id));
   };
 
   return (
     <Card size="md">
+      {/* fix/actions-admin-muettes — l'échec s'affiche au lieu de disparaître. */}
+      {messageAction && (
+        <p role="alert" className="mb-3 text-sm text-raspberry">
+          {messageAction}
+        </p>
+      )}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <p className="font-mono text-xs uppercase tracking-wider text-ink-soft">
           {t('admin.membersHeader')}
@@ -248,9 +272,20 @@ function WhitelistTab(): JSX.Element {
     }
   };
 
+  // fix/actions-admin-muettes — l'échec ne disparaît plus en silence.
+  const [retraitEnCours, setRetraitEnCours] = useState(false);
   const handleRemove = async (id: string): Promise<void> => {
-    await removeWhitelist(id);
-    await refresh();
+    if (retraitEnCours) return;
+    setRetraitEnCours(true);
+    try {
+      await removeWhitelist(id);
+      await refresh();
+    } catch (err: unknown) {
+      console.error('[super-admin] retrait de la liste en échec :', err);
+      window.alert(`Retrait impossible : ${(err as Error).message}`);
+    } finally {
+      setRetraitEnCours(false);
+    }
   };
 
   return (
@@ -347,10 +382,21 @@ function InvitationsTab(): JSX.Element {
     }
   };
 
+  // fix/actions-admin-muettes — l'échec ne disparaît plus en silence.
+  const [suppressionEnCours, setSuppressionEnCours] = useState(false);
   const handleDelete = async (id: string): Promise<void> => {
+    if (suppressionEnCours) return;
     if (!window.confirm(t('admin.confirmDelete'))) return;
-    await deleteInvitation(id);
-    await refresh();
+    setSuppressionEnCours(true);
+    try {
+      await deleteInvitation(id);
+      await refresh();
+    } catch (err: unknown) {
+      console.error('[super-admin] suppression du code en échec :', err);
+      window.alert(`Suppression impossible : ${(err as Error).message}`);
+    } finally {
+      setSuppressionEnCours(false);
+    }
   };
 
   return (

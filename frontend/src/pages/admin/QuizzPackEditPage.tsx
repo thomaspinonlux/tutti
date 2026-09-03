@@ -142,8 +142,17 @@ export function QuizzPackEditPage(): JSX.Element {
   const handleDelete = async (): Promise<void> => {
     if (!pack) return;
     if (!window.confirm(t('quizz.deleteConfirm'))) return;
-    await deleteQuestionSet(pack.id);
-    navigate('/admin/quizz', { replace: true });
+    // fix/suppression-sans-reponse — L'ÉCHEC SE DIT.
+    // Sans capture, un refus du serveur (playlist utilisée par une soirée en
+    // cours, par exemple) laissait la page strictement inchangée : on
+    // reconfirmait trois fois en croyant que le clic ne passait pas.
+    try {
+      await deleteQuestionSet(pack.id);
+      navigate('/admin/quizz', { replace: true });
+    } catch (err: unknown) {
+      console.error('[Pack quiz] suppression en échec :', err);
+      window.alert(`Suppression impossible : ${(err as Error).message}`);
+    }
   };
 
   const handleReorder = async (next: Question[]): Promise<void> => {

@@ -77,10 +77,15 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
             call.reject("url requise")
             return
         }
-        pendingURL = url
-        pendingNativeApiBase = nil
-        pendingNativeWorkspaceId = nil
+        // fix/tv-qui-rouvre-en-mode-web — CES TROIS VALEURS SONT ÉCRITES SUR LE
+        // FIL PRINCIPAL. Elles étaient posées depuis la file d'arrière-plan de
+        // Capacitor et relues sur le fil principal à la reconnexion HDMI : au
+        // rebranchement juste après un affichage natif, la TV pouvait rouvrir
+        // l'ancienne adresse web, ou ne rien ouvrir du tout.
         DispatchQueue.main.async {
+            self.pendingURL = url
+            self.pendingNativeApiBase = nil
+            self.pendingNativeWorkspaceId = nil
             let external = UIScreen.screens.first { $0 != UIScreen.main }
             guard let screen = external else {
                 // Pas d'écran externe pour l'instant : on mémorise l'URL, la
@@ -107,10 +112,12 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
             call.reject("apiBase et workspaceId requis")
             return
         }
-        pendingURL = nil
-        pendingNativeApiBase = apiBase
-        pendingNativeWorkspaceId = workspaceId
+        // fix/tv-qui-rouvre-en-mode-web — cf. present() : écriture sur le fil
+        // principal, celui-là même qui les relit à la reconnexion HDMI.
         DispatchQueue.main.async {
+            self.pendingURL = nil
+            self.pendingNativeApiBase = apiBase
+            self.pendingNativeWorkspaceId = workspaceId
             guard let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) else {
                 call.resolve(["presented": false])
                 return
@@ -142,10 +149,12 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     }
 
     @objc func dismiss(_ call: CAPPluginCall) {
-        pendingURL = nil
-        pendingNativeApiBase = nil
-        pendingNativeWorkspaceId = nil
+        // fix/tv-qui-rouvre-en-mode-web — cf. present() : écriture sur le fil
+        // principal, comme les deux autres points d'entrée.
         DispatchQueue.main.async {
+            self.pendingURL = nil
+            self.pendingNativeApiBase = nil
+            self.pendingNativeWorkspaceId = nil
             self.tearDown()
             call.resolve()
         }

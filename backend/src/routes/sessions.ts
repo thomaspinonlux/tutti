@@ -44,7 +44,10 @@ import { requireWorkspace } from '../middleware/tenant.js';
 import { generateUniqueShortCode } from '../lib/shortCode.js';
 import { generateUniqueTvCode } from '../lib/tvCode.js';
 import { broadcastToSession } from '../socket/index.js';
-import { getActiveTrack } from '../lib/gameState.js';
+import { getActiveTrack, clearActiveTrack } from '../lib/gameState.js';
+import { clearActiveQuestion } from '../lib/gameStateQuizz.js';
+import { clearAutoReveal } from '../lib/gameplayQuizzCore.js';
+import { cancelPhase2Timer } from './gameplayParticipant.js';
 import {
   DEFAULT_SESSION_SIZE,
   getEffectiveRoundTrackCount,
@@ -938,6 +941,20 @@ router.post(
     }
     try {
       // Termine d'abord le round courant éventuel
+      // fix/manche-fantome-en-memoire — L'ÉTAT MÉMOIRE EST PURGÉ AUSSI.
+      // Terminer ne fermait la manche qu'en base : son état (buzz, bonnes
+      // réponses) restait en mémoire du serveur pour toujours, et un minuteur
+      // de fin de phase pouvait encore diffuser sur une soirée close.
+      const manchesEnCours = await prisma.sessionRound.findMany({
+        where: { session_id: req.params.id, status: 'PLAYING' },
+        select: { id: true },
+      });
+      for (const m of manchesEnCours) {
+        clearActiveTrack(m.id);
+        cancelPhase2Timer(m.id);
+      }
+      clearAutoReveal(req.params.id);
+      clearActiveQuestion(req.params.id);
       await prisma.sessionRound.updateMany({
         where: { session_id: req.params.id, status: 'PLAYING' },
         data: { status: 'ENDED', ended_at: new Date() },
@@ -1000,6 +1017,20 @@ router.post(
     }
     try {
       console.info(`[Cleanup] Abandoning session ${own.id} (admin returned to dashboard)`);
+      // fix/manche-fantome-en-memoire — L'ÉTAT MÉMOIRE EST PURGÉ AUSSI.
+      // Terminer ne fermait la manche qu'en base : son état (buzz, bonnes
+      // réponses) restait en mémoire du serveur pour toujours, et un minuteur
+      // de fin de phase pouvait encore diffuser sur une soirée close.
+      const manchesEnCours = await prisma.sessionRound.findMany({
+        where: { session_id: req.params.id, status: 'PLAYING' },
+        select: { id: true },
+      });
+      for (const m of manchesEnCours) {
+        clearActiveTrack(m.id);
+        cancelPhase2Timer(m.id);
+      }
+      clearAutoReveal(req.params.id);
+      clearActiveQuestion(req.params.id);
       await prisma.sessionRound.updateMany({
         where: { session_id: req.params.id, status: 'PLAYING' },
         data: { status: 'ENDED', ended_at: new Date() },

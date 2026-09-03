@@ -231,7 +231,10 @@ export function matchTranscript(input: MatchInput): MatchResult {
   // n-grams 1 à 5 mots — couvre "stromae", "alors on danse", titres
   // composés type "All You Need is Love".
   const ngrams = generateNgrams(tokens, 5);
-  console.info('[Voice Match] N-grams testés:', JSON.stringify(ngrams));
+  // fix/journal-bavard — on n'écrit plus la liste complète des combinaisons
+  // testées (jusqu'à deux cents par buzz) : ces lignes sont facturées et, en
+  // rafale de buzz, elles noyaient les vraies erreurs.
+  console.info(`[Voice Match] ${ngrams.length} combinaisons testées`);
 
   const artistAliases = [input.artist.canonical_name, ...input.artist.aliases]
     .map(normalize)

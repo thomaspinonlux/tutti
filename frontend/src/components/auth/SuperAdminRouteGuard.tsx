@@ -24,7 +24,27 @@ import { useEstablishment, type EstablishmentContext } from '../../pages/admin/A
 
 export function SuperAdminRouteGuard(): JSX.Element {
   const ctx = useEstablishment();
-  const { me } = ctx;
+  const { me, error } = ctx;
+  // fix/pages-admin-bloquees-sur-chargement — L'ÉCHEC SE VOIT ET SE REJOUE.
+  // Quand la lecture du compte échouait, elle n'était jamais retentée : toutes
+  // les pages d'administration restaient sur « Chargement… » indéfiniment,
+  // sans message, jusqu'à ce qu'on recharge l'onglet à la main.
+  if (!me && error) {
+    return (
+      <div className="space-y-3">
+        <p role="alert" className="text-raspberry">
+          Impossible de lire votre compte : {error}
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="rounded-full border border-ink px-4 py-2 text-sm"
+        >
+          🔄 Réessayer
+        </button>
+      </div>
+    );
+  }
   if (!me) {
     return <p className="font-mono text-ink-soft animate-fade-in">Chargement…</p>;
   }

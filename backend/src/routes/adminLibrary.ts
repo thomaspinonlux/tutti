@@ -154,10 +154,13 @@ router.post(
 // aux super-admins de corriger manuellement les manqués de l'import auto.
 
 router.get('/tracks/unplayable', async (_req: Request, res: Response): Promise<void> => {
+  // perf/liste-sans-limite — un plafond, sinon la réponse grossit avec le
+  // catalogue et le tri se fait sur une table jointe, sans borne.
   const tracks = await prisma.officialPlaylistTrack.findMany({
     where: {
       OR: [{ youtube_id: null }, { is_playable: false }],
     },
+    take: 1000,
     orderBy: [{ playlist: { slug: 'asc' } }, { position: 'asc' }],
     include: {
       playlist: { select: { id: true, slug: true, name_fr: true } },

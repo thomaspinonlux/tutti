@@ -91,7 +91,11 @@ export async function fetchYtVideosBatch(
     id: ids.join(','),
     key: apiKey,
   });
-  const res = await fetch(`${YT_VIDEOS_ENDPOINT}?${params.toString()}`);
+  // fix/verification-sans-fin — sans borne, un service YouTube lent laissait la
+  // requête de vérification ouverte plusieurs minutes.
+  const res = await fetch(`${YT_VIDEOS_ENDPOINT}?${params.toString()}`, {
+    signal: AbortSignal.timeout(10_000),
+  });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new Error(`YouTube API ${res.status}: ${body.slice(0, 300)}`);

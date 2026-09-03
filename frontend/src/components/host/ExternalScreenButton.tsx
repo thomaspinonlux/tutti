@@ -61,7 +61,22 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
     setShowPrompt(false);
   };
 
+  // fix/deux-fenetres-sur-la-tv — GARDE ANTI-DOUBLE-APPUI.
+  // L'ouverture prend environ une seconde sur iPad et rien ne changeait à
+  // l'écran : l'animateur appuyait deux fois et deux fenêtres s'ouvraient sur
+  // la TV, la seconde volant l'affichage à la première.
+  const [ouvertureEnCours, setOuvertureEnCours] = useState(false);
   const handleManualOpen = async (): Promise<void> => {
+    if (ouvertureEnCours) return;
+    setOuvertureEnCours(true);
+    try {
+      await ouvrirEcran();
+    } finally {
+      setOuvertureEnCours(false);
+    }
+  };
+
+  const ouvrirEcran = async (): Promise<void> => {
     // PWA standalone + no external screen → window.open ne s'ouvrira pas
     // dans une vraie nouvelle fenêtre. Afficher un modal d'info au lieu
     // de naviguer hors host.
@@ -79,6 +94,7 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
         variant="ghost"
         size="sm"
         onClick={() => void handleManualOpen()}
+        disabled={ouvertureEnCours}
         title={t('host.externalScreen.openHint')}
       >
         📺 {t('host.externalScreen.openButton')}

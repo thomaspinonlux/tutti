@@ -62,6 +62,8 @@ export function useAppleMusicAudioSync({
   const appleStatus = apple.status;
   /** Vrai tant que l'effet n'a pas encore coupé le son après désactivation. */
   const wasEnabledRef = useRef(false);
+  // fix/ancien-morceau-qui-revient — numéro d'ordre du dernier lancement.
+  const jetonLancementRef = useRef(0);
 
   useEffect(() => {
     const apple = appleRef.current;
@@ -120,9 +122,18 @@ export function useAppleMusicAudioSync({
     // Restart du même track (started_at change) → toujours un play complet.
     if (trackIdChanged || startedAtChanged) {
       const target = currentTrack.provider_track_id;
+      // fix/ancien-morceau-qui-revient — LE LANCEMENT LE PLUS RÉCENT GAGNE.
+      // Rien ne vérifiait, après l'attente, que le morceau visé était toujours
+      // le morceau courant : quand l'animateur enchaînait deux titres en moins
+      // d'une seconde, la demande la plus ancienne pouvait aboutir en dernier
+      // et imposer le morceau précédent. La salle entendait un titre, la
+      // console et la TV en affichaient un autre.
+      const jeton = ++jetonLancementRef.current;
       void (async () => {
         const instant = trackIdChanged && (await apple.playPrepared(target));
+        if (jeton !== jetonLancementRef.current) return;
         if (!instant) await apple.play(target);
+        if (jeton !== jetonLancementRef.current) return;
         lastPreparedRef.current = null;
       })();
       prevTrackIdRef.current = trackId;

@@ -7,7 +7,7 @@
  * une track importée en apple_music jouera en apple_music, pas de mix).
  */
 
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import type { MusicProviderId, TrackResult } from '@tutti/shared';
 import { Input } from '../../../ui/index.js';
 import { searchTracks as searchSpotify } from '../../../../lib/spotifyApi.js';
@@ -101,7 +101,18 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
     setYearMax(max);
   };
 
-  const runSpotify = async (nextOffset: number, append: boolean): Promise<void> => {
+  // fix/resultats-de-la-frappe-precedente — LA DERNIÈRE DEMANDE GAGNE.
+  // La recherche se déclenche toute seule 500 ms après la frappe : deux
+  // demandes se croisaient, et si la plus ancienne répondait en dernier, la
+  // liste affichait les résultats de « stro » alors que le champ contenait
+  // « stromae ». Chaque écriture est désormais estampillée.
+  const numeroRechercheRef = useRef(0);
+
+  const runSpotify = async (
+    nextOffset: number,
+    append: boolean,
+    numero = numeroRechercheRef.current,
+  ): Promise<void> => {
     const res = await searchSpotify({
       artist: artist.trim() || undefined,
       track: track.trim() || undefined,
@@ -111,13 +122,14 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
       limit: PAGE_SIZE,
       offset: nextOffset,
     });
+    if (numero !== numeroRechercheRef.current) return;
     setTracks((prev) => (append ? [...prev, ...res.items] : res.items));
     setTotal(res.total);
     setHasNext(res.next !== null || res.items.length === PAGE_SIZE);
     setOffset(nextOffset);
   };
 
-  const runFreeSearch = async (): Promise<void> => {
+  const runFreeSearch = async (numero = numeroRechercheRef.current): Promise<void> => {
     const q = freeQuery.trim();
     if (q.length < 2) {
       setTracks([]);
@@ -127,6 +139,7 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
     // provider ∈ { youtube, apple_music } → endpoint générique, provider écrit
     // tel quel sur les TrackResult (donc sur la track importée : étanchéité).
     const res = await searchGeneric(q, { provider, limit: 25 });
+    if (numero !== numeroRechercheRef.current) return;
     setTracks(res.results);
     setTotal(res.results.length);
     setHasNext(false); // YouTube / Apple : pas de pagination V1
@@ -134,6 +147,8 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
   };
 
   const submit = async (e?: FormEvent): Promise<void> => {
+    // fix/resultats-de-la-frappe-precedente — la dernière demande gagne.
+    const numero = ++numeroRechercheRef.current;
     e?.preventDefault();
     setLoading(true);
     setError(null);
@@ -143,15 +158,15 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
           setLoading(false);
           return;
         }
-        await runSpotify(0, false);
+        await runSpotify(0, false, numero);
       } else {
-        await runFreeSearch();
+        await runFreeSearch(numero);
       }
       setHasSearched(true);
     } catch (err: unknown) {
-      setError((err as Error).message);
+      if (numero === numeroRechercheRef.current) setError((err as Error).message);
     } finally {
-      setLoading(false);
+      if (numero === numeroRechercheRef.current) setLoading(false);
     }
   };
 

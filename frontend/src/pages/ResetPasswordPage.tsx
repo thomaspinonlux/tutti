@@ -5,7 +5,7 @@
  * On affiche un form pour saisir le nouveau mot de passe → updateUser.
  */
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase.js';
@@ -13,6 +13,13 @@ import { LanguageSwitch } from '../components/LanguageSwitch.js';
 import { Button, Card, Input, MultiColorBar, TitleHandwritten } from '../components/ui/index.js';
 
 export function ResetPasswordPage(): JSX.Element {
+  // fix/redirection-qui-arrache — minuteur de renvoi, annulé au démontage.
+  const redirectionRef = useRef<number | null>(null);
+  useEffect(() => {
+    return () => {
+      if (redirectionRef.current !== null) window.clearTimeout(redirectionRef.current);
+    };
+  }, []);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
@@ -48,7 +55,10 @@ export function ResetPasswordPage(): JSX.Element {
         return;
       }
       setDone(true);
-      window.setTimeout(() => navigate('/admin', { replace: true }), 1500);
+      // fix/redirection-qui-arrache — le renvoi est annulable.
+      // Ce minuteur survivait au départ de la page : l'utilisateur qui cliquait
+      // un lien dans la seconde et demie était arraché de sa nouvelle page.
+      redirectionRef.current = window.setTimeout(() => navigate('/admin', { replace: true }), 1500);
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally {

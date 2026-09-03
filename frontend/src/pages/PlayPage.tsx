@@ -765,7 +765,22 @@ export function PlayPage(): JSX.Element {
     reason?: string;
   }): Promise<void> => {
     if (!identity) return;
-    await masterAdjustPoints(identity.sessionId, identity.token, args);
+    // fix/points-attribues-en-double — GARDE ET MESSAGE.
+    // Contrairement à toutes les autres actions de la télécommande, celle-ci ne
+    // passait pas par le verrou commun : rien ne bougeait à l'écran (le score
+    // n'arrive qu'au message suivant), l'animateur retapait, et le joueur
+    // recevait deux ou trois fois les points. Un échec, lui, ne se voyait nulle
+    // part — on croyait avoir donné des points qui n'existaient pas.
+    if (busy) return;
+    setBusy(true);
+    try {
+      await masterAdjustPoints(identity.sessionId, identity.token, args);
+    } catch (err: unknown) {
+      console.error('[Télécommande] ajustement de points en échec :', err);
+      setError('Points non attribués — réessaie');
+    } finally {
+      setBusy(false);
+    }
   };
 
   // ── Render ─────────────────────────────────────────────────────────────

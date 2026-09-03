@@ -164,15 +164,29 @@ export function SettingsPage(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (loading || !establishment) {
-    return <p className="font-mono text-ink-soft">{t('common.loading')}</p>;
-  }
+  // fix/reglages-bloques-sur-chargement — L'ERREUR PASSE AVANT.
+  // Quand la lecture de l'établissement échouait, « chargement » l'emportait
+  // et la branche d'erreur juste en dessous n'était JAMAIS atteinte : la page
+  // restait sur « Chargement… » pour toujours, sans message ni moyen de
+  // réessayer.
   if (fetchError) {
     return (
-      <p role="alert" className="text-raspberry">
-        {t('common.error')} : {fetchError}
-      </p>
+      <div className="space-y-3">
+        <p role="alert" className="text-raspberry">
+          {t('common.error')} : {fetchError}
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="rounded-full border border-ink px-4 py-2 text-sm"
+        >
+          🔄 Réessayer
+        </button>
+      </div>
     );
+  }
+  if (loading || !establishment) {
+    return <p className="font-mono text-ink-soft">{t('common.loading')}</p>;
   }
 
   const handleSubmit = async (e: FormEvent): Promise<void> => {
@@ -270,6 +284,13 @@ export function SettingsPage(): JSX.Element {
       await disconnectSpotify();
       setSpotify({ connected: false, account_email: null, expires_at: null, connected_at: null });
       await refetch(); // peut basculer activeProvider de spotify→demo côté backend
+    } catch (err: unknown) {
+      // fix/bascules-muettes — L'ÉCHEC SE DIT.
+      // Sans capture, une bascule refusée par le serveur laissait la case
+      // revenir toute seule à sa valeur d'origine, sans un mot : on cochait,
+      // ça revenait, on concluait que « ça ne marche pas ».
+      console.error('[Réglages] action en échec :', err);
+      setSaveState('error');
     } finally {
       setSpotifyBusy(false);
     }
@@ -297,6 +318,13 @@ export function SettingsPage(): JSX.Element {
       await disconnectAppleMusic();
       setApple((a) => (a ? { ...a, connected: false } : a));
       await refetch();
+    } catch (err: unknown) {
+      // fix/bascules-muettes — L'ÉCHEC SE DIT.
+      // Sans capture, une bascule refusée par le serveur laissait la case
+      // revenir toute seule à sa valeur d'origine, sans un mot : on cochait,
+      // ça revenait, on concluait que « ça ne marche pas ».
+      console.error('[Réglages] action en échec :', err);
+      setSaveState('error');
     } finally {
       setAppleBusy(false);
     }
@@ -334,6 +362,13 @@ export function SettingsPage(): JSX.Element {
     try {
       await disconnectYouTube();
       setYoutube({ connected: false });
+    } catch (err: unknown) {
+      // fix/bascules-muettes — L'ÉCHEC SE DIT.
+      // Sans capture, une bascule refusée par le serveur laissait la case
+      // revenir toute seule à sa valeur d'origine, sans un mot : on cochait,
+      // ça revenait, on concluait que « ça ne marche pas ».
+      console.error('[Réglages] action en échec :', err);
+      setSaveState('error');
     } finally {
       setYoutubeBusy(false);
     }
@@ -344,6 +379,13 @@ export function SettingsPage(): JSX.Element {
     try {
       await setYouTubePremium(next);
       setYoutube((y) => (y ? { ...y, premium: next } : y));
+    } catch (err: unknown) {
+      // fix/bascules-muettes — L'ÉCHEC SE DIT.
+      // Sans capture, une bascule refusée par le serveur laissait la case
+      // revenir toute seule à sa valeur d'origine, sans un mot : on cochait,
+      // ça revenait, on concluait que « ça ne marche pas ».
+      console.error('[Réglages] action en échec :', err);
+      setSaveState('error');
     } finally {
       setYoutubeBusy(false);
     }

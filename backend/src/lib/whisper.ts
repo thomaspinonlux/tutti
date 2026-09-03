@@ -102,23 +102,33 @@ export async function transcribeAudio(args: TranscribeArgs): Promise<TranscribeR
       'TIMEOUT',
       `Whisper injoignable : ${err instanceof Error ? err.message : 'inconnu'}`,
     );
-  } finally {
-    clearTimeout(minuteur);
   }
+  // fix/reponse-qui-traine — LE DÉLAI DE GARDE COUVRE AUSSI LA LECTURE.
+  // Il était désarmé dès l'arrivée des en-têtes : un service qui répond puis
+  // laisse traîner le corps échappait complètement à la limite de 8 secondes,
+  // et le téléphone du joueur restait sur « analyse ».
 
   if (res.status === 429) {
+    clearTimeout(minuteur);
     throw new WhisperError('RATE_LIMITED', 'Whisper API rate limit atteint');
   }
   if (res.status === 400) {
-    const text = await res.text().catch(() => '');
-    throw new WhisperError('INVALID_AUDIO', `Audio invalide: ${text.slice(0, 200)}`);
+    const detail = await res.text().catch(() => '');
+    clearTimeout(minuteur);
+    throw new WhisperError('INVALID_AUDIO', `Audio invalide: ${detail.slice(0, 200)}`);
   }
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new WhisperError('API_ERROR', `Whisper API ${res.status}: ${text.slice(0, 200)}`);
+    const detail = await res.text().catch(() => '');
+    clearTimeout(minuteur);
+    throw new WhisperError('API_ERROR', `Whisper API ${res.status}: ${detail.slice(0, 200)}`);
   }
 
-  const text = (await res.text()).trim();
+  let text: string;
+  try {
+    text = (await res.text()).trim();
+  } finally {
+    clearTimeout(minuteur);
+  }
   const elapsedMs = Date.now() - startMs;
   console.info(
     `[Whisper] ✓ transcribe done | latency=${elapsedMs}ms | text="${text.slice(0, 80)}${text.length > 80 ? '…' : ''}"`,

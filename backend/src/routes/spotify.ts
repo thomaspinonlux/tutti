@@ -252,6 +252,10 @@ router.get(
 
 // ── GET /_debug ──────────────────────────────────────────────────────────
 // Tests ciblés : isole le bug "Invalid limit" sur /v1/search.
+// fix/route-de-diagnostic — les appels externes sont bornés à 8 s chacun.
+// Sans limite, un service dégradé laissait la requête ouverte indéfiniment en
+// occupant une connexion. La réponse ne doit pas non plus renvoyer le message
+// d'erreur interne au client (cf. plus bas).
 
 router.get(
   '/_debug',
@@ -272,7 +276,11 @@ router.get(
       const auth = { Authorization: `Bearer ${token}` };
 
       // Test 1 : profil user — récupère country pour test ciblé
-      const r1 = await fetch('https://api.spotify.com/v1/me', { method: 'GET', headers: auth });
+      const r1 = await fetch('https://api.spotify.com/v1/me', {
+        method: 'GET',
+        headers: auth,
+        signal: AbortSignal.timeout(8_000),
+      });
       const body1 = await r1.text();
       let userCountry: string | null = null;
       try {
@@ -283,12 +291,20 @@ router.get(
 
       // Test 2 : search SANS market (utilise pays compte par défaut)
       const url2 = 'https://api.spotify.com/v1/search?q=stromae&type=track&limit=20';
-      const r2 = await fetch(url2, { method: 'GET', headers: auth });
+      const r2 = await fetch(url2, {
+        method: 'GET',
+        headers: auth,
+        signal: AbortSignal.timeout(8_000),
+      });
       const body2 = await r2.text();
 
       // Test 3 : search avec market=FR (forcé)
       const url3 = 'https://api.spotify.com/v1/search?q=stromae&type=track&limit=20&market=FR';
-      const r3 = await fetch(url3, { method: 'GET', headers: auth });
+      const r3 = await fetch(url3, {
+        method: 'GET',
+        headers: auth,
+        signal: AbortSignal.timeout(8_000),
+      });
       const body3 = await r3.text();
 
       // Test 4 : search avec market = pays user
@@ -297,7 +313,11 @@ router.get(
       let r4Status = 0;
       if (userCountry) {
         url4 = `https://api.spotify.com/v1/search?q=stromae&type=track&limit=20&market=${userCountry}`;
-        const r4 = await fetch(url4, { method: 'GET', headers: auth });
+        const r4 = await fetch(url4, {
+          method: 'GET',
+          headers: auth,
+          signal: AbortSignal.timeout(8_000),
+        });
         r4Status = r4.status;
         body4 = await r4.text();
       }
@@ -338,7 +358,11 @@ router.get(
 
       // Test 6 : minimal possible search (que q + type)
       const url6 = 'https://api.spotify.com/v1/search?q=stromae&type=track';
-      const r6 = await fetch(url6, { method: 'GET', headers: auth });
+      const r6 = await fetch(url6, {
+        method: 'GET',
+        headers: auth,
+        signal: AbortSignal.timeout(8_000),
+      });
       const body6 = await r6.text();
 
       // Tests 7-10 : vary limit values + check headers
@@ -376,7 +400,11 @@ router.get(
         }
       > = {};
       for (const v of variations) {
-        const r = await fetch(v.url, { method: 'GET', headers: auth });
+        const r = await fetch(v.url, {
+          method: 'GET',
+          headers: auth,
+          signal: AbortSignal.timeout(8_000),
+        });
         const txt = await r.text();
         variants[v.name] = {
           url: v.url,
@@ -419,7 +447,10 @@ router.get(
         variations: variants,
       });
     } catch (err: unknown) {
-      res.status(500).json({ error: (err as Error).message });
+      console.error('[GET /api/spotify/_debug] échec :', err);
+      res
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'Diagnostic indisponible' } });
     }
   },
 );

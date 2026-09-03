@@ -22,6 +22,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { borner } from './borner.js';
 
 const SUPPORTED_MIME_TYPES = [
   // iOS Safari produit AAC dans un container MP4. Deepgram Nova-3 accepte.
@@ -112,7 +113,17 @@ export function useMicStream(): MicStreamApi {
     initPromiseRef.current = (async (): Promise<void> => {
       try {
         console.info('[Voice] useMicStream getUserMedia() called');
-        const s = await navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS);
+        // fix/attente-du-micro-sans-issue — LA DEMANDE EST BORNÉE.
+        // Tant que la boîte de dialogue du système n'est pas tranchée, cette
+        // promesse reste en attente : si le joueur bascule vers une autre
+        // application au mauvais moment, l'écran restait sur l'attente
+        // d'autorisation et le bouton « Autoriser le micro » n'avait plus aucun
+        // effet, puisqu'il retombait sur la même attente bloquée.
+        const s = await borner(
+          navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS),
+          30_000,
+          'Autorisation du micro',
+        );
         const labels = s.getTracks().map((t) => t.label || '(no-label)');
         const settings = s.getAudioTracks()[0]?.getSettings?.() ?? {};
         console.info(
@@ -159,6 +170,11 @@ export function useMicStream(): MicStreamApi {
     stopStream();
     setPermitted('pending');
     setError(null);
+    // fix/attente-du-micro-sans-issue — on repart de zéro.
+    // Cette relance récupérait la promesse en cours, donc, si celle-ci était
+    // bloquée, elle attendait exactement la même chose : la « relance » ne
+    // relançait rien.
+    initPromiseRef.current = null;
     await initOnce();
   }, [initOnce, stopStream]);
 

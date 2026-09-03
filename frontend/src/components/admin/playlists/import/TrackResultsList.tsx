@@ -6,7 +6,7 @@
  * Utilisée par les 3 modes (search-tracks / my-playlists / public-playlists).
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { TrackResult } from '@tutti/shared';
 import { Button, Card } from '../../../ui/index.js';
 import {
@@ -89,7 +89,18 @@ export function TrackResultsList({
 
   // Reset sélection quand tracks ou filterOptions changent (pré-sélectionne
   // automatiquement les tracks qui passent les filtres).
+  // fix/coches-effacees — LA PRÉ-SÉLECTION NE S'APPLIQUE PAS À CONTRETEMPS.
+  // Elle était recalculée à l'arrivée des doublons, c'est-à-dire une seconde
+  // après l'affichage : tout ce que l'utilisateur avait décoché entre-temps
+  // était remis, sans un mot, et il importait des morceaux qu'il venait
+  // explicitement de retirer. On ne recalcule que sur un vrai changement de
+  // liste ou de filtres, pas sur l'arrivée des doublons.
+  const empreinteAppliquee = useRef<string>('');
   useEffect(() => {
+    const empreinte =
+      tracks.map((t) => t.provider_track_id).join('|') + '::' + JSON.stringify(filterOptions);
+    if (empreinteAppliquee.current === empreinte) return;
+    empreinteAppliquee.current = empreinte;
     const next = new Set<string>();
     tracks.forEach((t) => {
       const flags = flagsMap.get(t.provider_track_id);

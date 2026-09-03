@@ -70,9 +70,27 @@ type SessionWithIncludes = NonNullable<
 >;
 
 function serializeSession(session: SessionWithIncludes) {
+  // fix/donnees-de-trop-envoyees-aux-joueurs — ON NE RECOPIE PLUS TOUT.
+  // Cette copie intégrale envoyait à chaque joueur des champs que le contrat
+  // client ne déclare même pas : l'empreinte navigateur des autres joueurs
+  // (donnée d'identification, jamais destinée à quitter le serveur) et, pour
+  // chaque manche, la liste ORDONNÉE des morceaux tirés — c'est-à-dire la
+  // réponse au blind test, dans un fichier dont tout le reste est bâti contre
+  // la triche.
+  const { participants, rounds, ...reste } = session;
   return {
-    ...session,
-    rounds: session.rounds.map((r) => ({
+    ...reste,
+    participants: participants.map((p) => ({
+      id: p.id,
+      session_id: p.session_id,
+      pseudo: p.pseudo,
+      team_id: p.team_id,
+      is_master: p.is_master,
+      role: p.role,
+      is_kicked: p.is_kicked,
+      joined_at: p.joined_at,
+    })),
+    rounds: rounds.map(({ selected_track_ids: _tirage, ...r }) => ({
       ...r,
       playlist: {
         id: r.playlist.id,
@@ -262,8 +280,18 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
           // caviardé selon son rôle tant que la réponse n'est pas publique.
           const me = await prisma.participant.findUnique({
             where: { id: identity.participantId },
-            select: { role: true },
+            select: { role: true, is_kicked: true },
           });
+          // fix/joueur-exclu-toujours-connecte — L'EXCLUSION EST APPLIQUÉE ICI.
+          // Exclure ne posait qu'un drapeau en base : le jeton du joueur restait
+          // valable 24 h et il lui suffisait de rouvrir la page pour revenir
+          // dans la salle et continuer de recevoir les révélations — donc
+          // d'annoncer les réponses à voix haute.
+          if (me?.is_kicked) {
+            await socket.leave(roomName(sessionId));
+            ack?.({ ok: false, error: 'PARTICIPANT_EXCLU' });
+            return;
+          }
           const myRole = me?.role ?? 'PLAYER';
           if (myRole === 'ANIMATOR_FULL') {
             await socket.join(answersRoomName(sessionId));
@@ -337,6 +365,10 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
         else await socket.leave(answersRoomName(identity.sessionId));
         ack?.({ ok: true, subscribed });
       } catch (err) {
+        // fix/pannes-invisibles — les erreurs partaient au client et
+        // n'apparaissaient nulle part dans le journal du serveur : en cas de
+        // souci en soirée, on cherchait à l'aveugle.
+        console.error('[socket] échec de traitement :', err);
         ack?.({ ok: false, error: (err as Error).message });
       }
     });
@@ -356,6 +388,12 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
       }) => {
         const sessionId = String(payload?.session_id ?? '');
         if (!sessionId || !socket.rooms.has(roomName(sessionId))) return;
+        // fix/timeline-usurpable — SEULE LA CONSOLE PEUT DIRE OÙ EN EST LA
+        // LECTURE. Le seul contrôle était « l'émetteur est-il dans la salle »,
+        // ce que TOUT joueur est : n'importe qui pouvait, depuis la console de
+        // son navigateur, faire sauter le curseur de lecture de la TV et de la
+        // télécommande en boucle.
+        if (socket.identity?.kind !== 'host') return;
         const dur =
           payload?.duration_ms == null
             ? null

@@ -100,7 +100,16 @@ export function useExternalPlayerScreen({ webOrigin, workspaceId, active }: Opti
 
     let staleChecks = 0;
     let lastReviveAt = Date.now(); // le present() initial compte comme relance
+    // fix/verdicts-dans-le-desordre — UNE SEULE VÉRIFICATION EN VOL.
+    // La surveillance relançait une requête toutes les deux secondes sans
+    // attendre la précédente, alors qu'une requête peut prendre jusqu'à huit
+    // secondes. Trois réponses tardives arrivaient alors dans le désordre et
+    // pouvaient faire conclure « la TV est muette » — donc reconstruire
+    // entièrement la fenêtre externe — alors que tout allait bien.
+    let verificationEnVol = false;
     const supervise = window.setInterval(() => {
+      if (verificationEnVol) return;
+      verificationEnVol = true;
       void (async () => {
         try {
           const { last_seen_ms_ago } = await api<{ last_seen_ms_ago: number | null }>(
@@ -123,6 +132,8 @@ export function useExternalPlayerScreen({ webOrigin, workspaceId, active }: Opti
           }
         } catch {
           // Serveur injoignable depuis la console : on ne juge pas la TV là-dessus.
+        } finally {
+          verificationEnVol = false;
         }
       })();
     }, SUPERVISE_EVERY_MS);

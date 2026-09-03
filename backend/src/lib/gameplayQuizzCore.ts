@@ -109,7 +109,13 @@ export function scheduleAutoReveal(
   if (existing) clearTimeout(existing);
   const timer = setTimeout(() => {
     revealTimers.delete(sessionId);
-    doReveal();
+    // fix/serveur-qui-s-arrete — une erreur dans ce déclenchement différé
+    // remontait jusqu'à Node, qui arrêtait le processus en pleine partie.
+    try {
+      doReveal();
+    } catch (err: unknown) {
+      console.error('[quizz] révélation automatique en échec :', err);
+    }
   }, timeLimitMs);
   revealTimers.set(sessionId, timer);
 }
@@ -127,13 +133,37 @@ export function clearAutoReveal(sessionId: string): void {
  * ScoreEvent CORRECT_ANSWER (pour les bonnes réponses uniquement, V0),
  * broadcast quizz:question_revealed avec results triés.
  */
+const revelationsEnCours = new Set<string>();
+
 export async function revealCurrentQuestion(sessionId: string): Promise<void> {
   clearAutoReveal(sessionId);
   const active = getActiveQuestion(sessionId);
   if (!active || active.phase === 'revealed') return;
 
+  // fix/points-du-quiz-comptes-deux-fois — UNE SEULE RÉVÉLATION À LA FOIS.
+  // Trois déclencheurs coexistent : le chrono qui expire, le bouton de
+  // l'animateur, et « tout le monde a répondu ». Le contrôle « déjà révélé ? »
+  // se faisait avant une lecture en base, donc deux déclencheurs simultanés le
+  // passaient tous les deux et créaient deux jeux de points : chaque joueur
+  // encaissait le double, sans possibilité de correction depuis la console.
+  if (revelationsEnCours.has(sessionId)) return;
+  revelationsEnCours.add(sessionId);
+  try {
+    await revelerInterne(sessionId, active);
+  } finally {
+    revelationsEnCours.delete(sessionId);
+  }
+}
+
+async function revelerInterne(
+  sessionId: string,
+  active: NonNullable<ReturnType<typeof getActiveQuestion>>,
+): Promise<void> {
   const question = await prisma.question.findUnique({ where: { id: active.question_id } });
   if (!question) return;
+  // Deuxième contrôle après l'attente : l'état a pu changer entre-temps.
+  const encore = getActiveQuestion(sessionId);
+  if (!encore || encore.phase === 'revealed') return;
 
   // V0 simple : on score toujours en langue 1 (lang1).
   const playerLang = 'lang1' as const;

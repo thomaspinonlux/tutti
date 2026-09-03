@@ -163,6 +163,12 @@ function loadIframeApi(): Promise<void> {
     console.info('[YT API] Ready (already loaded)');
     return Promise.resolve();
   }
+  // fix/youtube-condamne-pour-la-soiree — UN ÉCHEC N'EST PLUS DÉFINITIF.
+  // La promesse était mémorisée même rejetée : si la bibliothèque mettait plus
+  // de cinq secondes à arriver au tout premier essai (réseau du bar au
+  // démarrage), toutes les tentatives suivantes échouaient INSTANTANÉMENT avec
+  // l'erreur mémorisée — plus aucune lecture YouTube possible sans recharger
+  // la page, même une fois le réseau revenu.
   if (apiLoadPromise) return apiLoadPromise;
 
   apiLoadPromise = new Promise<void>((resolve, reject) => {
@@ -225,6 +231,11 @@ function loadIframeApi(): Promise<void> {
         }
       }
     }, 100);
+  });
+  // En cas d'échec, on oublie la promesse pour qu'un nouvel essai reparte de
+  // zéro au lieu de rejeter instantanément avec l'erreur mémorisée.
+  apiLoadPromise.catch(() => {
+    apiLoadPromise = null;
   });
   return apiLoadPromise;
 }
