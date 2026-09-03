@@ -189,10 +189,20 @@ final class TuttiTvPoller {
     func stop() {
         timer?.invalidate()
         timer = nil
-        // fix/connexions-qui-s-accumulent — la session réseau est fermée.
-        // Une nouvelle est créée à chaque affichage de la TV native, et donc à
-        // chaque branchement/débranchement HDMI de la soirée ; sans fermeture,
-        // elles s'empilaient avec leurs connexions ouvertes.
+    }
+
+    // fix/tv-native-qui-n-interroge-plus-rien — RÉGRESSION QUE J'AI INTRODUITE.
+    // J'avais mis la fermeture de la session réseau dans stop(). Or start()
+    // appelle stop() en premier : la session était donc fermée AVANT la toute
+    // première requête, et une session fermée ne repart jamais. La TV native
+    // serait restée figée sur son état de départ toute la soirée, sans jamais
+    // recevoir ni morceau ni score.
+    //
+    // La fermeture appartient à la fin de vie de l'objet. L'objectif d'origine
+    // — ne pas empiler les connexions au fil des branchements HDMI — est tenu :
+    // un sondeur est créé par affichage et libéré avec son écran.
+    deinit {
+        timer?.invalidate()
         session.invalidateAndCancel()
     }
 

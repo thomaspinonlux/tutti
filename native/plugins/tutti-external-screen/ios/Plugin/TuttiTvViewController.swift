@@ -338,16 +338,33 @@ final class TuttiTvViewController: UIViewController {
         // fix/fil-principal — l'interrogation revient chaque seconde ; on ne
         // redessine que si quelque chose a changé (état, morceau, phase,
         // scores, joueurs). Une signature courte suffit à le savoir.
-        let sig = [
+        // fix/build-ios-qui-echoue — CETTE EXPRESSION EST DÉCOUPÉE.
+        // Écrite d'un seul bloc — tableau de huit termes mêlant chaînes
+        // optionnelles, valeurs de repli, conversions, interpolation, map et
+        // joined imbriqués —, elle faisait ABANDONNER le compilateur Swift :
+        // « unable to type-check this expression in reasonable time ». C'était
+        // l'unique erreur du build iOS. Résultat strictement identique, écrit
+        // en étapes dont le type est explicite : le compilateur n'a plus rien
+        // à deviner.
+        var scoresCumules = ""
+        if let cumulative = newState.cumulative {
+            var morceaux: [String] = []
+            for score in cumulative {
+                morceaux.append(score.id + ":" + String(score.totalPoints))
+            }
+            scoresCumules = morceaux.joined()
+        }
+        let composants: [String] = [
             newState.state,
             newState.currentTrack?.trackId ?? "",
             newState.currentTrack?.phase ?? "",
             String(newState.currentTrack?.correctAnswers?.count ?? 0),
-            String(newState.cumulative?.map { "\($0.id):\($0.totalPoints)" }.joined() ?? ""),
+            scoresCumules,
             String(newState.players?.count ?? 0),
             String(newState.session?.isPaused ?? false),
             newState.joinCode ?? "",
-        ].joined(separator: "|")
+        ]
+        let sig: String = composants.joined(separator: "|")
         state = newState
         if sig == lastStateSignature { return }
         lastStateSignature = sig
