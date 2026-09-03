@@ -28,6 +28,8 @@ export interface PlayerControlsProps {
   onResumeAudio: () => void;
   onRestartTrack: () => void;
   onRevealAnswer: () => void;
+  /** Relance le son (même bouton que sur la télécommande). */
+  onAudioKick?: () => void;
   /** Thème sombre (console premium) — défaut clair (identité crème). */
   dark?: boolean;
 }
@@ -65,6 +67,7 @@ export function PlayerControls({
   onResumeAudio,
   onRestartTrack,
   onRevealAnswer,
+  onAudioKick,
   dark = false,
 }: PlayerControlsProps): JSX.Element {
   const { t } = useTranslation();
@@ -100,6 +103,15 @@ export function PlayerControls({
             {canReveal && (
               <GlassButton onClick={onRevealAnswer} disabled={busy}>
                 💡 {t('host.revealAnswer')}
+              </GlassButton>
+            )}
+            {/* fix/bouton-relancer-le-son-console — DANS LA BARRE DE COMMANDES,
+                à côté de Pause / Relancer / Révéler, comme sur la télécommande.
+                Toujours visible dès qu'un morceau est en cours, quelle que
+                soit la source audio. */}
+            {onAudioKick && (
+              <GlassButton onClick={onAudioKick} disabled={busy}>
+                🔊 RELANCER LE SON
               </GlassButton>
             )}
           </div>
@@ -148,6 +160,11 @@ export function PlayerControls({
           {canReveal && (
             <Button variant="secondary" size="sm" onClick={onRevealAnswer} disabled={busy}>
               💡 {t('host.revealAnswer')}
+            </Button>
+          )}
+          {onAudioKick && (
+            <Button variant="secondary" size="sm" onClick={onAudioKick} disabled={busy}>
+              🔊 RELANCER LE SON
             </Button>
           )}
         </div>

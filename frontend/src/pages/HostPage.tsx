@@ -74,6 +74,7 @@ import { useAppleMusicAudioSync } from '../lib/useAppleMusicAudioSync.js';
 import { useExternalPlayerScreen, USE_NATIVE_TV } from '../lib/useExternalPlayerScreen.js';
 import { externalScreen } from '../lib/externalScreen.js';
 import { remoteLog, installRemoteErrorCapture } from '../lib/remoteLog.js';
+import { useNouvelleVersion } from '../lib/useNouvelleVersion.js';
 import { useSelectionBackgroundMusic } from '../lib/useSelectionBackgroundMusic.js';
 import { isCapacitorNative, getShareableOrigin } from '../lib/platform.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
@@ -833,6 +834,10 @@ function HostPageInner(): JSX.Element {
   }, [effectivePhase, qrBig]);
 
   const playingRound = session?.rounds.find((r) => r.status === 'PLAYING') ?? null;
+  // fix/app-qui-tourne-avec-un-vieux-code — recharge seule quand une nouvelle
+  // version est en ligne, uniquement hors morceau (sélection, salle d'attente,
+  // entracte, podium). Jamais pendant un titre.
+  useNouvelleVersion(!currentTrack, 'console');
   const lastEndedRound = session
     ? [...session.rounds].reverse().find((r) => r.status === 'ENDED')
     : null;
@@ -3238,6 +3243,7 @@ function RoundPlayingScreen({
             onResumeAudio={onResumeAudio}
             onRestartTrack={onRestartTrack}
             onRevealAnswer={onRevealAnswer}
+            onAudioKick={onForceAudio}
             dark
           />
         </div>

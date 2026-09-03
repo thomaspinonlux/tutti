@@ -27,6 +27,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useNouvelleVersion } from '../lib/useNouvelleVersion.js';
 import { getShareableOrigin } from '../lib/platform.js';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -61,6 +62,12 @@ export function ScreenPage(): JSX.Element {
   const [autoWorkspaceId, setAutoWorkspaceId] = useState<string | null>(null);
   const [codeInput, setCodeInput] = useState('');
   const [screenState, setScreenState] = useState<ScreenState | null>(null);
+  // fix/app-qui-tourne-avec-un-vieux-code — la TV se recharge seule quand une
+  // nouvelle version est en ligne, jamais pendant un morceau ni une pause.
+  useNouvelleVersion(
+    !screenState || (screenState.state !== 'PLAYING' && screenState.state !== 'PAUSED'),
+    'tv',
+  );
   const [error, setError] = useState<string | null>(null);
   const idleStreakRef = useRef(0);
 

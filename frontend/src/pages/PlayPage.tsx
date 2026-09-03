@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useNouvelleVersion } from '../lib/useNouvelleVersion.js';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
@@ -138,6 +139,9 @@ export function PlayPage(): JSX.Element {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [currentRound, setCurrentRound] = useState<SessionRoundWithPlaylist | null>(null);
   const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
+  // fix/app-qui-tourne-avec-un-vieux-code — le téléphone se recharge seul hors
+  // morceau quand une nouvelle version est en ligne.
+  useNouvelleVersion(!currentTrack, 'telephone');
   const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
   const [lastReveal, setLastReveal] = useState<{
     artist: string;
