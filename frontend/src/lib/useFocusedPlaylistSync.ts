@@ -160,13 +160,13 @@ export function useFocusedPlaylistSync({ enabled, signalKey, selectedThemeKey }:
 
     // Le défilement ne transporte plus rien : il sert seulement à réévaluer
     // quelle carte est la plus visible, ce dont l'observateur se charge déjà.
-    // fix/tv-sort-de-la-selection — LE SIGNAL PART MÊME SANS CARTE CHOISIE.
-    // Il n'était émis que si une carte était mise en avant : à l'étape des
-    // thèmes, ou juste après un retour en arrière, plus rien ne partait et la
-    // TV quittait l'écran de sélection au bout de 30 s (durée de validité côté
-    // serveur) pour retomber sur l'écran d'attente.
+    // Note : on n'émet le signal de présence QUE s'il y a une carte mise en
+    // avant. Envoyer `null` ne prolonge rien — côté serveur cela veut dire
+    // « j'ai quitté la sélection » et efface l'entrée. Tant que le protocole ne
+    // distingue pas « toujours dans la sélection, rien de surligné » de « je
+    // suis parti », c'est le comportement correct.
     const keepalive = window.setInterval(() => {
-      send(true);
+      if (focusedIdRef.current) send(true);
     }, KEEPALIVE_MS);
 
     return () => {

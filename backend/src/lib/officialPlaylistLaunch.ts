@@ -374,7 +374,10 @@ export async function launchOfficialPlaylistForSession(
     const data: { cover_url?: string | null; aliases?: string[] } = {};
     if (!t.cover_url && agg.cover_url) data.cover_url = agg.cover_url;
     if (merged.length !== t.aliases.length) data.aliases = merged;
-    return Object.keys(data).length > 0 ? [prisma.track.update({ where: { id: t.id }, data })] : [];
+    // Fonctions et non promesses : rien ne part avant l'envoi du paquet.
+    return Object.keys(data).length > 0
+      ? [() => prisma.track.update({ where: { id: t.id }, data })]
+      : [];
   });
   // perf/lancement-lent — LES MISES À JOUR PARTENT PAR PAQUETS.
   // Elles étaient toutes lancées d'un coup : jusqu'à 160 requêtes simultanées
@@ -383,7 +386,7 @@ export async function launchOfficialPlaylistForSession(
   // 20, c'est aussi rapide et cela ne sature plus rien.
   const TAILLE_PAQUET = 20;
   for (let i = 0; i < trackUpdates.length; i += TAILLE_PAQUET) {
-    await Promise.all(trackUpdates.slice(i, i + TAILLE_PAQUET));
+    await Promise.all(trackUpdates.slice(i, i + TAILLE_PAQUET).map((lancer) => lancer()));
   }
 
   // Re-fetch ids (créés + existants).

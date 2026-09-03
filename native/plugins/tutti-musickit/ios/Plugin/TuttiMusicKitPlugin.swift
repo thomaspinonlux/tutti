@@ -16,6 +16,20 @@ import StoreKit
  *      - NSAppleMusicUsageDescription (accès à la médiathèque)
  *      - UIBackgroundModes → audio (son qui continue écran verrouillé)
  */
+/// fix/apple-connexion-sans-reponse — garantit qu'une demande ne reçoit qu'UNE
+/// seule réponse, que ce soit celle d'Apple ou celle du délai de garde.
+private final class ReponseUnique {
+    private let verrou = NSLock()
+    private var fait = false
+    func premier() -> Bool {
+        verrou.lock()
+        defer { verrou.unlock() }
+        if fait { return false }
+        fait = true
+        return true
+    }
+}
+
 @objc(TuttiMusicKitPlugin)
 public class TuttiMusicKitPlugin: CAPPlugin {
 
@@ -101,30 +115,27 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             // si Apple ne répond pas du tout.
             let controleur = SKCloudServiceController()
             self.controleurJeton = controleur
-            var repondu = false
-            let terminer: (@escaping () -> Void) -> Void = { action in
-                DispatchQueue.main.async {
-                    guard !repondu else { return }
-                    repondu = true
-                    self.controleurJeton = nil
-                    action()
-                }
-            }
+            let unique = ReponseUnique()
+            // Filet : si Apple ne répond jamais, on tranche au bout de 15 s.
             DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
-                terminer { call.reject("Apple Music n'a pas répondu (15 s)") }
+                guard unique.premier() else { return }
+                self.controleurJeton = nil
+                call.reject("Apple Music n'a pas répondu (15 s)")
             }
             controleur.requestUserToken(
                 forDeveloperToken: developerToken
             ) { userToken, error in
+                guard unique.premier() else { return }
+                DispatchQueue.main.async { self.controleurJeton = nil }
                 if let error = error {
-                    terminer { call.reject("Music User Token : \(error.localizedDescription)") }
+                    call.reject("Music User Token : \(error.localizedDescription)")
                     return
                 }
                 guard let userToken = userToken else {
-                    terminer { call.reject("Music User Token indisponible") }
+                    call.reject("Music User Token indisponible")
                     return
                 }
-                terminer { call.resolve(["userToken": userToken]) }
+                call.resolve(["userToken": userToken])
             }
         }
     }
