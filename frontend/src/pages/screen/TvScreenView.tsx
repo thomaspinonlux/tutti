@@ -505,6 +505,11 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
 
   const title = lastReveal?.title ?? currentTrack?.title ?? '';
   const artist = lastReveal?.artist ?? currentTrack?.artist ?? '';
+  // feat/oeuvre-affichee — playlists film / série / dessin animé : `title` est
+  // le nom de l'ŒUVRE (réponse) ; on affiche en plus le vrai titre de la
+  // chanson, entre l'œuvre et l'interprète. Demande de Thomas : œuvre /
+  // chanson / interprète, sur les trois écrans.
+  const songTitle = lastReveal?.song_title ?? currentTrack?.song_title ?? null;
   // Fond ambiant = pochette du morceau (seulement au reveal — avant, on ne
   // divulgue rien, le fond reste neutre coral).
   const ambientCover = isRevealed ? (currentTrack?.cover_url ?? null) : null;
@@ -542,6 +547,11 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
             <p className="text-center font-display text-2xl font-bold leading-tight text-white">
               {title}
             </p>
+            {songTitle && (
+              <p className="text-center font-display text-lg font-semibold leading-tight text-white/85">
+                {songTitle}
+              </p>
+            )}
             <p className="text-center font-editorial text-xl italic" style={{ color: CORAL }}>
               {artist}
             </p>
@@ -577,6 +587,14 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
               >
                 {title}
               </h1>
+              {songTitle && (
+                <p
+                  className="tv-rise mt-4 break-words font-display text-3xl font-semibold text-white/90 lg:text-4xl"
+                  style={{ animationDelay: '80ms', textWrap: 'balance' }}
+                >
+                  {songTitle}
+                </p>
+              )}
               <p
                 className="tv-rise mt-4 break-words font-editorial text-3xl font-semibold italic lg:text-4xl"
                 style={{ color: CORAL, animationDelay: '110ms', textWrap: 'balance' }}

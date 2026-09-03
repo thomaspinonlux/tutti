@@ -1000,6 +1000,33 @@ router.post(
 // public (joueurs/écran TV repassent en IDLE au prochain poll screen-state).
 // Pas de cumulative final, pas de notification.
 
+// ── POST /:id/hide-podium ────────────────────────────────────────────────────
+// feat/classement-final-persistant — l'animateur ferme le podium final depuis
+// la console. Jusque-là, la TV et la console gardent le classement affiché.
+router.post(
+  '/:id/hide-podium',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const own = await ensureOwnSession(req.params.id, req.workspaceId!);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    try {
+      await prisma.session.updateMany({
+        where: { id: own.id, podium_hidden_at: null },
+        data: { podium_hidden_at: new Date() },
+      });
+      broadcastToSession(own.id, 'session:podium_hidden', { session_id: own.id });
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/hide-podium] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur' } });
+    }
+  },
+);
+
 router.post(
   '/:id/abandon',
   requireAuth,

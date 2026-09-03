@@ -46,7 +46,16 @@ export function isTrackAnswerPublic(phase: GameTrackPhase): boolean {
 
 /** Copie d'un state SANS les métadonnées-réponse (broadcast public / joueur). */
 export function stripTrackAnswer(state: CurrentTrackState): CurrentTrackState {
-  return { ...state, artist: '', title: '', album: null, year: null, cover_url: null };
+  return {
+    ...state,
+    artist: '',
+    title: '',
+    album: null,
+    year: null,
+    cover_url: null,
+    work_title: null,
+    song_title: null,
+  };
 }
 
 /**
@@ -238,6 +247,8 @@ export async function buildAndBroadcastTrack(
     album: track.album,
     year: track.year,
     cover_url: track.cover_url,
+    work_title: track.work_title ?? null,
+    song_title: track.song_title ?? null,
     started_at: new Date(nowMs).toISOString(),
     duration_ms: track.duration_ms,
     phase: 'phase1',
@@ -908,6 +919,8 @@ export async function buildCurrentTrackStateSnapshot(
     album: track.album,
     year: track.year,
     cover_url: track.cover_url,
+    work_title: track.work_title ?? null,
+    song_title: track.song_title ?? null,
     started_at: new Date(active.started_at_ms).toISOString(),
     duration_ms: track.duration_ms,
     lyrics_available: lyricsAvailable,
@@ -945,6 +958,8 @@ export async function revealCurrentTrack(
     select: {
       canonical_title: true,
       cover_url: true,
+      work_title: true,
+      song_title: true,
       artist: { select: { canonical_name: true } },
     },
   });
@@ -956,6 +971,9 @@ export async function revealCurrentTrack(
     track_index: active.track_index,
     artist: track.artist.canonical_name,
     title: track.canonical_title,
+    // feat/oeuvre-affichee — œuvre / chanson pour les playlists film & co.
+    work_title: track.work_title ?? null,
+    song_title: track.song_title ?? null,
     // feat/pochette-ecran-joueur — la pochette accompagne la RÉVÉLATION.
     // Aucune fuite : ce broadcast n'a lieu qu'une fois le morceau révélé à
     // tout le monde (avant, `stripTrackAnswer` la met à null pour les joueurs).
@@ -976,6 +994,8 @@ export async function revealCurrentTrack(
     artist: track.artist.canonical_name,
     title: track.canonical_title,
     cover_url: track.cover_url,
+    work_title: track.work_title ?? null,
+    song_title: track.song_title ?? null,
   });
   broadcastToSession(sessionId, 'track:revealed', payload);
   return {

@@ -684,6 +684,24 @@ router.post('/end-round', async (req: Request<{ id: string }>, res: Response): P
 
 // ── POST /end-session ─────────────────────────────────────────────────────
 
+// ── POST /hide-podium ─────────────────────────────────────────────────────────
+// feat/classement-final-persistant — l'animateur ferme le podium final depuis
+// son téléphone. La TV repasse en attente, la console revient au tableau de
+// bord.
+router.post('/hide-podium', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  try {
+    await prisma.session.updateMany({
+      where: { id: req.params.id, podium_hidden_at: null },
+      data: { podium_hidden_at: new Date() },
+    });
+    broadcastToSession(req.params.id, 'session:podium_hidden', { session_id: req.params.id });
+    res.json({ ok: true });
+  } catch (err: unknown) {
+    console.error('[POST master/hide-podium] error:', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur' } });
+  }
+});
+
 router.post('/end-session', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   const own = await prisma.session.findUnique({
     where: { id: req.params.id },

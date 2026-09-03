@@ -180,14 +180,11 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
           </button>
         </div>
 
-        {/* Onglets */}
-        <div className="flex gap-2 mb-3">
-          {(
-            [
-              { k: 'perso' as Tab, label: 'Mes playlists' },
-              { k: 'official' as Tab, label: 'Bibliothèque' },
-            ] as const
-          ).map((o) => (
+        {/* Onglets — masqués : un seul onglet (bibliothèque officielle) pour le moment. */}
+        <div className="hidden gap-2 mb-3">
+          {// fix/playlists-personnelles-retirees — seule la bibliothèque
+          // officielle est proposée pour le moment (demande de Thomas 03/09).
+          ([{ k: 'official' as Tab, label: 'Bibliothèque officielle' }] as const).map((o) => (
             <button
               key={o.k}
               type="button"

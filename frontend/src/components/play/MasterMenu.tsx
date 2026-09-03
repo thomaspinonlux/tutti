@@ -221,9 +221,11 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               {hasMeta ? (
                 <>
                   {track.title}
-                  {track.artist ? (
-                    <span className="text-white/55"> — {track.artist}</span>
+                  {/* feat/oeuvre-affichee — œuvre / chanson / interprète */}
+                  {track.song_title ? (
+                    <span className="text-white/80"> · {track.song_title}</span>
                   ) : null}
+                  {track.artist ? <span className="text-white/55"> — {track.artist}</span> : null}
                 </>
               ) : (
                 <span className="text-white/55">♪ Lecture en cours…</span>
@@ -296,29 +298,31 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
       {/* ── feat/synced-lyrics — paroles (affichage MANUEL) ───────────────
           Rendu UNIQUEMENT si des paroles vérifiées existent pour le morceau
           ET qu'il est révélé (l'appelant calcule `lyricsAvailable`). */}
-      {props.lyricsAvailable && props.onToggleLyrics && (
-        <div className="flex items-center gap-2">
+      <div className="grid grid-cols-2 gap-2.5">
+        {/* fix/boutons-paroles-comme-les-autres — les deux boutons Paroles sont
+            DANS la grille, avec le même style que Pause / Suivant / Révéler.
+            Avant : un bouton à part au-dessus, et « Paroles fausses » en texte
+            souligné minuscule. */}
+        {props.lyricsAvailable && props.onToggleLyrics && (
           <CtrlButton
             tone={props.lyricsOn ? 'go' : 'neutral'}
+            row
             icon="🎤"
             label={props.lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
             onClick={() => props.onToggleLyrics!(!props.lyricsOn)}
             disabled={props.busy}
           />
-          {props.onRejectLyrics && (
-            <button
-              type="button"
-              onClick={() => props.onRejectLyrics!()}
-              disabled={props.busy}
-              className="shrink-0 px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-white/45 underline underline-offset-2 disabled:opacity-40"
-            >
-              {t('host.session.lyricsWrong')}
-            </button>
-          )}
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-2.5">
+        )}
+        {props.lyricsAvailable && props.onToggleLyrics && props.onRejectLyrics && (
+          <CtrlButton
+            tone="neutral"
+            row
+            icon="🚫"
+            label={t('host.session.lyricsWrong')}
+            onClick={() => props.onRejectLyrics!()}
+            disabled={props.busy}
+          />
+        )}
         {/* ── Pause ↔ Reprendre (toggle selon l'état) ─────────────────────── */}
         {props.hasActiveRound && !props.isPaused && (
           <CtrlButton

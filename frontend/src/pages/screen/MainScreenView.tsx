@@ -158,7 +158,6 @@ function FestiveBackground({ confettiActive }: { confettiActive: boolean }): JSX
   );
 }
 
-
 // ── Pochette mystère / révélée ────────────────────────────────────────────
 
 function MysteryCover({
@@ -482,12 +481,7 @@ function IPadFooter({
           la manche. Avant, elle n'en avait que trois. */}
       <div className="flex flex-wrap items-center justify-end gap-2">
         {isPaused ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onResume}
-            disabled={busy || !onResume}
-          >
+          <Button variant="secondary" size="sm" onClick={onResume} disabled={busy || !onResume}>
             ▶ {t('screen.btnResume')}
           </Button>
         ) : (
@@ -869,7 +863,7 @@ function RevealResultMain({
   showConfetti,
 }: {
   track: CurrentTrackState;
-  reveal: { artist: string; title: string } | null;
+  reveal: { artist: string; title: string; song_title?: string | null } | null;
   playlistName: string;
   cumulative: CumulativeScore[];
   correctAnswers: CorrectAnswerEntry[];
@@ -879,6 +873,8 @@ function RevealResultMain({
   void showConfetti; // fix/no-confetti-console — plus aucun rendu de confettis.
   const title = reveal?.title ?? track.title;
   const artist = reveal?.artist ?? track.artist;
+  // feat/oeuvre-affichee — œuvre / chanson / interprète (playlists film & co).
+  const songTitle = reveal?.song_title ?? track.song_title ?? null;
   const joinUrl = `${getShareableOrigin()}/play?session=${joinCode}`;
   return (
     <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-6 p-6 relative z-10">
@@ -909,6 +905,14 @@ function RevealResultMain({
           >
             {title}
           </div>
+          {songTitle && (
+            <div
+              className="font-display text-white/85 text-2xl sm:text-3xl lg:text-4xl mb-2 animate-slide-up"
+              style={{ animationDelay: '100ms' }}
+            >
+              {songTitle}
+            </div>
+          )}
           <div
             className="font-editorial italic font-semibold text-raspberry text-2xl sm:text-3xl lg:text-4xl animate-slide-up"
             style={{ animationDelay: '150ms' }}
@@ -934,7 +938,7 @@ export interface MainScreenViewProps {
   cumulative: CumulativeScore[];
   correctAnswers: CorrectAnswerEntry[];
   phase2StartedAt: string | null;
-  lastReveal: { artist: string; title: string } | null;
+  lastReveal: { artist: string; title: string; song_title?: string | null } | null;
   /** Compte de joueurs avec un buzz ouvert (phase 1 counter). */
   activeBuzzCount: number;
   /** Position audio en ms (depuis Spotify SDK si dispo, sinon interpolation). */
@@ -1092,13 +1096,21 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
                       className="font-display text-5xl text-white leading-none mb-1 animate-slide-up"
                       style={{ animationDelay: '200ms' }}
                     >
-                      {lastReveal?.artist ?? currentTrack.artist}
+                      {lastReveal?.title ?? currentTrack.title}
                     </div>
+                    {(lastReveal?.song_title ?? currentTrack.song_title) && (
+                      <div
+                        className="font-display text-2xl text-white/85 animate-slide-up"
+                        style={{ animationDelay: '300ms' }}
+                      >
+                        {lastReveal?.song_title ?? currentTrack.song_title}
+                      </div>
+                    )}
                     <div
                       className="font-editorial italic text-2xl text-raspberry font-semibold animate-slide-up"
                       style={{ animationDelay: '400ms' }}
                     >
-                      {lastReveal?.title ?? currentTrack.title}
+                      {lastReveal?.artist ?? currentTrack.artist}
                     </div>
                   </div>
                 )}
@@ -1135,7 +1147,6 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
                   ) : (
                     <Phase3DanceCall />
                   ))}
-
               </>
             )}
           </section>

@@ -30,6 +30,11 @@ export interface PlayerControlsProps {
   onRevealAnswer: () => void;
   /** Relance le son (même bouton que sur la télécommande). */
   onAudioKick?: () => void;
+  /** Paroles synchronisées (affichage manuel). Rendu seulement si disponibles. */
+  lyricsAvailable?: boolean;
+  lyricsOn?: boolean;
+  onToggleLyrics?: () => void;
+  onRejectLyrics?: () => void;
   /** Thème sombre (console premium) — défaut clair (identité crème). */
   dark?: boolean;
 }
@@ -68,6 +73,10 @@ export function PlayerControls({
   onRestartTrack,
   onRevealAnswer,
   onAudioKick,
+  lyricsAvailable = false,
+  lyricsOn = false,
+  onToggleLyrics,
+  onRejectLyrics,
   dark = false,
 }: PlayerControlsProps): JSX.Element {
   const { t } = useTranslation();
@@ -112,6 +121,19 @@ export function PlayerControls({
             {onAudioKick && (
               <GlassButton onClick={onAudioKick} disabled={busy}>
                 🔊 RELANCER LE SON
+              </GlassButton>
+            )}
+            {/* fix/boutons-paroles-comme-les-autres — Paroles et Paroles fausses
+                DANS la barre, même style que les autres. Avant : relégués tout
+                en bas de la page, en petit texte souligné. */}
+            {lyricsAvailable && onToggleLyrics && (
+              <GlassButton onClick={onToggleLyrics} disabled={busy}>
+                🎤 {lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
+              </GlassButton>
+            )}
+            {lyricsAvailable && onRejectLyrics && (
+              <GlassButton onClick={onRejectLyrics} disabled={busy}>
+                🚫 {t('host.session.lyricsWrong')}
               </GlassButton>
             )}
           </div>
@@ -165,6 +187,16 @@ export function PlayerControls({
           {onAudioKick && (
             <Button variant="secondary" size="sm" onClick={onAudioKick} disabled={busy}>
               🔊 RELANCER LE SON
+            </Button>
+          )}
+          {lyricsAvailable && onToggleLyrics && (
+            <Button variant="secondary" size="sm" onClick={onToggleLyrics} disabled={busy}>
+              🎤 {lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
+            </Button>
+          )}
+          {lyricsAvailable && onRejectLyrics && (
+            <Button variant="secondary" size="sm" onClick={onRejectLyrics} disabled={busy}>
+              🚫 {t('host.session.lyricsWrong')}
             </Button>
           )}
         </div>

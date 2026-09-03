@@ -268,6 +268,14 @@ export interface CurrentTrackState {
   album: string | null;
   year: number | null;
   cover_url: string | null;
+  /**
+   * feat/oeuvre-affichee — playlists film / série / dessin animé : nom de
+   * l'ŒUVRE (réponse principale) et VRAI titre de la chanson. Affichage à la
+   * révélation : œuvre / chanson / interprète. null pour une playlist musique.
+   * Caviardés comme artist/title tant que la réponse n'est pas publique.
+   */
+  work_title: string | null;
+  song_title: string | null;
   /** Date de démarrage du track (ISO) pour calculer le timer côté client. */
   started_at: string;
   /** Durée du Track Spotify en ms (informatif, le morceau joue jusqu'au bout). */

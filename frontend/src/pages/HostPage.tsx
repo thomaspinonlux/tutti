@@ -54,6 +54,7 @@ import {
   startRound,
   startSession,
   toggleParticipantMaster,
+  hidePodium,
 } from '../lib/sessions.js';
 import {
   abandonSession,
@@ -260,7 +261,11 @@ function HostPageInner(): JSX.Element {
   const [recentBuzzes] = useState<BuzzResult[]>([]);
   const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
   const [phase2StartedAt, setPhase2StartedAt] = useState<string | null>(null);
-  const [lastReveal, setLastReveal] = useState<{ artist: string; title: string } | null>(null);
+  const [lastReveal, setLastReveal] = useState<{
+    artist: string;
+    title: string;
+    song_title?: string | null;
+  } | null>(null);
   // Set des participants avec un buzz ouvert (mic en cours d'enregistrement).
   // Sert au compteur "X joueurs ont buzzé" en phase 1 (maquette 06).
   const [activeBuzzers, setActiveBuzzers] = useState<Set<string>>(new Set());
@@ -438,6 +443,12 @@ function HostPageInner(): JSX.Element {
             setActiveBuzzers(new Set());
           },
         );
+        // feat/classement-final-persistant — fermé depuis le téléphone ou l'iPad.
+        socket.on('session:podium_hidden', () => {
+          if (cancelled) return;
+          console.info('[HostPage] podium final fermé → tableau de bord');
+          navigate('/admin/dashboard?notice=session-ended');
+        });
         socket.on('round:created', ({ round }: { round: SessionRoundWithPlaylist }) => {
           setSession((prev) => (prev ? { ...prev, rounds: [...prev.rounds, round] } : prev));
         });
@@ -572,6 +583,7 @@ function HostPageInner(): JSX.Element {
             phase2_started_at?: string;
             artist?: string;
             title?: string;
+            song_title?: string | null;
           }) => {
             // fix/buzzers-coupes-a-tort — ON ÉCARTE UN MESSAGE PÉRIMÉ.
             // Un changement de phase destiné à un AUTRE morceau (minuteur
@@ -598,14 +610,27 @@ function HostPageInner(): JSX.Element {
               setPhase2StartedAt(payload.phase2_started_at);
             }
             if (payload.phase === 'phase3-revealed' && payload.artist && payload.title) {
-              setLastReveal({ artist: payload.artist, title: payload.title });
+              setLastReveal({
+                artist: payload.artist,
+                title: payload.title,
+                song_title: payload.song_title ?? null,
+              });
             }
           },
         );
         socket.on(
           'track:revealed',
-          (payload: { round_id: string; artist: string; title: string }) => {
-            setLastReveal({ artist: payload.artist, title: payload.title });
+          (payload: {
+            round_id: string;
+            artist: string;
+            title: string;
+            song_title?: string | null;
+          }) => {
+            setLastReveal({
+              artist: payload.artist,
+              title: payload.title,
+              song_title: payload.song_title ?? null,
+            });
           },
         );
         socket.on('session:paused', () => {
@@ -1997,9 +2022,13 @@ function HostPageInner(): JSX.Element {
       // s'affiche sur l'écran TV (FINAL_PODIUM via ScreenState polling), pas
       // besoin de doublon sur la console host. URL param ?notice=session-ended
       // déclenche un banner de confirmation sur le dashboard.
-      console.info('[HostPage] handleEndSession navigate → /admin/dashboard?notice=session-ended');
-      navigate('/admin/dashboard?notice=session-ended');
-      // Pas de setBusy(false) — composant unmount avant.
+      // feat/classement-final-persistant — ON RESTE SUR LE PODIUM.
+      // Le renvoi immédiat au tableau de bord démontait la console, ce qui
+      // fermait aussi la fenêtre TV : l'écran joueurs revenait au menu de base
+      // à l'instant même où le classement final devait s'afficher. La console
+      // affiche désormais EndedScreen (podium) et la TV son FINAL_PODIUM, tant
+      // que l'animateur n'a pas fermé le classement (iPad ou téléphone).
+      setBusy(false);
     } catch (err: unknown) {
       setError((err as Error).message);
       setBusy(false);
@@ -2644,6 +2673,10 @@ function HostPageInner(): JSX.Element {
                 onResumeAudio={() => void handleResumeAudio()}
                 onRestartTrack={() => void handleRestartTrack()}
                 onRevealAnswer={() => void handleGiveAnswer()}
+                lyricsAvailable={canShowLyrics}
+                lyricsOn={lyricsOn}
+                onToggleLyrics={toggleLyrics}
+                onRejectLyrics={rejectLyrics}
                 onSeek={(ms) => {
                   // fix/barre-de-lecture-inerte — APPLE MUSIC ÉTAIT OUBLIÉ.
                   // Tout ce qui n'était pas YouTube partait sur Spotify : sur
@@ -2664,30 +2697,8 @@ function HostPageInner(): JSX.Element {
                 {/* feat/synced-lyrics — bouton PAROLES (affichage manuel).
                   Rendu UNIQUEMENT si des paroles vérifiées existent pour ce
                   morceau ET qu'il est révélé. Sinon : pas de bouton du tout. */}
-                {canShowLyrics && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={toggleLyrics}
-                      disabled={busy}
-                      aria-pressed={lyricsOn}
-                      className={`px-3 py-2 font-mono text-xs uppercase tracking-wider border-2 border-ink rounded transition-colors disabled:opacity-40 ${
-                        lyricsOn ? 'bg-basil text-cream' : 'bg-white/[0.06] text-white/70'
-                      }`}
-                    >
-                      🎤 {lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={rejectLyrics}
-                      disabled={busy}
-                      title={t('host.session.lyricsRemoved')}
-                      className="px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-white/45 underline underline-offset-2 disabled:opacity-40"
-                    >
-                      {t('host.session.lyricsWrong')}
-                    </button>
-                  </div>
-                )}
+                {/* fix/boutons-paroles-comme-les-autres — les boutons Paroles sont
+                    désormais dans la barre de commandes (PlayerControls). */}
               </>
             )}
 
@@ -2746,7 +2757,9 @@ function HostPageInner(): JSX.Element {
                 );
               })()}
 
-            {effectivePhase === 'ended' && <EndedScreen cumulative={cumulative} />}
+            {effectivePhase === 'ended' && (
+              <EndedScreen cumulative={cumulative} sessionId={session.id} />
+            )}
 
             {/* fix/eliminate-blank-pages-state-recovery — défense ultime :
                 si effectivePhase ne matche aucun case ci-dessus (valeur
@@ -3129,6 +3142,10 @@ function RoundPlayingScreen({
   onRestartTrack,
   onRevealAnswer,
   onSeek,
+  lyricsAvailable,
+  lyricsOn,
+  onToggleLyrics,
+  onRejectLyrics,
 }: {
   sessionId: string;
   round: SessionRoundWithPlaylist;
@@ -3152,6 +3169,10 @@ function RoundPlayingScreen({
   onRestartTrack: () => void;
   onRevealAnswer: () => void;
   onSeek: (ms: number) => void;
+  lyricsAvailable?: boolean;
+  lyricsOn?: boolean;
+  onToggleLyrics?: () => void;
+  onRejectLyrics?: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
   // F2 — position/durée effectives : lecteur local si fourni (sink=host), sinon
@@ -3244,6 +3265,10 @@ function RoundPlayingScreen({
             onRestartTrack={onRestartTrack}
             onRevealAnswer={onRevealAnswer}
             onAudioKick={onForceAudio}
+            lyricsAvailable={lyricsAvailable}
+            lyricsOn={lyricsOn}
+            onToggleLyrics={onToggleLyrics}
+            onRejectLyrics={onRejectLyrics}
             dark
           />
         </div>
@@ -3388,6 +3413,14 @@ function AnimatorTrackInfo({
           <p className={`font-display text-2xl break-words ${dark ? 'text-white' : 'text-ink'}`}>
             {track.title}
           </p>
+          {/* feat/oeuvre-affichee — œuvre / chanson / interprète */}
+          {track.song_title && (
+            <p
+              className={`font-display text-lg break-words ${dark ? 'text-white/85' : 'text-ink/85'}`}
+            >
+              {track.song_title}
+            </p>
+          )}
           <p
             className={`font-editorial italic break-words ${dark ? 'text-white/55' : 'text-ink-2'}`}
           >
@@ -3446,7 +3479,13 @@ function SpotifyStatusBanner({
 
 // CooldownView supprimé (Bug 5) — voir commentaire au-dessus de SpotifyStatusBanner.
 
-function EndedScreen({ cumulative }: { cumulative: CumulativeScore[] }): JSX.Element {
+function EndedScreen({
+  cumulative,
+  sessionId,
+}: {
+  cumulative: CumulativeScore[];
+  sessionId: string;
+}): JSX.Element {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [first, second, third, ...rest] = cumulative;
@@ -3505,8 +3544,17 @@ function EndedScreen({ cumulative }: { cumulative: CumulativeScore[] }): JSX.Ele
         </>
       )}
 
-      <Button variant="secondary" onClick={() => navigate('/admin/dashboard')}>
-        {t('host.backDashboard')}
+      <Button
+        variant="secondary"
+        onClick={() => {
+          // feat/classement-final-persistant — fermer le podium partout (TV
+          // comprise) avant de quitter.
+          void hidePodium(sessionId)
+            .catch(() => undefined)
+            .finally(() => navigate('/admin/dashboard?notice=session-ended'));
+        }}
+      >
+        ✕ Fermer le classement
       </Button>
     </div>
   );

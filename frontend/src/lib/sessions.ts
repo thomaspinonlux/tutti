@@ -47,6 +47,20 @@ export async function getSession(
   );
 }
 
+/** feat/classement-final-persistant — ferme le podium final (console). */
+export async function hidePodium(id: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(id)}/hide-podium`, { method: 'POST' });
+}
+
+/** feat/classement-final-persistant — ferme le podium final (téléphone animateur). */
+export async function masterHidePodium(sessionId: string, token: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/hide-podium`, {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}
+
 export async function endSession(
   id: string,
 ): Promise<{ session: Session; cumulative: CumulativeScore[] }> {

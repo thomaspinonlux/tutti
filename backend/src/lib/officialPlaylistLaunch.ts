@@ -119,6 +119,10 @@ export async function launchOfficialPlaylistForSession(
     provider: PlayProvider;
     provider_track_id: string;
     cover_url: string | null;
+    // feat/oeuvre-affichee — nom de l'œuvre et vrai titre de la chanson
+    // (playlists film / série / dessin animé). null hors mode « œuvre ».
+    work_title: string | null;
+    song_title: string | null;
     answers_accepted: Record<string, unknown> | null;
     // feat/official-library-aliases — alias curés par les super-admins.
     // Mergés au moment du clone-on-launch dans Artist.aliases + Track.aliases
@@ -205,6 +209,11 @@ export async function launchOfficialPlaylistForSession(
         provider,
         provider_track_id: providerId,
         cover_url: coverUrl,
+        // feat/oeuvre-affichee — en mode « œuvre », la réponse reste l'œuvre
+        // (matchTitle) et on conserve le VRAI titre de la chanson à part pour
+        // l'afficher : œuvre / chanson / interprète.
+        work_title: t.work_title ?? null,
+        song_title: isGuessWork && t.work_title ? t.title : null,
         answers_accepted: null,
         official_artist_aliases: t.artist_aliases ?? [],
         official_title_aliases: matchTitleAliases,
@@ -313,6 +322,8 @@ export async function launchOfficialPlaylistForSession(
     artist: string;
     year: number | null;
     cover_url: string | null;
+    work_title: string | null;
+    song_title: string | null;
     official: Set<string>;
   }
   // Dédup `chosen` par (provider, provider_track_id) + union aliases officiels.
@@ -328,6 +339,8 @@ export async function launchOfficialPlaylistForSession(
         artist: c.artist,
         year: c.year,
         cover_url: c.cover_url,
+        work_title: c.work_title,
+        song_title: c.song_title,
         official: new Set<string>(),
       } satisfies TrackAgg);
     c.official_title_aliases.forEach((a) => agg.official.add(a));
@@ -342,7 +355,15 @@ export async function launchOfficialPlaylistForSession(
 
   const existingTracks = await prisma.track.findMany({
     where: { provider: { in: fournisseurs }, provider_track_id: { in: providerTrackIds } },
-    select: { id: true, provider: true, provider_track_id: true, cover_url: true, aliases: true },
+    select: {
+      id: true,
+      provider: true,
+      provider_track_id: true,
+      cover_url: true,
+      aliases: true,
+      work_title: true,
+      song_title: true,
+    },
   });
   const existingTrackKeys = new Set(
     existingTracks.map((t) => trackKey(t.provider, t.provider_track_id)),
@@ -361,6 +382,8 @@ export async function launchOfficialPlaylistForSession(
       provider: t.provider,
       provider_track_id: t.provider_track_id,
       cover_url: t.cover_url,
+      work_title: t.work_title,
+      song_title: t.song_title,
     }));
   if (tracksToCreate.length > 0) {
     await prisma.track.createMany({ data: tracksToCreate, skipDuplicates: true });
@@ -371,9 +394,18 @@ export async function launchOfficialPlaylistForSession(
     const agg = trackAggByKey.get(trackKey(t.provider, t.provider_track_id));
     if (!agg) return [];
     const merged = Array.from(new Set([...t.aliases, ...agg.official]));
-    const data: { cover_url?: string | null; aliases?: string[] } = {};
+    const data: {
+      cover_url?: string | null;
+      aliases?: string[];
+      work_title?: string | null;
+      song_title?: string | null;
+    } = {};
     if (!t.cover_url && agg.cover_url) data.cover_url = agg.cover_url;
     if (merged.length !== t.aliases.length) data.aliases = merged;
+    // feat/oeuvre-affichee — remplit l'œuvre et le titre de chanson sur les
+    // morceaux clonés avant cette fonctionnalité.
+    if (agg.work_title && t.work_title !== agg.work_title) data.work_title = agg.work_title;
+    if (agg.song_title && t.song_title !== agg.song_title) data.song_title = agg.song_title;
     // Fonctions et non promesses : rien ne part avant l'envoi du paquet.
     return Object.keys(data).length > 0
       ? [() => prisma.track.update({ where: { id: t.id }, data })]

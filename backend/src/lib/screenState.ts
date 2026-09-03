@@ -128,7 +128,10 @@ export type ScreenState =
       lastUpdate: string;
     };
 
-const FINAL_PODIUM_WINDOW_MS = 5 * 60 * 1000; // 5 min après ended_at
+// feat/classement-final-persistant — le podium final reste affiché jusqu'à ce
+// que l'animateur le ferme (podium_hidden_at), avec un plafond de sûreté de
+// 12 h pour qu'une TV laissée allumée n'affiche pas le podium de la veille.
+const FINAL_PODIUM_WINDOW_MS = 12 * 60 * 60 * 1000;
 const ZOMBIE_CREATED_WINDOW_MS = 4 * 60 * 60 * 1000; // 4h max depuis création
 
 /**
@@ -196,6 +199,7 @@ async function findRepresentativeSession(workspaceId: string) {
       establishment: { workspace_id: workspaceId },
       status: 'ENDED',
       ended_at: { gte: finalPodiumCutoff },
+      podium_hidden_at: null,
     },
     orderBy: { ended_at: 'desc' },
     include: {
@@ -297,7 +301,16 @@ function masquerReponseAvantRevelation(track: CurrentTrackState | null): Current
     track.phase === 'phase3-revealed' ||
     track.phase === 'phase3-skipped';
   if (revele) return track;
-  return { ...track, artist: '', title: '', album: null, year: null, cover_url: null };
+  return {
+    ...track,
+    artist: '',
+    title: '',
+    album: null,
+    year: null,
+    cover_url: null,
+    work_title: null,
+    song_title: null,
+  };
 }
 
 // perf/journal-bavard — LE JOURNAL N'ÉCRIT QUE SUR CHANGEMENT.

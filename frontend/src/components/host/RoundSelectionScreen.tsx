@@ -151,7 +151,10 @@ export function RoundSelectionScreen({
   appleLibraryAvailable,
 }: Props): JSX.Element {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<Tab>('mine');
+  // fix/playlists-personnelles-retirees — DEMANDE DE THOMAS (03/09) : seul
+  // l'onglet « Bibliothèque officielle » reste, pour le moment. L'onglet
+  // « Mes playlists » est retiré de l'interface (le code reste, désactivé).
+  const [tab, setTab] = useState<Tab>('library');
   // fix/boite-systeme-qui-gele-l-ipad — message affiché dans la page.
   const [messagePremium, setMessagePremium] = useState<string | null>(null);
   const [librarySubTab, setLibrarySubTab] = useState<LibrarySubTab>('tracks');
@@ -373,8 +376,9 @@ export function RoundSelectionScreen({
         />
       </div>
 
-      {/* Onglets Mes playlists | Bibliothèque officielle */}
-      <div className="flex gap-2 border-b border-white/10 mb-4">
+      {/* Onglets Mes playlists | Bibliothèque officielle — masqués : seule la
+          bibliothèque officielle est proposée pour le moment. */}
+      <div className="hidden gap-2 border-b border-white/10 mb-4">
         <button
           type="button"
           onClick={() => setTab('mine')}

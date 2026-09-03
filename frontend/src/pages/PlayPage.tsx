@@ -43,6 +43,7 @@ import {
   masterRejectLyrics,
   masterRestartTrack,
   masterAudioKick,
+  masterHidePodium,
   cancelVoiceBuzz,
   masterResume,
   masterSeek,
@@ -146,6 +147,8 @@ export function PlayPage(): JSX.Element {
   const [lastReveal, setLastReveal] = useState<{
     artist: string;
     title: string;
+    // feat/oeuvre-affichee — vrai titre de la chanson (playlists film & co).
+    song_title?: string | null;
     // feat/pochette-ecran-joueur — pochette du morceau, envoyée par le serveur
     // AU MOMENT de la révélation uniquement.
     cover_url?: string | null;
@@ -184,6 +187,8 @@ export function PlayPage(): JSX.Element {
   }, [step]);
   const [isPaused, setIsPaused] = useState(false);
   const [masterPickerOpen, setMasterPickerOpen] = useState(false);
+  // feat/classement-final-persistant — bouton de fermeture du podium.
+  const [podiumFermeture, setPodiumFermeture] = useState(false);
   const [adjustSheetOpen, setAdjustSheetOpen] = useState(false);
   const [participantsList, setParticipantsList] = useState<Participant[]>([]);
   const [cumulative, setCumulative] = useState<CumulativeScore[]>([]);
@@ -482,6 +487,8 @@ export function PlayPage(): JSX.Element {
         phase2_started_at?: string;
         artist?: string;
         title?: string;
+        song_title?: string | null;
+        cover_url?: string | null;
       }) => {
         // fix/buzzers-coupes-a-tort — ON ÉCARTE UN MESSAGE PÉRIMÉ.
         // Un changement de phase destiné à un AUTRE morceau (minuteur
@@ -506,18 +513,30 @@ export function PlayPage(): JSX.Element {
         }
         if (payload.phase === 'phase3-revealed' && payload.artist && payload.title) {
           // Master a déclenché "Donner la réponse" sans qu'aucun buzz n'ait abouti
-          setLastReveal({ artist: payload.artist, title: payload.title });
+          setLastReveal({
+            artist: payload.artist,
+            title: payload.title,
+            song_title: payload.song_title ?? null,
+            cover_url: payload.cover_url ?? null,
+          });
         }
       },
     );
     sock.on(
       'track:revealed',
-      (payload: { round_id: string; artist: string; title: string; cover_url?: string | null }) => {
+      (payload: {
+        round_id: string;
+        artist: string;
+        title: string;
+        song_title?: string | null;
+        cover_url?: string | null;
+      }) => {
         // Cohérent avec phase_changed → phase3-revealed mais conservé pour
         // compat ascendante.
         setLastReveal({
           artist: payload.artist,
           title: payload.title,
+          song_title: payload.song_title ?? null,
           cover_url: payload.cover_url ?? null,
         });
       },
@@ -1099,6 +1118,23 @@ export function PlayPage(): JSX.Element {
                 {t('play.endedTitle')}
               </TitleHandwritten>
               <p className="font-editorial italic text-ink-2">{t('play.endedHint')}</p>
+              {/* feat/classement-final-persistant — l'animateur ferme le podium
+                  final (TV + console) depuis son téléphone, quand il le décide. */}
+              {isMaster && identity && (
+                <button
+                  type="button"
+                  disabled={podiumFermeture}
+                  onClick={() => {
+                    setPodiumFermeture(true);
+                    void masterHidePodium(identity.sessionId, identity.token)
+                      .catch(() => setError('Fermeture impossible — réessaie'))
+                      .finally(() => setPodiumFermeture(false));
+                  }}
+                  className="mt-5 w-full rounded-2xl border-4 border-ink bg-ink py-3 font-display text-lg text-cream active:translate-y-0.5 disabled:opacity-40"
+                >
+                  ✕ FERMER LE CLASSEMENT
+                </button>
+              )}
             </Card>
           )}
         </div>
@@ -1235,7 +1271,12 @@ interface PlayingViewProps {
   /** Réponses correctes accumulées sur le track courant (broadcast track:correct_answer). */
   correctAnswers: CorrectAnswerEntry[];
   /** Reveal master (phase3-revealed) ou null si phase3 normale. */
-  lastReveal: { artist: string; title: string; cover_url?: string | null } | null;
+  lastReveal: {
+    artist: string;
+    title: string;
+    song_title?: string | null;
+    cover_url?: string | null;
+  } | null;
   /** Phase 2 a démarré à cette date — pour calculer le chrono côté UI. */
   phase2StartedAt: string | null;
   busy: boolean;
@@ -1883,6 +1924,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         <ResultPanel
           artist={lastReveal?.artist ?? currentTrack?.artist ?? '???'}
           title={lastReveal?.title ?? currentTrack?.title ?? '???'}
+          songTitle={lastReveal?.song_title ?? currentTrack?.song_title ?? null}
           coverUrl={lastReveal?.cover_url ?? currentTrack?.cover_url ?? null}
         />
       )}
@@ -2094,10 +2136,13 @@ function LateBanner({
 function ResultPanel({
   artist,
   title,
+  songTitle,
   coverUrl,
 }: {
   artist: string;
   title: string;
+  /** feat/oeuvre-affichee — vrai titre de la chanson quand `title` est une œuvre. */
+  songTitle?: string | null;
   /** feat/pochette-ecran-joueur — pochette affichée à la révélation. */
   coverUrl?: string | null;
 }): JSX.Element {
@@ -2118,8 +2163,10 @@ function ResultPanel({
           style={{ boxShadow: '3px 3px 0 #ee6c2a' }}
         />
       )}
-      <p className="font-display text-2xl text-ink leading-none mb-1">{artist}</p>
-      <p className="font-editorial italic text-sm text-raspberry font-semibold">{title}</p>
+      {/* feat/oeuvre-affichee — ordre demandé : œuvre (ou titre) / chanson / interprète */}
+      <p className="font-display text-2xl text-ink leading-none mb-1">{title}</p>
+      {songTitle && <p className="font-display text-base text-ink/80 mb-1">{songTitle}</p>}
+      <p className="font-editorial italic text-sm text-raspberry font-semibold">{artist}</p>
     </div>
   );
 }
