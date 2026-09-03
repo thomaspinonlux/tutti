@@ -403,6 +403,16 @@ router.post('/next-track', async (req: Request<{ id: string }>, res: Response): 
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
     return;
   }
+  // fix/morceau-relance-apres-fin — LA MANCHE DOIT ÊTRE EN COURS.
+  // Sans ce contrôle, un « Suivant » ou un « Passer » arrivé après la fin de
+  // manche recréait un morceau en mémoire sur une manche déjà terminée : la
+  // console rejouait un titre alors que l'écran de fin de manche était affiché.
+  if (round.status !== 'PLAYING') {
+    res
+      .status(409)
+      .json({ error: { code: 'ROUND_NOT_PLAYING', message: 'La manche est terminée' } });
+    return;
+  }
   const result = await advanceToNextOrEndRound(req.params.id, round);
   // ANTI-TRICHE — caviarde le nouveau state pour un master ANIMATOR_PLAYING.
   res.json(
@@ -427,10 +437,21 @@ router.post('/skip-track', async (req: Request<{ id: string }>, res: Response): 
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
     return;
   }
+  // fix/morceau-relance-apres-fin — LA MANCHE DOIT ÊTRE EN COURS.
+  // Sans ce contrôle, un « Suivant » ou un « Passer » arrivé après la fin de
+  // manche recréait un morceau en mémoire sur une manche déjà terminée : la
+  // console rejouait un titre alors que l'écran de fin de manche était affiché.
+  if (round.status !== 'PLAYING') {
+    res
+      .status(409)
+      .json({ error: { code: 'ROUND_NOT_PLAYING', message: 'La manche est terminée' } });
+    return;
+  }
   // Marque la phase phase3-skipped pour que les clients sachent ne pas
   // afficher de reveal. Puis avance.
   broadcastToSession(req.params.id, 'track:phase_changed', {
     round_id: parsed.data.round_id,
+    track_index: round.current_track_index,
     phase: 'phase3-skipped',
   });
   const result = await advanceToNextOrEndRound(req.params.id, round);
@@ -666,7 +687,11 @@ router.post('/end-session', async (req: Request<{ id: string }>, res: Response):
 
     const session = await prisma.session.update({
       where: { id: req.params.id },
-      data: { status: 'ENDED', ended_at: new Date() },
+      // fix/pause-collee — LA PAUSE EST LEVÉE EN MÊME TEMPS.
+      // Terminer une soirée alors qu'elle était en pause laissait le drapeau
+      // actif : la soirée suivante repartait « en pause » et l'animateur
+      // devait appuyer sur reprendre sans comprendre pourquoi.
+      data: { status: 'ENDED', ended_at: new Date(), is_paused: false },
     });
 
     const teams = (own.teams_config as Team[] | null) ?? null;

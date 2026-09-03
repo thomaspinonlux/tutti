@@ -60,10 +60,25 @@ export async function runSessionAutoClose(
     `[Cron][SessionAutoClose] start | source=${source} | threshold=${threshold.toISOString()} (older = close)`,
   );
 
+  // fix/soiree-coupee-en-plein-jeu — L'INACTIVITÉ SE MESURE SUR LE JEU RÉEL.
+  //
+  // On ne regardait que `updated_at` de la session. Or jouer un morceau touche
+  // la manche, buzzer touche les scores, un joueur qui arrive touche les
+  // participants — jamais la ligne de session. Une soirée de plus de deux
+  // heures sans une seule pause était donc marquée « terminée » EN PLEIN JEU,
+  // sans le moindre avertissement : la console continuait comme si de rien
+  // n'était jusqu'au premier refus, et la TV repassait à l'écran d'accueil.
+  //
+  // On exclut désormais toute session ayant une manche récente ou un point
+  // marqué récemment.
   const result = await prisma.session.updateMany({
     where: {
       status: { in: [SessionStatus.WAITING, SessionStatus.PLAYING] },
       updated_at: { lt: threshold },
+      rounds: {
+        none: { OR: [{ started_at: { gte: threshold } }, { ended_at: { gte: threshold } }] },
+      },
+      score_events: { none: { created_at: { gte: threshold } } },
     },
     data: {
       status: SessionStatus.ENDED,

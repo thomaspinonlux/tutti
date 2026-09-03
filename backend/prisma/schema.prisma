@@ -484,6 +484,11 @@ model Track {
   session_played  SessionPlayedTrack[]
 
   @@index([artist_id])
+  // fix/morceaux-en-double — un couple (fournisseur, identifiant) ne peut
+  // exister qu'une fois. Sans cette règle, deux lancements simultanés créaient
+  // deux fiches pour le même titre : le même morceau pouvait alors repasser
+  // dans la soirée malgré le filtre anti-répétition.
+  @@unique([provider, provider_track_id], map: "tracks_provider_provider_track_id_key")
   @@index([provider, provider_track_id])
   @@index([is_playable])
   @@index([last_refreshed_at])

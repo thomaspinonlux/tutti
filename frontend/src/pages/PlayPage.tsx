@@ -473,12 +473,30 @@ export function PlayPage(): JSX.Element {
       'track:phase_changed',
       (payload: {
         round_id: string;
+        track_index?: number;
         phase: CurrentTrackState['phase'];
         phase2_started_at?: string;
         artist?: string;
         title?: string;
       }) => {
-        setCurrentTrack((prev) => (prev ? { ...prev, phase: payload.phase } : prev));
+        // fix/buzzers-coupes-a-tort — ON ÉCARTE UN MESSAGE PÉRIMÉ.
+        // Un changement de phase destiné à un AUTRE morceau (minuteur
+        // d'une manche précédente, message arrivé en retard) coupait les
+        // buzzers du morceau en cours. On ne l'applique que s'il désigne
+        // bien la manche ET le morceau affichés.
+        let perime = false;
+        setCurrentTrack((prev) => {
+          if (!prev) return prev;
+          if (
+            payload.round_id !== prev.round_id ||
+            (payload.track_index !== undefined && payload.track_index !== prev.track_index)
+          ) {
+            perime = true;
+            return prev;
+          }
+          return { ...prev, phase: payload.phase };
+        });
+        if (perime) return;
         if (payload.phase === 'phase2' && payload.phase2_started_at) {
           setPhase2StartedAt(payload.phase2_started_at);
         }
@@ -490,12 +508,7 @@ export function PlayPage(): JSX.Element {
     );
     sock.on(
       'track:revealed',
-      (payload: {
-        round_id: string;
-        artist: string;
-        title: string;
-        cover_url?: string | null;
-      }) => {
+      (payload: { round_id: string; artist: string; title: string; cover_url?: string | null }) => {
         // Cohérent avec phase_changed → phase3-revealed mais conservé pour
         // compat ascendante.
         setLastReveal({
@@ -1073,10 +1086,20 @@ export function PlayPage(): JSX.Element {
           <div className="bg-cream rounded-3xl border-4 border-ink shadow-xl max-w-sm w-full p-6">
             <p className="font-display text-2xl mb-4 text-center">Comment répondre 🎤</p>
             <ul className="space-y-3 font-editorial text-base leading-snug">
-              <li>🎵 Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux = plus de points).</li>
-              <li>📱 Parle <strong>près du micro</strong> de ton téléphone, bien fort.</li>
-              <li>🤫 Arrête de parler quand tu as fini : l'envoi part <strong>tout seul</strong>. Tu peux aussi appuyer sur <strong>ENVOYER</strong>.</li>
-              <li>⚡ Raté ? Tu peux <strong>re-buzzer aussitôt</strong>.</li>
+              <li>
+                🎵 Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux
+                = plus de points).
+              </li>
+              <li>
+                📱 Parle <strong>près du micro</strong> de ton téléphone, bien fort.
+              </li>
+              <li>
+                🤫 Arrête de parler quand tu as fini : l'envoi part <strong>tout seul</strong>. Tu
+                peux aussi appuyer sur <strong>ENVOYER</strong>.
+              </li>
+              <li>
+                ⚡ Raté ? Tu peux <strong>re-buzzer aussitôt</strong>.
+              </li>
             </ul>
             <button
               type="button"
@@ -1171,7 +1194,14 @@ function pushToast(
 
 type RecState =
   | { kind: 'idle' }
-  | { kind: 'recording'; capture: VoiceCapture; startedAt: number; level: number }
+  | {
+      kind: 'recording';
+      capture: VoiceCapture;
+      startedAt: number;
+      level: number;
+      // fix/compte-a-rebours-faux — la durée réelle vient du serveur.
+      windowMs: number;
+    }
   | { kind: 'uploading' }
   | { kind: 'result'; result: VoiceAnswerResult };
 
@@ -1375,6 +1405,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         capture,
         startedAt: Date.now(),
         level: 0,
+        windowMs: maxDurationMs,
       });
 
       // fix/enregistrement-coupe — LE MINUTEUR EST MÉMORISÉ ET ANNULÉ.
@@ -1475,7 +1506,22 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
               elapsedMs: 0,
               error: undefined,
             });
-      const [blobResult, wsResult] = await Promise.all([capture.stop(), wsStopPromise]);
+      // fix/analyse-qui-ne-finit-pas — LA RECONNAISSANCE DU NAVIGATEUR NE PEUT
+      // PLUS BLOQUER LA SUITE. Sa promesse d'arrêt n'est résolue que par un
+      // événement du moteur (hébergé chez Google) : si cet événement n'arrive
+      // pas — perte de réseau au mauvais moment — toute la chaîne restait en
+      // attente et le joueur voyait « analyse » jusqu'au morceau suivant. Ce
+      // niveau n'est qu'un gain de rapidité : au-delà de 1,5 s on s'en passe.
+      const wsStopBorne = Promise.race([
+        wsStopPromise,
+        new Promise<Awaited<typeof wsStopPromise>>((resolve) =>
+          window.setTimeout(
+            () => resolve({ transcript: '', supported: false, elapsedMs: 1500, error: undefined }),
+            1500,
+          ),
+        ),
+      ]);
+      const [blobResult, wsResult] = await Promise.all([capture.stop(), wsStopBorne]);
       blob = blobResult;
       webSpeechTranscript = wsResult.transcript;
       webSpeechSupported = wsResult.supported;
@@ -1510,6 +1556,10 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
           sessionId: identity.sessionId,
           roundId: currentTrack.round_id,
           token: identity.token,
+          // fix/reponse-comptee-sur-le-mauvais-titre — le morceau visé part avec
+          // la réponse : si l'animateur enchaîne pendant la transcription, le
+          // serveur écarte la réponse au lieu de la compter sur le titre suivant.
+          trackId: currentTrack.track_id,
           transcript: webSpeechTranscript,
           source: 'web-speech',
         });
@@ -1554,6 +1604,10 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
           sessionId: identity.sessionId,
           roundId: currentTrack.round_id,
           token: identity.token,
+          // fix/reponse-comptee-sur-le-mauvais-titre — le morceau visé part avec
+          // la réponse : si l'animateur enchaîne pendant la transcription, le
+          // serveur écarte la réponse au lieu de la compter sur le titre suivant.
+          trackId: currentTrack.track_id,
           audio: blob,
           filename,
         });
@@ -1581,6 +1635,10 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
               sessionId: identity.sessionId,
               roundId: currentTrack.round_id,
               token: identity.token,
+              // fix/reponse-comptee-sur-le-mauvais-titre — le morceau visé part avec
+              // la réponse : si l'animateur enchaîne pendant la transcription, le
+              // serveur écarte la réponse au lieu de la compter sur le titre suivant.
+              trackId: currentTrack.track_id,
               audio: blob,
               filename,
             });
@@ -1653,7 +1711,14 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
 
     if (!finalResult.matched) {
       setRecState({ kind: 'idle' });
-      setFailToast(t('play.notMatchedShort'));
+      // fix/panne-invisible — on distingue « je ne t'ai pas compris » d'une
+      // panne du service de reconnaissance : le joueur ne doit pas croire
+      // qu'il s'est trompé, ni chercher un problème sur son téléphone.
+      setFailToast(
+        finalResult.reason === 'RECONNAISSANCE_INDISPONIBLE'
+          ? 'Reconnaissance indisponible — préviens l’animateur'
+          : t('play.notMatchedShort'),
+      );
       return;
     }
 
@@ -1800,6 +1865,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         <RecordingView
           capture={recState.capture}
           startedAt={recState.startedAt}
+          windowMs={recState.windowMs}
           level={recState.level}
           onSubmit={() => void finalizeRecording()}
           onCancel={handleCancelRec}
@@ -2290,12 +2356,14 @@ function PhoneFooter({
 function RecordingView({
   capture,
   startedAt,
+  windowMs,
   level,
   onSubmit,
   onCancel,
 }: {
   capture: VoiceCapture;
   startedAt: number;
+  windowMs: number;
   level: number;
   onSubmit: () => void;
   onCancel: () => void;
@@ -2309,7 +2377,11 @@ function RecordingView({
     return () => window.clearInterval(id);
   }, []);
   const elapsed = now - startedAt;
-  const remaining = Math.max(0, 10_000 - elapsed);
+  // fix/compte-a-rebours-faux — LE DÉCOMPTE SUIT LA VRAIE FENÊTRE.
+  // Il était figé à 10 s : dès que la fenêtre de buzz était réglée
+  // autrement, le joueur voyait 0 alors qu'il lui restait du temps, ou
+  // l'inverse.
+  const remaining = Math.max(0, windowMs - elapsed);
   const seconds = Math.ceil(remaining / 1000);
 
   // Niveau audio normalisé (0-100% pour la barre)

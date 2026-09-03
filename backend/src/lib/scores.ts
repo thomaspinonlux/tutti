@@ -22,15 +22,21 @@ export async function getCumulativeScores({
   teams,
   participants,
 }: ComputeArgs): Promise<CumulativeScore[]> {
-  const events = await prisma.scoreEvent.findMany({
-    where: { session_id: sessionId },
-    select: { participant_id: true, team_id: true, points: true },
-  });
-
+  // perf/classement — L'ADDITION EST FAITE PAR LA BASE.
+  // On chargeait toutes les lignes de points de la soirée pour les additionner
+  // ici, à chaque bonne réponse, chaque pause et chaque calcul d'écran : sur
+  // une soirée de plusieurs manches cela faisait des milliers de lignes
+  // transportées par seconde, et c'est ce qui rendait l'affichage lent en fin
+  // de partie. La base sait le faire en une requête.
   if (mode === 'SOLO') {
+    const parParticipant = await prisma.scoreEvent.groupBy({
+      by: ['participant_id'],
+      where: { session_id: sessionId },
+      _sum: { points: true },
+    });
     const totals = new Map<string, number>();
-    for (const e of events) {
-      totals.set(e.participant_id, (totals.get(e.participant_id) ?? 0) + e.points);
+    for (const ligne of parParticipant) {
+      totals.set(ligne.participant_id, ligne._sum.points ?? 0);
     }
     return participants
       .map((p) => ({
@@ -42,11 +48,16 @@ export async function getCumulativeScores({
       .sort((a, b) => b.total_points - a.total_points);
   }
 
-  // TEAMS
+  // TEAMS — même principe : addition côté base.
+  const parEquipe = await prisma.scoreEvent.groupBy({
+    by: ['team_id'],
+    where: { session_id: sessionId, team_id: { not: null } },
+    _sum: { points: true },
+  });
   const totals = new Map<string, number>();
-  for (const e of events) {
-    if (!e.team_id) continue;
-    totals.set(e.team_id, (totals.get(e.team_id) ?? 0) + e.points);
+  for (const ligne of parEquipe) {
+    if (!ligne.team_id) continue;
+    totals.set(ligne.team_id, ligne._sum.points ?? 0);
   }
   return (teams ?? [])
     .map((t) => ({

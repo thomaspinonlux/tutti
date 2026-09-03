@@ -30,12 +30,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } 
 import { getShareableOrigin } from '../lib/platform.js';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Card,
-  Input,
-  MultiColorBar,
-} from '../components/ui/index.js';
+import { Button, Card, Input, MultiColorBar } from '../components/ui/index.js';
 import { QRCode } from '../components/host/QRCode.js';
 import { getScreenState, type ScreenState } from '../lib/screenState.js';
 import type { RoundRankingEntry, FastestPlayer } from '../lib/sessions.js';
@@ -161,7 +156,25 @@ export function ScreenPage(): JSX.Element {
       }
     };
 
+    // fix/rafale-de-requetes — UN DÉLAI MINIMUM ENTRE DEUX INTERROGATIONS.
+    // Chaque message reçu (buzz, bonne réponse, phase) demandait une lecture
+    // immédiate : quand cinq joueurs buzzent en même temps, la TV lançait cinq
+    // requêtes dans la même seconde, et c'est exactement à ce moment-là que
+    // l'image se figeait. On garde la réactivité (80 ms) sans la rafale.
+    const ECART_MINIMUM_MS = 80;
+    let dernierDeclenchement = 0;
+    let declenchementDiffere: number | null = null;
     triggerPollRef.current = () => {
+      const attendu = Date.now() - dernierDeclenchement;
+      if (attendu < ECART_MINIMUM_MS) {
+        if (declenchementDiffere !== null) return;
+        declenchementDiffere = window.setTimeout(() => {
+          declenchementDiffere = null;
+          triggerPollRef.current?.();
+        }, ECART_MINIMUM_MS - attendu);
+        return;
+      }
+      dernierDeclenchement = Date.now();
       // Annule le timeout en cours et déclenche un poll immédiat. Si un poll est
       // déjà in-flight, poll() mémorise pendingTrigger et rejoue au finally.
       if (timeoutId !== null) {
@@ -193,7 +206,7 @@ export function ScreenPage(): JSX.Element {
         return;
       }
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        console.warn('[Écran TV] appareil hors réseau — on garde l\'image et on attend');
+        console.warn("[Écran TV] appareil hors réseau — on garde l'image et on attend");
         return;
       }
       echecsConsecutifs += 1;
@@ -212,6 +225,7 @@ export function ScreenPage(): JSX.Element {
     return () => {
       cancelled = true;
       triggerPollRef.current = null;
+      if (declenchementDiffere !== null) window.clearTimeout(declenchementDiffere);
       if (timeoutId !== null) window.clearTimeout(timeoutId);
       window.clearInterval(watchdogId);
       window.removeEventListener('online', kick);
@@ -248,19 +262,27 @@ export function ScreenPage(): JSX.Element {
   // Position audio pour la synchro : la TV n'a pas le son, on interpole depuis
   // le dernier track:progress reçu. Repli sur l'estimation started_at si aucun
   // message depuis 5 s (console déconnectée ou socket mort).
+  // fix/paroles-saccadees — CETTE FONCTION NE DOIT JAMAIS CHANGER D'IDENTITÉ.
+  // Elle était reconstruite à chaque état reçu, soit une fois par seconde ;
+  // l'affichage des paroles repartait de zéro à chaque fois, d'où le
+  // scintillement et le défilement heurté sur la TV. On lit l'état par une
+  // référence pour que la fonction reste la même pendant toute la manche.
+  const etatEcranRef = useRef(screenState);
+  etatEcranRef.current = screenState;
   const getLyricsPositionMs = useMemo(() => {
     return (): number => {
       const p = progressRef.current;
       if (p && Date.now() - p.at < 5000) {
         return p.position_ms + (p.is_paused ? 0 : Date.now() - p.at);
       }
-      if (screenState && 'currentTrack' in screenState && screenState.currentTrack?.started_at) {
-        const ms = Date.now() - new Date(screenState.currentTrack.started_at).getTime();
+      const etat = etatEcranRef.current;
+      if (etat && 'currentTrack' in etat && etat.currentTrack?.started_at) {
+        const ms = Date.now() - new Date(etat.currentTrack.started_at).getTime();
         return Number.isFinite(ms) && ms > 0 ? ms : 0;
       }
       return 0;
     };
-  }, [screenState]);
+  }, []);
 
   // Socket spectator : trigger re-poll immédiat sur events critiques.
   // Best-effort overlay au-dessus du polling 2s (qui reste source de vérité).

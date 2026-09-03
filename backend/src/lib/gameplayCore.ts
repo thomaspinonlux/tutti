@@ -288,7 +288,9 @@ export async function buildAndBroadcastTrack(
     .updateMany({ where: { id: sessionId, is_paused: true }, data: { is_paused: false } })
     .then((r) => {
       if (r.count > 0) {
-        console.info(`[gameplayCore] pause relâchée au démarrage du morceau (session=${sessionId})`);
+        console.info(
+          `[gameplayCore] pause relâchée au démarrage du morceau (session=${sessionId})`,
+        );
         broadcastToSession(sessionId, 'session:resumed', { session_id: sessionId });
       }
     })
@@ -375,10 +377,7 @@ export interface RandomPickResult {
  * même chanson. On écarte désormais aussi tout candidat qui partage l'ŒUVRE
  * (`song_id`) d'un morceau déjà passé.
  */
-async function filterAlreadyPlayed(
-  sessionId: string,
-  candidateIds: string[],
-): Promise<string[]> {
+async function filterAlreadyPlayed(sessionId: string, candidateIds: string[]): Promise<string[]> {
   if (candidateIds.length === 0) return [];
   try {
     const playedRows = await prisma.sessionPlayedTrack.findMany({
@@ -499,10 +498,7 @@ export async function pickRandomTrackIdsForRound(
  * Le tirage aval (slice ou quotas par niveau) est inchangé : il profite
  * simplement d'un ordre déjà diversifié.
  */
-export function interleaveByArtist(
-  ids: string[],
-  artistByTrackId: Map<string, string>,
-): string[] {
+export function interleaveByArtist(ids: string[], artistByTrackId: Map<string, string>): string[] {
   if (ids.length <= 1) return ids;
   const groups = new Map<string, string[]>();
   for (const id of ids) {
@@ -534,9 +530,7 @@ export function interleaveByArtist(
 }
 
 /** Artiste de chaque morceau — pour la répartition ci-dessus. */
-export async function loadArtistByTrackId(
-  trackIds: string[],
-): Promise<Map<string, string>> {
+export async function loadArtistByTrackId(trackIds: string[]): Promise<Map<string, string>> {
   const map = new Map<string, string>();
   if (trackIds.length === 0) return map;
   try {
@@ -627,7 +621,12 @@ export async function pickWeightedTrackIdsForRound(
   // pour ne pas fausser les proportions Facile/Moyen/Expert.
   const artistByTrackId = await loadArtistByTrackId(candidates);
   const selected = weightedStratifiedSample(
-    candidates, tierByTrackId, weights, targetN, artistByTrackId);
+    candidates,
+    tierByTrackId,
+    weights,
+    targetN,
+    artistByTrackId,
+  );
   return {
     selectedTrackIds: selected,
     poolSize: poolTracks.length,
@@ -742,6 +741,26 @@ export async function advanceToNextOrEndRound(
   { ended: true; round: EnrichedEndedRound | null } | { ended: false; state: CurrentTrackState }
 > {
   const nextIndex = round.current_track_index + 1;
+  // fix/morceau-saute — AVANCE ATOMIQUE. Deux appuis quasi simultanés sur
+  // « Suivant » (console iPad ET télécommande) lisaient tous deux le même
+  // index : soit le même morceau repartait deux fois en effaçant les buzz déjà
+  // validés, soit l'un sautait à l'index suivant et un morceau du tirage
+  // n'était jamais joué. La garde « occupé » du frontend est par appareil, elle
+  // ne protégeait rien. On réserve donc l'index en base : le premier appui
+  // gagne, le second est ignoré proprement.
+  const reservation = await prisma.sessionRound.updateMany({
+    where: { id: round.id, current_track_index: round.current_track_index },
+    data: { current_track_index: nextIndex },
+  });
+  if (reservation.count === 0) {
+    console.info(
+      `[gameplayCore] avance déjà prise en compte (manche=${round.id}, index=${nextIndex}) — appui ignoré`,
+    );
+    const etatCourant = await buildCurrentTrackStateSnapshot(round.id);
+    if (etatCourant) {
+      return { ended: false, state: etatCourant };
+    }
+  }
   // fix/session-pick-respect-default-size — défense en profondeur : clamp
   // à default_session_size. Si selected_track_ids est vide, l'auto-clamp
   // côté buildAndBroadcastTrack a déjà persisté un sous-ensemble — mais on
@@ -772,8 +791,14 @@ export async function advanceToNextOrEndRound(
     }
     const state = await buildAndBroadcastTrack(sessionId, round, nextIndex);
     if (!state) {
-      // ne devrait pas arriver, on a déjà vérifié l'index
-      return { ended: false, state: state as never };
+      // fix/rien-ne-se-passe — le morceau tiré n'existe plus dans la playlist
+      // clonée (retiré, dédoublonné). On répondait 200 avec un état vide : la
+      // console gardait l'ancien morceau à l'écran et l'animateur appuyait
+      // dans le vide, sans message. On termine proprement la manche.
+      console.warn(
+        `[gameplayCore] morceau introuvable à l'index ${nextIndex} (manche=${round.id}) → fin de manche`,
+      );
+      return { ended: true, round: await endRoundInternal(sessionId, round.id) };
     }
     return { ended: false, state };
   }
@@ -803,7 +828,10 @@ export async function endRoundInternal(
   roundId: string,
 ): Promise<EnrichedEndedRound | null> {
   await prisma.sessionRound.update({
-    where: { id: roundId },
+    // fix/manche-d-une-autre-session — l'identifiant de manche vient du corps
+    // de la requête : sans le filtre de session, un animateur pouvait terminer
+    // la manche d'une AUTRE soirée en cours.
+    where: { id: roundId, session_id: sessionId },
     data: { status: 'ENDED', ended_at: new Date() },
   });
   clearActiveTrack(roundId);
@@ -940,6 +968,10 @@ export async function revealCurrentTrack(
   // Sans cet event, lastReveal était bien set mais phase restait phase1/2.
   broadcastToSession(sessionId, 'track:phase_changed', {
     round_id: roundId,
+    // fix/buzzers-coupes-a-tort — l'index du morceau accompagne l'événement :
+    // un écran peut ainsi écarter un message qui ne concerne plus le morceau
+    // qu'il affiche.
+    track_index: active.track_index,
     phase: 'phase3-revealed',
     artist: track.artist.canonical_name,
     title: track.canonical_title,

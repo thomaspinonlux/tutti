@@ -61,6 +61,13 @@ interface CommonArgs {
   sessionId: string;
   roundId: string;
   token: string;
+  /**
+   * fix/reponse-comptee-sur-le-mauvais-titre — morceau visé au moment du buzz.
+   * La transcription peut durer plusieurs secondes ; si l'animateur enchaîne
+   * pendant ce temps, le serveur doit écarter la réponse au lieu de la
+   * comparer au morceau suivant.
+   */
+  trackId?: string;
 }
 
 /**
@@ -81,6 +88,7 @@ export async function postVoiceMatchText(
       token: args.token,
       transcript: args.transcript,
       source: args.source ?? 'web-speech',
+      track_id: args.trackId,
     }),
   });
   if (!res.ok) {
@@ -107,6 +115,7 @@ export async function postVoiceTranscribeDeepgram(
   const filename = args.filename ?? `buzz.${ext}`;
   form.append('audio', args.audio, filename);
   form.append('token', args.token);
+  if (args.trackId) form.append('track_id', args.trackId);
   console.info(
     `[Voice] L2 upload | blobType=${args.audio.type || '(empty)'} | filename=${filename} | size=${Math.round(args.audio.size / 1024)}KB`,
   );
@@ -143,6 +152,7 @@ export async function postVoiceTranscribeAssemblyAI(
   const filename = args.filename ?? `buzz.${ext}`;
   form.append('audio', args.audio, filename);
   form.append('token', args.token);
+  if (args.trackId) form.append('track_id', args.trackId);
   console.info(
     `[Voice] L3 upload | blobType=${args.audio.type || '(empty)'} | filename=${filename} | size=${Math.round(args.audio.size / 1024)}KB`,
   );

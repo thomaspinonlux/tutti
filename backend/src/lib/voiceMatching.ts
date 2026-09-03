@@ -152,7 +152,11 @@ function levenshteinDistance(a: string, b: string): number {
 export function levenshteinScore(a: string, b: string): number {
   const na = normalizeText(a);
   const nb = normalizeText(b);
-  if (na === '' && nb === '') return 100;
+  // fix/points-sans-rien-dire — DEUX CHAÎNES VIDES NE VALENT PAS 100 %.
+  // La normalisation retire les mots outils : un titre très court composé
+  // uniquement de ces mots se réduit à une chaîne vide. Combiné à une
+  // transcription vide (panne de reconnaissance), le score valait 100 et les
+  // points étaient accordés à qui buzzait sans rien dire.
   if (na === '' || nb === '') return 0;
   if (na === nb) return 100;
   const dist = levenshteinDistance(na, nb);
@@ -188,11 +192,16 @@ function metaphonesMatch(a: string, b: string): boolean {
 export function phoneticScore(a: string, b: string): number {
   const na = normalizeText(a);
   const nb = normalizeText(b);
-  if (na === '' && nb === '') return 100;
+  // fix/points-sans-rien-dire — DEUX CHAÎNES VIDES NE VALENT PAS 100 %.
+  // La normalisation retire les mots outils : un titre très court composé
+  // uniquement de ces mots se réduit à une chaîne vide. Combiné à une
+  // transcription vide (panne de reconnaissance), le score valait 100 et les
+  // points étaient accordés à qui buzzait sans rien dire.
   if (na === '' || nb === '') return 0;
   const tokensA = na.split(' ').filter((t) => t.length > 0);
   const tokensB = nb.split(' ').filter((t) => t.length > 0);
-  if (tokensA.length === 0 && tokensB.length === 0) return 100;
+  // fix/points-sans-rien-dire — cf. ci-dessus : aucun jeton des deux côtés
+  // ne vaut pas une correspondance parfaite.
   if (tokensA.length === 0 || tokensB.length === 0) return 0;
 
   // Alignement greedy : pour chaque token de A, cherche le 1ʳᵉ match

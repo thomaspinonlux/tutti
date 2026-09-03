@@ -334,18 +334,23 @@ export async function launchOfficialPlaylistForSession(
     trackAggByKey.set(k, agg);
   }
   const providerTrackIds = [...trackAggByKey.values()].map((t) => t.provider_track_id);
+  // perf/lancement-lent — ON LIMITE LA RECHERCHE AUX FOURNISSEURS CONCERNÉS.
+  // Sans ce filtre, la base parcourait toute la table des morceaux (tous
+  // fournisseurs confondus) deux fois par lancement de manche : c'est une
+  // partie des secondes d'attente entre le clic et le premier titre.
+  const fournisseurs = [...new Set([...trackAggByKey.values()].map((t) => t.provider))];
 
   const existingTracks = await prisma.track.findMany({
-    where: { provider_track_id: { in: providerTrackIds } },
+    where: { provider: { in: fournisseurs }, provider_track_id: { in: providerTrackIds } },
     select: { id: true, provider: true, provider_track_id: true, cover_url: true, aliases: true },
   });
   const existingTrackKeys = new Set(
     existingTracks.map((t) => trackKey(t.provider, t.provider_track_id)),
   );
 
-  // Créations : tracks absentes. Dédup APP (pas de contrainte unique sur
-  // (provider, provider_track_id) → skipDuplicates inopérant ici ; même
-  // fenêtre de course que l'ancien findFirst+create).
+  // Créations : tracks absentes. La base porte désormais une règle d'unicité
+  // sur (provider, provider_track_id) : skipDuplicates ferme la fenêtre de
+  // course entre deux lancements simultanés (cf. fix/morceaux-en-double).
   const tracksToCreate = [...trackAggByKey.values()]
     .filter((t) => !existingTrackKeys.has(trackKey(t.provider, t.provider_track_id)))
     .map((t) => ({
@@ -358,7 +363,7 @@ export async function launchOfficialPlaylistForSession(
       cover_url: t.cover_url,
     }));
   if (tracksToCreate.length > 0) {
-    await prisma.track.createMany({ data: tracksToCreate });
+    await prisma.track.createMany({ data: tracksToCreate, skipDuplicates: true });
   }
 
   // Mises à jour : tracks existantes — backfill cover_url + merge aliases. Parallèle.
@@ -371,11 +376,19 @@ export async function launchOfficialPlaylistForSession(
     if (merged.length !== t.aliases.length) data.aliases = merged;
     return Object.keys(data).length > 0 ? [prisma.track.update({ where: { id: t.id }, data })] : [];
   });
-  if (trackUpdates.length > 0) await Promise.all(trackUpdates);
+  // perf/lancement-lent — LES MISES À JOUR PARTENT PAR PAQUETS.
+  // Elles étaient toutes lancées d'un coup : jusqu'à 160 requêtes simultanées
+  // sur un nombre de connexions bien plus petit, donc une file d'attente et,
+  // par moments, une requête abandonnée en cours de lancement. Par paquets de
+  // 20, c'est aussi rapide et cela ne sature plus rien.
+  const TAILLE_PAQUET = 20;
+  for (let i = 0; i < trackUpdates.length; i += TAILLE_PAQUET) {
+    await Promise.all(trackUpdates.slice(i, i + TAILLE_PAQUET));
+  }
 
   // Re-fetch ids (créés + existants).
   const allTracks = await prisma.track.findMany({
-    where: { provider_track_id: { in: providerTrackIds } },
+    where: { provider: { in: fournisseurs }, provider_track_id: { in: providerTrackIds } },
     select: { id: true, provider: true, provider_track_id: true },
   });
   const trackIdByKey = new Map(

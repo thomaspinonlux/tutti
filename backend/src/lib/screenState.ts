@@ -77,6 +77,9 @@ export type ScreenState =
       sessionName: string | null;
       session: SessionWithParticipants;
       currentTrack: CurrentTrackState | null;
+      /** fix/classement-qui-disparait-en-pause — mêmes scores qu'en jeu. */
+      cumulative: CumulativeScore[];
+      correctAnswers: CorrectAnswerEntry[];
       /** feat/tv-join-qr-codes — animateur a demandé l'overlay QR géant. */
       qr_overlay: boolean;
       /** feat/synced-lyrics — cf. variante PLAYING. */
@@ -287,14 +290,26 @@ function serializeSession(
  * pouvait lire la réponse avant tout le monde. On les retire tant que le
  * morceau n'est pas révélé à toute la salle.
  */
-function masquerReponseAvantRevelation(
-  track: CurrentTrackState | null,
-): CurrentTrackState | null {
+function masquerReponseAvantRevelation(track: CurrentTrackState | null): CurrentTrackState | null {
   if (!track) return null;
   const revele =
-    track.phase === 'phase3' || track.phase === 'phase3-revealed' || track.phase === 'phase3-skipped';
+    track.phase === 'phase3' ||
+    track.phase === 'phase3-revealed' ||
+    track.phase === 'phase3-skipped';
   if (revele) return track;
   return { ...track, artist: '', title: '', album: null, year: null, cover_url: null };
+}
+
+// perf/journal-bavard — LE JOURNAL N'ÉCRIT QUE SUR CHANGEMENT.
+// Chaque TV interroge cet état une fois par seconde : une ligne écrite à
+// chaque calcul remplissait les journaux de Railway de milliers de lignes
+// identiques par soirée, ce qui coûte cher et masque les vraies erreurs.
+const dernierEtatJournalise = new Map<string, string>();
+
+function journaliserSiChange(workspaceId: string, ligne: string): void {
+  if (dernierEtatJournalise.get(workspaceId) === ligne) return;
+  dernierEtatJournalise.set(workspaceId, ligne);
+  console.info(ligne);
 }
 
 export async function computeScreenState(workspaceId: string): Promise<ScreenState> {
@@ -302,7 +317,10 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
   const session = await findRepresentativeSession(workspaceId);
 
   if (!session) {
-    console.info(`[ScreenState] Workspace ${workspaceId} → IDLE (pas de session active)`);
+    journaliserSiChange(
+      workspaceId,
+      `[ScreenState] Workspace ${workspaceId} → IDLE (pas de session active)`,
+    );
     return { state: 'IDLE', lastUpdate };
   }
 
@@ -320,7 +338,10 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       teams: (session.teams_config as Team[] | null) ?? null,
       participants: players,
     });
-    console.info(`[ScreenState] Workspace ${workspaceId} → FINAL_PODIUM (session=${session.id})`);
+    journaliserSiChange(
+      workspaceId,
+      `[ScreenState] Workspace ${workspaceId} → FINAL_PODIUM (session=${session.id})`,
+    );
     return {
       state: 'FINAL_PODIUM',
       sessionId: session.id,
@@ -338,7 +359,19 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
   // PAUSED : session PLAYING + round PLAYING + is_paused
   if (playingRound && session.is_paused) {
     const currentTrack = await buildCurrentTrackStateSnapshot(playingRound.id);
-    console.info(
+    // fix/classement-qui-disparait-en-pause — L'ÉTAT EN PAUSE PORTE AUSSI LES
+    // SCORES. Il ne contenait ni le classement ni les joueurs ayant trouvé :
+    // dès que l'animateur mettait en pause pour une annonce, le classement
+    // s'effaçait de la TV alors que la console l'affichait toujours. Au retour
+    // de pause tout réapparaissait — ça ressemblait à une perte de points.
+    const cumulativePause = await getCumulativeScores({
+      sessionId: session.id,
+      mode: session.mode as GameMode,
+      teams: (session.teams_config as Team[] | null) ?? null,
+      participants: players,
+    });
+    journaliserSiChange(
+      workspaceId,
       `[ScreenState] Workspace ${workspaceId} → PAUSED (session=${session.id}, round=${playingRound.position})`,
     );
     return {
@@ -348,6 +381,8 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       sessionName: session.name,
       session: serializeSession(session),
       currentTrack: masquerReponseAvantRevelation(currentTrack),
+      cumulative: cumulativePause,
+      correctAnswers: currentTrack?.correct_answers ?? [],
       qr_overlay: getQrOverlay(workspaceId),
       lyrics_overlay: getLyricsOverlay(session.id),
       lastUpdate,
@@ -363,7 +398,8 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       teams: (session.teams_config as Team[] | null) ?? null,
       participants: players,
     });
-    console.info(
+    journaliserSiChange(
+      workspaceId,
       `[ScreenState] Workspace ${workspaceId} → PLAYING (session=${session.id}, round=${playingRound.position}/${roundsTotal})`,
     );
     return {
@@ -391,7 +427,8 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
   // elle-même (/api/library-public/catalog) et mirrore l'écran animateur.
   const focus = getFocusedSelection(workspaceId);
   if (focus) {
-    console.info(
+    journaliserSiChange(
+      workspaceId,
       `[ScreenState] Workspace ${workspaceId} → PLAYLIST_SELECTION (session=${session.id}, focus=${focus.playlistId}, scroll=${focus.scrollRatio.toFixed(2)})`,
     );
     return {
@@ -419,7 +456,8 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       }),
       computeRoundResults(session.id, lastEndedRound.id),
     ]);
-    console.info(
+    journaliserSiChange(
+      workspaceId,
       `[ScreenState] Workspace ${workspaceId} → ROUND_PODIUM (session=${session.id}, lastRound=${lastEndedRound.position})`,
     );
     return {
@@ -436,7 +474,8 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
   }
 
   // LOBBY : session WAITING ou PLAYING sans round actif
-  console.info(
+  journaliserSiChange(
+    workspaceId,
     `[ScreenState] Workspace ${workspaceId} → LOBBY (session=${session.id}, players=${players.length})`,
   );
   return {

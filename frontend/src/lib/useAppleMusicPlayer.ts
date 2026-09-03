@@ -112,6 +112,8 @@ export function useAppleMusicPlayer({
   const [audioBlocked, setAudioBlocked] = useState(false);
 
   const musicRef = useRef<MusicKitInstance | null>(null);
+  // fix/apple-ecouteurs-empiles — retire les écouteurs posés sur l'instance.
+  const detacherEcouteurs = useRef<(() => void) | null>(null);
   // Dernier morceau demandé — rejoué par unblockAudio() depuis un geste frais.
   const lastCatalogIdRef = useRef<string | null>(null);
   // feat/next-track-preload — id du morceau actuellement PRÉCHARGÉ dans la
@@ -201,15 +203,31 @@ export function useAppleMusicPlayer({
           setPositionMs(Math.round((m.currentPlaybackTime ?? 0) * 1000));
           setDurationMs(Math.round((m.currentPlaybackDuration ?? 0) * 1000));
         };
-        music.addEventListener('playbackStateDidChange', onPlayback);
-        music.addEventListener('playbackTimeDidChange', onTime);
-        // fix/no-auto-advance — cf. queueChangeAllowedUntilRef.
-        music.addEventListener('queuePositionDidChange', () => {
+        // fix/apple-ecouteurs-empiles — LES ÉCOUTEURS SONT RETIRÉS À LA SORTIE.
+        // MusicKit.configure() rend toujours la MÊME instance : à chaque
+        // relance de cet effet (changement de jeton, remontage de la page) une
+        // nouvelle série d'écouteurs s'ajoutait aux précédentes sans jamais
+        // partir. Au bout de quelques manches, le garde-fou d'avance de file
+        // se déclenchait en cascade et mettait la musique en pause tout seul.
+        const onQueue = (): void => {
           if (Date.now() > queueChangeAllowedUntilRef.current) {
             console.warn('[Apple] avance de file NON demandée → pause immédiate');
             void musicRef.current?.pause();
           }
-        });
+        };
+        music.addEventListener('playbackStateDidChange', onPlayback);
+        music.addEventListener('playbackTimeDidChange', onTime);
+        // fix/no-auto-advance — cf. queueChangeAllowedUntilRef.
+        music.addEventListener('queuePositionDidChange', onQueue);
+        detacherEcouteurs.current = () => {
+          try {
+            music.removeEventListener('playbackStateDidChange', onPlayback);
+            music.removeEventListener('playbackTimeDidChange', onTime);
+            music.removeEventListener('queuePositionDidChange', onQueue);
+          } catch {
+            /* retrait best-effort : jamais bloquant */
+          }
+        };
 
         setStatus('ready');
       } catch (err: unknown) {
@@ -222,6 +240,8 @@ export function useAppleMusicPlayer({
 
     return () => {
       cancelled = true;
+      detacherEcouteurs.current?.();
+      detacherEcouteurs.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, musicUserToken]);

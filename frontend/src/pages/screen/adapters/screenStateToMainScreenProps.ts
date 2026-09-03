@@ -34,12 +34,15 @@ export function screenStateToMainScreenProps(state: PlayingOrPaused): MainScreen
       // pas de positionMs/durationMs côté TV — MainScreenView gère undefined
     };
   }
-  // PAUSED : pas de scoreboard cumulé exposé dans cet état; on passe [].
+  // fix/classement-qui-disparait-en-pause — LE SERVEUR ENVOIE MAINTENANT LES
+  // SCORES EN PAUSE. On les transmet au lieu de forcer des tableaux vides :
+  // le classement et les joueurs ayant trouvé restent affichés pendant une
+  // annonce de l'animateur, comme sur sa console.
   return {
     session: state.session,
     currentTrack: state.currentTrack,
-    cumulative: [],
-    correctAnswers: [],
+    cumulative: state.cumulative ?? [],
+    correctAnswers: state.correctAnswers ?? [],
     phase2StartedAt: null,
     lastReveal: null,
     activeBuzzCount: 0,

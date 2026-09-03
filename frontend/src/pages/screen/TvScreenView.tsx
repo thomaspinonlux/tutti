@@ -613,7 +613,11 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
               </div>
             ) : (
               <>
-                {isPhase1 && (
+                {/* fix/compteur-de-buzz-a-zero — la TV n'a pas accès au nombre
+                    de buzz en cours : la pastille affichait « 0 personne a
+                    buzzé » en grand pendant que douze joueurs buzzaient. On ne
+                    l'affiche que si la valeur est réellement disponible. */}
+                {isPhase1 && props.activeBuzzCount > 0 && (
                   <div className="absolute left-0 top-0 flex items-center gap-2 rounded-2xl bg-[#23232e] px-4 py-3 text-sm font-bold text-white ring-1 ring-white/10">
                     <span
                       aria-hidden

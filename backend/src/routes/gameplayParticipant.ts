@@ -684,17 +684,44 @@ function schedulePhase3Transition(sessionId: string, roundId: string): void {
   const existing = phase2Timers.get(roundId);
   if (existing) clearTimeout(existing);
 
+  // fix/buzzers-coupes-a-tort — ON MÉMORISE LE MORCEAU VISÉ.
+  // Le minuteur de fin de phase 2 ne portait que l'identifiant de manche. S'il
+  // se déclenchait après que l'animateur a enchaîné, il faisait basculer en
+  // phase 3 le morceau qui venait de démarrer : buzzers coupés pour toute la
+  // salle au bout de trois secondes. On vérifie désormais qu'on parle bien du
+  // même morceau qu'à l'armement.
+  const cible = getActiveTrack(roundId);
+  const indexCible = cible?.track_index ?? -1;
+
   const timer = setTimeout(() => {
     phase2Timers.delete(roundId);
     const active = getActiveTrack(roundId);
     if (!active || active.phase !== 'phase2') return; // déjà passé en phase 3
+    if (active.track_index !== indexCible) {
+      console.info(
+        `[phase2] minuteur périmé (visait le titre ${indexCible}, en cours : ${active.track_index}) — ignoré`,
+      );
+      return;
+    }
     setPhase3(roundId);
     broadcastToSession(sessionId, 'track:phase_changed', {
       round_id: roundId,
+      // fix/buzzers-coupes-a-tort — l'index part avec l'événement : les écrans
+      // peuvent ainsi écarter un message qui ne concerne plus leur morceau.
+      track_index: indexCible,
       phase: 'phase3',
     });
   }, PHASE_2_DURATION_MS);
   phase2Timers.set(roundId, timer);
+}
+
+/** Annule le minuteur de phase 2 d'une manche (fin de manche, enchaînement). */
+export function cancelPhase2Timer(roundId: string): void {
+  const existing = phase2Timers.get(roundId);
+  if (existing) {
+    clearTimeout(existing);
+    phase2Timers.delete(roundId);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -732,6 +759,12 @@ interface CascadeMatchCommitArgs {
   persistTranscript?: boolean;
   /** feat/voice-cascade-l3-assemblyai — latence côté backend pour analytics. */
   latencyMs?: number;
+  /**
+   * fix/reponse-comptee-sur-le-mauvais-titre — morceau visé par le joueur au
+   * moment de son buzz. Si l'animateur a enchaîné pendant la transcription, la
+   * réponse ne doit PAS être comparée au morceau suivant.
+   */
+  expectedTrackId?: string;
 }
 
 interface CascadeMatchCommitResult {
@@ -763,6 +796,25 @@ async function runMatchAndCommit(
   const active = getActiveTrack(args.roundId);
   if (!active) return { error: 'NO_TRACK', status: 409 };
 
+  // fix/reponse-comptee-sur-le-mauvais-titre — LA RÉPONSE DOIT VISER LE BON
+  // MORCEAU. La transcription peut prendre plusieurs secondes ; si l'animateur
+  // enchaîne pendant ce temps, l'ancienne réponse était comparée au NOUVEAU
+  // morceau — elle consommait le buzz du joueur, et sur une ressemblance
+  // phonétique elle lui donnait même les points du titre suivant.
+  if (args.expectedTrackId && args.expectedTrackId !== active.track_id) {
+    console.info(
+      `[voix] réponse périmée (visait ${args.expectedTrackId}, en cours ${active.track_id}) — ignorée`,
+    );
+    return {
+      matched: false,
+      scored: false,
+      score: 0,
+      target: null,
+      transcript_normalized: args.transcript,
+      reason: 'MORCEAU_DEPASSE',
+    };
+  }
+
   if (hasCorrectAnswer(args.roundId, args.participantId)) {
     return {
       matched: false,
@@ -771,6 +823,21 @@ async function runMatchAndCommit(
       target: null,
       transcript_normalized: args.transcript,
       reason: 'ALREADY_ANSWERED',
+    };
+  }
+
+  // fix/points-sans-rien-dire — GARDE EN AMONT.
+  // Une transcription vide ne doit jamais être évaluée : elle vient soit d'un
+  // joueur qui n'a rien dit, soit d'une panne de reconnaissance. Dans les deux
+  // cas, aucun point.
+  if (!args.transcript || args.transcript.trim() === '') {
+    return {
+      matched: false,
+      scored: false,
+      score: 0,
+      target: null,
+      transcript_normalized: '',
+      reason: 'AUCUNE_PAROLE',
     };
   }
 
@@ -1009,6 +1076,7 @@ router.post(
     }
 
     const result = await runMatchAndCommit({
+      expectedTrackId: (req.body as { track_id?: string } | undefined)?.track_id,
       sessionId: req.params.id,
       roundId: req.params.roundId,
       participantId: participant.id,
@@ -1136,6 +1204,13 @@ router.post(
     let transcript = '';
     let level: 'L2' | 'L3-fallback' = 'L2';
     let source = 'deepgram';
+    /**
+     * fix/panne-invisible — vrai si AUCUN service de transcription n'a répondu.
+     * Sans ce drapeau, une coupure donnait un score de 0, indistinguable d'une
+     * mauvaise réponse : toute la salle voyait « Pas reconnu » et cherchait un
+     * problème de micro. On le renvoie au joueur pour qu'il sache quoi faire.
+     */
+    let transcriptionIndisponible = false;
 
     // Tente Deepgram (Nova-3).
     try {
@@ -1168,11 +1243,17 @@ router.post(
         } else {
           console.error('[voice-cascade] Whisper unexpected error:', err2);
         }
-        // Pire cas : aucun transcript → on continue avec '' (score = 0).
+        // fix/panne-invisible — ON RETIENT QUE C'EST UNE PANNE.
+        // Auparavant, une coupure des services de transcription donnait un
+        // score de 0, exactement comme une mauvaise réponse : toute la salle
+        // voyait « Pas reconnu » et cherchait un problème de micro pendant
+        // vingt minutes. On distingue désormais les deux cas.
+        transcriptionIndisponible = true;
       }
     }
 
     const result = await runMatchAndCommit({
+      expectedTrackId: (req.body as { track_id?: string } | undefined)?.track_id,
       sessionId: req.params.id,
       roundId: req.params.roundId,
       participantId: participant.id,
@@ -1202,7 +1283,9 @@ router.post(
       position: result.position,
       total_score: result.total_score,
       breakdown: result.breakdown,
-      reason: result.reason,
+      // fix/panne-invisible — le joueur doit savoir si c'est SA réponse qui
+      // n'allait pas, ou si la reconnaissance était en panne.
+      reason: transcriptionIndisponible ? 'RECONNAISSANCE_INDISPONIBLE' : result.reason,
     });
   },
 );
@@ -1325,6 +1408,7 @@ router.post(
     }
 
     const result = await runMatchAndCommit({
+      expectedTrackId: (req.body as { track_id?: string } | undefined)?.track_id,
       sessionId: req.params.id,
       roundId: req.params.roundId,
       participantId: participant.id,

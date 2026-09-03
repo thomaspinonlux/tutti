@@ -67,6 +67,9 @@ export type ScreenState =
       sessionName: string | null;
       session: SessionWithParticipants;
       currentTrack: CurrentTrackState | null;
+      /** fix/classement-qui-disparait-en-pause — mêmes scores qu'en jeu. */
+      cumulative?: CumulativeScore[];
+      correctAnswers?: CorrectAnswerEntry[];
       /** feat/tv-join-qr-codes — overlay QR géant demandé par l'animateur. */
       qr_overlay: boolean;
       /** feat/synced-lyrics — cf. variante PLAYING. */

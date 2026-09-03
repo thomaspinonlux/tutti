@@ -543,12 +543,33 @@ function HostPageInner(): JSX.Element {
           'track:phase_changed',
           (payload: {
             round_id: string;
+            track_index?: number;
             phase: CurrentTrackState['phase'];
             phase2_started_at?: string;
             artist?: string;
             title?: string;
           }) => {
-            setCurrentTrack((prev) => (prev ? { ...prev, phase: payload.phase } : prev));
+            // fix/buzzers-coupes-a-tort — ON ÉCARTE UN MESSAGE PÉRIMÉ.
+            // Un changement de phase destiné à un AUTRE morceau (minuteur
+            // d'une manche précédente, message arrivé en retard) coupait les
+            // buzzers du morceau en cours. On ne l'applique que s'il désigne
+            // bien la manche ET le morceau affichés.
+            let perime = false;
+            setCurrentTrack((prev) => {
+              if (!prev) return prev;
+              if (
+                payload.round_id !== prev.round_id ||
+                (payload.track_index !== undefined && payload.track_index !== prev.track_index)
+              ) {
+                perime = true;
+                return prev;
+              }
+              return { ...prev, phase: payload.phase };
+            });
+            if (perime) {
+              console.info('[Socket] changement de phase périmé — ignoré');
+              return;
+            }
             if (payload.phase === 'phase2' && payload.phase2_started_at) {
               setPhase2StartedAt(payload.phase2_started_at);
             }
@@ -1041,8 +1062,7 @@ function HostPageInner(): JSX.Element {
       // = relance » redémarrait alors le morceau toutes les 2 secondes, et il
       // n'atteignait jamais le refrain. Un écart non identifié est désormais
       // seulement journalisé.
-      const isStaleOldTrack =
-        !!prevAppleTrackRef.current && actual === prevAppleTrackRef.current;
+      const isStaleOldTrack = !!prevAppleTrackRef.current && actual === prevAppleTrackRef.current;
       if (isStaleOldTrack) {
         console.warn(`[Synchro] le lecteur joue encore l'ancien titre → relance de ${expected}`);
         resyncCountRef.current = 0;
@@ -1080,8 +1100,17 @@ function HostPageInner(): JSX.Element {
   };
 
   const handleAudioUnlockTap = (): void => {
-    if (currentTrack?.provider === 'apple_music') {
+    // fix/relance-du-son-sans-effet — TOUS LES FOURNISSEURS.
+    // La relance demandée depuis la télécommande n'agissait qu'en Apple Music :
+    // sur une manche YouTube ou Spotify, l'animateur appuyait et rien ne se
+    // passait, il devait revenir physiquement à l'iPad.
+    const provider = currentTrack?.provider;
+    if (provider === 'apple_music' && currentTrack) {
       void apple.play(currentTrack.provider_track_id);
+    } else if (provider === 'youtube') {
+      void youtube.tapToStart();
+    } else if (provider === 'spotify') {
+      void spotify.unblockAudio();
     }
   };
   audioUnlockRef.current = handleAudioUnlockTap;
@@ -2178,7 +2207,14 @@ function HostPageInner(): JSX.Element {
           onStart={() => void handleStartFirstPlay()}
           onCancel={handleCancelFirstPlay}
           onYoutubeWarmup={youtube.warmupSync}
-          getYoutubeState={youtube.getPlayerState}
+          getYoutubeState={
+            // fix/avertissement-a-tort — cette détection ne vaut que pour
+            // YouTube. Sur une manche Apple Music, le lecteur YouTube existe
+            // mais n'a jamais reçu de vidéo : il se déclarait « non démarré »
+            // et un avertissement plein écran recouvrait le lancement alors
+            // que la musique partait normalement.
+            audioProvider === 'youtube' ? youtube.getPlayerState : undefined
+          }
         />
       </>
     );
@@ -2503,11 +2539,13 @@ function HostPageInner(): JSX.Element {
                   // FULLY SYNC dans le gesture (resume AudioContext + silent
                   // buffer). Doit être la 1ʳᵉ instruction avant tout async.
                   unlockAudioSync('force-audio-button');
-                  // Bug 4 — route le clic vers le provider du morceau courant.
-                  // youtube.unblockAudio est sync. spotify.transferToTutti est
-                  // async mais le gesture est déjà capturé par unlockAudioSync.
+                  // fix/forcer-le-son-sans-effet — APPLE MUSIC ÉTAIT OUBLIÉ.
+                  // Tout ce qui n'était pas YouTube partait sur Spotify : sur
+                  // une manche Apple Music, le bouton ne faisait rien d'utile.
                   if (currentTrack?.provider === 'youtube') {
                     youtube.unblockAudio();
+                  } else if (currentTrack?.provider === 'apple_music') {
+                    void apple.unblockAudio();
                   } else {
                     void spotify.transferToTutti();
                   }
@@ -2517,8 +2555,12 @@ function HostPageInner(): JSX.Element {
                 onRestartTrack={() => void handleRestartTrack()}
                 onRevealAnswer={() => void handleGiveAnswer()}
                 onSeek={(ms) => {
-                  // feat/seek-bar — route vers le provider du morceau courant.
+                  // fix/barre-de-lecture-inerte — APPLE MUSIC ÉTAIT OUBLIÉ.
+                  // Tout ce qui n'était pas YouTube partait sur Spotify : sur
+                  // une manche Apple Music, cliquer dans la barre ne déplaçait
+                  // rien alors que la fonction existe.
                   if (currentTrack?.provider === 'youtube') youtube.seek(ms);
+                  else if (currentTrack?.provider === 'apple_music') void apple.seek(ms);
                   else void spotify.seek(ms);
                 }}
               />

@@ -69,6 +69,17 @@ router.post(
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
       return;
     }
+    // fix/morceau-relance-apres-fin — LA MANCHE DOIT ÊTRE EN COURS.
+    // Sans ce contrôle, un « Suivant » ou un « Passer » arrivé après la fin de
+    // manche (double appui, télécommande en retard, réseau lent) recréait un
+    // morceau en mémoire sur une manche déjà terminée en base : la console
+    // rejouait un titre alors que l'écran de fin de manche était déjà affiché.
+    if (round.status !== 'PLAYING') {
+      res
+        .status(409)
+        .json({ error: { code: 'ROUND_NOT_PLAYING', message: 'La manche est terminée' } });
+      return;
+    }
     const result = await advanceToNextOrEndRound(req.params.id, round);
     res.json(result);
   },
@@ -90,8 +101,20 @@ router.post(
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
       return;
     }
+    // fix/morceau-relance-apres-fin — LA MANCHE DOIT ÊTRE EN COURS.
+    // Sans ce contrôle, un « Suivant » ou un « Passer » arrivé après la fin de
+    // manche (double appui, télécommande en retard, réseau lent) recréait un
+    // morceau en mémoire sur une manche déjà terminée en base : la console
+    // rejouait un titre alors que l'écran de fin de manche était déjà affiché.
+    if (round.status !== 'PLAYING') {
+      res
+        .status(409)
+        .json({ error: { code: 'ROUND_NOT_PLAYING', message: 'La manche est terminée' } });
+      return;
+    }
     broadcastToSession(req.params.id, 'track:phase_changed', {
       round_id: req.params.roundId,
+      track_index: round.current_track_index,
       phase: 'phase3-skipped',
     });
     const result = await advanceToNextOrEndRound(req.params.id, round);

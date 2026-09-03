@@ -71,7 +71,15 @@ export async function loadMusicKitSdk(): Promise<MusicKitNamespace> {
     document.addEventListener('musickitloaded', () => done(), { once: true });
     script.onerror = () => reject(new Error('Échec de chargement de MusicKit JS'));
     document.head.appendChild(script);
-    window.setTimeout(() => (window.MusicKit ? resolve() : undefined), 10_000);
+    // fix/apple-music-attente-infinie — CE DÉLAI DOIT TRANCHER.
+    // Il ne faisait rien quand MusicKit manquait : la promesse restait en
+    // attente pour toujours, et l'écran de contrôle semblait figé au lancement
+    // d'une manche Apple Music. Désormais il échoue, ce qui laisse l'appelant
+    // afficher une erreur au lieu de tourner dans le vide.
+    window.setTimeout(
+      () => (window.MusicKit ? resolve() : reject(new Error('MusicKit timeout (script chargé)'))),
+      10_000,
+    );
   });
   if (!window.MusicKit) throw new Error('MusicKit indisponible');
   return window.MusicKit;

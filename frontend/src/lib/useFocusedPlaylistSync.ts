@@ -53,11 +53,7 @@ interface Options {
   selectedThemeKey?: string | null;
 }
 
-export function useFocusedPlaylistSync({
-  enabled,
-  signalKey,
-  selectedThemeKey,
-}: Options): void {
+export function useFocusedPlaylistSync({ enabled, signalKey, selectedThemeKey }: Options): void {
   /** Dernière sélection calculée localement. */
   const focusedIdRef = useRef<string | null>(null);
   /** Dernière sélection réellement transmise. */
@@ -164,8 +160,13 @@ export function useFocusedPlaylistSync({
 
     // Le défilement ne transporte plus rien : il sert seulement à réévaluer
     // quelle carte est la plus visible, ce dont l'observateur se charge déjà.
+    // fix/tv-sort-de-la-selection — LE SIGNAL PART MÊME SANS CARTE CHOISIE.
+    // Il n'était émis que si une carte était mise en avant : à l'étape des
+    // thèmes, ou juste après un retour en arrière, plus rien ne partait et la
+    // TV quittait l'écran de sélection au bout de 30 s (durée de validité côté
+    // serveur) pour retomber sur l'écran d'attente.
     const keepalive = window.setInterval(() => {
-      if (focusedIdRef.current) send(true);
+      send(true);
     }, KEEPALIVE_MS);
 
     return () => {
