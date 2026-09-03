@@ -228,18 +228,18 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         }
     }
 
-    // fix/lecteur-hors-fil-principal — LE LECTEUR EST TOUJOURS TOUCHÉ SUR LE
-    // FIL PRINCIPAL. Capacitor exécute les méthodes de greffon sur une file
-    // d'arrière-plan. Ces trois méthodes lisaient et écrivaient l'état du
-    // lecteur Apple depuis cette file, pendant que les tâches de lecture le
-    // modifiaient : d'où des valeurs incohérentes renvoyées à la console — qui
-    // déclenchait alors une resynchronisation inutile en pleine soirée — et un
-    // risque d'arrêt brutal sous charge.
+    // fix/app-entierement-gelee-au-premier-morceau — JAMAIS SUR LE FIL PRINCIPAL.
+    // J'avais déplacé ces lectures sur le fil principal (build 45). Résultat
+    // observé en soirée : à l'instant exact où le premier morceau démarre,
+    // console ET TV se figent et plus rien ne sort de l'iPad. Mécanisme :
+    // pendant que la tâche de lecture remplace la file du lecteur, MusicKit
+    // tient un verrou interne et peut attendre le fil principal ; si le fil
+    // principal, lui, attend ce même verrou pour lire l'état, c'est un blocage
+    // mutuel — l'app entière est morte. Sur la file d'arrière-plan de
+    // Capacitor, une lecture qui attend ne bloque qu'elle-même, jamais l'app.
     @objc func pause(_ call: CAPPluginCall) {
-        DispatchQueue.main.async {
-            self.player.pause()
-            call.resolve()
-        }
+        player.pause()
+        call.resolve()
     }
 
     @objc func resume(_ call: CAPPluginCall) {
@@ -255,10 +255,8 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     @objc func seek(_ call: CAPPluginCall) {
         let ms = call.getDouble("ms") ?? 0
-        DispatchQueue.main.async {
-            self.player.playbackTime = max(0, ms / 1000.0)
-            call.resolve()
-        }
+        player.playbackTime = max(0, ms / 1000.0)
+        call.resolve()
     }
 
     @objc func setVolume(_ call: CAPPluginCall) {
@@ -267,11 +265,38 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         call.resolve()
     }
 
+    // fix/app-entierement-gelee-au-premier-morceau — LA LECTURE D'ÉTAT NE PEUT
+    // PLUS BLOQUER LE PONT. Les greffons Capacitor s'exécutent sur UNE file en
+    // série : si une lecture de l'état MusicKit reste suspendue (elle est
+    // interrogée quatre fois par seconde, y compris pendant le remplacement
+    // de la file au démarrage d'un morceau), TOUS les appels natifs suivants
+    // — console et écran externe compris — attendent derrière elle. C'est
+    // très probablement l'origine des « console figée au lancement » d'avant.
+    // La lecture part sur sa propre file ; au-delà d'une demi-seconde on rend
+    // le dernier état connu et on passe à la suite.
+    private let fileLecture = DispatchQueue(label: "app.tutti.musickit.lecture")
+    private var dernierEtatConnu: [String: Any] = [
+        "isPlaying": false, "positionMs": 0.0, "durationMs": 0.0, "nowPlayingId": "",
+    ]
+
     @objc func getStatus(_ call: CAPPluginCall) {
-        DispatchQueue.main.async { self.lireEtat(call) }
+        let semaphore = DispatchSemaphore(value: 0)
+        var resultat: [String: Any]?
+        fileLecture.async {
+            let r = self.lireEtat()
+            resultat = r
+            semaphore.signal()
+        }
+        if semaphore.wait(timeout: .now() + 0.5) == .success, let r = resultat {
+            dernierEtatConnu = r
+            call.resolve(r)
+        } else {
+            print("[TuttiMusicKit] lecture d'état trop lente — dernier état connu renvoyé")
+            call.resolve(dernierEtatConnu)
+        }
     }
 
-    private func lireEtat(_ call: CAPPluginCall) {
+    private func lireEtat() -> [String: Any] {
         let isPlaying = player.state.playbackStatus == .playing
         // fix/live-sync-check — identité du morceau RÉELLEMENT en lecture.
         // La console la compare en continu au morceau attendu par le jeu :
@@ -282,11 +307,11 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 nowPlayingId = song.id.rawValue
             }
         }
-        call.resolve([
+        return [
             "isPlaying": isPlaying,
             "positionMs": player.playbackTime * 1000.0,
             "durationMs": lireDureeCourante() * 1000.0,
             "nowPlayingId": nowPlayingId,
-        ])
+        ]
     }
 }
