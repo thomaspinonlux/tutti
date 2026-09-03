@@ -157,7 +157,9 @@ router.post('/whitelist', async (req: Request, res: Response): Promise<void> => 
       res.status(409).json({ error: { code: 'ALREADY_EXISTS', message: 'Email déjà whitelisté' } });
       return;
     }
-    throw err;
+    // fix/serveur-qui-s-arrete — on répond, on ne relance pas (cf. server.ts).
+    console.error('[admin] erreur non prévue :', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur serveur' } });
   }
 });
 
@@ -233,7 +235,9 @@ router.post('/invitations', async (req: Request, res: Response): Promise<void> =
       res.status(409).json({ error: { code: 'ALREADY_EXISTS', message: 'Code déjà utilisé' } });
       return;
     }
-    throw err;
+    // fix/serveur-qui-s-arrete — on répond, on ne relance pas (cf. server.ts).
+    console.error('[admin] erreur non prévue :', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur serveur' } });
   }
 });
 

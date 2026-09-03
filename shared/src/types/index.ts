@@ -294,7 +294,10 @@ export interface CurrentTrackState {
 }
 
 /** Durée de la phase 2 en ms (constante partagée frontend ↔ backend). */
-export const PHASE_2_DURATION_MS = 15_000;
+// fix/chrono-faux — 10 s, comme le serveur (backend/src/lib/gameState.ts).
+// Cette constante annonçait 15 s : tout écran qui la lisait affichait cinq
+// secondes de rab pendant lesquelles les buzz étaient refusés sans explication.
+export const PHASE_2_DURATION_MS = 10_000;
 
 // ───── Programme manche (Phase 2.1) ────────────────────────────────────────
 

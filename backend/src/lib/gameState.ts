@@ -222,6 +222,17 @@ export function registerCorrectAnswer(
     return null; // phase festive, plus de score
   }
 
+  // fix/points-comptes-deux-fois — UN JOUEUR NE MARQUE QU'UNE FOIS PAR MORCEAU.
+  // Le contrôle « a-t-il déjà répondu ? » se faisait AVANT la transcription,
+  // c'est-à-dire plusieurs secondes avant l'enregistrement. Deux envois du même
+  // joueur (il rebuzze parce qu'il ne voit rien venir, ou deux niveaux de
+  // reconnaissance répondent) passaient donc tous les deux, lui donnaient deux
+  // fois les points et faisaient reculer d'un rang tous les autres. Le contrôle
+  // doit être ici, au moment exact de l'écriture.
+  if (state.correct_answers.some((a) => a.participant_id === args.participant_id)) {
+    return null;
+  }
+
   const now = Date.now();
   const isFirst = state.correct_answers.length === 0;
 

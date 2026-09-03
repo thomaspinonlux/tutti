@@ -87,8 +87,12 @@ describe('levenshteinScore', () => {
     assert.ok(score >= 70 && score <= 90, `attendu 70-90, reçu ${score}`);
   });
 
-  it('chaînes vides → 100', () => {
-    assert.equal(levenshteinScore('', ''), 100);
+  // fix/points-sans-rien-dire — DEUX CHAÎNES VIDES NE VALENT PLUS 100.
+  // Un joueur qui buzzait sans rien dire, ou dont la reconnaissance tombait en
+  // panne, obtenait une correspondance parfaite dès que le titre se réduisait à
+  // rien après normalisation. Le test attendait l'ancien comportement.
+  it('chaînes vides → 0 (aucune parole ne vaut jamais une bonne réponse)', () => {
+    assert.equal(levenshteinScore('', ''), 0);
   });
 
   it('une vide / une non-vide → 0', () => {

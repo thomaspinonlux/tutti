@@ -33,6 +33,7 @@ import {
   lyricsErrorStatus,
 } from '../lib/lyrics/lyricsActions.js';
 import { requireMasterParticipant } from '../middleware/master.js';
+import { prendreVerrouLancement, libererVerrouLancement } from '../lib/verrouLancement.js';
 import { broadcastToSession } from '../socket/index.js';
 import { clearActiveTrack, getActiveTrack, restartActiveTrack } from '../lib/gameState.js';
 import {
@@ -253,6 +254,31 @@ router.post(
       res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
       return;
     }
+    // fix/double-lancement-de-manche — cf. /pick-round, même garde.
+    if (!prendreVerrouLancement(req.params.id)) {
+      res
+        .status(409)
+        .json({ error: { code: 'LANCEMENT_EN_COURS', message: 'Lancement déjà en cours' } });
+      return;
+    }
+    try {
+      await lancerDepuisBibliotheque(req, res);
+    } finally {
+      libererVerrouLancement(req.params.id);
+    }
+  },
+);
+
+async function lancerDepuisBibliotheque(
+  req: Request<{ id: string; playlistId: string }>,
+  res: Response,
+): Promise<void> {
+  {
+    const parsed = libraryLaunchSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
     const session = await prisma.session.findUnique({
       where: { id: req.params.id },
       select: { establishment_id: true, status: true },
@@ -348,8 +374,8 @@ router.post(
         .status(500)
         .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur lancement de la manche' } });
     }
-  },
-);
+  }
+}
 
 // ── POST /screen/focus ─────────────────────────────────────────────────────
 // feat/animator-tv-library — quand l'animateur parcourt la bibliothèque sur son
@@ -726,6 +752,17 @@ router.post('/pick-round', async (req: Request<{ id: string }>, res: Response): 
     res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'playlist_id requis' } });
     return;
   }
+  // fix/double-lancement-de-manche — UN SEUL LANCEMENT À LA FOIS.
+  // Deux demandes quasi simultanées (double appui, ou iPad et téléphone
+  // ensemble) créaient deux manches : la seconde terminait celle que la
+  // première venait de démarrer. La musique jouait, mais la manche était close
+  // en base et « Suivant » répondait « la manche est terminée ».
+  if (!prendreVerrouLancement(req.params.id)) {
+    res
+      .status(409)
+      .json({ error: { code: 'LANCEMENT_EN_COURS', message: 'Lancement déjà en cours' } });
+    return;
+  }
   // Vérif tenant playlist via l'établissement de la session.
   const session = await prisma.session.findUnique({
     where: { id: req.params.id },
@@ -842,6 +879,8 @@ router.post('/pick-round', async (req: Request<{ id: string }>, res: Response): 
     res.status(500).json({
       error: { code: 'INTERNAL_ERROR', message: 'Erreur lancement de la manche' },
     });
+  } finally {
+    libererVerrouLancement(req.params.id);
   }
 });
 

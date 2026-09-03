@@ -1014,7 +1014,11 @@ export function PlayPage(): JSX.Element {
                 roundPosition={currentRound?.position ?? null}
                 isMaster={isMaster}
                 isPaused={isPaused}
-                onOpenMasterMenu={isMaster ? () => setMasterPickerOpen(false) : undefined}
+                // fix/engrenage-mort — IL OUVRAIT UN PANNEAU DÉJÀ FERMÉ.
+                // Le bouton ⚙ de l'animateur appelait la fermeture au lieu de
+                // l'ouverture : aucun changement d'état, aucun rendu, bouton
+                // parfaitement mort en soirée.
+                onOpenMasterMenu={isMaster ? () => setMasterPickerOpen(true) : undefined}
                 onMasterPause={isMaster ? handleMasterPause : undefined}
               />
 
@@ -1429,7 +1433,21 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         `[Voice] Buzz refused | code=${code} | message=${err instanceof Error ? err.message : String(err)}`,
       );
       setError(translateBuzzRefusalReason(code, t));
-      setRecState({ kind: 'idle' });
+      // fix/deuxieme-appui-qui-casse-le-premier — ON N'ÉCRASE QUE SON PROPRE
+      // ÉTAT. Ce retour à l'état de repos était inconditionnel : quand le
+      // joueur appuyait une seconde fois (le premier appui ne montrant rien
+      // pendant que le réseau répond), le refus du second effaçait
+      // l'enregistrement que le premier venait de démarrer. Le micro, lui,
+      // continuait de tourner sans que rien ne puisse l'arrêter.
+      setRecState((prev) => (prev.kind === 'recording' ? prev : { kind: 'idle' }));
+      // Si le serveur avait accepté le buzz mais que la capture a échoué, il
+      // faut refermer la fenêtre côté serveur, sinon le joueur est bloqué
+      // pendant toute sa durée sans pouvoir retenter.
+      if (!(err instanceof ApiError) && identity && currentTrack) {
+        void cancelVoiceBuzz(identity.sessionId, currentTrack.round_id, identity.token).catch(
+          () => undefined,
+        );
+      }
     }
   };
 
@@ -2445,8 +2463,19 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
   const [proposed, setProposed] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState('');
 
+  // fix/rafale-de-requetes-modale — UN ÉCHEC NE DOIT PAS RELANCER LA REQUÊTE.
+  // Le garde ne tenait compte ni de l'échec ni d'un catalogue vide : « chargement »
+  // repassait à faux, les dépendances changeaient, l'effet repartait — le
+  // téléphone envoyait des requêtes en rafale tant que la fenêtre restait
+  // ouverte. On mémorise qu'une tentative a eu lieu.
+  const tentativeFaite = useRef(false);
   useEffect(() => {
-    if (!open || catalog.length > 0 || loading) return;
+    if (!open) {
+      tentativeFaite.current = false;
+      return;
+    }
+    if (tentativeFaite.current || catalog.length > 0 || loading) return;
+    tentativeFaite.current = true;
     setLoading(true);
     setError(null);
     void import('../lib/playlistProposals.js')
@@ -2468,7 +2497,9 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
         setError((err as Error).message);
         setLoading(false);
       });
-  }, [open, catalog.length, loading, props.shortCode, i18n.language]);
+    // `loading` et `catalog.length` restent lus, jamais déclencheurs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, props.shortCode, i18n.language]);
 
   const handlePropose = async (id: string): Promise<void> => {
     setBusy(id);

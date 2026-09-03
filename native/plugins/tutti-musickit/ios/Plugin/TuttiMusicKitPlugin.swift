@@ -202,14 +202,29 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 self.promouvoirDureeSuivante()
                 call.resolve(["ok": true])
             } catch {
+                // fix/silence-apres-un-saut-rate — LA MUSIQUE REPART.
+                // La lecture est coupée juste avant le saut ; si le saut
+                // échoue (file vide, morceau suivant pas encore chargé, réseau
+                // Apple), rien ne la relançait : silence total dans la salle
+                // jusqu'à intervention de l'animateur.
+                try? await self.player.play()
                 call.reject("Saut échoué : \(error.localizedDescription)")
             }
         }
     }
 
+    // fix/lecteur-hors-fil-principal — LE LECTEUR EST TOUJOURS TOUCHÉ SUR LE
+    // FIL PRINCIPAL. Capacitor exécute les méthodes de greffon sur une file
+    // d'arrière-plan. Ces trois méthodes lisaient et écrivaient l'état du
+    // lecteur Apple depuis cette file, pendant que les tâches de lecture le
+    // modifiaient : d'où des valeurs incohérentes renvoyées à la console — qui
+    // déclenchait alors une resynchronisation inutile en pleine soirée — et un
+    // risque d'arrêt brutal sous charge.
     @objc func pause(_ call: CAPPluginCall) {
-        player.pause()
-        call.resolve()
+        DispatchQueue.main.async {
+            self.player.pause()
+            call.resolve()
+        }
     }
 
     @objc func resume(_ call: CAPPluginCall) {
@@ -225,8 +240,10 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     @objc func seek(_ call: CAPPluginCall) {
         let ms = call.getDouble("ms") ?? 0
-        player.playbackTime = max(0, ms / 1000.0)
-        call.resolve()
+        DispatchQueue.main.async {
+            self.player.playbackTime = max(0, ms / 1000.0)
+            call.resolve()
+        }
     }
 
     @objc func setVolume(_ call: CAPPluginCall) {
@@ -236,6 +253,10 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     }
 
     @objc func getStatus(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { self.lireEtat(call) }
+    }
+
+    private func lireEtat(_ call: CAPPluginCall) {
         let isPlaying = player.state.playbackStatus == .playing
         // fix/live-sync-check — identité du morceau RÉELLEMENT en lecture.
         // La console la compare en continu au morceau attendu par le jeu :

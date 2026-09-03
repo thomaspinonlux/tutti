@@ -305,12 +305,32 @@ export async function startVoiceCapture(opts: VoiceCaptureOptions): Promise<Voic
           resolve(new Blob(chunks, { type: effectiveMime }));
           return;
         }
-        recorder.onstop = (): void => {
+        // fix/enregistrement-qui-ne-se-ferme-jamais — L'ARRÊT NE PEUT PLUS
+        // RESTER EN SUSPENS. Cette promesse n'était résolue que par
+        // l'événement d'arrêt de l'enregistreur ; si le système coupe le micro
+        // (téléphone verrouillé, appel entrant, retour d'arrière-plan sur
+        // iPhone), l'événement n'arrive jamais : le joueur restait sur
+        // « analyse » jusqu'au morceau suivant, et le nettoyage — donc la
+        // fermeture du contexte audio — n'était jamais fait non plus.
+        let rendu = false;
+        const terminer = (): void => {
+          if (rendu) return;
+          rendu = true;
+          window.clearTimeout(filet);
           cleanup();
-          const blob = new Blob(chunks, { type: effectiveMime });
-          resolve(blob);
+          resolve(new Blob(chunks, { type: effectiveMime }));
         };
-        recorder.stop();
+        const filet = window.setTimeout(() => {
+          console.warn("[Voice] l'enregistreur n'a pas confirmé l'arrêt — on continue");
+          terminer();
+        }, 2_000);
+        recorder.onstop = terminer;
+        try {
+          recorder.stop();
+        } catch (err: unknown) {
+          console.warn("[Voice] arrêt de l'enregistreur refusé :", err);
+          terminer();
+        }
       });
     },
     cancel: () => {
@@ -328,6 +348,29 @@ export async function startVoiceCapture(opts: VoiceCaptureOptions): Promise<Voic
  * Helper qui upload un blob audio à l'endpoint /voice-answer du backend.
  * Multipart : `audio` + `token`.
  */
+/**
+ * fix/analyse-sans-fin — TOUT APPEL RÉSEAU DU BUZZ EST BORNÉ.
+ * Ces envois passaient à côté du garde-fou général : quand le réseau du bar
+ * « pend » (connexion ouverte mais morte), la requête ne rendait jamais la
+ * main et le téléphone du joueur restait sur « analyse » jusqu'au morceau
+ * suivant, buzzer verrouillé. Un envoi audio est plus lourd qu'un appel
+ * ordinaire : 15 s, puis on abandonne proprement.
+ */
+async function envoiBorne(url: string, init: RequestInit, delaiMs = 15_000): Promise<Response> {
+  const controleur = new AbortController();
+  const minuteur = setTimeout(() => controleur.abort(), delaiMs);
+  try {
+    return await fetch(url, { ...init, signal: controleur.signal });
+  } catch (err: unknown) {
+    if ((err as Error)?.name === 'AbortError') {
+      throw new Error(`Le serveur ne répond pas (${Math.round(delaiMs / 1000)} s)`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(minuteur);
+  }
+}
+
 export async function uploadVoiceAnswer(args: {
   apiUrl: string;
   sessionId: string;
@@ -341,7 +384,7 @@ export async function uploadVoiceAnswer(args: {
   form.append('token', args.token);
 
   const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/voice-answer`;
-  const res = await fetch(url, { method: 'POST', body: form });
+  const res = await envoiBorne(url, { method: 'POST', body: form });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`voice-answer ${res.status}: ${text.slice(0, 200)}`);
@@ -361,7 +404,7 @@ export async function submitTextAnswer(args: {
   text: string;
 }): Promise<VoiceAnswerResult> {
   const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/text-answer`;
-  const res = await fetch(url, {
+  const res = await envoiBorne(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token: args.token, text: args.text }),

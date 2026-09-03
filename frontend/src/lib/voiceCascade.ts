@@ -77,11 +77,34 @@ interface CommonArgs {
  * Retourne le score brut pour permettre la décision côté frontend (escalade
  * L2 si 30 ≤ score < 80, abandon si score < 30).
  */
+/**
+ * fix/analyse-sans-fin — TOUT APPEL RÉSEAU DU BUZZ EST BORNÉ.
+ * Ces envois passaient à côté du garde-fou général : quand le réseau du bar
+ * « pend » (connexion ouverte mais morte), la requête ne rendait jamais la
+ * main et le téléphone du joueur restait sur « analyse » jusqu'au morceau
+ * suivant, buzzer verrouillé. Un envoi audio est plus lourd qu'un appel
+ * ordinaire : 15 s, puis on abandonne proprement.
+ */
+async function envoiBorne(url: string, init: RequestInit, delaiMs = 15_000): Promise<Response> {
+  const controleur = new AbortController();
+  const minuteur = setTimeout(() => controleur.abort(), delaiMs);
+  try {
+    return await fetch(url, { ...init, signal: controleur.signal });
+  } catch (err: unknown) {
+    if ((err as Error)?.name === 'AbortError') {
+      throw new Error(`Le serveur ne répond pas (${Math.round(delaiMs / 1000)} s)`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(minuteur);
+  }
+}
+
 export async function postVoiceMatchText(
   args: CommonArgs & { transcript: string; source?: string },
 ): Promise<CascadeMatchResponse> {
   const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/voice-match-text`;
-  const res = await fetch(url, {
+  const res = await envoiBorne(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -121,7 +144,7 @@ export async function postVoiceTranscribeDeepgram(
   );
 
   const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/voice-transcribe-deepgram`;
-  const res = await fetch(url, { method: 'POST', body: form });
+  const res = await envoiBorne(url, { method: 'POST', body: form });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`voice-transcribe-deepgram ${res.status}: ${text.slice(0, 200)}`);
@@ -158,7 +181,7 @@ export async function postVoiceTranscribeAssemblyAI(
   );
 
   const url = `${args.apiUrl}/api/sessions/${encodeURIComponent(args.sessionId)}/rounds/${encodeURIComponent(args.roundId)}/voice-transcribe-assemblyai`;
-  const res = await fetch(url, { method: 'POST', body: form });
+  const res = await envoiBorne(url, { method: 'POST', body: form });
   if (res.status === 503) {
     const body = await res.text().catch(() => '');
     if (body.includes('ASSEMBLYAI_DISABLED')) {

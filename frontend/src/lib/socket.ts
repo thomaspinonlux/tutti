@@ -86,7 +86,25 @@ export async function connectAsHost(): Promise<Socket> {
   const token = data.session?.access_token;
   if (!token) throw new Error('Auth Supabase requise pour Socket.IO host');
   return io(SOCKET_URL, {
-    auth: { token, role: 'host' },
+    // fix/console-muette-apres-une-heure — LE JETON EST RELU À CHAQUE
+    // RECONNEXION. Passé sous forme d'objet, il était figé au moment de la
+    // première connexion et rejoué tel quel indéfiniment. Or il expire au bout
+    // d'une heure : la moindre coupure réseau après ce délai enfermait la
+    // console dans des tentatives refusées pour le reste de la soirée — plus
+    // aucun événement de la partie, sans le moindre message à l'écran. Sous
+    // forme de fonction, la bibliothèque le redemande à chaque essai, et le
+    // client d'authentification, lui, l'a bien renouvelé de son côté.
+    auth: (transmettre: (donnees: Record<string, unknown>) => void) => {
+      void supabase.auth
+        .getSession()
+        .then(({ data: frais }) => {
+          transmettre({
+            token: frais.session?.access_token ?? token,
+            role: 'host',
+          });
+        })
+        .catch(() => transmettre({ token, role: 'host' }));
+    },
     transports: ['websocket', 'polling'],
     ...RECONNECT_OPTS,
   });

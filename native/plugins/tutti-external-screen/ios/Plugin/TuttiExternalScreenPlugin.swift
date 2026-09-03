@@ -51,7 +51,15 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
             name: UIScreen.modeDidChangeNotification, object: nil)
     }
 
+    // fix/geometrie-lue-hors-fil-principal — toutes les autres méthodes de ce
+    // greffon basculent sur le fil principal ; celle-ci lisait l'écran et la
+    // fenêtre depuis la file d'arrière-plan de Capacitor, d'où des dimensions
+    // incohérentes et un risque d'arrêt brutal.
     @objc func isConnected(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { self.lireConnexion(call) }
+    }
+
+    private func lireConnexion(_ call: CAPPluginCall) {
         let external = UIScreen.screens.first { $0 != UIScreen.main }
         var payload: [String: Any] = ["connected": external != nil]
         if let screen = external {

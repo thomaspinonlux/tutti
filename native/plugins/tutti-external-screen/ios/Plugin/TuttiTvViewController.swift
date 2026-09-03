@@ -507,7 +507,12 @@ final class TuttiTvViewController: UIViewController {
             qrLabel.attributedText = TvTheme.tracked(
                 "REJOIGNEZ", font: TvTheme.mono(10), em: 0.28, color: TvTheme.coral)
             qrHint.text = "Scannez pour jouer"
-            if qrImage.image == nil && qrPendingCode != code {
+            // fix/qr-de-la-session-precedente — LA CONDITION EXIGEAIT UNE IMAGE
+        // VIDE. Une fois le premier QR posé, il ne pouvait plus changer : à la
+        // partie suivante, le texte affichait le nouveau code mais le QR
+        // renvoyait toujours vers la session précédente. Les joueurs qui
+        // scannaient tombaient dans la mauvaise partie.
+        if qrPendingCode != code {
                 qrPendingCode = code
                 DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                     let img = TuttiTvViewController.makeQr(from: code)

@@ -206,7 +206,9 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promis
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Song introuvable' } });
       return;
     }
-    throw err;
+    // fix/serveur-qui-s-arrete — on répond, on ne relance pas (cf. server.ts).
+    console.error('[admin] erreur non prévue :', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur serveur' } });
   }
 });
 
@@ -247,7 +249,9 @@ router.post('/bulk-apply', async (req: Request, res: Response): Promise<void> =>
         .json({ error: { code: 'NOT_FOUND', message: 'Une des songs est introuvable' } });
       return;
     }
-    throw err;
+    // fix/serveur-qui-s-arrete — on répond, on ne relance pas (cf. server.ts).
+    console.error('[admin] erreur non prévue :', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur serveur' } });
   }
 });
 

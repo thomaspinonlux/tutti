@@ -285,9 +285,15 @@ function HostPageInner(): JSX.Element {
         if (cancelled) return;
         socket = await connectAsHost();
         setHostSocket(socket);
+        // fix/console-remplacee-par-une-erreur — UNE COUPURE RÉSEAU NE DOIT PAS
+        // EFFACER LA CONSOLE. Ce message est émis à CHAQUE tentative de
+        // reconnexion, et le moindre échec remplaçait tout l'écran de contrôle
+        // par une page d'erreur dont le seul bouton met fin à la soirée. Le
+        // socket se reconnecte pourtant tout seul, indéfiniment. On se contente
+        // donc de le noter et d'allumer un témoin discret.
         socket.on('connect_error', (err) => {
           if (cancelled) return;
-          setError(`Socket: ${err.message}`);
+          console.warn('[Socket] connexion refusée ou perdue :', err.message);
         });
         // fix/eliminate-blank-pages-state-recovery — tracking de l'état
         // socket pour bandeau "Reconnexion..." + re-sync auto au reconnect.
@@ -651,6 +657,16 @@ function HostPageInner(): JSX.Element {
           }
         });
 
+        // fix/chargement-sans-fin — LA RÉPONSE DU SERVEUR EST ATTENDUE, PAS
+        // ESPÉRÉE. Si l'accusé de réception n'arrivait jamais (gestionnaire
+        // serveur bloqué sur une requête base), la console restait sur
+        // « Chargement… » pour toujours, sans même un bouton pour recharger :
+        // il fallait fermer l'application. Dix secondes, puis on le dit.
+        const minuteurAccuse = window.setTimeout(() => {
+          if (cancelled) return;
+          setError('Le serveur ne répond pas au démarrage de la console. Recharge la page.');
+        }, 10_000);
+
         // Maintenant on emit le join — listeners déjà en place.
         socket.emit(
           'session:join_by_code',
@@ -661,6 +677,7 @@ function HostPageInner(): JSX.Element {
             active_track?: CurrentTrackState | null;
             error?: string;
           }) => {
+            window.clearTimeout(minuteurAccuse);
             if (cancelled) return;
             if (!resp.ok || !resp.session) {
               setError(resp.error ?? t('host.notFound'));
@@ -1343,37 +1360,52 @@ function HostPageInner(): JSX.Element {
   // Pas d'optimistic update : on attend le broadcast socket session:paused/
   // session:resumed qui set session.is_paused. useSpotifyAudioSync pilote
   // Spotify automatiquement quand le state change. Single source of truth.
-  const handlePauseAudio = async (): Promise<void> => {
-    if (!session || !playingRound) return;
-    console.info('[Session Pause] POST /pause');
+  // fix/boutons-sans-reaction — LES TROIS COMMANDES AUDIO SE VERROUILLENT ET
+  // PARLENT. Elles ne posaient pas l'indicateur « en cours » : le bouton restait
+  // actif et strictement inchangé pendant tout l'aller-retour serveur, donc
+  // l'animateur appuyait plusieurs fois (jusqu'à quatre demandes de pause pour
+  // un seul geste), et un échec réseau ne disait rien du tout — la musique
+  // continuait, le bouton avait l'air mort.
+  const commandeAudio = async (
+    etiquette: string,
+    action: () => Promise<unknown>,
+    messageErreur: string,
+  ): Promise<void> => {
+    if (!session || !playingRound || busy) return;
+    setBusy(true);
+    console.info(`[${etiquette}] envoi`);
     try {
-      await hostPauseSession(session.id, playingRound.id);
+      await action();
     } catch (err: unknown) {
-      console.error('[Session Pause] ERROR:', err);
+      console.error(`[${etiquette}] échec :`, err);
+      pushToast(setToasts, messageErreur, 'raspberry');
+    } finally {
+      setBusy(false);
     }
   };
 
-  const handleResumeAudio = async (): Promise<void> => {
-    if (!session || !playingRound) return;
-    console.info('[Session Resume] POST /resume');
-    try {
-      await hostResumeSession(session.id, playingRound.id);
-    } catch (err: unknown) {
-      console.error('[Session Resume] ERROR:', err);
-    }
-  };
+  const handlePauseAudio = async (): Promise<void> =>
+    commandeAudio(
+      'Session Pause',
+      () => hostPauseSession(session!.id, playingRound!.id),
+      'Pause non prise en compte — réessaie',
+    );
 
-  const handleRestartTrack = async (): Promise<void> => {
-    if (!session || !playingRound) return;
-    console.info('[Restart Track] POST /restart-track');
-    try {
-      await hostRestartTrack(session.id, playingRound.id);
-      // Backend re-broadcast track:start avec nouveau started_at.
-      // useSpotifyAudioSync détecte le changement → seek 0 + play.
-    } catch (err: unknown) {
-      console.error('[Restart Track] ERROR:', err);
-    }
-  };
+  const handleResumeAudio = async (): Promise<void> =>
+    commandeAudio(
+      'Session Resume',
+      () => hostResumeSession(session!.id, playingRound!.id),
+      'Reprise non prise en compte — réessaie',
+    );
+
+  const handleRestartTrack = async (): Promise<void> =>
+    commandeAudio(
+      'Restart Track',
+      // Le serveur rediffuse track:start avec un nouveau départ ; la
+      // synchronisation audio repositionne et relance toute seule.
+      () => hostRestartTrack(session!.id, playingRound!.id),
+      'Relance non prise en compte — réessaie',
+    );
 
   // Bug 3 (fix/critical-bugs-v3) — pré-game state. Le clic sur une playlist
   // ne lance plus la création/play directement : on stage les infos puis on
@@ -2005,9 +2037,19 @@ function HostPageInner(): JSX.Element {
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="max-w-md text-center">
             <p className="text-raspberry font-medium mb-4">{error}</p>
-            <Button variant="secondary" onClick={() => void handleBackToDashboard()}>
-              {t('host.backDashboard')}
-            </Button>
+            {/* fix/bouton-qui-tue-la-soiree — RECHARGER D'ABORD.
+                Le seul bouton proposé mettait FIN à la partie en cours : sur une
+                erreur passagère, l'animateur perdait la soirée devant la salle.
+                Recharger répare la quasi-totalité des cas ; quitter reste
+                possible, mais en second et clairement nommé. */}
+            <div className="flex flex-col gap-2 items-center">
+              <Button variant="primary" onClick={() => window.location.reload()}>
+                🔄 Recharger la console
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => void handleBackToDashboard()}>
+                {t('host.backDashboard')}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

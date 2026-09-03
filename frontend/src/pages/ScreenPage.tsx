@@ -78,15 +78,44 @@ export function ScreenPage(): JSX.Element {
     return () => window.clearInterval(beat);
   }, []);
 
+  // fix/tv-morte-au-demarrage — ON RÉESSAIE. Si cette lecture échouait une
+  // seule fois — cas courant quand la TV s'allume en même temps que la box du
+  // bar —, plus rien ne repartait : ni interrogation du serveur, ni chien de
+  // garde. L'écran restait sur la saisie du code toute la soirée, jusqu'à ce
+  // qu'un humain recharge la page.
   useEffect(() => {
     if (workspaceParam) return;
-    void getMe()
-      .then((me) => {
-        if (me.workspace?.id) setAutoWorkspaceId(me.workspace.id);
-      })
-      .catch(() => {
-        /* pas logged in admin — fallback saisie manuelle */
-      });
+    let annule = false;
+    let tentative = 0;
+    let minuteur: number | null = null;
+    const essayer = (): void => {
+      void getMe()
+        .then((me) => {
+          if (annule) return;
+          if (me.workspace?.id) {
+            setAutoWorkspaceId(me.workspace.id);
+            return;
+          }
+          reprogrammer();
+        })
+        .catch(() => {
+          if (!annule) reprogrammer();
+        });
+    };
+    const reprogrammer = (): void => {
+      // 3 s, 6 s, 12 s… plafonné à 60 s. Six tentatives suffisent largement à
+      // couvrir le démarrage d'une box ; au-delà, la saisie manuelle prend le
+      // relais sans que l'écran ait rien tenté de coûteux.
+      if (tentative >= 6) return;
+      const attente = Math.min(3_000 * Math.pow(2, tentative), 60_000);
+      tentative += 1;
+      minuteur = window.setTimeout(essayer, attente);
+    };
+    essayer();
+    return () => {
+      annule = true;
+      if (minuteur !== null) window.clearTimeout(minuteur);
+    };
   }, [workspaceParam]);
 
   const workspaceId = workspaceParam || autoWorkspaceId;
@@ -197,12 +226,35 @@ export function ScreenPage(): JSX.Element {
     // superviseurs s'emballaient ensemble et la TV clignotait sans revenir.
     // Désormais : on ne recharge que si l'appareil se dit connecté, et on
     // espace les tentatives (6 s, 12 s, 24 s, puis 60 s au plus).
-    let echecsConsecutifs = 0;
+    // fix/tv-qui-se-recharge-en-boucle — L'ESPACEMENT DOIT SURVIVRE AU
+    // RECHARGEMENT. Ce compteur était une variable locale : recharger la page
+    // détruit tout le contexte, il repartait donc à zéro et le seuil ne
+    // dépassait jamais 6 s. Serveur injoignable = TV qui clignote toutes les
+    // 6 secondes devant la salle, en perdant sa dernière image à chaque fois.
+    // On le range dans la mémoire de session du navigateur, qui, elle, survit.
+    const lireEchecs = (): number => {
+      try {
+        return Number(window.sessionStorage.getItem('tutti.tv.echecs') ?? '0') || 0;
+      } catch {
+        return 0;
+      }
+    };
+    const ecrireEchecs = (n: number): void => {
+      try {
+        window.sessionStorage.setItem('tutti.tv.echecs', String(n));
+      } catch {
+        /* navigation privée : on se contente du comportement d'origine */
+      }
+    };
+    let echecsConsecutifs = lireEchecs();
     const watchdogId = window.setInterval(() => {
       const silence = Date.now() - lastPollOkRef.current;
-      const seuil = Math.min(6_000 * Math.pow(2, echecsConsecutifs), 60_000);
+      const seuil = Math.min(15_000 * Math.pow(2, echecsConsecutifs), 120_000);
       if (silence <= seuil) {
-        echecsConsecutifs = 0;
+        if (echecsConsecutifs !== 0) {
+          echecsConsecutifs = 0;
+          ecrireEchecs(0);
+        }
         return;
       }
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
@@ -210,6 +262,7 @@ export function ScreenPage(): JSX.Element {
         return;
       }
       echecsConsecutifs += 1;
+      ecrireEchecs(echecsConsecutifs);
       console.warn(
         `[Écran TV] ${Math.round(silence / 1000)} s sans réponse du serveur → rechargement ` +
           `(tentative ${echecsConsecutifs})`,

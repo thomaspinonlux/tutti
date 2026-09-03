@@ -233,15 +233,40 @@ httpServer.listen(PORT, () => {
 });
 
 // Gestion propre des arrêts
+// fix/serveur-qui-s-arrete — LE PROCESSUS NE DOIT PLUS TOMBER SUR UNE ERREUR
+// ISOLÉE. Express 4 n'attrape pas les erreurs des gestionnaires asynchrones :
+// un simple hoquet de la base pendant un lancement de manche remontait jusqu'à
+// Node, qui arrête le processus par défaut. Au redémarrage, la manche en cours
+// est perdue (l'état vit en mémoire), tous les buzz sont refusés et la TV
+// retombe en attente — en pleine soirée. On journalise et on continue : un
+// serveur qui a raté une requête vaut infiniment mieux qu'un serveur mort.
+process.on('unhandledRejection', (raison: unknown) => {
+  console.error('[tutti-backend] promesse rejetée non traitée :', raison);
+});
+process.on('uncaughtException', (err: Error) => {
+  console.error('[tutti-backend] exception non traitée :', err);
+});
+
 const shutdown = (signal: string): void => {
   console.info(`[tutti-backend] signal ${signal} reçu — arrêt en cours...`);
-  io.close();
-  httpServer.close(() => {
-    void prisma.$disconnect().finally(() => {
-      console.info('[tutti-backend] arrêté proprement');
-      process.exit(0);
+  // fix/arret-qui-traine — un délai de garde force la sortie.
+  // L'arrêt fermait deux fois le même serveur, n'attendait rien et n'arrêtait
+  // aucune tâche périodique : un redéploiement pouvait rester suspendu jusqu'à
+  // ce que la plateforme tue le conteneur brutalement.
+  const sortieForcee = setTimeout(() => {
+    console.warn('[tutti-backend] arrêt forcé après 10 s');
+    process.exit(0);
+  }, 10_000);
+  sortieForcee.unref();
+
+  void Promise.resolve(io.close())
+    .catch((err: unknown) => console.warn('[tutti-backend] fermeture socket :', err))
+    .finally(() => {
+      void prisma.$disconnect().finally(() => {
+        console.info('[tutti-backend] arrêté proprement');
+        process.exit(0);
+      });
     });
-  });
 };
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));

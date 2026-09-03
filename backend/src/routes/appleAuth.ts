@@ -171,13 +171,24 @@ router.delete(
 );
 
 // ───── GET /token-public/:workspaceId ──────────────────────────────────────
-// Pour la TV ouverte via tv_code (sans cookies admin). Gate : session active
-// dans le workspace (même modèle que Spotify token-public). Renvoie developer
-// token + music user token pour que MusicKit JS lise sur la TV.
+// fix/jeton-apple-expose — CETTE ROUTE EXIGE DÉSORMAIS UNE AUTHENTIFICATION.
+// Elle renvoie le Music User Token du compte Apple Music du patron, valable
+// 180 jours et non révocable côté serveur. Elle était ouverte : il suffisait de
+// lire le code TV affiché sur les tables du bar pour obtenir l'identifiant du
+// workspace (route /api/tv/:code, publique), puis le jeton. Le seul appelant
+// est la console de l'animateur, qui est authentifiée — le nom « public » est
+// resté pour ne pas casser l'adresse, mais la porte est fermée.
 router.get(
   '/token-public/:workspaceId',
+  requireAuth,
+  requireWorkspace,
   async (req: Request<{ workspaceId: string }>, res: Response): Promise<void> => {
     const workspaceId = req.params.workspaceId;
+    // Un compte authentifié ne peut lire que le jeton de SON espace.
+    if (req.workspaceId !== workspaceId) {
+      res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Espace non autorisé' } });
+      return;
+    }
     try {
       const session = await prisma.session.findFirst({
         where: {

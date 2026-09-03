@@ -266,7 +266,14 @@ router.post(
         res.status(400).json({ error: { code: err.code, message: err.message } });
         return;
       }
-      throw err;
+      // fix/serveur-qui-s-arrete — ON RÉPOND, ON NE RELANCE PAS.
+      // Relancer l'erreur dans un gestionnaire asynchrone d'Express 4 la fait
+      // remonter jusqu'à Node, qui arrête le processus : une erreur base
+      // pendant un lancement de manche coupait toute la soirée.
+      console.error('[POST /library/playlists/:id/launch] échec :', err);
+      res.status(500).json({
+        error: { code: 'INTERNAL_ERROR', message: 'Lancement impossible' },
+      });
     }
   },
 );
