@@ -189,10 +189,17 @@ final class TuttiTvPoller {
     func stop() {
         timer?.invalidate()
         timer = nil
-        // fix/connexions-qui-s-accumulent — la session réseau est fermée.
-        // Une nouvelle est créée à chaque affichage de la TV native, et donc à
-        // chaque branchement/débranchement HDMI de la soirée ; sans fermeture,
-        // elles s'empilaient avec leurs connexions ouvertes.
+    }
+
+    // fix/tv-native-muette — LA SESSION EST FERMÉE À LA LIBÉRATION, PAS DANS
+    // stop(). Elle l'était dans stop(), or start() appelle stop() en premier :
+    // la session était donc close AVANT la toute première requête, et une
+    // session close ne repart jamais. Résultat, l'écran TV natif n'interrogeait
+    // plus jamais le serveur et restait figé sur son état initial.
+    // L'objectif d'origine (ne pas empiler les connexions au fil des
+    // branchements HDMI) est conservé : un sondeur est créé par affichage et
+    // libéré avec son écran, donc ce deinit ferme bien chaque session.
+    deinit {
         session.invalidateAndCancel()
     }
 
