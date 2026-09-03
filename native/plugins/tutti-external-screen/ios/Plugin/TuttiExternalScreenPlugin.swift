@@ -73,6 +73,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     }
 
     @objc func present(_ call: CAPPluginCall) {
+        TuttiJournalEcran.shared.note("ecran", "present() demandé")
         guard let urlString = call.getString("url"), let url = URL(string: urlString) else {
             call.reject("url requise")
             return
@@ -106,6 +107,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
      * morceau que la salle n'entend pas encore.
      */
     @objc func presentNative(_ call: CAPPluginCall) {
+        TuttiJournalEcran.shared.note("ecran", "presentNative() demandé")
         guard let apiBase = call.getString("apiBase"),
               let workspaceId = call.getString("workspaceId"),
               !apiBase.isEmpty, !workspaceId.isEmpty else {
@@ -163,6 +165,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     // MARK: - Interne
 
     private func showWindow(on screen: UIScreen, url: URL) {
+        TuttiJournalEcran.shared.note("ecran", "showWindow (web)", ["largeur": Int(screen.bounds.width), "hauteur": Int(screen.bounds.height), "residentMo": TuttiJournalEcran.memoireResidenteMo()])
         tearDown()
 
         // fix/tv-plein-ecran — GÉOMÉTRIE DE L'ÉCRAN EXTERNE.
@@ -230,6 +233,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     /// feat/tv-native — même géométrie que la version web, mais la fenêtre
     /// héberge le contrôleur natif au lieu d'une WebView.
     private func showNativeWindow(on screen: UIScreen, apiBase: String, workspaceId: String) {
+        TuttiJournalEcran.shared.note("ecran", "showNativeWindow (natif)", ["residentMo": TuttiJournalEcran.memoireResidenteMo()])
         tearDown()
 
         if let best = screen.availableModes.max(by: {
@@ -290,6 +294,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     }
 
     private func tearDown() {
+        TuttiJournalEcran.shared.note("ecran", "tearDown")
         stopWatchdog()
         nativeTv = nil
         externalWebView?.navigationDelegate = nil
@@ -301,6 +306,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     /// Reconstruit intégralement fenêtre + WebView sur l'écran externe courant.
     private func rebuild(reason: String) {
         CAPLog.print("TuttiExternalScreen: rebuild (\(reason))")
+        TuttiJournalEcran.shared.note("ecran", "REBUILD", ["raison": reason], niveau: "warn")
         guard let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) else {
             tearDown()
             return
@@ -321,6 +327,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     public func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         DispatchQueue.main.async {
             guard webView === self.externalWebView else { return }
+            TuttiJournalEcran.shared.note("ecran", "PROCESSUS WEB DE LA TV TERMINÉ PAR iOS", ["residentMo": TuttiJournalEcran.memoireResidenteMo()], niveau: "error")
             self.rebuild(reason: "content process terminated")
         }
     }
@@ -365,6 +372,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
                 // Moteur injoignable (processus mort sans notification) :
                 // 2 échecs d'affilée → reconstruction.
                 self.pingFailures += 1
+                TuttiJournalEcran.shared.note("ecran", "battement : moteur injoignable", ["echecs": self.pingFailures], niveau: "warn")
                 if self.pingFailures >= 2 {
                     self.rebuild(reason: "eval failed ×\(self.pingFailures)")
                 }
@@ -383,6 +391,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
             self.noBeatChecks = 0
             if beat == self.lastBeat {
                 self.stalledChecks += 1
+                TuttiJournalEcran.shared.note("ecran", "battement ARRÊTÉ (page TV figée)", ["controles": self.stalledChecks], niveau: "warn")
                 if self.stalledChecks >= 2 {
                     self.rebuild(reason: "battement arrêté (~8 s)")
                 }
@@ -398,6 +407,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     }
 
     @objc private func screenDidConnect() {
+        TuttiJournalEcran.shared.note("ecran", "écran externe CONNECTÉ")
         guard let screen = UIScreen.screens.first(where: { $0 != UIScreen.main }) else { return }
         if let apiBase = pendingNativeApiBase, let workspaceId = pendingNativeWorkspaceId {
             showNativeWindow(on: screen, apiBase: apiBase, workspaceId: workspaceId)
@@ -409,6 +419,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     }
 
     @objc private func screenDidDisconnect() {
+        TuttiJournalEcran.shared.note("ecran", "écran externe DÉCONNECTÉ")
         tearDown()
     }
 }

@@ -40,4 +40,59 @@ router.post('/client-log', requireAuth, (req: Request, res: Response): void => {
   res.json({ ok: true });
 });
 
+// ── POST /client-log/natif — JOURNAL DES GREFFONS NATIFS (iPad) ─────────────
+// Les greffons Swift n'ont pas de jeton d'authentification sous la main, et
+// leur journal doit partir MÊME quand le fil principal de l'app est bloqué.
+// Adresse volontairement sans authentification : elle ne fait qu'écrire des
+// lignes de diagnostic dans le journal serveur, avec un débit plafonné par
+// adresse IP. Aucune donnée personnelle.
+const ligneNativeSchema = z.object({
+  t: z.number(),
+  fil: z.string().max(20),
+  source: z.string().max(40),
+  etape: z.string().max(200),
+  niveau: z.enum(['info', 'warn', 'error']).default('info'),
+  details: z.record(z.string(), z.unknown()).optional(),
+});
+const corpsNatifSchema = z.object({
+  appareil: z.string().max(60).optional(),
+  systeme: z.string().max(30).optional(),
+  lignes: z.array(ligneNativeSchema).max(200),
+});
+
+const debitParIp = new Map<string, { fenetre: number; n: number }>();
+const LIGNES_MAX_PAR_10S = 400;
+
+router.post('/client-log/natif', (req: Request, res: Response): void => {
+  if (req.get('x-tutti-natif') !== '1') {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Journal invalide' } });
+    return;
+  }
+  const parsed = corpsNatifSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Journal invalide' } });
+    return;
+  }
+  const ip = req.ip ?? 'inconnue';
+  const fenetre = Math.floor(Date.now() / 10_000);
+  const compteur = debitParIp.get(ip);
+  const n = compteur && compteur.fenetre === fenetre ? compteur.n : 0;
+  if (n >= LIGNES_MAX_PAR_10S) {
+    res.status(429).json({ error: { code: 'TROP_DE_LIGNES', message: 'Débit dépassé' } });
+    return;
+  }
+  debitParIp.set(ip, { fenetre, n: n + parsed.data.lignes.length });
+  if (debitParIp.size > 500) debitParIp.clear();
+
+  const appareil = `${parsed.data.appareil ?? 'iPad'} iOS ${parsed.data.systeme ?? '?'}`;
+  for (const l of parsed.data.lignes) {
+    const details = l.details ? ` ${JSON.stringify(l.details).slice(0, 500)}` : '';
+    const line = `[Natif:${appareil}] t+${l.t}ms [${l.fil}] [${l.source}] ${l.etape}${details}`;
+    if (l.niveau === 'error') console.error(line);
+    else if (l.niveau === 'warn') console.warn(line);
+    else console.info(line);
+  }
+  res.json({ ok: true, recues: parsed.data.lignes.length });
+});
+
 export default router;

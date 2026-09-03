@@ -79,9 +79,23 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         return response.items.first
     }
 
+    // diag/journal-natif — tout est noté et envoyé au serveur (cf. TuttiJournal).
+    public override func load() {
+        TuttiJournal.shared.lancerSurveillance()
+        TuttiJournal.shared.note("musickit", "greffon chargé")
+    }
+
+    /** diag/journal-natif — adresse du serveur pour le journal (par défaut prod). */
+    @objc func configurerJournal(_ call: CAPPluginCall) {
+        if let base = call.getString("apiBase") { TuttiJournal.shared.configurer(apiBase: base) }
+        call.resolve()
+    }
+
     @objc func authorize(_ call: CAPPluginCall) {
+        let jeton = TuttiJournal.shared.debut("musickit", "authorize")
         Task {
             let status = await MusicAuthorization.request()
+            TuttiJournal.shared.fin("musickit", jeton, ["autorise": status == .authorized])
             call.resolve(["authorized": status == .authorized])
         }
     }
@@ -154,17 +168,28 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.reject("catalogId requis")
             return
         }
+        let jetonPlay = TuttiJournal.shared.debut("musickit", "play", ["id": catalogId, "residentMo": TuttiJournal.memoireResidenteMo()])
         Task {
             do {
+                let j1 = TuttiJournal.shared.debut("musickit", "play.fetchSong")
                 guard let song = try await self.fetchSong(catalogId) else {
+                    TuttiJournal.shared.fin("musickit", j1, ["trouve": false])
+                    TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": "introuvable"])
                     call.reject("Morceau introuvable pour l'id \(catalogId)")
                     return
                 }
+                TuttiJournal.shared.fin("musickit", j1, ["trouve": true, "dureeS": Int(song.duration ?? 0)])
                 self.ecrireDurees(courante: song.duration ?? 0, suivante: 0)
+                let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
                 self.player.queue = [song]
+                TuttiJournal.shared.fin("musickit", j2)
+                let j3 = TuttiJournal.shared.debut("musickit", "play.player.play()")
                 try await self.player.play()
+                TuttiJournal.shared.fin("musickit", j3)
+                TuttiJournal.shared.fin("musickit", jetonPlay, ["ok": true])
                 call.resolve(["ok": true])
             } catch {
+                TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": error.localizedDescription])
                 call.reject("Lecture échouée : \(error.localizedDescription)")
             }
         }
@@ -180,16 +205,22 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.reject("catalogId requis")
             return
         }
+        let jeton = TuttiJournal.shared.debut("musickit", "queueNext", ["id": catalogId])
         Task {
             do {
                 guard let song = try await self.fetchSong(catalogId) else {
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "introuvable"])
                     call.reject("Morceau introuvable pour l'id \(catalogId)")
                     return
                 }
+                let j2 = TuttiJournal.shared.debut("musickit", "queueNext.insert")
                 try await self.player.queue.insert(song, position: .tail)
+                TuttiJournal.shared.fin("musickit", j2)
                 self.ecrireDurees(courante: nil, suivante: song.duration ?? 0)
+                TuttiJournal.shared.fin("musickit", jeton, ["ok": true])
                 call.resolve(["ok": true])
             } catch {
+                TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
                 call.reject("File d'attente échouée : \(error.localizedDescription)")
             }
         }
@@ -197,6 +228,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     /** feat/next-track-preload — saute sur le morceau préchargé (instantané). */
     @objc func skipToNext(_ call: CAPPluginCall) {
+        let jeton = TuttiJournal.shared.debut("musickit", "skipToNext")
         Task {
             do {
                 // fix/skip-sans-fuite-audio — COUPER l'ancien titre AVANT le
@@ -206,15 +238,20 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // révélé à l'oreille). Un blanc de quelques centaines de ms
                 // est invisible ; l'ancien titre audible est inacceptable.
                 self.player.pause()
+                let j2 = TuttiJournal.shared.debut("musickit", "skipToNext.skipToNextEntry")
                 try await self.player.skipToNextEntry()
+                TuttiJournal.shared.fin("musickit", j2)
+                let j3 = TuttiJournal.shared.debut("musickit", "skipToNext.play()")
                 try await self.player.play()
+                TuttiJournal.shared.fin("musickit", j3)
                 // fix/duree-du-morceau-precedent — on le signale si rien n'a été
                 // préchargé : la durée affichée resterait alors celle du titre
                 // précédent, donc une barre de progression fausse sur la console
                 // ET sur la TV.
                 if !self.promouvoirDureeSuivante() {
-                    print("[TuttiMusicKit] saut sans préchargement — durée à confirmer")
+                    TuttiJournal.shared.note("musickit", "saut sans préchargement — durée à confirmer", niveau: "warn")
                 }
+                TuttiJournal.shared.fin("musickit", jeton, ["ok": true])
                 call.resolve(["ok": true])
             } catch {
                 // fix/silence-apres-un-saut-rate — LA MUSIQUE REPART.
@@ -223,6 +260,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // Apple), rien ne la relançait : silence total dans la salle
                 // jusqu'à intervention de l'animateur.
                 try? await self.player.play()
+                TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
                 call.reject("Saut échoué : \(error.localizedDescription)")
             }
         }
@@ -238,16 +276,21 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     // mutuel — l'app entière est morte. Sur la file d'arrière-plan de
     // Capacitor, une lecture qui attend ne bloque qu'elle-même, jamais l'app.
     @objc func pause(_ call: CAPPluginCall) {
+        let jeton = TuttiJournal.shared.debut("musickit", "pause")
         player.pause()
+        TuttiJournal.shared.fin("musickit", jeton)
         call.resolve()
     }
 
     @objc func resume(_ call: CAPPluginCall) {
+        let jeton = TuttiJournal.shared.debut("musickit", "resume")
         Task {
             do {
                 try await player.play()
+                TuttiJournal.shared.fin("musickit", jeton)
                 call.resolve()
             } catch {
+                TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
                 call.reject("Reprise échouée : \(error.localizedDescription)")
             }
         }
@@ -255,7 +298,9 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     @objc func seek(_ call: CAPPluginCall) {
         let ms = call.getDouble("ms") ?? 0
+        let jeton = TuttiJournal.shared.debut("musickit", "seek", ["ms": Int(ms)])
         player.playbackTime = max(0, ms / 1000.0)
+        TuttiJournal.shared.fin("musickit", jeton)
         call.resolve()
     }
 
@@ -291,12 +336,14 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             dernierEtatConnu = r
             call.resolve(r)
         } else {
-            print("[TuttiMusicKit] lecture d'état trop lente — dernier état connu renvoyé")
+            TuttiJournal.shared.note("musickit", "getStatus TROP LENT (>500 ms) — dernier état connu renvoyé", niveau: "warn")
             call.resolve(dernierEtatConnu)
         }
     }
 
     private func lireEtat() -> [String: Any] {
+        let jeton = TuttiJournal.shared.debut("musickit", "getStatus.lecture", silencieux: true)
+        defer { TuttiJournal.shared.finSiLent("musickit", jeton, seuilMs: 200) }
         let isPlaying = player.state.playbackStatus == .playing
         // fix/live-sync-check — identité du morceau RÉELLEMENT en lecture.
         // La console la compare en continu au morceau attendu par le jeu :

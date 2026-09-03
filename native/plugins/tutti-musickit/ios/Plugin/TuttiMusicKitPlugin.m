@@ -14,4 +14,5 @@ CAP_PLUGIN(TuttiMusicKitPlugin, "TuttiMusicKit",
     CAP_PLUGIN_METHOD(queueNext, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(skipToNext, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(getStatus, CAPPluginReturnPromise);
+    CAP_PLUGIN_METHOD(configurerJournal, CAPPluginReturnPromise);
 )
