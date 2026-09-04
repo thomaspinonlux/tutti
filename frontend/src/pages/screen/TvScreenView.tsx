@@ -561,7 +561,14 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
         /* ── REVEAL ── */
         <main className="grid flex-1 grid-cols-1 gap-10 px-12 pb-12 lg:grid-cols-[1.5fr_1fr]">
           <section className="flex min-h-0 flex-col items-center justify-center gap-10 lg:flex-row">
-            <div className="flex shrink-0 items-center justify-center">
+            {/* fix/pochette-invisible-sur-la-tv — LA LARGEUR EST OBLIGATOIRE ICI.
+                RevealCoverDark est en `w-full` : sans largeur sur ce conteneur,
+                le pourcentage se résolvait contre un parent dimensionné par son
+                contenu, donc contre lui-même → 0 px de large (mesuré 0×0 en
+                navigateur). La pochette était bien rendue, mais invisible : la
+                salle ne voyait jamais l'image à la révélation, alors que la
+                console de l'animateur, elle, l'affichait. */}
+            <div className="flex w-[min(40vh,400px)] shrink-0 items-center justify-center">
               <RevealCoverDark track={currentTrack} title={title} />
             </div>
             <div className="min-w-0 text-center lg:text-left">
