@@ -843,7 +843,10 @@ function ScreenPlaylistGridView({
         const card = el.firstElementChild as HTMLElement | null;
         if (card) {
           const cardW = card.offsetWidth + RAIL_GAP;
-          targetRef.current = -(focusIndex * cardW) - cardW / 2;
+          // fix/bandeau-playlists-trop-petit — on centre sur la LARGEUR DE LA
+          // CARTE, pas sur « carte + espacement » : l'ancien calcul decalait
+          // tout le bandeau d'un demi-espacement vers la gauche.
+          targetRef.current = -(focusIndex * cardW) - card.offsetWidth / 2;
           posRef.current += (targetRef.current - posRef.current) * (reduce ? 1 : 0.18);
           if (Math.abs(targetRef.current - posRef.current) < 0.4) {
             posRef.current = targetRef.current;
@@ -874,7 +877,7 @@ function ScreenPlaylistGridView({
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-[#0B0B0F] text-white">
       <MultiColorBar height="md" />
-      <header className="flex shrink-0 items-baseline justify-between px-12 pb-3 pt-7">
+      <header className="flex shrink-0 items-baseline justify-between px-12 pb-2 pt-5">
         <div>
           <p
             className="mb-1 font-mono text-[11px] uppercase tracking-[0.3em]"
@@ -882,7 +885,7 @@ function ScreenPlaylistGridView({
           >
             {t('screen.playlistSelection.eyebrow')}
           </p>
-          <h1 className="font-display text-5xl leading-none text-white">
+          <h1 className="font-display text-6xl leading-none text-white">
             {current ? current.name : t('screen.playlistSelection.gridTitle')}
           </h1>
         </div>
@@ -907,7 +910,11 @@ function ScreenPlaylistGridView({
               return (
                 <article
                   key={it.id}
-                  className="flex w-[19vw] max-w-[300px] shrink-0 flex-col gap-3 rounded-[20px] border p-5 transition-[opacity,background-color,border-color,transform] duration-[420ms]"
+                  /* fix/bandeau-playlists-trop-petit — cartes agrandies et
+                     centrees : sur une TV regardee de loin, 19vw plafonne a
+                     300 px occupait un quart de l'ecran et le titre etait
+                     illisible depuis la salle. */
+                  className="flex w-[26vw] min-w-[300px] max-w-[520px] shrink-0 flex-col gap-4 rounded-[24px] border p-7 transition-[opacity,background-color,border-color,transform] duration-[420ms]"
                   style={{
                     opacity: on ? 1 : 0.38,
                     transform: on ? 'scale(1.06)' : 'scale(0.92)',
@@ -926,11 +933,11 @@ function ScreenPlaylistGridView({
                   />
                   <p
                     className="font-display leading-tight text-white"
-                    style={{ fontSize: on ? '1.6rem' : '1.35rem' }}
+                    style={{ fontSize: on ? '2.5rem' : '1.9rem' }}
                   >
                     {it.name}
                   </p>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/45">
+                  <p className="font-mono text-[15px] uppercase tracking-[0.16em] text-white/60">
                     {it.count} {t('screen.playlistSelection.tracks', { defaultValue: 'titres' })}
                     {it.levelLabel ? ` · ${it.levelLabel}` : ''}
                   </p>
@@ -941,7 +948,7 @@ function ScreenPlaylistGridView({
         )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-3 px-12 pb-5">
+      <div className="flex shrink-0 items-center justify-center gap-3 px-12 pb-4">
         {items.map((it, i) => (
           <span
             key={it.id}

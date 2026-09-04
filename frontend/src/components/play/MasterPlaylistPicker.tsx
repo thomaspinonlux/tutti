@@ -139,7 +139,66 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
   // (celle sélectionnée pour le niveau, sinon la 1ʳᵉ de la liste filtrée) → la TV
   // affiche la grille catalogue + la surligne. Heartbeat 15s (TTL store = 30s).
   // Fermeture → sort de la sélection (playlist_id null).
-  const tvFocusId = tab === 'official' ? (selected?.id ?? filteredOfficial?.[0]?.id ?? null) : null;
+  // fix/tv-ne-suit-pas-le-telephone — LA TV SUIT LE DÉFILEMENT DU TÉLÉPHONE.
+  //
+  // Avant : tant qu'aucune playlist n'était TOUCHÉE, on poussait toujours la
+  // PREMIÈRE de la liste. L'animateur faisait défiler son téléphone et la salle
+  // voyait la même carte figée — « la TV ne suit pas ». La console iPad, elle,
+  // avait bien ce suivi (useFocusedPlaylistSync) ; le téléphone ne l'a jamais eu.
+  //
+  // Désormais on repère la carte la plus proche du CENTRE de l'écran du
+  // téléphone (critère net sur une liste verticale, là où « la plus visible »
+  // donne des ex æquo dès que trois cartes tiennent à l'écran) et c'est elle
+  // qu'on envoie, au plus une fois toutes les 150 ms.
+  const conteneurRef = useRef<HTMLDivElement | null>(null);
+  const [idCentre, setIdCentre] = useState<string | null>(null);
+  useEffect(() => {
+    const boite = conteneurRef.current;
+    if (!props.open || !boite || tab !== 'official' || selected) return;
+    let dernier = 0;
+    let differe: number | null = null;
+    const calculer = (): void => {
+      const r = boite.getBoundingClientRect();
+      const centre = r.top + r.height / 2;
+      let meilleur: string | null = null;
+      let ecartMin = Number.POSITIVE_INFINITY;
+      boite.querySelectorAll<HTMLElement>('[data-focus-playlist-id]').forEach((el) => {
+        const b = el.getBoundingClientRect();
+        if (b.bottom < r.top || b.top > r.bottom) return; // hors écran
+        const ecart = Math.abs(b.top + b.height / 2 - centre);
+        if (ecart < ecartMin) {
+          ecartMin = ecart;
+          meilleur = el.getAttribute('data-focus-playlist-id');
+        }
+      });
+      if (meilleur) setIdCentre(meilleur);
+    };
+    const surDefilement = (): void => {
+      const attendu = Date.now() - dernier;
+      if (attendu >= 150) {
+        dernier = Date.now();
+        calculer();
+        return;
+      }
+      if (differe !== null) return;
+      differe = window.setTimeout(() => {
+        differe = null;
+        dernier = Date.now();
+        calculer();
+      }, 150 - attendu);
+    };
+    calculer();
+    boite.addEventListener('scroll', surDefilement, { passive: true });
+    return () => {
+      boite.removeEventListener('scroll', surDefilement);
+      if (differe !== null) window.clearTimeout(differe);
+    };
+  }, [props.open, tab, selected, filteredOfficial]);
+
+  const tvFocusId =
+    tab === 'official'
+      ? (selected?.id ?? idCentre ?? filteredOfficial?.[0]?.id ?? null)
+      : null;
   useEffect(() => {
     if (!props.open) {
       void masterSetScreenFocus(props.sessionId, props.token, null).catch(() => {});
@@ -166,7 +225,12 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
   };
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 bg-cream overflow-y-auto">
+    <div
+      ref={conteneurRef}
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 bg-cream overflow-y-auto"
+    >
       <div className="max-w-[500px] mx-auto p-4">
         <div className="flex items-center justify-between mb-3">
           <p className="font-display text-2xl">{t('play.masterPickRoundTitle')}</p>
@@ -333,7 +397,9 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
               </p>
             )}
             {filteredOfficial.map((p) => (
-              <li key={p.id}>
+              /* fix/tv-ne-suit-pas-le-telephone — ancre lue pour savoir quelle
+                 carte est au centre de l'écran du téléphone. */
+              <li key={p.id} data-focus-playlist-id={p.id}>
                 <button
                   type="button"
                   disabled={p.locked}
