@@ -183,9 +183,36 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
                 self.player.queue = [song]
                 TuttiJournal.shared.fin("musickit", j2)
+                // fix/play-qui-ne-rend-jamais-la-main — on PRÉPARE d'abord : le
+                // chargement du flux se fait ici, hors de la commande de
+                // lecture, ce qui raccourcit d'autant l'appel critique.
+                let jPrep = TuttiJournal.shared.debut("musickit", "play.prepareToPlay")
+                let prete = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.player.prepareToPlay()
+                    return true
+                }
+                TuttiJournal.shared.fin("musickit", jPrep, ["prete": prete == true])
                 let j3 = TuttiJournal.shared.debut("musickit", "play.player.play()")
-                try await self.player.play()
-                TuttiJournal.shared.fin("musickit", j3)
+                let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.player.play()
+                    return true
+                }
+                TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
+                guard demarre == true else {
+                    // Apple n'a pas démarré dans le délai : on le DIT au lieu de
+                    // laisser la salle devant un écran mort. La console affiche
+                    // l'erreur et l'animateur peut relancer ou changer de source.
+                    TuttiJournal.shared.note(
+                        "musickit",
+                        "APPLE NE DÉMARRE PAS — abandon après \(Int(self.delaiCommandeApple)) s",
+                        ["id": catalogId],
+                        niveau: "error"
+                    )
+                    self.noterEtat(enLecture: false, position: 0, nowPlayingId: catalogId, confirme: true)
+                    TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": "apple-ne-demarre-pas"])
+                    call.reject("Apple Music n'a pas démarré (réseau ?) — réessaie ou passe sur YouTube")
+                    return
+                }
                 // fix/ecran-fige-sur-apple-music — on connaît l'état sans rien demander.
                 self.noterEtat(enLecture: true, position: 0, nowPlayingId: catalogId, confirme: true)
                 TuttiJournal.shared.fin("musickit", jetonPlay, ["ok": true])
@@ -244,8 +271,11 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 try await self.player.skipToNextEntry()
                 TuttiJournal.shared.fin("musickit", j2)
                 let j3 = TuttiJournal.shared.debut("musickit", "skipToNext.play()")
-                try await self.player.play()
-                TuttiJournal.shared.fin("musickit", j3)
+                let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.player.play()
+                    return true
+                }
+                TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
                 // fix/duree-du-morceau-precedent — on le signale si rien n'a été
                 // préchargé : la durée affichée resterait alors celle du titre
                 // précédent, donc une barre de progression fausse sur la console
@@ -291,7 +321,17 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         let jeton = TuttiJournal.shared.debut("musickit", "resume")
         Task {
             do {
-                try await player.play()
+                let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.player.play()
+                    return true
+                }
+                guard demarre == true else {
+                    TuttiJournal.shared.note("musickit", "APPLE NE REPREND PAS — abandon", niveau: "error")
+                    self.noterEtat(enLecture: false, position: nil, confirme: true)
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "apple-ne-reprend-pas"])
+                    call.reject("Apple Music n'a pas repris — réessaie ou passe sur YouTube")
+                    return
+                }
                 self.noterEtat(enLecture: true, position: nil, confirme: true)
                 TuttiJournal.shared.fin("musickit", jeton)
                 call.resolve()
@@ -360,6 +400,39 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     private var nonConfirmeSignale = false
 
     private func maintenant() -> Double { ProcessInfo.processInfo.systemUptime }
+
+    // fix/play-qui-ne-rend-jamais-la-main — AUCUNE COMMANDE APPLE N'EST ATTENDUE
+    // SANS LIMITE.
+    //
+    // Journal du 04/09 13:31 (build 48, correctif getStatus déjà en place) :
+    //   ▶ play.fetchSong          → trouvé en 2514 ms (déjà anormalement lent)
+    //   ▶ play.player.play()      → ne se termine JAMAIS
+    //   FIL PRINCIPAL BLOQUÉ { play.player.play() depuis 27073 ms }
+    // Ce n'est plus la lecture d'état : c'est la commande « joue » elle-même
+    // qui reste suspendue — MusicKit attend Apple (réseau du bar) en tenant le
+    // fil qui dessine l'écran. Tant qu'on l'attend, l'app est morte.
+    //
+    // `courseAvecDelai` laisse la commande partir mais rend la main au bout de
+    // `delaiSec`. L'appelant peut alors se replier proprement (message à la
+    // console, bascule de source) au lieu de figer la salle.
+    private func courseAvecDelai<T: Sendable>(
+        _ delaiSec: Double,
+        _ operation: @escaping @Sendable () async throws -> T
+    ) async throws -> T? {
+        try await withThrowingTaskGroup(of: T?.self) { groupe in
+            groupe.addTask { try await operation() }
+            groupe.addTask {
+                try? await Task.sleep(nanoseconds: UInt64(delaiSec * 1_000_000_000))
+                return nil
+            }
+            let premier = try await groupe.next() ?? nil
+            groupe.cancelAll()
+            return premier
+        }
+    }
+
+    /// Délai au-delà duquel on considère qu'Apple ne démarrera pas.
+    private let delaiCommandeApple: Double = 6.0
 
     /// Position extrapolée à l'horloge depuis le dernier point d'ancrage.
     private func positionCouranteSec() -> Double {
