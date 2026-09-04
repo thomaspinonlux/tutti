@@ -172,7 +172,11 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         Task {
             do {
                 let j1 = TuttiJournal.shared.debut("musickit", "play.fetchSong")
-                guard let song = try await self.fetchSong(catalogId) else {
+                // RÈGLE — aucun appel Apple n'est attendu sans échéance.
+                let trouve = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.fetchSong(catalogId)
+                }
+                guard let song = trouve ?? nil else {
                     TuttiJournal.shared.fin("musickit", j1, ["trouve": false])
                     TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": "introuvable"])
                     call.reject("Morceau introuvable pour l'id \(catalogId)")
@@ -181,7 +185,12 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 TuttiJournal.shared.fin("musickit", j1, ["trouve": true, "dureeS": Int(song.duration ?? 0)])
                 self.ecrireDurees(courante: song.duration ?? 0, suivante: 0)
                 let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
-                self.player.queue = [song]
+                // Assignation synchrone : bornée elle aussi, elle a déjà pris
+                // plusieurs secondes en soirée quand Apple traîne.
+                _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
+                    self.player.queue = [song]
+                    return true
+                }
                 TuttiJournal.shared.fin("musickit", j2)
                 // fix/play-qui-ne-rend-jamais-la-main — on PRÉPARE d'abord : le
                 // chargement du flux se fait ici, hors de la commande de
@@ -237,14 +246,26 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         let jeton = TuttiJournal.shared.debut("musickit", "queueNext", ["id": catalogId])
         Task {
             do {
-                guard let song = try await self.fetchSong(catalogId) else {
+                let trouve = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.fetchSong(catalogId)
+                }
+                guard let song = trouve ?? nil else {
                     TuttiJournal.shared.fin("musickit", jeton, ["erreur": "introuvable"])
                     call.reject("Morceau introuvable pour l'id \(catalogId)")
                     return
                 }
                 let j2 = TuttiJournal.shared.debut("musickit", "queueNext.insert")
-                try await self.player.queue.insert(song, position: .tail)
-                TuttiJournal.shared.fin("musickit", j2)
+                let insere = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.player.queue.insert(song, position: .tail)
+                    return true
+                }
+                TuttiJournal.shared.fin("musickit", j2, ["insere": insere == true])
+                guard insere == true else {
+                    TuttiJournal.shared.note("musickit", "PRÉCHARGEMENT ABANDONNÉ — Apple n'a pas répondu", ["id": catalogId], niveau: "warn")
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "preload-abandonne"])
+                    call.reject("Préchargement abandonné (Apple ne répond pas)")
+                    return
+                }
                 self.ecrireDurees(courante: nil, suivante: song.duration ?? 0)
                 TuttiJournal.shared.fin("musickit", jeton, ["ok": true])
                 call.resolve(["ok": true])
@@ -268,8 +289,17 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // est invisible ; l'ancien titre audible est inacceptable.
                 self.player.pause()
                 let j2 = TuttiJournal.shared.debut("musickit", "skipToNext.skipToNextEntry")
-                try await self.player.skipToNextEntry()
-                TuttiJournal.shared.fin("musickit", j2)
+                let saute = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.player.skipToNextEntry()
+                    return true
+                }
+                TuttiJournal.shared.fin("musickit", j2, ["saute": saute == true])
+                guard saute == true else {
+                    TuttiJournal.shared.note("musickit", "APPLE NE SAUTE PAS — abandon", niveau: "error")
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "apple-ne-saute-pas"])
+                    call.reject("Apple Music n'a pas changé de morceau — réessaie")
+                    return
+                }
                 let j3 = TuttiJournal.shared.debut("musickit", "skipToNext.play()")
                 let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
                     try await self.player.play()
@@ -293,7 +323,10 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // échoue (file vide, morceau suivant pas encore chargé, réseau
                 // Apple), rien ne la relançait : silence total dans la salle
                 // jusqu'à intervention de l'animateur.
-                try? await self.player.play()
+                _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.player.play()
+                    return true
+                }
                 TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
                 call.reject("Saut échoué : \(error.localizedDescription)")
             }
