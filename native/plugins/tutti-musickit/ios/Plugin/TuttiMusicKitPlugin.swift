@@ -186,6 +186,8 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 let j3 = TuttiJournal.shared.debut("musickit", "play.player.play()")
                 try await self.player.play()
                 TuttiJournal.shared.fin("musickit", j3)
+                // fix/ecran-fige-sur-apple-music — on connaît l'état sans rien demander.
+                self.noterEtat(enLecture: true, position: 0, nowPlayingId: catalogId, confirme: true)
                 TuttiJournal.shared.fin("musickit", jetonPlay, ["ok": true])
                 call.resolve(["ok": true])
             } catch {
@@ -248,6 +250,8 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // préchargé : la durée affichée resterait alors celle du titre
                 // précédent, donc une barre de progression fausse sur la console
                 // ET sur la TV.
+                // fix/ecran-fige-sur-apple-music — nouveau morceau : la fiche repart à zéro.
+                self.noterEtat(enLecture: true, position: 0, confirme: true)
                 if !self.promouvoirDureeSuivante() {
                     TuttiJournal.shared.note("musickit", "saut sans préchargement — durée à confirmer", niveau: "warn")
                 }
@@ -278,6 +282,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     @objc func pause(_ call: CAPPluginCall) {
         let jeton = TuttiJournal.shared.debut("musickit", "pause")
         player.pause()
+        noterEtat(enLecture: false, position: nil, confirme: true)
         TuttiJournal.shared.fin("musickit", jeton)
         call.resolve()
     }
@@ -287,6 +292,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         Task {
             do {
                 try await player.play()
+                self.noterEtat(enLecture: true, position: nil, confirme: true)
                 TuttiJournal.shared.fin("musickit", jeton)
                 call.resolve()
             } catch {
@@ -300,6 +306,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         let ms = call.getDouble("ms") ?? 0
         let jeton = TuttiJournal.shared.debut("musickit", "seek", ["ms": Int(ms)])
         player.playbackTime = max(0, ms / 1000.0)
+        noterEtat(enLecture: nil, position: max(0, ms / 1000.0), confirme: true)
         TuttiJournal.shared.fin("musickit", jeton)
         call.resolve()
     }
@@ -310,41 +317,143 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         call.resolve()
     }
 
-    // fix/app-entierement-gelee-au-premier-morceau — LA LECTURE D'ÉTAT NE PEUT
-    // PLUS BLOQUER LE PONT. Les greffons Capacitor s'exécutent sur UNE file en
-    // série : si une lecture de l'état MusicKit reste suspendue (elle est
-    // interrogée quatre fois par seconde, y compris pendant le remplacement
-    // de la file au démarrage d'un morceau), TOUS les appels natifs suivants
-    // — console et écran externe compris — attendent derrière elle. C'est
-    // très probablement l'origine des « console figée au lancement » d'avant.
-    // La lecture part sur sa propre file ; au-delà d'une demi-seconde on rend
-    // le dernier état connu et on passe à la suite.
+    // fix/ecran-fige-sur-apple-music — ON N'ATTEND PLUS JAMAIS APPLE.
+    //
+    // Constaté en direct le 04/09 (journal natif, playlist Britpop 90) :
+    //   11:10:52  getStatus TROP LENT (>500 ms) — répété toutes les 500 ms
+    //   11:10:55  getStatus.lecture LENT { dureeMs: 4039 }
+    //   11:10:57  FIL PRINCIPAL BLOQUÉ { operationsEnCours:
+    //               ["getStatus.lecture depuis 1728 ms"] }
+    //   … et le fil principal est resté bloqué plus de 57 secondes.
+    //
+    // Mécanisme : la console demande l'état quatre fois par seconde et
+    // l'ancienne implémentation INTERROGEAIT ApplicationMusicPlayer à chaque
+    // fois. Ces propriétés ne répondent que depuis le fil principal ; quand
+    // MusicKit tarde, la lecture prend ce fil en otage et l'écran gèle. Le
+    // délai de garde d'une demi-seconde protégeait l'appelant mais n'annulait
+    // pas la lecture : elle continuait de tenir le verrou, et les demandes
+    // suivantes s'empilaient derrière elle sur une file en série.
+    //
+    // Désormais le greffon tient une FICHE D'ÉTAT toujours disponible :
+    //   - les commandes que NOUS passons (play, pause, resume, seek, saut) la
+    //     mettent à jour immédiatement — aucune question à poser à Apple ;
+    //   - entre deux, la position avance à l'horloge (départ + temps écoulé) ;
+    //   - un rafraîchissement part vers Apple SANS ATTENDRE, un seul à la fois.
+    //     S'il répond, la fiche est recalée au millième près ; s'il ne répond
+    //     pas, l'app continue sur l'horloge au lieu de se figer.
+    // Aucune attente nulle part : plus rien ne peut prendre le fil principal.
     private let fileLecture = DispatchQueue(label: "app.tutti.musickit.lecture")
-    private var dernierEtatConnu: [String: Any] = [
-        "isPlaying": false, "positionMs": 0.0, "durationMs": 0.0, "nowPlayingId": "",
-    ]
+    private let verrouFiche = NSLock()
+    private var ficheEnLecture = false
+    private var fichePositionSec: Double = 0
+    /// Instant (horloge monotone) auquel `fichePositionSec` a été posée.
+    private var ficheAncreeA: Double = ProcessInfo.processInfo.systemUptime
+    private var ficheNowPlayingId = ""
+    /// Dernier instant où Apple a réellement confirmé la fiche.
+    private var ficheConfirmeeA: Double = 0
+    /// Un rafraîchissement au plus en vol : sans ce garde-fou, quatre demandes
+    /// par seconde s'empilaient sur une file en série derrière une lecture
+    /// suspendue.
+    private var rafraichissementEnVol = false
+    /// Au-delà de ce délai sans confirmation d'Apple, on le signale une fois.
+    private let seuilNonConfirmeSec: Double = 3.0
+    private var nonConfirmeSignale = false
 
-    @objc func getStatus(_ call: CAPPluginCall) {
-        let semaphore = DispatchSemaphore(value: 0)
-        var resultat: [String: Any]?
-        fileLecture.async {
-            let r = self.lireEtat()
-            resultat = r
-            semaphore.signal()
-        }
-        if semaphore.wait(timeout: .now() + 0.5) == .success, let r = resultat {
-            dernierEtatConnu = r
-            call.resolve(r)
-        } else {
-            TuttiJournal.shared.note("musickit", "getStatus TROP LENT (>500 ms) — dernier état connu renvoyé", niveau: "warn")
-            call.resolve(dernierEtatConnu)
+    private func maintenant() -> Double { ProcessInfo.processInfo.systemUptime }
+
+    /// Position extrapolée à l'horloge depuis le dernier point d'ancrage.
+    private func positionCouranteSec() -> Double {
+        guard ficheEnLecture else { return fichePositionSec }
+        return fichePositionSec + max(0, maintenant() - ficheAncreeA)
+    }
+
+    /// Met la fiche à jour depuis une commande que nous venons de passer.
+    /// `position` en secondes ; `nil` = on garde la position extrapolée.
+    private func noterEtat(enLecture: Bool?, position: Double?, nowPlayingId: String? = nil, confirme: Bool = false) {
+        verrouFiche.lock()
+        defer { verrouFiche.unlock() }
+        let pos = position ?? positionCouranteSec()
+        if let enLecture { ficheEnLecture = enLecture }
+        fichePositionSec = pos
+        ficheAncreeA = maintenant()
+        if let nowPlayingId { ficheNowPlayingId = nowPlayingId }
+        if confirme {
+            ficheConfirmeeA = maintenant()
+            nonConfirmeSignale = false
         }
     }
 
-    private func lireEtat() -> [String: Any] {
+    /// Demande l'état réel à Apple SANS L'ATTENDRE. Un seul appel en vol.
+    private func rafraichirEnFond() {
+        verrouFiche.lock()
+        if rafraichissementEnVol {
+            verrouFiche.unlock()
+            return
+        }
+        rafraichissementEnVol = true
+        verrouFiche.unlock()
+        fileLecture.async { [weak self] in
+            guard let self else { return }
+            let etat = self.lireEtat()
+            self.verrouFiche.lock()
+            self.ficheEnLecture = etat.enLecture
+            self.fichePositionSec = etat.positionSec
+            self.ficheAncreeA = self.maintenant()
+            if !etat.nowPlayingId.isEmpty { self.ficheNowPlayingId = etat.nowPlayingId }
+            self.ficheConfirmeeA = self.maintenant()
+            self.nonConfirmeSignale = false
+            self.rafraichissementEnVol = false
+            self.verrouFiche.unlock()
+        }
+    }
+
+    @objc func getStatus(_ call: CAPPluginCall) {
+        // Réponse immédiate, prise sur la fiche. Aucune attente.
+        verrouFiche.lock()
+        let enLecture = ficheEnLecture
+        let positionSec = positionCouranteSec()
+        let nowPlayingId = ficheNowPlayingId
+        let confirmeeA = ficheConfirmeeA
+        let dejaSignale = nonConfirmeSignale
+        let depuis = confirmeeA == 0 ? 0 : maintenant() - confirmeeA
+        if depuis > seuilNonConfirmeSec && !dejaSignale { nonConfirmeSignale = true }
+        verrouFiche.unlock()
+
+        if depuis > seuilNonConfirmeSec && !dejaSignale {
+            // La console allume « Relancer le son » sur ce drapeau : l'animateur
+            // voit que l'état n'est plus confirmé, au lieu d'un écran figé.
+            TuttiJournal.shared.note(
+                "musickit",
+                "état Apple non confirmé depuis \(Int(depuis)) s — position tenue à l'horloge",
+                ["depuisS": Int(depuis)],
+                niveau: "warn"
+            )
+        }
+
+        call.resolve([
+            "isPlaying": enLecture,
+            "positionMs": positionSec * 1000.0,
+            "durationMs": lireDureeCourante() * 1000.0,
+            "nowPlayingId": nowPlayingId,
+            "confirme": depuis <= seuilNonConfirmeSec,
+        ])
+
+        // Et on relance une confirmation en tâche de fond, sans l'attendre.
+        rafraichirEnFond()
+    }
+
+    private struct EtatLu {
+        let enLecture: Bool
+        let positionSec: Double
+        let nowPlayingId: String
+    }
+
+    /// Lecture réelle auprès d'Apple. N'est appelée QUE depuis `rafraichirEnFond`,
+    /// jamais depuis un chemin qui attend le résultat.
+    private func lireEtat() -> EtatLu {
         let jeton = TuttiJournal.shared.debut("musickit", "getStatus.lecture", silencieux: true)
         defer { TuttiJournal.shared.finSiLent("musickit", jeton, seuilMs: 200) }
-        let isPlaying = player.state.playbackStatus == .playing
+        let enLecture = player.state.playbackStatus == .playing
         // fix/live-sync-check — identité du morceau RÉELLEMENT en lecture.
         // La console la compare en continu au morceau attendu par le jeu :
         // divergence = resynchronisation automatique.
@@ -354,11 +463,6 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 nowPlayingId = song.id.rawValue
             }
         }
-        return [
-            "isPlaying": isPlaying,
-            "positionMs": player.playbackTime * 1000.0,
-            "durationMs": lireDureeCourante() * 1000.0,
-            "nowPlayingId": nowPlayingId,
-        ]
+        return EtatLu(enLecture: enLecture, positionSec: player.playbackTime, nowPlayingId: nowPlayingId)
     }
 }
