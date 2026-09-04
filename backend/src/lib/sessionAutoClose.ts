@@ -22,9 +22,16 @@
  *   `status = 'ENDED'`, `ended_at = now()` (cohérent avec POST /:id/end).
  *   `updated_at` est bumpé automatiquement par Prisma.
  *
- * Pas d'event Socket.IO émis — la session est déjà inactive, personne
- * n'écoute. Le prochain refresh du dashboard host verra le statut ENDED
- * et masquera le bandeau.
+ * fix/lobby-ferme-avant-lancement — une session en salle d'attente
+ * (`WAITING`) ne compte NI manche NI point : les deux garde-fous ci-dessous
+ * ne la protégeaient pas. Un lobby ouvert tôt (les joueurs scannent le QR
+ * pendant que la salle se remplit) était fermé au bout de 2h, sans un mot,
+ * et le clic « Lancer » échouait en 409 INVALID_STATUS. Comptent désormais
+ * aussi comme activité : une inscription de joueur (participants.joined_at)
+ * et une proposition de playlist (playlist_proposals.created_at).
+ *
+ * Un event `session:auto_closed` est émis pour que la console l'apprenne
+ * tout de suite, au lieu de le découvrir au moment de lancer.
  *
  * Pas de dep node-cron — un simple setInterval suffit pour 1 job, même
  * pattern que `lib/youtubeRefresh.ts`.
@@ -36,6 +43,7 @@ import { clearActiveTrack } from './gameState.js';
 import { clearActiveQuestion } from './gameStateQuizz.js';
 import { clearAutoReveal } from './gameplayQuizzCore.js';
 import { cancelPhase2Timer } from '../routes/gameplayParticipant.js';
+import { broadcastToSession } from '../socket/index.js';
 
 /** Sessions inactives depuis plus de ça sont auto-fermées. Override via env. */
 const INACTIVITY_TIMEOUT_MS = Number.parseInt(
@@ -85,8 +93,15 @@ export async function runSessionAutoClose(
         none: { OR: [{ started_at: { gte: threshold } }, { ended_at: { gte: threshold } }] },
       },
       score_events: { none: { created_at: { gte: threshold } } },
+      // fix/lobby-ferme-avant-lancement — un lobby vivant n'est pas inactif.
+      participants: { none: { joined_at: { gte: threshold } } },
+      playlist_proposals: { none: { created_at: { gte: threshold } } },
     },
-    select: { id: true, rounds: { where: { status: 'PLAYING' }, select: { id: true } } },
+    select: {
+      id: true,
+      status: true,
+      rounds: { where: { status: 'PLAYING' }, select: { id: true } },
+    },
   });
 
   const result = await prisma.session.updateMany({
@@ -97,6 +112,9 @@ export async function runSessionAutoClose(
         none: { OR: [{ started_at: { gte: threshold } }, { ended_at: { gte: threshold } }] },
       },
       score_events: { none: { created_at: { gte: threshold } } },
+      // fix/lobby-ferme-avant-lancement — un lobby vivant n'est pas inactif.
+      participants: { none: { joined_at: { gte: threshold } } },
+      playlist_proposals: { none: { created_at: { gte: threshold } } },
     },
     data: {
       status: SessionStatus.ENDED,
@@ -112,6 +130,18 @@ export async function runSessionAutoClose(
     }
     clearAutoReveal(soiree.id);
     clearActiveQuestion(soiree.id);
+    // fix/lobby-ferme-avant-lancement — prévenir tout de suite les écrans
+    // encore ouverts plutôt que de les laisser afficher un QR mort.
+    try {
+      broadcastToSession(soiree.id, 'session:auto_closed', {
+        sessionId: soiree.id,
+        raison: 'inactivite',
+        inactiviteMinutes: Math.round(INACTIVITY_TIMEOUT_MS / 60_000),
+        avaitDemarre: soiree.status === SessionStatus.PLAYING,
+      });
+    } catch (err) {
+      console.error('[Cron][SessionAutoClose] broadcast error:', err);
+    }
   }
 
   const elapsedMs = Date.now() - start;

@@ -359,6 +359,7 @@ export async function launchOfficialPlaylistForSession(
       id: true,
       provider: true,
       provider_track_id: true,
+      canonical_title: true,
       cover_url: true,
       aliases: true,
       work_title: true,
@@ -393,13 +394,31 @@ export async function launchOfficialPlaylistForSession(
   const trackUpdates = existingTracks.flatMap((t) => {
     const agg = trackAggByKey.get(trackKey(t.provider, t.provider_track_id));
     if (!agg) return [];
-    const merged = Array.from(new Set([...t.aliases, ...agg.official]));
+    // fix/oeuvre-pas-affichee — LE TITRE À DEVINER SE MET AUSSI À JOUR.
+    //
+    // `agg.title` porte déjà la bonne réponse : le nom de l'ŒUVRE quand la
+    // playlist est en mode « deviner le film / la série », le titre de la
+    // chanson sinon. Il n'était écrit qu'à la CRÉATION du morceau cloné. Un
+    // morceau déjà cloné avant que l'œuvre soit renseignée gardait donc le
+    // titre de la chanson comme réponse : la console, la TV et les téléphones
+    // affichaient « Hakuna Matata » là où il fallait « Le Roi Lion ».
+    // 215 morceaux étaient dans ce cas le 04/09.
+    const titreDejaBon = agg.title === t.canonical_title;
+    const merged = Array.from(
+      new Set([
+        ...t.aliases,
+        ...agg.official,
+        ...(titreDejaBon ? [] : generateAliases(agg.title)),
+      ]),
+    );
     const data: {
+      canonical_title?: string;
       cover_url?: string | null;
       aliases?: string[];
       work_title?: string | null;
       song_title?: string | null;
     } = {};
+    if (!titreDejaBon) data.canonical_title = agg.title;
     if (!t.cover_url && agg.cover_url) data.cover_url = agg.cover_url;
     if (merged.length !== t.aliases.length) data.aliases = merged;
     // feat/oeuvre-affichee — remplit l'œuvre et le titre de chanson sur les

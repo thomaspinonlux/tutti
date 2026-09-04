@@ -443,6 +443,21 @@ function HostPageInner(): JSX.Element {
             setActiveBuzzers(new Set());
           },
         );
+        // fix/lobby-ferme-avant-lancement — la soirée vient d'être fermée
+        // automatiquement par le serveur. Sans ça, la console gardait le QR
+        // affiché et ne l'apprenait qu'au clic « Lancer ».
+        socket.on(
+          'session:auto_closed',
+          ({ inactiviteMinutes }: { inactiviteMinutes?: number }) => {
+            if (cancelled) return;
+            const heures = Math.max(1, Math.round((inactiviteMinutes ?? 120) / 60));
+            console.warn('[HostPage] soiree fermee automatiquement (inactivite)');
+            setError(
+              `Cette partie a été fermée automatiquement après ${heures} h sans activité. ` +
+                'Crée une nouvelle partie depuis le tableau de bord — les joueurs devront rescanner le QR.',
+            );
+          },
+        );
         // feat/classement-final-persistant — fermé depuis le téléphone ou l'iPad.
         socket.on('session:podium_hidden', () => {
           if (cancelled) return;
@@ -862,7 +877,12 @@ function HostPageInner(): JSX.Element {
   // fix/app-qui-tourne-avec-un-vieux-code — recharge seule quand une nouvelle
   // version est en ligne, uniquement hors morceau (sélection, salle d'attente,
   // entracte, podium). Jamais pendant un titre.
-  useNouvelleVersion(!currentTrack, 'console');
+  // fix/lobby-ferme-avant-lancement — `!currentTrack` seul n'est PAS un
+  // moment sûr : il reste vrai pendant TOUTE la chaîne de lancement.
+  // Un rechargement pile à cet instant rendait une page sans geste
+  // utilisateur alors qu'une manche venait de démarrer : le son ne
+  // partait pas. `busy` couvre les deux handlers de lancement.
+  useNouvelleVersion(!currentTrack && !busy, 'console');
   const lastEndedRound = session
     ? [...session.rounds].reverse().find((r) => r.status === 'ENDED')
     : null;
