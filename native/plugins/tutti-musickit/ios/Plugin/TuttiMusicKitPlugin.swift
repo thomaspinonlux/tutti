@@ -257,6 +257,14 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 TuttiJournal.shared.fin("musickit", jetonPlay, ["ok": true])
                 call.resolve(["ok": true])
             } catch {
+                // fix/fiche-menteuse-apres-echec — LA FICHE DIT LA VÉRITÉ MÊME
+                // QUAND ÇA RATE. Sans ça, après un échec de lecture la fiche
+                // annonçait encore « en lecture » avec l'ANCIEN identifiant :
+                // la console voyait l'ancien titre, relançait, échouait, et
+                // recommençait chaque seconde — boucle sans fin, écran figé.
+                // Le chemin « Apple ne démarre pas » juste au-dessus le faisait
+                // déjà ; celui-ci l'oubliait.
+                self.noterEtat(enLecture: false, position: 0, nowPlayingId: "", confirme: true)
                 TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": error.localizedDescription])
                 call.reject("Lecture échouée : \(error.localizedDescription)")
             }

@@ -1127,6 +1127,8 @@ function HostPageInner(): JSX.Element {
   // une intervention humaine. C'est le filet qui rend impossible le
   // « décalage d'une chanson » entre musique, titre et paroles.
   const resyncCountRef = useRef(0);
+  /** fix/relance-en-boucle — nombre de relances déjà tentées pour ce morceau. */
+  const relancesRef = useRef(0);
   // fix/skip-sans-fuite-audio — mémorise le titre PRÉCÉDENT : si la sonde
   // détecte que le lecteur joue encore l'ANCIEN morceau (le cas exact vu en
   // soirée), on resynchronise dès le 1er constat au lieu d'attendre deux.
@@ -1142,6 +1144,7 @@ function HostPageInner(): JSX.Element {
   useEffect(() => {
     if (!currentTrack || currentTrack.provider !== 'apple_music') return;
     const expected = currentTrack.provider_track_id;
+    relancesRef.current = 0;
     const id = window.setInterval(() => {
       if (Date.now() - appleTrackChangedAtRef.current < 3000) return; // grâce
       if (!apple.isPlaying) return; // pause volontaire : rien à corriger
@@ -1159,7 +1162,28 @@ function HostPageInner(): JSX.Element {
       // seulement journalisé.
       const isStaleOldTrack = !!prevAppleTrackRef.current && actual === prevAppleTrackRef.current;
       if (isStaleOldTrack) {
-        console.warn(`[Synchro] le lecteur joue encore l'ancien titre → relance de ${expected}`);
+        // fix/relance-en-boucle — TROIS ESSAIS, PAS L'INFINI.
+        // Quand la lecture échoue côté Apple, l'ancien titre reste affiché
+        // comme « en cours » : cette relance repartait chaque seconde, sans
+        // fin et sans que l'animateur en sache rien. Au-delà de trois essais
+        // on arrête et on le DIT.
+        if (relancesRef.current >= 3) {
+          if (relancesRef.current === 3) {
+            relancesRef.current = 4;
+            remoteLog('lancement', 'RELANCE ABANDONNÉE — 3 essais sans succès', {
+              attendu: expected,
+              joue: actual,
+            });
+            setError(
+              "Apple Music ne repart pas sur ce morceau. Passe au suivant, ou appuie sur « Relancer le son ».",
+            );
+          }
+          return;
+        }
+        relancesRef.current += 1;
+        console.warn(
+          `[Synchro] le lecteur joue encore l'ancien titre → relance ${relancesRef.current}/3 de ${expected}`,
+        );
         resyncCountRef.current = 0;
         void apple.play(expected);
       } else if (resyncCountRef.current === 3) {
