@@ -168,8 +168,14 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.reject("catalogId requis")
             return
         }
+        guard prendreLaMain() else {
+            TuttiJournal.shared.note("musickit", "play IGNORÉ — une commande est déjà en cours", ["id": catalogId], niveau: "warn")
+            call.reject("Une lecture est déjà en cours de démarrage")
+            return
+        }
         let jetonPlay = TuttiJournal.shared.debut("musickit", "play", ["id": catalogId, "residentMo": TuttiJournal.memoireResidenteMo()])
         Task {
+            defer { self.rendreLaMain() }
             do {
                 let j1 = TuttiJournal.shared.debut("musickit", "play.fetchSong")
                 // RÈGLE — aucun appel Apple n'est attendu sans échéance.
@@ -184,29 +190,53 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 }
                 TuttiJournal.shared.fin("musickit", j1, ["trouve": true, "dureeS": Int(song.duration ?? 0)])
                 self.ecrireDurees(courante: song.duration ?? 0, suivante: 0)
-                let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
-                // Assignation synchrone : bornée elle aussi, elle a déjà pris
-                // plusieurs secondes en soirée quand Apple traîne.
-                _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
-                    self.player.queue = [song]
-                    return true
+
+                // fix/gel-au-demarrage-de-playlist — ON PASSE PAR LE CHEMIN QUI
+                // NE GÈLE JAMAIS.
+                //
+                // Constat des journaux du 04/09 (build 49, délais de garde en
+                // place) : les six gels de la soirée sont TOUS sur `play` —
+                // c'est-à-dire le démarrage d'une manche, qui remplace la file
+                // du lecteur. L'enchaînement des morceaux DANS une manche, lui,
+                // n'a jamais gelé : il passe par insert + skipToNextEntry.
+                // Le remplacement de file est donc le chemin fragile ; on ne
+                // l'emprunte plus que la toute première fois, quand le lecteur
+                // n'a encore rien.
+                //
+                // Et `prepareToPlay` est RETIRÉ : ajouté la veille pour sortir
+                // le chargement de la commande critique, c'est lui qui bloquait
+                // 50 secondes le 04/09 à 19:40 (aucune ligne de fin, fil
+                // principal figé jusqu'à la relance de l'app).
+                let premiereFois = self.nowPlayingIdConnu().isEmpty
+                var demarre: Bool? = false
+                if premiereFois {
+                    let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
+                    _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
+                        self.player.queue = [song]
+                        return true
+                    }
+                    TuttiJournal.shared.fin("musickit", j2)
+                    let j3 = TuttiJournal.shared.debut("musickit", "play.player.play()")
+                    demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                        try await self.player.play()
+                        return true
+                    }
+                    TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
+                } else {
+                    let j2 = TuttiJournal.shared.debut("musickit", "play.insert")
+                    let insere = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                        try await self.player.queue.insert(song, position: .afterCurrentEntry)
+                        return true
+                    }
+                    TuttiJournal.shared.fin("musickit", j2, ["insere": insere == true])
+                    let j3 = TuttiJournal.shared.debut("musickit", "play.skip")
+                    demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                        try await self.player.skipToNextEntry()
+                        try await self.player.play()
+                        return true
+                    }
+                    TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
                 }
-                TuttiJournal.shared.fin("musickit", j2)
-                // fix/play-qui-ne-rend-jamais-la-main — on PRÉPARE d'abord : le
-                // chargement du flux se fait ici, hors de la commande de
-                // lecture, ce qui raccourcit d'autant l'appel critique.
-                let jPrep = TuttiJournal.shared.debut("musickit", "play.prepareToPlay")
-                let prete = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.player.prepareToPlay()
-                    return true
-                }
-                TuttiJournal.shared.fin("musickit", jPrep, ["prete": prete == true])
-                let j3 = TuttiJournal.shared.debut("musickit", "play.player.play()")
-                let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.player.play()
-                    return true
-                }
-                TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
                 guard demarre == true else {
                     // Apple n'a pas démarré dans le délai : on le DIT au lieu de
                     // laisser la salle devant un écran mort. La console affiche
@@ -434,6 +464,12 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     private func maintenant() -> Double { ProcessInfo.processInfo.systemUptime }
 
+    /// Dernier morceau connu du lecteur (fiche), sans rien demander à Apple.
+    private func nowPlayingIdConnu() -> String {
+        verrouFiche.lock(); defer { verrouFiche.unlock() }
+        return ficheNowPlayingId
+    }
+
     // fix/play-qui-ne-rend-jamais-la-main — AUCUNE COMMANDE APPLE N'EST ATTENDUE
     // SANS LIMITE.
     //
@@ -466,6 +502,26 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     /// Délai au-delà duquel on considère qu'Apple ne démarrera pas.
     private let delaiCommandeApple: Double = 6.0
+
+    // fix/deux-play-en-meme-temps — UNE SEULE COMMANDE APPLE À LA FOIS.
+    // Journal du 04/09 20:49 : deux `play` en vol simultanément
+    //   operationsEnCours: ["play depuis 2265 ms", "play depuis 3491 ms",
+    //                       "play.prepareToPlay depuis 2221 ms", "… 3365 ms"]
+    // Deux remplacements de file concurrents sur ApplicationMusicPlayer est le
+    // scénario d'interblocage le plus évident. On refuse le second au lieu de
+    // le lancer par-dessus le premier.
+    private let verrouCommande = NSLock()
+    private var commandeEnCours = false
+    private func prendreLaMain() -> Bool {
+        verrouCommande.lock(); defer { verrouCommande.unlock() }
+        if commandeEnCours { return false }
+        commandeEnCours = true
+        return true
+    }
+    private func rendreLaMain() {
+        verrouCommande.lock(); defer { verrouCommande.unlock() }
+        commandeEnCours = false
+    }
 
     /// Position extrapolée à l'horloge depuis le dernier point d'ancrage.
     private func positionCouranteSec() -> Double {
