@@ -173,6 +173,13 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.reject("Une lecture est déjà en cours de démarrage")
             return
         }
+        let feuVert = peutInterrogerApple()
+        guard feuVert.ok else {
+            rendreLaMain()
+            TuttiJournal.shared.note("musickit", "play REFUSÉ — \(feuVert.raison)", ["id": catalogId], niveau: "warn")
+            call.reject("Apple Music n'est pas disponible à l'instant (\(feuVert.raison))")
+            return
+        }
         let jetonPlay = TuttiJournal.shared.debut("musickit", "play", ["id": catalogId, "residentMo": TuttiJournal.memoireResidenteMo()])
         Task {
             defer { self.rendreLaMain() }
@@ -180,7 +187,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 let j1 = TuttiJournal.shared.debut("musickit", "play.fetchSong")
                 // RÈGLE — aucun appel Apple n'est attendu sans échéance.
                 let trouve = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.fetchSong(catalogId)
+                    try await self.chercherMorceau(catalogId)
                 }
                 guard let song = trouve ?? nil else {
                     TuttiJournal.shared.fin("musickit", j1, ["trouve": false])
@@ -265,6 +272,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // Le chemin « Apple ne démarre pas » juste au-dessus le faisait
                 // déjà ; celui-ci l'oubliait.
                 self.noterEtat(enLecture: false, position: 0, nowPlayingId: "", confirme: true)
+                self.noterPauseApresErreur()
                 TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": error.localizedDescription])
                 call.reject("Lecture échouée : \(error.localizedDescription)")
             }
@@ -281,11 +289,17 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.reject("catalogId requis")
             return
         }
+        let feuVertPrechargement = peutInterrogerApple()
+        guard feuVertPrechargement.ok else {
+            TuttiJournal.shared.note("musickit", "queueNext REFUSÉ — \(feuVertPrechargement.raison)", ["id": catalogId], niveau: "warn")
+            call.reject("Préchargement reporté (\(feuVertPrechargement.raison))")
+            return
+        }
         let jeton = TuttiJournal.shared.debut("musickit", "queueNext", ["id": catalogId])
         Task {
             do {
                 let trouve = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.fetchSong(catalogId)
+                    try await self.chercherMorceau(catalogId)
                 }
                 guard let song = trouve ?? nil else {
                     TuttiJournal.shared.fin("musickit", jeton, ["erreur": "introuvable"])
@@ -308,6 +322,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 TuttiJournal.shared.fin("musickit", jeton, ["ok": true])
                 call.resolve(["ok": true])
             } catch {
+                self.noterPauseApresErreur()
                 TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
                 call.reject("File d'attente échouée : \(error.localizedDescription)")
             }
@@ -529,6 +544,50 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     private func rendreLaMain() {
         verrouCommande.lock(); defer { verrouCommande.unlock() }
         commandeEnCours = false
+    }
+
+    // fix/fetchsong-zombies — LE DÉLAI DE GARDE NE TUE PAS LA REQUÊTE.
+    //
+    // Journal du 05/09 22:48 : le fil principal bloqué 6 min 25, avec une pile
+    // de play.fetchSong « depuis 5 610 882 ms » — 93 minutes d'appels jamais
+    // revenus, empilés les uns sur les autres.
+    // Mécanisme : courseAvecDelai rend la main à l'appelant au bout de 6 s,
+    // mais la requête Apple, elle, continue de vivre (l'annulation en Swift
+    // est cooperative, MusicKit ne l'honore pas). Chaque tentative en laissait
+    // donc une derriere elle. Au bout d'une centaine, l'app etouffe.
+    //
+    // Deux garde-fous, cette fois sur ce qui est REELLEMENT en vol :
+    //   - on refuse toute nouvelle recherche tant qu'une precedente n'est pas
+    //     revenue (compteur decremente DANS la requete, pas dans la course) ;
+    //   - apres une erreur Apple, on observe une pause avant de reessayer,
+    //     au lieu de marteler.
+    private let verrouVol = NSLock()
+    private var recherchesEnVol = 0
+    private var pauseJusqua: Double = 0
+    private let pauseApresErreurSec: Double = 8.0
+
+    private func peutInterrogerApple() -> (ok: Bool, raison: String) {
+        verrouVol.lock(); defer { verrouVol.unlock() }
+        if recherchesEnVol > 0 {
+            return (false, "une recherche precedente n'est toujours pas revenue (\(recherchesEnVol) en vol)")
+        }
+        let reste = pauseJusqua - ProcessInfo.processInfo.systemUptime
+        if reste > 0 {
+            return (false, "pause apres erreur Apple, encore \(Int(reste)) s")
+        }
+        return (true, "")
+    }
+
+    private func noterPauseApresErreur() {
+        verrouVol.lock(); defer { verrouVol.unlock() }
+        pauseJusqua = ProcessInfo.processInfo.systemUptime + pauseApresErreurSec
+    }
+
+    /// fetchSong instrumente : le compteur suit la requete REELLE, pas la course.
+    private func chercherMorceau(_ catalogId: String) async throws -> Song? {
+        verrouVol.lock(); recherchesEnVol += 1; verrouVol.unlock()
+        defer { verrouVol.lock(); recherchesEnVol -= 1; verrouVol.unlock() }
+        return try await fetchSong(catalogId)
     }
 
     /// Position extrapolée à l'horloge depuis le dernier point d'ancrage.
