@@ -81,3 +81,62 @@ export function generateAliases(raw: string, mode: 'artist' | 'title' = 'title')
 
   return [...set].filter((s) => s.length >= 2);
 }
+
+/**
+ * fix/alias-de-titre-qui-designent-l-artiste — FILTRE OBLIGATOIRE AVANT
+ * D'ÉCRIRE DES ALIAS DE TITRE.
+ *
+ * Constat du 09/09 : 79,7 % des morceaux avaient, dans leurs alias de TITRE,
+ * un alias qui était exactement le nom de l'ARTISTE ("calvin harris" sur
+ * « Summer », "major lazer" sur « Lean On », "wiz khalifa" sur « See You
+ * Again »). Conséquence en jeu, mesurée sur les buzz de la soirée : un joueur
+ * qui donnait le NOM DU GROUPE était compté « titre trouvé » et « artiste non
+ * trouvé » — donc jamais de bonus double, et un tableau qui annonçait l'inverse
+ * de ce qui avait été dit. 16 460 alias étaient dans ce cas au catalogue.
+ *
+ * Ces alias venaient d'un enrichissement phonétique, pas de generateAliases.
+ * Ce filtre est la garde qui empêche qu'ils reviennent, quelle que soit la
+ * source : un alias de titre qui désigne l'artiste est retiré, SAUF s'il
+ * partage un mot avec le titre (cas légitime « Rita Mitsouko » pour
+ * « Marcia Baïla », ou un titre qui contient vraiment le nom du groupe).
+ */
+export function retirerAliasDeTitreQuiDesignentLArtiste(
+  aliasesTitre: string[],
+  titre: string,
+  artiste: string,
+  aliasesArtiste: string[] = [],
+): string[] {
+  const formes = new Set(
+    [
+      ...decouperArtiste(artiste),
+      ...aliasesArtiste.map(basicNormalize),
+    ].filter((f) => f.length >= 3),
+  );
+  if (formes.size === 0) return aliasesTitre;
+  const motsDuTitre = basicNormalize(titre)
+    .split(' ')
+    .filter((m) => m.length >= 3);
+  return aliasesTitre.filter((alias) => {
+    const n = basicNormalize(alias);
+    if (!n) return false;
+    // Partage un mot avec le titre → c'est bien un alias de titre.
+    if (motsDuTitre.some((m) => n.split(' ').includes(m))) return true;
+    return !formes.has(n);
+  });
+}
+
+/**
+ * Découpe un nom d'artiste en ses formes utiles : le nom entier, et chaque
+ * partie séparée par &, virgule, feat., ft., featuring, avec, vs, x.
+ * « Major Lazer & DJ Snake ft. MØ » → ["major lazer dj snake ft mo",
+ * "major lazer", "dj snake", "mo"].
+ */
+export function decouperArtiste(nom: string): string[] {
+  const brut = (nom ?? '').trim();
+  if (!brut) return [];
+  const parts = brut
+    .split(/\s*(?:&|,|\/|\+|\bfeat\.?\b|\bft\.?\b|\bfeaturing\b|\bavec\b|\bvs\.?\b|\bwith\b|\sx\s)\s*/giu)
+    .map((p) => basicNormalize(p))
+    .filter((p) => p.length >= 2);
+  return Array.from(new Set([basicNormalize(brut), ...parts])).filter((p) => p.length >= 2);
+}

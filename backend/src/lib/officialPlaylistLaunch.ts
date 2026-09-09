@@ -15,7 +15,7 @@
  */
 
 import { prisma } from './prisma.js';
-import { generateAliases } from './aliases.js';
+import { generateAliases, retirerAliasDeTitreQuiDesignentLArtiste } from './aliases.js';
 import { broadcastToSession } from '../socket/index.js';
 import {
   DEFAULT_SESSION_SIZE,
@@ -325,6 +325,9 @@ export async function launchOfficialPlaylistForSession(
     work_title: string | null;
     song_title: string | null;
     official: Set<string>;
+    /** Alias d'artiste du catalogue — servent à écarter les alias de titre
+     *  qui désignent en réalité l'artiste (cf. aliases.ts). */
+    officialArtistAliases: Set<string>;
   }
   // Dédup `chosen` par (provider, provider_track_id) + union aliases officiels.
   const trackAggByKey = new Map<string, TrackAgg>();
@@ -342,8 +345,10 @@ export async function launchOfficialPlaylistForSession(
         work_title: c.work_title,
         song_title: c.song_title,
         official: new Set<string>(),
+        officialArtistAliases: new Set<string>(),
       } satisfies TrackAgg);
     c.official_title_aliases.forEach((a) => agg.official.add(a));
+    c.official_artist_aliases.forEach((a) => agg.officialArtistAliases.add(a));
     trackAggByKey.set(k, agg);
   }
   const providerTrackIds = [...trackAggByKey.values()].map((t) => t.provider_track_id);
@@ -378,7 +383,12 @@ export async function launchOfficialPlaylistForSession(
     .map((t) => ({
       artist_id: artistIdByName.get(t.artist)!,
       canonical_title: t.title,
-      aliases: Array.from(new Set([...generateAliases(t.title), ...t.official])),
+      aliases: retirerAliasDeTitreQuiDesignentLArtiste(
+        Array.from(new Set([...generateAliases(t.title), ...t.official])),
+        t.title,
+        t.artist,
+        [...t.officialArtistAliases],
+      ),
       year: t.year,
       provider: t.provider,
       provider_track_id: t.provider_track_id,
@@ -404,12 +414,17 @@ export async function launchOfficialPlaylistForSession(
     // affichaient « Hakuna Matata » là où il fallait « Le Roi Lion ».
     // 215 morceaux étaient dans ce cas le 04/09.
     const titreDejaBon = agg.title === t.canonical_title;
-    const merged = Array.from(
-      new Set([
-        ...t.aliases,
-        ...agg.official,
-        ...(titreDejaBon ? [] : generateAliases(agg.title)),
-      ]),
+    const merged = retirerAliasDeTitreQuiDesignentLArtiste(
+      Array.from(
+        new Set([
+          ...t.aliases,
+          ...agg.official,
+          ...(titreDejaBon ? [] : generateAliases(agg.title)),
+        ]),
+      ),
+      agg.title,
+      agg.artist,
+      [...agg.officialArtistAliases],
     );
     const data: {
       canonical_title?: string;
