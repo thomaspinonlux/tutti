@@ -103,6 +103,21 @@ final class TuttiJournal {
         }
     }
 
+    /// État de l'application, tenu à jour depuis le fil principal (cf. démarrage).
+    /// `true` par défaut : au lancement l'app est active.
+    private let verrouActivite = NSLock()
+    private var applicationActive = true
+
+    private func marquerApplicationActive(_ actif: Bool) {
+        verrouActivite.lock(); defer { verrouActivite.unlock() }
+        applicationActive = actif
+    }
+
+    private func applicationEstActive() -> Bool {
+        verrouActivite.lock(); defer { verrouActivite.unlock() }
+        return applicationActive
+    }
+
     private func operationsEnCours() -> [String] {
         verrou.lock(); defer { verrou.unlock() }
         let maintenant = CFAbsoluteTimeGetCurrent()
@@ -153,10 +168,26 @@ final class TuttiJournal {
         NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: nil) { [weak self] _ in
             self?.note("systeme", "AVERTISSEMENT MÉMOIRE", ["residentMo": TuttiJournal.memoireResidenteMo()], niveau: "warn")
         }
+        // fix/fausse-alarme-de-surveillance — L'APP EN VEILLE N'EST PAS UNE PANNE.
+        //
+        // Le 09/09 à 18:59:21, Thomas met la musique en PAUSE (▶ pause, 3 ms,
+        // dans le journal). 1,5 s plus tard : « FIL PRINCIPAL BLOQUÉ », répété
+        // pendant 2 min 07, puis plus aucune ligne. Rien n'était bloqué :
+        // musique en pause = plus rien qui justifie de garder l'app éveillée,
+        // iOS la met en veille, le fil principal cesse de traiter les blocs, et
+        // la surveillance — qui ne mesure QUE ça — crie au blocage.
+        //
+        // On mémorise donc l'état de l'application à chaque changement (sur le
+        // fil principal, où les notifications arrivent) et le fil de
+        // surveillance se contente de LIRE ce drapeau : il n'interroge jamais
+        // UIApplication lui-même, ce qui exigerait le fil principal — celui-là
+        // même qu'il soupçonne.
         NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: nil) { [weak self] _ in
+            self?.marquerApplicationActive(false)
             self?.note("systeme", "app va passer inactive")
         }
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [weak self] _ in
+            self?.marquerApplicationActive(true)
             self?.note("systeme", "app active", ["residentMo": TuttiJournal.memoireResidenteMo()])
         }
         NotificationCenter.default.addObserver(forName: UIApplication.willTerminateNotification, object: nil, queue: nil) { [weak self] _ in
@@ -165,6 +196,7 @@ final class TuttiJournal {
 
         let fil = Thread { [weak self] in
             var enAttente = false
+            var enVeilleSignalee = false
             var bloqueDepuis: CFAbsoluteTime = 0
             var dernierRapport: CFAbsoluteTime = 0
             var signalRecu = true
@@ -181,6 +213,7 @@ final class TuttiJournal {
                         self.note("surveillance", "FIL PRINCIPAL REPRIS", ["bloqueMs": duree], niveau: "warn")
                         enAttente = false
                     }
+                    enVeilleSignalee = false
                     verrouLocal.lock(); signalRecu = false; verrouLocal.unlock()
                     let envoye = CFAbsoluteTimeGetCurrent()
                     bloqueDepuis = envoye
@@ -189,6 +222,23 @@ final class TuttiJournal {
                     }
                 } else {
                     let depuis = CFAbsoluteTimeGetCurrent() - bloqueDepuis
+                    // App en veille : le fil principal ne traite plus rien, et
+                    // c'est NORMAL. On le note une fois, en information, et on
+                    // se tait tant qu'elle n'est pas revenue au premier plan.
+                    guard self.applicationEstActive() else {
+                        if !enVeilleSignalee {
+                            enVeilleSignalee = true
+                            self.note("surveillance", "app en veille — surveillance suspendue", [
+                                "depuisMs": Int(depuis * 1000),
+                            ])
+                        }
+                        // Une alerte en cours au moment de la mise en veille
+                        // est abandonnée : sinon le réveil publierait un
+                        // « FIL PRINCIPAL REPRIS » de plusieurs minutes qui ne
+                        // mesurerait que la durée du sommeil.
+                        enAttente = false
+                        continue
+                    }
                     if depuis >= 1.5 {
                         let maintenant = CFAbsoluteTimeGetCurrent()
                         if !enAttente || maintenant - dernierRapport >= 5 {
