@@ -88,6 +88,10 @@ export interface UseAppleMusicPlayerResult {
    * un geste user frais. JAMAIS d'alert() ni de reload.
    */
   audioBlocked: boolean;
+  /** fix/refus-apple-dit-vrai — le pont natif a REFUSÉ ce morceau (Apple ne
+   *  peut pas le lire : droits de streaming absents, identifiant mort…).
+   *  Ce n'est PAS un blocage d'autoplay : la console passe au suivant. */
+  refusNatif: { id: string; message: string } | null;
   /**
    * fix/robust-autoplay-no-refresh (Apple) — relance le dernier morceau
    * demandé depuis un geste user frais (clic sur l'overlay de secours).
@@ -116,6 +120,7 @@ export function useAppleMusicPlayer({
   // fix/robust-autoplay-no-refresh (Apple) — autoplay bloqué → overlay de
   // secours (identique YouTube/Spotify), jamais d'alert().
   const [audioBlocked, setAudioBlocked] = useState(false);
+  const [refusNatif, setRefusNatif] = useState<{ id: string; message: string } | null>(null);
 
   const musicRef = useRef<MusicKitInstance | null>(null);
   // fix/apple-ecouteurs-empiles — retire les écouteurs posés sur l'instance.
@@ -385,7 +390,7 @@ export function useAppleMusicPlayer({
           setIsAuthorized(auth.authorized);
           if (!auth.authorized) {
             setErrorCode('APPLE_NOT_AUTHORIZED');
-            setAudioBlocked(true);
+            setRefusNatif({ id: catalogId, message: 'Apple Music non autorisé sur cet iPad' });
             return false;
           }
           queueChangeAllowedUntilRef.current = Date.now() + 4000;
@@ -393,10 +398,11 @@ export function useAppleMusicPlayer({
           preparedNextRef.current = null; // nouvelle file → l'ancien préchargé est perdu
           if (!r.ok) {
             remoteLog('apple', 'lecture native refusée par le pont', { id: catalogId }, 'error');
-            setAudioBlocked(true);
+            setRefusNatif({ id: catalogId, message: 'Apple Music a refusé ce morceau' });
             return false;
           }
           setAudioBlocked(false);
+          setRefusNatif(null);
           if (r.verifie === false) {
             // Le pont a lancé la lecture mais Apple n'a pas annoncé ce morceau
             // dans les 3 s : on le journalise tel quel, sans relancer ici.
@@ -410,9 +416,17 @@ export function useAppleMusicPlayer({
           verifierQueLeSonAvance(catalogId);
           return true;
         } catch (err: unknown) {
-          console.warn('[Apple] lecture native refusée :', err);
+          // fix/refus-apple-dit-vrai — Journal du 09/09 19:44:57 :
+          //   ■ play {erreur: "MPMusicPlayerControllerErrorDomain error 1"}
+          // « Train de vie » (Koba LaD) : présent dans la boutique FR mais
+          // isStreamable=false — Apple ne PEUT pas le lire. L'app affichait
+          // « le navigateur bloque l'autoplay » : faux, et sans issue pour
+          // l'animateur. On dit la vraie raison et la console passe au suivant.
+          const message = (err as Error)?.message ?? String(err);
+          console.warn('[Apple] lecture native refusée :', message);
+          remoteLog('apple', 'Apple ne peut pas lire ce morceau', { id: catalogId, erreur: message }, 'error');
           setErrorCode('APPLE_PLAY_FAILED');
-          setAudioBlocked(true);
+          setRefusNatif({ id: catalogId, message });
           return false;
         }
       }
@@ -722,6 +736,7 @@ export function useAppleMusicPlayer({
     readNowPlayingId,
     activate,
     audioBlocked,
+    refusNatif,
     unblockAudio,
   };
 }

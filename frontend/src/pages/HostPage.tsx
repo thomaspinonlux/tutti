@@ -1955,6 +1955,44 @@ function HostPageInner(): JSX.Element {
     }
   };
 
+  // fix/refus-apple-dit-vrai — quand Apple REFUSE un morceau (droits de
+  // streaming absents, identifiant mort), la console passe au suivant toute
+  // seule et le dit. Trois refus d'affilée → on s'arrête et on le dit aussi,
+  // plutôt que de sauter toute la manche en silence.
+  const refusConsecutifsRef = useRef(0);
+  const dernierRefusIdRef = useRef('');
+  useEffect(() => {
+    const refus = apple.refusNatif;
+    if (!refus || !session || !playingRound) return;
+    if (!currentTrack || currentTrack.provider_track_id !== refus.id) return;
+    if (dernierRefusIdRef.current === refus.id) return; // déjà traité
+    dernierRefusIdRef.current = refus.id;
+    refusConsecutifsRef.current += 1;
+    const titre = currentTrack.title || refus.id;
+    remoteLog('lancement', 'Apple refuse le morceau — passage au suivant', {
+      id: refus.id,
+      titre,
+      erreur: refus.message,
+      refusConsecutifs: refusConsecutifsRef.current,
+    }, 'warn');
+    if (/non autoris/i.test(refus.message)) {
+      // Pas un problème de morceau : sauter ne servirait à rien.
+      setError("Apple Music n'est pas autorisé sur cet iPad — Réglages → Tutti → Musique et Apple Music.");
+      return;
+    }
+    if (refusConsecutifsRef.current > 3) {
+      setError(`Apple Music refuse trois morceaux d'affilée (« ${titre} »). Vérifie la connexion Apple Music, ou change de playlist.`);
+      return;
+    }
+    setError(`Apple Music ne peut pas lire « ${titre} » — passage au suivant.`);
+    void handleSkipTrack();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apple.refusNatif, currentTrack?.provider_track_id, session?.id, playingRound?.id]);
+  useEffect(() => {
+    // Un morceau qui démarre remet le compteur de refus à zéro.
+    if (apple.isPlaying) refusConsecutifsRef.current = 0;
+  }, [apple.isPlaying]);
+
   const handleSkipTrack = async (): Promise<void> => {
     console.info('[Skip Track] Click — session:', session?.id, '| round:', playingRound?.id);
     if (!session || !playingRound) {
@@ -2469,7 +2507,7 @@ function HostPageInner(): JSX.Element {
           lecture (autoplay bloqué / non autorisé). Click = geste user frais →
           unblockAudio() (authorize + rejoue le dernier morceau). JAMAIS
           d'alert() ni de reload. */}
-      {apple.audioBlocked && (
+      {apple.audioBlocked && !isCapacitorNative() && (
         <div
           role="dialog"
           aria-modal="true"
