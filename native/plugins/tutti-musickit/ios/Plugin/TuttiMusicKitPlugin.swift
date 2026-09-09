@@ -198,32 +198,68 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 TuttiJournal.shared.fin("musickit", j1, ["trouve": true, "dureeS": Int(song.duration ?? 0)])
                 self.ecrireDurees(courante: song.duration ?? 0, suivante: 0)
 
-                // fix/meme-morceau-en-boucle — LA FILE EST REMPLACÉE, JAMAIS EMPILÉE.
+                // fix/play-qui-gele-liPad — ON NE RAPPELLE PLUS player.play()
+                // SUR UNE FILE FRAÎCHEMENT REMPLACÉE.
                 //
-                // Journal du 09/09 18:53 (build 51) : `play` passait par
-                // insert(afterCurrentEntry) + skipToNextEntry. Apple annonçait
-                // encore l'ANCIEN titre plusieurs secondes après le saut, la
-                // console relançait (3 fois en 3 s), et chaque relance EMPILAIT
-                // une copie de plus du même morceau dans la file :
-                //   ▶ play 1442993961  ×4 en 20 s  →  file = [A, B, B, B, B, C…]
-                // Résultat en salle : le même morceau rejoué plusieurs fois,
-                // puis un titre qui ne correspond pas à l'écran — « les
-                // playlists tournent en rond ».
+                // Journal du 09/09 19:36:46 (build 52) :
+                //     ■ play.fetchSong   848 ms   trouvé
+                //     ■ play.queue=        3 ms   file remplacée
+                //     ▶ play.player.play()        ← AUCUNE LIGNE DE FIN
+                //     FIL PRINCIPAL BLOQUÉ { play.player.play() depuis 3334 ms }
+                //       … 8376 … 13418 … 23483 … 33546 … 43609 … 48640 ms
+                // L'iPad entier est mort sur cet appel ; le téléphone animateur,
+                // lui, continue (il parle au serveur, pas à MusicKit).
                 //
-                // Une file REMPLACÉE ([song] et rien d'autre) est idempotente :
-                // dix relances donnent toujours une file d'un seul morceau.
-                // Ce chemin a démarré la manche 1 du 09/09 en 1,2 s ; les gels
-                // de « queue= » du 04/09 étaient dus à prepareToPlay, retiré.
-                let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
-                let remplace = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    self.player.queue = [song]
-                    return true
-                }
-                TuttiJournal.shared.fin("musickit", j2, ["remplace": remplace == true])
+                // J'avais mis `queue= + play()` quelques heures plus tôt pour
+                // empêcher l'empilement de copies. C'était un mauvais échange :
+                // `insert + skipToNextEntry` est mesuré entre 0 et 9 ms et n'a
+                // JAMAIS bloqué — y compris ce même soir à 18:53 et 18:54 —
+                // parce que `skipToNextEntry` démarre lui-même la lecture sur
+                // un lecteur déjà vivant, alors que `play()` sur un lecteur
+                // arrêté attend Apple en tenant le fil principal.
+                //
+                // L'empilement est traité autrement, sans toucher à ce chemin :
+                //   - on n'insère pas une copie d'un morceau déjà dans la file ;
+                //   - les relances de la console sont espacées de 5 s ;
+                //   - la lecture est vérifiée avant d'annoncer « ça joue ».
+                //
+                // Reste le tout premier morceau d'une session : le lecteur n'a
+                // pas de file, il n'y a rien à quoi s'accrocher, `queue= +
+                // play()` est inévitable. C'est le seul moment de risque, une
+                // fois par soirée, et il est signalé comme tel dans le journal.
                 var demarre: Bool? = false
-                if remplace == true {
-                    let j3 = TuttiJournal.shared.debut("musickit", "play.player.play()")
+                let fileVide = self.player.queue.entries.isEmpty
+                if fileVide {
+                    TuttiJournal.shared.note("musickit", "premier morceau de la session — passage obligé par queue= + play()", ["id": catalogId], niveau: "warn")
+                    let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
+                    let remplace = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                        self.player.queue = [song]
+                        return true
+                    }
+                    TuttiJournal.shared.fin("musickit", j2, ["remplace": remplace == true])
+                    if remplace == true {
+                        let j3 = TuttiJournal.shared.debut("musickit", "play.player.play()")
+                        demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                            try await self.player.play()
+                            return true
+                        }
+                        TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
+                    }
+                } else {
+                    // Chemin normal : jamais bloqué en six soirées de journaux.
+                    if self.fileContient(catalogId) {
+                        TuttiJournal.shared.note("musickit", "déjà dans la file — pas de copie supplémentaire", ["id": catalogId])
+                    } else {
+                        let j2 = TuttiJournal.shared.debut("musickit", "play.insert")
+                        let insere = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                            try await self.player.queue.insert(song, position: .afterCurrentEntry)
+                            return true
+                        }
+                        TuttiJournal.shared.fin("musickit", j2, ["insere": insere == true])
+                    }
+                    let j3 = TuttiJournal.shared.debut("musickit", "play.skip")
                     demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                        try await self.player.skipToNextEntry()
                         try await self.player.play()
                         return true
                     }
@@ -231,8 +267,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 }
                 guard demarre == true else {
                     // Apple n'a pas démarré dans le délai : on le DIT au lieu de
-                    // laisser la salle devant un écran mort. La console affiche
-                    // l'erreur et l'animateur peut relancer ou changer de source.
+                    // laisser la salle devant un écran mort.
                     TuttiJournal.shared.note(
                         "musickit",
                         "APPLE NE DÉMARRE PAS — abandon après \(Int(self.delaiCommandeApple)) s",
@@ -704,10 +739,20 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         }
         TuttiJournal.shared.fin("musickit", j1, ["trouve": true])
         ecrireDurees(courante: song.duration ?? 0, suivante: 0)
-        let j2 = TuttiJournal.shared.debut("musickit", "repli.queue=+play")
+        // Même règle que play : insert + skip sur un lecteur vivant, queue= +
+        // play() seulement si la file est vide (cf. fix/play-qui-gele-liPad).
+        let j2 = TuttiJournal.shared.debut("musickit", "repli.lecture")
         let demarre = try await courseAvecDelai(delaiCommandeApple) {
-            self.player.queue = [song]
-            try await self.player.play()
+            if self.player.queue.entries.isEmpty {
+                self.player.queue = [song]
+                try await self.player.play()
+            } else {
+                if !self.fileContient(catalogId) {
+                    try await self.player.queue.insert(song, position: .afterCurrentEntry)
+                }
+                try await self.player.skipToNextEntry()
+                try await self.player.play()
+            }
             return true
         }
         TuttiJournal.shared.fin("musickit", j2, ["demarre": demarre == true])
