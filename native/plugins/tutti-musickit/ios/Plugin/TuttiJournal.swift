@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import MetricKit
 
 /**
  * TuttiJournal — JOURNAL NATIF ENVOYÉ AU SERVEUR.
@@ -260,7 +261,19 @@ final class TuttiJournal {
         note("surveillance", "surveillance du fil principal démarrée", [
             "residentMo": TuttiJournal.memoireResidenteMo(),
         ])
+        // diag/pile-du-fil-principal — MetricKit.
+        // Ma surveillance sait dire « le fil principal ne répond plus » ; elle
+        // ne sait pas dire CE QU'IL FAIT. iOS, lui, l'enregistre : à chaque
+        // blocage du fil principal, MetricKit capture la pile d'appels et la
+        // livre à l'app (au plus tard au lancement suivant). On l'envoie au
+        // journal serveur telle quelle : la prochaine fois que l'iPad gèle,
+        // le coupable a un nom de fonction, pas une supposition.
+        if #available(iOS 14.0, *) {
+            MXMetricManager.shared.add(recepteurMetricKit)
+        }
     }
+
+    private lazy var recepteurMetricKit = RecepteurMetricKit()
 
     static func memoireResidenteMo() -> Int {
         var info = mach_task_basic_info()
@@ -272,5 +285,72 @@ final class TuttiJournal {
         }
         guard resultat == KERN_SUCCESS else { return -1 }
         return Int(info.resident_size / (1024 * 1024))
+    }
+}
+
+// MARK: - MetricKit : piles d'appels des blocages, livrées par iOS
+
+@available(iOS 14.0, *)
+private final class RecepteurMetricKit: NSObject, MXMetricManagerSubscriber {
+
+    func didReceive(_ payloads: [MXDiagnosticPayload]) {
+        for charge in payloads {
+            for blocage in charge.hangDiagnostics ?? [] {
+                let duree = Int(blocage.hangDuration.converted(to: .milliseconds).value)
+                let pile = RecepteurMetricKit.pileLisible(blocage.callStackTree)
+                TuttiJournal.shared.note("metrickit", "BLOCAGE ENREGISTRÉ PAR iOS — pile du fil principal", [
+                    "dureeMs": duree,
+                    "debutFenetre": ISO8601DateFormatter().string(from: charge.timeStampBegin),
+                    "finFenetre": ISO8601DateFormatter().string(from: charge.timeStampEnd),
+                    "pile": pile,
+                ], niveau: "error")
+            }
+            for plantage in charge.crashDiagnostics ?? [] {
+                TuttiJournal.shared.note("metrickit", "PLANTAGE ENREGISTRÉ PAR iOS", [
+                    "signal": plantage.signal?.intValue ?? -1,
+                    "raison": plantage.terminationReason ?? "",
+                    "pile": RecepteurMetricKit.pileLisible(plantage.callStackTree),
+                ], niveau: "error")
+            }
+        }
+    }
+
+    func didReceive(_ payloads: [MXMetricPayload]) {
+        // Métriques agrégées quotidiennes : le taux de blocage suffit.
+        for charge in payloads {
+            if let app = charge.applicationResponsivenessMetrics {
+                TuttiJournal.shared.note("metrickit", "réactivité du jour", [
+                    "histogrammeBlocages": app.histogrammedApplicationHangTime.description,
+                ])
+            }
+        }
+    }
+
+    /// Réduit l'arbre de piles MetricKit (JSON) aux 60 premières trames du fil
+    /// principal, du plus récent au plus ancien — c'est ce qu'il faut lire.
+    private static func pileLisible(_ arbre: MXCallStackTree) -> String {
+        let donnees = arbre.jsonRepresentation()
+        guard let racine = try? JSONSerialization.jsonObject(with: donnees) as? [String: Any],
+              let piles = racine["callStacks"] as? [[String: Any]] else {
+            return String(decoding: donnees.prefix(6_000), as: UTF8.self)
+        }
+        // Le fil principal est marqué threadAttributed=true.
+        let principale = piles.first { ($0["threadAttributed"] as? Bool) == true } ?? piles.first
+        guard let principale, let trames = principale["callStackRootFrames"] as? [[String: Any]] else {
+            return String(decoding: donnees.prefix(6_000), as: UTF8.self)
+        }
+        var lignes: [String] = []
+        func parcourir(_ trame: [String: Any], profondeur: Int) {
+            guard lignes.count < 60 else { return }
+            let binaire = (trame["binaryName"] as? String) ?? "?"
+            let decalage = (trame["offsetIntoBinaryTextSegment"] as? Int) ?? 0
+            let adresse = (trame["address"] as? Int) ?? 0
+            lignes.append("\(profondeur) \(binaire) +\(decalage) @\(String(adresse, radix: 16))")
+            for sous in (trame["subFrames"] as? [[String: Any]]) ?? [] {
+                parcourir(sous, profondeur: profondeur + 1)
+            }
+        }
+        for t in trames { parcourir(t, profondeur: 0) }
+        return lignes.joined(separator: " | ")
     }
 }
