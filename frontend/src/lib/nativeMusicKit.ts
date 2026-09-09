@@ -12,10 +12,13 @@
 interface NativeMusicKitBridge {
   authorize(): Promise<{ authorized: boolean }>;
   getUserToken(options: { developerToken: string }): Promise<{ userToken: string }>;
-  play(options: { catalogId: string }): Promise<{ ok: boolean }>;
+  /** `verifie` (build ≥ 52) : Apple a bien annoncé ce morceau comme entrée courante. */
+  play(options: { catalogId: string }): Promise<{ ok: boolean; verifie?: boolean }>;
   /** feat/next-track-preload — absents des binaires < build 34 : appels gardés try/catch. */
   queueNext?(options: { catalogId: string }): Promise<{ ok: boolean }>;
-  skipToNext?(): Promise<{ ok: boolean }>;
+  /** `expectedId` (build ≥ 52) : le pont vérifie le saut et se replie sur une
+   *  lecture directe s'il est tombé sur un autre morceau. */
+  skipToNext?(options?: { expectedId?: string }): Promise<{ ok: boolean; verifie?: boolean; repli?: boolean }>;
   pause(): Promise<void>;
   resume(): Promise<void>;
   seek(options: { ms: number }): Promise<void>;
@@ -46,7 +49,7 @@ export const nativeMusicKit = {
   getUserToken(developerToken: string): Promise<{ userToken: string }> {
     return bridge()?.getUserToken({ developerToken }) ?? Promise.resolve({ userToken: '' });
   },
-  play(catalogId: string): Promise<{ ok: boolean }> {
+  play(catalogId: string): Promise<{ ok: boolean; verifie?: boolean }> {
     return bridge()?.play({ catalogId }) ?? Promise.resolve({ ok: false });
   },
   pause(): Promise<void> {
@@ -80,10 +83,13 @@ export const nativeMusicKit = {
       return false;
     }
   },
-  /** feat/next-track-preload — saute sur le morceau préchargé. false → fallback play(). */
-  async skipToNext(): Promise<boolean> {
+  /** feat/next-track-preload — saute sur le morceau préchargé. false → fallback play().
+   *  fix/meme-morceau-en-boucle — on passe le morceau ATTENDU : le pont vérifie
+   *  que le saut est tombé dessus, sinon il se replie lui-même sur une lecture
+   *  directe (file remplacée). */
+  async skipToNext(expectedId?: string): Promise<boolean> {
     try {
-      const r = await bridge()?.skipToNext?.();
+      const r = await bridge()?.skipToNext?.(expectedId ? { expectedId } : undefined);
       return r?.ok === true;
     } catch {
       return false;

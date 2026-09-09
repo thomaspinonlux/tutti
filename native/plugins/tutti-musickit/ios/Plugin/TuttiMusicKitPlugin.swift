@@ -198,47 +198,32 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 TuttiJournal.shared.fin("musickit", j1, ["trouve": true, "dureeS": Int(song.duration ?? 0)])
                 self.ecrireDurees(courante: song.duration ?? 0, suivante: 0)
 
-                // fix/gel-au-demarrage-de-playlist — ON PASSE PAR LE CHEMIN QUI
-                // NE GÈLE JAMAIS.
+                // fix/meme-morceau-en-boucle — LA FILE EST REMPLACÉE, JAMAIS EMPILÉE.
                 //
-                // Constat des journaux du 04/09 (build 49, délais de garde en
-                // place) : les six gels de la soirée sont TOUS sur `play` —
-                // c'est-à-dire le démarrage d'une manche, qui remplace la file
-                // du lecteur. L'enchaînement des morceaux DANS une manche, lui,
-                // n'a jamais gelé : il passe par insert + skipToNextEntry.
-                // Le remplacement de file est donc le chemin fragile ; on ne
-                // l'emprunte plus que la toute première fois, quand le lecteur
-                // n'a encore rien.
+                // Journal du 09/09 18:53 (build 51) : `play` passait par
+                // insert(afterCurrentEntry) + skipToNextEntry. Apple annonçait
+                // encore l'ANCIEN titre plusieurs secondes après le saut, la
+                // console relançait (3 fois en 3 s), et chaque relance EMPILAIT
+                // une copie de plus du même morceau dans la file :
+                //   ▶ play 1442993961  ×4 en 20 s  →  file = [A, B, B, B, B, C…]
+                // Résultat en salle : le même morceau rejoué plusieurs fois,
+                // puis un titre qui ne correspond pas à l'écran — « les
+                // playlists tournent en rond ».
                 //
-                // Et `prepareToPlay` est RETIRÉ : ajouté la veille pour sortir
-                // le chargement de la commande critique, c'est lui qui bloquait
-                // 50 secondes le 04/09 à 19:40 (aucune ligne de fin, fil
-                // principal figé jusqu'à la relance de l'app).
-                let premiereFois = self.nowPlayingIdConnu().isEmpty
+                // Une file REMPLACÉE ([song] et rien d'autre) est idempotente :
+                // dix relances donnent toujours une file d'un seul morceau.
+                // Ce chemin a démarré la manche 1 du 09/09 en 1,2 s ; les gels
+                // de « queue= » du 04/09 étaient dus à prepareToPlay, retiré.
+                let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
+                let remplace = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    self.player.queue = [song]
+                    return true
+                }
+                TuttiJournal.shared.fin("musickit", j2, ["remplace": remplace == true])
                 var demarre: Bool? = false
-                if premiereFois {
-                    let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
-                    _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
-                        self.player.queue = [song]
-                        return true
-                    }
-                    TuttiJournal.shared.fin("musickit", j2)
+                if remplace == true {
                     let j3 = TuttiJournal.shared.debut("musickit", "play.player.play()")
                     demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                        try await self.player.play()
-                        return true
-                    }
-                    TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
-                } else {
-                    let j2 = TuttiJournal.shared.debut("musickit", "play.insert")
-                    let insere = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                        try await self.player.queue.insert(song, position: .afterCurrentEntry)
-                        return true
-                    }
-                    TuttiJournal.shared.fin("musickit", j2, ["insere": insere == true])
-                    let j3 = TuttiJournal.shared.debut("musickit", "play.skip")
-                    demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                        try await self.player.skipToNextEntry()
                         try await self.player.play()
                         return true
                     }
@@ -259,10 +244,26 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                     call.reject("Apple Music n'a pas démarré (réseau ?) — réessaie ou passe sur YouTube")
                     return
                 }
-                // fix/ecran-fige-sur-apple-music — on connaît l'état sans rien demander.
-                self.noterEtat(enLecture: true, position: 0, nowPlayingId: catalogId, confirme: true)
-                TuttiJournal.shared.fin("musickit", jetonPlay, ["ok": true])
-                call.resolve(["ok": true])
+                // La fiche connaît le morceau COMMANDÉ dès maintenant : pendant
+                // le délai de grâce, une lecture d'état qui annoncerait encore
+                // l'ancien titre ne l'écrasera pas (cf. rafraichirEnFond).
+                self.noterEtat(enLecture: true, position: 0, nowPlayingId: catalogId, confirme: true, commande: true)
+                // VÉRIFICATION — on ne dit « ça joue » qu'après l'avoir vu.
+                let j4 = TuttiJournal.shared.debut("musickit", "play.verif")
+                let verif = await self.attendreEntreeCourante(catalogId, delaiSec: 3.0)
+                TuttiJournal.shared.fin("musickit", j4, ["vu": verif.vu, "apresMs": verif.apresMs, "annonce": verif.annonce])
+                if verif.vu {
+                    self.noterEtat(enLecture: true, position: self.player.playbackTime, nowPlayingId: catalogId, confirme: true)
+                } else {
+                    TuttiJournal.shared.note(
+                        "musickit",
+                        "LECTURE NON VÉRIFIÉE — Apple n'annonce pas le morceau demandé",
+                        ["attendu": catalogId, "annonce": verif.annonce],
+                        niveau: "warn"
+                    )
+                }
+                TuttiJournal.shared.fin("musickit", jetonPlay, ["ok": true, "verifie": verif.vu])
+                call.resolve(["ok": true, "verifie": verif.vu])
             } catch {
                 // fix/fiche-menteuse-apres-echec — LA FICHE DIT LA VÉRITÉ MÊME
                 // QUAND ÇA RATE. Sans ça, après un échec de lecture la fiche
@@ -271,7 +272,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // recommençait chaque seconde — boucle sans fin, écran figé.
                 // Le chemin « Apple ne démarre pas » juste au-dessus le faisait
                 // déjà ; celui-ci l'oubliait.
-                self.noterEtat(enLecture: false, position: 0, nowPlayingId: "", confirme: true)
+                self.noterEtat(enLecture: false, position: 0, nowPlayingId: "", confirme: true, commande: true)
                 self.noterPauseApresErreur()
                 TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": error.localizedDescription])
                 call.reject("Lecture échouée : \(error.localizedDescription)")
@@ -306,6 +307,16 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                     call.reject("Morceau introuvable pour l'id \(catalogId)")
                     return
                 }
+                // fix/meme-morceau-en-boucle — jamais deux fois le même morceau
+                // dans la file : un préchargement répété (relance de la console)
+                // le rejouerait à la suite.
+                if self.fileContient(catalogId) {
+                    TuttiJournal.shared.note("musickit", "préchargement ignoré — déjà dans la file", ["id": catalogId])
+                    self.ecrireDurees(courante: nil, suivante: song.duration ?? 0)
+                    TuttiJournal.shared.fin("musickit", jeton, ["ok": true, "dejaLa": true])
+                    call.resolve(["ok": true])
+                    return
+                }
                 let j2 = TuttiJournal.shared.debut("musickit", "queueNext.insert")
                 let insere = try await self.courseAvecDelai(self.delaiCommandeApple) {
                     try await self.player.queue.insert(song, position: .tail)
@@ -331,8 +342,19 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     /** feat/next-track-preload — saute sur le morceau préchargé (instantané). */
     @objc func skipToNext(_ call: CAPPluginCall) {
-        let jeton = TuttiJournal.shared.debut("musickit", "skipToNext")
+        // fix/meme-morceau-en-boucle — le saut est VÉRIFIÉ contre le morceau
+        // attendu par la console. S'il tombe sur autre chose (copie résiduelle,
+        // entrée qui n'a pas encore basculé), on se replie sur une lecture
+        // directe du bon morceau au lieu de laisser jouer n'importe quoi.
+        let attendu = call.getString("expectedId") ?? ""
+        guard prendreLaMain() else {
+            TuttiJournal.shared.note("musickit", "skipToNext IGNORÉ — une commande est déjà en cours", ["attendu": attendu], niveau: "warn")
+            call.reject("Une lecture est déjà en cours de démarrage")
+            return
+        }
+        let jeton = TuttiJournal.shared.debut("musickit", "skipToNext", ["attendu": attendu])
         Task {
+            defer { self.rendreLaMain() }
             do {
                 // fix/skip-sans-fuite-audio — COUPER l'ancien titre AVANT le
                 // saut : si l'entrée suivante doit encore se buffériser, le
@@ -359,17 +381,44 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                     return true
                 }
                 TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
+                if !attendu.isEmpty {
+                    self.noterEtat(enLecture: true, position: 0, nowPlayingId: attendu, confirme: true, commande: true)
+                    let j4 = TuttiJournal.shared.debut("musickit", "skipToNext.verif")
+                    let verif = await self.attendreEntreeCourante(attendu, delaiSec: 1.5)
+                    TuttiJournal.shared.fin("musickit", j4, ["vu": verif.vu, "apresMs": verif.apresMs, "annonce": verif.annonce])
+                    if !verif.vu {
+                        TuttiJournal.shared.note(
+                            "musickit",
+                            "SAUT VERS LE MAUVAIS MORCEAU — repli sur une lecture directe",
+                            ["attendu": attendu, "annonce": verif.annonce],
+                            niveau: "warn"
+                        )
+                        let repli = try await self.lireDirectement(attendu)
+                        if !self.promouvoirDureeSuivante() {
+                            TuttiJournal.shared.note("musickit", "saut sans préchargement — durée à confirmer", niveau: "warn")
+                        }
+                        TuttiJournal.shared.fin("musickit", jeton, ["ok": repli.ok, "verifie": repli.verifie, "repli": true])
+                        if repli.ok {
+                            call.resolve(["ok": true, "verifie": repli.verifie, "repli": true])
+                        } else {
+                            call.reject("Apple Music n'a pas démarré le morceau attendu")
+                        }
+                        return
+                    }
+                    self.noterEtat(enLecture: true, position: self.player.playbackTime, nowPlayingId: attendu, confirme: true)
+                } else {
+                    // fix/ecran-fige-sur-apple-music — nouveau morceau : la fiche repart à zéro.
+                    self.noterEtat(enLecture: true, position: 0, confirme: true)
+                }
                 // fix/duree-du-morceau-precedent — on le signale si rien n'a été
                 // préchargé : la durée affichée resterait alors celle du titre
                 // précédent, donc une barre de progression fausse sur la console
                 // ET sur la TV.
-                // fix/ecran-fige-sur-apple-music — nouveau morceau : la fiche repart à zéro.
-                self.noterEtat(enLecture: true, position: 0, confirme: true)
                 if !self.promouvoirDureeSuivante() {
                     TuttiJournal.shared.note("musickit", "saut sans préchargement — durée à confirmer", niveau: "warn")
                 }
                 TuttiJournal.shared.fin("musickit", jeton, ["ok": true])
-                call.resolve(["ok": true])
+                call.resolve(["ok": true, "verifie": !attendu.isEmpty])
             } catch {
                 // fix/silence-apres-un-saut-rate — LA MUSIQUE REPART.
                 // La lecture est coupée juste avant le saut ; si le saut
@@ -562,14 +611,25 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     //   - apres une erreur Apple, on observe une pause avant de reessayer,
     //     au lieu de marteler.
     private let verrouVol = NSLock()
-    private var recherchesEnVol = 0
+    /// Instants de départ des recherches Apple réellement en vol.
+    private var recherchesEnVolDepuis: [Double] = []
     private var pauseJusqua: Double = 0
     private let pauseApresErreurSec: Double = 8.0
 
+    // fix/play-refuse-a-cause-du-prechargement — Journal du 09/09 18:54 :
+    //   play REFUSÉ — une recherche precedente n'est toujours pas revenue (1 en vol)
+    // La « recherche précédente » était le PRÉCHARGEMENT du titre suivant,
+    // parti 6 ms plus tôt et revenu 200 ms plus tard. Refuser un démarrage
+    // pour ça, c'est un morceau qui ne part pas et une console qui relance.
+    // On ne refuse désormais que si une recherche est réellement BLOQUÉE :
+    // plus vieille que le délai de garde, donc jamais revenue.
     private func peutInterrogerApple() -> (ok: Bool, raison: String) {
         verrouVol.lock(); defer { verrouVol.unlock() }
-        if recherchesEnVol > 0 {
-            return (false, "une recherche precedente n'est toujours pas revenue (\(recherchesEnVol) en vol)")
+        let maintenant = ProcessInfo.processInfo.systemUptime
+        let bloquees = recherchesEnVolDepuis.filter { maintenant - $0 > delaiCommandeApple }
+        if !bloquees.isEmpty {
+            let plusVieille = Int(maintenant - bloquees.min()!)
+            return (false, "\(bloquees.count) recherche(s) Apple bloquee(s), la plus vieille depuis \(plusVieille) s")
         }
         let reste = pauseJusqua - ProcessInfo.processInfo.systemUptime
         if reste > 0 {
@@ -585,9 +645,80 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     /// fetchSong instrumente : le compteur suit la requete REELLE, pas la course.
     private func chercherMorceau(_ catalogId: String) async throws -> Song? {
-        verrouVol.lock(); recherchesEnVol += 1; verrouVol.unlock()
-        defer { verrouVol.lock(); recherchesEnVol -= 1; verrouVol.unlock() }
+        let depart = ProcessInfo.processInfo.systemUptime
+        verrouVol.lock(); recherchesEnVolDepuis.append(depart); verrouVol.unlock()
+        defer {
+            verrouVol.lock()
+            if let i = recherchesEnVolDepuis.firstIndex(of: depart) { recherchesEnVolDepuis.remove(at: i) }
+            verrouVol.unlock()
+        }
         return try await fetchSong(catalogId)
+    }
+
+    // MARK: - Vérification de ce que joue réellement Apple
+
+    /// Identifiant du morceau que le lecteur annonce comme entrée courante.
+    /// Lecture d'arrière-plan uniquement (jamais sur le fil principal, cf. build 45).
+    private func idEntreeCourante() -> String {
+        if let entry = player.queue.currentEntry, let item = entry.item, case let .song(song) = item {
+            return song.id.rawValue
+        }
+        return ""
+    }
+
+    /// Vrai si la file contient déjà ce morceau (entrée courante comprise).
+    private func fileContient(_ catalogId: String) -> Bool {
+        for entry in player.queue.entries {
+            if let item = entry.item, case let .song(song) = item, song.id.rawValue == catalogId {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// Attend (au plus `delaiSec`) que le lecteur annonce `catalogId` comme
+    /// entrée courante. Sondage toutes les 150 ms, en arrière-plan.
+    private func attendreEntreeCourante(_ catalogId: String, delaiSec: Double) async -> (vu: Bool, apresMs: Int, annonce: String) {
+        let debut = maintenant()
+        var dernier = ""
+        while maintenant() - debut < delaiSec {
+            dernier = idEntreeCourante()
+            if dernier == catalogId {
+                return (true, Int((maintenant() - debut) * 1000), dernier)
+            }
+            try? await Task.sleep(nanoseconds: 150_000_000)
+        }
+        return (false, Int(delaiSec * 1000), dernier)
+    }
+
+    /// Repli : file remplacée par ce seul morceau, lecture, vérification.
+    /// Utilisé quand un saut est tombé sur autre chose que le titre attendu.
+    private func lireDirectement(_ catalogId: String) async throws -> (ok: Bool, verifie: Bool) {
+        let j1 = TuttiJournal.shared.debut("musickit", "repli.fetchSong", ["id": catalogId])
+        let trouve = try await courseAvecDelai(delaiCommandeApple) {
+            try await self.chercherMorceau(catalogId)
+        }
+        guard let song = trouve ?? nil else {
+            TuttiJournal.shared.fin("musickit", j1, ["trouve": false])
+            return (false, false)
+        }
+        TuttiJournal.shared.fin("musickit", j1, ["trouve": true])
+        ecrireDurees(courante: song.duration ?? 0, suivante: 0)
+        let j2 = TuttiJournal.shared.debut("musickit", "repli.queue=+play")
+        let demarre = try await courseAvecDelai(delaiCommandeApple) {
+            self.player.queue = [song]
+            try await self.player.play()
+            return true
+        }
+        TuttiJournal.shared.fin("musickit", j2, ["demarre": demarre == true])
+        guard demarre == true else { return (false, false) }
+        noterEtat(enLecture: true, position: 0, nowPlayingId: catalogId, confirme: true, commande: true)
+        let verif = await attendreEntreeCourante(catalogId, delaiSec: 3.0)
+        TuttiJournal.shared.note("musickit", "repli.verif", ["vu": verif.vu, "apresMs": verif.apresMs, "annonce": verif.annonce])
+        if verif.vu {
+            noterEtat(enLecture: true, position: player.playbackTime, nowPlayingId: catalogId, confirme: true)
+        }
+        return (true, verif.vu)
     }
 
     /// Position extrapolée à l'horloge depuis le dernier point d'ancrage.
@@ -598,7 +729,15 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     /// Met la fiche à jour depuis une commande que nous venons de passer.
     /// `position` en secondes ; `nil` = on garde la position extrapolée.
-    private func noterEtat(enLecture: Bool?, position: Double?, nowPlayingId: String? = nil, confirme: Bool = false) {
+    /// Morceau demandé par la dernière commande (play / skip vérifié) et instant.
+    private var ficheCommandeeId = ""
+    private var ficheCommandeeA: Double = 0
+    private var ecartSignale = false
+    /// Pendant ce délai après une commande, une lecture d'état qui annonce un
+    /// AUTRE morceau est considérée comme périmée (file pas encore basculée).
+    private let delaiGraceCommandeSec: Double = 4.0
+
+    private func noterEtat(enLecture: Bool?, position: Double?, nowPlayingId: String? = nil, confirme: Bool = false, commande: Bool = false) {
         verrouFiche.lock()
         defer { verrouFiche.unlock() }
         let pos = position ?? positionCouranteSec()
@@ -606,6 +745,11 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         fichePositionSec = pos
         ficheAncreeA = maintenant()
         if let nowPlayingId { ficheNowPlayingId = nowPlayingId }
+        if commande, let nowPlayingId {
+            ficheCommandeeId = nowPlayingId
+            ficheCommandeeA = maintenant()
+            ecartSignale = false
+        }
         if confirme {
             ficheConfirmeeA = maintenant()
             nonConfirmeSignale = false
@@ -624,15 +768,40 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         fileLecture.async { [weak self] in
             guard let self else { return }
             let etat = self.lireEtat()
+            var ecartASignaler: (attendu: String, annonce: String, depuisMs: Int)? = nil
             self.verrouFiche.lock()
             self.ficheEnLecture = etat.enLecture
             self.fichePositionSec = etat.positionSec
             self.ficheAncreeA = self.maintenant()
-            if !etat.nowPlayingId.isEmpty { self.ficheNowPlayingId = etat.nowPlayingId }
+            if !etat.nowPlayingId.isEmpty {
+                // fix/meme-morceau-en-boucle — Journal du 09/09 18:53 : à +1 s la
+                // fiche disait le bon titre, à +3 s l'ANCIEN (800157892) — la
+                // lecture d'état écrasait le morceau commandé avec une entrée
+                // courante pas encore basculée, et la console relançait.
+                // Dans le délai de grâce, le morceau commandé fait foi.
+                let depuisCommande = self.maintenant() - self.ficheCommandeeA
+                let commandeRecente = !self.ficheCommandeeId.isEmpty && depuisCommande < self.delaiGraceCommandeSec
+                if commandeRecente && etat.nowPlayingId != self.ficheCommandeeId {
+                    if !self.ecartSignale {
+                        self.ecartSignale = true
+                        ecartASignaler = (self.ficheCommandeeId, etat.nowPlayingId, Int(depuisCommande * 1000))
+                    }
+                } else {
+                    self.ficheNowPlayingId = etat.nowPlayingId
+                }
+            }
             self.ficheConfirmeeA = self.maintenant()
             self.nonConfirmeSignale = false
             self.rafraichissementEnVol = false
             self.verrouFiche.unlock()
+            if let e = ecartASignaler {
+                TuttiJournal.shared.note(
+                    "musickit",
+                    "Apple annonce encore un autre titre après la commande — fiche tenue au morceau commandé",
+                    ["attendu": e.attendu, "annonce": e.annonce, "depuisMs": e.depuisMs],
+                    niveau: "warn"
+                )
+            }
         }
     }
 

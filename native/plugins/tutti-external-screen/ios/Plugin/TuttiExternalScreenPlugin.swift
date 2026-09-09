@@ -94,6 +94,18 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
                 call.resolve(["presented": false])
                 return
             }
+            // fix/tv-reconstruite-pour-rien — Journal du 09/09 : la console
+            // redemande present() toutes les 16 s (relance « TV muette »).
+            // Reconstruire la fenêtre à chaque fois, c'est tearDown + mode
+            // d'écran + nouvelle WKWebView sur le fil principal, et une TV
+            // qui recharge. Même adresse, fenêtre visible, page vivante : on
+            // ne touche à rien.
+            if let fenetre = self.externalWindow, !fenetre.isHidden,
+               let web = self.externalWebView, web.url == url, self.pageVivante {
+                TuttiJournalEcran.shared.note("ecran", "present() ignoré — déjà affichée et vivante")
+                call.resolve(["presented": true, "dejaAffichee": true])
+                return
+            }
             self.showWindow(on: screen, url: url)
             call.resolve(["presented": true])
         }
@@ -166,7 +178,13 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
 
     private func showWindow(on screen: UIScreen, url: URL) {
         TuttiJournalEcran.shared.note("ecran", "showWindow (web)", ["largeur": Int(screen.bounds.width), "hauteur": Int(screen.bounds.height), "residentMo": TuttiJournalEcran.memoireResidenteMo()])
+        // diag/fil-principal-bloque — Journal du 09/09 19:00 : fil principal
+        // bloqué 2 min 07 sans aucune opération MusicKit en vol. Ce plugin
+        // fait tout son travail SUR le fil principal ; chaque étape lourde est
+        // désormais bornée par un ▶ / ■ pour qu'un blocage porte un nom.
+        TuttiJournalEcran.shared.note("ecran", "▶ tearDown")
         tearDown()
+        TuttiJournalEcran.shared.note("ecran", "■ tearDown")
 
         // fix/tv-plein-ecran — GÉOMÉTRIE DE L'ÉCRAN EXTERNE.
         // Symptôme corrigé : l'image n'occupait qu'une partie de la TV (bande
@@ -180,8 +198,13 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
         //     et à chaque changement de mode de l'écran.
         if let best = screen.availableModes.max(by: {
             ($0.size.width * $0.size.height) < ($1.size.width * $1.size.height)
-        }) {
+        }), screen.currentMode != best {
+            // Changer le mode d'un écran HDMI renégocie le signal : c'est
+            // synchrone et peut prendre plusieurs secondes. On ne le fait que
+            // si le mode diffère vraiment.
+            TuttiJournalEcran.shared.note("ecran", "▶ currentMode", ["largeur": Int(best.size.width), "hauteur": Int(best.size.height)])
             screen.currentMode = best
+            TuttiJournalEcran.shared.note("ecran", "■ currentMode")
         }
         screen.overscanCompensation = .scale
 
@@ -200,7 +223,9 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
 
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
+        TuttiJournalEcran.shared.note("ecran", "▶ WKWebView")
         let web = WKWebView(frame: window.bounds, configuration: config)
+        TuttiJournalEcran.shared.note("ecran", "■ WKWebView")
         web.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         web.navigationDelegate = self
         web.backgroundColor = .black
@@ -214,10 +239,13 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
         controller.view = web
         controller.view.backgroundColor = .black
         window.rootViewController = controller
+        TuttiJournalEcran.shared.note("ecran", "▶ window.isHidden=false")
         window.isHidden = false
+        TuttiJournalEcran.shared.note("ecran", "■ window.isHidden=false")
 
         self.externalWindow = window
         self.externalWebView = web
+        self.pageVivante = false
 
         CAPLog.print("TuttiExternalScreen: fenêtre ouverte, bounds=\(screen.bounds)")
 
@@ -345,6 +373,8 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
     private var lastBeat: Double = -1
     private var stalledChecks = 0
     private var noBeatChecks = 0
+    /// Vrai dès que la page TV a publié au moins un battement depuis la dernière ouverture.
+    private var pageVivante = false
 
     private func startWatchdog() {
         stopWatchdog()
@@ -389,6 +419,7 @@ public class TuttiExternalScreenPlugin: CAPPlugin, WKNavigationDelegate {
                 return
             }
             self.noBeatChecks = 0
+            self.pageVivante = true
             if beat == self.lastBeat {
                 self.stalledChecks += 1
                 TuttiJournalEcran.shared.note("ecran", "battement ARRÊTÉ (page TV figée)", ["controles": self.stalledChecks], niveau: "warn")

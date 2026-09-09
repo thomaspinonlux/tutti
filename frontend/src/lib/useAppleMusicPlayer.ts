@@ -483,7 +483,7 @@ export function useAppleMusicPlayer({
       // la cible. Pas confirmé → return false → l'appelant fait un play()
       // complet (setQueue). Résultat : soit bascule instantanée confirmée,
       // soit rechargement franc — jamais l'ancien titre qui continue.
-      const jumped = await nativeMusicKit.skipToNext();
+      const jumped = await nativeMusicKit.skipToNext(catalogId);
       if (!jumped) return false;
       for (let i = 0; i < 10; i += 1) {
         await new Promise((r) => setTimeout(r, 150));

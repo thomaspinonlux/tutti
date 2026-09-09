@@ -1129,6 +1129,13 @@ function HostPageInner(): JSX.Element {
   const resyncCountRef = useRef(0);
   /** fix/relance-en-boucle — nombre de relances déjà tentées pour ce morceau. */
   const relancesRef = useRef(0);
+  /** fix/meme-morceau-en-boucle — instant de la dernière relance (espacement). */
+  const derniereRelanceRef = useRef(0);
+  /** Espacement minimal entre deux relances : le temps que le pont vérifie et
+   *  que la file d'Apple bascule (grâce native de 4 s). Journal du 09/09 :
+   *  trois relances en trois secondes avaient empilé quatre copies du même
+   *  morceau dans la file. */
+  const ESPACEMENT_RELANCE_MS = 5000;
   // fix/skip-sans-fuite-audio — mémorise le titre PRÉCÉDENT : si la sonde
   // détecte que le lecteur joue encore l'ANCIEN morceau (le cas exact vu en
   // soirée), on resynchronise dès le 1er constat au lieu d'attendre deux.
@@ -1145,6 +1152,7 @@ function HostPageInner(): JSX.Element {
     if (!currentTrack || currentTrack.provider !== 'apple_music') return;
     const expected = currentTrack.provider_track_id;
     relancesRef.current = 0;
+    derniereRelanceRef.current = 0;
     const id = window.setInterval(() => {
       if (Date.now() - appleTrackChangedAtRef.current < 3000) return; // grâce
       if (!apple.isPlaying) return; // pause volontaire : rien à corriger
@@ -1180,10 +1188,18 @@ function HostPageInner(): JSX.Element {
           }
           return;
         }
+        if (Date.now() - derniereRelanceRef.current < ESPACEMENT_RELANCE_MS) return;
         relancesRef.current += 1;
+        derniereRelanceRef.current = Date.now();
+        // La relance est une nouvelle commande : la grâce repart avec elle.
+        appleTrackChangedAtRef.current = Date.now();
         console.warn(
           `[Synchro] le lecteur joue encore l'ancien titre → relance ${relancesRef.current}/3 de ${expected}`,
         );
+        remoteLog('lancement', `relance ${relancesRef.current}/3 — le lecteur annonce encore l'ancien titre`, {
+          attendu: expected,
+          joue: actual,
+        }, 'warn');
         resyncCountRef.current = 0;
         void apple.play(expected);
       } else if (resyncCountRef.current === 3) {

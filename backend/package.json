@@ -31,7 +31,8 @@
     "arbitrate:apple": "tsx scripts/arbitrateAppleMusic.ts",
     "migrate:canonical-songs": "tsx scripts/migrateCanonicalSongs.ts",
     "import:canonical-songs": "tsx scripts/importCanonicalSongs.ts",
-    "verify:canonical-ingest": "tsx scripts/verifyCanonicalIngest.ts"
+    "verify:canonical-ingest": "tsx scripts/verifyCanonicalIngest.ts",
+    "verify:apple": "tsx scripts/verifierCatalogueApple.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
