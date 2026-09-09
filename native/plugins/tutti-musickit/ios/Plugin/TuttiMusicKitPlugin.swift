@@ -269,39 +269,39 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // play()` est inévitable. C'est le seul moment de risque, une
                 // fois par soirée, et il est signalé comme tel dans le journal.
                 var demarre: Bool? = false
-                let fileVide = self.player.queue.entries.isEmpty
+                let fileVide = try await self.surLePrincipal { self.player.queue.entries.isEmpty }
                 if fileVide {
                     TuttiJournal.shared.note("musickit", "premier morceau de la session — passage obligé par queue= + play()", ["id": catalogId], niveau: "warn")
                     let j2 = TuttiJournal.shared.debut("musickit", "play.queue=")
                     let remplace = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                        self.player.queue = [song]
+                        try await self.surLePrincipal { self.player.queue = [song] }
                         return true
                     }
                     TuttiJournal.shared.fin("musickit", j2, ["remplace": remplace == true])
                     if remplace == true {
                         let j3 = TuttiJournal.shared.debut("musickit", "play.player.play()")
                         demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                            try await self.player.play()
+                            try await self.surLePrincipal { try await self.player.play() }
                             return true
                         }
                         TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
                     }
                 } else {
                     // Chemin normal : jamais bloqué en six soirées de journaux.
-                    if self.fileContient(catalogId) {
+                    if await self.fileContient(catalogId) {
                         TuttiJournal.shared.note("musickit", "déjà dans la file — pas de copie supplémentaire", ["id": catalogId])
                     } else {
                         let j2 = TuttiJournal.shared.debut("musickit", "play.insert")
                         let insere = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                            try await self.player.queue.insert(song, position: .afterCurrentEntry)
+                            try await self.surLePrincipal { try await self.player.queue.insert(song, position: .afterCurrentEntry) }
                             return true
                         }
                         TuttiJournal.shared.fin("musickit", j2, ["insere": insere == true])
                     }
                     let j3 = TuttiJournal.shared.debut("musickit", "play.skip")
                     demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                        try await self.player.skipToNextEntry()
-                        try await self.player.play()
+                        try await self.surLePrincipal { try await self.player.skipToNextEntry() }
+                        try await self.surLePrincipal { try await self.player.play() }
                         return true
                     }
                     TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
@@ -329,7 +329,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 let verif = await self.attendreEntreeCourante(catalogId, delaiSec: 3.0)
                 TuttiJournal.shared.fin("musickit", j4, ["vu": verif.vu, "apresMs": verif.apresMs, "annonce": verif.annonce])
                 if verif.vu {
-                    self.noterEtat(enLecture: true, position: self.player.playbackTime, nowPlayingId: catalogId, confirme: true)
+                    self.noterEtat(enLecture: true, position: (try? await self.surLePrincipal { self.player.playbackTime }) ?? 0, nowPlayingId: catalogId, confirme: true)
                 } else {
                     TuttiJournal.shared.note(
                         "musickit",
@@ -386,7 +386,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // fix/meme-morceau-en-boucle — jamais deux fois le même morceau
                 // dans la file : un préchargement répété (relance de la console)
                 // le rejouerait à la suite.
-                if self.fileContient(catalogId) {
+                if await self.fileContient(catalogId) {
                     TuttiJournal.shared.note("musickit", "préchargement ignoré — déjà dans la file", ["id": catalogId])
                     self.ecrireDurees(courante: nil, suivante: song.duration ?? 0)
                     TuttiJournal.shared.fin("musickit", jeton, ["ok": true, "dejaLa": true])
@@ -395,7 +395,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 }
                 let j2 = TuttiJournal.shared.debut("musickit", "queueNext.insert")
                 let insere = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.player.queue.insert(song, position: .tail)
+                    try await self.surLePrincipal { try await self.player.queue.insert(song, position: .tail) }
                     return true
                 }
                 TuttiJournal.shared.fin("musickit", j2, ["insere": insere == true])
@@ -438,10 +438,10 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // (l'écran affichait déjà le nouveau → « décalage » et titre
                 // révélé à l'oreille). Un blanc de quelques centaines de ms
                 // est invisible ; l'ancien titre audible est inacceptable.
-                self.player.pause()
+                await MainActor.run { self.player.pause() }
                 let j2 = TuttiJournal.shared.debut("musickit", "skipToNext.skipToNextEntry")
                 let saute = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.player.skipToNextEntry()
+                    try await self.surLePrincipal { try await self.player.skipToNextEntry() }
                     return true
                 }
                 TuttiJournal.shared.fin("musickit", j2, ["saute": saute == true])
@@ -453,7 +453,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 }
                 let j3 = TuttiJournal.shared.debut("musickit", "skipToNext.play()")
                 let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.player.play()
+                    try await self.surLePrincipal { try await self.player.play() }
                     return true
                 }
                 TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
@@ -481,7 +481,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                         }
                         return
                     }
-                    self.noterEtat(enLecture: true, position: self.player.playbackTime, nowPlayingId: attendu, confirme: true)
+                    self.noterEtat(enLecture: true, position: (try? await self.surLePrincipal { self.player.playbackTime }) ?? 0, nowPlayingId: attendu, confirme: true)
                 } else {
                     // fix/ecran-fige-sur-apple-music — nouveau morceau : la fiche repart à zéro.
                     self.noterEtat(enLecture: true, position: 0, confirme: true)
@@ -502,7 +502,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 // Apple), rien ne la relançait : silence total dans la salle
                 // jusqu'à intervention de l'animateur.
                 _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.player.play()
+                    try await self.surLePrincipal { try await self.player.play() }
                     return true
                 }
                 TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
@@ -511,18 +511,12 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         }
     }
 
-    // fix/app-entierement-gelee-au-premier-morceau — JAMAIS SUR LE FIL PRINCIPAL.
-    // J'avais déplacé ces lectures sur le fil principal (build 45). Résultat
-    // observé en soirée : à l'instant exact où le premier morceau démarre,
-    // console ET TV se figent et plus rien ne sort de l'iPad. Mécanisme :
-    // pendant que la tâche de lecture remplace la file du lecteur, MusicKit
-    // tient un verrou interne et peut attendre le fil principal ; si le fil
-    // principal, lui, attend ce même verrou pour lire l'état, c'est un blocage
-    // mutuel — l'app entière est morte. Sur la file d'arrière-plan de
-    // Capacitor, une lecture qui attend ne bloque qu'elle-même, jamais l'app.
+    // (Ancienne doctrine « jamais sur le fil principal », build 45 : elle venait
+    // d'un getStatus qui attendait avec un sémaphore. Doctrine actuelle :
+    // cf. surLePrincipal — toujours sur le fil principal, jamais en l'attendant.)
     @objc func pause(_ call: CAPPluginCall) {
         let jeton = TuttiJournal.shared.debut("musickit", "pause")
-        player.pause()
+        DispatchQueue.main.async { self.player.pause() }
         noterEtat(enLecture: false, position: nil, confirme: true)
         TuttiJournal.shared.fin("musickit", jeton)
         call.resolve()
@@ -533,7 +527,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         Task {
             do {
                 let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.player.play()
+                    try await self.surLePrincipal { try await self.player.play() }
                     return true
                 }
                 guard demarre == true else {
@@ -556,7 +550,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     @objc func seek(_ call: CAPPluginCall) {
         let ms = call.getDouble("ms") ?? 0
         let jeton = TuttiJournal.shared.debut("musickit", "seek", ["ms": Int(ms)])
-        player.playbackTime = max(0, ms / 1000.0)
+        DispatchQueue.main.async { self.player.playbackTime = max(0, ms / 1000.0) }
         noterEtat(enLecture: nil, position: max(0, ms / 1000.0), confirme: true)
         TuttiJournal.shared.fin("musickit", jeton)
         call.resolve()
@@ -632,6 +626,29 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     // `courseAvecDelai` laisse la commande partir mais rend la main au bout de
     // `delaiSec`. L'appelant peut alors se replier proprement (message à la
     // console, bascule de source) au lieu de figer la salle.
+    // fix/musickit-sur-le-fil-principal — LE LECTEUR D'APPLE N'EST PLUS
+    // TOUCHÉ QUE DEPUIS LE FIL PRINCIPAL, ET JAMAIS EN LE BLOQUANT.
+    //
+    // Trois gels identiques le 09/09 (19:36, 20:13) : `play()` lancé depuis
+    // la file d'arrière-plan ne revient jamais, et le fil principal est
+    // bloqué au même instant, sans qu'aucune de nos opérations n'y tourne.
+    // ApplicationMusicPlayer est bâti sur MPMusicPlayerController, qu'Apple
+    // documente comme à utiliser depuis le fil principal : appelé d'ailleurs,
+    // il tient son verrou interne en arrière-plan et attend le fil principal
+    // — qui, lui, reçoit au même moment une notification du lecteur et
+    // attend ce même verrou. Blocage mutuel, l'app est morte.
+    //
+    // Le build 45 avait déjà mis les LECTURES d'état sur le fil principal et
+    // gelé : mais à l'époque getStatus attendait avec un sémaphore. Ce
+    // sémaphore n'existe plus (fiche d'état, 0727968) : plus rien n'attend
+    // jamais le fil principal de façon synchrone. On peut donc faire ce
+    // qu'Apple demande : toutes les commandes et lectures du lecteur passent
+    // par l'acteur principal, en asynchrone — le fil principal se suspend
+    // pendant qu'Apple travaille, il ne se bloque pas.
+    private func surLePrincipal<T: Sendable>(_ op: @escaping @MainActor @Sendable () async throws -> T) async throws -> T {
+        try await Task { @MainActor in try await op() }.value
+    }
+
     private func courseAvecDelai<T: Sendable>(
         _ delaiSec: Double,
         _ operation: @escaping @Sendable () async throws -> T
@@ -735,21 +752,25 @@ public class TuttiMusicKitPlugin: CAPPlugin {
 
     /// Identifiant du morceau que le lecteur annonce comme entrée courante.
     /// Lecture d'arrière-plan uniquement (jamais sur le fil principal, cf. build 45).
-    private func idEntreeCourante() -> String {
-        if let entry = player.queue.currentEntry, let item = entry.item, case let .song(song) = item {
-            return song.id.rawValue
-        }
-        return ""
+    private func idEntreeCourante() async -> String {
+        (try? await surLePrincipal {
+            if let entry = self.player.queue.currentEntry, let item = entry.item, case let .song(song) = item {
+                return song.id.rawValue
+            }
+            return ""
+        }) ?? ""
     }
 
     /// Vrai si la file contient déjà ce morceau (entrée courante comprise).
-    private func fileContient(_ catalogId: String) -> Bool {
-        for entry in player.queue.entries {
-            if let item = entry.item, case let .song(song) = item, song.id.rawValue == catalogId {
-                return true
+    private func fileContient(_ catalogId: String) async -> Bool {
+        (try? await surLePrincipal {
+            for entry in self.player.queue.entries {
+                if let item = entry.item, case let .song(song) = item, song.id.rawValue == catalogId {
+                    return true
+                }
             }
-        }
-        return false
+            return false
+        }) ?? false
     }
 
     /// Attend (au plus `delaiSec`) que le lecteur annonce `catalogId` comme
@@ -758,7 +779,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         let debut = maintenant()
         var dernier = ""
         while maintenant() - debut < delaiSec {
-            dernier = idEntreeCourante()
+            dernier = await idEntreeCourante()
             if dernier == catalogId {
                 return (true, Int((maintenant() - debut) * 1000), dernier)
             }
@@ -784,15 +805,15 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         // play() seulement si la file est vide (cf. fix/play-qui-gele-liPad).
         let j2 = TuttiJournal.shared.debut("musickit", "repli.lecture")
         let demarre = try await courseAvecDelai(delaiCommandeApple) {
-            if self.player.queue.entries.isEmpty {
-                self.player.queue = [song]
-                try await self.player.play()
+            if try await self.surLePrincipal({ self.player.queue.entries.isEmpty }) {
+                try await self.surLePrincipal { self.player.queue = [song] }
+                try await self.surLePrincipal { try await self.player.play() }
             } else {
-                if !self.fileContient(catalogId) {
-                    try await self.player.queue.insert(song, position: .afterCurrentEntry)
+                if !(await self.fileContient(catalogId)) {
+                    try await self.surLePrincipal { try await self.player.queue.insert(song, position: .afterCurrentEntry) }
                 }
-                try await self.player.skipToNextEntry()
-                try await self.player.play()
+                try await self.surLePrincipal { try await self.player.skipToNextEntry() }
+                try await self.surLePrincipal { try await self.player.play() }
             }
             return true
         }
@@ -802,7 +823,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         let verif = await attendreEntreeCourante(catalogId, delaiSec: 3.0)
         TuttiJournal.shared.note("musickit", "repli.verif", ["vu": verif.vu, "apresMs": verif.apresMs, "annonce": verif.annonce])
         if verif.vu {
-            noterEtat(enLecture: true, position: player.playbackTime, nowPlayingId: catalogId, confirme: true)
+            noterEtat(enLecture: true, position: (try? await surLePrincipal { self.player.playbackTime }) ?? 0, nowPlayingId: catalogId, confirme: true)
         }
         return (true, verif.vu)
     }
@@ -851,7 +872,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         }
         rafraichissementEnVol = true
         verrouFiche.unlock()
-        fileLecture.async { [weak self] in
+        DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             let etat = self.lireEtat()
             var ecartASignaler: (attendu: String, annonce: String, depuisMs: Int)? = nil
