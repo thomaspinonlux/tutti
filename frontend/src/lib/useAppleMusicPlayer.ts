@@ -23,6 +23,10 @@ import { supportsNativeAppleMusic } from './platform.js';
 import { nativeMusicKit } from './nativeMusicKit.js';
 import { remoteLog } from './remoteLog.js';
 
+/** fix/un-seul-chemin — préchargement natif du titre suivant (insertion dans
+ *  la file + saut). Désactivé : voir prepareNext. */
+const PRECHARGEMENT_NATIF = false;
+
 export type AppleMusicPlayerStatus =
   | 'idle'
   | 'loading_sdk'
@@ -393,6 +397,11 @@ export function useAppleMusicPlayer({
             return false;
           }
           setAudioBlocked(false);
+          if (r.verifie === false) {
+            // Le pont a lancé la lecture mais Apple n'a pas annoncé ce morceau
+            // dans les 3 s : on le journalise tel quel, sans relancer ici.
+            remoteLog('apple', 'lecture acceptée mais NON vérifiée par le pont', { id: catalogId }, 'warn');
+          }
           // diag/son-qui-ne-part-pas — ON VÉRIFIE QUE LE SON AVANCE VRAIMENT.
           // « lecture acceptée » ne veut pas dire « on entend quelque chose ».
           // On relit l'état du lecteur 1 s puis 3 s après : s'il n'est pas en
@@ -451,6 +460,20 @@ export function useAppleMusicPlayer({
   const prepareNext = useCallback(async (catalogId: string): Promise<boolean> => {
     if (preparedNextRef.current === catalogId) return true;
     if (useNativeRef.current) {
+      // fix/un-seul-chemin — PLUS DE PRÉCHARGEMENT NATIF.
+      //
+      // Toutes les pannes depuis le 05/09 ont le même point commun : le
+      // préchargement crée un DEUXIÈME chemin (insérer dans la file, sauter)
+      // qui doit rester cohérent avec le premier (jouer), avec la fiche
+      // d'état, avec les relances de la console et avec le garde-fou. Le
+      // 09/09 : quatre copies du même morceau empilées, un titre qui ne
+      // correspond pas à l'écran, un démarrage refusé à cause d'un
+      // préchargement en cours.
+      //
+      // Un seul chemin désormais : à chaque titre, play(id) — file remplacée,
+      // lecture, vérification. Prix : ~1 s de silence au changement de
+      // titre. Pour remettre le préchargement : PRECHARGEMENT_NATIF = true.
+      if (!PRECHARGEMENT_NATIF) return false;
       const ok = await nativeMusicKit.queueNext(catalogId);
       if (ok) preparedNextRef.current = catalogId;
       return ok;
