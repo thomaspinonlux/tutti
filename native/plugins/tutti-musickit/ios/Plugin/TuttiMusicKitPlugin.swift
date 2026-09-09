@@ -2,6 +2,7 @@ import Foundation
 import Capacitor
 import MusicKit
 import StoreKit
+import AVFoundation
 
 /**
  * TuttiMusicKitPlugin — lecture Apple Music NATIVE pour la console Tutti.
@@ -83,6 +84,46 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     public override func load() {
         TuttiJournal.shared.lancerSurveillance()
         TuttiJournal.shared.note("musickit", "greffon chargé")
+        preparerSessionAudio()
+    }
+
+    /// fix/session-audio-preparee — LA SESSION AUDIO EST ACTIVÉE AVANT LE
+    /// PREMIER MORCEAU, PAS PAR LUI.
+    ///
+    /// Constat : aucun AVAudioSession nulle part dans l'app. C'était donc le
+    /// tout premier `play()` de la soirée qui devait créer et activer la
+    /// session audio d'iOS — au moment même où la console et la TV (deux
+    /// pages web) négocient la leur pour les sons de buzzer. Une activation
+    /// contestée est exactement ce qui peut suspendre un `play()` : le
+    /// journal montre le premier morceau à 1,2 s le 09/09 à 18:52 et jamais
+    /// revenu à 19:36, même code, même iPad.
+    ///
+    /// Catégorie « lecture » (le son continue écran verrouillé, coupe les
+    /// autres apps), activation immédiate, en arrière-plan, journalisée.
+    private func preparerSessionAudio() {
+        let jeton = TuttiJournal.shared.debut("musickit", "sessionAudio.activer")
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let session = AVAudioSession.sharedInstance()
+                try session.setCategory(.playback, mode: .default, options: [])
+                try session.setActive(true, options: [])
+                TuttiJournal.shared.fin("musickit", jeton, ["categorie": "playback", "sortie": session.currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")])
+            } catch {
+                TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
+                TuttiJournal.shared.note("musickit", "SESSION AUDIO NON ACTIVÉE", ["erreur": error.localizedDescription], niveau: "error")
+            }
+        }
+        // Une interruption (appel, autre app qui prend le son) ou un changement
+        // de sortie (HDMI branché / débranché) est journalisé : si un gel suit,
+        // on saura qu'iOS venait de toucher à la session audio.
+        NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: nil) { notif in
+            let type = (notif.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt).flatMap(AVAudioSession.InterruptionType.init) 
+            TuttiJournal.shared.note("musickit", "session audio INTERROMPUE", ["type": type == .began ? "début" : "fin"], niveau: "warn")
+        }
+        NotificationCenter.default.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: nil) { _ in
+            let sorties = AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")
+            TuttiJournal.shared.note("musickit", "sortie audio changée", ["sortie": sorties])
+        }
     }
 
     /** diag/journal-natif — adresse du serveur pour le journal (par défaut prod). */
