@@ -104,6 +104,7 @@ import {
 } from '../components/ui/index.js';
 import { PlayQuizzView } from '../components/play/quizz/PlayQuizzView.js';
 import { VinylBuzzer } from '../components/play/VinylBuzzer.js';
+import { ClassementDuTitre } from '../components/game/ClassementDuTitre.js';
 
 type Step =
   | 'pseudo'
@@ -1048,6 +1049,7 @@ export function PlayPage(): JSX.Element {
                 teamName={teams.find((t2) => t2.id === identity.teamId)?.name ?? null}
                 teamColor={teams.find((t2) => t2.id === identity.teamId)?.color ?? null}
                 myRank={cumulative.findIndex((c) => c.id === identity.participantId) + 1 || null}
+                cumulative={cumulative}
                 totalParticipants={participantsCount}
                 roundPosition={currentRound?.position ?? null}
                 isMaster={isMaster}
@@ -1304,6 +1306,8 @@ interface PlayingViewExtraProps {
   onMasterPause?: () => void;
   /** Pause active (overlay). */
   isPaused: boolean;
+  /** Classement cumule de la partie — sert au classement du titre (animateur). */
+  cumulative: CumulativeScore[];
 }
 
 function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Element {
@@ -1324,6 +1328,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     onOpenMasterMenu,
     onMasterPause,
     isPaused,
+    cumulative,
   } = props;
   const [recState, setRecState] = useState<RecState>({ kind: 'idle' });
   const [buzzCooldownUntil, setBuzzCooldownUntil] = useState(0);
@@ -1904,6 +1909,19 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
         teamColor={teamColor ?? null}
         score={totalScore}
       />
+
+      {/* Classement DU TITRE — telephone ANIMATEUR uniquement (choix Thomas :
+          TV + console iPad + telephone animateur). Le telephone des joueurs
+          garde son affichage actuel. */}
+      {isMaster && correctAnswers.length > 0 && (
+        <ClassementDuTitre
+          correctAnswers={correctAnswers}
+          cumulative={cumulative}
+          variante="compact"
+          moiParticipantId={identity.participantId}
+          maxLignes={8}
+        />
+      )}
 
       {/* Phase 2 banner — différent pour finder vs non-finder.
           Pas de reveal ici (correction spec — pas de leak). */}

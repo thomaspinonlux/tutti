@@ -648,7 +648,10 @@
     "btnLyricsShow": "Paroles",
     "btnLyricsHide": "Masquer paroles",
     "btnAudioKick": "Relancer le son",
-    "btnEndRound": "Terminer la manche"
+    "btnEndRound": "Terminer la manche",
+    "trackRankingTitle": "Classement sur ce titre",
+    "trackRankingEmpty": "Personne n'a encore trouvé.",
+    "trackRankingTotal": "total {{total}}"
   },
   "play": {
     "missingCode": "Lien invalide. Demande à l'animateur de te scanner le QR code.",

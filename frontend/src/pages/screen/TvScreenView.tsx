@@ -21,6 +21,7 @@ import type {
   SessionRoundWithPlaylist,
 } from '@tutti/shared';
 import { QRCode } from '../../components/host/QRCode.js';
+import { ClassementDuTitre } from '../../components/game/ClassementDuTitre.js';
 import { useTimeElapsed, useTimeRemaining } from './MainScreenView.js';
 import type { MainScreenViewProps } from './MainScreenView.js';
 import { LyricsOverlay } from '../../components/screen/LyricsOverlay.js';
@@ -619,7 +620,16 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
             </div>
           </section>
           <aside className="flex min-h-0 flex-col gap-5">
-            <DarkLeaderboard cumulative={cumulative} correctAnswers={correctAnswers} />
+            {/* Classement DU TITRE en cours — demande terrain : ordre d'arrivee
+                en gros, points du titre, total general. Prioritaire sur le
+                cumul de la partie, qui reste dessous. */}
+            <ClassementDuTitre
+              correctAnswers={correctAnswers}
+              cumulative={cumulative}
+              variante="sombre"
+              maxLignes={6}
+            />
+            <DarkLeaderboard cumulative={cumulative} correctAnswers={correctAnswers} compact />
             <JoinQrDark shortCode={session.short_code} />
           </aside>
         </main>
@@ -681,6 +691,14 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
             )}
           </section>
           <aside className="flex min-h-0 flex-col gap-5">
+            {correctAnswers.length > 0 && (
+              <ClassementDuTitre
+                correctAnswers={correctAnswers}
+                cumulative={cumulative}
+                variante="sombre"
+                maxLignes={5}
+              />
+            )}
             <DarkLeaderboard cumulative={cumulative} correctAnswers={correctAnswers} compact />
             <JoinQrDark shortCode={session.short_code} />
           </aside>

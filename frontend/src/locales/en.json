@@ -648,7 +648,10 @@
     "btnLyricsShow": "Lyrics",
     "btnLyricsHide": "Hide lyrics",
     "btnAudioKick": "Restart sound",
-    "btnEndRound": "End round"
+    "btnEndRound": "End round",
+    "trackRankingTitle": "Ranking on this track",
+    "trackRankingEmpty": "Nobody has found it yet.",
+    "trackRankingTotal": "total {{total}}"
   },
   "play": {
     "missingCode": "Invalid link. Ask the host to scan the QR code.",

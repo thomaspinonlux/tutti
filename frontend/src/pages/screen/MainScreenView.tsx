@@ -40,6 +40,7 @@ import type {
 } from '@tutti/shared';
 import { Button, Card } from '../../components/ui/index.js';
 import { QRCode } from '../../components/host/QRCode.js';
+import { ClassementDuTitre } from '../../components/game/ClassementDuTitre.js';
 
 // ── Hooks utilitaires ─────────────────────────────────────────────────────
 
@@ -1153,6 +1154,17 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
 
           {/* Right panel */}
           <aside className="flex flex-col gap-5 min-w-0">
+            {/* Classement DU TITRE en cours — meme composant que la TV, variante
+                claire pour la console iPad. Placé AVANT le cumul de la partie :
+                c'est l'info que la salle réclame pendant le morceau. */}
+            {correctAnswers.length > 0 && (
+              <ClassementDuTitre
+                correctAnswers={correctAnswers}
+                cumulative={cumulative}
+                variante="clair"
+                maxLignes={6}
+              />
+            )}
             <LiveLeaderboard cumulative={cumulative} />
             {/* Refonte #5 — affichage live phase 2 (entre 1er gagnant et fin) :
               les retardataires voient les positions actuelles + qui a déjà
