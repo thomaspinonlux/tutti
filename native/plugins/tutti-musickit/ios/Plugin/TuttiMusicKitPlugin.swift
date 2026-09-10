@@ -2,6 +2,7 @@ import Foundation
 import Capacitor
 import MusicKit
 import StoreKit
+import MediaPlayer
 import AVFoundation
 
 /**
@@ -85,6 +86,77 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         TuttiJournal.shared.lancerSurveillance()
         TuttiJournal.shared.note("musickit", "greffon chargé")
         preparerSessionAudio()
+        diagnostiquerAutorisations()
+    }
+
+    /**
+     * diag/autorisation-apple — ON MESURE AU LIEU DE SUPPOSER.
+     *
+     * Le 10/09, MusicAuthorization rend `denied` en 0 ms alors que la clé
+     * NSAppleMusicUsageDescription est bien dans le binaire livré (Info.plist
+     * du .ipa 56 vérifié), qu aucune restriction Temps d écran n est active,
+     * que la liste Réglages > Confidentialité > Médias et Apple Music est
+     * VIDE, et que supprimer puis réinstaller l app ne change rien.
+     *
+     * `MusicAuthorization` seul ne permet pas de distinguer les causes. On
+     * interroge donc les trois portes d entrée séparément, plus l état de
+     * l abonnement, au chargement du greffon :
+     *
+     *   - MusicAuthorization        : porte MusicKit (iOS 15+) ;
+     *   - SKCloudServiceController  : porte StoreKit historique — c est ELLE
+     *     que peuple la liste Réglages ; si les deux divergent, le problème
+     *     est en amont de MusicKit ;
+     *   - MPMediaLibrary            : porte médiathèque locale ;
+     *   - capacités StoreKit        : y a-t-il un abonnement Apple Music actif
+     *     sur le compte connecté, et la lecture catalogue est-elle permise ;
+     *   - boutique                  : code pays du compte.
+     *
+     * Aucune de ces lectures n ouvre de fenêtre : ce sont des consultations
+     * d état, sûres au chargement.
+     */
+    private func diagnostiquerAutorisations() {
+        let musicKit = Self.nomStatut(MusicAuthorization.currentStatus)
+        let storeKit: String
+        switch SKCloudServiceController.authorizationStatus() {
+        case .authorized: storeKit = "autorise"
+        case .denied: storeKit = "refuse"
+        case .restricted: storeKit = "restreint"
+        case .notDetermined: storeKit = "jamais demande"
+        @unknown default: storeKit = "inconnu"
+        }
+        let mediatheque: String
+        switch MPMediaLibrary.authorizationStatus() {
+        case .authorized: mediatheque = "autorise"
+        case .denied: mediatheque = "refuse"
+        case .restricted: mediatheque = "restreint"
+        case .notDetermined: mediatheque = "jamais demande"
+        @unknown default: mediatheque = "inconnu"
+        }
+        TuttiJournal.shared.note("diagnostic", "portes d autorisation", [
+            "musicKit": musicKit,
+            "storeKit": storeKit,
+            "mediatheque": mediatheque,
+            "cleInfoPlist": Bundle.main.object(forInfoDictionaryKey: "NSAppleMusicUsageDescription") != nil,
+            "identifiant": Bundle.main.bundleIdentifier ?? "?",
+            "build": Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?",
+        ])
+
+        let controleur = SKCloudServiceController()
+        controleur.requestCapabilities { capacites, erreur in
+            TuttiJournal.shared.note("diagnostic", "abonnement Apple Music", [
+                "abonnementActif": capacites.contains(.musicCatalogPlayback),
+                "peutSAbonner": capacites.contains(.musicCatalogSubscriptionEligible),
+                "mediathequeAjout": capacites.contains(.addToCloudMusicLibrary),
+                "brut": capacites.rawValue,
+                "erreur": erreur?.localizedDescription ?? "aucune",
+            ])
+        }
+        controleur.requestStorefrontCountryCode { pays, erreur in
+            TuttiJournal.shared.note("diagnostic", "boutique du compte", [
+                "pays": pays ?? "aucun",
+                "erreur": erreur?.localizedDescription ?? "aucune",
+            ])
+        }
     }
 
     /// fix/session-audio-preparee — LA SESSION AUDIO EST ACTIVÉE AVANT LE

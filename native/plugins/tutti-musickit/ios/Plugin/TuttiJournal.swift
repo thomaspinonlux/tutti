@@ -142,13 +142,27 @@ final class TuttiJournal {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("1", forHTTPHeaderField: "x-tutti-natif")
         let corps: [String: Any] = [
-            "appareil": UIDevice.current.model,
+            // diag/deux-ipads — UIDevice.model rend "iPad" pour TOUS les iPad :
+            // avec deux appareils en service, impossible de savoir lequel parle.
+            // L identifiant materiel (iPad13,4...) les distingue.
+            "appareil": Self.modeleMateriel(),
             "systeme": UIDevice.current.systemVersion,
             "lignes": lignes,
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: corps) else { return }
         req.httpBody = data
         session.dataTask(with: req) { _, _, _ in }.resume()
+    }
+
+    /// Identifiant materiel de l appareil ("iPad13,4"), pour distinguer deux
+    /// iPad dans le journal la ou UIDevice.model rend "iPad" pour les deux.
+    private static func modeleMateriel() -> String {
+        var infos = utsname()
+        uname(&infos)
+        let brut = withUnsafePointer(to: &infos.machine) {
+            $0.withMemoryRebound(to: CChar.self, capacity: 1) { String(validatingUTF8: $0) }
+        }
+        return brut ?? UIDevice.current.model
     }
 
     // MARK: - Surveillance du fil principal
