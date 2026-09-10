@@ -302,6 +302,8 @@ export interface MatchResult {
 export function matchAnswer(
   transcript: string,
   expected: { title: string; artist: string },
+  /** Seuil de reconnaissance d une moitie (defaut = celui du serveur). */
+  seuil = 80,
 ): MatchResult {
   const titleLev = levenshteinScore(transcript, expected.title);
   const titlePhon = phoneticScore(transcript, expected.title);
@@ -332,15 +334,43 @@ export function matchAnswer(
   // pas exprimer « artiste seul ».
   const artistCombined = combinedScore(transcript, expected.artist);
 
-  // Choix de la cible : le combo l emporte a egalite (plus specifique, il porte
-  // le bonus double), sinon le meilleur des deux seuls.
+  // fix/bonus-double-imerite — LA CIBLE SE DECIDE SUR CHAQUE MOITIE, PAS SUR
+  // LE COMBO.
+  //
+  // L ancienne regle prenait le combo « artiste titre » des qu il egalait le
+  // meilleur des deux. Or le score de proximite ignore les mots en trop : pour
+  // « Yeah! » de Usher, le joueur qui dit seulement « usher » obtient 100 sur
+  // l artiste ET 100 sur le combo « Usher Yeah! ». Egalite -> combo -> bonus
+  // double alors qu il n a jamais dit le titre. Six buzz dans ce cas rien que
+  // sur ce titre le 10/09.
+  //
+  // La regle du jeu se lit moitie par moitie : le joueur a-t-il dit l artiste ?
+  // a-t-il dit le titre ? On teste donc chaque moitie SEPAREMENT contre le
+  // seuil. Consequence utile : l ordre n a plus aucune importance — « Usher
+  // Yeah », « Yeah Usher », ou l un puis l autre apres une hesitation donnent
+  // le meme resultat, alors que le combo imposait implicitement « artiste puis
+  // titre ».
+  //
+  // Le combo ne sert plus qu au repechage : quand aucune moitie ne passe seule
+  // mais que l ensemble ressemble (« adele make you feel » tronque), il porte
+  // le score.
+  const artisteSeulPasse = artistCombined >= seuil;
+  const titreSeulPasse = titleCombined >= seuil;
   let target: MatchTarget;
-  if (comboCombined >= titleCombined && comboCombined >= artistCombined) {
+  if (artisteSeulPasse && titreSeulPasse) {
     target = 'artist_title';
-  } else if (titleCombined >= artistCombined) {
+  } else if (artisteSeulPasse) {
+    target = 'artist';
+  } else if (titreSeulPasse) {
     target = 'title';
   } else {
-    target = 'artist';
+    // Aucune moitie ne passe seule : on retombe sur le meilleur des trois.
+    target =
+      comboCombined >= titleCombined && comboCombined >= artistCombined
+        ? 'artist_title'
+        : artistCombined > titleCombined
+          ? 'artist'
+          : 'title';
   }
   const score = Math.max(titleCombined, comboCombined, artistCombined);
 
