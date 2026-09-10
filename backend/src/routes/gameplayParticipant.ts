@@ -37,6 +37,7 @@ import {
   isAssemblyAIEnabled,
 } from '../lib/assemblyai.js';
 import { matchTranscript } from '../lib/voiceMatch.js';
+import type { MatchTarget } from '../lib/voiceMatching.js';
 import { matchAnswer } from '../lib/voiceMatching.js';
 import { getCumulativeScores } from '../lib/scores.js';
 import type { GameMode, Team } from '@tutti/shared';
@@ -773,7 +774,7 @@ interface CascadeMatchCommitResult {
   /** Score combiné 0-100 (lib/voiceMatching). */
   score: number;
   /** Cible matchée (title vs artist_title). */
-  target: 'title' | 'artist_title' | null;
+  target: MatchTarget | null;
   /** Transcript normalisé pour la réponse / debug. */
   transcript_normalized: string;
   position?: number;
@@ -855,7 +856,7 @@ async function runMatchAndCommit(
     (s) => typeof s === 'string' && s.length > 0,
   );
 
-  let best = { score: 0, target: 'title' as 'title' | 'artist_title' };
+  let best = { score: 0, target: 'title' as MatchTarget };
   for (const title of titleCandidates) {
     for (const artist of artistCandidates) {
       const r = matchAnswer(args.transcript, { title, artist });
@@ -873,10 +874,17 @@ async function runMatchAndCommit(
           participant_id: args.participantId,
           track_id: track.id,
           transcript: `[${args.source}] ${args.transcript.slice(0, 980)}`,
-          // Matcher cascade title-centric : target 'title' → titre seul,
-          // 'artist_title' → artiste + titre. (Plus de faux "artiste" sur titre seul.)
-          matched_artist: best.score >= VOICE_MATCH_THRESHOLD && best.target === 'artist_title',
-          matched_title: best.score >= VOICE_MATCH_THRESHOLD,
+          // fix/artiste-seul-jamais-reconnu — les trois cibles sont distinctes :
+          // 'title' → titre seul, 'artist' → artiste seul, 'artist_title' → les
+          // deux. Auparavant matched_title etait vrai des que QUELQUE CHOSE
+          // matchait, meme quand seul l artiste avait ete reconnu — et l artiste
+          // seul ne pouvait de toute facon jamais matcher.
+          matched_artist:
+            best.score >= VOICE_MATCH_THRESHOLD &&
+            (best.target === 'artist' || best.target === 'artist_title'),
+          matched_title:
+            best.score >= VOICE_MATCH_THRESHOLD &&
+            (best.target === 'title' || best.target === 'artist_title'),
           confidence: best.score / 100,
           level: args.source,
           latency_ms: args.latencyMs,
@@ -901,10 +909,14 @@ async function runMatchAndCommit(
   }
 
   // Score ≥ threshold → commit (broadcast + ScoreEvent).
-  // Matcher cascade title-centric : 'title' → titre seul, 'artist_title' → les deux.
-  // → titre toujours présent quand ça matche ; artiste seulement sur le combo.
-  const matchedArtist = best.target === 'artist_title';
-  const matchedTitle = true;
+  // fix/artiste-seul-jamais-reconnu — `matchedTitle` etait cable a `true` : un
+  // joueur qui n avait reconnu que l artiste se voyait attribuer le titre, et
+  // reciproquement l artiste seul ne pouvait pas etre reconnu du tout. Les deux
+  // drapeaux suivent desormais la cible reellement matchee, conformement a la
+  // regle de gameScoring : artiste OU titre -> points de position, les deux ->
+  // bonus double.
+  const matchedArtist = best.target === 'artist' || best.target === 'artist_title';
+  const matchedTitle = best.target === 'title' || best.target === 'artist_title';
   const tentativePosition = (active.correct_answers.length ?? 0) + 1;
   const tentativeScore = computeAnswerScore({
     matched_artist: matchedArtist,

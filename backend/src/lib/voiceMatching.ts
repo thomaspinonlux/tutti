@@ -272,16 +272,20 @@ export function combinedScore(transcript: string, expected: string): number {
   return combined;
 }
 
+/** Ce que le transcript a permis de reconnaître. */
+export type MatchTarget = 'title' | 'artist' | 'artist_title';
+
 export interface MatchResult {
   /** Score combiné meilleur match (0-100). */
   score: number;
-  /** Cible matchée : 'title' ou 'artist_title' (combo "artist title"). */
-  target: 'title' | 'artist_title';
+  /** Cible matchée : titre seul, artiste seul, ou les deux. */
+  target: MatchTarget;
   /** Détail des scores pour debug / UI tooltip. */
   scores: {
     title_combined: number;
     title_lev: number;
     title_phon: number;
+    artist_combined: number;
     artist_title_combined: number;
     artist_title_lev: number;
     artist_title_phon: number;
@@ -308,12 +312,37 @@ export function matchAnswer(
   const comboPhon = phoneticScore(transcript, combo);
   const comboCombined = combinedScore(transcript, combo);
 
-  // fix/ios-voice-cascade-mic-and-buzz-refused — préfère artist_title en cas
-  // d'égalité (boost substring/token-overlap peut tier les 2 scores) : un match
-  // qui inclut l'artiste est plus spécifique et mérite le bonus title_bonus.
-  const target: 'title' | 'artist_title' =
-    comboCombined >= titleCombined ? 'artist_title' : 'title';
-  const score = Math.max(titleCombined, comboCombined);
+  // fix/artiste-seul-jamais-reconnu — LE NOM DE L ARTISTE SEUL N ETAIT COMPARE
+  // A RIEN.
+  //
+  // Ce moteur ne testait que « le titre » et « artiste + titre ». Un joueur qui
+  // dit seulement « Adele » ne pouvait donc MATHEMATIQUEMENT pas marquer : son
+  // transcript etait compare a « Make You Feel My Love » et a « Adele Make You
+  // Feel My Love », deux scores tres bas. Soiree du 10/09 : 99 buzz dans ce cas
+  // sur 728, dont « Sam Smith », « Usher », « The Weeknd », « Celine Dion »,
+  // « Beyonce » — tous refuses.
+  //
+  // Le defaut etait masque : beaucoup de titres avaient un alias de TITRE egal
+  // au nom de l artiste, et dire l artiste matchait ce faux alias de titre. Le
+  // nettoyage de ces alias (9d49479), fait pour que les points titre/chanteur
+  // soient justes, a retire la bequille et rendu le trou visible.
+  //
+  // La regle du jeu (gameScoring.ts) est pourtant explicite : artiste OU titre
+  // trouve -> points de position ; les deux -> bonus double. Ce moteur ne savait
+  // pas exprimer « artiste seul ».
+  const artistCombined = combinedScore(transcript, expected.artist);
+
+  // Choix de la cible : le combo l emporte a egalite (plus specifique, il porte
+  // le bonus double), sinon le meilleur des deux seuls.
+  let target: MatchTarget;
+  if (comboCombined >= titleCombined && comboCombined >= artistCombined) {
+    target = 'artist_title';
+  } else if (titleCombined >= artistCombined) {
+    target = 'title';
+  } else {
+    target = 'artist';
+  }
+  const score = Math.max(titleCombined, comboCombined, artistCombined);
 
   return {
     score,
@@ -322,6 +351,7 @@ export function matchAnswer(
       title_combined: titleCombined,
       title_lev: titleLev,
       title_phon: titlePhon,
+      artist_combined: artistCombined,
       artist_title_combined: comboCombined,
       artist_title_lev: comboLev,
       artist_title_phon: comboPhon,

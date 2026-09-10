@@ -24,8 +24,8 @@ export interface CascadeMatchResponse {
   scored: boolean;
   /** Score combiné 0-100 (lib/voiceMatching). */
   score: number;
-  /** "title" ou "artist_title" (combo). */
-  target: 'title' | 'artist_title' | null;
+  /** Ce qui a ete reconnu : titre seul, artiste seul, ou les deux. */
+  target: 'title' | 'artist' | 'artist_title' | null;
   /** Transcript renvoyé par le backend (web-speech normalisé ou Deepgram brut). */
   transcript: string;
   /** Seuil utilisé côté backend (≥ → commit). */

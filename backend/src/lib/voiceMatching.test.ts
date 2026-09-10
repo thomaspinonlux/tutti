@@ -123,6 +123,35 @@ describe('phoneticScore', () => {
 // ───── matchAnswer (title + artist combo) ────────────────────────────────
 
 describe('matchAnswer', () => {
+  // fix/artiste-seul-jamais-reconnu — non regression. Ces cas viennent de la
+  // soiree du 10/09 : le joueur nomme l artiste et RIEN d autre. L ancienne
+  // regle ne comparait qu au titre et au combo « artiste titre » : elle rendait
+  // 0 et le joueur ne marquait pas.
+  it('reconnait l artiste seul (Adele)', () => {
+    const r = matchAnswer('adele', { title: 'Make You Feel My Love', artist: 'Adele' });
+    assert.equal(r.target, 'artist');
+    assert.ok(r.score >= 80, `score ${r.score} < 80`);
+  });
+
+  it('reconnait l artiste seul dans une phrase (Sam Smith)', () => {
+    const r = matchAnswer('euh attends sam smith', { title: 'Stay With Me', artist: 'Sam Smith' });
+    assert.equal(r.target, 'artist');
+    assert.ok(r.score >= 80, `score ${r.score} < 80`);
+  });
+
+  it('prefere toujours le combo quand les deux sont dits', () => {
+    const r = matchAnswer('adele make you feel my love', {
+      title: 'Make You Feel My Love',
+      artist: 'Adele',
+    });
+    assert.equal(r.target, 'artist_title');
+  });
+
+  it('ne reconnait pas un artiste qui n a rien a voir', () => {
+    const r = matchAnswer('yo banane', { title: 'Stay With Me', artist: 'Sam Smith' });
+    assert.ok(r.score < 80, `score ${r.score} >= 80`);
+  });
+
   it('match sur le title seul', () => {
     const r = matchAnswer('like a prayer', { title: 'Like a Prayer', artist: 'Madonna' });
     assert.equal(r.target, 'title');
