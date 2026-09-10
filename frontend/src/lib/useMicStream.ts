@@ -154,12 +154,43 @@ export function useMicStream(): MicStreamApi {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * fix/micro-muet-enregistrement-vide — LE CONTROLE DE SANTE REGARDAIT LE
+   * MAUVAIS INDICATEUR.
+   *
+   * Soiree du 10/09 : plusieurs buzz d un meme iPhone arrivent au serveur a
+   * 0 Ko. Le micro etait pourtant declare en bonne sante, la capture demarrait,
+   * et le fichier produit etait vide.
+   *
+   * Explication : quand iOS reprend le micro — appel, Siri, une autre app ou
+   * onglet, ou une interruption de la session audio (et la console JOUE de la
+   * musique juste a cote) — la piste ne meurt pas. Elle reste
+   * `readyState === 'live'` et `enabled === true`, mais passe a
+   * `muted === true` : elle ne fournit plus aucun echantillon. C est
+   * exactement le drapeau prevu par la norme pour « cette piste est
+   * temporairement incapable de fournir des donnees », et c est le seul des
+   * trois que nous ne regardions pas.
+   *
+   * Resultat : le controle passait, MediaRecorder enregistrait du neant, et le
+   * buzz partait vide vers les trois services de transcription qui le
+   * refusaient l un apres l autre — le joueur restait bloque.
+   *
+   * En ajoutant `muted`, une piste muette declenche le `reinit()` qui existe
+   * deja : le micro est repris proprement avant l enregistrement.
+   */
   const isLive = useCallback((): boolean => {
     const s = streamRef.current;
     if (!s) return false;
     const tracks = s.getAudioTracks();
     if (tracks.length === 0) return false;
-    return tracks.every((t) => t.readyState === 'live' && t.enabled);
+    const vivante = tracks.every((t) => t.readyState === 'live' && t.enabled && !t.muted);
+    if (!vivante) {
+      const etat = tracks
+        .map((t) => `${t.readyState}/enabled=${t.enabled}/muted=${t.muted}`)
+        .join(', ');
+      console.warn(`[Micro] piste inutilisable — ${etat}`);
+    }
+    return vivante;
   }, []);
 
   const getStream = useCallback((): MediaStream | null => {
