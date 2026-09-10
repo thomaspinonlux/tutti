@@ -88,7 +88,11 @@ function TopRibbon({
 }): JSX.Element {
   const { t } = useTranslation();
   return (
-    <header className="flex items-center justify-between px-12 py-7">
+    /* fix/affichage-trop-bas — py-7 en haut ET en bas de l entete, plus le
+       pb-12 des zones de contenu, poussaient tout le contenu vers le bas :
+       sur une TV, le titre revele et le classement finissaient dans le tiers
+       bas de l ecran. L entete est resserree, le contenu remonte d autant. */
+    <header className="flex items-center justify-between px-12 py-3">
       <div className="flex items-center gap-5">
         <span className="font-display text-[32px] leading-none tracking-tight text-white">
           Tutti
@@ -533,7 +537,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
            visibles, en plus petit, en colonne latérale.
            DOUBLE GARDE : `isRevealed` conditionne ce bloc — jamais de paroles
            en phase 1/2, même si la prop est fournie. */
-        <main className="grid flex-1 grid-cols-1 gap-8 px-12 pb-12 lg:grid-cols-[1fr_320px]">
+        <main className="grid flex-1 grid-cols-1 gap-8 px-12 pb-6 lg:grid-cols-[1fr_320px]">
           <section className="flex min-h-0 items-center justify-center">
             <LyricsOverlay
               lines={lyrics.lines}
@@ -560,7 +564,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
         </main>
       ) : isRevealed && currentTrack ? (
         /* ── REVEAL ── */
-        <main className="grid flex-1 grid-cols-1 gap-10 px-12 pb-12 lg:grid-cols-[1.5fr_1fr]">
+        <main className="grid flex-1 grid-cols-1 gap-10 px-12 pb-6 lg:grid-cols-[1.5fr_1fr]">
           <section className="flex min-h-0 flex-col items-center justify-center gap-10 lg:flex-row">
             {/* fix/pochette-invisible-sur-la-tv — LA LARGEUR EST OBLIGATOIRE ICI.
                 RevealCoverDark est en `w-full` : sans largeur sur ce conteneur,
@@ -635,7 +639,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
         </main>
       ) : (
         /* ── ÉCOUTE / ATTENTE ── */
-        <main className="grid flex-1 grid-cols-1 gap-10 px-12 pb-12 lg:grid-cols-[1fr_360px]">
+        <main className="grid flex-1 grid-cols-1 gap-10 px-12 pb-6 lg:grid-cols-[1fr_360px]">
           <section className="relative flex flex-col items-center justify-center">
             {!playingRound || !currentTrack ? (
               <ReadyStage round={playingRound} lastEnded={lastEnded} master={master} />

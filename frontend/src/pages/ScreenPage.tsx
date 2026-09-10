@@ -877,7 +877,12 @@ function ScreenPlaylistGridView({
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-[#0B0B0F] text-white">
       <MultiColorBar height="md" />
-      <header className="flex shrink-0 items-baseline justify-between px-12 pb-2 pt-5">
+      {/* fix/affichage-trop-bas — L ENTETE MANGEAIT LE HAUT DE L ECRAN.
+          La grille est centree dans la zone RESTANTE : plus l entete est
+          haute, plus les cartes descendent. Sur une TV regardee de loin, la
+          rangee finissait dans le tiers bas de l ecran. Entete resserree et
+          titre ramene a une taille lisible sans etre monumentale. */}
+      <header className="flex shrink-0 items-baseline justify-between px-12 pb-1 pt-2">
         <div>
           <p
             className="mb-1 font-mono text-[11px] uppercase tracking-[0.3em]"
@@ -885,7 +890,7 @@ function ScreenPlaylistGridView({
           >
             {t('screen.playlistSelection.eyebrow')}
           </p>
-          <h1 className="font-display text-6xl leading-none text-white">
+          <h1 className="font-display text-5xl leading-none text-white">
             {current ? current.name : t('screen.playlistSelection.gridTitle')}
           </h1>
         </div>
@@ -914,7 +919,14 @@ function ScreenPlaylistGridView({
                      centrees : sur une TV regardee de loin, 19vw plafonne a
                      300 px occupait un quart de l'ecran et le titre etait
                      illisible depuis la salle. */
-                  className="flex w-[26vw] min-w-[300px] max-w-[520px] shrink-0 flex-col gap-4 rounded-[24px] border p-7 transition-[opacity,background-color,border-color,transform] duration-[420ms]"
+                  /* fix/affichage-trop-bas — la carte etait dimensionnee en
+                     LARGEUR seulement (26vw). Sur un ecran large, la pochette
+                     carree faisait donc jusqu a 520 px de HAUT, et carte +
+                     texte depassaient la zone disponible : le bas etait
+                     rogne et l ensemble paraissait tasse vers le bas. La
+                     largeur est desormais bornee AUSSI par la hauteur de
+                     l ecran. */
+                  className="flex w-[min(26vw,34vh)] min-w-[240px] max-w-[520px] shrink-0 flex-col gap-3 rounded-[24px] border p-5 transition-[opacity,background-color,border-color,transform] duration-[420ms]"
                   style={{
                     opacity: on ? 1 : 0.38,
                     transform: on ? 'scale(1.06)' : 'scale(0.92)',
@@ -933,7 +945,7 @@ function ScreenPlaylistGridView({
                   />
                   <p
                     className="font-display leading-tight text-white"
-                    style={{ fontSize: on ? '2.5rem' : '1.9rem' }}
+                    style={{ fontSize: on ? '2.1rem' : '1.6rem' }}
                   >
                     {it.name}
                   </p>
