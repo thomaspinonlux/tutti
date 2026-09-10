@@ -37,6 +37,7 @@ import {
   isAssemblyAIEnabled,
 } from '../lib/assemblyai.js';
 import { matchTranscript } from '../lib/voiceMatch.js';
+import { decouperArtiste } from '../lib/aliases.js';
 import type { MatchTarget } from '../lib/voiceMatching.js';
 import { matchAnswer } from '../lib/voiceMatching.js';
 import { getCumulativeScores } from '../lib/scores.js';
@@ -852,9 +853,17 @@ async function runMatchAndCommit(
   const titleCandidates = [track.canonical_title, ...(track.aliases ?? [])].filter(
     (s) => typeof s === 'string' && s.length > 0,
   );
-  const artistCandidates = [track.artist.canonical_name, ...(track.artist.aliases ?? [])].filter(
-    (s) => typeof s === 'string' && s.length > 0,
-  );
+  // fix/featuring-nom-non-reconnu — « Sam Smith » sur « Disclosure feat. Sam
+  // Smith » valait 54% : le nom dit etait compare au duo ENTIER. Nommer un des
+  // deux artistes est pourtant une bonne reponse. decouperArtiste ajoute chaque
+  // partie (feat., &, x, vs, avec…) comme candidat a part entiere.
+  const artistCandidates = Array.from(
+    new Set(
+      [track.artist.canonical_name, ...(track.artist.aliases ?? [])]
+        .filter((s): s is string => typeof s === 'string' && s.length > 0)
+        .flatMap((nom) => [nom, ...decouperArtiste(nom)]),
+    ),
+  ).filter((s) => s.length > 0);
 
   let best = { score: 0, target: 'title' as MatchTarget };
   for (const title of titleCandidates) {
