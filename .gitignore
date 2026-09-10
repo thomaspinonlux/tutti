@@ -81,3 +81,8 @@ exports/
 
 # Clés MusicKit Apple (ne JAMAIS committer)
 *.p8
+
+# Dossier tampon : git ne pouvant pas supprimer de fichiers ici, on y deplace
+# les verrous et fichiers morts. Rien de ce qui y atterrit ne doit etre versionne.
+_to_delete/
+.git/verrou-recycle*
