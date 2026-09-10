@@ -1976,8 +1976,23 @@ function HostPageInner(): JSX.Element {
       refusConsecutifs: refusConsecutifsRef.current,
     }, 'warn');
     if (/non autoris/i.test(refus.message)) {
-      // Pas un problème de morceau : sauter ne servirait à rien.
-      setError("Apple Music n'est pas autorisé sur cet iPad — Réglages → Tutti → Musique et Apple Music.");
+      // Pas un problème de morceau : sauter ne servirait à rien. Le geste à
+      // faire dépend du statut rendu par iOS, et il n'est pas le même :
+      //   refusé   → l'interrupteur existe dans Réglages, il est éteint ;
+      //   restreint→ Temps d'écran ou gestion d'appareil bloque, Réglages ne
+      //              montre alors AUCUN interrupteur (piège classique) ;
+      //   jamais demandé → la fenêtre système n'a pas pu être présentée.
+      if (/restreint/i.test(refus.message)) {
+        setError(
+          "Apple Music est BLOQUÉ sur cet iPad par une restriction — Réglages → Temps d'écran → Restrictions de contenu et de confidentialité → Apple Music. (Réglages → Tutti n'affichera aucun interrupteur tant que la restriction est active.)",
+        );
+      } else if (/jamais demand/i.test(refus.message)) {
+        setError(
+          "iOS n'a jamais demandé l'accès à Apple Music pour Tutti — ferme complètement l'app et rouvre-la pour que la fenêtre d'autorisation s'affiche.",
+        );
+      } else {
+        setError("Apple Music n'est pas autorisé sur cet iPad — Réglages → Tutti → Musique et Apple Music.");
+      }
       return;
     }
     if (refusConsecutifsRef.current > 3) {

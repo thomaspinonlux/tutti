@@ -132,12 +132,50 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         call.resolve()
     }
 
+    /**
+     * fix/autorisation-apple-sur-le-fil-principal — LA DEMANDE PRÉSENTE UNE
+     * FENÊTRE SYSTÈME, ELLE DOIT PARTIR DU FIL PRINCIPAL.
+     *
+     * Soirée du 10/09, journal natif : quatre appels d'affilée, tous
+     * `{"autorise":false}` en 0 à 12 ms, tous depuis la file d'arrière-plan.
+     * Zéro milliseconde veut dire qu'aucune fenêtre n'a été présentée : quand
+     * le statut est `notDetermined`, iOS doit afficher la demande, ce qui
+     * prend des secondes. Capacitor appelle les méthodes de greffon sur une
+     * file d'arrière-plan ; `MusicAuthorization.request()` y perd sa capacité
+     * à présenter et rend un refus immédiat. Même famille de bug que les gels
+     * de lecture (155b380) : tout ce qui touche à l'interface ou au lecteur
+     * part désormais du fil principal.
+     *
+     * Le statut EXACT est journalisé — refusé, restreint (Temps d'écran ou
+     * gestion d'appareil) ou jamais demandé n'appellent pas le même geste, et
+     * on ne pouvait pas les distinguer jusqu'ici.
+     */
     @objc func authorize(_ call: CAPPluginCall) {
         let jeton = TuttiJournal.shared.debut("musickit", "authorize")
-        Task {
-            let status = await MusicAuthorization.request()
-            TuttiJournal.shared.fin("musickit", jeton, ["autorise": status == .authorized])
-            call.resolve(["authorized": status == .authorized])
+        Task { @MainActor in
+            let avant = MusicAuthorization.currentStatus
+            let status = avant == .notDetermined ? await MusicAuthorization.request() : avant
+            let autorise = status == .authorized
+            TuttiJournal.shared.fin("musickit", jeton, [
+                "autorise": autorise,
+                "statut": Self.nomStatut(status),
+                "statutAvant": Self.nomStatut(avant),
+            ])
+            call.resolve([
+                "authorized": autorise,
+                "status": Self.nomStatut(status),
+            ])
+        }
+    }
+
+    /** Nom lisible d'un statut d'autorisation, pour le journal et la console. */
+    private static func nomStatut(_ s: MusicAuthorization.Status) -> String {
+        switch s {
+        case .authorized: return "autorise"
+        case .denied: return "refuse"
+        case .restricted: return "restreint"
+        case .notDetermined: return "jamais demande"
+        @unknown default: return "inconnu"
         }
     }
 
@@ -155,11 +193,18 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.reject("developerToken requis")
             return
         }
-        Task {
+        Task { @MainActor in
             // Dialogue d'autorisation natif iOS (nécessaire avant le token).
-            let status = await MusicAuthorization.request()
+            // Sur le fil principal : la fenêtre système ne peut pas être
+            // présentée depuis la file d'arrière-plan de Capacitor (cf.
+            // authorize ci-dessus).
+            let avant = MusicAuthorization.currentStatus
+            let status = avant == .notDetermined ? await MusicAuthorization.request() : avant
             guard status == .authorized else {
-                call.reject("Autorisation Apple Music refusée")
+                TuttiJournal.shared.note("musickit", "getUserToken refuse", [
+                    "statut": Self.nomStatut(status),
+                ])
+                call.reject("Autorisation Apple Music \(Self.nomStatut(status))")
                 return
             }
             // fix/apple-connexion-sans-reponse — LE CONTRÔLEUR EST CONSERVÉ.

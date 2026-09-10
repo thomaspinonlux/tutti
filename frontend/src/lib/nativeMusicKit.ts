@@ -10,7 +10,8 @@
  */
 
 interface NativeMusicKitBridge {
-  authorize(): Promise<{ authorized: boolean }>;
+  /** `status` (build >= 57) : autorise | refuse | restreint | jamais demande. */
+  authorize(): Promise<{ authorized: boolean; status?: string }>;
   getUserToken(options: { developerToken: string }): Promise<{ userToken: string }>;
   /** `verifie` (build ≥ 52) : Apple a bien annoncé ce morceau comme entrée courante. */
   play(options: { catalogId: string }): Promise<{ ok: boolean; verifie?: boolean }>;
@@ -42,7 +43,7 @@ export const nativeMusicKit = {
   isAvailable(): boolean {
     return bridge() !== null;
   },
-  authorize(): Promise<{ authorized: boolean }> {
+  authorize(): Promise<{ authorized: boolean; status?: string }> {
     return bridge()?.authorize() ?? Promise.resolve({ authorized: false });
   },
   /** Music User Token natif (compte abonné), pour persister la connexion sans popup. */

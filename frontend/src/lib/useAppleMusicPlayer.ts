@@ -390,7 +390,12 @@ export function useAppleMusicPlayer({
           setIsAuthorized(auth.authorized);
           if (!auth.authorized) {
             setErrorCode('APPLE_NOT_AUTHORIZED');
-            setRefusNatif({ id: catalogId, message: 'Apple Music non autorisé sur cet iPad' });
+            // Le statut exact vient du greffon (build >= 57) : refuse,
+            // restreint ou jamais demande n'appellent pas le meme geste.
+            setRefusNatif({
+              id: catalogId,
+              message: `Apple Music non autorisé sur cet iPad (${auth.status ?? 'statut inconnu'})`,
+            });
             return false;
           }
           queueChangeAllowedUntilRef.current = Date.now() + 4000;
