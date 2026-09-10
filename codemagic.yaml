@@ -185,6 +185,20 @@ workflows:
             || /usr/libexec/PlistBuddy -c "Set :NSAppleMusicUsageDescription 'Tutti utilise Apple Music pour diffuser les extraits musicaux pendant vos parties de blind test.'" ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Add :NSMicrophoneUsageDescription string 'Tutti utilise le micro pour reconnaître vos réponses chantées ou dites à voix haute pendant le blind test.'" ios/App/App/Info.plist \
             || /usr/libexec/PlistBuddy -c "Set :NSMicrophoneUsageDescription 'Tutti utilise le micro pour reconnaître vos réponses chantées ou dites à voix haute pendant le blind test.'" ios/App/App/Info.plist
+          # fix/son-coupe-en-arriere-plan — UIBackgroundModes=audio MANQUAIT.
+          # Constaté en lisant l'Info.plist du .ipa 56 publié : la clé est
+          # absente. native/README.md dit de cocher "Background Modes > Audio"
+          # dans Xcode, mais le projet iOS est REGENERE a chaque build par
+          # `cap add ios` : tout reglage fait a la main dans Xcode disparait au
+          # build suivant. Sans cette cle, iOS coupe le son des que l'app passe
+          # en arriere-plan ou que l'iPad se verrouille — en pleine soiree.
+          # Comme les autres, la cle est donc injectee ICI, apres `cap sync`.
+          /usr/libexec/PlistBuddy -c "Delete :UIBackgroundModes" ios/App/App/Info.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes array" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:0 string audio" ios/App/App/Info.plist
+          echo "Info.plist final :"
+          /usr/libexec/PlistBuddy -c "Print :UIBackgroundModes" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Print :NSAppleMusicUsageDescription" ios/App/App/Info.plist
 
       - name: 6. Numéro de build unique (requis par TestFlight)
         # $BUILD_NUMBER est fourni et auto-incrémenté par Codemagic à chaque build.

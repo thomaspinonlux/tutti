@@ -50,12 +50,32 @@ dépendances `file:` de cette coque — `cap sync` les intègre automatiquement 
    route `/screen` sur un écran externe (2ᵉ `UIWindow`/`WKWebView`). Piloté par
    `useExternalPlayerScreen`. → l'iPad sort l'écran joueurs sur la TV.
 
-### À faire dans Xcode après `cap add ios`
+### Prérequis Apple — À FAIRE UNE FOIS, SUR LE PORTAIL
 
-- **Signing & Capabilities → Background Modes → Audio** (son écran verrouillé).
-- **Info.plist → `NSAppleMusicUsageDescription`** (accès médiathèque) et
+> Sans ceci, l'app se lance mais Apple Music est refusé sur TOUT appareil, avec
+> l'erreur « The requesting app does not have the necessary permissions » et
+> AUCUNE fenêtre d'autorisation. Diagnostiqué le 10/09/2026 après trois builds
+> à chercher ailleurs : la liste Réglages → Confidentialité → Médias et Apple
+> Music reste vide, désinstaller l'app ne change rien, et les trois portes
+> (MusicKit, StoreKit, MPMediaLibrary) répondent « refusé » en 0 ms.
+
+- **developer.apple.com → Certificates, Identifiers & Profiles → Identifiers →
+  `app.tuttiparty` → App Services → cocher MusicKit → Save.**
+
+### Réglages du projet iOS — NE PAS LES FAIRE À LA MAIN DANS XCODE
+
+`native/ios/` est gitignoré et **régénéré à chaque build** par `cap add ios` :
+tout réglage coché à la main dans Xcode disparaît au build suivant. Ces trois
+points sont donc appliqués par `codemagic.yaml`, étape 5, après `cap sync` :
+
+- **`UIBackgroundModes = [audio]`** (son quand l'écran se verrouille).
+- **`NSAppleMusicUsageDescription`** (accès médiathèque) et
   **`NSMicrophoneUsageDescription`** (reconnaissance vocale).
-- Cible de déploiement **iOS 15+** (MusicKit `ApplicationMusicPlayer`).
+- Cible de déploiement **iOS 15+** (MusicKit `ApplicationMusicPlayer`), forcée
+  dans le Podfile et le projet.
+
+Pour un build local dans Xcode, il faut les cocher à la main après chaque
+`cap add ios`.
 
 > ⚠️ Le code Swift des plugins n'a pas pu être compilé hors Xcode : à builder et
 > valider sur device. Si aucun plugin n'est présent au runtime, l'app native
