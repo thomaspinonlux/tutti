@@ -779,7 +779,8 @@
     "masterEndSession": "End the game",
     "masterEndSessionConfirm": "End now? Final podium will show.",
     "masterEndSessionYes": "Yes, end it",
-    "masterPausedBadge": "Game paused"
+    "masterPausedBadge": "Game paused",
+    "nothingHeard": "Nothing heard — buzz again"
   },
   "onboarding": {
     "contentBlocker": {

@@ -1620,6 +1620,23 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       return;
     }
 
+    // fix/telephone-bloque-sur-enregistrement-vide — ON N ENVOIE PAS DU VIDE.
+    //
+    // Soiree du 10/09 : plusieurs buzz d un meme iPhone partent a 0 Ko. Le
+    // serveur les transmettait a Deepgram, puis Whisper, puis AssemblyAI —
+    // trois refus en cascade, chacun avec son delai reseau — et le telephone
+    // restait bloque sur l ecran d attente. Un buzz reel pese 6 a 33 Ko ; sous
+    // 1 Ko il n y a pas de parole. On rend la main tout de suite, le joueur
+    // rebuzze sans attendre. Le serveur applique la meme garde de son cote,
+    // pour les clients qui n auraient pas cette version.
+    if (blob.size < 1024) {
+      console.warn(`[Voice] enregistrement vide (${blob.size} o) — rien envoye`);
+      setRecState({ kind: 'idle' });
+      setFailToast(t('play.nothingHeard'));
+      webSpeech.cancel();
+      return;
+    }
+
     const filename = capture.mimeType.includes('mp4') ? 'buzz.mp4' : 'buzz.webm';
     let finalResult: CascadeMatchResponse | null = null;
     let finalLevel: 'L1' | 'L2' | 'L3' | 'L3-fallback' | 'L3-legacy-whisper' | null = null;

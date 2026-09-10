@@ -1213,6 +1213,39 @@ router.post(
       `[Server][Voice L2] Deepgram call | session=${req.params.id} | playerId=${auth.participantId} | trackTitle="${track.canonical_title}" | trackArtist="${track.artist.canonical_name}" | mime=${audioFile.mimetype || '(none)'} | size=${Math.round(audioFile.buffer.byteLength / 1024)}KB`,
     );
 
+    // fix/telephone-bloque-sur-enregistrement-vide — ON N ENVOIE PLUS DU VIDE
+    // AUX TROIS SERVICES.
+    //
+    // Soiree du 10/09 : plusieurs buzz d un meme joueur arrivent a size=0KB
+    // (iPhone, audio/mp4 — le micro n a rien capture). Ce vide partait quand
+    // meme a Deepgram (« corrupt or unsupported data »), puis a Whisper
+    // (« invalid_request_error »), puis a AssemblyAI (« Upload 422 »). Trois
+    // echecs en cascade, chacun avec son delai reseau, et pendant ce temps le
+    // telephone attendait une reponse qui n arrivait jamais : c est le
+    // « telephone bloque » signale en salle.
+    //
+    // Un enregistrement exploitable pese quelques kilo-octets (les buzz reels
+    // de la soiree font 6 a 33 Ko). En dessous de 1 Ko il n y a pas de parole :
+    // on repond immediatement, le joueur peut rebuzzer tout de suite.
+    const TAILLE_MINIMALE_OCTETS = 1024;
+    if (audioFile.buffer.byteLength < TAILLE_MINIMALE_OCTETS) {
+      console.warn(
+        `[Server][Voice L2] enregistrement vide ignore | playerId=${auth.participantId} | size=${audioFile.buffer.byteLength}o | mime=${audioFile.mimetype || '(none)'}`,
+      );
+      res.json({
+        matched: false,
+        scored: false,
+        score: 0,
+        target: null,
+        transcript: '',
+        level: 'L2',
+        source: 'deepgram',
+        reason: 'AUCUNE_PAROLE',
+        transcriptionIndisponible: false,
+      });
+      return;
+    }
+
     let transcript = '';
     let level: 'L2' | 'L3-fallback' = 'L2';
     let source = 'deepgram';

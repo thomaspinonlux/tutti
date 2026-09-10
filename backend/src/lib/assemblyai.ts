@@ -119,11 +119,18 @@ export async function transcribeWithAssemblyAI(
     console.info(`[AssemblyAI] upload done | elapsed=${uploadElapsed}ms`);
 
     // ── 2. Create transcript request ──────────────────────────────────
-    // speech_model "best" = Universal-2 (qualité max, latence raisonnable).
-    // Ne pas confondre avec "nano" (rapide mais moins précis).
+    // fix/assemblyai-parametre-deprecie — LE DERNIER FILET NE MARCHAIT PLUS.
+    // Soiree du 10/09 : CHAQUE appel de niveau 3 rendait
+    //   400 "The speech_model parameter is deprecated.
+    //        Use speech_models: [\"universal-3-5-pro\", \"universal-2\"]"
+    // AssemblyAI a remplace `speech_model` (singulier) par `speech_models`
+    // (pluriel, liste de preferences). Quand Web Speech et Deepgram echouaient,
+    // le dernier recours echouait aussi : le buzz mourait sans reponse.
+    // On donne la liste par ordre de preference ; le service prend le premier
+    // disponible.
     const body: Record<string, unknown> = {
       audio_url: uploadJson.upload_url,
-      speech_model: 'best',
+      speech_models: ['universal-3-5-pro', 'universal-2'],
       word_boost: (args.keywords ?? []).slice(0, 50).filter((k) => k.length > 1),
       boost_param: 'high',
       punctuate: false,
