@@ -253,11 +253,24 @@ export function combinedScore(transcript: string, expected: string): number {
   if (lev < 30 && phon === 0) {
     combined = Math.floor(combined * 0.5);
   }
-  // Boost #1 — substring containment.
+  // Boost #1 — contenance par MOTS ENTIERS.
+  //
+  // fix/alias-court-dans-un-mot — c etait une sous-chaine brute : l alias
+  // « mas » (Jeanne Mas) etait trouve a l interieur de « masque », et « la
+  // compagnie creole le bal masque » creditait Jeanne Mas. Mesure sur 1 953
+  // titres : une reponse totalement fausse etait acceptee dans 0,15 % des
+  // cas, toujours par ce mecanisme. L alias doit desormais apparaitre comme
+  // une suite de mots entiers du transcript.
   const nt = normalizeText(transcript);
   const ne = normalizeText(expected);
-  if (ne.length >= 3 && nt.length >= ne.length && nt.includes(ne)) {
-    combined = Math.max(combined, 90);
+  if (ne.length >= 3 && nt.length >= ne.length) {
+    const motsT = nt.split(' ');
+    const motsE = ne.split(' ');
+    let contenu = false;
+    for (let i = 0; i + motsE.length <= motsT.length && !contenu; i++) {
+      contenu = motsE.every((m, k) => motsT[i + k] === m);
+    }
+    if (contenu) combined = Math.max(combined, 90);
   }
   // Boost #2 — token-overlap (ordre libre).
   const expTokens = ne.split(' ').filter((t) => t.length >= 2);

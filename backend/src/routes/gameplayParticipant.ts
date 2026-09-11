@@ -865,12 +865,50 @@ async function runMatchAndCommit(
     ),
   ).filter((s) => s.length > 0);
 
-  let best = { score: 0, target: 'title' as MatchTarget };
+  // fix/les-deux-moities-sur-tous-les-alias — LA DECISION SE PREND SUR
+  // L ENSEMBLE DES ALIAS, PAS SUR UNE SEULE PAIRE.
+  //
+  // On gardait la paire (titre, artiste) au meilleur score et sa cible. A
+  // egalite de score, la premiere paire rencontree l emportait : pour « Kali
+  // Uchis Cry about it! », la paire (titre, « Kali Uchis & Ravyn Lenae »)
+  // donnait titre=100/artiste=faible -> cible 'title', et la paire (titre,
+  // « Kali Uchis ») donnait titre=100/artiste=90 -> cible 'artist_title'.
+  // Meme score 100, la premiere gagnait : bonus double perdu selon l ORDRE
+  // des alias en base. Mesure sur 1 953 titres : 8 a 11 % des reponses
+  // completes retombaient en « titre seul ».
+  //
+  // La question du jeu est « a-t-il dit l artiste ? a-t-il dit le titre ? ».
+  // On prend donc le meilleur score de chaque moitie sur TOUTES les paires,
+  // puis on decide. Independant de l ordre des alias, et de l ordre des mots.
+  let meilleurTitre = 0;
+  let meilleurArtiste = 0;
+  let meilleurCombo = 0;
   for (const title of titleCandidates) {
     for (const artist of artistCandidates) {
-      const r = matchAnswer(args.transcript, { title, artist });
-      if (r.score > best.score) best = { score: r.score, target: r.target };
+      const r = matchAnswer(args.transcript, { title, artist }, VOICE_MATCH_THRESHOLD);
+      if (r.scores.title_combined > meilleurTitre) meilleurTitre = r.scores.title_combined;
+      if (r.scores.artist_combined > meilleurArtiste) meilleurArtiste = r.scores.artist_combined;
+      if (r.scores.artist_title_combined > meilleurCombo) meilleurCombo = r.scores.artist_title_combined;
     }
+  }
+  const titrePasse = meilleurTitre >= VOICE_MATCH_THRESHOLD;
+  const artistePasse = meilleurArtiste >= VOICE_MATCH_THRESHOLD;
+  let best: { score: number; target: MatchTarget };
+  if (artistePasse && titrePasse) {
+    best = { score: Math.max(meilleurTitre, meilleurArtiste), target: 'artist_title' };
+  } else if (artistePasse) {
+    best = { score: meilleurArtiste, target: 'artist' };
+  } else if (titrePasse) {
+    best = { score: meilleurTitre, target: 'title' };
+  } else {
+    // Aucune moitie ne passe seule : repechage par le combo (reponse complete
+    // mais mal transcrite), sinon le meilleur des scores pour le journal.
+    best =
+      meilleurCombo >= meilleurTitre && meilleurCombo >= meilleurArtiste
+        ? { score: meilleurCombo, target: 'artist_title' }
+        : meilleurArtiste > meilleurTitre
+          ? { score: meilleurArtiste, target: 'artist' }
+          : { score: meilleurTitre, target: 'title' };
   }
 
   // Log voice_transcript (optionnel — frontend peut en spammer plusieurs L1 par
