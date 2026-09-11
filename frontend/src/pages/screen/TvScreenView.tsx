@@ -518,7 +518,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
   const ambientCover = isRevealed ? (currentTrack?.cover_url ?? null) : null;
 
   return (
-    <div className="relative flex min-h-screen flex-col text-white px-[2.5vmin] pt-[1.5vmin] pb-[3vmin]">
+    <div className="relative flex h-screen flex-col overflow-hidden text-white px-[2.5vmin] pt-[1.5vmin] pb-[2vmin]">
       <style>{TV_STYLE}</style>
       <AmbientBackdrop cover={ambientCover} />
       <TopRibbon
@@ -535,7 +535,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
            visibles, en plus petit, en colonne latérale.
            DOUBLE GARDE : `isRevealed` conditionne ce bloc — jamais de paroles
            en phase 1/2, même si la prop est fournie. */
-        <main className="grid flex-1 grid-cols-1 gap-8 px-12 pb-6 lg:grid-cols-[1fr_320px]">
+        <main className="grid min-h-0 flex-1 grid-cols-1 gap-8 px-12 pb-6 lg:grid-cols-[1fr_320px]">
           <section className="flex min-h-0 items-center justify-center">
             <LyricsOverlay
               lines={lyrics.lines}
@@ -562,7 +562,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
         </main>
       ) : isRevealed && currentTrack ? (
         /* ── REVEAL ── */
-        <main className="grid flex-1 grid-cols-1 gap-10 px-12 pb-6 lg:grid-cols-[1.5fr_1fr]">
+        <main className="grid min-h-0 flex-1 grid-cols-1 gap-10 px-12 pb-6 lg:grid-cols-[1.5fr_1fr]">
           <section className="flex min-h-0 flex-col items-center justify-center gap-10 lg:flex-row">
             {/* fix/pochette-invisible-sur-la-tv — LA LARGEUR EST OBLIGATOIRE ICI.
                 RevealCoverDark est en `w-full` : sans largeur sur ce conteneur,
@@ -631,23 +631,33 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
               )}
             </div>
           </section>
-          <aside className="flex min-h-0 flex-col gap-5">
-            {/* Classement DU TITRE en cours — demande terrain : ordre d'arrivee
-                en gros, points du titre, total general. Prioritaire sur le
-                cumul de la partie, qui reste dessous. */}
-            <ClassementDuTitre
-              correctAnswers={correctAnswers}
-              cumulative={cumulative}
-              variante="sombre"
-              maxLignes={6}
-            />
-            <DarkLeaderboard cumulative={cumulative} correctAnswers={correctAnswers} compact />
-            <JoinQrDark shortCode={session.short_code} />
+          {/* fix/colonne-droite-coupee — LA COLONNE EST BORNEE PAR L ECRAN.
+              La TV sortie par l iPad fait 1280 x 900 (journal natif). Classement
+              du titre (6 lignes) + cumul (5 lignes) + QR depassaient 900 px : le
+              bas etait coupe. Desormais : la colonne ne peut pas depasser
+              (min-h-0 + overflow-hidden), le classement du titre garde 4 lignes
+              (l ordre d arrivee qui compte), le QR garde sa place, et le cumul
+              prend ce qui reste avec son propre defilement. */}
+          <aside className="flex min-h-0 flex-col gap-4 overflow-hidden">
+            <div className="shrink-0">
+              <ClassementDuTitre
+                correctAnswers={correctAnswers}
+                cumulative={cumulative}
+                variante="sombre"
+                maxLignes={4}
+              />
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <DarkLeaderboard cumulative={cumulative} correctAnswers={correctAnswers} compact />
+            </div>
+            <div className="shrink-0">
+              <JoinQrDark shortCode={session.short_code} />
+            </div>
           </aside>
         </main>
       ) : (
         /* ── ÉCOUTE / ATTENTE ── */
-        <main className="grid flex-1 grid-cols-1 gap-10 px-12 pb-6 lg:grid-cols-[1fr_360px]">
+        <main className="grid min-h-0 flex-1 grid-cols-1 gap-10 px-12 pb-6 lg:grid-cols-[1fr_360px]">
           <section className="relative flex flex-col items-center justify-center">
             {!playingRound || !currentTrack ? (
               <ReadyStage round={playingRound} lastEnded={lastEnded} master={master} />
@@ -702,17 +712,23 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
               </>
             )}
           </section>
-          <aside className="flex min-h-0 flex-col gap-5">
+          <aside className="flex min-h-0 flex-col gap-4 overflow-hidden">
             {correctAnswers.length > 0 && (
-              <ClassementDuTitre
-                correctAnswers={correctAnswers}
-                cumulative={cumulative}
-                variante="sombre"
-                maxLignes={5}
-              />
+              <div className="shrink-0">
+                <ClassementDuTitre
+                  correctAnswers={correctAnswers}
+                  cumulative={cumulative}
+                  variante="sombre"
+                  maxLignes={4}
+                />
+              </div>
             )}
-            <DarkLeaderboard cumulative={cumulative} correctAnswers={correctAnswers} compact />
-            <JoinQrDark shortCode={session.short_code} />
+            <div className="flex min-h-0 flex-1 flex-col">
+              <DarkLeaderboard cumulative={cumulative} correctAnswers={correctAnswers} compact />
+            </div>
+            <div className="shrink-0">
+              <JoinQrDark shortCode={session.short_code} />
+            </div>
           </aside>
         </main>
       )}

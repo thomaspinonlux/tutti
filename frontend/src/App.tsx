@@ -45,6 +45,7 @@ import { PrivacyPage } from './pages/legal/PrivacyPage.js';
 import { TermsPage } from './pages/legal/TermsPage.js';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner.js';
 import { DebugOverlay } from './components/DebugOverlay.js';
+import { ScreenApercuPage } from './pages/screen/ScreenApercuPage.js';
 
 // Lazy : chunks dédiés aux pages volumineuses (audio, dnd, qrcode, socket.io…)
 const DesignSystemPage = lazy(() =>
@@ -89,6 +90,8 @@ function App(): JSX.Element {
 
         {/* feat/youtube-compliance — pages légales publiques (Privacy/Terms)
             requises par YouTube API Services. Liées depuis footer + signup. */}
+        {/* fix/ecran-tv-jamais-vu-avant-la-soiree — apercu visuel de la TV, sans partie */}
+        <Route path="/screen/apercu" element={<ScreenApercuPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         {/* Compat ancien lien footer landing ("/cgu" historiquement). */}
