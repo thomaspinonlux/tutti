@@ -335,8 +335,8 @@ function DarkLeaderboard({
   void compact;
   const rows = cumulative;
   return (
-    <div className={`${PANEL} flex min-h-0 flex-1 flex-col p-6`}>
-      <div className="mb-4 flex shrink-0 items-center gap-2.5">
+    <div className={`${PANEL} flex min-h-0 flex-1 flex-col p-5`}>
+      <div className="mb-3 flex shrink-0 items-center gap-2.5">
         <span aria-hidden className="text-lg">
           🏆
         </span>
@@ -378,7 +378,7 @@ function DarkLeaderboard({
                       style={{ backgroundColor: entry.color }}
                     />
                   )}
-                  <span className={`font-bold text-white ${classesNom(entry.label, 'liste')}`}>
+                  <span className={`font-bold text-white ${classesNom(entry.label, 'colonne')}`}>
                     {entry.label}
                   </span>
                 </div>
@@ -407,9 +407,9 @@ function JoinQrDark({ shortCode }: { shortCode: string }): JSX.Element {
   const { t } = useTranslation();
   const url = `${getShareableOrigin()}/play?session=${shortCode}`;
   return (
-    <div className={`${PANEL} flex items-center gap-4 p-5`}>
+    <div className={`${PANEL} flex items-center gap-4 p-4`}>
       <div className="rounded-2xl bg-white p-2">
-        <QRCode value={url} size={104} />
+        <QRCode value={url} size={88} />
       </div>
       <div className="min-w-0">
         <p className="font-mono text-[10px] uppercase tracking-[0.28em]" style={{ color: CORAL }}>
@@ -652,7 +652,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
                 plus 45 % de la colonne et défile s'il déborde ; le cumul prend
                 le reste et défile aussi. Chacun voit son score, quel que soit
                 le nombre de joueurs. */}
-            <div className="flex max-h-[45%] min-h-0 shrink-0 flex-col">
+            <div className="flex max-h-[40%] min-h-0 shrink-0 flex-col">
               <ClassementDuTitre
                 correctAnswers={correctAnswers}
                 cumulative={cumulative}
@@ -727,7 +727,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
           </section>
           <aside className="flex min-h-0 flex-col gap-4 overflow-hidden">
             {correctAnswers.length > 0 && (
-              <div className="flex max-h-[45%] min-h-0 shrink-0 flex-col">
+              <div className="flex max-h-[40%] min-h-0 shrink-0 flex-col">
                 <ClassementDuTitre
                   correctAnswers={correctAnswers}
                   cumulative={cumulative}

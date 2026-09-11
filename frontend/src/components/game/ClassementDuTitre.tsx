@@ -32,14 +32,22 @@ export type VarianteClassement = 'sombre' | 'clair' | 'compact';
  *   - et dans tous les cas, retour a la ligne autorise, 2 lignes maximum.
  * `grand` = taille pleine sur les ecrans ou le nom est l element principal.
  */
-export function classesNom(nom: string, grand: 'podium' | 'liste' | 'compact' = 'liste'): string {
+export function classesNom(
+  nom: string,
+  grand: 'podium' | 'liste' | 'colonne' | 'compact' = 'liste',
+): string {
   const n = (nom ?? '').length;
   const tailles = {
     podium: n <= 14 ? 'text-4xl lg:text-5xl' : n <= 24 ? 'text-3xl lg:text-4xl' : 'text-2xl lg:text-3xl',
     liste: n <= 14 ? 'text-2xl lg:text-3xl' : n <= 24 ? 'text-xl lg:text-2xl' : 'text-lg lg:text-xl',
+    // fix/noms-coupes-colonne-tv — la colonne droite de la TV fait 360 px :
+    // en taille « liste », « Les Bretons du fond de la salle » tenait sur
+    // deux lignes et finissait en « … » (capture du 11/09). Un cran plus
+    // petit et trois lignes autorisees : le nom entier, toujours.
+    colonne: n <= 14 ? 'text-xl' : n <= 24 ? 'text-lg' : 'text-base',
     compact: n <= 14 ? 'text-base' : n <= 24 ? 'text-sm' : 'text-xs',
   }[grand];
-  return `${tailles} break-words line-clamp-2 leading-tight`;
+  return `${tailles} break-words ${grand === 'colonne' ? 'line-clamp-3' : 'line-clamp-2'} leading-tight`;
 }
 
 const CORAL = '#FF5C4D';
@@ -194,7 +202,7 @@ export function ClassementDuTitre({
                 {/* Rang — le gros chiffre demandé, lisible depuis la salle */}
                 <span
                   className={`text-center font-display tabular-nums ${
-                    compact ? 'w-9 text-xl' : 'w-16 text-4xl lg:text-5xl'
+                    compact ? 'w-9 text-xl' : sombre ? 'w-12 text-3xl' : 'w-16 text-4xl lg:text-5xl'
                   }`}
                   style={{ color: premier ? CORAL : sombre ? '#ffffff' : undefined }}
                 >
@@ -211,7 +219,7 @@ export function ClassementDuTitre({
                       />
                     )}
                     <span
-                      className={`font-bold ${couleurTexte} ${classesNom(l.pseudo, compact ? 'compact' : 'liste')}`}
+                      className={`font-bold ${couleurTexte} ${classesNom(l.pseudo, compact ? 'compact' : sombre ? 'colonne' : 'liste')}`}
                     >
                       {l.pseudo}
                     </span>
@@ -228,7 +236,9 @@ export function ClassementDuTitre({
                 <div className="whitespace-nowrap text-right">
                   {/* Points gagnés SUR CE TITRE */}
                   <div
-                    className={`font-mono font-bold tabular-nums ${compact ? 'text-lg' : 'text-3xl lg:text-4xl'}`}
+                    className={`font-mono font-bold tabular-nums ${
+                      compact ? 'text-lg' : sombre ? 'text-2xl' : 'text-3xl lg:text-4xl'
+                    }`}
                     style={{ color: CORAL }}
                   >
                     +{l.pointsTitre}
