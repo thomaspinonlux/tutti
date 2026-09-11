@@ -26,7 +26,7 @@
  * optimisation au-dessus du polling (V3).
  */
 
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNouvelleVersion } from '../lib/useNouvelleVersion.js';
 import { getShareableOrigin } from '../lib/platform.js';
 import { useSearchParams } from 'react-router-dom';
@@ -49,6 +49,7 @@ import {
 import { buildThemeSections, flattenThemes } from '../lib/officialThemes.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 import { classesNom } from '../components/game/ClassementDuTitre.js';
+import { AutoScrollList } from '../components/screen/AutoScrollList.js';
 
 // fix/tv-1s-poll — 1 s en partie : l'écran ne peut jamais avoir plus d'une
 // seconde de retard sur le serveur, même si le canal temps réel est mort.
@@ -1014,70 +1015,8 @@ function ScreenWithQrOverlay({
   );
 }
 
-// feat/tv-round-results — liste à auto-défilement : la TV n'a personne pour
-// scroller, donc on défile lentement haut↔bas SEULEMENT si le contenu déborde
-// (gère 15-20+ joueurs). Une seule boucle rAF montée à vie du composant ; elle
-// lit scrollHeight/clientHeight à chaque frame → s'adapte aux updates 2s.
-function AutoScrollList({
-  className,
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}): JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    let raf = 0;
-    let dir = 1;
-    let pause = 90; // frames d'arrêt en haut/bas (~1.5s)
-    let acc = 0;
-    // fix/tv-qui-saccade-sur-le-podium — ON NE MESURE PLUS À CHAQUE IMAGE.
-    // Lire la hauteur de contenu force le navigateur à recalculer toute la
-    // mise en page ; c'était fait soixante fois par seconde, et DEUX listes
-    // sont affichées en même temps sur le podium — soit cent vingt recalculs
-    // par seconde pendant tout l'entracte, sur un boîtier TV modeste. La
-    // hauteur ne change qu'au changement de contenu : on la relit dix fois par
-    // seconde, ce qui est déjà généreux, et on ne s'anime pas du tout quand
-    // rien ne dépasse.
-    let max = el.scrollHeight - el.clientHeight;
-    let prochaineMesure = 0;
-    const step = (): void => {
-      const maintenant = performance.now();
-      if (maintenant >= prochaineMesure) {
-        prochaineMesure = maintenant + 100;
-        max = el.scrollHeight - el.clientHeight;
-      }
-      if (max > 2) {
-        if (pause > 0) {
-          pause -= 1;
-        } else {
-          acc += dir * 0.6;
-          if (acc >= max) {
-            acc = max;
-            dir = -1;
-            pause = 90;
-          } else if (acc <= 0) {
-            acc = 0;
-            dir = 1;
-            pause = 90;
-          }
-          el.scrollTop = acc;
-        }
-      }
-      raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-  return (
-    <div ref={ref} className={`overflow-hidden ${className ?? ''}`}>
-      {children}
-    </div>
-  );
-}
-
+// feat/tv-round-results — les deux classements défilent tout seuls quand ils
+// débordent (AutoScrollList, composant partagé avec TvScreenView).
 function ScreenRoundPodiumView({
   joinCode,
   cumulative,

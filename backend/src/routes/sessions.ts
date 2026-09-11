@@ -112,7 +112,7 @@ const createSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
   game_type: z.enum(['TRACKS', 'QUIZZ']).default('TRACKS'),
   mode: z.enum(['SOLO', 'TEAMS']).default('SOLO'),
-  teams_config: z.array(teamSchema).max(8).optional(),
+  teams_config: z.array(teamSchema).max(15).optional(),
   language: z.enum(['fr', 'en']).default('fr'),
   question_set_id: z.string().uuid().optional(),
   // Mode A vs B. Défaut B (false) = "tout le monde joue", c'est le défaut B2C.
@@ -762,7 +762,7 @@ router.get(
 const patchSchema = z.object({
   name: z.string().trim().min(1).max(120).nullable().optional(),
   mode: z.enum(['SOLO', 'TEAMS']).optional(),
-  teams_config: z.array(teamSchema).max(8).nullable().optional(),
+  teams_config: z.array(teamSchema).max(15).nullable().optional(),
   language: z.enum(['fr', 'en']).optional(),
   question_set_id: z.string().uuid().nullable().optional(),
 });

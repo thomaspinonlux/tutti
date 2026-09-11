@@ -25,6 +25,7 @@ import { ClassementDuTitre, classesNom } from '../../components/game/ClassementD
 import { useTimeElapsed, useTimeRemaining } from './MainScreenView.js';
 import type { MainScreenViewProps } from './MainScreenView.js';
 import { LyricsOverlay } from '../../components/screen/LyricsOverlay.js';
+import { AutoScrollList } from '../../components/screen/AutoScrollList.js';
 
 const CORAL = '#FF5C4D';
 const PANEL =
@@ -326,7 +327,13 @@ function DarkLeaderboard({
     }
     return m;
   }, [correctAnswers]);
-  const rows = cumulative.slice(0, compact ? 5 : 8);
+  // feat/classements-defilants-tv — TOUT LE MONDE EST DANS LA LISTE. On ne
+  // coupait qu'aux 5 (ou 8) premiers : avec quinze équipes ou trente joueurs,
+  // les autres ne voyaient jamais leur score. La liste défile toute seule
+  // quand elle déborde (AutoScrollList) ; `compact` ne joue plus que sur la
+  // densité.
+  void compact;
+  const rows = cumulative;
   return (
     <div className={`${PANEL} flex min-h-0 flex-1 flex-col p-6`}>
       <div className="mb-4 flex shrink-0 items-center gap-2.5">
@@ -342,7 +349,8 @@ function DarkLeaderboard({
           {t('host.noScoresYet')}
         </p>
       ) : (
-        <ul className="flex flex-col gap-2.5 overflow-y-auto">
+        <AutoScrollList className="min-h-0 flex-1">
+        <ul className="flex flex-col gap-2.5">
           {rows.map((entry, idx) => {
             const isLeader = idx === 0;
             const delta = deltaById.get(entry.id) ?? 0;
@@ -388,6 +396,7 @@ function DarkLeaderboard({
             );
           })}
         </ul>
+        </AutoScrollList>
       )}
     </div>
   );
@@ -635,16 +644,20 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
               La TV sortie par l iPad fait 1280 x 900 (journal natif). Classement
               du titre (6 lignes) + cumul (5 lignes) + QR depassaient 900 px : le
               bas etait coupe. Desormais : la colonne ne peut pas depasser
-              (min-h-0 + overflow-hidden), le classement du titre garde 4 lignes
-              (l ordre d arrivee qui compte), le QR garde sa place, et le cumul
-              prend ce qui reste avec son propre defilement. */}
+              (min-h-0 + overflow-hidden), le classement du titre est borne a 45 %
+              et defile, le QR garde sa place, et le cumul prend ce qui reste
+              avec son propre defilement (feat/classements-defilants-tv). */}
           <aside className="flex min-h-0 flex-col gap-4 overflow-hidden">
-            <div className="shrink-0">
+            {/* feat/classements-defilants-tv — le classement du titre prend au
+                plus 45 % de la colonne et défile s'il déborde ; le cumul prend
+                le reste et défile aussi. Chacun voit son score, quel que soit
+                le nombre de joueurs. */}
+            <div className="flex max-h-[45%] min-h-0 shrink-0 flex-col">
               <ClassementDuTitre
                 correctAnswers={correctAnswers}
                 cumulative={cumulative}
                 variante="sombre"
-                maxLignes={4}
+                defilement
               />
             </div>
             <div className="flex min-h-0 flex-1 flex-col">
@@ -714,12 +727,12 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
           </section>
           <aside className="flex min-h-0 flex-col gap-4 overflow-hidden">
             {correctAnswers.length > 0 && (
-              <div className="shrink-0">
+              <div className="flex max-h-[45%] min-h-0 shrink-0 flex-col">
                 <ClassementDuTitre
                   correctAnswers={correctAnswers}
                   cumulative={cumulative}
                   variante="sombre"
-                  maxLignes={4}
+                  defilement
                 />
               </div>
             )}

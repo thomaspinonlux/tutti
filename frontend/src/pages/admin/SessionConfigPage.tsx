@@ -25,8 +25,31 @@ import {
   Underline,
 } from '../../components/ui/index.js';
 
-const TEAM_COLORS = ['#ee6c2a', '#4a8b3f', '#c8336e', '#e8c547', '#6e3a6e', '#e89a64'] as const;
-const DEFAULT_TEAM_NAMES = ['Pinots', 'Basilics', 'Frambois', 'Citrons', 'Prunes', 'Pamplemousses'];
+// feat/quinze-equipes — 15 équipes maximum (demande de Thomas), 15 couleurs
+// distinctes pour que chaque pastille soit reconnaissable sur la TV.
+const MAX_EQUIPES = 15;
+const TEAM_COLORS = [
+  '#ee6c2a', // orange
+  '#4a8b3f', // vert
+  '#c8336e', // framboise
+  '#e8c547', // citron
+  '#6e3a6e', // prune
+  '#e89a64', // pamplemousse
+  '#2f7fc1', // bleu
+  '#1fb5a3', // turquoise
+  '#8b5a2b', // brun
+  '#d94a4a', // rouge
+  '#7b68ee', // violet
+  '#3cb371', // menthe
+  '#ff8fab', // rose
+  '#a0a0a0', // gris
+  '#f5f5dc', // crème
+] as const;
+const DEFAULT_TEAM_NAMES = [
+  'Pinots', 'Basilics', 'Frambois', 'Citrons', 'Prunes', 'Pamplemousses',
+  'Myrtilles', 'Menthes', 'Noisettes', 'Cerises', 'Lavandes', 'Kiwis',
+  'Pêches', 'Poivres', 'Vanilles',
+];
 
 function newTeam(idx: number): Team {
   return {
@@ -62,7 +85,7 @@ export function SessionConfigPage(): JSX.Element {
       .catch(() => setPlaylistName(null));
   }, [playlistId]);
 
-  const canAddTeam = teams.length < 6;
+  const canAddTeam = teams.length < MAX_EQUIPES;
   const canRemoveTeam = teams.length > 2;
 
   const updateTeam = (id: string, patch: Partial<Team>): void => {
@@ -200,7 +223,7 @@ export function SessionConfigPage(): JSX.Element {
               <p className="text-xs font-mono uppercase tracking-wider text-ink/70">
                 {t('sessionConfig.teams')}
               </p>
-              <span className="font-mono text-xs text-ink-soft">{teams.length}/6</span>
+              <span className="font-mono text-xs text-ink-soft">{teams.length}/{MAX_EQUIPES}</span>
             </div>
             <ul className="space-y-2 mb-3">
               {teams.map((team, idx) => (

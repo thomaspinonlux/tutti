@@ -12,7 +12,8 @@
  */
 
 import type { CorrectAnswerEntry, CumulativeScore } from '@tutti/shared';
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import { AutoScrollList } from '../screen/AutoScrollList.js';
 import { useTranslation } from 'react-i18next';
 
 export type VarianteClassement = 'sombre' | 'clair' | 'compact';
@@ -96,25 +97,37 @@ export function construireClassementTitre(
     });
 }
 
+/** Liste défilante sur TV, liste simple ailleurs. */
+function Conteneur({ defilement, children }: { defilement: boolean; children: ReactNode }): JSX.Element {
+  return defilement ? <AutoScrollList className="min-h-0 flex-1">{children}</AutoScrollList> : <>{children}</>;
+}
+
 export function ClassementDuTitre({
   correctAnswers,
   cumulative,
   variante,
   moiParticipantId,
   maxLignes,
+  defilement,
 }: {
   correctAnswers: CorrectAnswerEntry[];
   cumulative: CumulativeScore[];
   variante: VarianteClassement;
   moiParticipantId?: string | null;
   maxLignes?: number;
+  /**
+   * feat/classements-defilants-tv — TV : TOUTES les lignes, et la liste
+   * défile toute seule si elle déborde de la hauteur donnée par le parent
+   * (personne ne peut faire défiler une TV). `maxLignes` est ignoré.
+   */
+  defilement?: boolean;
 }): JSX.Element {
   const { t, i18n } = useTranslation();
   const lignes = useMemo(
     () => construireClassementTitre(correctAnswers, cumulative, moiParticipantId),
     [correctAnswers, cumulative, moiParticipantId],
   );
-  const visibles = maxLignes ? lignes.slice(0, maxLignes) : lignes;
+  const visibles = maxLignes && !defilement ? lignes.slice(0, maxLignes) : lignes;
 
   const sombre = variante === 'sombre';
   const compact = variante === 'compact';
@@ -130,11 +143,13 @@ export function ClassementDuTitre({
 
   return (
     <section
-      className={`${cadre} ${compact ? 'p-3' : 'p-5'} animate-slide-up`}
+      className={`${cadre} ${compact ? 'p-3' : 'p-5'} animate-slide-up ${
+        defilement ? 'flex min-h-0 flex-col overflow-hidden' : ''
+      }`}
       aria-live="polite"
       aria-label={t('screen.trackRankingTitle')}
     >
-      <div className={`mb-3 flex items-center gap-2.5 ${compact ? 'mb-2' : ''}`}>
+      <div className={`mb-3 flex shrink-0 items-center gap-2.5 ${compact ? 'mb-2' : ''}`}>
         <span aria-hidden className={compact ? 'text-base' : 'text-xl'}>
           🎯
         </span>
@@ -152,6 +167,7 @@ export function ClassementDuTitre({
           {t('screen.trackRankingEmpty')}
         </p>
       ) : (
+        <Conteneur defilement={!!defilement}>
         <ol className={`flex flex-col ${compact ? 'gap-1.5' : 'gap-2.5'}`}>
           {visibles.map((l) => {
             const premier = l.rang === 1;
@@ -232,6 +248,7 @@ export function ClassementDuTitre({
             );
           })}
         </ol>
+        </Conteneur>
       )}
     </section>
   );
