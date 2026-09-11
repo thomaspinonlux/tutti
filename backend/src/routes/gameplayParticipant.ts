@@ -753,6 +753,13 @@ interface CascadeMatchCommitArgs {
   participantPseudo: string;
   participantTeamId: string | null;
   transcript: string;
+  /**
+   * feat/double-ecoute — autres transcriptions DU MEME ENREGISTREMENT (autre
+   * langue de reconnaissance). Chaque moitie (artiste / titre) est prise au
+   * meilleur score sur l ensemble des transcriptions : ce sont les memes
+   * paroles, entendues deux fois.
+   */
+  transcriptsAlternatifs?: string[];
   /** Provenance ("web-speech", "deepgram", "whisper-fallback", "assemblyai") — log + DB. */
   source: string;
   /** Trace technique (Deepgram OK / fallback Whisper) — log only. */
@@ -832,7 +839,10 @@ async function runMatchAndCommit(
   // Une transcription vide ne doit jamais être évaluée : elle vient soit d'un
   // joueur qui n'a rien dit, soit d'une panne de reconnaissance. Dans les deux
   // cas, aucun point.
-  if (!args.transcript || args.transcript.trim() === '') {
+  const transcriptions = [args.transcript, ...(args.transcriptsAlternatifs ?? [])]
+    .map((t) => (typeof t === 'string' ? t.trim() : ''))
+    .filter((t) => t !== '');
+  if (transcriptions.length === 0) {
     return {
       matched: false,
       scored: false,
@@ -883,12 +893,20 @@ async function runMatchAndCommit(
   let meilleurTitre = 0;
   let meilleurArtiste = 0;
   let meilleurCombo = 0;
-  for (const title of titleCandidates) {
-    for (const artist of artistCandidates) {
-      const r = matchAnswer(args.transcript, { title, artist }, VOICE_MATCH_THRESHOLD);
-      if (r.scores.title_combined > meilleurTitre) meilleurTitre = r.scores.title_combined;
-      if (r.scores.artist_combined > meilleurArtiste) meilleurArtiste = r.scores.artist_combined;
-      if (r.scores.artist_title_combined > meilleurCombo) meilleurCombo = r.scores.artist_title_combined;
+  // feat/double-ecoute — Test du 11/09 09:52, Sia « Chandelier », six buzz
+  // d une syllabe : Deepgram (langue « multi ») a rendu « Ja. », « Hier. »,
+  // « Ja. », « » — deux fois « Sia. » seulement. Un mot court et isole est
+  // devine dans la mauvaise langue. Le meme enregistrement est desormais
+  // aussi transcrit dans la langue de la soiree ; chaque moitie prend son
+  // meilleur score sur l ensemble des transcriptions.
+  for (const transcript of transcriptions) {
+    for (const title of titleCandidates) {
+      for (const artist of artistCandidates) {
+        const r = matchAnswer(transcript, { title, artist }, VOICE_MATCH_THRESHOLD);
+        if (r.scores.title_combined > meilleurTitre) meilleurTitre = r.scores.title_combined;
+        if (r.scores.artist_combined > meilleurArtiste) meilleurArtiste = r.scores.artist_combined;
+        if (r.scores.artist_title_combined > meilleurCombo) meilleurCombo = r.scores.artist_title_combined;
+      }
     }
   }
   const titrePasse = meilleurTitre >= VOICE_MATCH_THRESHOLD;
@@ -920,7 +938,7 @@ async function runMatchAndCommit(
           session_id: args.sessionId,
           participant_id: args.participantId,
           track_id: track.id,
-          transcript: `[${args.source}] ${args.transcript.slice(0, 980)}`,
+          transcript: `[${args.source}] ${transcriptions.join(' | ').slice(0, 980)}`,
           // fix/artiste-seul-jamais-reconnu — les trois cibles sont distinctes :
           // 'title' → titre seul, 'artist' → artiste seul, 'artist_title' → les
           // deux. Auparavant matched_title etait vrai des que QUELQUE CHOSE
@@ -941,7 +959,7 @@ async function runMatchAndCommit(
   }
 
   console.info(
-    `[Voice] ${args.level} ${args.source}: "${args.transcript.slice(0, 80)}" score=${best.score}% target=${best.target} threshold=${VOICE_MATCH_THRESHOLD}`,
+    `[Voice] ${args.level} ${args.source}: ${transcriptions.map((t) => `"${t.slice(0, 80)}"`).join(' | ')} score=${best.score}% target=${best.target} threshold=${VOICE_MATCH_THRESHOLD}`,
   );
 
   if (best.score < VOICE_MATCH_THRESHOLD) {
@@ -1294,6 +1312,8 @@ router.post(
     }
 
     let transcript = '';
+    /** feat/double-ecoute — transcription du meme audio dans la langue de la soiree. */
+    let transcriptLangueSoiree = '';
     let level: 'L2' | 'L3-fallback' = 'L2';
     let source = 'deepgram';
     /**
@@ -1306,13 +1326,36 @@ router.post(
 
     // Tente Deepgram (Nova-3).
     try {
-      const dgRes = await transcribeWithDeepgram({
+      // feat/double-ecoute — DEUX ECOUTES EN PARALLELE, MEME AUDIO.
+      // « multi » (FR+EN melanges, pour les titres anglais) ET la langue de la
+      // soiree. Sur un mot court et isole (« Sia »), « multi » devinait une
+      // autre langue (« Ja. », « Hier. ») ; la seconde ecoute donne une
+      // deuxieme chance sans attendre (appels simultanes, ~0,4 s). La
+      // seconde ecoute ne fait jamais echouer la premiere.
+      const ecouteMulti = transcribeWithDeepgram({
         audio: audioFile.buffer,
         contentType: audioFile.mimetype || 'audio/webm',
         language: dgLang,
         keyterms,
       });
+      const ecouteSoiree =
+        sessionLang && sessionLang !== dgLang
+          ? transcribeWithDeepgram({
+              audio: audioFile.buffer,
+              contentType: audioFile.mimetype || 'audio/webm',
+              language: sessionLang,
+              keyterms,
+            }).catch((err: unknown) => {
+              console.warn(
+                `[voice-cascade] Deepgram (${sessionLang}) en echec — on garde l ecoute « ${dgLang} » seule :`,
+                err instanceof Error ? err.message : err,
+              );
+              return null;
+            })
+          : Promise.resolve(null);
+      const [dgRes, dgSoiree] = await Promise.all([ecouteMulti, ecouteSoiree]);
       transcript = dgRes.text;
+      transcriptLangueSoiree = dgSoiree?.text ?? '';
     } catch (err: unknown) {
       if (err instanceof DeepgramError) {
         console.warn('[voice-cascade] Deepgram error → Whisper fallback:', err.code, err.message);
@@ -1352,6 +1395,7 @@ router.post(
       participantPseudo: participant.pseudo,
       participantTeamId: participant.team_id,
       transcript,
+      transcriptsAlternatifs: transcriptLangueSoiree ? [transcriptLangueSoiree] : [],
       source,
       level,
       // L2 toujours persiste (un upload audio = événement significatif).
