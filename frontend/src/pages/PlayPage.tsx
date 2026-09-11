@@ -1358,7 +1358,16 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
   /** Minuteur de fin d'enregistrement, annulable. */
   const autoStopRef = useRef<number | null>(null);
 
-  // Reset le state d'enregistrement à chaque nouveau track.
+  // Reset le state d'enregistrement à chaque nouveau track — ET à chaque
+  // « Recommencer » du même track.
+  //
+  // fix/rejouer-apres-recommencer — Test du 11/09 09:40 : le joueur avait
+  // trouvé (écran « résultat »), l'animateur a appuyé sur Recommencer, et le
+  // téléphone est resté bloqué : aucun buzz n'est parti (rien côté serveur).
+  // Cet effet ne se déclenchait que sur un changement de `track_id` ; un
+  // Recommencer garde le même morceau, seul `started_at` change. L'état
+  // « résultat » restait donc en place et le buzzer restait désactivé
+  // (`recState.kind !== 'idle'`). On écoute aussi `started_at`.
   useEffect(() => {
     // fix/micro-qui-fuit — ON ANNULE VRAIMENT LA CAPTURE EN COURS.
     // Passer l'état à « repos » ne fermait ni le micro, ni l'analyseur audio,
@@ -1377,7 +1386,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     setError(null);
     setBuzzCooldownUntil(0);
     setFailToast(null);
-  }, [currentTrack?.track_id]);
+  }, [currentTrack?.track_id, currentTrack?.started_at]);
 
   // Démontage (fin de partie, fermeture) : on relâche tout.
   useEffect(() => {

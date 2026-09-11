@@ -733,6 +733,26 @@ export async function restartCurrentTrackAndBroadcast(
     });
     broadcastToSession(sessionId, 'session:resumed', { session_id: sessionId });
   }
+  // fix/rejouer-apres-recommencer — LES POINTS DE LA TENTATIVE ANNULEE
+  // SONT RETIRES. « Recommencer » remet le morceau a zero pour tout le monde :
+  // les joueurs peuvent rebuzzer (l etat serveur est vide), mais sans ceci
+  // les points deja gagnes sur ce titre restaient en base et un joueur qui
+  // retrouvait la reponse etait paye deux fois pour le meme titre. On efface
+  // les evenements de score de CE titre (jamais les ajustements manuels de
+  // l animateur), puis on demande aux ecrans de recharger le cumul.
+  const supprimes = await prisma.scoreEvent.deleteMany({
+    where: {
+      session_round_id: round.id,
+      round_index: round.current_track_index,
+      type: { in: ['ARTIST_FOUND', 'TITLE_BONUS', 'SPEED_BONUS', 'CORRECT_ANSWER', 'MVP_BONUS'] },
+    },
+  });
+  if (supprimes.count > 0) {
+    console.info(
+      `[gameplayCore] Recommencer : ${supprimes.count} evenement(s) de score retire(s) sur le titre ${round.current_track_index} (manche=${round.id})`,
+    );
+    broadcastToSession(sessionId, 'scores:invalidated', {});
+  }
   // Le track courant = round.current_track_index
   return buildAndBroadcastTrack(sessionId, round, round.current_track_index);
 }
