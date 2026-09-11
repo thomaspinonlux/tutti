@@ -48,6 +48,7 @@ import {
 } from '../lib/library.js';
 import { buildThemeSections, flattenThemes } from '../lib/officialThemes.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
+import { classesNom } from '../components/game/ClassementDuTitre.js';
 
 // fix/tv-1s-poll — 1 s en partie : l'écran ne peut jamais avoir plus d'une
 // seconde de retard sur le serveur, même si le canal temps réel est mort.
@@ -664,7 +665,7 @@ function ScreenLobbyView({
                   >
                     {p.pseudo.charAt(0).toUpperCase()}
                   </span>
-                  <span className="truncate">{p.pseudo}</span>
+                  <span className="break-words line-clamp-2">{p.pseudo}</span>
                 </li>
               ))}
             </ul>
@@ -1136,7 +1137,7 @@ function ScreenRoundPodiumView({
                           <span className="font-mono text-2xl text-[#B8B8C4]">{idx + 1}</span>
                         )}
                       </span>
-                      <span className="font-display text-4xl lg:text-5xl flex-1 truncate text-white">
+                      <span className={`font-display flex-1 text-white ${classesNom(e.pseudo, 'podium')}`}>
                         {e.pseudo}
                       </span>
                       <span className="font-mono text-4xl lg:text-5xl font-bold tabular-nums text-white">
@@ -1190,7 +1191,7 @@ function ScreenRoundPodiumView({
                       }}
                     >
                       <span className="font-mono text-xl w-10 text-[#B8B8C4]">{idx + 1}.</span>
-                      <span className="font-display text-3xl lg:text-4xl flex-1 truncate text-white">
+                      <span className={`font-display flex-1 text-white ${classesNom(e.label, 'podium')}`}>
                         {e.label}
                       </span>
                       <span className="font-mono text-3xl lg:text-4xl font-bold tabular-nums text-white">
@@ -1253,7 +1254,7 @@ function ScreenFinalPodiumView({
                 <span aria-hidden className="text-4xl">
                   {['🥇', '🥈', '🥉'][idx]}
                 </span>
-                <span className="font-display text-3xl lg:text-4xl flex-1 truncate text-white">
+                <span className={`font-display flex-1 text-white ${classesNom(entry!.label, 'podium')}`}>
                   {entry!.label}
                 </span>
                 <span className="font-mono text-2xl font-bold tabular-nums text-white">
@@ -1270,7 +1271,7 @@ function ScreenFinalPodiumView({
                       className="flex items-center gap-3 font-mono text-sm text-[#B8B8C4]"
                     >
                       <span className="w-6 text-right">{idx + 4}.</span>
-                      <span className="flex-1 truncate">{entry.label}</span>
+                      <span className="flex-1 break-words line-clamp-2">{entry.label}</span>
                       <span className="tabular-nums">{entry.total_points}</span>
                     </li>
                   ))}

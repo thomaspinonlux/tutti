@@ -21,7 +21,7 @@ import type {
   SessionRoundWithPlaylist,
 } from '@tutti/shared';
 import { QRCode } from '../../components/host/QRCode.js';
-import { ClassementDuTitre } from '../../components/game/ClassementDuTitre.js';
+import { ClassementDuTitre, classesNom } from '../../components/game/ClassementDuTitre.js';
 import { useTimeElapsed, useTimeRemaining } from './MainScreenView.js';
 import type { MainScreenViewProps } from './MainScreenView.js';
 import { LyricsOverlay } from '../../components/screen/LyricsOverlay.js';
@@ -370,9 +370,7 @@ function DarkLeaderboard({
                       style={{ backgroundColor: entry.color }}
                     />
                   )}
-                  <span
-                    className={`truncate font-bold text-white ${isLeader ? 'text-2xl lg:text-3xl' : 'text-lg lg:text-2xl'}`}
-                  >
+                  <span className={`font-bold text-white ${classesNom(entry.label, 'liste')}`}>
                     {entry.label}
                   </span>
                 </div>
@@ -607,8 +605,18 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
                   {songTitle}
                 </p>
               )}
+              {/* fix/noms-longs-coupes — meme regle que le titre : un nom
+                  d artiste long descend en corps et passe a la ligne, il n est
+                  jamais coupe. « Christina Aguilera, Lil' Kim, Mya & Pink »
+                  tenait sur une ligne en 4xl et sortait du cadre. */}
               <p
-                className="tv-rise mt-4 break-words font-editorial text-3xl font-semibold italic lg:text-4xl"
+                className={`tv-rise mt-4 break-words font-editorial font-semibold italic ${
+                  artist.length <= 18
+                    ? 'text-3xl lg:text-4xl'
+                    : artist.length <= 32
+                      ? 'text-2xl lg:text-3xl'
+                      : 'text-xl lg:text-2xl'
+                }`}
                 style={{ color: CORAL, animationDelay: '110ms', textWrap: 'balance' }}
               >
                 {artist}

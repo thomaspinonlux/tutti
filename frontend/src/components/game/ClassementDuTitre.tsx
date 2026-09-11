@@ -17,6 +17,30 @@ import { useTranslation } from 'react-i18next';
 
 export type VarianteClassement = 'sombre' | 'clair' | 'compact';
 
+/**
+ * fix/noms-longs-coupes — LA REGLE POUR UN NOM LONG : IL RETRECIT, PUIS IL
+ * PASSE A LA LIGNE. JAMAIS COUPE.
+ *
+ * Partout sur la TV (classement, podium, classement du titre), les pseudos et
+ * noms d equipe etaient en `truncate` : « Les Bretons du fond de la salle »
+ * devenait « Les Bretons du fon… ». Depuis une table, impossible de savoir
+ * qui est premier. Regle unique, appliquee a tous les ecrans :
+ *   - jusqu a 14 caracteres : taille pleine ;
+ *   - jusqu a 24 : un cran en dessous ;
+ *   - au-dela : deux crans en dessous ;
+ *   - et dans tous les cas, retour a la ligne autorise, 2 lignes maximum.
+ * `grand` = taille pleine sur les ecrans ou le nom est l element principal.
+ */
+export function classesNom(nom: string, grand: 'podium' | 'liste' | 'compact' = 'liste'): string {
+  const n = (nom ?? '').length;
+  const tailles = {
+    podium: n <= 14 ? 'text-4xl lg:text-5xl' : n <= 24 ? 'text-3xl lg:text-4xl' : 'text-2xl lg:text-3xl',
+    liste: n <= 14 ? 'text-2xl lg:text-3xl' : n <= 24 ? 'text-xl lg:text-2xl' : 'text-lg lg:text-xl',
+    compact: n <= 14 ? 'text-base' : n <= 24 ? 'text-sm' : 'text-xs',
+  }[grand];
+  return `${tailles} break-words line-clamp-2 leading-tight`;
+}
+
 const CORAL = '#FF5C4D';
 
 /** 1 → « 1ᵉʳ », 2 → « 2ᵉ »… (ordinal court, lisible de loin). */
@@ -171,9 +195,7 @@ export function ClassementDuTitre({
                       />
                     )}
                     <span
-                      className={`truncate font-bold ${couleurTexte} ${
-                        compact ? 'text-base' : premier ? 'text-2xl lg:text-3xl' : 'text-xl lg:text-2xl'
-                      }`}
+                      className={`font-bold ${couleurTexte} ${classesNom(l.pseudo, compact ? 'compact' : 'liste')}`}
                     >
                       {l.pseudo}
                     </span>

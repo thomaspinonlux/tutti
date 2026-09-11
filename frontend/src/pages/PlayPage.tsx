@@ -105,6 +105,7 @@ import {
 import { PlayQuizzView } from '../components/play/quizz/PlayQuizzView.js';
 import { VinylBuzzer } from '../components/play/VinylBuzzer.js';
 import { ClassementDuTitre } from '../components/game/ClassementDuTitre.js';
+import { remoteLog } from '../lib/remoteLog.js';
 
 type Step =
   | 'pseudo'
@@ -1449,6 +1450,11 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       // re-init en transparence avant de démarrer la capture.
       if (!mic.isLive()) {
         console.warn('[Voice] Mic stream not live — reinit before capture');
+        // diag/telephones-en-difficulte — jusqu ici ces evenements ne
+        // quittaient jamais le telephone : le soir du 10/09, impossible de
+        // dire pourquoi certains appareils « n arrivaient pas a buzzer ».
+        // Chaque reprise du micro part au journal serveur, avec l appareil.
+        remoteLog('micro', 'micro inutilisable avant le buzz — reprise', { pseudo: identity.pseudo }, 'warn');
         await mic.reinit();
       }
       const persistentStream = mic.getStream();
@@ -1497,6 +1503,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       console.warn(
         `[Voice] Buzz refused | code=${code} | message=${err instanceof Error ? err.message : String(err)}`,
       );
+      remoteLog('buzz', 'buzz refuse', { pseudo: identity?.pseudo, code, message: err instanceof Error ? err.message : String(err) }, 'warn');
       setError(translateBuzzRefusalReason(code, t));
       // fix/deuxieme-appui-qui-casse-le-premier — ON N'ÉCRASE QUE SON PROPRE
       // ÉTAT. Ce retour à l'état de repos était inconditionnel : quand le
@@ -1614,6 +1621,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
       );
     } catch (err: unknown) {
       console.error('[Voice] Capture stop failed:', err);
+      remoteLog('micro', 'capture echouee', { pseudo: identity.pseudo, erreur: err instanceof Error ? err.message : String(err) }, 'error');
       setError(err instanceof Error ? err.message : 'Capture échouée');
       setRecState({ kind: 'idle' });
       webSpeech.cancel();
@@ -1631,6 +1639,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     // pour les clients qui n auraient pas cette version.
     if (blob.size < 1024) {
       console.warn(`[Voice] enregistrement vide (${blob.size} o) — rien envoye`);
+      remoteLog('micro', 'enregistrement vide', { pseudo: identity.pseudo, octets: blob.size, mime: capture.mimeType }, 'warn');
       setRecState({ kind: 'idle' });
       setFailToast(t('play.nothingHeard'));
       webSpeech.cancel();
