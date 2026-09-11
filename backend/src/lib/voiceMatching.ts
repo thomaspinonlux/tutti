@@ -92,6 +92,17 @@ export function normalizeText(text: string): string {
     .replace(/\p{Diacritic}/gu, '')
     // Apostrophes : remplace les variantes typographiques par '
     .replace(/[‘’ʼ]/g, "'")
+    // fix/elision-collee — « L'Aventurier » devenait « aventurier » (le l'
+    // etait jete comme mot outil) alors que la transcription arrive souvent
+    // COLLEE : « laventurier » -> 55 %, refuse ; « l'aventurier » -> 100 %.
+    // Meme titre, deux resultats selon l humeur du transcripteur. On soude
+    // l elision des DEUX cotes : l'aventurier, laventurier et l aventurier
+    // donnent tous « laventurier ». Touche tous les titres francais en L',
+    // C', J', D', N', S', T', M', QU'.
+    .replace(/\b(qu|[lcdjnstm])'(?=\p{L})/gu, '$1')
+    // ... et l elision transcrite avec un ESPACE (« l aventurier », « c est
+    // bon ») : meme soudure, sinon le « l » isole partait en mot outil.
+    .replace(/\b(qu|[lcdjnstm]) (?=[aeiouyh]\p{L})/gu, '$1')
     // Retire toute ponctuation sauf l'apostrophe (gardée pour "l'" "d'").
     .replace(/[^\p{L}\p{N}\s']/gu, ' ')
     // Collapse multiple whitespace.

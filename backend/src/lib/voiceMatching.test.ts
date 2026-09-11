@@ -37,9 +37,17 @@ describe('normalizeText', () => {
     assert.equal(normalizeText('The Beatles'), 'beatles');
   });
 
-  it('gère apostrophes typographiques (l’ d’)', () => {
-    assert.equal(normalizeText("L'été indien"), 'ete indien');
-    assert.equal(normalizeText('l’ami'), 'ami');
+  // fix/elision-collee — l elision est SOUDEE au mot, plus jetee. Avant,
+  // « L'été indien » donnait « ete indien » mais la transcription collee
+  // « lété indien » donnait « lete indien » : 55 %, refuse. Les trois
+  // graphies convergent desormais.
+  it('soude l elision quelle que soit sa graphie (l’ l\' l␣ collé)', () => {
+    assert.equal(normalizeText("L'été indien"), 'lete indien');
+    assert.equal(normalizeText('l’été indien'), 'lete indien');
+    assert.equal(normalizeText('l été indien'), 'lete indien');
+    assert.equal(normalizeText('lété indien'), 'lete indien');
+    assert.equal(normalizeText("c'est bon"), 'cest bon');
+    assert.equal(normalizeText('c est bon'), 'cest bon');
   });
 
   it('chaîne vide → vide', () => {
