@@ -20,6 +20,7 @@ import { requireWorkspace } from '../middleware/tenant.js';
 import { broadcastToSession } from '../socket/index.js';
 import { prisma } from '../lib/prisma.js';
 import { restartActiveTrack } from '../lib/gameState.js';
+import { cancelPhase2Timer } from './gameplayParticipant.js';
 import {
   advanceToNextOrEndRound,
   buildAndBroadcastTrack,
@@ -266,6 +267,13 @@ router.post(
     // Reset gameState + re-broadcast track:start (single source of truth).
     // Les clients voient un nouveau started_at → useSpotifyAudioSync seek(0)
     // ou play depuis URI inchangé. Plus d'event séparé track:restart.
+    // fix/reponse-revelee-apres-recommencer — LE MINUTEUR DE PHASE 2 EST
+    // ANNULÉ. Armé au premier buzz juste, il bascule le morceau en phase 3
+    // (réponse publique, plus de bouton « Donner la réponse ») 10 s plus
+    // tard. Sa garde ne compare que l'index du morceau : après un
+    // « Recommencer », l'index est le même, le minuteur de l'ancienne
+    // tentative révélait donc la réponse du morceau relancé.
+    cancelPhase2Timer(req.params.roundId);
     restartActiveTrack(req.params.roundId);
     const state = await restartCurrentTrackAndBroadcast(req.params.id, round);
     res.json({ ok: true, state });

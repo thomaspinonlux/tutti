@@ -36,6 +36,7 @@ import { requireMasterParticipant } from '../middleware/master.js';
 import { prendreVerrouLancement, libererVerrouLancement } from '../lib/verrouLancement.js';
 import { broadcastToSession } from '../socket/index.js';
 import { clearActiveTrack, getActiveTrack, restartActiveTrack } from '../lib/gameState.js';
+import { cancelPhase2Timer } from './gameplayParticipant.js';
 import {
   clearActiveQuestion,
   getActiveQuestion,
@@ -658,6 +659,8 @@ router.post(
       return;
     }
     // Reset gameState + re-broadcast track:start (cf. gameplay.ts).
+    // fix/reponse-revelee-apres-recommencer — cf. gameplay.ts /restart-track.
+    cancelPhase2Timer(parsed.data.round_id);
     restartActiveTrack(parsed.data.round_id);
     const state = await restartCurrentTrackAndBroadcast(req.params.id, round);
     // ANTI-TRICHE — caviarde pour un master ANIMATOR_PLAYING.

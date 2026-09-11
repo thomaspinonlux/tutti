@@ -405,23 +405,28 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                     }
                 } else {
                     // Chemin normal : jamais bloqué en six soirées de journaux.
-                    if await self.fileContient(catalogId) {
-                        TuttiJournal.shared.note("musickit", "déjà dans la file — pas de copie supplémentaire", ["id": catalogId])
-                    } else {
-                        let j2 = TuttiJournal.shared.debut("musickit", "play.insert")
-                        let insere = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                            try await self.surLePrincipal { try await self.player.queue.insert(song, position: .afterCurrentEntry) }
-                            return true
-                        }
-                        TuttiJournal.shared.fin("musickit", j2, ["insere": insere == true])
+                    //
+                    // fix/recommencer-rejoue-un-autre-titre — LE MÊME MORCEAU
+                    // NE SE SAUTE PAS. Journal du 11/09 07:23 (build 57) :
+                    //     ▶ play {id:1521807334}   ← « Recommencer » sur le titre EN COURS
+                    //       déjà dans la file — pas de copie supplémentaire
+                    //     ▶ play.skip              ← skipToNextEntry() sur… l'entrée suivante
+                    //     relance 1/3 — le lecteur annonce encore l'ancien titre
+                    //       {attendu:1521807334, joue:1614631245}
+                    // « Déjà dans la file » couvrait DEUX cas très différents :
+                    // le morceau est l'ENTRÉE COURANTE (Recommencer) — sauter
+                    // l'envoie sur l'entrée d'après, c.-à-d. un autre titre de
+                    // la soirée ; ou il est plus loin dans la file — sauter
+                    // d'UNE entrée ne l'atteint pas non plus. Le seul cas où le
+                    // saut est juste : le morceau est l'entrée SUIVANTE.
+                    // Décision désormais prise sur la position réelle
+                    // (cf. lancerSurFileVivante).
+                    let j3 = TuttiJournal.shared.debut("musickit", "play.lancer")
+                    let chemin: String? = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                        try await self.lancerSurFileVivante(song, catalogId)
                     }
-                    let j3 = TuttiJournal.shared.debut("musickit", "play.skip")
-                    demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                        try await self.surLePrincipal { try await self.player.skipToNextEntry() }
-                        try await self.surLePrincipal { try await self.player.play() }
-                        return true
-                    }
-                    TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true])
+                    demarre = chemin != nil
+                    TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true, "chemin": chemin ?? "delai-depasse"])
                 }
                 guard demarre == true else {
                     // Apple n'a pas démarré dans le délai : on le DIT au lieu de
@@ -878,6 +883,44 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         }) ?? ""
     }
 
+    /// Identifiant catalogue de l'entrée qui SUIT l'entrée courante ("" si aucune).
+    private func idEntreeSuivante() async -> String {
+        (try? await surLePrincipal {
+            let entrees = self.player.queue.entries
+            guard let courante = self.player.queue.currentEntry,
+                  let index = entrees.firstIndex(where: { $0.id == courante.id }),
+                  index + 1 < entrees.count,
+                  let item = entrees[index + 1].item,
+                  case let .song(song) = item else { return "" }
+            return song.id.rawValue
+        }) ?? ""
+    }
+
+    /// Démarre `catalogId` sur un lecteur qui a déjà une file, en fonction de
+    /// la POSITION RÉELLE du morceau (fix/recommencer-rejoue-un-autre-titre) :
+    ///   - entrée courante  → retour au début + play, AUCUN saut
+    ///     (bouton « Recommencer », relances de la console) ;
+    ///   - entrée suivante  → saut d'une entrée + play ;
+    ///   - ailleurs/absent  → insertion après la courante + saut + play.
+    /// Renvoie le chemin pris, pour le journal.
+    private func lancerSurFileVivante(_ song: Song, _ catalogId: String) async throws -> String {
+        let courant = await idEntreeCourante()
+        if courant == catalogId {
+            try await surLePrincipal { self.player.playbackTime = 0 }
+            try await surLePrincipal { try await self.player.play() }
+            return "meme-morceau-retour-au-debut"
+        }
+        if await idEntreeSuivante() == catalogId {
+            try await surLePrincipal { try await self.player.skipToNextEntry() }
+            try await surLePrincipal { try await self.player.play() }
+            return "suivant-saut"
+        }
+        try await surLePrincipal { try await self.player.queue.insert(song, position: .afterCurrentEntry) }
+        try await surLePrincipal { try await self.player.skipToNextEntry() }
+        try await surLePrincipal { try await self.player.play() }
+        return "insert-saut"
+    }
+
     /// Vrai si la file contient déjà ce morceau (entrée courante comprise).
     private func fileContient(_ catalogId: String) async -> Bool {
         (try? await surLePrincipal {
@@ -926,11 +969,8 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 try await self.surLePrincipal { self.player.queue = [song] }
                 try await self.surLePrincipal { try await self.player.play() }
             } else {
-                if !(await self.fileContient(catalogId)) {
-                    try await self.surLePrincipal { try await self.player.queue.insert(song, position: .afterCurrentEntry) }
-                }
-                try await self.surLePrincipal { try await self.player.skipToNextEntry() }
-                try await self.surLePrincipal { try await self.player.play() }
+                // Même décision que play (cf. fix/recommencer-rejoue-un-autre-titre).
+                _ = try await self.lancerSurFileVivante(song, catalogId)
             }
             return true
         }
