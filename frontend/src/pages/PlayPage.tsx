@@ -93,7 +93,7 @@ import {
   MasterAdjustPointsSheet,
   type ParticipantOption,
 } from '../components/play/MasterAdjustPointsSheet.js';
-import { MultiColorBar } from '../components/ui/index.js';
+
 import { PlayQuizzView } from '../components/play/quizz/PlayQuizzView.js';
 import { VinylBuzzer } from '../components/play/VinylBuzzer.js';
 import { ClassementDuTitre } from '../components/game/ClassementDuTitre.js';
@@ -831,7 +831,14 @@ export function PlayPage(): JSX.Element {
   return (
     // feat/telephone-au-style-tv — fond sombre de la TV sur tout le parcours.
     <div className="min-h-screen flex flex-col bg-[#0B0B0F] text-white">
-      <MultiColorBar height="md" />
+      {/* feat/telephone-au-style-tv — la barre cinq couleurs etait le dernier
+          reste de la charte claire sur l ecran joueur. La TV n en a pas : un
+          lisere corail suffit a signer l ecran. */}
+      <div
+        aria-hidden
+        className="h-px w-full shrink-0"
+        style={{ background: `linear-gradient(90deg, transparent, ${TEL_CORAIL}, transparent)` }}
+      />
       {/* fix/prevent-safari-reader-mode — role="application" évite que Safari
           détecte la page joueur (peu de texte structuré) comme article éditorial
           et propose son mode Lecteur (casserait micro + buzz + animations). */}
@@ -1251,7 +1258,14 @@ export function PlayPage(): JSX.Element {
         ))}
       </div>
 
-      <MultiColorBar height="md" />
+      {/* feat/telephone-au-style-tv — la barre cinq couleurs etait le dernier
+          reste de la charte claire sur l ecran joueur. La TV n en a pas : un
+          lisere corail suffit a signer l ecran. */}
+      <div
+        aria-hidden
+        className="h-px w-full shrink-0"
+        style={{ background: `linear-gradient(90deg, transparent, ${TEL_CORAIL}, transparent)` }}
+      />
     </div>
   );
 }
