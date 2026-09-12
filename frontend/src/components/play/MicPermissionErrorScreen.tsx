@@ -4,8 +4,12 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Button, Card, TitleHandwritten, Underline } from '../ui/index.js';
 import { detectPlatform, type Platform } from '../../lib/onboarding.js';
+
+// feat/telephone-au-style-tv — l'écran joueur a pris les codes de la TV.
+const CORAIL = '#FF5C4D';
+const PANNEAU =
+  'rounded-[20px] bg-[#191922] border border-white/[0.07] shadow-[0_18px_50px_rgba(0,0,0,0.5)]';
 
 interface Props {
   onRetry: () => void | Promise<void>;
@@ -23,31 +27,40 @@ export function MicPermissionErrorScreen({ onRetry, busy }: Props): JSX.Element 
         : t('onboarding.micErrorOther');
 
   return (
-    <Card size="lg" tone="raspberry">
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-raspberry-deep mb-2 text-center">
+    <div className={`${PANNEAU} p-6`}>
+      <p
+        className="mb-2 text-center font-mono text-xs uppercase tracking-[0.24em]"
+        style={{ color: CORAIL }}
+      >
         {t('onboarding.micErrorEyebrow')}
       </p>
-      <TitleHandwritten as="h2" className="text-center mb-3">
-        <Underline>{t('onboarding.micErrorTitle')}</Underline>
-      </TitleHandwritten>
-      <p className="font-editorial italic text-ink-2 text-center mb-5">
+      <h2 className="mb-3 text-center font-display text-2xl leading-tight text-white">
+        {t('onboarding.micErrorTitle')}
+      </h2>
+      <p className="mb-5 text-center font-editorial italic text-white/60">
         {t('onboarding.micErrorBody')}
       </p>
 
-      <div className="border-2 border-ink rounded-lg bg-white p-4 mb-5">
-        <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-2">
+      <div className="mb-5 rounded-2xl border border-white/12 bg-white/[0.05] p-4">
+        <p className="mb-2 font-mono text-xs uppercase tracking-wider text-white/50">
           {platform === 'ios'
             ? 'iOS Safari'
             : platform === 'android'
               ? 'Chrome Android'
               : t('onboarding.micErrorOtherLabel')}
         </p>
-        <p className="text-sm text-ink-2 whitespace-pre-line">{instructions}</p>
+        <p className="whitespace-pre-line text-sm text-white/75">{instructions}</p>
       </div>
 
-      <Button size="lg" className="w-full" onClick={() => void onRetry()} disabled={busy}>
+      <button
+        type="button"
+        className="w-full rounded-2xl px-4 py-3 font-bold text-[#0B0B0F] transition-transform active:scale-[0.98] disabled:opacity-40"
+        style={{ backgroundColor: CORAIL }}
+        onClick={() => void onRetry()}
+        disabled={busy}
+      >
         {busy ? t('onboarding.requesting') : t('onboarding.micErrorRetry')}
-      </Button>
-    </Card>
+      </button>
+    </div>
   );
 }

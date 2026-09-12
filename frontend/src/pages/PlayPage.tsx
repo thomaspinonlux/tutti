@@ -12,7 +12,7 @@
  *   6. ended
  */
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useNouvelleVersion } from '../lib/useNouvelleVersion.js';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -133,11 +133,9 @@ export function PlayPage(): JSX.Element {
   const [view, setView] = useState<PublicSessionView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('pseudo');
-  // feat/telephone-au-style-tv — le fond sombre ne couvre pour l instant que
-  // l ecran de JEU. L accueil, la salle d attente et l ecran de fin sont
-  // encore en charte claire : les passer en sombre sans les convertir
-  // donnerait du texte encre sur fond noir.
-  useFondJoueurSombre(step === 'playing');
+  // feat/telephone-au-style-tv — tout l ecran joueur est sombre : accueil,
+  // salle d attente, jeu, fin de partie.
+  useFondJoueurSombre();
   const [pseudo, setPseudo] = useState('');
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -839,8 +837,8 @@ export function PlayPage(): JSX.Element {
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    // feat/telephone-au-style-tv — fond sombre de la TV sur l ecran de jeu.
-    <div className={`min-h-screen flex flex-col ${step === 'playing' ? 'bg-[#0B0B0F] text-white' : ''}`}>
+    // feat/telephone-au-style-tv — fond sombre de la TV sur tout le parcours.
+    <div className="min-h-screen flex flex-col bg-[#0B0B0F] text-white">
       <MultiColorBar height="md" />
       {/* fix/prevent-safari-reader-mode — role="application" évite que Safari
           détecte la page joueur (peu de texte structuré) comme article éditorial
@@ -852,67 +850,74 @@ export function PlayPage(): JSX.Element {
               {identity && <ConnectionIndicator socket={socket} />}
             </div>
             <div className="text-center">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-1">
+              <p
+                className="mb-1 font-mono text-xs uppercase tracking-[0.28em]"
+                style={{ color: TEL_CORAIL }}
+              >
                 {t('common.brand')}
               </p>
-              <TitleHandwritten as="h1" className="text-3xl">
-                {/* Pivot B2C — backend renvoie session.name (custom) ou "Tutti"
-                    par défaut, jamais le nom d'établissement. */}
-                <Underline>{view?.establishment_name ?? t('common.brand')}</Underline>
-              </TitleHandwritten>
-              <p className="font-mono text-xs tracking-[0.2em] text-ink-soft mt-2">{shortCode}</p>
+              {/* Pivot B2C — backend renvoie session.name (custom) ou "Tutti"
+                  par défaut, jamais le nom d'établissement. */}
+              <h1 className="font-display text-3xl leading-tight text-white">
+                {view?.establishment_name ?? t('common.brand')}
+              </h1>
+              <p className="mt-2 font-mono text-xs tracking-[0.3em] text-white/45">{shortCode}</p>
               {currentRound && (
-                <Badge tone="spritz" tilt={-1} className="mt-2">
+                <span className="mt-2 inline-block rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-white/70">
                   {t('play.roundBadge', {
                     n: currentRound.position,
                     name: currentRound.playlist.name,
                   })}
-                </Badge>
+                </span>
               )}
             </div>
           </header>
 
           {error && (
-            <Card tone="raspberry" size="sm" className="mb-4">
-              <p role="alert" className="text-sm font-medium text-raspberry-deep">
+            <div
+              className="mb-4 rounded-2xl border px-4 py-3"
+              style={{ backgroundColor: `${TEL_CORAIL}1a`, borderColor: `${TEL_CORAIL}55` }}
+            >
+              <p role="alert" className="text-sm font-medium" style={{ color: TEL_CORAIL }}>
                 {error}
               </p>
-            </Card>
+            </div>
           )}
 
           {step === 'pseudo' && view?.status !== 'ENDED' && (
-            <Card size="md">
+            <PanneauJoueur>
               <form onSubmit={handlePseudoSubmit} className="space-y-4">
-                <p className="font-editorial italic text-ink-2 text-center mb-2">
+                <p className="mb-2 text-center font-editorial italic text-white/60">
                   {t('play.pseudoTagline')}
                 </p>
-                <Input
-                  label={t('play.pseudoLabel')}
-                  value={pseudo}
-                  onChange={(e) => setPseudo(e.target.value)}
-                  placeholder={t('play.pseudoPlaceholder')}
-                  required
-                  minLength={1}
-                  maxLength={40}
-                  autoFocus
-                />
-                <Button
-                  type="submit"
-                  disabled={submitting || !pseudo.trim()}
-                  size="lg"
-                  className="w-full"
-                >
+                <label className="block">
+                  <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.22em] text-white/55">
+                    {t('play.pseudoLabel')}
+                  </span>
+                  <input
+                    type="text"
+                    value={pseudo}
+                    onChange={(e) => setPseudo(e.target.value)}
+                    placeholder={t('play.pseudoPlaceholder')}
+                    required
+                    minLength={1}
+                    maxLength={40}
+                    autoFocus
+                    className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50"
+                  />
+                </label>
+                <BoutonJoueur type="submit" disabled={submitting || !pseudo.trim()}>
                   {view?.mode === 'TEAMS'
                     ? t('play.continueToTeam')
                     : t('play.continueToOnboarding')}
-                </Button>
+                </BoutonJoueur>
               </form>
-            </Card>
+            </PanneauJoueur>
           )}
 
           {step === 'team' && (
-            <Card size="md">
-              <p className="font-editorial italic text-ink-2 text-center mb-4">
+            <PanneauJoueur>
+              <p className="mb-4 text-center font-editorial italic text-white/60">
                 {t('play.chooseTeam')}
               </p>
               <ul className="space-y-2 mb-4">
@@ -922,10 +927,10 @@ export function PlayPage(): JSX.Element {
                       type="button"
                       onClick={() => setSelectedTeam(team.id)}
                       aria-pressed={selectedTeam === team.id}
-                      className={`w-full px-4 py-3 border-2 rounded font-bold text-base transition-colors min-h-[44px] ${
+                      className={`min-h-[44px] w-full rounded-2xl border px-4 py-3 text-base font-bold transition-colors ${
                         selectedTeam === team.id
-                          ? 'border-ink shadow-pop-sm text-cream'
-                          : 'border-ink bg-cream text-ink hover:bg-cream-2'
+                          ? 'border-white/30 text-white'
+                          : 'border-white/12 bg-white/[0.05] text-white/80 hover:bg-white/[0.1]'
                       }`}
                       style={selectedTeam === team.id ? { backgroundColor: team.color } : undefined}
                     >
@@ -935,26 +940,18 @@ export function PlayPage(): JSX.Element {
                 ))}
               </ul>
               <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="md"
-                  onClick={() => setStep('pseudo')}
-                  className="flex-1"
-                >
+                <BoutonJoueur type="button" variante="fantome" onClick={() => setStep('pseudo')}>
                   {t('common.cancel')}
-                </Button>
-                <Button
+                </BoutonJoueur>
+                <BoutonJoueur
                   type="button"
-                  size="md"
                   onClick={handleTeamSubmit}
                   disabled={!selectedTeam || submitting}
-                  className="flex-1"
                 >
                   {t('play.continueToOnboarding')}
-                </Button>
+                </BoutonJoueur>
               </div>
-            </Card>
+            </PanneauJoueur>
           )}
 
           {step === 'onboarding' && (
@@ -982,67 +979,69 @@ export function PlayPage(): JSX.Element {
 
           {step === 'waiting' && identity && (
             <>
-              <Card size="md" tone="basil" className="text-center">
-                <p className="text-xs font-mono uppercase tracking-wider text-basil-deep mb-3">
+              <PanneauJoueur className="text-center">
+                <p
+                  className="mb-3 font-mono text-[11px] uppercase tracking-[0.28em]"
+                  style={{ color: TEL_CORAIL }}
+                >
                   {t('play.youAreIn')}
                 </p>
-                <TitleHandwritten as="h2" className="mb-2">
+                <h2 className="mb-2 font-display text-2xl leading-tight text-white">
                   {identity.pseudo}
-                </TitleHandwritten>
+                </h2>
                 {identity.teamId && (
-                  <Badge tone="ink" tilt={-1} className="mb-4">
+                  <span className="mb-4 inline-block rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-white/70">
                     {teams.find((t2) => t2.id === identity.teamId)?.name}
-                  </Badge>
+                  </span>
                 )}
-                <p className="font-editorial italic text-ink-2 mt-4">{t('play.waitingMessage')}</p>
-                <p className="font-mono text-xs text-ink-soft mt-3">
+                <p className="mt-4 font-editorial italic text-white/60">
+                  {t('play.waitingMessage')}
+                </p>
+                <p className="mt-3 font-mono text-xs text-white/45">
                   {participantsCount} {t('play.participantsConnected')}
                 </p>
-                <div className="mt-6 h-1 bg-cream-3 rounded overflow-hidden relative" aria-hidden>
-                  <div className="absolute inset-y-0 w-1/3 bg-spritz animate-pulse" />
+                <div className="relative mt-6 h-1 overflow-hidden rounded-full bg-white/[0.08]" aria-hidden>
+                  <div
+                    className="absolute inset-y-0 w-1/3 animate-pulse"
+                    style={{ backgroundColor: TEL_CORAIL }}
+                  />
                 </div>
                 {/* feat/tv-playlist-carousel — proposer une playlist depuis le
                   lobby. Modal qui charge le catalogue OfficialPlaylist + POST
                   /api/sessions/by-code/:short_code/proposals. */}
                 <ProposePlaylistButton shortCode={shortCode} token={identity.token} />
-              </Card>
+              </PanneauJoueur>
               {/* feat/animator-full-control — l'animateur désigné lance la 1ʳᵉ manche
                   DEPUIS LE LOBBY (bibliothèque + niveau + source ou playlist perso).
                   Le backend passe la session WAITING → PLAYING. */}
               {isMaster && (
-                <Card
-                  size="md"
-                  tone="cream"
-                  className="mt-4 !border-3 border-spritz-deep text-center"
+                <div
+                  className="mt-4 rounded-[20px] border p-5 text-center"
+                  style={{ backgroundColor: `${TEL_CORAIL}14`, borderColor: `${TEL_CORAIL}55` }}
                 >
-                  <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="mb-2 flex items-center justify-center gap-2">
                     <span aria-hidden className="text-lg">
                       👑
                     </span>
-                    <p className="font-display text-base">{t('play.masterMenuTitle')}</p>
+                    <p className="font-display text-base text-white">{t('play.masterMenuTitle')}</p>
                   </div>
                   {/* feat/multi-animator-roles — profil animateur : FULL voit les
                       réponses en avance, PLAYING non (il peut jouer). */}
-                  <p className="font-mono text-[11px] uppercase tracking-wide text-ink-soft mb-1">
+                  <p className="mb-1 font-mono text-[11px] uppercase tracking-wide text-white/55">
                     {myRole === 'ANIMATOR_FULL'
                       ? t('host.roleAnimatorFull')
                       : t('host.roleAnimatorPlaying')}
                   </p>
-                  <p className="font-editorial italic text-ink-2 text-sm mb-3">
+                  <p className="mb-3 font-editorial text-sm italic text-white/60">
                     Tu pilotes la partie — choisis une playlist et lance le blind test.
                   </p>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="w-full"
-                    onClick={() => setMasterPickerOpen(true)}
-                  >
+                  <BoutonJoueur type="button" onClick={() => setMasterPickerOpen(true)}>
                     🎬 Choisir une playlist &amp; démarrer
-                  </Button>
-                </Card>
+                  </BoutonJoueur>
+                </div>
               )}
               {/* feat/rules — règles concises visibles dans le lobby avant la manche 1 */}
-              <GameRules className="mt-4" />
+              <GameRules className="mt-4" sombre />
             </>
           )}
 
@@ -1061,12 +1060,12 @@ export function PlayPage(): JSX.Element {
           {step === 'playing' && identity && view?.game_type !== 'QUIZZ' && (
             <>
               {isPaused && (
-                <Card tone="plum" size="md" className="text-center mb-3">
-                  <p className="font-display text-2xl">⏸ {t('play.pausedTitle')}</p>
-                  <p className="font-editorial italic text-ink-2 text-sm mt-1">
+                <PanneauJoueur className="mb-3 text-center">
+                  <p className="font-display text-2xl text-white">⏸ {t('play.pausedTitle')}</p>
+                  <p className="mt-1 font-editorial text-sm italic text-white/60">
                     {t('play.pausedHint')}
                   </p>
-                </Card>
+                </PanneauJoueur>
               )}
               <PlayingView
                 currentTrack={currentTrack}
@@ -1146,11 +1145,9 @@ export function PlayPage(): JSX.Element {
           )}
 
           {step === 'ended' && (
-            <Card size="md" tone="cream" className="text-center">
-              <TitleHandwritten as="h2" className="mb-2">
-                {t('play.endedTitle')}
-              </TitleHandwritten>
-              <p className="font-editorial italic text-ink-2">{t('play.endedHint')}</p>
+            <PanneauJoueur className="text-center">
+              <h2 className="mb-2 font-display text-2xl text-white">{t('play.endedTitle')}</h2>
+              <p className="font-editorial italic text-white/60">{t('play.endedHint')}</p>
               {/* feat/classement-final-persistant — l'animateur ferme le podium
                   final (TV + console) depuis son téléphone, quand il le décide. */}
               {isMaster && identity && (
@@ -1163,21 +1160,21 @@ export function PlayPage(): JSX.Element {
                       .catch(() => setError('Fermeture impossible — réessaie'))
                       .finally(() => setPodiumFermeture(false));
                   }}
-                  className="mt-5 w-full rounded-2xl border-4 border-ink bg-ink py-3 font-display text-lg text-cream active:translate-y-0.5 disabled:opacity-40"
+                  className="mt-5 w-full rounded-2xl border border-white/15 py-3 font-display text-lg text-white/80 transition-colors hover:bg-white/[0.06] active:translate-y-0.5 disabled:opacity-40"
                 >
                   ✕ FERMER LE CLASSEMENT
                 </button>
               )}
-            </Card>
+            </PanneauJoueur>
           )}
         </div>
       </main>
 
       {showRules && step === 'playing' && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/80 p-5 animate-fade-in">
-          <div className="bg-cream rounded-3xl border-4 border-ink shadow-xl max-w-sm w-full p-6">
-            <p className="font-display text-2xl mb-4 text-center">Comment répondre 🎤</p>
-            <ul className="space-y-3 font-editorial text-base leading-snug">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-5 animate-fade-in backdrop-blur-sm">
+          <div className={`${TEL_PANNEAU} w-full max-w-sm p-6`}>
+            <p className="mb-4 text-center font-display text-2xl text-white">Comment répondre 🎤</p>
+            <ul className="space-y-3 font-editorial text-base leading-snug text-white/80">
               <li>
                 🎵 Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux
                 = plus de points).
@@ -1196,7 +1193,8 @@ export function PlayPage(): JSX.Element {
             <button
               type="button"
               onClick={() => setShowRules(false)}
-              className="mt-5 w-full rounded-2xl border-4 border-ink bg-spritz py-3 font-display text-xl active:translate-y-0.5"
+              className="mt-5 w-full rounded-2xl py-3 font-display text-xl text-[#0B0B0F] transition-transform active:scale-[0.98]"
+              style={{ backgroundColor: TEL_CORAIL }}
             >
               C'EST PARTI !
             </button>
@@ -1246,14 +1244,14 @@ export function PlayPage(): JSX.Element {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-3 py-2 border-2 border-ink rounded shadow-pop bg-white font-medium text-sm ${
+            className={`rounded-2xl border border-white/12 bg-[#191922]/95 px-3 py-2 text-sm font-medium text-white shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur ${
               toast.fading ? 'animate-fade-out' : 'animate-pop-in'
             } ${
               toast.tone === 'basil'
-                ? 'border-l-8 border-l-basil'
+                ? 'border-l-4 border-l-[#4ade80]'
                 : toast.tone === 'spritz'
-                  ? 'border-l-8 border-l-spritz'
-                  : 'border-l-8 border-l-raspberry'
+                  ? 'border-l-4 border-l-[#FF5C4D]'
+                  : 'border-l-4 border-l-[#FF5C4D]'
             }`}
           >
             {toast.text}
@@ -1314,6 +1312,47 @@ interface PlayingViewProps {
   phase2StartedAt: string | null;
   busy: boolean;
   setBusy: (v: boolean) => void;
+}
+
+/**
+ * feat/telephone-au-style-tv — briques communes a TOUS les ecrans du
+ * telephone (accueil, salle d attente, fin de partie), au meme langage
+ * visuel que la TV. Les composants generiques Card / Button / Input sont
+ * partages avec le back-office : on ne les touche pas, on pose ici des
+ * equivalents sombres propres a l ecran joueur.
+ */
+function PanneauJoueur({
+  children,
+  className = '',
+}: {
+  children: ReactNode;
+  className?: string;
+}): JSX.Element {
+  return <div className={`${TEL_PANNEAU} p-5 ${className}`}>{children}</div>;
+}
+
+function BoutonJoueur({
+  children,
+  variante = 'corail',
+  ...rest
+}: {
+  children: ReactNode;
+  variante?: 'corail' | 'fantome';
+} & React.ButtonHTMLAttributes<HTMLButtonElement>): JSX.Element {
+  const base =
+    'w-full rounded-2xl px-4 py-3 font-bold transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40';
+  if (variante === 'fantome') {
+    return (
+      <button {...rest} className={`${base} border border-white/15 text-white/75 hover:bg-white/[0.06]`}>
+        {children}
+      </button>
+    );
+  }
+  return (
+    <button {...rest} className={`${base} text-[#0B0B0F]`} style={{ backgroundColor: TEL_CORAIL }}>
+      {children}
+    </button>
+  );
 }
 
 /**
@@ -2041,12 +2080,10 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
 
       {/* Zone interactive centrale : buzzer / recording / uploading / validated */}
       {!currentTrack ? (
-        <Card size="md" tone="cream" className="text-center">
-          <TitleHandwritten as="h2" className="mb-2">
-            {t('play.waitingTrack')}
-          </TitleHandwritten>
-          <p className="font-editorial italic text-ink-2">{t('play.waitingTrackHint')}</p>
-        </Card>
+        <div className={`${TEL_PANNEAU} p-5 text-center`}>
+          <h2 className="mb-2 font-display text-2xl text-white">{t('play.waitingTrack')}</h2>
+          <p className="font-editorial italic text-white/60">{t('play.waitingTrackHint')}</p>
+        </div>
       ) : recState.kind === 'recording' ? (
         <RecordingView
           capture={recState.capture}
@@ -2225,18 +2262,21 @@ function LateBanner({
   const remaining = Math.max(0, 10_000 - (now - new Date(phase2StartedAt).getTime()));
   const seconds = Math.ceil(remaining / 1000);
   return (
-    <div className="bg-lemon border-3 border-ink rounded-xl p-3 flex items-center justify-between shadow-pop">
-      <div className="font-bold text-sm leading-tight pr-3">
-        <strong className="block font-display font-normal text-base text-ink">
+    <div className={`${TEL_PANNEAU} flex items-center justify-between p-3`}>
+      <div className="pr-3 text-sm font-bold leading-tight">
+        <strong className="block font-display text-base font-normal text-white">
           {isFinder
             ? t('play.lateBannerFinderTitle')
             : t('play.lateBannerNonFinderTitle', { pseudo: firstFinderPseudo ?? '…' })}
         </strong>
-        <span className="text-ink">
+        <span className="text-white/60">
           {isFinder ? t('play.lateBannerFinderSub') : t('play.lateBannerNonFinderSub')}
         </span>
       </div>
-      <div className="font-mono text-4xl font-bold text-ink leading-none animate-tick-pulse tabular-nums shrink-0">
+      <div
+        className="shrink-0 animate-tick-pulse font-mono text-4xl font-bold leading-none tabular-nums"
+        style={{ color: TEL_CORAIL }}
+      >
         {seconds}
       </div>
     </div>
@@ -2405,7 +2445,7 @@ function PhoneConfettiBurst(): JSX.Element {
       {pieces.map((c) => (
         <span
           key={c.id}
-          className="absolute top-0 animate-confetti-fall border border-ink"
+          className="absolute top-0 animate-confetti-fall"
           style={{
             left: c.left,
             width: '8px',
@@ -2731,7 +2771,7 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-6 inline-flex items-center gap-2 px-4 py-2 border-2 border-ink rounded-lg bg-cream text-ink font-mono text-xs hover:bg-spritz/30 transition shadow-pop-sm"
+        className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs text-white/80 transition-colors hover:bg-white/[0.12]"
       >
         <span aria-hidden>💡</span>
         <span>{t('play.proposePlaylistCta')}</span>
@@ -2740,44 +2780,44 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-ink/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 animate-fade-in"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 animate-fade-in"
           onClick={() => setOpen(false)}
         >
           <div
-            className="bg-cream border-2 border-ink rounded-lg shadow-pop-lg w-full max-w-md max-h-[85vh] flex flex-col"
+            className={`${TEL_PANNEAU} flex max-h-[85vh] w-full max-w-md flex-col p-0`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b-2 border-ink flex items-center justify-between gap-2">
-              <p className="font-display text-lg">💡 {t('play.proposePlaylistTitle')}</p>
+            <div className="flex items-center justify-between gap-2 border-b border-white/10 p-4">
+              <p className="font-display text-lg text-white">💡 {t('play.proposePlaylistTitle')}</p>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t('common.close')}
-                className="text-ink-soft hover:text-ink text-xl"
+                className="text-xl text-white/50 hover:text-white"
               >
                 ✕
               </button>
             </div>
-            <div className="p-3 border-b border-ink/15">
+            <div className="border-b border-white/10 p-3">
               <input
                 type="search"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder={t('play.proposePlaylistSearch')}
-                className="w-full px-3 py-2 border-2 border-ink rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-spritz"
+                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3 py-2 font-mono text-sm text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50"
               />
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {loading && (
-                <p className="font-mono text-sm text-ink-soft">⏳ {t('common.loading')}</p>
+                <p className="font-mono text-sm text-white/50">⏳ {t('common.loading')}</p>
               )}
               {error && (
-                <p role="alert" className="font-mono text-sm text-raspberry">
+                <p role="alert" className="font-mono text-sm" style={{ color: TEL_CORAIL }}>
                   {error}
                 </p>
               )}
               {!loading && !error && filtered.length === 0 && (
-                <p className="font-editorial italic text-ink-soft text-center py-6">
+                <p className="py-6 text-center font-editorial italic text-white/45">
                   {t('play.proposePlaylistEmpty')}
                 </p>
               )}
@@ -2790,22 +2830,22 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
                     type="button"
                     onClick={() => void handlePropose(p.id)}
                     disabled={isProposed || isBusy}
-                    className={`w-full text-left p-3 border-2 rounded-lg transition ${
+                    className={`w-full rounded-2xl border p-3 text-left transition ${
                       isProposed
-                        ? 'border-basil bg-basil/10 cursor-default'
-                        : 'border-ink hover:bg-spritz/20 active:translate-y-px'
+                        ? 'cursor-default border-[#4ade80]/50 bg-[#4ade80]/10'
+                        : 'border-white/12 bg-white/[0.04] hover:bg-white/[0.09] active:translate-y-px'
                     } ${isBusy ? 'opacity-60' : ''}`}
                   >
-                    <p className="font-display font-semibold text-sm flex items-center gap-2">
+                    <p className="flex items-center gap-2 font-display text-sm font-semibold text-white">
                       {p.name}
-                      {isProposed && <span className="text-basil text-xs">✓ proposée</span>}
+                      {isProposed && <span className="text-xs text-[#4ade80]">✓ proposée</span>}
                     </p>
                     {p.description && (
-                      <p className="font-mono text-[11px] text-ink-soft mt-1 line-clamp-2">
+                      <p className="mt-1 line-clamp-2 font-mono text-[11px] text-white/50">
                         {p.description}
                       </p>
                     )}
-                    <p className="font-mono text-[10px] text-ink-soft mt-1">
+                    <p className="mt-1 font-mono text-[10px] text-white/45">
                       {p.theme && <span>{p.theme} · </span>}
                       {p.track_count} morceaux
                     </p>

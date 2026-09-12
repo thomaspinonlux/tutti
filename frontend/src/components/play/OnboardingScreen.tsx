@@ -10,7 +10,25 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Badge, Button, Card, TitleHandwritten, Underline } from '../ui/index.js';
+// feat/telephone-au-style-tv — l'accueil du joueur prend les codes de la TV.
+const CORAIL = '#FF5C4D';
+const PANNEAU =
+  'rounded-[20px] bg-[#191922] border border-white/[0.07] shadow-[0_18px_50px_rgba(0,0,0,0.5)]';
+
+function BoutonPlein({
+  children,
+  ...rest
+}: { children: React.ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>): JSX.Element {
+  return (
+    <button
+      {...rest}
+      className="w-full rounded-2xl px-4 py-3 font-bold text-[#0B0B0F] transition-transform active:scale-[0.98] disabled:opacity-40"
+      style={{ backgroundColor: CORAIL }}
+    >
+      {children}
+    </button>
+  );
+}
 
 interface Props {
   /** L'utilisateur a déjà joué : version condensée. */
@@ -39,17 +57,22 @@ function FullOnboarding({
 }): JSX.Element {
   const { t } = useTranslation();
   return (
-    <Card size="lg" className="bg-white">
-      <header className="text-center mb-6">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
+    <div className={`${PANNEAU} p-6`}>
+      <header className="mb-6 text-center">
+        <p
+          className="mb-2 font-mono text-xs uppercase tracking-[0.24em]"
+          style={{ color: CORAIL }}
+        >
           {t('onboarding.eyebrow')}
         </p>
-        <TitleHandwritten as="h2">
-          <Underline>{t('onboarding.welcome')}</Underline>
-        </TitleHandwritten>
+        <h2 className="font-display text-2xl leading-tight text-white">
+          {t('onboarding.welcome')}
+        </h2>
       </header>
 
-      <p className="font-editorial italic text-ink-2 text-center mb-6">{t('onboarding.intro')}</p>
+      <p className="mb-6 text-center font-editorial italic text-white/60">
+        {t('onboarding.intro')}
+      </p>
 
       <ol className="space-y-4 mb-6">
         <Step
@@ -72,45 +95,42 @@ function FullOnboarding({
         />
       </ol>
 
-      <div className="border-2 border-ink rounded-lg bg-cream-2 p-4 mb-6">
-        <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-2">
+      <div className="mb-6 rounded-2xl border border-white/12 bg-white/[0.05] p-4">
+        <p className="mb-2 font-mono text-xs uppercase tracking-wider text-white/50">
           {t('onboarding.examplesLabel')}
         </p>
         <ul className="space-y-2">
           <li className="flex items-center gap-2">
-            <Badge tone="cream" tilt={-1}>
+            <span className="rounded-full border border-white/15 bg-white/[0.07] px-2.5 py-0.5 text-sm text-white/80">
               {t('onboarding.example1Said')}
-            </Badge>
-            <span className="text-ink-soft">→</span>
-            <Badge tone="basil" tilt={1}>
+            </span>
+            <span className="text-white/40">→</span>
+            <span className="rounded-full border border-[#4ade80]/40 bg-[#4ade80]/15 px-2.5 py-0.5 text-sm font-bold text-[#4ade80]">
               {t('onboarding.example1Score')}
-            </Badge>
+            </span>
           </li>
           <li className="flex items-center gap-2">
-            <Badge tone="cream" tilt={-1}>
+            <span className="rounded-full border border-white/15 bg-white/[0.07] px-2.5 py-0.5 text-sm text-white/80">
               {t('onboarding.example2Said')}
-            </Badge>
-            <span className="text-ink-soft">→</span>
-            <Badge tone="spritz" tilt={1}>
+            </span>
+            <span className="text-white/40">→</span>
+            <span
+              className="rounded-full px-2.5 py-0.5 text-sm font-bold text-[#0B0B0F]"
+              style={{ backgroundColor: CORAIL }}
+            >
               {t('onboarding.example2Score')}
-            </Badge>
+            </span>
           </li>
         </ul>
       </div>
 
-      <Button
-        type="button"
-        size="lg"
-        className="w-full"
-        onClick={() => void onContinue()}
-        disabled={busy}
-      >
+      <BoutonPlein type="button" onClick={() => void onContinue()} disabled={busy}>
         {busy ? t('onboarding.requesting') : t('onboarding.cta')}
-      </Button>
-      <p className="font-mono text-xs text-ink-soft mt-3 text-center">
+      </BoutonPlein>
+      <p className="mt-3 text-center font-mono text-xs text-white/45">
         {t('onboarding.micConsent')}
       </p>
-    </Card>
+    </div>
   );
 }
 
@@ -125,26 +145,31 @@ function CondensedOnboarding({
 }): JSX.Element {
   const { t } = useTranslation();
   return (
-    <Card size="md" tone="cream" className="text-center">
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
+    <div className={`${PANNEAU} p-5 text-center`}>
+      <p className="mb-2 font-mono text-xs uppercase tracking-[0.24em]" style={{ color: CORAIL }}>
         {t('onboarding.welcomeBackEyebrow')}
       </p>
-      <TitleHandwritten as="h2" className="mb-3">
+      <h2 className="mb-3 font-display text-2xl leading-tight text-white">
         {t('onboarding.welcomeBack')}
-      </TitleHandwritten>
-      <p className="font-editorial italic text-ink-2 mb-6">{t('onboarding.condensedHint')}</p>
+      </h2>
+      <p className="mb-6 font-editorial italic text-white/60">{t('onboarding.condensedHint')}</p>
 
       <div className="space-y-2">
-        <Button size="lg" className="w-full" onClick={() => void onContinue()} disabled={busy}>
+        <BoutonPlein type="button" onClick={() => void onContinue()} disabled={busy}>
           {busy ? t('onboarding.requesting') : t('onboarding.skipCta')}
-        </Button>
+        </BoutonPlein>
         {onShowFull && (
-          <Button variant="ghost" size="sm" className="w-full" onClick={onShowFull} disabled={busy}>
+          <button
+            type="button"
+            className="w-full rounded-2xl border border-white/15 px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/[0.06] disabled:opacity-40"
+            onClick={onShowFull}
+            disabled={busy}
+          >
             {t('onboarding.reviewTutorial')}
-          </Button>
+          </button>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -161,15 +186,17 @@ function Step({
 }): JSX.Element {
   return (
     <li className="flex items-start gap-3">
-      <div className="w-12 h-12 shrink-0 border-2 border-ink rounded bg-cream-2 flex items-center justify-center text-ink">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/12 bg-white/[0.06] text-white/80">
         {icon}
       </div>
       <div className="flex-1">
-        <p className="font-display text-base mb-0.5">
-          <span className="text-spritz-deep mr-1">{number}.</span>
+        <p className="mb-0.5 font-display text-base text-white">
+          <span className="mr-1" style={{ color: CORAIL }}>
+            {number}.
+          </span>
           {title}
         </p>
-        <p className="text-sm text-ink-soft">{body}</p>
+        <p className="text-sm text-white/60">{body}</p>
       </div>
     </li>
   );
