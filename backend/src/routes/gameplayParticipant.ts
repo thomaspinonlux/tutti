@@ -36,10 +36,9 @@ import {
   AssemblyAIError,
   isAssemblyAIEnabled,
 } from '../lib/assemblyai.js';
-import { matchTranscript } from '../lib/voiceMatch.js';
 import { decouperArtiste } from '../lib/aliases.js';
 import type { MatchTarget } from '../lib/voiceMatching.js';
-import { matchAnswer } from '../lib/voiceMatching.js';
+import { matchAnswer, couvreAssezDuTitre } from '../lib/voiceMatching.js';
 import { getCumulativeScores } from '../lib/scores.js';
 import type { GameMode, Team } from '@tutti/shared';
 
@@ -226,16 +225,6 @@ router.post(
       return;
     }
 
-    // Récup track + artiste pour le matching.
-    const track = await prisma.track.findUnique({
-      where: { id: active.track_id },
-      include: { artist: true },
-    });
-    if (!track) {
-      res.status(500).json({ error: { code: 'TRACK_LOST', message: 'Track introuvable' } });
-      return;
-    }
-
     // Récup langue de la session pour Whisper.
     const session = await prisma.session.findUnique({
       where: { id: req.params.id },
@@ -262,150 +251,42 @@ router.post(
       }
     }
 
-    // Matching fuzzy.
-    const matchResult = matchTranscript({
-      transcript,
-      artist: { canonical_name: track.artist.canonical_name, aliases: track.artist.aliases },
-      track: { canonical_title: track.canonical_title, aliases: track.aliases },
-    });
-
-    // Log toutes les transcriptions (même les ratées) pour l'auto-apprentissage V1.1.
-    await prisma.voiceTranscript
-      .create({
-        data: {
-          session_id: req.params.id,
-          participant_id: auth.participantId,
-          track_id: track.id,
-          transcript: transcript.slice(0, 1000),
-          matched_artist: matchResult.matched_artist,
-          matched_title: matchResult.matched_title,
-          confidence: matchResult.confidence,
-        },
-      })
-      .catch((err) => console.warn('[voice-answer] log error:', err));
-
-    if (!matchResult.matched_artist && !matchResult.matched_title) {
-      // Ni artiste ni titre → pas de score, pas de pénalité, rebuzz illimité.
-      res.json({
-        matched: false,
-        transcript: matchResult.transcript_normalized,
-      });
-      return;
-    }
-
-    // Artiste OU titre trouvé : on enregistre + on calcule le score (points de
-    // position dès qu'un des deux match, +10 si les deux sur n-grams distincts).
-    const tentativePosition = (active.correct_answers.length ?? 0) + 1;
-    // Garde "double imérité" : titre comptant pour le bonus seulement si
-    // distinct du n-gram artiste (titre contenant le nom de l'artiste → pas double).
-    const titleForScore = matchResult.matched_title && !matchResult.same_ngram;
-    const tentativeScore = computeAnswerScore({
-      matched_artist: matchResult.matched_artist,
-      matched_title: titleForScore,
-      position: tentativePosition,
-      answered_at_ms: Date.now() - active.started_at_ms,
-    });
-
-    const registered = registerCorrectAnswer(req.params.roundId, {
-      participant_id: auth.participantId,
-      pseudo: participant.pseudo,
-      team_id: participant.team_id,
-      matched_artist: matchResult.matched_artist,
-      matched_title: matchResult.matched_title,
-      score: tentativeScore.total,
-      score_position: tentativeScore.artist_base,
-      score_title_bonus: tentativeScore.title_bonus,
-      score_speed_bonus: tentativeScore.speed_bonus,
-    });
-    if (!registered) {
-      // Race condition (phase 2 expirée pendant le traitement) : on log mais
-      // on ne donne pas de points.
-      res.json({
-        matched: true,
-        scored: false,
-        reason: 'PHASE_2_EXPIRED',
-        transcript: matchResult.transcript_normalized,
-      });
-      return;
-    }
-
-    // Persiste les ScoreEvent (FOUND base + éventuellement DOUBLE + SPEED).
-    await persistScoreEvents({
+    // fix/deux-moteurs-deux-regles — MEME MOTEUR QUE LA CASCADE.
+    // Cette route de secours (Whisper direct, quand la cascade est
+    // injoignable) appelait encore matchTranscript : un troisieme verdict
+    // possible pour la meme phrase. Elle passe par le moteur commun.
+    const result = await runMatchAndCommit({
+      expectedTrackId: (req.body as { track_id?: string } | undefined)?.track_id,
       sessionId: req.params.id,
-      sessionRoundId: req.params.roundId,
+      roundId: req.params.roundId,
       participantId: participant.id,
-      teamId: participant.team_id,
-      trackIndex: active.track_index,
-      breakdown: tentativeScore,
-      matchedArtist: matchResult.matched_artist,
-      matchedTitle: matchResult.matched_title,
-      buzzTimeMs: registered.entry.answered_at_ms,
-      transcriptPreview: matchResult.transcript_normalized.slice(0, 200),
+      participantPseudo: participant.pseudo,
+      participantTeamId: participant.team_id,
+      transcript,
+      source: 'whisper-direct',
+      level: 'L3',
+      persistTranscript: true,
     });
 
-    // Compute la cumulative à inclure dans le broadcast — permet aux
-    // téléphones joueurs d'afficher leur position dans le footer (myRank
-    // dans le PhoneFooter de la maquette 07) sans avoir besoin d'un
-    // endpoint REST master-only.
-    const sessionForCumul = await prisma.session.findUnique({
-      where: { id: req.params.id },
-      select: {
-        mode: true,
-        teams_config: true,
-        participants: {
-          where: { is_kicked: false },
-          select: { id: true, pseudo: true, team_id: true },
-        },
-      },
-    });
-    const cumulative = sessionForCumul
-      ? await getCumulativeScores({
-          sessionId: req.params.id,
-          mode: sessionForCumul.mode as GameMode,
-          teams: (sessionForCumul.teams_config as Team[] | null) ?? null,
-          participants: sessionForCumul.participants,
-        })
-      : [];
-
-    // Broadcast la bonne réponse à tous (l'iPad festif l'affiche en toast XL,
-    // les téléphones autres adaptent leur UI + footer position).
-    broadcastToSession(req.params.id, 'track:correct_answer', {
-      round_id: req.params.roundId,
-      track_index: active.track_index,
-      participant_id: participant.id,
-      pseudo: participant.pseudo,
-      team_id: participant.team_id,
-      position: registered.entry.position,
-      answered_at_ms: registered.entry.answered_at_ms,
-      matched_artist: true,
-      matched_title: matchResult.matched_title,
-      score: registered.entry.score,
-      score_position: registered.entry.score_position,
-      score_title_bonus: registered.entry.score_title_bonus,
-      score_speed_bonus: registered.entry.score_speed_bonus,
-      cumulative,
-    });
-
-    // Si c'est la 1ʳᵉ bonne réponse → on broadcast le passage en phase 2 +
-    // on programme le passage en phase 3 dans 15s.
-    if (registered.isFirst) {
-      broadcastToSession(req.params.id, 'track:phase_changed', {
-        round_id: req.params.roundId,
-        phase: 'phase2',
-        // ANTI-TRICHE — pas d'artist/title dans le broadcast public : la réponse
-        // reste caviardée avant reveal (les privilégiés l'ont via track:answer).
-        phase2_started_at: new Date().toISOString(),
-      });
-      schedulePhase3Transition(req.params.id, req.params.roundId);
+    if ('error' in result) {
+      res.status(result.status).json({ error: { code: result.error, message: result.error } });
+      return;
+    }
+    if (result.reason === 'ALREADY_ANSWERED') {
+      res.json({ matched: false, alreadyAnswered: true });
+      return;
     }
 
     res.json({
-      matched: true,
-      scored: true,
-      transcript: matchResult.transcript_normalized,
-      position: registered.entry.position,
-      score: registered.entry.score,
-      breakdown: tentativeScore,
+      matched: result.matched,
+      scored: result.scored,
+      score: result.score,
+      target: result.target,
+      transcript: result.transcript_normalized,
+      position: result.position,
+      total_score: result.total_score,
+      breakdown: result.breakdown,
+      reason: result.reason,
     });
   },
 );
@@ -448,146 +329,51 @@ router.post(
       return;
     }
 
-    // Pas de closeBuzz (texte = pas de fenêtre micro ouverte).
-    const active = getActiveTrack(req.params.roundId);
-    if (!active) {
-      res.status(409).json({ error: { code: 'NO_TRACK', message: 'Pas de track en cours' } });
+    // fix/deux-moteurs-deux-regles — LE CLAVIER PASSE PAR LE MEME MOTEUR QUE LA VOIX.
+    //
+    // Jusqu ici cette route appelait matchTranscript (voiceMatch.ts, n-grammes
+    // + similarite floue) pendant que la voix passait par matchAnswer
+    // (voiceMatching.ts, Levenshtein + phonetique + regle des deux moities).
+    // Deux moteurs, deux verdicts pour la meme phrase. Mesure sur la soiree du
+    // 11/09 : onze reponses acceptees au clavier auraient ete refusees a
+    // l oral — « phill colins », « uptwon girl », « keicha », « somebody i
+    // used to lnow », et surtout « listen to my heart » pour *Listen to Your
+    // Heart*. Le meme joueur etait accepte s il ecrivait, refuse s il parlait.
+    //
+    // Desormais une seule regle, un seul seuil, un seul journal — et le
+    // classement du titre, le bonus double et les points de position se
+    // calculent de la meme facon quel que soit le moyen de repondre.
+    const result = await runMatchAndCommit({
+      expectedTrackId: (req.body as { track_id?: string } | undefined)?.track_id,
+      sessionId: req.params.id,
+      roundId: req.params.roundId,
+      participantId: participant.id,
+      participantPseudo: participant.pseudo,
+      participantTeamId: participant.team_id,
+      transcript: text,
+      source: 'clavier',
+      level: 'L1',
+      persistTranscript: true,
+    });
+
+    if ('error' in result) {
+      res.status(result.status).json({ error: { code: result.error, message: result.error } });
       return;
     }
-
-    if (hasCorrectAnswer(req.params.roundId, auth.participantId)) {
+    if (result.reason === 'ALREADY_ANSWERED') {
       res.json({ matched: false, alreadyAnswered: true });
       return;
     }
 
-    const track = await prisma.track.findUnique({
-      where: { id: active.track_id },
-      include: { artist: true },
-    });
-    if (!track) {
-      res.status(500).json({ error: { code: 'TRACK_LOST', message: 'Track introuvable' } });
-      return;
-    }
-
-    // Matching fuzzy (même logique que voice-answer).
-    const matchResult = matchTranscript({
-      transcript: text,
-      artist: { canonical_name: track.artist.canonical_name, aliases: track.artist.aliases },
-      track: { canonical_title: track.canonical_title, aliases: track.aliases },
-    });
-
-    // Log dans voice_transcripts pour cohérence stats (source = "text").
-    await prisma.voiceTranscript
-      .create({
-        data: {
-          session_id: req.params.id,
-          participant_id: auth.participantId,
-          track_id: track.id,
-          transcript: `[TEXT] ${text.slice(0, 980)}`,
-          matched_artist: matchResult.matched_artist,
-          matched_title: matchResult.matched_title,
-          confidence: matchResult.confidence,
-        },
-      })
-      .catch((err) => console.warn('[text-answer] log error:', err));
-
-    if (!matchResult.matched_artist && !matchResult.matched_title) {
-      res.json({ matched: false });
-      return;
-    }
-
-    const tentativePosition = (active.correct_answers.length ?? 0) + 1;
-    const titleForScore = matchResult.matched_title && !matchResult.same_ngram;
-    const tentativeScore = computeAnswerScore({
-      matched_artist: matchResult.matched_artist,
-      matched_title: titleForScore,
-      position: tentativePosition,
-      answered_at_ms: Date.now() - active.started_at_ms,
-    });
-
-    const registered = registerCorrectAnswer(req.params.roundId, {
-      participant_id: auth.participantId,
-      pseudo: participant.pseudo,
-      team_id: participant.team_id,
-      matched_artist: matchResult.matched_artist,
-      matched_title: matchResult.matched_title,
-      score: tentativeScore.total,
-      score_position: tentativeScore.artist_base,
-      score_title_bonus: tentativeScore.title_bonus,
-      score_speed_bonus: tentativeScore.speed_bonus,
-    });
-    if (!registered) {
-      res.json({ matched: true, scored: false, reason: 'PHASE_2_EXPIRED' });
-      return;
-    }
-
-    await persistScoreEvents({
-      sessionId: req.params.id,
-      sessionRoundId: req.params.roundId,
-      participantId: participant.id,
-      teamId: participant.team_id,
-      trackIndex: active.track_index,
-      breakdown: tentativeScore,
-      matchedArtist: matchResult.matched_artist,
-      matchedTitle: matchResult.matched_title,
-      buzzTimeMs: registered.entry.answered_at_ms,
-      transcriptPreview: `[TEXT] ${text.slice(0, 200)}`,
-    });
-
-    const sessionForCumul = await prisma.session.findUnique({
-      where: { id: req.params.id },
-      select: {
-        mode: true,
-        teams_config: true,
-        participants: {
-          where: { is_kicked: false },
-          select: { id: true, pseudo: true, team_id: true },
-        },
-      },
-    });
-    const cumulative = sessionForCumul
-      ? await getCumulativeScores({
-          sessionId: req.params.id,
-          mode: sessionForCumul.mode as GameMode,
-          teams: (sessionForCumul.teams_config as Team[] | null) ?? null,
-          participants: sessionForCumul.participants,
-        })
-      : [];
-
-    broadcastToSession(req.params.id, 'track:correct_answer', {
-      round_id: req.params.roundId,
-      track_index: active.track_index,
-      participant_id: participant.id,
-      pseudo: participant.pseudo,
-      team_id: participant.team_id,
-      position: registered.entry.position,
-      answered_at_ms: registered.entry.answered_at_ms,
-      matched_artist: true,
-      matched_title: matchResult.matched_title,
-      score: registered.entry.score,
-      score_position: registered.entry.score_position,
-      score_title_bonus: registered.entry.score_title_bonus,
-      score_speed_bonus: registered.entry.score_speed_bonus,
-      cumulative,
-    });
-
-    if (registered.isFirst) {
-      broadcastToSession(req.params.id, 'track:phase_changed', {
-        round_id: req.params.roundId,
-        phase: 'phase2',
-        // ANTI-TRICHE — pas d'artist/title dans le broadcast public : la réponse
-        // reste caviardée avant reveal (les privilégiés l'ont via track:answer).
-        phase2_started_at: new Date().toISOString(),
-      });
-      schedulePhase3Transition(req.params.id, req.params.roundId);
-    }
-
     res.json({
-      matched: true,
-      scored: true,
-      position: registered.entry.position,
-      score: registered.entry.score,
-      breakdown: tentativeScore,
+      matched: result.matched,
+      scored: result.scored,
+      score: result.score,
+      target: result.target,
+      position: result.position,
+      total_score: result.total_score,
+      breakdown: result.breakdown,
+      reason: result.reason,
     });
   },
 );
@@ -799,6 +585,59 @@ interface CascadeMatchCommitResult {
  * Gère aussi les aliases (title.aliases, artist.aliases) en testant chaque
  * combinaison title/artist possible et gardant le meilleur score.
  */
+/**
+ * feat/titre-partiel — LES AUTRES TITRES DE LA MANCHE, POUR NE PAS ACCEPTER UN
+ * BOUT DE TITRE AMBIGU.
+ *
+ * Un fragment n est accepte que s il ne designe QUE le morceau en cours. Si le
+ * meme bout de phrase vaut aussi un autre titre de la manche, le joueur n a pas
+ * prouve qu il connaissait celui-la. Les titres d une manche ne bougent plus
+ * une fois la manche lancee : on les lit une fois.
+ */
+interface TitreDeManche {
+  trackId: string;
+  titre: string;
+  artiste: string;
+}
+const titresParManche = new Map<string, TitreDeManche[]>();
+
+/**
+ * On ne garde que les huit dernieres manches : une soiree en compte huit, et le
+ * serveur tourne des semaines sans redemarrer.
+ */
+function limiterLeCache(): void {
+  while (titresParManche.size > 8) {
+    const plusAncienne = titresParManche.keys().next().value;
+    if (plusAncienne === undefined) break;
+    titresParManche.delete(plusAncienne);
+  }
+}
+
+async function titresDeLaManche(roundId: string, sauf: string): Promise<TitreDeManche[]> {
+  let tous = titresParManche.get(roundId);
+  if (!tous) {
+    const round = await prisma.sessionRound.findUnique({
+      where: { id: roundId },
+      select: { selected_track_ids: true },
+    });
+    const ids = (round?.selected_track_ids ?? []).filter((id) => typeof id === 'string');
+    const tracks = ids.length
+      ? await prisma.track.findMany({
+          where: { id: { in: ids } },
+          select: { id: true, canonical_title: true, artist: { select: { canonical_name: true } } },
+        })
+      : [];
+    tous = tracks.map((t) => ({
+      trackId: t.id,
+      titre: t.canonical_title,
+      artiste: t.artist.canonical_name,
+    }));
+    titresParManche.set(roundId, tous);
+    limiterLeCache();
+  }
+  return tous.filter((t) => t.trackId !== sauf);
+}
+
 async function runMatchAndCommit(
   args: CascadeMatchCommitArgs,
 ): Promise<CascadeMatchCommitResult | { error: string; status: number }> {
@@ -909,11 +748,49 @@ async function runMatchAndCommit(
       }
     }
   }
-  const titrePasse = meilleurTitre >= VOICE_MATCH_THRESHOLD;
+  // feat/titre-partiel — « LA MOITIE DU TITRE SUFFIT » (voir fragmentDuTitre).
+  //
+  // Le 11/09, six reponses justes ont ete refusees parce que le joueur n avait
+  // dit qu une partie du titre : « Morena » pour *Baila Morena*, « Of the
+  // Tiger » pour *Eye of the Tiger*. On rattrape ce cas — mais la mesure
+  // (2 718 essais) montre que la regle seule accepte 1 214 reponses FAUSSES
+  // pour 68 justes recuperees. La garde ci-dessous est donc obligatoire : on
+  // refuse le fragment des qu il designe aussi un AUTRE morceau de la manche
+  // (« Over the » vaut *Somewhere Over the Rainbow* comme *All Over the
+  // World* — dans le doute, le joueur n a pas prouve qu il connaissait le
+  // morceau). L artiste doit en plus etre bon : le titre partiel ne se suffit
+  // jamais a lui-meme.
+  let titreParFragment = false;
+  if (meilleurTitre < VOICE_MATCH_THRESHOLD && meilleurArtiste >= VOICE_MATCH_THRESHOLD) {
+    // Le titre OFFICIEL seulement : les alias contiennent souvent le nom de
+    // l artiste, et un bout d alias donnerait le titre a qui n a dit que le
+    // chanteur.
+    const assez = transcriptions.some((tr) =>
+      couvreAssezDuTitre(tr, track.canonical_title, track.artist.canonical_name),
+    );
+    if (assez) {
+      const autres = await titresDeLaManche(args.roundId, track.id);
+      const ambigu = transcriptions.some((tr) =>
+        autres.some(({ titre, artiste }) => couvreAssezDuTitre(tr, titre, artiste)),
+      );
+      if (ambigu) {
+        console.info(
+          `[Voix] titre partiel refuse (ambigu dans la manche) : "${transcriptions[0]?.slice(0, 60)}"`,
+        );
+      } else {
+        titreParFragment = true;
+        console.info(
+          `[Voix] titre partiel accepte : "${transcriptions[0]?.slice(0, 60)}" -> "${track.canonical_title}"`,
+        );
+      }
+    }
+  }
+
+  const titrePasse = meilleurTitre >= VOICE_MATCH_THRESHOLD || titreParFragment;
   const artistePasse = meilleurArtiste >= VOICE_MATCH_THRESHOLD;
   let best: { score: number; target: MatchTarget };
   if (artistePasse && titrePasse) {
-    best = { score: Math.max(meilleurTitre, meilleurArtiste), target: 'artist_title' };
+    best = { score: Math.max(meilleurTitre, meilleurArtiste, VOICE_MATCH_THRESHOLD), target: 'artist_title' };
   } else if (artistePasse) {
     best = { score: meilleurArtiste, target: 'artist' };
   } else if (titrePasse) {

@@ -787,7 +787,9 @@
     "masterEndSessionConfirm": "End now? Final podium will show.",
     "masterEndSessionYes": "Yes, end it",
     "masterPausedBadge": "Game paused",
-    "nothingHeard": "Nothing heard — buzz again"
+    "nothingHeard": "Nothing heard — buzz again",
+    "repriseDePlace": "You’re back in your seat — your score is safe",
+    "pseudoDejaEnLigne": "That nickname is already in use on a connected phone. Pick another one."
   },
   "onboarding": {
     "contentBlocker": {

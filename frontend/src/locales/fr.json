@@ -787,7 +787,9 @@
     "masterEndRoundConfirm": "Terminer la manche en cours ?",
     "masterEndRoundYes": "Oui, terminer",
     "masterPausedBadge": "Jeu en pause",
-    "nothingHeard": "Rien entendu — rebuzze"
+    "nothingHeard": "Rien entendu — rebuzze",
+    "repriseDePlace": "Tu reprends ta place — ton score est conservé",
+    "pseudoDejaEnLigne": "Ce pseudo est déjà utilisé par un téléphone connecté. Choisis-en un autre."
   },
   "onboarding": {
     "contentBlocker": {

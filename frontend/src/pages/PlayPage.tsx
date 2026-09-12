@@ -665,8 +665,13 @@ export function PlayPage(): JSX.Element {
       saveParticipantContext(shortCode, ctx);
       setIdentity(ctx);
       setStep('waiting');
+      // feat/reprendre-ma-place — on le dit, sinon le joueur croit repartir de zero.
+      if (resp.reprise) pushToast(setToasts, t('play.repriseDePlace'), 'basil');
     } catch (err: unknown) {
-      setError((err as Error).message);
+      const e = err as { code?: string; message?: string };
+      setError(
+        e.code === 'PSEUDO_DEJA_EN_LIGNE' ? t('play.pseudoDejaEnLigne') : (e.message ?? ''),
+      );
     } finally {
       setSubmitting(false);
     }

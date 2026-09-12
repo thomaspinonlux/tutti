@@ -545,4 +545,10 @@ export interface PublicSessionView {
 export interface JoinResponse {
   participant: Participant;
   token: string;
+  /**
+   * feat/reprendre-ma-place — vrai quand le serveur a rendu au joueur sa place
+   * d origine (meme pseudo, ancien appareil deconnecte) au lieu d en creer une
+   * nouvelle. Le telephone le dit au joueur : son score est conserve.
+   */
+  reprise?: boolean;
 }

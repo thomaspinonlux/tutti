@@ -296,6 +296,103 @@ export function combinedScore(transcript: string, expected: string): number {
   return combined;
 }
 
+/**
+ * feat/titre-partiel — UNE PARTIE DU TITRE PEUT SUFFIRE, MAIS PAS N IMPORTE
+ * LAQUELLE.
+ *
+ * Demande de Thomas apres le 11/09 : « Morena » pour *Baila Morena*, « Of the
+ * Tiger » pour *Eye of the Tiger* — le joueur connait le morceau, le moteur
+ * refusait. Regle demandee : la moitie du titre suffit.
+ *
+ * MESURE AVANT DE LIVRER, et elle a fait changer la regle. Sur les 1 011
+ * reponses du 11/09 et 2 718 reponses « bon artiste + titre d un autre
+ * morceau » :
+ *
+ *   moitie des mots           ~7 reponses rattrapees   647 fausses acceptees
+ *   deux tiers, mots qui se suivent   3 rattrapees      81 fausses
+ *
+ * A « la moitie », on donne des points a « Billie Eilish, Lonely » pour
+ * *Lovely* et a « Beyonce, Beautiful Life » pour *Beautiful Liar*. Retenu donc,
+ * et c est ce que fait le code ci-dessous :
+ *
+ *   1. on ne compte QUE les mots qui portent du sens — « of », « the », « la »,
+ *      « pour » sont dans des centaines de titres et ne prouvent rien ;
+ *   2. on ne compte PAS les mots du titre qui sont aussi dans le nom de
+ *      l artiste — sinon dire « Santana » donnait le titre *Smooth* en prime
+ *      via l alias « Santana Smooth » ;
+ *   3. il faut les deux tiers de ces mots-la, et qui se suivent dans le titre ;
+ *   4. la regle ne s applique qu au titre officiel, jamais aux alias (ils
+ *      contiennent souvent le nom de l artiste) ;
+ *   5. et l appelant verifie en plus que le fragment ne designe pas un AUTRE
+ *      morceau de la manche (runMatchAndCommit) : sur les titres joues le meme
+ *      soir, cette garde ramene les fausses acceptations a zero.
+ *
+ * L artiste doit de toute facon etre reconnu : un bout de titre ne se suffit
+ * jamais a lui-meme.
+ */
+
+/** Mots-outils : presents dans des centaines de titres, ils ne prouvent rien. */
+const MOTS_OUTILS = new Set([
+  'le','la','les','un','une','des','du','de','d','l','au','aux','et','ou','a','en','dans','sur',
+  'pour','par','avec','sans','mon','ma','mes','ton','ta','tes','son','sa','ses','ce','cet','cette',
+  'qui','que','quoi','ne','pas','plus','je','tu','il','elle','on','nous','vous','ils','elles','me',
+  'te','se','y','si','the','an','of','to','in','on','at','for','with','and','or','but','my','your',
+  'his','her','its','our','their','you','he','she','it','we','they','is','are','was','were','be',
+  'am','do','not','no','all','up','down','out','so','that','this','i','im','dont','el','los','las',
+  'del','una','mi','su',
+]);
+
+/**
+ * Le transcript couvre-t-il assez du titre officiel pour valoir le titre ?
+ * `artiste` sert a ne pas compter deux fois les mots deja portes par la moitie
+ * « artiste » (cf. point 2 ci-dessus).
+ */
+export function couvreAssezDuTitre(transcript: string, titre: string, artiste: string): boolean {
+  const mots = normalizeText(titre).split(' ').filter(Boolean);
+  if (mots.length === 0) return false;
+  const dits = normalizeText(transcript).split(' ').filter(Boolean);
+  if (dits.length === 0) return false;
+
+  const consomme = new Array<boolean>(dits.length).fill(false);
+  const presents = mots.map((m) => {
+    const i = dits.findIndex(
+      (d, k) => !consomme[k] && (d === m || (m.length >= 4 && levenshteinScore(d, m) >= 80)),
+    );
+    if (i >= 0) consomme[i] = true;
+    return i >= 0;
+  });
+
+  // Plus long bloc de mots qui se suivent.
+  let debut = -1;
+  let longueur = 0;
+  let courantDebut = -1;
+  let courant = 0;
+  presents.forEach((ok, i) => {
+    if (!ok) {
+      courant = 0;
+      return;
+    }
+    if (courant === 0) courantDebut = i;
+    courant += 1;
+    if (courant > longueur) {
+      longueur = courant;
+      debut = courantDebut;
+    }
+  });
+  if (longueur === 0) return false;
+
+  const motsArtiste = new Set(normalizeText(artiste).split(' ').filter(Boolean));
+  const porteDuSens = (m: string): boolean =>
+    m.length >= 3 && !MOTS_OUTILS.has(m) && !motsArtiste.has(m);
+
+  const attendus = mots.filter(porteDuSens);
+  if (attendus.length === 0) return false; // titre sans mot propre : rien a verifier
+  const dansLeBloc = mots.filter((m, i) => i >= debut && i < debut + longueur && porteDuSens(m));
+  if (dansLeBloc.length === 0) return false;
+  if (dansLeBloc.join('').length < 5) return false;
+  return dansLeBloc.length / attendus.length >= 2 / 3;
+}
+
 /** Ce que le transcript a permis de reconnaître. */
 export type MatchTarget = 'title' | 'artist' | 'artist_title';
 

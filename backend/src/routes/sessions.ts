@@ -43,7 +43,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { generateUniqueShortCode } from '../lib/shortCode.js';
 import { generateUniqueTvCode } from '../lib/tvCode.js';
-import { broadcastToSession } from '../socket/index.js';
+import { broadcastToSession, participantEstConnecte } from '../socket/index.js';
 import { getActiveTrack, clearActiveTrack } from '../lib/gameState.js';
 import { clearActiveQuestion } from '../lib/gameStateQuizz.js';
 import { clearAutoReveal } from '../lib/gameplayQuizzCore.js';
@@ -1420,6 +1420,53 @@ router.post(
           return;
         }
         teamId = parsed.data.team_id;
+      }
+
+      // feat/reprendre-ma-place — LE MEME PSEUDO REPREND SA PLACE, PAS UNE
+      // NOUVELLE.
+      //
+      // Soiree du 11/09 : un joueur a perdu sa session (telephone en veille,
+      // onglet ferme). En revenant il retapait son pseudo — et le serveur
+      // creait un SECOND participant : score a zero, et son nom en double sur
+      // la TV. Desormais, si ce pseudo existe deja dans la soiree, on lui rend
+      // sa place avec son score.
+      //
+      // Condition, choisie par Thomas : SEULEMENT si l autre appareil est
+      // deconnecte. Tant que le telephone d origine est en ligne, la place lui
+      // appartient — sinon il suffirait de taper le pseudo d un joueur pour
+      // jouer a sa place (et le sortir de la partie).
+      const memeNom = await prisma.participant.findFirst({
+        where: {
+          session_id: session.id,
+          pseudo: { equals: parsed.data.pseudo, mode: 'insensitive' },
+          is_kicked: false,
+        },
+        orderBy: { joined_at: 'asc' },
+      });
+      if (memeNom) {
+        if (await participantEstConnecte(memeNom.id)) {
+          res.status(409).json({
+            error: {
+              code: 'PSEUDO_DEJA_EN_LIGNE',
+              message: 'Ce pseudo est deja utilise par un appareil connecte',
+            },
+          });
+          return;
+        }
+        const repris = await prisma.participant.update({
+          where: { id: memeNom.id },
+          data: {
+            // L equipe peut avoir change entre-temps (le joueur en choisit une
+            // au moment de revenir) ; le score, lui, ne bouge pas.
+            ...(session.mode === 'TEAMS' && teamId ? { team_id: teamId } : {}),
+            fingerprint: parsed.data.fingerprint ?? memeNom.fingerprint,
+          },
+        });
+        const jeton = signParticipantToken({ participantId: repris.id, sessionId: session.id });
+        console.info(`[join] reprise de place : ${repris.pseudo} (${repris.id})`);
+        broadcastToSession(session.id, 'participant:joined', { participant: repris });
+        res.status(200).json({ participant: repris, token: jeton, reprise: true });
+        return;
       }
 
       const participant = await prisma.participant.create({

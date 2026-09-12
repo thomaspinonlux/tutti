@@ -439,6 +439,21 @@ export function participantRoomName(participantId: string): string {
   return `participant:${participantId}`;
 }
 
+/**
+ * feat/reprendre-ma-place — CE TELEPHONE EST-IL ENCORE EN LIGNE ?
+ *
+ * Le 11/09, un joueur a perdu sa session et n a pas pu revenir : le rejoin
+ * creait un NOUVEAU participant, donc un score reparti de zero. La reprise de
+ * place n est acceptable que si l ancien appareil est vraiment parti — sinon
+ * n importe qui pourrait reprendre la place d un joueur en tapant son pseudo.
+ * Chaque participant a sa propre room : si elle est vide, plus personne.
+ */
+export async function participantEstConnecte(participantId: string): Promise<boolean> {
+  if (!io) return false;
+  const sockets = await io.in(participantRoomName(participantId)).fetchSockets();
+  return sockets.length > 0;
+}
+
 /** Helper : broadcast à tous les sockets d'une session (host + joueurs). */
 export function broadcastToSession(sessionId: string, event: string, payload: unknown): void {
   if (!io) return;
