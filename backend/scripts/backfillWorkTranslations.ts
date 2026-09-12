@@ -58,26 +58,44 @@ config();
 const prisma = new PrismaClient();
 const CONCURRENCY = 10;
 
-const TARGET_PLAYLIST_NAMES = [
-  'Disney en français',
-  'Disney — Versions originales',
-  'Génériques Disney & Pixar',
-  'Génériques dessins animés & séries enfants',
-  'Génériques Club Dorothée — Dessins animés',
-  'Génériques de Séries TV',
-  'Génériques films & séries',
-  'Génériques Jeux TV & Émissions FR',
-  'Jeux Vidéo',
-  'Anime (Openings)',
-  'Comédies musicales US',
-  'Comédies musicales françaises',
-  'Musique de Film',
-  'Musique de Film — Facile',
-  'Musique de Film — Moyen',
-  'Musique de Film — Difficile',
-  'Cinéma français — Bandes originales',
-  'James Bond — Génériques',
+/**
+ * fix/perimetre-par-slug — LE PERIMETRE SE DESIGNE PAR SLUG, PAS PAR NOM.
+ *
+ * La liste etait ecrite en noms affiches et comparee en egalite stricte. Des
+ * emoji ont ete ajoutes aux noms depuis (« Comedies musicales US 🌍 ») : ces
+ * playlists ne correspondaient plus a rien et n ont jamais ete traitees, sans
+ * que rien ne le signale. Le slug, lui, est la cle naturelle et ne bouge pas.
+ */
+const TARGET_PLAYLIST_SLUGS = [
+  // Dessins animes, series, jeux — montees a la main
+  'official-pl-disney-fr',
+  'official-pl-disney-en',
+  'official-pl-generiques-disney',
+  'official-pl-generiques-dessins-animes',
+  'official-pl-club-dorothee',
+  'official-pl-series-tv',
+  'official-pl-generiques-films-series',
+  'official-pl-jeux-tv-fr',
+  'official-pl-video-games',
+  'official-pl-anime-openings',
+  'official-pl-musicals-us',
+  'official-pl-musicales-fr',
+  'official-pl-musique-film',
+  'official-pl-films-easy',
+  'official-pl-films-medium',
+  'official-pl-films-hard',
+  'official-pl-cinema-fr-bo',
+  'official-pl-james-bond',
+  // Reprises du catalogue editorial Apple (importerPlaylistsApple.ts)
+  'official-pl-films-bo-apple',
+  'official-pl-films-bo-80s-apple',
+  'official-pl-films-bo-2000s-apple',
+  'official-pl-films-bo-2010s-apple',
+  'official-pl-films-frissons-apple',
+  'official-pl-james-bond-apple',
+  'official-pl-comedies-musicales-apple',
 ];
+
 
 interface CliArgs {
   dryRun: boolean;
@@ -146,11 +164,11 @@ async function main(): Promise<void> {
   }
 
   const playlists = await prisma.officialPlaylist.findMany({
-    where: { name_fr: { in: TARGET_PLAYLIST_NAMES } },
-    select: { id: true, name_fr: true, locale_primary: true },
+    where: { slug: { in: TARGET_PLAYLIST_SLUGS } },
+    select: { id: true, slug: true, name_fr: true, locale_primary: true },
   });
-  const foundNames = new Set(playlists.map((p) => p.name_fr));
-  const missing = TARGET_PLAYLIST_NAMES.filter((n) => !foundNames.has(n));
+  const trouves = new Set(playlists.map((p) => p.slug));
+  const missing = TARGET_PLAYLIST_SLUGS.filter((s) => !trouves.has(s));
   if (missing.length > 0) {
     console.error(`[WorkTranslations] Playlists introuvables (abort) : ${missing.join(', ')}`);
     process.exitCode = 1;
