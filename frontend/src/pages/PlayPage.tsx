@@ -133,6 +133,11 @@ export function PlayPage(): JSX.Element {
   const [view, setView] = useState<PublicSessionView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('pseudo');
+  // feat/telephone-au-style-tv — le fond sombre ne couvre pour l instant que
+  // l ecran de JEU. L accueil, la salle d attente et l ecran de fin sont
+  // encore en charte claire : les passer en sombre sans les convertir
+  // donnerait du texte encre sur fond noir.
+  useFondJoueurSombre(step === 'playing');
   const [pseudo, setPseudo] = useState('');
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -834,8 +839,8 @@ export function PlayPage(): JSX.Element {
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    // feat/telephone-au-style-tv — fond sombre de la TV sur toute la page.
-    <div className="min-h-screen flex flex-col bg-[#0B0B0F] text-white">
+    // feat/telephone-au-style-tv — fond sombre de la TV sur l ecran de jeu.
+    <div className={`min-h-screen flex flex-col ${step === 'playing' ? 'bg-[#0B0B0F] text-white' : ''}`}>
       <MultiColorBar height="md" />
       {/* fix/prevent-safari-reader-mode — role="application" évite que Safari
           détecte la page joueur (peu de texte structuré) comme article éditorial
@@ -1309,6 +1314,20 @@ interface PlayingViewProps {
   phase2StartedAt: string | null;
   busy: boolean;
   setBusy: (v: boolean) => void;
+}
+
+/**
+ * feat/telephone-au-style-tv — pose le fond sombre sur le document entier
+ * pendant qu on est sur l ecran joueur, et le retire en sortant. Sans ca,
+ * la page passait en sombre mais le document restait creme : bandes claires
+ * au rebond iOS et texture papier par-dessus un ecran sombre.
+ */
+export function useFondJoueurSombre(actif = true): void {
+  useEffect(() => {
+    if (!actif) return;
+    document.documentElement.classList.add('theme-joueur');
+    return () => document.documentElement.classList.remove('theme-joueur');
+  }, [actif]);
 }
 
 // feat/telephone-au-style-tv — MEMES CODES VISUELS QUE L ECRAN DE LA SALLE.

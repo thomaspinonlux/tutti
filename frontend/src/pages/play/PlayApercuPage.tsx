@@ -18,9 +18,10 @@
 
 import type { CorrectAnswerEntry, CumulativeScore, CurrentTrackState } from '@tutti/shared';
 import { useSearchParams } from 'react-router-dom';
-import { PlayingView } from '../PlayPage.js';
+import { PlayingView, useFondJoueurSombre } from '../PlayPage.js';
 
 export function PlayApercuPage(): JSX.Element {
+  useFondJoueurSombre();
   const [params] = useSearchParams();
   const etat = params.get('etat') ?? 'buzz';
   const long = params.get('long') !== null;
@@ -80,7 +81,7 @@ export function PlayApercuPage(): JSX.Element {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-[500px] px-4 py-3">
+    <div className="mx-auto min-h-screen w-full max-w-[500px] bg-[#0B0B0F] px-4 py-3 text-white">
       <PlayingView
         currentTrack={currentTrack}
         identity={moi}

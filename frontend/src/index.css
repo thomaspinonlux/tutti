@@ -66,6 +66,22 @@
     z-index: 0;
   }
 
+  /* feat/telephone-au-style-tv — L ECRAN JOUEUR EST SOMBRE JUSQU AU BORD.
+     La page /play reprend les codes de la TV. Sans cette classe, la page
+     seule passait en sombre mais le fond du document restait creme : bandes
+     claires au rebond iOS, et texture papier « Pop Cocktail » par-dessus un
+     ecran sombre. La classe est posee sur <html> par l ecran joueur et
+     retiree quand on le quitte. */
+  html.theme-joueur,
+  html.theme-joueur body {
+    background: #0b0b0f;
+    color: #ffffff;
+  }
+  html.theme-joueur body::before,
+  html.theme-joueur body::after {
+    display: none;
+  }
+
   /* Tout contenu doit être au-dessus des textures */
   #root {
     position: relative;
