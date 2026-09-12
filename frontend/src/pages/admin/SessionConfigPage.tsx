@@ -69,6 +69,10 @@ export function SessionConfigPage(): JSX.Element {
   const [playlistName, setPlaylistName] = useState<string | null>(null);
   // Défaut B2C : mode B "tout le monde joue", sans animateur dédié.
   const [hasAnimator, setHasAnimator] = useState(false);
+  // feat/option-vocal — reconnaissance vocale active par defaut. Decoche =
+  // partie 100 % ecrite : le telephone des joueurs n affiche pas le buzzer
+  // vocal, seule la saisie clavier reste.
+  const [vocalActif, setVocalActif] = useState(true);
   const [mode, setMode] = useState<'SOLO' | 'TEAMS'>('SOLO');
   const [teams, setTeams] = useState<Team[]>(() => [newTeam(0), newTeam(1)]);
   const [language, setLanguage] = useState<'fr' | 'en'>('fr');
@@ -112,6 +116,7 @@ export function SessionConfigPage(): JSX.Element {
         teams_config: mode === 'TEAMS' ? teams : undefined,
         language,
         has_animator: hasAnimator,
+        voice_enabled: vocalActif,
       });
       // Si une playlist est passée en paramètre, on pré-crée la 1ʳᵉ manche
       // pour qu'elle soit prête au démarrage. L'host n'aura plus qu'à
@@ -184,6 +189,53 @@ export function SessionConfigPage(): JSX.Element {
               </p>
               <p className="font-editorial italic text-sm text-ink-2">
                 {t('sessionConfig.modeAnimatorBody')}
+              </p>
+            </button>
+          </div>
+        </div>
+
+        {/* ── feat/option-vocal : vocal + ecrit, ou ecrit seul ──────── */}
+        <div>
+          <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-3">
+            {t('sessionConfig.answerModeChoice')}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setVocalActif(true)}
+              aria-pressed={vocalActif}
+              className={[
+                'text-left p-5 border-3 rounded shadow-pop transition-all',
+                vocalActif
+                  ? 'border-spritz-deep bg-spritz/10 -rotate-[0.4deg]'
+                  : 'border-ink bg-cream-2 hover:bg-cream',
+              ].join(' ')}
+            >
+              <p className="font-display text-2xl mb-1">
+                {vocalActif && '✓ '}
+                {t('sessionConfig.modeVoiceTitle')}
+              </p>
+              <p className="font-editorial italic text-sm text-ink-2">
+                {t('sessionConfig.modeVoiceBody')}
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setVocalActif(false)}
+              aria-pressed={!vocalActif}
+              className={[
+                'text-left p-5 border-3 rounded shadow-pop transition-all',
+                !vocalActif
+                  ? 'border-spritz-deep bg-spritz/10 rotate-[0.4deg]'
+                  : 'border-ink bg-cream-2 hover:bg-cream',
+              ].join(' ')}
+            >
+              <p className="font-display text-2xl mb-1">
+                {!vocalActif && '✓ '}
+                {t('sessionConfig.modeWrittenTitle')}
+              </p>
+              <p className="font-editorial italic text-sm text-ink-2">
+                {t('sessionConfig.modeWrittenBody')}
               </p>
             </button>
           </div>

@@ -117,6 +117,9 @@ const createSchema = z.object({
   question_set_id: z.string().uuid().optional(),
   // Mode A vs B. Défaut B (false) = "tout le monde joue", c'est le défaut B2C.
   has_animator: z.boolean().default(false),
+  // feat/option-vocal — partie 100 % écrite quand false : le téléphone des
+  // joueurs n'affiche pas le buzzer vocal, seule la saisie clavier reste.
+  voice_enabled: z.boolean().default(true),
 });
 
 router.post(
@@ -224,6 +227,7 @@ router.post(
           language: parsed.data.language,
           question_set_id: parsed.data.question_set_id ?? null,
           has_animator: parsed.data.has_animator,
+          voice_enabled: parsed.data.voice_enabled,
           short_code: shortCode,
           tv_code: tvCode,
           status: 'WAITING',
@@ -365,6 +369,9 @@ router.get(
           branding_color: session.establishment.branding_color,
           participants_count: session.participants.length,
           has_animator: session.has_animator,
+          // feat/option-vocal — le telephone doit savoir, des l ecran d accueil,
+          // s il affiche le buzzer vocal ou seulement la saisie ecrite.
+          voice_enabled: session.voice_enabled,
           master_pseudo: masterPseudo,
           current_round: currentRound
             ? {
@@ -1022,6 +1029,56 @@ router.post(
       res.json({ ok: true });
     } catch (err: unknown) {
       console.error('[POST /sessions/:id/hide-podium] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur' } });
+    }
+  },
+);
+
+// feat/option-vocal — L ANIMATEUR CHANGE D AVIS AVANT DE LANCER.
+// La reconnaissance vocale se decide a la creation de la partie, mais la
+// salle se juge sur place : trop bruyante, un micro qui refuse, un groupe
+// qui prefere ecrire. Tant que la partie n a pas demarre, l interrupteur
+// reste accessible depuis la console.
+router.post(
+  '/:id/voice-mode',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = z.object({ voice_enabled: z.boolean() }).safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({ error: { code: 'VALIDATION_ERROR', message: 'voice_enabled requis' } });
+      return;
+    }
+    const own = await ensureOwnSession(req.params.id, req.workspaceId!);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    try {
+      // Une partie deja lancee ne change pas de mode en cours de route : les
+      // joueurs ont commence a repondre, certains avec le micro ouvert.
+      const maj = await prisma.session.updateMany({
+        where: { id: own.id, status: 'WAITING' },
+        data: { voice_enabled: parsed.data.voice_enabled },
+      });
+      if (maj.count === 0) {
+        res.status(409).json({
+          error: {
+            code: 'SESSION_DEJA_LANCEE',
+            message: 'La partie a déjà démarré — le mode de réponse ne change plus.',
+          },
+        });
+        return;
+      }
+      broadcastToSession(own.id, 'session:voice_mode', {
+        session_id: own.id,
+        voice_enabled: parsed.data.voice_enabled,
+      });
+      res.json({ ok: true, voice_enabled: parsed.data.voice_enabled });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/voice-mode] error:', err);
       res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur' } });
     }
   },

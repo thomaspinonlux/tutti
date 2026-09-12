@@ -637,6 +637,10 @@ model Session {
   podium_hidden_at    DateTime?     @db.Timestamptz(6)
   // Durée de la fenêtre micro joueur (10s défaut, 15s en mode "détendu").
   buzz_window_seconds Int           @default(10)
+  /// feat/option-vocal — la reconnaissance vocale est un réglage de partie,
+  /// décidé au lancement. false = partie 100 % écrite : le buzzer vocal
+  /// disparaît du téléphone des joueurs, seule la saisie clavier reste.
+  voice_enabled       Boolean       @default(true)
   // Cap technique de participants par session (15 V1 pour B2C).
   max_participants    Int           @default(15)
   created_at          DateTime      @default(now()) @db.Timestamptz(6)

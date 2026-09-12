@@ -123,6 +123,12 @@ export function PlayPage(): JSX.Element {
   const shortCode = (params.get('session') ?? '').toUpperCase();
 
   const [view, setView] = useState<PublicSessionView | null>(null);
+  /**
+   * feat/option-vocal — la reconnaissance vocale est-elle active dans cette
+   * partie ? Reglee au lancement. Un serveur plus ancien n envoie pas le
+   * champ : on considere alors le vocal actif, comme avant.
+   */
+  const vocalActif = view?.voice_enabled !== false;
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('pseudo');
   // feat/telephone-au-style-tv — tout l ecran joueur est sombre : accueil,
@@ -358,6 +364,12 @@ export function PlayPage(): JSX.Element {
       );
     });
 
+    // feat/option-vocal — l animateur peut basculer le mode de reponse depuis
+    // la console tant que la partie n a pas demarre : les telephones deja
+    // connectes doivent suivre sans rechargement.
+    sock.on('session:voice_mode', ({ voice_enabled }: { voice_enabled: boolean }) => {
+      setView((prev) => (prev ? { ...prev, voice_enabled } : prev));
+    });
     sock.on('participant:joined', ({ participant }: { participant: Participant }) => {
       setParticipantsCount((c) => c + 1);
       setParticipantsList((prev) => [...prev, participant]);
@@ -611,6 +623,15 @@ export function PlayPage(): JSX.Element {
   };
 
   const handleOnboardingContinue = async (): Promise<void> => {
+    // feat/option-vocal — PARTIE ECRITE : ON NE DEMANDE PAS LE MICRO.
+    // Reclamer l autorisation micro dans une partie ou le buzzer vocal
+    // n existe pas, c est une fenetre systeme anxiogene pour rien — et un
+    // refus envoyait le joueur sur l ecran d erreur micro, sans issue.
+    if (!vocalActif) {
+      markOnboardingDone();
+      await doJoin(selectedTeam);
+      return;
+    }
     setMicRequesting(true);
     const res = await requestMicPermission();
     setMicRequesting(false);
@@ -1083,6 +1104,7 @@ export function PlayPage(): JSX.Element {
                 roundPosition={currentRound?.position ?? null}
                 isMaster={isMaster}
                 isPaused={isPaused}
+                vocalActif={vocalActif}
                 // fix/engrenage-mort — IL OUVRAIT UN PANNEAU DÉJÀ FERMÉ.
                 // Le bouton ⚙ de l'animateur appelait la fermeture au lieu de
                 // l'ouverture : aucun changement d'état, aucun rendu, bouton
@@ -1408,6 +1430,11 @@ interface PlayingViewExtraProps {
   isPaused: boolean;
   /** Classement cumule de la partie — sert au classement du titre (animateur). */
   cumulative: CumulativeScore[];
+  /**
+   * feat/option-vocal — false = partie 100 % ecrite : pas de buzzer vocal,
+   * la saisie clavier devient le seul moyen de repondre.
+   */
+  vocalActif?: boolean;
 }
 
 export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Element {
@@ -1429,6 +1456,7 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
     onMasterPause,
     isPaused,
     cumulative,
+    vocalActif = true,
   } = props;
   const [recState, setRecState] = useState<RecState>({ kind: 'idle' });
   const [buzzCooldownUntil, setBuzzCooldownUntil] = useState(0);
@@ -2118,27 +2146,41 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
         // BUZZ + TextInput sous le header avec un gap fixe minimal. Le BUZZ
         // est en taille FIXE 240×240 (cf BuzzerArea) pour iPhone SE/14.
         <div className="flex flex-col gap-2">
-          <div className="flex justify-center">
-            <BuzzerArea
-              onBuzz={() => void handleBuzz()}
-              disabled={buzzerDisabled}
-              isPhase3={isPhase3}
-              isPhase3Skipped={phase === 'phase3-skipped'}
-              error={error}
-              analyzing={recState.kind === 'uploading'}
-              isPlaying={!!currentTrack && !isPaused && (isPhase1 || isPhase2)}
-            />
-          </div>
-          {/* Saisie texte alternative au buzz vocal — collée sous le BUZZ
-              (pas sticky bottom, pas mt-auto). 16px de gap max via gap-2 du
-              parent. */}
+          {/* feat/option-vocal — dans une partie 100 % ecrite, le vinyle
+              disparait : il n y a rien a buzzer, la reponse se tape. */}
+          {vocalActif && (
+            <div className="flex justify-center">
+              <BuzzerArea
+                onBuzz={() => void handleBuzz()}
+                disabled={buzzerDisabled}
+                isPhase3={isPhase3}
+                isPhase3Skipped={phase === 'phase3-skipped'}
+                error={error}
+                analyzing={recState.kind === 'uploading'}
+                isPlaying={!!currentTrack && !isPaused && (isPhase1 || isPhase2)}
+              />
+            </div>
+          )}
+          {/* Saisie texte : alternative au buzz vocal, ou SEUL moyen de
+              repondre quand le vocal est desactive — elle prend alors la
+              place du vinyle, avec sa consigne. */}
           {(isPhase1 || isPhase2) && !myCorrect && !isPaused && (
-            <div className="px-1">
+            <div className={vocalActif ? 'px-1' : `${TEL_PANNEAU} p-4`}>
+              {!vocalActif && (
+                <p className="mb-3 text-center font-display text-lg text-white">
+                  {t('play.textOnlyHint')}
+                </p>
+              )}
               <TextAnswerInput
                 onSubmit={(text) => void handleTextAnswer(text)}
                 busy={textBusy}
                 disabled={recState.kind !== 'idle' || !!myCorrect}
               />
+              {!vocalActif && error && (
+                <p role="alert" className="mt-2 text-center text-sm" style={{ color: TEL_CORAIL }}>
+                  {error}
+                </p>
+              )}
             </div>
           )}
         </div>

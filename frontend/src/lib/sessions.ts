@@ -32,6 +32,12 @@ export interface CreateSessionInput {
   question_set_id?: string;
   /** false = mode B "tout le monde joue" (défaut), true = mode A avec animateur. */
   has_animator?: boolean;
+  /**
+   * feat/option-vocal — false = partie 100 % écrite : le téléphone des
+   * joueurs n'affiche pas le buzzer vocal, seule la saisie clavier reste.
+   * Défaut true.
+   */
+  voice_enabled?: boolean;
 }
 
 export async function createSession(input: CreateSessionInput): Promise<Session> {
@@ -45,6 +51,17 @@ export async function getSession(
   return api<{ session: SessionWithParticipants; cumulative: CumulativeScore[] }>(
     `/api/sessions/by-id/${encodeURIComponent(id)}`,
   );
+}
+
+/**
+ * feat/option-vocal — bascule le mode de reponse avant le lancement.
+ * Refuse (409) si la partie a deja demarre.
+ */
+export async function setVoiceMode(id: string, voiceEnabled: boolean): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(id)}/voice-mode`, {
+    method: 'POST',
+    body: { voice_enabled: voiceEnabled },
+  });
 }
 
 /** feat/classement-final-persistant — ferme le podium final (console). */

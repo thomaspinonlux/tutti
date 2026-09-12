@@ -257,7 +257,12 @@
     "teamRemove": "Retirer cette équipe",
     "language": "Langue par défaut",
     "create": "Créer la partie",
-    "creating": "Création…"
+    "creating": "Création…",
+    "answerModeChoice": "Comment les joueurs répondent",
+    "modeVoiceTitle": "À la voix et au clavier",
+    "modeVoiceBody": "Les joueurs buzzent et disent leur réponse. Le clavier reste disponible pour ceux qui préfèrent écrire.",
+    "modeWrittenTitle": "Au clavier seulement",
+    "modeWrittenBody": "Pas de buzzer vocal, pas de micro demandé : les joueurs tapent leur réponse. Utile en salle bruyante."
   },
   "rules": {
     "title": "Comment jouer",
@@ -743,6 +748,7 @@
     "notMatched": "Pas reconnu, retente !",
     "notMatchedShort": "❌ Pas reconnu, retente !",
     "textAnswerPlaceholder": "📝 Écris ta réponse…",
+    "textOnlyHint": "Écris le titre, l'artiste — ou les deux",
     "textAnswerSubmit": "Envoyer",
     "scoreArtist": "pts ({{n}}ᵉ place)",
     "scoreSpeed": "pts bonus vitesse",

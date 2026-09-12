@@ -257,7 +257,12 @@
     "teamRemove": "Remove team",
     "language": "Default language",
     "create": "Create the game",
-    "creating": "Creating…"
+    "creating": "Creating…",
+    "answerModeChoice": "How players answer",
+    "modeVoiceTitle": "Voice and keyboard",
+    "modeVoiceBody": "Players buzz in and say their answer. The keyboard stays available for those who prefer typing.",
+    "modeWrittenTitle": "Keyboard only",
+    "modeWrittenBody": "No voice buzzer, no microphone prompt: players type their answer. Handy in a noisy room."
   },
   "rules": {
     "title": "How to play",
@@ -743,6 +748,7 @@
     "notMatched": "Not recognized, try again!",
     "notMatchedShort": "❌ Not recognized, try again!",
     "textAnswerPlaceholder": "📝 Type your answer…",
+    "textOnlyHint": "Type the title, the artist — or both",
     "textAnswerSubmit": "Send",
     "scoreArtist": "pts (place #{{n}})",
     "scoreSpeed": "pts speed bonus",

@@ -55,6 +55,7 @@ import {
   startSession,
   toggleParticipantMaster,
   hidePodium,
+  setVoiceMode,
 } from '../lib/sessions.js';
 import {
   abandonSession,
@@ -2498,6 +2499,18 @@ function HostPageInner(): JSX.Element {
             // que la musique partait normalement.
             audioProvider === 'youtube' ? youtube.getPlayerState : undefined
           }
+          vocalActif={session?.voice_enabled !== false}
+          onToggleVocal={(actif) => {
+            if (!session) return;
+            // feat/option-vocal — mise a jour optimiste : l interrupteur
+            // repond tout de suite, le serveur confirme et previent les
+            // telephones deja connectes.
+            setSession((prev) => (prev ? { ...prev, voice_enabled: actif } : prev));
+            void setVoiceMode(session.id, actif).catch((err: unknown) => {
+              setSession((prev) => (prev ? { ...prev, voice_enabled: !actif } : prev));
+              setError((err as Error).message);
+            });
+          }}
         />
       </>
     );

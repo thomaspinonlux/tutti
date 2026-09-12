@@ -68,6 +68,14 @@ interface Props {
    * 1500ms = bloqué par autoplay policy navigateur).
    */
   getYoutubeState?: () => number | null;
+  /**
+   * feat/option-vocal — mode de réponse de la partie. Quand les deux props
+   * sont fournies, l'interrupteur s'affiche : l'animateur juge la salle au
+   * dernier moment (trop bruyante, micro capricieux) et bascule en 100 %
+   * écrit avant de lancer.
+   */
+  vocalActif?: boolean;
+  onToggleVocal?: (actif: boolean) => void;
 }
 
 export function PreGameStartScreen({
@@ -80,6 +88,8 @@ export function PreGameStartScreen({
   onCancel,
   onYoutubeWarmup,
   getYoutubeState,
+  vocalActif,
+  onToggleVocal,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   const silentAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -226,6 +236,37 @@ export function PreGameStartScreen({
             </div>
           )}
 
+          {/* feat/option-vocal — dernier reglage avant de lancer. */}
+          {typeof vocalActif === 'boolean' && onToggleVocal && (
+            <div className="mt-8 flex items-center justify-center gap-3">
+              <span className="font-mono text-sm uppercase tracking-[0.18em] text-cream/60">
+                {t('sessionConfig.answerModeChoice')}
+              </span>
+              <div className="inline-flex overflow-hidden rounded-2xl border border-white/15">
+                <button
+                  type="button"
+                  onClick={() => onToggleVocal(true)}
+                  aria-pressed={vocalActif}
+                  className={`px-4 py-2 text-sm font-bold transition-colors ${
+                    vocalActif ? 'bg-[#FF5C4D] text-[#0B0B0F]' : 'bg-transparent text-cream/70'
+                  }`}
+                >
+                  🎤 {t('sessionConfig.modeVoiceTitle')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onToggleVocal(false)}
+                  aria-pressed={!vocalActif}
+                  className={`px-4 py-2 text-sm font-bold transition-colors ${
+                    !vocalActif ? 'bg-[#FF5C4D] text-[#0B0B0F]' : 'bg-transparent text-cream/70'
+                  }`}
+                >
+                  ⌨ {t('sessionConfig.modeWrittenTitle')}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* feat/rules — option host : voir/masquer les règles que voient les joueurs */}
           <div className="mt-8">
             <button
@@ -237,7 +278,7 @@ export function PreGameStartScreen({
             </button>
             {showRules && (
               <div className="mt-4 max-w-md mx-auto">
-                <GameRules />
+                <GameRules sombre />
               </div>
             )}
           </div>

@@ -247,6 +247,9 @@ function serializeSession(
     has_animator: session.has_animator,
     is_paused: session.is_paused,
     buzz_window_seconds: session.buzz_window_seconds,
+    // feat/option-vocal — la TV et la console doivent savoir si la partie est
+    // en mode 100 % ecrit.
+    voice_enabled: session.voice_enabled,
     max_participants: session.max_participants,
     created_at: session.created_at.toISOString(),
     started_at: session.started_at ? session.started_at.toISOString() : null,

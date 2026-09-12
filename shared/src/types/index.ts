@@ -179,6 +179,13 @@ export interface Session {
    * après un buzz pour capter la réponse vocale.
    */
   buzz_window_seconds: number;
+  /**
+   * feat/option-vocal — la reconnaissance vocale est-elle active dans cette
+   * partie ? false = partie 100 % écrite : le buzzer vocal disparaît du
+   * téléphone des joueurs, seule la saisie clavier reste. Décidé au
+   * lancement, modifiable tant que la partie n'a pas démarré.
+   */
+  voice_enabled: boolean;
   /** Cap technique de participants par session (15 par défaut V1 B2C). */
   max_participants: number;
   created_at: string;
@@ -523,6 +530,13 @@ export interface PublicSessionView {
   participants_count: number;
   /** Mode A (true) vs Mode B (false). Le tel adapte ses contrôles selon. */
   has_animator: boolean;
+  /**
+   * feat/option-vocal — reconnaissance vocale active dans cette partie.
+   * false = partie 100 % écrite : le téléphone n'affiche pas le buzzer vocal,
+   * seule la saisie clavier reste. Optionnel pour rétrocompatibilité avec un
+   * serveur plus ancien (absent = vocal actif).
+   */
+  voice_enabled?: boolean;
   /** Pseudo du master désigné (mode B). null si personne n'est encore animateur. */
   master_pseudo: string | null;
 }
