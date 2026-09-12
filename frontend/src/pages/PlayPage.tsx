@@ -93,15 +93,7 @@ import {
   MasterAdjustPointsSheet,
   type ParticipantOption,
 } from '../components/play/MasterAdjustPointsSheet.js';
-import {
-  Badge,
-  Button,
-  Card,
-  Input,
-  MultiColorBar,
-  TitleHandwritten,
-  Underline,
-} from '../components/ui/index.js';
+import { MultiColorBar } from '../components/ui/index.js';
 import { PlayQuizzView } from '../components/play/quizz/PlayQuizzView.js';
 import { VinylBuzzer } from '../components/play/VinylBuzzer.js';
 import { ClassementDuTitre } from '../components/game/ClassementDuTitre.js';
