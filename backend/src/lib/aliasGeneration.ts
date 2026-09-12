@@ -93,7 +93,7 @@ export async function generateAliases(
 
     const block = response.content[0];
     const text = block && block.type === 'text' ? block.text : '';
-    const aliases = withCombinationAliases(parseAliasesJson(text), title, artist);
+    const aliases = sansLeNomDeLArtiste(parseAliasesJson(text), title, artist);
     const latency_ms = Date.now() - t0;
 
     console.info(
@@ -194,34 +194,36 @@ Track à analyser :
 
 Génère EXACTEMENT 10 aliases que des joueurs francophones sont susceptibles de prononcer ou que la transcription Deepgram (en mode FR) peut produire.
 
+Ces aliases servent A RECONNAITRE LE TITRE, et RIEN D AUTRE. Le nom de
+l'artiste ne doit JAMAIS y figurer, ni seul, ni collé au titre : l'artiste a
+ses propres aliases, et le moteur juge les deux moitiés séparément (dire
+l'artiste ne doit pas donner les points du titre).
+
 OBLIGATOIRE — Inclus ces catégories (10 entrées au TOTAL):
 1. Le titre exact (minuscules, sans ponctuation)
 2. Le titre sans articles (the, le, la, les, a, an)
-3. 2-3 variations phonétiques françaises du titre (comment un Français qui ne parle pas anglais prononcerait)
-4. Le nom de l'artiste seul (minuscules)
-5. Une variation phonétique FR du nom de l'artiste
-6. La combinaison "artiste + titre" en une seule chaîne minuscule
-7. 1-2 transcriptions phonétiques typiques que Deepgram FR retournerait pour un titre EN
-8. Surnoms ou raccourcis courants si applicable
+3. 3-4 variations phonétiques françaises du titre (comment un Français qui ne parle pas anglais prononcerait)
+4. 2-3 transcriptions phonétiques typiques que Deepgram FR retournerait pour un titre EN
+5. Surnoms ou raccourcis courants du TITRE si applicable
 
 ${langContext}
 
 Exemples de qualité attendue :
 
 Pour "Cheap Thrills" par "Sia" :
-["cheap thrills", "chip trill", "tchip trim", "tchip thrille", "chip thril", "sia", "siah", "sia cheap thrills", "siah cheep", "sia thrills"]
+["cheap thrills", "chip trill", "tchip trim", "tchip thrille", "chip thril", "cheap thrill", "tchip trills", "chip trils", "tchip", "cheap trills"]
 
 Pour "Basket Case" par "Green Day" :
-["basket case", "basquette case", "basket queue", "basquette queue", "green day", "grine day", "grine dé", "green day basket case", "basquette", "cas baskette"]
+["basket case", "basquette case", "basket queue", "basquette queue", "basquette kaze", "baskette case", "basket cass", "basquette", "cas baskette", "basket kase"]
 
 Pour "Hung Up" par "Madonna" :
-["hung up", "hongup", "hangap", "hanguépe", "anguéppe", "madonna", "madona", "madonna hung up", "hunga", "anguppé"]
+["hung up", "hongup", "hangap", "hanguépe", "anguéppe", "hunga", "anguppé", "hong ap", "heung up", "hangup"]
 
 RÈGLES STRICTES :
 - Format : JSON array de 10 strings, tout en minuscules
 - Pas d'articles inutiles
 - Pas de doublons
-- L'artiste est OBLIGATOIRE comme alias séparé
+- INTERDIT : le nom de l'artiste, seul ou combiné au titre
 - Une phonétique FR est OBLIGATOIRE pour les titres en anglais
 - Réponds UNIQUEMENT avec le JSON array, sans préambule, sans markdown
 
@@ -325,35 +327,41 @@ function normForCombo(s: string): string {
 }
 
 /**
- * Ajoute aux alias IA les 3 combinaisons titre/artiste dans l'ordre parlé
- * naturel du français, pour tous les nouveaux titres :
- *   - "<titre> <artiste>"      → "bad romance lady gaga"
- *   - "<titre> de <artiste>"   → "bad romance de lady gaga"
- *   - "<artiste> <titre>"      → "lady gaga bad romance"
+ * fix/artiste-hors-des-alias-de-titre — LE NOM DE L ARTISTE N A RIEN A FAIRE
+ * DANS LES ALIAS DU TITRE.
  *
- * But : un joueur qui dit le titre ET l'artiste dans une même phrase marque les
- * points des DEUX (voiceMatch matche titre et artiste sur des n-grams distincts,
- * cf. lib/voiceMatch.ts). Les alias existants ne couvraient que "artiste titre".
+ * Cette fonction fabriquait exactement l inverse : elle AJOUTAIT
+ * « <titre> <artiste> », « <titre> de <artiste> » et « <artiste> <titre> » aux
+ * alias de titre, et le prompt reclamait en plus le nom de l artiste seul.
+ * C etait correct pour l ancien moteur (voiceMatch, n-grammes), qui cherchait
+ * titre et artiste dans des fenetres distinctes de la meme chaine.
  *
- * Déduplication : insensible à la casse, contre les alias déjà produits (qui
- * sont déjà en minuscules via parseAliasesJson).
+ * Le moteur actuel compare le transcript a CHAQUE alias de titre et prend le
+ * meilleur score : un alias qui contient le nom de l artiste fait gagner les
+ * points du TITRE a qui n a dit que le chanteur. Mesure sur la soiree du
+ * 11/09 : « Usher » seul decrochait le bonus du titre *Yeah!* grace a l alias
+ * « usher yeah ». Et dire les deux n a plus besoin d aide — combinedScore
+ * reconnait le titre contenu mot a mot dans une phrase plus longue (« lady
+ * gaga bad romance » -> 90 sur *Bad Romance*).
+ *
+ * Verification avant nettoyage : en retirant TOUS les alias de titre
+ * contenant le nom de l artiste, les 1 011 reponses du 11/09 rendent le meme
+ * verdict a deux pres — deux bonus de titre qui n etaient pas merites.
  */
-function withCombinationAliases(aliases: string[], title: string, artist: string): string[] {
-  const t = normForCombo(title);
+function sansLeNomDeLArtiste(aliases: string[], title: string, artist: string): string[] {
   const a = normForCombo(artist);
-  // Sans titre OU sans artiste exploitable, aucune combinaison n'a de sens.
-  if (!t || !a) return aliases;
-
-  const combos = [`${t} ${a}`, `${t} de ${a}`, `${a} ${t}`];
-  const seen = new Set(aliases.map((x) => x.toLowerCase()));
-  const out = [...aliases];
-  for (const combo of combos) {
-    if (combo.length < 2) continue;
-    if (seen.has(combo)) continue;
-    seen.add(combo);
-    out.push(combo);
-  }
-  return out;
+  const t = normForCombo(title);
+  if (!a) return aliases;
+  const morceauxDuNom = [a, ...a.split(/\s+/).filter((m) => m.length >= 4)];
+  return aliases.filter((alias) => {
+    const n = normForCombo(alias);
+    if (!n) return false;
+    // Un titre qui CONTIENT vraiment le nom de l artiste se garde tel quel
+    // (« Bohemian Rhapsody » n est pas concerne, mais « Ziggy Stardust » d un
+    // groupe nomme Ziggy le serait) : on ne jette que ce qui ajoute le nom.
+    if (t.includes(a)) return true;
+    return !morceauxDuNom.some((m) => n === m || n.includes(m));
+  });
 }
 
 /**

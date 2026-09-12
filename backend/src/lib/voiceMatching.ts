@@ -83,7 +83,22 @@ const STOPWORDS = new Set([
  *   - "Like a Prayer!" → "like prayer"
  *   - "L'été indien" → "ete indien"  (l' supprimé comme stopword)
  */
-export function normalizeText(text: string): string {
+/**
+ * fix/titre-mange-par-les-mots-outils — UN MOT-OUTIL QUI EST LE TITRE DOIT
+ * SURVIVRE.
+ *
+ * « Yeah! » (Usher) se reduisait a la chaine VIDE : « yeah » figure dans la
+ * liste des mots sans interet, jetee des deux cotes. Le titre ne pouvait donc
+ * mathematiquement jamais etre reconnu — et c est un alias de titre contenant
+ * le nom de l artiste (« usher yeah ») qui rattrapait le coup, en donnant les
+ * points du TITRE a qui disait seulement « Usher ». Soiree du 11/09 : quatre
+ * bonus doubles voles de cette facon.
+ *
+ * `motsProteges` contient les mots-outils presents dans la reponse ATTENDUE :
+ * ceux-la restent, des deux cotes. « yeah » compte quand le titre est
+ * *Yeah!*, et reste ignore partout ailleurs.
+ */
+export function normalizeText(text: string, motsProteges?: Set<string>): string {
   if (!text) return '';
   const base = text
     .toLowerCase()
@@ -112,7 +127,11 @@ export function normalizeText(text: string): string {
 
   // Tokenize sur espaces + apostrophes (pour séparer "l'ete" → ["l", "ete"]).
   // On split sur apostrophe ET espace, puis filtre les stopwords.
-  const tokens = base.split(/[\s']+/).filter((tok) => tok.length > 0 && !STOPWORDS.has(tok));
+  const bruts = base.split(/[\s']+/).filter((tok) => tok.length > 0);
+  const tokens = bruts.filter((tok) => !STOPWORDS.has(tok) || motsProteges?.has(tok));
+  // Un titre entierement compose de mots-outils (« Yeah! », « Oh la la ») ne
+  // doit pas devenir une chaine vide : on garde alors les mots tels quels.
+  if (tokens.length === 0) return bruts.join(' ');
   return tokens.join(' ');
 }
 
@@ -160,9 +179,9 @@ function levenshteinDistance(a: string, b: string): number {
  * que "abc" vs "abcd" (1 edit / 4 chars) = 75% mais "x" vs "xy" (1 edit /
  * 2 chars) = 50%.
  */
-export function levenshteinScore(a: string, b: string): number {
-  const na = normalizeText(a);
-  const nb = normalizeText(b);
+export function levenshteinScore(a: string, b: string, motsProteges?: Set<string>): number {
+  const na = normalizeText(a, motsProteges);
+  const nb = normalizeText(b, motsProteges);
   // fix/points-sans-rien-dire — DEUX CHAÎNES VIDES NE VALENT PAS 100 %.
   // La normalisation retire les mots outils : un titre très court composé
   // uniquement de ces mots se réduit à une chaîne vide. Combiné à une
@@ -200,9 +219,9 @@ function metaphonesMatch(a: string, b: string): boolean {
  * Si les longueurs diffèrent, on utilise le max comme dénominateur pour
  * pénaliser les phrases trop courtes/longues.
  */
-export function phoneticScore(a: string, b: string): number {
-  const na = normalizeText(a);
-  const nb = normalizeText(b);
+export function phoneticScore(a: string, b: string, motsProteges?: Set<string>): number {
+  const na = normalizeText(a, motsProteges);
+  const nb = normalizeText(b, motsProteges);
   // fix/points-sans-rien-dire — DEUX CHAÎNES VIDES NE VALENT PAS 100 %.
   // La normalisation retire les mots outils : un titre très court composé
   // uniquement de ces mots se réduit à une chaîne vide. Combiné à une
@@ -257,9 +276,31 @@ export function phoneticScore(a: string, b: string): number {
  *      QUELQUE PART dans le transcript (ordre libre), on ajoute +15 pts.
  *      Couvre "Mistral Gagnant Renaud" vs "Renaud Mistral Gagnant".
  */
+/**
+ * Mots-outils a garder pour cette comparaison — cf. normalizeText.
+ *
+ * UNIQUEMENT quand la reponse attendue n est faite QUE de mots-outils
+ * (« Yeah! », « Oh la la ») : sans cela elle se reduit a rien et ne peut
+ * jamais etre reconnue. Des qu il reste un mot porteur, on ne protege rien :
+ * garder le « a » de *Like a Prayer* ajoutait un jeton qui se rapprochait
+ * phonetiquement de n importe quoi (« yo banane » passait de 6 a 27).
+ */
+export function motsAProteger(expected: string): Set<string> {
+  const bruts = (expected ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^\p{L}\p{N}\s']/gu, ' ')
+    .split(/[\s']+/)
+    .filter(Boolean);
+  if (bruts.length === 0 || bruts.some((m) => !STOPWORDS.has(m))) return new Set();
+  return new Set(bruts);
+}
+
 export function combinedScore(transcript: string, expected: string): number {
-  const lev = levenshteinScore(transcript, expected);
-  const phon = phoneticScore(transcript, expected);
+  const proteges = motsAProteger(expected);
+  const lev = levenshteinScore(transcript, expected, proteges);
+  const phon = phoneticScore(transcript, expected, proteges);
   let combined = Math.round(0.6 * lev + 0.4 * phon);
   if (lev < 30 && phon === 0) {
     combined = Math.floor(combined * 0.5);
@@ -272,8 +313,8 @@ export function combinedScore(transcript: string, expected: string): number {
   // titres : une reponse totalement fausse etait acceptee dans 0,15 % des
   // cas, toujours par ce mecanisme. L alias doit desormais apparaitre comme
   // une suite de mots entiers du transcript.
-  const nt = normalizeText(transcript);
-  const ne = normalizeText(expected);
+  const nt = normalizeText(transcript, proteges);
+  const ne = normalizeText(expected, proteges);
   if (ne.length >= 3 && nt.length >= ne.length) {
     const motsT = nt.split(' ');
     const motsE = ne.split(' ');
