@@ -1961,10 +1961,51 @@ function HostPageInner(): JSX.Element {
   // plutôt que de sauter toute la manche en silence.
   const refusConsecutifsRef = useRef(0);
   const dernierRefusIdRef = useRef('');
+  /** fix/cascade-de-morceaux-sautes — essais de rattrapage déjà faits, par morceau. */
+  const essaisRattrapageRef = useRef<Map<string, number>>(new Map());
   useEffect(() => {
     const refus = apple.refusNatif;
     if (!refus || !session || !playingRound) return;
     if (!currentTrack || currentTrack.provider_track_id !== refus.id) return;
+
+    // fix/cascade-de-morceaux-sautes — UN REFUS N'EST PAS FORCÉMENT LE MORCEAU.
+    //
+    // Soirée du 11/09, 22:43 (journal serveur) : « Bella » échoue vraiment
+    // (erreur Apple), le pont natif observe alors sa pause de sécurité de 8 s
+    // avant de réinterroger Apple. Pendant ces 8 s, la console est passée au
+    // suivant, qui a été refusé par la pause — pas par Apple — puis au suivant,
+    // puis au suivant :
+    //     Apple refuse le morceau — Bella      (vrai échec)
+    //     Apple refuse le morceau — Réseaux    (pause apres erreur, encore 6 s)
+    //     Apple refuse le morceau — Tchikita   (pause apres erreur, encore 5 s)
+    //     Apple refuse le morceau — Life       (pause apres erreur, encore 3 s)
+    // Quatre titres brûlés en huit secondes et la manche Hip-Hop FR arrêtée.
+    // Même mécanique à 21:36 sur « Under Pressure », qui a mis fin à la
+    // manche 1 après un seul titre.
+    //
+    // Ces refus-là disent « pas maintenant », pas « pas ce morceau » : on
+    // attend la fin de la pause annoncée et on relance LE MÊME morceau.
+    const refusTemporaire =
+      /pas disponible à l'instant|déjà en cours de démarrage|recherche\(s\) Apple bloquee/i.test(
+        refus.message,
+      );
+    if (refusTemporaire) {
+      const secondes = /encore (\d+)\s*s/.exec(refus.message);
+      const attenteMs = secondes ? (Number(secondes[1]) + 1) * 1000 : 3000;
+      remoteLog(
+        'lancement',
+        'refus temporaire du pont — on attend, on ne saute pas le morceau',
+        { id: refus.id, titre: currentTrack.title || refus.id, erreur: refus.message, attenteMs },
+        'warn',
+      );
+      const vise = refus.id;
+      window.setTimeout(() => {
+        if (currentTrackRef.current?.provider_track_id !== vise) return; // l'animateur a changé
+        void appleRef.current.play(vise);
+      }, attenteMs);
+      return;
+    }
+
     if (dernierRefusIdRef.current === refus.id) return; // déjà traité
     dernierRefusIdRef.current = refus.id;
     refusConsecutifsRef.current += 1;
@@ -1997,6 +2038,30 @@ function HostPageInner(): JSX.Element {
     }
     if (refusConsecutifsRef.current > 3) {
       setError(`Apple Music refuse trois morceaux d'affilée (« ${titre} »). Vérifie la connexion Apple Music, ou change de playlist.`);
+      return;
+    }
+    // fix/cascade-de-morceaux-sautes — UN SEUL ÉCHEC NE CONDAMNE PAS LE MORCEAU.
+    // « Bella », « Under Pressure », « Réseaux », « Tchikita » et « Life » sont
+    // tous les cinq vérifiés présents et diffusables dans la boutique FR
+    // (contrôle API du 12/09) : l'échec du 11/09 était passager. On redonne
+    // donc une chance au morceau — après la pause de sécurité du pont — avant
+    // de le sauter.
+    const essais = essaisRattrapageRef.current.get(refus.id) ?? 0;
+    if (essais < 1) {
+      essaisRattrapageRef.current.set(refus.id, essais + 1);
+      dernierRefusIdRef.current = ''; // le prochain refus de ce morceau sera retraité
+      remoteLog(
+        'lancement',
+        'Apple a refusé ce morceau — nouvel essai avant de passer au suivant',
+        { id: refus.id, titre, erreur: refus.message },
+        'warn',
+      );
+      setError(`Apple Music n'a pas démarré « ${titre} » — nouvel essai…`);
+      const vise = refus.id;
+      window.setTimeout(() => {
+        if (currentTrackRef.current?.provider_track_id !== vise) return;
+        void appleRef.current.play(vise);
+      }, 9000); // la pause de sécurité du pont natif dure 8 s
       return;
     }
     setError(`Apple Music ne peut pas lire « ${titre} » — passage au suivant.`);

@@ -278,8 +278,32 @@ export function PlayPage(): JSX.Element {
           error?: string;
         }) => {
           if (!resp.ok) {
+            // fix/joueur-qui-perd-sa-place — ON N EFFACE QUE SI C EST VOULU.
+            //
+            // Soiree du 11/09 : une joueuse a du se reinscrire sous un nouveau
+            // pseudo en cours de partie, et l animateur lui a retransfere ses
+            // 456 points a la main. Ici, TOUTE reponse negative du serveur
+            // effacait l identite du telephone et renvoyait a l ecran pseudo —
+            // y compris une panne passagere (base indisponible, delai depasse),
+            // qui renvoie simplement le message de l exception. Le joueur
+            // perdait alors sa place pour un incident de deux secondes.
+            //
+            // Seule l exclusion par l animateur justifie d oublier le joueur.
+            // Tout le reste laisse l identite en place : la bibliotheque
+            // Socket.IO retentera, et le journal garde la trace du motif.
+            const exclu = resp.error === 'PARTICIPANT_EXCLU';
+            remoteLog(
+              'session',
+              exclu ? 'joueur exclu par l animateur' : 'session:join refuse — identite conservee',
+              { pseudo: identity.pseudo, motif: resp.error ?? '(aucun)' },
+              exclu ? 'warn' : 'error',
+            );
+            if (!exclu) {
+              setError(t('play.reconnecting'));
+              return;
+            }
             clearParticipantContext(shortCode);
-            setError(resp.error ?? t('play.kicked'));
+            setError(t('play.kicked'));
             setIdentity(null);
             setStep('pseudo');
             return;

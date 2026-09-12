@@ -658,6 +658,7 @@
     "notFound": "Session not found. Check the code.",
     "alreadyStarted": "This game is already running or finished.",
     "kicked": "You have been kicked from the game.",
+    "reconnecting": "Connection dropped for a moment — reconnecting you…",
     "pseudoLabel": "Your nickname",
     "pseudoPlaceholder": "Ex: Florian",
     "pseudoTagline": "Pick a nickname, it'll appear on the main screen.",

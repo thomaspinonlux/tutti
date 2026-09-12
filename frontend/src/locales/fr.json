@@ -658,6 +658,7 @@
     "notFound": "Session introuvable. Vérifie le code.",
     "alreadyStarted": "Cette partie est déjà en cours ou terminée.",
     "kicked": "Tu as été exclu de la partie.",
+    "reconnecting": "Connexion perdue un instant — on te remet en jeu…",
     "pseudoLabel": "Ton pseudo",
     "pseudoPlaceholder": "Ex : Florian",
     "pseudoTagline": "Choisis un pseudo, ça apparaîtra sur l'écran principal.",
