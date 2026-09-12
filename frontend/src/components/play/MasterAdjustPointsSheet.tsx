@@ -7,7 +7,10 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Input } from '../ui/index.js';
+// feat/telephone-au-style-tv — le panneau de l'animateur reprend les codes
+// de la TV, comme le reste du téléphone.
+const CORAIL = '#FF5C4D';
+
 
 export interface ParticipantOption {
   id: string;
@@ -68,35 +71,35 @@ export function MasterAdjustPointsSheet(props: Props): JSX.Element | null {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 bg-ink/40 flex items-end justify-center"
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end justify-center"
       onClick={(e) => {
         if (e.target === e.currentTarget) props.onClose();
       }}
     >
-      <div className="w-full max-w-[500px] bg-cream max-h-[90vh] overflow-y-auto rounded-t-2xl border-t-3 border-ink shadow-pop">
+      <div className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-t-[24px] border-t border-white/10 bg-[#191922] text-white shadow-[0_-24px_70px_rgba(0,0,0,0.6)]">
         <div className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <p className="font-display text-xl">⚖ {t('play.masterAdjustTitle')}</p>
+          <div className="mb-4 flex items-center justify-between">
+            <p className="font-display text-xl text-white">⚖ {t('play.masterAdjustTitle')}</p>
             <button
               type="button"
               onClick={props.onClose}
               aria-label={t('common.cancel')}
-              className="text-2xl text-ink-soft hover:text-ink"
+              className="text-2xl text-white/50 hover:text-white"
             >
               ✕
             </button>
           </div>
 
-          <p className="font-editorial italic text-sm text-ink-soft mb-4">
+          <p className="mb-4 font-editorial text-sm italic text-white/60">
             {t('play.masterAdjustHint')}
           </p>
 
-          <Card>
-            <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-2">
+          <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <p className="mb-2 font-mono text-xs uppercase tracking-wider text-white/50">
               {t('play.masterAdjustParticipant')}
             </p>
             {props.participants.length === 0 ? (
-              <p className="font-editorial italic text-sm text-ink-soft py-3">
+              <p className="py-3 font-editorial text-sm italic text-white/45">
                 {t('host.waitingForPlayers')}
               </p>
             ) : (
@@ -107,70 +110,81 @@ export function MasterAdjustPointsSheet(props: Props): JSX.Element | null {
                       type="button"
                       onClick={() => setTargetId(p.id)}
                       className={[
-                        'w-full text-left flex items-center justify-between gap-2 px-3 py-2 border-2 rounded text-sm',
+                        'flex w-full items-center justify-between gap-2 rounded-2xl border px-3 py-2 text-left text-sm',
                         targetId === p.id
-                          ? 'border-spritz-deep bg-spritz/15'
-                          : 'border-ink bg-white hover:bg-cream-2',
+                          ? 'border-[#FF5C4D]/60 bg-[#FF5C4D]/15 text-white'
+                          : 'border-white/12 bg-white/[0.05] text-white/80 hover:bg-white/[0.1]',
                       ].join(' ')}
                     >
-                      <span className="font-medium truncate">{p.pseudo}</span>
-                      <span className="font-mono text-xs text-ink-soft">{p.total_points} pts</span>
+                      <span className="truncate font-medium">{p.pseudo}</span>
+                      <span className="font-mono text-xs text-white/50">{p.total_points} pts</span>
                     </button>
                   </li>
                 ))}
               </ul>
             )}
-          </Card>
+          </div>
 
-          <Card>
-            <Input
-              label={t('play.masterAdjustDelta')}
-              type="number"
-              step="10"
-              value={delta}
-              onChange={(e) => setDelta(e.target.value)}
-              placeholder="±50"
-              hint={t('play.masterAdjustDeltaHint')}
-              required
-            />
-          </Card>
+          <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <label className="block">
+              <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.22em] text-white/55">
+                {t('play.masterAdjustDelta')}
+              </span>
+              <input
+                type="number"
+                step="10"
+                value={delta}
+                onChange={(e) => setDelta(e.target.value)}
+                placeholder="±50"
+                required
+                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50"
+              />
+              <span className="mt-1 block font-mono text-[11px] text-white/45">
+                {t('play.masterAdjustDeltaHint')}
+              </span>
+            </label>
+          </div>
 
-          <Card>
-            <Input
-              label={t('play.masterAdjustReason')}
-              type="text"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder={t('play.masterAdjustReasonPlaceholder')}
-              maxLength={200}
-            />
-          </Card>
+          <div className="mb-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <label className="block">
+              <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.22em] text-white/55">
+                {t('play.masterAdjustReason')}
+              </span>
+              <input
+                type="text"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder={t('play.masterAdjustReasonPlaceholder')}
+                maxLength={200}
+                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50"
+              />
+            </label>
+          </div>
 
           {error && (
-            <p role="alert" className="text-sm text-raspberry mb-3">
+            <p role="alert" className="mb-3 text-sm" style={{ color: CORAIL }}>
               {error}
             </p>
           )}
 
-          <div className="flex gap-2 mb-4 sticky bottom-0 bg-cream pt-3 -mx-4 px-4">
-            <Button
-              variant="ghost"
-              size="md"
+          <div className="sticky bottom-0 -mx-4 mb-4 flex gap-2 bg-[#191922] px-4 pt-3">
+            <button
+              type="button"
               onClick={props.onClose}
               disabled={submitting}
-              className="flex-1"
+              className="flex-1 rounded-2xl border border-white/15 px-4 py-2.5 text-white/75 transition-colors hover:bg-white/[0.06] disabled:opacity-40"
             >
               {t('common.cancel')}
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
+            </button>
+            <button
+              type="button"
               onClick={() => void handleConfirm()}
               disabled={!canConfirm}
-              className="flex-1"
+              className="flex-1 rounded-2xl px-4 py-2.5 font-bold text-[#0B0B0F] transition-transform active:scale-[0.98] disabled:opacity-40"
+              style={{ backgroundColor: CORAIL }}
             >
               {submitting ? t('common.saving') : t('play.masterAdjustConfirm')}
-            </Button>
+            </button>
           </div>
         </div>
       </div>

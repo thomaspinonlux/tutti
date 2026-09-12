@@ -20,7 +20,34 @@ import {
 } from '../../lib/sessions.js';
 import type { LibraryPlaylistSummary } from '../../lib/library.js';
 import { playlistMatchesSource } from '../../lib/providerSelection.js';
-import { Badge, Button, Card } from '../ui/index.js';
+// feat/telephone-au-style-tv — le selecteur de playlist de l animateur
+// reprend les codes de la TV, comme le reste du telephone. Les composants
+// generiques Card / Badge / Button restent intacts pour le back-office.
+const CORAIL = '#FF5C4D';
+
+function Carte({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}): JSX.Element {
+  return (
+    <div
+      className={`rounded-2xl border border-white/10 bg-white/[0.05] p-4 transition-colors ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Puce({ children }: { children: React.ReactNode; tone?: string; tilt?: number }): JSX.Element {
+  return (
+    <span className="inline-block rounded-full border border-white/15 bg-white/[0.07] px-2.5 py-0.5 font-mono text-[11px] text-white/75">
+      {children}
+    </span>
+  );
+}
 
 interface Props {
   open: boolean;
@@ -229,16 +256,16 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
       ref={conteneurRef}
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 bg-cream overflow-y-auto"
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#0B0B0F] text-white"
     >
       <div className="max-w-[500px] mx-auto p-4">
         <div className="flex items-center justify-between mb-3">
-          <p className="font-display text-2xl">{t('play.masterPickRoundTitle')}</p>
+          <p className="font-display text-2xl text-white">{t('play.masterPickRoundTitle')}</p>
           <button
             type="button"
             onClick={props.onClose}
             aria-label={t('common.cancel')}
-            className="text-2xl text-ink-soft hover:text-ink"
+            className="text-2xl text-white/50 hover:text-white"
           >
             ✕
           </button>
@@ -258,8 +285,8 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
               }}
               className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
                 tab === o.k
-                  ? 'border-ink bg-ink text-cream'
-                  : 'border-ink/20 text-ink-soft hover:bg-cream-2'
+                  ? 'border-white/25 bg-white/[0.12] text-white'
+                  : 'border-white/12 text-white/60 hover:bg-white/[0.08]'
               }`}
             >
               {o.label}
@@ -270,7 +297,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
         {/* Onglet officiel : source + recherche (masqué pendant le choix de niveau) */}
         {tab === 'official' && !selected && (
           <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <div className="inline-flex border-2 border-ink/20 rounded-lg overflow-hidden">
+            <div className="inline-flex border-2 border-white/15 rounded-lg overflow-hidden">
               {(['apple_music', 'youtube', 'spotify'] as const).map((pv) => {
                 // fix/source-tabs-forced-source — Spotify est hors du flow
                 // officiel (cf. preferredProvider) : onglet grisé, non cliquable.
@@ -289,10 +316,10 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                     }}
                     className={`px-3 py-1.5 text-xs font-medium ${
                       locked
-                        ? 'bg-transparent text-ink-soft/35 cursor-not-allowed'
+                        ? 'cursor-not-allowed bg-transparent text-white/25'
                         : provider === pv
-                          ? 'bg-ink text-cream'
-                          : 'bg-transparent text-ink-soft'
+                          ? 'bg-white/[0.14] text-white'
+                          : 'bg-transparent text-white/55'
                     }`}
                   >
                     {pv === 'youtube'
@@ -309,7 +336,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Rechercher…"
-              className="flex-1 min-w-[120px] text-sm border-2 border-ink/20 rounded-lg px-3 py-1.5 bg-white"
+              className="flex-1 min-w-[120px] text-sm border-2 border-white/15 rounded-2xl px-3 py-1.5 bg-white/[0.07] text-white"
             />
           </div>
         )}
@@ -320,17 +347,17 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Rechercher…"
-            className="w-full text-sm border-2 border-ink/20 rounded-lg px-3 py-1.5 bg-white mb-3"
+            className="w-full text-sm border-2 border-white/15 rounded-2xl px-3 py-1.5 bg-white/[0.07] text-white mb-3"
           />
         )}
 
         {loading && (
-          <p className="font-editorial italic text-ink-soft py-8 text-center">
+          <p className="font-editorial italic text-white/50 py-8 text-center">
             {t('common.loading')}
           </p>
         )}
         {error && (
-          <p role="alert" className="text-sm text-raspberry mb-4">
+          <p role="alert" className="text-sm text-[#FF5C4D] mb-4">
             {error}
           </p>
         )}
@@ -341,13 +368,13 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
             <button
               type="button"
               onClick={() => setSelected(null)}
-              className="text-sm text-spritz-deep hover:underline"
+              className="text-sm text-[#FF5C4D] hover:underline"
             >
               ← Retour
             </button>
-            <Card tone="cream">
-              <p className="font-display text-lg">{selected.name_fr}</p>
-              <p className="font-mono text-xs text-ink-soft mt-1">
+            <Carte>
+              <p className="font-display text-lg text-white">{selected.name_fr}</p>
+              <p className="font-mono text-xs text-white/50 mt-1">
                 Source :{' '}
                 {provider === 'youtube'
                   ? 'YouTube'
@@ -356,7 +383,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                     : 'Apple Music'}{' '}
                 · niveau ?
               </p>
-            </Card>
+            </Carte>
             <div className="grid grid-cols-2 gap-2">
               {LEVELS.map((lvl) => {
                 const dc = selected.difficulty_counts;
@@ -370,20 +397,25 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                   (lvl.difficulty === 'MEDIUM' && dc.EASY + dc.MEDIUM >= 15) ||
                   (lvl.difficulty === 'EXPERT' && dc.EASY + dc.MEDIUM + dc.EXPERT >= 15);
                 return (
-                  <Button
+                  <button
                     key={lvl.key}
-                    variant={lvl.difficulty === undefined ? 'primary' : 'secondary'}
-                    size="md"
+                    type="button"
                     disabled={launching || !enabled}
                     onClick={() => launchOfficial(lvl.difficulty)}
+                    className={`rounded-2xl px-4 py-3 text-sm font-bold transition-transform active:scale-[0.98] disabled:opacity-35 ${
+                      lvl.difficulty === undefined
+                        ? 'text-[#0B0B0F]'
+                        : 'border border-white/15 bg-white/[0.07] text-white'
+                    }`}
+                    style={lvl.difficulty === undefined ? { backgroundColor: CORAIL } : undefined}
                   >
                     {lvl.label}
-                  </Button>
+                  </button>
                 );
               })}
             </div>
             {launching && (
-              <p className="font-editorial italic text-ink-soft text-center text-sm">Lancement…</p>
+              <p className="font-editorial italic text-white/50 text-center text-sm">Lancement…</p>
             )}
           </div>
         )}
@@ -392,7 +424,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
         {tab === 'official' && !selected && filteredOfficial && (
           <ul className="space-y-2">
             {filteredOfficial.length === 0 && (
-              <p className="font-editorial italic text-ink-soft py-8 text-center">
+              <p className="font-editorial italic text-white/50 py-8 text-center">
                 Aucune playlist pour cette source.
               </p>
             )}
@@ -406,27 +438,27 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                   onClick={() => setSelected(p)}
                   className="w-full text-left disabled:opacity-50"
                 >
-                  <Card className="hover:bg-cream-2 transition-colors">
+                  <Carte className="hover:bg-white/[0.1]">
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="font-display text-base truncate">{p.name_fr}</p>
+                        <p className="truncate font-display text-base text-white">{p.name_fr}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge tone="ink" tilt={-1}>
+                          <Puce>
                             {provider === 'youtube'
                               ? p.youtube_count
                               : provider === 'spotify'
                                 ? p.spotify_count
                                 : (p.apple_music_count ?? 0)}{' '}
                             {t('playlists.tracksCount')}
-                          </Badge>
-                          {p.locked && <Badge tone="raspberry">🔒</Badge>}
+                          </Puce>
+                          {p.locked && <Puce>🔒</Puce>}
                         </div>
                       </div>
-                      <span aria-hidden className="text-ink-soft">
+                      <span aria-hidden className="text-white/50">
                         ›
                       </span>
                     </div>
-                  </Card>
+                  </Carte>
                 </button>
               </li>
             ))}
@@ -437,7 +469,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
         {tab === 'perso' && filteredPerso && (
           <ul className="space-y-2">
             {filteredPerso.length === 0 && (
-              <p className="font-editorial italic text-ink-soft py-8 text-center">
+              <p className="font-editorial italic text-white/50 py-8 text-center">
                 {t('host.noPlaylistsHint')}
               </p>
             )}
@@ -455,19 +487,19 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                   }}
                   className="w-full text-left"
                 >
-                  <Card className="hover:bg-cream-2 transition-colors">
+                  <Carte className="hover:bg-white/[0.1]">
                     <div className="min-w-0 flex-1">
-                      <p className="font-display text-base truncate">{p.name}</p>
+                      <p className="truncate font-display text-base text-white">{p.name}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge tone="ink" tilt={-1}>
+                        <Puce>
                           {p.tracks_count} {t('playlists.tracksCount')}
-                        </Badge>
-                        <Badge tone="cream">{p.level}</Badge>
-                        {p.is_express && <Badge tone="lemon">{t('host.expressBadge')}</Badge>}
-                        {p.is_official_tutti && <Badge tone="basil">Tutti</Badge>}
+                        </Puce>
+                        <Puce>{p.level}</Puce>
+                        {p.is_express && <Puce>{t('host.expressBadge')}</Puce>}
+                        {p.is_official_tutti && <Puce>Tutti</Puce>}
                       </div>
                     </div>
-                  </Card>
+                  </Carte>
                 </button>
               </li>
             ))}
@@ -475,9 +507,13 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
         )}
 
         <div className="mt-6 mb-4">
-          <Button variant="ghost" size="sm" onClick={props.onClose} className="w-full">
+          <button
+            type="button"
+            onClick={props.onClose}
+            className="w-full rounded-2xl border border-white/15 px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/[0.06]"
+          >
             {t('common.cancel')}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
