@@ -45,6 +45,7 @@ export function PlayApercuPage(): JSX.Element {
     album: 'Moulin Rouge!',
     year: 2001,
     cover_url: null,
+    work_title: null,
     song_title: null,
     started_at: new Date(now - 12_000).toISOString(),
     duration_ms: 258_000,
@@ -52,15 +53,13 @@ export function PlayApercuPage(): JSX.Element {
     phase2_started_at: etat === 'trouve' ? new Date(now - 3_000).toISOString() : null,
     correct_answers: [],
     lyrics_available: false,
-  } as CurrentTrackState;
+  };
 
   const correctAnswers: CorrectAnswerEntry[] =
     etat === 'buzz'
       ? []
-      : ([
+      : [
           {
-            round_id: 'r1',
-            track_index: 4,
             participant_id: 'p0',
             pseudo: moi.pseudo,
             team_id: null,
@@ -73,12 +72,12 @@ export function PlayApercuPage(): JSX.Element {
             score_title_bonus: 10,
             score_speed_bonus: 8,
           },
-        ] as unknown as CorrectAnswerEntry[]);
+        ];
 
   const cumulative: CumulativeScore[] = [
     { id: 'p0', label: moi.pseudo, total_points: 268, color: null },
     { id: 'p1', label: 'Kevin', total_points: 241, color: null },
-  ] as unknown as CumulativeScore[];
+  ];
 
   return (
     <div className="mx-auto w-full max-w-[500px] px-4 py-3">
