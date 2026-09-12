@@ -92,8 +92,8 @@ function TabButton({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`px-4 py-2 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider transition-colors ${
-        active ? 'bg-spritz-deep text-cream' : 'bg-cream-2 text-ink hover:bg-cream-3'
+      className={`px-4 py-2 border-2 border-hairline rounded font-mono text-xs uppercase tracking-wider transition-colors ${
+        active ? 'bg-spritz-deep text-white' : 'bg-cream-2 text-ink hover:bg-cream-3'
       }`}
     >
       {children}
@@ -174,7 +174,7 @@ function MembersTab(): JSX.Element {
               key={f}
               type="button"
               onClick={() => setFilter(f)}
-              className={`px-2 py-1 font-mono text-[10px] uppercase tracking-wider border-2 border-ink rounded ${
+              className={`px-2 py-1 font-mono text-[10px] uppercase tracking-wider border-2 border-hairline rounded ${
                 filter === f ? 'bg-ink text-cream' : 'bg-cream-2 text-ink'
               }`}
             >
@@ -199,7 +199,7 @@ function MembersTab(): JSX.Element {
         {members.map((m) => (
           <li
             key={m.id}
-            className="flex items-center gap-3 px-3 py-2 border-2 border-ink rounded bg-white flex-wrap"
+            className="flex items-center gap-3 px-3 py-2 border-2 border-hairline rounded bg-panel flex-wrap"
           >
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{m.email ?? '(email inconnu)'}</p>
@@ -325,7 +325,7 @@ function WhitelistTab(): JSX.Element {
         {entries.map((e) => (
           <li
             key={e.id}
-            className="flex items-center gap-3 px-3 py-2 border-2 border-ink rounded bg-white"
+            className="flex items-center gap-3 px-3 py-2 border-2 border-hairline rounded bg-panel"
           >
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{e.email}</p>
@@ -437,7 +437,7 @@ function InvitationsTab(): JSX.Element {
         {codes.map((c) => (
           <li
             key={c.id}
-            className="flex items-center gap-3 px-3 py-2 border-2 border-ink rounded bg-white flex-wrap"
+            className="flex items-center gap-3 px-3 py-2 border-2 border-hairline rounded bg-panel flex-wrap"
           >
             <code className="font-mono text-sm bg-lemon/30 px-2 py-1 rounded shrink-0">
               {c.code}

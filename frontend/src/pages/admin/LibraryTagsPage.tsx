@@ -558,7 +558,7 @@ export function LibraryTagsPage(): JSX.Element {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as TagStatus)}
-            className="border-2 border-ink/20 rounded px-2 py-1.5 text-sm bg-white"
+            className="border-2 border-ink/20 rounded px-2 py-1.5 text-sm bg-panel"
             aria-label="Filtrer par statut"
           >
             <option value="all">Tous statuts</option>
@@ -651,7 +651,7 @@ export function LibraryTagsPage(): JSX.Element {
                 key={s.key}
                 type="button"
                 onClick={() => toggleSort(s.key)}
-                className="inline-flex items-center gap-1 text-[11px] font-medium px-2 h-6 rounded-full bg-ink text-cream border-2 border-ink"
+                className="inline-flex items-center gap-1 text-[11px] font-medium px-2 h-6 rounded-full bg-ink text-cream border-2 border-hairline"
                 title="Cliquer pour inverser / retirer"
               >
                 <span className="opacity-70">{i + 1}.</span>
@@ -737,7 +737,7 @@ export function LibraryTagsPage(): JSX.Element {
       {/* Barre « Tout enregistrer » sticky — visible dès qu'il y a des brouillons. */}
       {dirtyCount > 0 && (
         <div className="sticky bottom-3 z-20 flex justify-center pointer-events-none">
-          <div className="pointer-events-auto flex items-center gap-3 bg-ink text-cream rounded-full pl-4 pr-2 py-2 shadow-lg border-2 border-ink">
+          <div className="pointer-events-auto flex items-center gap-3 bg-ink text-cream rounded-full pl-4 pr-2 py-2 shadow-lg border-2 border-hairline">
             <span className="font-mono text-xs">
               {dirtyCount} modification{dirtyCount > 1 ? 's' : ''} non enregistrée
               {dirtyCount > 1 ? 's' : ''}
@@ -806,8 +806,8 @@ function Facet<T extends string>({
               aria-pressed={on}
               className={`px-2 h-6 rounded-full text-[11px] font-medium border-2 whitespace-nowrap transition-colors ${
                 on
-                  ? 'bg-ink text-cream border-ink'
-                  : 'bg-white text-ink-soft border-ink/25 hover:border-ink/50'
+                  ? 'bg-ink text-cream border-hairline'
+                  : 'bg-panel text-ink-soft border-ink/25 hover:border-ink/50'
               }`}
             >
               {o.label}
@@ -885,7 +885,7 @@ function SongRowView({
 
   return (
     <div
-      className={`bg-white border-2 border-ink/10 rounded-lg px-3 py-2.5 lg:grid lg:grid-cols-[minmax(190px,2fr)_140px_112px_minmax(160px,1.8fr)_minmax(150px,1.4fr)_116px_120px] lg:gap-3 lg:items-center flex flex-col gap-2.5 border-l-4 ${
+      className={`bg-panel border-2 border-ink/10 rounded-lg px-3 py-2.5 lg:grid lg:grid-cols-[minmax(190px,2fr)_140px_112px_minmax(160px,1.8fr)_minmax(150px,1.4fr)_116px_120px] lg:gap-3 lg:items-center flex flex-col gap-2.5 border-l-4 ${
         done ? 'border-l-basil' : 'border-l-spritz/50'
       } ${saving ? 'opacity-70' : ''}`}
     >
@@ -975,7 +975,7 @@ function SongRowView({
             const s = e.target.value;
             if (s) set((d) => (d.themes.includes(s) ? d : { ...d, themes: [...d.themes, s] }));
           }}
-          className="text-xs border border-dashed border-ink/30 rounded px-1 py-0.5 bg-white text-ink-soft"
+          className="text-xs border border-dashed border-ink/30 rounded px-1 py-0.5 bg-panel text-ink-soft"
           aria-label="Ajouter un thème"
         >
           <option value="">+ thème</option>
@@ -994,7 +994,7 @@ function SongRowView({
           onChange={(e) =>
             set((d) => ({ ...d, work_kind: (e.target.value || null) as WorkKind | null }))
           }
-          className="text-xs border-2 border-ink/20 rounded px-1 py-1 bg-white"
+          className="text-xs border-2 border-ink/20 rounded px-1 py-1 bg-panel"
           aria-label="Type d'œuvre"
         >
           <option value="">— pas une œuvre —</option>

@@ -46,7 +46,7 @@ export function MobileNav(): JSX.Element {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-cream-2 border-t-2 border-ink shadow-pop-lg"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-cream-2 border-t-2 border-hairline shadow-pop-lg"
       aria-label="Navigation admin mobile"
     >
       <ul className="flex justify-around items-stretch overflow-x-auto">

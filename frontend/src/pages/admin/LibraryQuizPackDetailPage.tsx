@@ -208,7 +208,7 @@ export function LibraryQuizPackDetailPage(): JSX.Element {
             value={pack.visibility}
             onChange={(e) => void handleVisibility(e.target.value as Visibility)}
             disabled={savingField === 'visibility'}
-            className="border-2 border-ink rounded px-3 py-2 bg-cream font-medium"
+            className="border-2 border-hairline rounded px-3 py-2 bg-cream font-medium"
           >
             <option value="public">{t('library.visibilityPublic')}</option>
             <option value="premium_only">{t('library.visibilityPremium')}</option>
@@ -325,7 +325,7 @@ function EditableField({
           onBlur={handleBlur}
           rows={3}
           disabled={saving}
-          className="w-full border-2 border-ink rounded px-2 py-1 bg-cream font-mono text-sm"
+          className="w-full border-2 border-hairline rounded px-2 py-1 bg-cream font-mono text-sm"
         />
       ) : (
         <Input

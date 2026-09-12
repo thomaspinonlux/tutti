@@ -32,12 +32,12 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-rose text-ink border-ink hover:bg-rose-deep hover:text-cream',
-  secondary: 'bg-cream text-ink border-ink hover:bg-cream-2',
-  danger: 'bg-raspberry text-cream border-ink hover:bg-raspberry-deep',
-  success: 'bg-basil text-cream border-ink hover:bg-basil-deep',
+  primary: 'bg-rose text-ink border-hairline hover:bg-rose-deep hover:text-white',
+  secondary: 'bg-cream text-ink border-hairline hover:bg-cream-2',
+  danger: 'bg-raspberry text-white border-hairline hover:bg-raspberry-deep',
+  success: 'bg-basil text-white border-hairline hover:bg-basil-deep',
   ghost: 'bg-transparent text-plum border-transparent underline underline-offset-4 hover:text-ink',
-  icon: 'bg-cream text-ink border-ink hover:bg-cream-2',
+  icon: 'bg-cream text-ink border-hairline hover:bg-cream-2',
 };
 
 // Press arcade : shadow-arcade-* au repos → translate + shadow-arcade-flat

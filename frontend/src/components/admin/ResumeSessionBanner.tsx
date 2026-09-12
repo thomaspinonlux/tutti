@@ -74,7 +74,7 @@ export function ResumeSessionBanner(): JSX.Element | null {
     session.started_at && Date.now() - new Date(session.started_at).getTime() > 30 * 60 * 1000;
 
   return (
-    <div className="sticky top-0 z-40 bg-spritz border-b-2 border-ink shadow-pop-sm">
+    <div className="sticky top-0 z-40 bg-spritz border-b-2 border-hairline shadow-pop-sm">
       <div className="max-w-6xl mx-auto px-4 py-2 flex items-center gap-3 flex-wrap">
         <span className="text-xl">🎵</span>
         <div className="flex-1 min-w-0">

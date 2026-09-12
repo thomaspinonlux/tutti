@@ -78,7 +78,7 @@ export function WorkspaceMembersCard(): JSX.Element {
       </div>
 
       {inviteUrl && (
-        <div className="mb-4 p-3 border-2 border-ink rounded bg-cream-2 flex items-center gap-2">
+        <div className="mb-4 p-3 border-2 border-hairline rounded bg-cream-2 flex items-center gap-2">
           <input
             type="text"
             readOnly
@@ -111,7 +111,7 @@ export function WorkspaceMembersCard(): JSX.Element {
           {members.map((m) => (
             <li
               key={m.id}
-              className="flex items-center gap-2 px-3 py-1.5 border-2 border-ink rounded bg-cream"
+              className="flex items-center gap-2 px-3 py-1.5 border-2 border-hairline rounded bg-cream"
             >
               <span className="flex-1 truncate text-sm">{m.email ?? '—'}</span>
               <Badge tone={m.role === 'OWNER' ? 'plum' : 'basil'}>{m.role}</Badge>

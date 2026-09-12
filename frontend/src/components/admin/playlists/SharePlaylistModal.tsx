@@ -112,7 +112,7 @@ export function SharePlaylistModal({
               {t('playlists.shareCodeReady')}
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 font-mono text-2xl tracking-[0.3em] bg-lemon/30 px-3 py-2 rounded border-2 border-ink text-center">
+              <code className="flex-1 font-mono text-2xl tracking-[0.3em] bg-lemon/30 px-3 py-2 rounded border-2 border-hairline text-center">
                 {share.code}
               </code>
               <Button variant="primary" size="sm" onClick={() => void handleCopy()}>

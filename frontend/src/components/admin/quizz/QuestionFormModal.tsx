@@ -203,7 +203,7 @@ export function QuestionFormModal({ open, set, question, onClose, onSaved }: Pro
               value={state.type}
               onChange={(e) => setField('type', e.target.value as QuestionType)}
               disabled={!!question}
-              className="w-full px-2 py-1.5 border-2 border-ink rounded font-medium bg-cream"
+              className="w-full px-2 py-1.5 border-2 border-hairline rounded font-medium bg-cream"
             >
               <option value="MCQ">MCQ</option>
               <option value="TRUE_FALSE">TRUE / FALSE</option>
@@ -251,7 +251,7 @@ export function QuestionFormModal({ open, set, question, onClose, onSaved }: Pro
               rows={2}
               required
               placeholder={t('quizz.textPlaceholder')}
-              className="w-full px-3 py-2 border-2 border-ink rounded font-medium bg-cream resize-none"
+              className="w-full px-3 py-2 border-2 border-hairline rounded font-medium bg-cream resize-none"
             />
           </label>
           {showLang2 && (
@@ -265,7 +265,7 @@ export function QuestionFormModal({ open, set, question, onClose, onSaved }: Pro
                 rows={2}
                 required
                 placeholder={t('quizz.textPlaceholder')}
-                className="w-full px-3 py-2 border-2 border-ink rounded font-medium bg-cream resize-none"
+                className="w-full px-3 py-2 border-2 border-hairline rounded font-medium bg-cream resize-none"
               />
             </label>
           )}
@@ -350,7 +350,7 @@ function McqFields({
             type="button"
             onClick={() => setCorrect(idx)}
             aria-pressed={state.mcq_correct_index === idx}
-            className={`shrink-0 w-8 h-8 rounded-full border-2 border-ink font-bold transition-colors ${
+            className={`shrink-0 w-8 h-8 rounded-full border-2 border-hairline font-bold transition-colors ${
               state.mcq_correct_index === idx ? 'bg-basil text-ink' : 'bg-cream'
             }`}
           >
@@ -362,7 +362,7 @@ function McqFields({
               value={state.choices_lang1[idx] ?? ''}
               onChange={(e) => setChoice('lang1', idx, e.target.value)}
               placeholder={`${t('quizz.choicePlaceholder')} ${idx + 1} (${language1.toUpperCase()})`}
-              className="w-full px-3 py-1.5 border-2 border-ink rounded font-medium bg-cream"
+              className="w-full px-3 py-1.5 border-2 border-hairline rounded font-medium bg-cream"
             />
             {showLang2 && (
               <input
@@ -370,7 +370,7 @@ function McqFields({
                 value={state.choices_lang2[idx] ?? ''}
                 onChange={(e) => setChoice('lang2', idx, e.target.value)}
                 placeholder={`${t('quizz.choicePlaceholder')} ${idx + 1} (${(language2 ?? '').toUpperCase()})`}
-                className="w-full px-3 py-1.5 border-2 border-ink rounded font-medium bg-cream"
+                className="w-full px-3 py-1.5 border-2 border-hairline rounded font-medium bg-cream"
               />
             )}
           </div>
@@ -401,11 +401,11 @@ function TrueFalseFields({
             type="button"
             onClick={() => onChange(opt)}
             aria-pressed={value === opt}
-            className={`flex-1 px-3 py-2 border-2 border-ink rounded font-bold transition-colors ${
+            className={`flex-1 px-3 py-2 border-2 border-hairline rounded font-bold transition-colors ${
               value === opt
                 ? opt === 'true'
                   ? 'bg-basil text-ink'
-                  : 'bg-raspberry text-cream'
+                  : 'bg-raspberry text-white'
                 : 'bg-cream text-ink hover:bg-cream-2'
             }`}
           >

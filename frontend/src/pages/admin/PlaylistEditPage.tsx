@@ -234,7 +234,7 @@ export function PlaylistEditPage(): JSX.Element {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
               }}
-              className="w-full px-2 py-1 border-2 border-ink rounded bg-cream/30 text-sm font-display focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz"
+              className="w-full px-2 py-1 border-2 border-hairline rounded bg-cream/30 text-sm font-display focus:bg-panel focus:outline-none focus:ring-2 focus:ring-spritz"
             />
           </label>
 
@@ -322,7 +322,7 @@ export function PlaylistEditPage(): JSX.Element {
                   <li key={p.id}>
                     <Link
                       to={`/admin/tracks/${p.id}`}
-                      className="block px-2 py-1 text-sm border border-ink rounded bg-white hover:bg-cream-2 truncate"
+                      className="block px-2 py-1 text-sm border border-hairline rounded bg-panel hover:bg-cream-2 truncate"
                     >
                       {p.name}{' '}
                       <span className="text-ink-soft text-xs">({p.tracks_count ?? 0})</span>
@@ -465,7 +465,7 @@ function PoolSessionSizeField(props: {
             if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
           }}
           disabled={saving}
-          className="w-16 px-2 py-1 border-2 border-ink rounded bg-cream/30 text-sm font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz"
+          className="w-16 px-2 py-1 border-2 border-hairline rounded bg-cream/30 text-sm font-mono focus:bg-panel focus:outline-none focus:ring-2 focus:ring-spritz"
         />
       </label>
     </div>

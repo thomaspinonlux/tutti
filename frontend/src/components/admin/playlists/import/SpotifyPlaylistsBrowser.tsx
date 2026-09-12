@@ -200,12 +200,12 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
         tracksError.toLowerCase().includes('éditoriale'));
     return (
       <div className="space-y-3">
-        <div className="flex items-start gap-3 p-3 border-2 border-ink rounded bg-cream">
+        <div className="flex items-start gap-3 p-3 border-2 border-hairline rounded bg-cream">
           {selectedPlaylist.cover_url && (
             <img
               src={selectedPlaylist.cover_url}
               alt=""
-              className="w-16 h-16 rounded border-2 border-ink object-cover shrink-0"
+              className="w-16 h-16 rounded border-2 border-hairline object-cover shrink-0"
             />
           )}
           <div className="flex-1 min-w-0">
@@ -366,17 +366,17 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
               <button
                 type="button"
                 onClick={() => void openPlaylist(p)}
-                className="w-full flex items-start gap-3 p-3 border-2 border-ink rounded bg-cream hover:bg-cream-2 active:translate-y-0.5 transition-transform text-left"
+                className="w-full flex items-start gap-3 p-3 border-2 border-hairline rounded bg-cream hover:bg-cream-2 active:translate-y-0.5 transition-transform text-left"
               >
                 {p.cover_url ? (
                   <img
                     src={p.cover_url}
                     alt=""
                     loading="lazy"
-                    className="w-16 h-16 rounded border-2 border-ink object-cover shrink-0"
+                    className="w-16 h-16 rounded border-2 border-hairline object-cover shrink-0"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded border-2 border-ink bg-cream-2 shrink-0" />
+                  <div className="w-16 h-16 rounded border-2 border-hairline bg-cream-2 shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-0.5">

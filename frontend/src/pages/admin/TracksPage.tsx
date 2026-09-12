@@ -114,7 +114,7 @@ export function TracksPage(): JSX.Element {
 
       {/* Onglets Mes playlists / Bibliothèque officielle — même système visuel
           que la page /admin/library (#164 : boutons à bordure basse). */}
-      <div className="flex gap-2 border-b-2 border-ink mb-6 flex-wrap">
+      <div className="flex gap-2 border-b-2 border-hairline mb-6 flex-wrap">
         {(
           [
             { key: 'mine', icon: '🎧', label: t('library.tabMyPlaylists') },
@@ -125,7 +125,7 @@ export function TracksPage(): JSX.Element {
             key={key}
             type="button"
             onClick={() => setTab(key)}
-            className={`px-4 py-2 font-display text-lg border-2 border-ink border-b-0 rounded-t-md transition-colors ${
+            className={`px-4 py-2 font-display text-lg border-2 border-hairline border-b-0 rounded-t-md transition-colors ${
               tab === key
                 ? 'bg-cream text-ink shadow-pop-sm'
                 : 'bg-cream-2 text-ink-soft hover:bg-cream'
@@ -166,7 +166,7 @@ export function TracksPage(): JSX.Element {
                 disabled={deletingId === p.id}
                 aria-label={`Supprimer la playlist ${p.name}`}
                 title="Supprimer la playlist"
-                className="absolute bottom-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-ink text-raspberry hover:bg-raspberry hover:text-white shadow-pop transition-colors disabled:opacity-50"
+                className="absolute bottom-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-panel border-2 border-hairline text-raspberry hover:bg-raspberry hover:text-white shadow-pop transition-colors disabled:opacity-50"
               >
                 {deletingId === p.id ? '…' : '🗑'}
               </button>
@@ -401,7 +401,7 @@ function NewPlaylistModal({
                 type="button"
                 onClick={() => setLanguage(lng)}
                 aria-pressed={language === lng}
-                className={`flex-1 px-3 py-1.5 border-2 border-ink rounded font-medium transition-colors ${
+                className={`flex-1 px-3 py-1.5 border-2 border-hairline rounded font-medium transition-colors ${
                   language === lng ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
                 }`}
               >

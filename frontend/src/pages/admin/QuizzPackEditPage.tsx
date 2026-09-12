@@ -238,7 +238,7 @@ export function QuizzPackEditPage(): JSX.Element {
               value={name}
               onChange={(e) => setName(e.target.value)}
               onBlur={() => void handleNameBlur()}
-              className="w-full px-2 py-1.5 border-2 border-ink rounded font-bold bg-cream"
+              className="w-full px-2 py-1.5 border-2 border-hairline rounded font-bold bg-cream"
             />
           </label>
 
@@ -253,7 +253,7 @@ export function QuizzPackEditPage(): JSX.Element {
               rows={2}
               maxLength={300}
               placeholder={t('quizz.descriptionPlaceholder')}
-              className="w-full px-2 py-1.5 border-2 border-ink rounded text-sm bg-cream resize-none"
+              className="w-full px-2 py-1.5 border-2 border-hairline rounded text-sm bg-cream resize-none"
             />
           </label>
 
@@ -267,13 +267,13 @@ export function QuizzPackEditPage(): JSX.Element {
               onChange={(e) => setCoverUrl(e.target.value)}
               onBlur={() => void handleCoverUrlBlur()}
               placeholder="https://…"
-              className="w-full px-2 py-1.5 border-2 border-ink rounded text-xs font-mono bg-cream"
+              className="w-full px-2 py-1.5 border-2 border-hairline rounded text-xs font-mono bg-cream"
             />
             {coverUrl && (
               <img
                 src={coverUrl}
                 alt=""
-                className="mt-2 w-full h-24 object-cover border-2 border-ink rounded"
+                className="mt-2 w-full h-24 object-cover border-2 border-hairline rounded"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                 }}
@@ -337,7 +337,7 @@ export function QuizzPackEditPage(): JSX.Element {
                 <Link
                   key={p.id}
                   to={`/admin/quizz/${p.id}`}
-                  className="block px-3 py-1.5 border-2 border-ink rounded text-sm font-medium hover:bg-cream-2 transition-colors truncate"
+                  className="block px-3 py-1.5 border-2 border-hairline rounded text-sm font-medium hover:bg-cream-2 transition-colors truncate"
                 >
                   {p.name}
                 </Link>

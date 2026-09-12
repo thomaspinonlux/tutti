@@ -166,7 +166,7 @@ export function AliasesPage(): JSX.Element {
             type="button"
             onClick={() => void runBatchMissing()}
             disabled={batchRunning}
-            className="px-4 py-2 bg-spritz text-ink border-2 border-ink rounded-md shadow-pop-sm font-display disabled:opacity-50"
+            className="px-4 py-2 bg-spritz text-ink border-2 border-hairline rounded-md shadow-pop-sm font-display disabled:opacity-50"
           >
             {batchRunning ? '⏳ En cours…' : '▶ Lancer'}
           </button>
@@ -190,8 +190,8 @@ export function AliasesPage(): JSX.Element {
               setFilter(f);
               setPage(1);
             }}
-            className={`px-3 py-1.5 border-2 border-ink rounded ${
-              filter === f ? 'bg-ink text-cream' : 'bg-cream hover:bg-spritz/30'
+            className={`px-3 py-1.5 border-2 border-hairline rounded ${
+              filter === f ? 'bg-ink text-white' : 'bg-cream hover:bg-spritz/30'
             }`}
           >
             {f === 'missing' ? 'Sans aliases' : f === 'present' ? 'Avec aliases' : 'Tous'}
@@ -220,7 +220,7 @@ export function AliasesPage(): JSX.Element {
         <Card size="md">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left border-b-2 border-ink">
+              <tr className="text-left border-b-2 border-hairline">
                 <th className="font-mono text-[10px] uppercase tracking-wider py-2">Morceau</th>
                 <th className="font-mono text-[10px] uppercase tracking-wider py-2">Artiste</th>
                 <th className="font-mono text-[10px] uppercase tracking-wider py-2 w-1/2">
@@ -247,7 +247,7 @@ export function AliasesPage(): JSX.Element {
                             setEditing((s) => ({ ...s, [row.track_id]: e.target.value }))
                           }
                           rows={3}
-                          className="w-full font-mono text-xs border-2 border-ink rounded p-2"
+                          className="w-full font-mono text-xs border-2 border-hairline rounded p-2"
                           placeholder="alias1, alias2, alias3"
                         />
                       ) : row.aliases.length === 0 ? (
@@ -277,14 +277,14 @@ export function AliasesPage(): JSX.Element {
                             type="button"
                             onClick={() => void saveEdit(row.track_id)}
                             disabled={isBusy}
-                            className="px-2 py-1 font-mono text-[10px] uppercase bg-basil text-cream border border-ink rounded disabled:opacity-50"
+                            className="px-2 py-1 font-mono text-[10px] uppercase bg-basil text-white border border-hairline rounded disabled:opacity-50"
                           >
                             ✓
                           </button>
                           <button
                             type="button"
                             onClick={() => cancelEdit(row.track_id)}
-                            className="px-2 py-1 font-mono text-[10px] uppercase border border-ink rounded"
+                            className="px-2 py-1 font-mono text-[10px] uppercase border border-hairline rounded"
                           >
                             ✕
                           </button>
@@ -295,7 +295,7 @@ export function AliasesPage(): JSX.Element {
                             type="button"
                             onClick={() => startEdit(row)}
                             disabled={isBusy}
-                            className="px-2 py-1 font-mono text-[10px] uppercase border border-ink rounded hover:bg-cream-2 disabled:opacity-50"
+                            className="px-2 py-1 font-mono text-[10px] uppercase border border-hairline rounded hover:bg-cream-2 disabled:opacity-50"
                           >
                             Éditer
                           </button>
@@ -303,7 +303,7 @@ export function AliasesPage(): JSX.Element {
                             type="button"
                             onClick={() => void regenerate(row.track_id)}
                             disabled={isBusy}
-                            className="px-2 py-1 font-mono text-[10px] uppercase bg-spritz/30 border border-ink rounded hover:bg-spritz/50 disabled:opacity-50"
+                            className="px-2 py-1 font-mono text-[10px] uppercase bg-spritz/30 border border-hairline rounded hover:bg-spritz/50 disabled:opacity-50"
                             title="Régénérer via IA"
                           >
                             {isBusy ? '⏳' : '🤖'}
@@ -326,7 +326,7 @@ export function AliasesPage(): JSX.Element {
             type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="px-3 py-1.5 border-2 border-ink rounded disabled:opacity-30"
+            className="px-3 py-1.5 border-2 border-hairline rounded disabled:opacity-30"
           >
             ← Page précédente
           </button>
@@ -337,7 +337,7 @@ export function AliasesPage(): JSX.Element {
             type="button"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
-            className="px-3 py-1.5 border-2 border-ink rounded disabled:opacity-30"
+            className="px-3 py-1.5 border-2 border-hairline rounded disabled:opacity-30"
           >
             Page suivante →
           </button>

@@ -226,8 +226,8 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
               onClick={() => void handleVisibilityChange(v)}
               className={`px-4 py-2 rounded-full border-2 font-medium text-sm transition-colors ${
                 playlist.visibility === v
-                  ? 'bg-ink text-cream border-ink'
-                  : 'bg-cream text-ink border-ink hover:bg-cream-2'
+                  ? 'bg-ink text-cream border-hairline'
+                  : 'bg-cream text-ink border-hairline hover:bg-cream-2'
               }`}
             >
               {t(
@@ -280,7 +280,7 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
         <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
           {t('library.tracksTitle')} ({playlist.tracks.length})
         </p>
-        <div className="border-2 border-ink rounded overflow-x-auto">
+        <div className="border-2 border-hairline rounded overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
               <tr>
@@ -344,7 +344,7 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
                         <button
                           type="button"
                           onClick={() => setExpandedTrackId(expanded ? null : tr.id)}
-                          className="px-2 py-0.5 text-xs font-mono border-2 border-ink rounded bg-cream hover:bg-cream-2"
+                          className="px-2 py-0.5 text-xs font-mono border-2 border-hairline rounded bg-cream hover:bg-cream-2"
                           title={t('library.tracksAliasesEdit')}
                         >
                           {expanded ? '▾ ' : '▸ '}
@@ -414,7 +414,7 @@ function InlineField({ label, value, saving, onSave, multiline }: InlineFieldPro
           }}
           onBlur={commit}
           rows={3}
-          className="w-full border-2 border-ink rounded px-3 py-2 bg-cream text-sm"
+          className="w-full border-2 border-hairline rounded px-3 py-2 bg-cream text-sm"
         />
       ) : (
         <Input
@@ -555,13 +555,13 @@ function AliasListEditor({
             onKeyDown={handleKey}
             placeholder={t('library.aliasPlaceholder')}
             disabled={saving}
-            className="flex-1 px-2 py-1 border-2 border-ink rounded bg-cream/30 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz disabled:opacity-50"
+            className="flex-1 px-2 py-1 border-2 border-hairline rounded bg-cream/30 text-sm focus:bg-panel focus:outline-none focus:ring-2 focus:ring-spritz disabled:opacity-50"
           />
           <button
             type="button"
             onClick={add}
             disabled={saving}
-            className="px-3 py-1 text-sm bg-cream text-ink border-2 border-ink rounded font-bold shadow-pop-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-50"
+            className="px-3 py-1 text-sm bg-cream text-ink border-2 border-hairline rounded font-bold shadow-pop-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-50"
           >
             +
           </button>
@@ -576,7 +576,7 @@ function AliasListEditor({
                 type="button"
                 onClick={() => remove(alias)}
                 disabled={saving}
-                className="px-2 py-0.5 text-xs font-mono border-2 border-ink rounded bg-cream-2 hover:bg-raspberry hover:text-cream transition-colors disabled:opacity-50"
+                className="px-2 py-0.5 text-xs font-mono border-2 border-hairline rounded bg-cream-2 hover:bg-raspberry hover:text-white transition-colors disabled:opacity-50"
                 title={t('library.aliasRemove')}
               >
                 {alias} <span className="ml-1 opacity-60">✕</span>

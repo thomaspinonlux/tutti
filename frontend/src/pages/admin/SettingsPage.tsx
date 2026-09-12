@@ -178,7 +178,7 @@ export function SettingsPage(): JSX.Element {
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="rounded-full border border-ink px-4 py-2 text-sm"
+          className="rounded-full border border-hairline px-4 py-2 text-sm"
         >
           🔄 Réessayer
         </button>
@@ -436,14 +436,14 @@ export function SettingsPage(): JSX.Element {
                 <img
                   src={establishment.branding_logo}
                   alt=""
-                  className="w-16 h-16 object-contain border-2 border-ink rounded bg-cream"
+                  className="w-16 h-16 object-contain border-2 border-hairline rounded bg-cream"
                 />
               ) : (
                 <div className="w-16 h-16 border-2 border-dashed border-ink-faded rounded bg-cream/30" />
               )}
               <div className="flex-1 flex flex-wrap items-center gap-2">
                 <label className="cursor-pointer inline-flex">
-                  <span className="px-3 py-1.5 text-sm bg-cream text-ink border-2 border-ink rounded shadow-pop-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all font-bold">
+                  <span className="px-3 py-1.5 text-sm bg-cream text-ink border-2 border-hairline rounded shadow-pop-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all font-bold">
                     {logoUploading
                       ? t('settings.brandingLogoUploading')
                       : t('settings.brandingLogoCta')}
@@ -490,7 +490,7 @@ export function SettingsPage(): JSX.Element {
                 type="color"
                 value={brandingColor || '#ee6c2a'}
                 onChange={(e) => setBrandingColor(e.target.value)}
-                className="w-12 h-12 border-2 border-ink rounded cursor-pointer"
+                className="w-12 h-12 border-2 border-hairline rounded cursor-pointer"
               />
               <input
                 type="text"
@@ -498,7 +498,7 @@ export function SettingsPage(): JSX.Element {
                 onChange={(e) => setBrandingColor(e.target.value)}
                 placeholder="#ee6c2a"
                 pattern="^#[0-9a-fA-F]{6}$"
-                className="flex-1 px-3 py-2 border-2 border-ink rounded bg-cream/30 font-mono text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz"
+                className="flex-1 px-3 py-2 border-2 border-hairline rounded bg-cream/30 font-mono text-sm focus:bg-panel focus:outline-none focus:ring-2 focus:ring-spritz"
               />
             </div>
             <span className="block text-xs text-ink-soft mt-2 italic">
@@ -519,7 +519,7 @@ export function SettingsPage(): JSX.Element {
                   type="button"
                   onClick={() => setDefaultLanguage(lng)}
                   aria-pressed={defaultLanguage === lng}
-                  className={`flex-1 px-3 py-2 border-2 border-ink rounded font-medium transition-colors ${
+                  className={`flex-1 px-3 py-2 border-2 border-hairline rounded font-medium transition-colors ${
                     defaultLanguage === lng
                       ? 'bg-ink text-cream shadow-pop-sm'
                       : 'bg-cream text-ink hover:bg-cream-2'
@@ -743,8 +743,8 @@ export function SettingsPage(): JSX.Element {
                       disabled
                         ? 'border-ink/20 bg-ink/5 cursor-not-allowed opacity-60'
                         : checked
-                          ? 'border-ink bg-spritz/20 cursor-pointer'
-                          : 'border-ink bg-white hover:bg-cream-2 cursor-pointer'
+                          ? 'border-hairline bg-spritz/20 cursor-pointer'
+                          : 'border-hairline bg-panel hover:bg-cream-2 cursor-pointer'
                     }`}
                   >
                     <input

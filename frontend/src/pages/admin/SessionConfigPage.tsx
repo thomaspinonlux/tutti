@@ -161,7 +161,7 @@ export function SessionConfigPage(): JSX.Element {
                 'text-left p-5 border-3 rounded shadow-pop transition-all',
                 !hasAnimator
                   ? 'border-spritz-deep bg-spritz/10 -rotate-[0.4deg]'
-                  : 'border-ink bg-cream-2 hover:bg-cream',
+                  : 'border-hairline bg-cream-2 hover:bg-cream',
               ].join(' ')}
             >
               <p className="font-display text-2xl mb-1">
@@ -180,7 +180,7 @@ export function SessionConfigPage(): JSX.Element {
                 'text-left p-5 border-3 rounded shadow-pop transition-all',
                 hasAnimator
                   ? 'border-spritz-deep bg-spritz/10 rotate-[0.4deg]'
-                  : 'border-ink bg-cream-2 hover:bg-cream',
+                  : 'border-hairline bg-cream-2 hover:bg-cream',
               ].join(' ')}
             >
               <p className="font-display text-2xl mb-1">
@@ -208,7 +208,7 @@ export function SessionConfigPage(): JSX.Element {
                 'text-left p-5 border-3 rounded shadow-pop transition-all',
                 vocalActif
                   ? 'border-spritz-deep bg-spritz/10 -rotate-[0.4deg]'
-                  : 'border-ink bg-cream-2 hover:bg-cream',
+                  : 'border-hairline bg-cream-2 hover:bg-cream',
               ].join(' ')}
             >
               <p className="font-display text-2xl mb-1">
@@ -227,7 +227,7 @@ export function SessionConfigPage(): JSX.Element {
                 'text-left p-5 border-3 rounded shadow-pop transition-all',
                 !vocalActif
                   ? 'border-spritz-deep bg-spritz/10 rotate-[0.4deg]'
-                  : 'border-ink bg-cream-2 hover:bg-cream',
+                  : 'border-hairline bg-cream-2 hover:bg-cream',
               ].join(' ')}
             >
               <p className="font-display text-2xl mb-1">
@@ -284,7 +284,7 @@ export function SessionConfigPage(): JSX.Element {
                     type="color"
                     value={team.color}
                     onChange={(e) => updateTeam(team.id, { color: e.target.value })}
-                    className="w-10 h-10 border-2 border-ink rounded cursor-pointer shrink-0"
+                    className="w-10 h-10 border-2 border-hairline rounded cursor-pointer shrink-0"
                   />
                   <Input
                     type="text"

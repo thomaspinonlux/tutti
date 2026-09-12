@@ -11,6 +11,25 @@
 
 @layer base {
   :root {
+    /*
+     * feat/back-office-au-style-tv — LA PALETTE CLAIRE, VALEUR PAR DEFAUT.
+     * Ecrite en canaux RVB (cf. tailwind.config.js) pour que les opacites
+     * Tailwind continuent de marcher : bg-ink/15, border-ink/10…
+     */
+    --c-cream: 245 236 217;
+    --c-cream-2: 239 228 204;
+    --c-cream-3: 230 216 184;
+    --c-cream-4: 212 195 158;
+    --c-kraft: 194 170 120;
+    --c-ink: 26 20 16;
+    --c-ink-2: 61 47 36;
+    --c-ink-soft: 107 84 67;
+    --c-ink-faded: 154 132 112;
+    --c-panel: 255 255 255;
+    --c-hairline: 26 20 16;
+    /* Ombre dure decalee — la signature risographe du theme clair. */
+    --c-ombre: #1a1410;
+
     --paper: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.5'/%3E%3C/svg%3E");
   }
 
@@ -79,6 +98,50 @@
   }
   html.theme-joueur body::before,
   html.theme-joueur body::after {
+    display: none;
+  }
+
+  /*
+   * feat/back-office-au-style-tv — LA MEME PALETTE QUE LA TV, POUR TOUT
+   * L ESPACE ADMIN.
+   *
+   * Demande de Thomas : « idem pour le back office de tuttiparty, nous
+   * pourrions avoir un design plus similaire ». La TV, la console animateur et
+   * le telephone joueur sont passes au sombre ; l administration restait creme,
+   * et passer de l une a l autre en pleine soiree piquait les yeux.
+   *
+   * Les vingt-et-une pages d administration n ont pas ete retouchees : elles
+   * emploient deja les jetons (bg-cream, text-ink, border-ink…). Il suffit donc
+   * de redonner a ces jetons les valeurs de la TV sous .theme-console. Une
+   * page qui ecrit une couleur en dur reste a corriger au cas par cas.
+   *
+   * Les accents ne changent pas : basilic = reussite, framboise = danger, dans
+   * les deux themes.
+   */
+  html.theme-console {
+    --c-cream: 11 11 15;
+    --c-cream-2: 21 21 29;
+    --c-cream-3: 30 30 40;
+    --c-cream-4: 39 39 51;
+    --c-kraft: 58 58 70;
+    --c-ink: 255 255 255;
+    --c-ink-2: 230 230 238;
+    --c-ink-soft: 160 160 176;
+    --c-ink-faded: 110 110 126;
+    --c-panel: 25 25 34;
+    --c-hairline: 58 58 72;
+    /* Plus d ombre dure : sur fond nuit elle salit au lieu de detacher. Le
+       contour discret suffit, comme sur la TV. */
+    --c-ombre: transparent;
+  }
+  html.theme-console,
+  html.theme-console body {
+    background: #0b0b0f;
+    color: #ffffff;
+  }
+  /* Le grain papier et les halos oranges sont la signature du theme clair. */
+  html.theme-console body::before,
+  html.theme-console body::after {
     display: none;
   }
 

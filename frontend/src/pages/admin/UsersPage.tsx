@@ -149,7 +149,7 @@ export function UsersPage(): JSX.Element {
           <p className="font-editorial italic text-ink-soft">Aucun utilisateur trouvé.</p>
         </Card>
       ) : (
-        <div className="border-2 border-ink rounded-lg overflow-x-auto bg-cream">
+        <div className="border-2 border-hairline rounded-lg overflow-x-auto bg-cream">
           <table className="w-full text-sm">
             <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
               <tr>
@@ -217,7 +217,7 @@ export function UsersPage(): JSX.Element {
                       className={`inline-block px-2 py-0.5 border text-[11px] font-mono uppercase rounded ${
                         u.tier === 'premium'
                           ? 'bg-spritz/15 border-spritz text-spritz-deep'
-                          : 'bg-ink/10 border-ink text-ink'
+                          : 'bg-ink/10 border-hairline text-ink'
                       }`}
                     >
                       {u.tier}
@@ -287,7 +287,7 @@ function Th({ k, sk, so, on, align, children }: ThProps): JSX.Element {
   const arrow = active ? (so === 'asc' ? ' ↑' : ' ↓') : '';
   const alignClass =
     align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
-  const activeClass = active ? 'bg-spritz/30 text-cream' : 'hover:bg-ink/80';
+  const activeClass = active ? 'bg-spritz/30 text-white' : 'hover:bg-ink/80';
   return (
     <th
       scope="col"

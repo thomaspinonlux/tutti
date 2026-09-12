@@ -77,7 +77,7 @@ function DetailsTab({
     <div className="space-y-4">
       <Card size="sm">
         <div className="flex items-start gap-3 mb-3">
-          <div className="w-16 h-16 shrink-0 border-2 border-ink rounded bg-cream-3 overflow-hidden">
+          <div className="w-16 h-16 shrink-0 border-2 border-hairline rounded bg-cream-3 overflow-hidden">
             {selected.cover_url ? (
               <img src={selected.cover_url} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -183,12 +183,12 @@ function AliasEditor({
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={handleKey}
             placeholder={t('playlists.aliasPlaceholder')}
-            className="flex-1 px-2 py-1 border-2 border-ink rounded bg-cream/30 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-spritz"
+            className="flex-1 px-2 py-1 border-2 border-hairline rounded bg-cream/30 text-sm focus:bg-panel focus:outline-none focus:ring-2 focus:ring-spritz"
           />
           <button
             type="button"
             onClick={add}
-            className="px-3 py-1 text-sm bg-cream text-ink border-2 border-ink rounded font-bold shadow-pop-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5"
+            className="px-3 py-1 text-sm bg-cream text-ink border-2 border-hairline rounded font-bold shadow-pop-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5"
           >
             +
           </button>
@@ -202,7 +202,7 @@ function AliasEditor({
               <button
                 type="button"
                 onClick={() => remove(alias)}
-                className="px-2 py-0.5 text-xs font-mono border-2 border-ink rounded bg-cream-2 hover:bg-raspberry hover:text-cream transition-colors"
+                className="px-2 py-0.5 text-xs font-mono border-2 border-hairline rounded bg-cream-2 hover:bg-raspberry hover:text-white transition-colors"
                 title={t('playlists.aliasRemove')}
               >
                 {alias} <span className="ml-1 opacity-60">✕</span>

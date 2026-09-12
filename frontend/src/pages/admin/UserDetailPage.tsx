@@ -193,7 +193,7 @@ export function UserDetailPage(): JSX.Element {
               className={`inline-block px-2 py-0.5 border text-[10px] uppercase rounded ${
                 user.tier === 'premium'
                   ? 'bg-spritz/15 border-spritz text-spritz-deep'
-                  : 'bg-ink/10 border-ink text-ink'
+                  : 'bg-ink/10 border-hairline text-ink'
               }`}
             >
               {user.tier}
@@ -238,7 +238,7 @@ export function UserDetailPage(): JSX.Element {
       <Card size="md" className="mb-6">
         <p className="text-xs font-mono uppercase tracking-wider text-ink-soft mb-3">Permissions</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <label className="flex items-center justify-between p-3 border-2 border-ink rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
+          <label className="flex items-center justify-between p-3 border-2 border-hairline rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
             <div>
               <p className="font-display text-base">🎵 Accès Blind Test (Tracks)</p>
               <p className="font-editorial italic text-xs text-ink-soft">
@@ -253,7 +253,7 @@ export function UserDetailPage(): JSX.Element {
               className="w-6 h-6 cursor-pointer accent-spritz"
             />
           </label>
-          <label className="flex items-center justify-between p-3 border-2 border-ink rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
+          <label className="flex items-center justify-between p-3 border-2 border-hairline rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
             <div>
               <p className="font-display text-base">❓ Accès Quizz</p>
               <p className="font-editorial italic text-xs text-ink-soft">

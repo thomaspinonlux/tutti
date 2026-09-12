@@ -93,8 +93,8 @@ export function VoiceAnalyticsPage(): JSX.Element {
             key={d}
             type="button"
             onClick={() => setDays(d)}
-            className={`px-3 py-1.5 border-2 border-ink rounded ${
-              days === d ? 'bg-ink text-cream' : 'bg-cream hover:bg-spritz/30'
+            className={`px-3 py-1.5 border-2 border-hairline rounded ${
+              days === d ? 'bg-ink text-white' : 'bg-cream hover:bg-spritz/30'
             }`}
           >
             {d}j
@@ -151,7 +151,7 @@ export function VoiceAnalyticsPage(): JSX.Element {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="text-left text-ink-soft border-b-2 border-ink">
+                  <thead className="text-left text-ink-soft border-b-2 border-hairline">
                     <tr>
                       <th className="py-2 pr-3 font-mono uppercase text-xs">Niveau</th>
                       <th className="py-2 pr-3 font-mono uppercase text-xs text-right">Count</th>
@@ -217,7 +217,7 @@ export function VoiceAnalyticsPage(): JSX.Element {
                 <span className="text-ink-soft">🎯 AssemblyAI</span>
                 <span>{fmtEur(data.cost_estimate_eur.assemblyai)}</span>
               </li>
-              <li className="flex justify-between border-t-2 border-ink pt-2 font-semibold">
+              <li className="flex justify-between border-t-2 border-hairline pt-2 font-semibold">
                 <span>Total</span>
                 <span>{fmtEur(data.cost_estimate_eur.total)}</span>
               </li>
@@ -240,7 +240,7 @@ export function VoiceAnalyticsPage(): JSX.Element {
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left border-b-2 border-ink">
+                  <tr className="text-left border-b-2 border-hairline">
                     <th className="font-mono text-[10px] uppercase tracking-wider py-2">#</th>
                     <th className="font-mono text-[10px] uppercase tracking-wider py-2">Morceau</th>
                     <th className="font-mono text-[10px] uppercase tracking-wider py-2">Artiste</th>
@@ -282,7 +282,7 @@ interface SummaryCardProps {
 }
 
 function SummaryCard({ label, value, hint, tone }: SummaryCardProps): JSX.Element {
-  const accent = tone === 'warn' ? 'border-raspberry text-raspberry-deep' : 'border-ink text-ink';
+  const accent = tone === 'warn' ? 'border-raspberry text-raspberry-deep' : 'border-hairline text-ink';
   return (
     <div className={`border-2 ${accent} bg-cream rounded-lg px-4 py-3 shadow-pop-sm`}>
       <p className="font-mono text-[10px] uppercase tracking-wider text-ink-soft">{label}</p>
@@ -347,7 +347,7 @@ function FailedTrackRow({
           type="button"
           onClick={() => void handleGenerate()}
           disabled={state === 'busy' || state === 'done'}
-          className={`px-2 py-1 font-mono text-[10px] uppercase border border-ink rounded ${
+          className={`px-2 py-1 font-mono text-[10px] uppercase border border-hairline rounded ${
             state === 'done'
               ? 'bg-basil/30 text-basil-deep'
               : state === 'error'

@@ -81,8 +81,8 @@ export function Sidebar(): JSX.Element {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-60 shrink-0 bg-cream-2 border-r-2 border-ink min-h-screen sticky top-0">
-      <div className="px-5 pt-6 pb-4 border-b-2 border-ink relative">
+    <aside className="hidden md:flex flex-col w-60 shrink-0 bg-cream-2 border-r-2 border-hairline min-h-screen sticky top-0">
+      <div className="px-5 pt-6 pb-4 border-b-2 border-hairline relative">
         <div className="absolute -bottom-0.5 left-5 w-12 h-1.5 bg-spritz" />
         <TitleHandwritten as="h3" className="text-2xl">
           {t('common.brand')}
@@ -92,7 +92,7 @@ export function Sidebar(): JSX.Element {
       <nav className="flex-1 px-3 py-5 space-y-1">
         <NavLink
           to="/admin/sessions/new"
-          className="flex items-center gap-2 px-3 py-2 mb-3 rounded border-2 border-ink bg-spritz text-ink font-bold text-sm hover:bg-spritz-deep hover:text-cream transition-colors shadow-pop-sm"
+          className="flex items-center gap-2 px-3 py-2 mb-3 rounded border-2 border-hairline bg-spritz text-ink font-bold text-sm hover:bg-spritz-deep hover:text-white transition-colors shadow-pop-sm"
         >
           <span>▶</span>
           <span>{t('dashboard.newSession')}</span>
@@ -107,8 +107,8 @@ export function Sidebar(): JSX.Element {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-ink text-cream border-ink shadow-pop-sm'
-                  : 'border-transparent text-ink hover:bg-cream hover:border-ink'
+                  ? 'bg-ink text-cream border-hairline shadow-pop-sm'
+                  : 'border-transparent text-ink hover:bg-cream hover:border-hairline'
               }`
             }
           >
@@ -123,8 +123,8 @@ export function Sidebar(): JSX.Element {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-ink text-cream border-ink shadow-pop-sm'
-                    : 'border-transparent text-raspberry hover:bg-cream hover:border-ink'
+                    ? 'bg-ink text-cream border-hairline shadow-pop-sm'
+                    : 'border-transparent text-raspberry hover:bg-cream hover:border-hairline'
                 }`
               }
               title="Modération signup (approbations, whitelist, codes invitation)"
@@ -138,8 +138,8 @@ export function Sidebar(): JSX.Element {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-ink text-cream border-ink shadow-pop-sm'
-                    : 'border-transparent text-raspberry hover:bg-cream hover:border-ink'
+                    ? 'bg-ink text-cream border-hairline shadow-pop-sm'
+                    : 'border-transparent text-raspberry hover:bg-cream hover:border-hairline'
                 }`
               }
               title="Cascade voix : distribution L1/L2/L3, latence, coût estimé"
@@ -151,7 +151,7 @@ export function Sidebar(): JSX.Element {
         )}
       </nav>
 
-      <div className="px-4 pb-5 pt-4 border-t-2 border-ink space-y-3">
+      <div className="px-4 pb-5 pt-4 border-t-2 border-hairline space-y-3">
         <LanguageSwitch className="w-full justify-center" />
         {/* feat/pwa-installable — bouton "Installer Tutti" (Chrome/Edge prompt
             natif, iOS instructions Partager → Sur l'écran d'accueil). Auto-

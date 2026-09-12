@@ -131,10 +131,10 @@ export function ImportPlaylistPage(): JSX.Element {
               <img
                 src={preview.playlist.cover_url}
                 alt=""
-                className="w-20 h-20 border-2 border-ink rounded object-cover"
+                className="w-20 h-20 border-2 border-hairline rounded object-cover"
               />
             ) : (
-              <div className="w-20 h-20 border-2 border-ink rounded bg-cream-3 flex items-center justify-center">
+              <div className="w-20 h-20 border-2 border-hairline rounded bg-cream-3 flex items-center justify-center">
                 <span className="font-display text-3xl text-ink-soft">♪</span>
               </div>
             )}

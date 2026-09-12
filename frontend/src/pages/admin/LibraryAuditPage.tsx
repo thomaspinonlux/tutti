@@ -145,7 +145,7 @@ export function LibraryAuditPage(): JSX.Element {
               <span className="px-3 py-1 bg-basil/20 border-2 border-basil rounded-full">
                 ✓ Fixés : <strong>{fixed.size}</strong>
               </span>
-              <span className="px-3 py-1 bg-cream border-2 border-ink rounded-full">
+              <span className="px-3 py-1 bg-cream border-2 border-hairline rounded-full">
                 Total : <strong>{tracks.length}</strong>
               </span>
             </>

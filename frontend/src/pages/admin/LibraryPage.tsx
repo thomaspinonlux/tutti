@@ -63,13 +63,13 @@ export function LibraryPage(): JSX.Element {
       </header>
 
       {/* Onglets : officielles / personnelles × playlists / quizzes */}
-      <div className="flex gap-2 border-b-2 border-ink mb-6 flex-wrap">
+      <div className="flex gap-2 border-b-2 border-hairline mb-6 flex-wrap">
         {TABS.map(({ key, icon, labelKey }) => (
           <button
             key={key}
             type="button"
             onClick={() => setTab(key)}
-            className={`px-4 py-2 font-display text-lg border-2 border-ink border-b-0 rounded-t-md transition-colors ${
+            className={`px-4 py-2 font-display text-lg border-2 border-hairline border-b-0 rounded-t-md transition-colors ${
               tab === key
                 ? 'bg-cream text-ink shadow-pop-sm'
                 : 'bg-cream-2 text-ink-soft hover:bg-cream'
@@ -159,7 +159,7 @@ function MyPlaylistsTab(): JSX.Element {
                 disabled={deletingId === p.id}
                 aria-label={`Supprimer la playlist ${p.name}`}
                 title="Supprimer la playlist"
-                className="absolute bottom-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-ink text-raspberry hover:bg-raspberry hover:text-white shadow-pop transition-colors disabled:opacity-50"
+                className="absolute bottom-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-panel border-2 border-hairline text-raspberry hover:bg-raspberry hover:text-white shadow-pop transition-colors disabled:opacity-50"
               >
                 {deletingId === p.id ? '…' : '🗑'}
               </button>
@@ -258,7 +258,7 @@ function NewPlaylistModal({
                 type="button"
                 onClick={() => setLanguage(lng)}
                 aria-pressed={language === lng}
-                className={`flex-1 px-3 py-1.5 border-2 border-ink rounded font-medium transition-colors ${
+                className={`flex-1 px-3 py-1.5 border-2 border-hairline rounded font-medium transition-colors ${
                   language === lng ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
                 }`}
               >
@@ -429,7 +429,7 @@ function NewPackModal({
                 type="button"
                 onClick={() => setLanguage1(lng)}
                 aria-pressed={language1 === lng}
-                className={`flex-1 px-3 py-1.5 border-2 border-ink rounded font-medium transition-colors ${
+                className={`flex-1 px-3 py-1.5 border-2 border-hairline rounded font-medium transition-colors ${
                   language1 === lng ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
                 }`}
               >
@@ -620,7 +620,7 @@ function PlaylistsTab(): JSX.Element {
           <select
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as Visibility | 'all')}
-            className="border-2 border-ink rounded px-3 py-2 bg-cream font-medium"
+            className="border-2 border-hairline rounded px-3 py-2 bg-cream font-medium"
           >
             <option value="all">{t('library.visibilityAll')}</option>
             <option value="public">{t('library.visibilityPublic')}</option>
@@ -631,13 +631,13 @@ function PlaylistsTab(): JSX.Element {
         <div className="ml-auto flex items-center gap-2 flex-wrap">
           <Link
             to="/admin/library/audit"
-            className="font-mono text-sm px-3 py-2 border-2 border-ink rounded hover:bg-cream transition-colors"
+            className="font-mono text-sm px-3 py-2 border-2 border-hairline rounded hover:bg-cream transition-colors"
           >
             🔍 Audit tracks non jouables
           </Link>
           <Link
             to="/admin/library/tags"
-            className="font-mono text-sm px-3 py-2 border-2 border-ink rounded hover:bg-cream transition-colors"
+            className="font-mono text-sm px-3 py-2 border-2 border-hairline rounded hover:bg-cream transition-colors"
           >
             🎼 Chansons &amp; paramètres
           </Link>
@@ -670,7 +670,7 @@ function PlaylistsTab(): JSX.Element {
           <p className="font-editorial italic text-ink-soft">{t('library.empty')}</p>
         </Card>
       ) : (
-        <div className="border-2 border-ink rounded-lg overflow-x-auto bg-cream">
+        <div className="border-2 border-hairline rounded-lg overflow-x-auto bg-cream">
           <table className="w-full text-sm">
             <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
               <tr>
@@ -892,7 +892,7 @@ function QuizzesTab(): JSX.Element {
           <select
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as Visibility | 'all')}
-            className="border-2 border-ink rounded px-3 py-2 bg-cream font-medium"
+            className="border-2 border-hairline rounded px-3 py-2 bg-cream font-medium"
           >
             <option value="all">{t('library.visibilityAll')}</option>
             <option value="public">{t('library.visibilityPublic')}</option>
@@ -917,7 +917,7 @@ function QuizzesTab(): JSX.Element {
           <p className="font-editorial italic text-ink-soft">{t('library.empty')}</p>
         </Card>
       ) : (
-        <div className="border-2 border-ink rounded-lg overflow-x-auto bg-cream">
+        <div className="border-2 border-hairline rounded-lg overflow-x-auto bg-cream">
           <table className="w-full text-sm">
             <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
               <tr>
@@ -1049,7 +1049,7 @@ function QuizSortableHeader({
   const isActive = active === sortKey && order !== null;
   const arrow = isActive ? (order === 'asc' ? ' ↑' : ' ↓') : '';
   const alignClass = align === 'right' ? 'text-right' : 'text-left';
-  const activeClass = isActive ? 'bg-spritz/30 text-cream' : 'hover:bg-ink/80';
+  const activeClass = isActive ? 'bg-spritz/30 text-white' : 'hover:bg-ink/80';
   return (
     <th
       scope="col"
@@ -1090,7 +1090,7 @@ function SortableHeader({
   const isActive = active === sortKey && order !== null;
   const arrow = isActive ? (order === 'asc' ? ' ↑' : ' ↓') : '';
   const alignClass = align === 'right' ? 'text-right' : 'text-left';
-  const activeClass = isActive ? 'bg-spritz/30 text-cream' : 'hover:bg-ink/80';
+  const activeClass = isActive ? 'bg-spritz/30 text-white' : 'hover:bg-ink/80';
   return (
     <th
       scope="col"
@@ -1115,7 +1115,7 @@ function VisibilityBadge({ visibility }: { visibility: Visibility }): JSX.Elemen
       bg: 'bg-spritz/15 border-spritz text-spritz-deep',
       label: 'Premium only',
     },
-    private: { bg: 'bg-ink/10 border-ink text-ink', label: 'Private' },
+    private: { bg: 'bg-ink/10 border-hairline text-ink', label: 'Private' },
   }[visibility];
   return (
     <span
@@ -1133,7 +1133,7 @@ function DifficultyBadge({
 }): JSX.Element {
   const map = {
     EASY: 'bg-basil/15 border-basil text-basil-deep',
-    MEDIUM: 'bg-lemon/30 border-ink text-ink',
+    MEDIUM: 'bg-lemon/30 border-hairline text-ink',
     EXPERT: 'bg-raspberry/15 border-raspberry text-raspberry-deep',
   };
   return (

@@ -5,19 +5,37 @@ export default {
     extend: {
       // ─── Direction Pop Cocktail ─────────────────────────────────────────
       colors: {
+        // feat/back-office-au-style-tv — LES FONDS ET LES ENCRES PASSENT PAR
+        // DES VARIABLES.
+        //
+        // Demande de Thomas : « le back office de tuttiparty, nous pourrions
+        // avoir un design plus similaire » (a la TV et au telephone, passes au
+        // sombre). Retoucher vingt-et-une pages une par une aurait garanti des
+        // oublis. Les couleurs de SURFACE et d ENCRE sont donc devenues des
+        // variables CSS : la palette claire reste la valeur par defaut, et la
+        // coque admin (theme-console) leur donne les valeurs de la TV. Les
+        // couleurs d ACCENT (spritz, basil, framboise…) ne bougent pas : elles
+        // portent du sens (succes, danger) dans les deux themes.
+        //
+        // Ecrites en canaux RVB pour que les opacites Tailwind (bg-ink/15,
+        // border-ink/10…) continuent de fonctionner.
         cream: {
-          DEFAULT: '#f5ecd9',
-          2: '#efe4cc',
-          3: '#e6d8b8',
-          4: '#d4c39e',
+          DEFAULT: 'rgb(var(--c-cream) / <alpha-value>)',
+          2: 'rgb(var(--c-cream-2) / <alpha-value>)',
+          3: 'rgb(var(--c-cream-3) / <alpha-value>)',
+          4: 'rgb(var(--c-cream-4) / <alpha-value>)',
         },
-        kraft: '#c2aa78',
+        kraft: 'rgb(var(--c-kraft) / <alpha-value>)',
         ink: {
-          DEFAULT: '#1a1410',
-          2: '#3d2f24',
-          soft: '#6b5443',
-          faded: '#9a8470',
+          DEFAULT: 'rgb(var(--c-ink) / <alpha-value>)',
+          2: 'rgb(var(--c-ink-2) / <alpha-value>)',
+          soft: 'rgb(var(--c-ink-soft) / <alpha-value>)',
+          faded: 'rgb(var(--c-ink-faded) / <alpha-value>)',
         },
+        /** Surface d un panneau : blanc en clair, gris-nuit facon TV en sombre. */
+        panel: 'rgb(var(--c-panel) / <alpha-value>)',
+        /** Trait de contour : l encre en clair, un gris discret en sombre. */
+        hairline: 'rgb(var(--c-hairline) / <alpha-value>)',
         spritz: {
           DEFAULT: '#ee6c2a',
           deep: '#c84e15',
@@ -49,17 +67,17 @@ export default {
       },
       boxShadow: {
         // Ombres décalées fixes (style risographe)
-        'pop-sm': '2px 2px 0 0 #1a1410',
-        pop: '4px 4px 0 0 #1a1410',
-        'pop-lg': '6px 6px 0 0 #1a1410',
-        'pop-xl': '8px 8px 0 0 #1a1410',
+        'pop-sm': '2px 2px 0 0 var(--c-ombre)',
+        pop: '4px 4px 0 0 var(--c-ombre)',
+        'pop-lg': '6px 6px 0 0 var(--c-ombre)',
+        'pop-xl': '8px 8px 0 0 var(--c-ombre)',
         // feat/arcade-buttons-vinyl-buzzer — l'ombre dure de l'arcade. Alias
         // sémantique pour les boutons du nouveau système (press = translate
         // (4px,4px) + shadow-arcade-flat). Les ombres pop existantes restent
         // utilisables pour les Cards et autres surfaces.
-        arcade: '4px 4px 0 0 #1a1410',
-        'arcade-sm': '2px 2px 0 0 #1a1410',
-        'arcade-flat': '0 0 0 0 #1a1410',
+        arcade: '4px 4px 0 0 var(--c-ombre)',
+        'arcade-sm': '2px 2px 0 0 var(--c-ombre)',
+        'arcade-flat': '0 0 0 0 var(--c-ombre)',
       },
       borderWidth: {
         3: '3px',

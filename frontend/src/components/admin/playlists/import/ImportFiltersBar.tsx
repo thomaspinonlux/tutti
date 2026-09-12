@@ -16,7 +16,7 @@ export function ImportFiltersBar({ options, onChange }: Props): JSX.Element {
   };
 
   return (
-    <details className="border-2 border-ink rounded bg-cream-2/30">
+    <details className="border-2 border-hairline rounded bg-cream-2/30">
       <summary className="cursor-pointer px-3 py-2 font-mono text-xs uppercase tracking-wider text-ink-soft">
         ⚙ Filtres d'import
       </summary>

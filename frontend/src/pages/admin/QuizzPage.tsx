@@ -161,7 +161,7 @@ function NewPackModal({
                 type="button"
                 onClick={() => setLanguage1(lng)}
                 aria-pressed={language1 === lng}
-                className={`flex-1 px-3 py-1.5 border-2 border-ink rounded font-medium transition-colors ${
+                className={`flex-1 px-3 py-1.5 border-2 border-hairline rounded font-medium transition-colors ${
                   language1 === lng ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
                 }`}
               >

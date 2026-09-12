@@ -16,7 +16,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 }
 
 const TONES: Record<Tone, string> = {
-  default: 'bg-white',
+  default: 'bg-panel',
   spritz: 'bg-spritz/10',
   basil: 'bg-basil/10',
   raspberry: 'bg-raspberry/10',
@@ -38,7 +38,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(function Card(
   return (
     <div
       ref={ref}
-      className={`border-2 border-ink rounded-lg ${TONES[tone]} ${SIZES[size]} ${className ?? ''}`}
+      className={`border-2 border-hairline rounded-lg ${TONES[tone]} ${SIZES[size]} ${className ?? ''}`}
       {...rest}
     >
       {children}

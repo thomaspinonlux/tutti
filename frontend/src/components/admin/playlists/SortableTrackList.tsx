@@ -103,7 +103,7 @@ function SortableTrackItem({ track, index, selected, onSelect, onDelete }: ItemP
       ref={setNodeRef}
       style={style}
       className={`group flex items-center gap-3 p-2 border-2 rounded transition-colors ${
-        selected ? 'border-spritz bg-spritz/10' : 'border-ink bg-white hover:bg-cream-2'
+        selected ? 'border-spritz bg-spritz/10' : 'border-hairline bg-panel hover:bg-cream-2'
       }`}
     >
       <button
@@ -121,7 +121,7 @@ function SortableTrackItem({ track, index, selected, onSelect, onDelete }: ItemP
         onClick={() => onSelect?.(track)}
         className="flex-1 min-w-0 flex items-center gap-3 text-left"
       >
-        <div className="w-10 h-10 shrink-0 border border-ink rounded bg-cream-3 overflow-hidden">
+        <div className="w-10 h-10 shrink-0 border border-hairline rounded bg-cream-3 overflow-hidden">
           {track.cover_url ? (
             <img src={track.cover_url} alt="" className="w-full h-full object-cover" />
           ) : (

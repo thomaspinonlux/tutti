@@ -305,8 +305,8 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
                 role="tab"
                 aria-selected={selected}
                 onClick={() => setProvider(p)}
-                className={`px-3 py-1.5 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider transition-colors ${
-                  selected ? 'bg-spritz-deep text-cream' : 'bg-cream-2 text-ink hover:bg-cream-3'
+                className={`px-3 py-1.5 border-2 border-hairline rounded font-mono text-xs uppercase tracking-wider transition-colors ${
+                  selected ? 'bg-spritz-deep text-white' : 'bg-cream-2 text-ink hover:bg-cream-3'
                 }`}
               >
                 {PROVIDER_LABELS[p] ?? p}
@@ -350,7 +350,7 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
           onChange={(e) => setText(e.target.value)}
           rows={8}
           placeholder={'Stromae - Alors on danse\nDaft Punk - One More Time\nZaz - Je veux\n…'}
-          className="w-full text-sm border-2 border-ink/20 rounded px-3 py-2 bg-white font-mono resize-y focus:border-ink outline-none"
+          className="w-full text-sm border-2 border-ink/20 rounded px-3 py-2 bg-panel font-mono resize-y focus:border-hairline outline-none"
         />
         <p className="font-mono text-[11px] text-ink-soft mt-1">
           Format libre : « Artiste - Titre » marche le mieux. Max {MAX_LINES} lignes · doublons

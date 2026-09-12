@@ -22,7 +22,7 @@ export function TrackRowWithCheckbox({ track, flags, selected, onToggle }: Props
   return (
     <li
       className={`flex items-center gap-3 px-3 py-2 border-2 rounded transition-colors ${
-        selected ? 'bg-cream border-ink' : 'bg-cream-2/50 border-ink/30'
+        selected ? 'bg-cream border-hairline' : 'bg-cream-2/50 border-ink/30'
       }`}
     >
       <input
@@ -37,10 +37,10 @@ export function TrackRowWithCheckbox({ track, flags, selected, onToggle }: Props
           src={track.cover_url}
           alt=""
           loading="lazy"
-          className="w-10 h-10 rounded border-2 border-ink shrink-0 object-cover"
+          className="w-10 h-10 rounded border-2 border-hairline shrink-0 object-cover"
         />
       ) : (
-        <div className="w-10 h-10 rounded border-2 border-ink shrink-0 bg-cream-2" />
+        <div className="w-10 h-10 rounded border-2 border-hairline shrink-0 bg-cream-2" />
       )}
       <div className="flex-1 min-w-0">
         <p className="font-medium text-sm truncate">{track.title}</p>

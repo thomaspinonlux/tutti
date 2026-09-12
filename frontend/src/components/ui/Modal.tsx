@@ -42,7 +42,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: Props): J
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
-        className={`w-full ${SIZES[size]} bg-white border-2 border-ink rounded-lg shadow-pop-xl animate-pop-in p-6`}
+        className={`w-full ${SIZES[size]} bg-panel border-2 border-hairline rounded-lg shadow-pop-xl animate-pop-in p-6`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (

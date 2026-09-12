@@ -103,15 +103,15 @@ export function GettingStartedChecklist(): JSX.Element | null {
           {completed} / {requiredItems.length}
         </span>
       </div>
-      <div className="w-full h-2 border-2 border-ink rounded overflow-hidden bg-cream-2 mb-4">
+      <div className="w-full h-2 border-2 border-hairline rounded overflow-hidden bg-cream-2 mb-4">
         <div className="h-full bg-spritz transition-[width]" style={{ width: `${pct}%` }} />
       </div>
       <ul className="space-y-2">
         {items.map((item) => {
           const content = (
-            <span className="flex items-center gap-3 px-3 py-2 border-2 border-ink rounded text-sm bg-cream">
+            <span className="flex items-center gap-3 px-3 py-2 border-2 border-hairline rounded text-sm bg-cream">
               <span
-                className={`shrink-0 w-6 h-6 border-2 border-ink rounded-full flex items-center justify-center text-xs font-bold ${
+                className={`shrink-0 w-6 h-6 border-2 border-hairline rounded-full flex items-center justify-center text-xs font-bold ${
                   item.done ? 'bg-basil text-ink' : 'bg-cream'
                 }`}
               >

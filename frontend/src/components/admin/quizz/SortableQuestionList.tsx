@@ -119,7 +119,7 @@ function SortableQuestionItem({
     <li ref={setNodeRef} style={style}>
       <div
         className={`flex items-center gap-2 p-3 border-2 rounded transition-colors ${
-          selected ? 'bg-ink text-cream border-ink' : 'bg-cream border-ink hover:bg-cream-2'
+          selected ? 'bg-ink text-cream border-hairline' : 'bg-cream border-hairline hover:bg-cream-2'
         }`}
       >
         <button

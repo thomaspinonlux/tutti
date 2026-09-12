@@ -99,8 +99,8 @@ export function TrackSearch({
                 role="tab"
                 aria-selected={selected}
                 onClick={() => setActiveProvider(p)}
-                className={`px-3 py-1 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider transition-colors ${
-                  selected ? 'bg-spritz-deep text-cream' : 'bg-cream-2 text-ink hover:bg-cream-3'
+                className={`px-3 py-1 border-2 border-hairline rounded font-mono text-xs uppercase tracking-wider transition-colors ${
+                  selected ? 'bg-spritz-deep text-white' : 'bg-cream-2 text-ink hover:bg-cream-3'
                 }`}
               >
                 {p}
@@ -162,7 +162,7 @@ function ResultRow({
       <button
         type="button"
         onClick={handleClick}
-        className="w-full text-left px-3 py-2 border-2 border-ink rounded bg-cream/40 hover:bg-cream-2 transition-colors flex items-center justify-between gap-3"
+        className="w-full text-left px-3 py-2 border-2 border-hairline rounded bg-cream/40 hover:bg-cream-2 transition-colors flex items-center justify-between gap-3"
       >
         <span>
           <span className="font-medium">{track.artist}</span>
@@ -179,9 +179,9 @@ function ResultRow({
     <button
       type="button"
       onClick={handleClick}
-      className="group w-full text-left p-3 border-2 border-ink rounded bg-white hover:bg-cream-2 transition-colors flex items-center gap-3 shadow-pop-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5"
+      className="group w-full text-left p-3 border-2 border-hairline rounded bg-panel hover:bg-cream-2 transition-colors flex items-center gap-3 shadow-pop-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5"
     >
-      <div className="w-12 h-12 shrink-0 border-2 border-ink rounded bg-cream-3 flex items-center justify-center">
+      <div className="w-12 h-12 shrink-0 border-2 border-hairline rounded bg-cream-3 flex items-center justify-center">
         {track.cover_url ? (
           <img src={track.cover_url} alt="" className="w-full h-full object-cover" />
         ) : (

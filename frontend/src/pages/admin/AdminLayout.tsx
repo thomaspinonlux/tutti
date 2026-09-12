@@ -42,7 +42,24 @@ export interface EstablishmentContext {
   me: MeResponse | null;
 }
 
+/**
+ * feat/back-office-au-style-tv — LA COQUE ADMIN ALLUME LE THEME SOMBRE.
+ *
+ * La classe est posee sur <html> (et non sur un div) parce que le fond de page
+ * et la texture papier sont definis sur html/body : sans cela, les panneaux
+ * passaient au sombre mais la page restait creme derriere — exactement le
+ * defaut constate sur le telephone joueur avant theme-joueur.
+ */
+function useFondAdminSombre(): void {
+  useEffect(() => {
+    const racine = document.documentElement;
+    racine.classList.add('theme-console');
+    return () => racine.classList.remove('theme-console');
+  }, []);
+}
+
 export function AdminLayout(): JSX.Element {
+  useFondAdminSombre();
   const [establishment, setEstablishment] = useState<Establishment | null>(null);
   const [me, setMe] = useState<MeResponse | null>(null);
   const [meLoading, setMeLoading] = useState(true);

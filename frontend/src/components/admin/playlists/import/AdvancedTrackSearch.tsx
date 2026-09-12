@@ -228,8 +228,8 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
                 role="tab"
                 aria-selected={selected}
                 onClick={() => setProvider(p)}
-                className={`px-3 py-1.5 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider transition-colors ${
-                  selected ? 'bg-spritz-deep text-cream' : 'bg-cream-2 text-ink hover:bg-cream-3'
+                className={`px-3 py-1.5 border-2 border-hairline rounded font-mono text-xs uppercase tracking-wider transition-colors ${
+                  selected ? 'bg-spritz-deep text-white' : 'bg-cream-2 text-ink hover:bg-cream-3'
                 }`}
               >
                 {PROVIDER_LABELS[p] ?? p}
@@ -287,7 +287,7 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
                     type="button"
                     onClick={() => pickDecade(d.min, d.max)}
                     aria-pressed={active}
-                    className={`px-3 py-1 border-2 border-ink rounded text-xs font-mono uppercase transition-colors ${
+                    className={`px-3 py-1 border-2 border-hairline rounded text-xs font-mono uppercase transition-colors ${
                       active ? 'bg-ink text-cream' : 'bg-cream hover:bg-cream-2'
                     }`}
                   >
