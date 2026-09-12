@@ -2334,13 +2334,24 @@ function ValidatedBanner({
       {/* Confettis confinés au banner — déclenchés en phase 3 pour les finders.
           Pas en phase 2 (pas d'animation festive avant le reveal global). */}
       {showConfetti && <PhoneConfettiBurst />}
-      <div className="bg-basil border-4 border-ink rounded-2xl px-5 py-7 text-center shadow-pop-lg animate-valid-pop relative z-10">
-        <span className="font-display text-6xl block mb-1.5 text-cream">✓</span>
-        <p className="font-display text-2xl text-cream mb-1.5">
+      {/* feat/telephone-au-style-tv — le bandeau de reussite reprend le corail
+          de la TV : c etait le dernier ilot vert-et-jaune de l ecran. */}
+      <div
+        className="relative z-10 rounded-[20px] border px-5 py-7 text-center animate-valid-pop"
+        style={{
+          backgroundColor: `${TEL_CORAIL}1f`,
+          borderColor: `${TEL_CORAIL}66`,
+          boxShadow: `0 0 40px ${TEL_CORAIL}33`,
+        }}
+      >
+        <span className="mb-1.5 block font-display text-6xl" style={{ color: TEL_CORAIL }}>
+          ✓
+        </span>
+        <p className="mb-1.5 font-display text-2xl text-white">
           {scoreTitleBonus ? t('play.doubleValidated') : t('play.answerValidated')}
         </p>
         {hasBreakdown && (
-          <ul className="space-y-0.5 mb-2 text-cream-2 font-mono text-sm">
+          <ul className="mb-2 space-y-0.5 font-mono text-sm text-white/65">
             {!!scorePosition && (
               <li>
                 +{scorePosition} {t('play.scoreArtist', { n: position })}
@@ -2358,10 +2369,13 @@ function ValidatedBanner({
             )}
           </ul>
         )}
-        <p className="font-mono text-3xl bg-lemon text-ink inline-block px-4 py-1 rounded-xl font-bold">
+        <p
+          className="inline-block rounded-2xl px-4 py-1 font-mono text-3xl font-bold tabular-nums text-[#0B0B0F]"
+          style={{ backgroundColor: TEL_CORAIL }}
+        >
           {t('play.scoreTotal')} : +{score} pts
         </p>
-        <p className="font-mono text-xs text-cream-2 mt-3 uppercase tracking-widest">
+        <p className="mt-3 font-mono text-xs uppercase tracking-widest text-white/50">
           {t('play.position', { n: position })}
         </p>
       </div>
@@ -2381,7 +2395,8 @@ function PhoneConfettiBurst(): JSX.Element {
       left: `${Math.round(Math.random() * 100)}%`,
       delay: `${Math.round(Math.random() * 1500)}ms`,
       duration: `${3 + Math.round(Math.random() * 2)}s`,
-      color: ['#ee6c2a', '#4a8b3f', '#c8336e', '#e8c547', '#6e3a6e', '#e89a64'][i % 6],
+      // feat/telephone-au-style-tv — palette resserree autour du corail.
+      color: ['#FF5C4D', '#FFFFFF', '#FF8A7A', '#FFD166', '#FF5C4D', '#FFFFFF'][i % 6],
       isCircle: i % 3 === 0,
     })),
   );
