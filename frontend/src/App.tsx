@@ -46,6 +46,7 @@ import { TermsPage } from './pages/legal/TermsPage.js';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner.js';
 import { DebugOverlay } from './components/DebugOverlay.js';
 import { ScreenApercuPage } from './pages/screen/ScreenApercuPage.js';
+import { PlayApercuPage } from './pages/play/PlayApercuPage.js';
 
 // Lazy : chunks dédiés aux pages volumineuses (audio, dnd, qrcode, socket.io…)
 const DesignSystemPage = lazy(() =>
@@ -92,6 +93,8 @@ function App(): JSX.Element {
             requises par YouTube API Services. Liées depuis footer + signup. */}
         {/* fix/ecran-tv-jamais-vu-avant-la-soiree — apercu visuel de la TV, sans partie */}
         <Route path="/screen/apercu" element={<ScreenApercuPage />} />
+        {/* feat/telephone-au-style-tv — apercu visuel du telephone joueur, sans partie */}
+        <Route path="/play/apercu" element={<PlayApercuPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         {/* Compat ancien lien footer landing ("/cgu" historiquement). */}

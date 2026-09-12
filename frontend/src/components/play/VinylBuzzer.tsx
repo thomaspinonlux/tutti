@@ -90,16 +90,19 @@ export function VinylBuzzer({
 
   return (
     <div className="flex flex-col items-center gap-4 select-none">
-      {/* Conteneur fond clair (jamais noir sur noir). Cream + bord ink. */}
-      <div className="relative flex items-center justify-center w-[240px] h-[240px] rounded-2xl bg-cream border-2 border-ink shadow-arcade">
-        {/* Glow rose autour quand scratching */}
+      {/* feat/telephone-au-style-tv — LE PLATEAU PREND LES CODES DE LA TV.
+          Il etait creme a bord noir, seul ilot clair d un ecran desormais
+          sombre. Meme panneau que l ecran de la salle, et le halo passe du
+          rose au corail. */}
+      <div className="relative flex items-center justify-center w-[240px] h-[240px] rounded-[28px] bg-[#191922] border border-white/[0.07] shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+        {/* Halo corail autour quand scratching */}
         <span
           aria-hidden
           className={`absolute inset-2 rounded-full transition-opacity duration-300 ${
             scratching ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            boxShadow: '0 0 0 6px rgba(232, 92, 138, 0.55), 0 0 28px 12px rgba(232, 92, 138, 0.35)',
+            boxShadow: '0 0 0 6px rgba(255, 92, 77, 0.5), 0 0 28px 12px rgba(255, 92, 77, 0.32)',
           }}
         />
 
@@ -110,7 +113,7 @@ export function VinylBuzzer({
           disabled={disabled}
           aria-label={ariaLabel ?? 'Buzzer vinyle'}
           aria-pressed={buzzed}
-          className={`relative w-[200px] h-[200px] rounded-full border-2 border-ink overflow-hidden focus:outline-none focus-visible:ring-4 focus-visible:ring-rose focus-visible:ring-offset-2 ${
+          className={`relative w-[200px] h-[200px] rounded-full border border-white/10 overflow-hidden focus:outline-none focus-visible:ring-4 focus-visible:ring-[#FF5C4D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#191922] ${
             disabled ? 'opacity-[0.38] cursor-not-allowed' : 'cursor-pointer'
           }`}
           style={{
@@ -148,16 +151,16 @@ export function VinylBuzzer({
             // pour le wordmark court (3 lettres) et reflète le tournedisque.
           >
             <span
-              className="flex items-center justify-center rounded-full border-2 border-ink"
+              className="flex items-center justify-center rounded-full border border-black/30"
               style={{
                 width: '44%',
                 height: '44%',
-                background: scratching ? '#c43b6e' : '#e85c8a',
+                background: scratching ? '#D9432F' : '#FF5C4D',
                 transition: 'background 200ms ease',
               }}
             >
               <span
-                className="text-center text-cream leading-none px-1"
+                className="text-center leading-none px-1 text-[#0B0B0F]"
                 style={{
                   fontFamily: 'Fraunces, serif',
                   fontStyle: 'italic',
@@ -175,7 +178,7 @@ export function VinylBuzzer({
           {/* Trou central crème */}
           <span
             aria-hidden
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cream border-2 border-ink"
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#191922] border border-white/20"
             style={{ width: 14, height: 14 }}
           />
         </button>
@@ -183,7 +186,7 @@ export function VinylBuzzer({
 
       {/* Hint sous le vinyle (état texte, ex "Appuie pour buzzer"). */}
       {hint && (
-        <p className="font-display text-base md:text-lg text-ink text-center" aria-live="polite">
+        <p className="font-display text-base md:text-lg text-white/85 text-center" aria-live="polite">
           {hint}
         </p>
       )}

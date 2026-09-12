@@ -834,7 +834,8 @@ export function PlayPage(): JSX.Element {
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col">
+    // feat/telephone-au-style-tv — fond sombre de la TV sur toute la page.
+    <div className="min-h-screen flex flex-col bg-[#0B0B0F] text-white">
       <MultiColorBar height="md" />
       {/* fix/prevent-safari-reader-mode — role="application" évite que Safari
           détecte la page joueur (peu de texte structuré) comme article éditorial
@@ -1310,6 +1311,16 @@ interface PlayingViewProps {
   setBusy: (v: boolean) => void;
 }
 
+// feat/telephone-au-style-tv — MEMES CODES VISUELS QUE L ECRAN DE LA SALLE.
+// Demande de Thomas apres la soiree du 11/09 : le telephone des joueurs doit
+// reprendre le style de la TV. On reutilise donc les memes valeurs que
+// TvScreenView plutot que la charte claire « Pop Cocktail » : fond tres
+// sombre, panneaux gris-bleu a filet blanc, corail pour l accent, et le
+// meme trio de polices (display / editorial / mono).
+const TEL_CORAIL = '#FF5C4D';
+const TEL_PANNEAU =
+  'rounded-[20px] bg-[#191922] border border-white/[0.07] shadow-[0_18px_50px_rgba(0,0,0,0.5)]';
+
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
 
 interface PlayingViewExtraProps {
@@ -1335,7 +1346,7 @@ interface PlayingViewExtraProps {
   cumulative: CumulativeScore[];
 }
 
-function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Element {
+export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Element {
   const { t, i18n } = useTranslation();
   const {
     currentTrack,
@@ -1948,7 +1959,7 @@ function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JSX.Eleme
     <div className="flex flex-col gap-2 overflow-x-hidden">
       {/* Refonte #2 — toast top "Pas reconnu" 1.5s, retour buzzer immédiat. */}
       {failToast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 border-2 border-ink rounded shadow-pop bg-raspberry text-cream font-medium text-sm animate-pop-in">
+        <div className="fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-2xl border border-white/15 bg-[#191922]/95 px-4 py-2 text-sm font-medium text-white shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur animate-pop-in">
           {failToast}
         </div>
       )}
@@ -2091,25 +2102,26 @@ function PhoneHeader({
   onPause?: () => void;
 }): JSX.Element {
   return (
-    <div className="relative bg-ink text-cream rounded-2xl px-4 py-3.5 flex items-center justify-between shadow-pop">
+    <div className={`relative ${TEL_PANNEAU} px-4 py-3.5 flex items-center justify-between`}>
       <div className="flex items-center gap-2">
-        <div className="font-display text-xl text-spritz">
+        <div className="font-display text-xl text-white">
           Tutti
           <span
             aria-hidden
-            className="inline-block w-2 h-2 bg-lemon rounded-full ml-0.5 align-top"
+            className="inline-block w-2 h-2 rounded-full ml-0.5 align-top"
+            style={{ backgroundColor: TEL_CORAIL }}
           />
         </div>
         {roundPosition !== null && (
-          <span className="font-bold text-[11px] bg-basil text-ink px-2.5 py-0.5 rounded-xl uppercase tracking-wider">
-            M{roundPosition}
+          <span className="rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-white/70">
+            {`M${roundPosition}`}
           </span>
         )}
       </div>
       <div className="flex items-center gap-2">
         <span
           aria-hidden
-          className="w-2 h-2 rounded-full bg-basil animate-pulse-buzz"
+          className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse-buzz"
           title="Connecté"
         />
         {isMaster && onModerate && (
@@ -2117,7 +2129,7 @@ function PhoneHeader({
             type="button"
             onClick={onModerate}
             aria-label="Modérer"
-            className="w-7 h-7 bg-spritz border-2 border-cream rounded-full flex items-center justify-center text-sm hover:bg-spritz-deep"
+            className="w-7 h-7 rounded-full border border-white/20 bg-white/[0.08] flex items-center justify-center text-sm text-white hover:bg-white/[0.16]"
           >
             ⚙
           </button>
@@ -2127,20 +2139,19 @@ function PhoneHeader({
             type="button"
             onClick={onPause}
             aria-label="Pause"
-            className="w-7 h-7 border-2 border-cream rounded-full flex items-center justify-center text-sm hover:bg-cream/10"
+            className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-sm text-white hover:bg-white/[0.12]"
           >
             ⏸
           </button>
         )}
       </div>
-      {/* Multi-color signature */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 flex rounded-b-2xl overflow-hidden">
-        <div className="flex-1 bg-spritz" />
-        <div className="flex-1 bg-basil" />
-        <div className="flex-1 bg-raspberry" />
-        <div className="flex-1 bg-lemon" />
-        <div className="flex-1 bg-plum" />
-      </div>
+      {/* feat/telephone-au-style-tv — le filet multicolore devient le liseré
+          corail de la TV : un seul accent, comme sur l'écran de la salle. */}
+      <div
+        aria-hidden
+        className="absolute bottom-0 left-4 right-4 h-px rounded-full"
+        style={{ background: `linear-gradient(90deg, transparent, ${TEL_CORAIL}, transparent)` }}
+      />
     </div>
   );
 }
@@ -2158,13 +2169,16 @@ function PlayerInfoBar({
 }): JSX.Element {
   return (
     <div className="text-center">
-      <p className="font-display text-2xl text-ink leading-tight">{pseudo}</p>
+      <p className="font-display text-2xl leading-tight text-white">{pseudo}</p>
       {teamName && (
-        <p className="font-editorial italic text-sm" style={{ color: teamColor ?? '#c8336e' }}>
+        <p className="font-editorial italic text-sm" style={{ color: teamColor ?? TEL_CORAIL }}>
           {teamName}
         </p>
       )}
-      <span className="font-mono text-sm bg-lemon border-2 border-ink px-3 py-0.5 rounded-2xl inline-block mt-1.5 font-bold">
+      <span
+        className="mt-1.5 inline-block rounded-full px-3 py-0.5 font-mono text-sm font-bold tabular-nums"
+        style={{ backgroundColor: `${TEL_CORAIL}22`, border: `1px solid ${TEL_CORAIL}66`, color: TEL_CORAIL }}
+      >
         {score} pts
       </span>
     </div>
@@ -2225,25 +2239,23 @@ function ResultPanel({
 }): JSX.Element {
   const { t } = useTranslation();
   return (
-    <div
-      className="bg-cream-2 border-3 border-ink rounded-xl p-4 text-center"
-      style={{ boxShadow: '4px 4px 0 #ee6c2a' }}
-    >
-      <p className="text-[10px] uppercase tracking-widest font-bold opacity-70 mb-1">
+    <div className={`${TEL_PANNEAU} p-4 text-center`}>
+      <p className="mb-2 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-white/55">
         {t('play.resultPanelLabel')}
       </p>
       {coverUrl && (
         <img
           src={coverUrl}
           alt=""
-          className="mx-auto mb-2 h-28 w-28 rounded-lg border-2 border-ink object-cover"
-          style={{ boxShadow: '3px 3px 0 #ee6c2a' }}
+          className="mx-auto mb-3 h-28 w-28 rounded-2xl object-cover ring-1 ring-white/15 shadow-[0_16px_40px_rgba(0,0,0,0.6)]"
         />
       )}
       {/* feat/oeuvre-affichee — ordre demandé : œuvre (ou titre) / chanson / interprète */}
-      <p className="font-display text-2xl text-ink leading-none mb-1">{title}</p>
-      {songTitle && <p className="font-display text-base text-ink/80 mb-1">{songTitle}</p>}
-      <p className="font-editorial italic text-sm text-raspberry font-semibold">{artist}</p>
+      <p className="mb-1 font-display text-2xl leading-tight text-white">{title}</p>
+      {songTitle && <p className="mb-1 font-display text-base text-white/75">{songTitle}</p>}
+      <p className="font-editorial text-sm font-semibold italic" style={{ color: TEL_CORAIL }}>
+        {artist}
+      </p>
     </div>
   );
 }
@@ -2251,7 +2263,7 @@ function ResultPanel({
 function DanceMessage({ isFinder, score }: { isFinder: boolean; score: number }): JSX.Element {
   const { t } = useTranslation();
   return (
-    <div className="bg-ink text-cream rounded-xl py-3.5 text-center font-display text-lg animate-dance-pulse">
+    <div className={`${TEL_PANNEAU} py-3.5 text-center font-display text-lg text-white animate-dance-pulse`}>
       {isFinder ? (
         <>
           <span aria-hidden className="inline-block animate-emoji-wave mr-2">
@@ -2422,7 +2434,7 @@ function BuzzerArea({
         ariaLabel={t('play.voiceButton.ariaIdle')}
       />
       {error && (
-        <p role="alert" className="text-sm text-raspberry text-center">
+        <p role="alert" className="text-center text-sm" style={{ color: TEL_CORAIL }}>
           {error}
         </p>
       )}
@@ -2475,7 +2487,7 @@ function TextAnswerInput({
         // Bug 5 — PAS de text-sm/text-xs sur les inputs : iOS Safari zoom auto
         // sur tout input < 16px. La règle globale index.css force 16px sur
         // input/textarea/select.
-        className="flex-1 px-3 py-2 border-2 border-ink rounded bg-white focus:outline-none focus:ring-2 focus:ring-spritz disabled:bg-ink/10 disabled:text-ink-soft"
+        className="flex-1 rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/40 backdrop-blur focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50 disabled:bg-white/[0.03] disabled:text-white/30"
       />
       <button
         type="submit"
@@ -2488,7 +2500,8 @@ function TextAnswerInput({
           e.preventDefault();
           submit(e);
         }}
-        className="px-3 py-2 border-2 border-ink rounded font-mono text-xs uppercase tracking-wider bg-basil text-ink hover:bg-basil-deep hover:text-cream transition-colors disabled:bg-ink/10 disabled:text-ink-soft disabled:cursor-not-allowed"
+        className="rounded-2xl px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.18em] text-[#0B0B0F] transition-transform active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-white/[0.08] disabled:text-white/30"
+        style={{ backgroundColor: busy || disabled || !text.trim() ? undefined : TEL_CORAIL }}
       >
         {busy ? '…' : t('play.textAnswerSubmit')}
       </button>
@@ -2505,8 +2518,12 @@ function PhoneFooter({
 }): JSX.Element {
   const { t } = useTranslation();
   return (
-    <div className="bg-ink text-cream rounded-xl py-2.5 px-4 text-center text-xs font-bold mt-2">
-      {myRank !== null && <span className="font-display text-lg text-lemon mr-1.5">{myRank}</span>}
+    <div className={`${TEL_PANNEAU} mt-2 px-4 py-2.5 text-center text-xs font-bold text-white/75`}>
+      {myRank !== null && (
+        <span className="mr-1.5 font-display text-lg" style={{ color: TEL_CORAIL }}>
+          {myRank}
+        </span>
+      )}
       <span>{t('play.phoneFooter', { count: totalParticipants })}</span>
     </div>
   );
@@ -2549,29 +2566,39 @@ function RecordingView({
   const levelPct = Math.min(100, Math.round(level * 800));
 
   return (
-    <Card size="md" tone="spritz" className="text-center">
-      <p className="text-5xl mb-2 animate-pulse">🎤</p>
-      <TitleHandwritten as="h2" className="mb-2">
-        {t('play.recording')}
-      </TitleHandwritten>
-      <p className="font-editorial italic text-ink-2 text-sm mb-4">{t('play.recordingHint')}</p>
+    /* feat/telephone-au-style-tv — l ecoute prend elle aussi le panneau sombre. */
+    <div className={`${TEL_PANNEAU} p-5 text-center`}>
+      <p className="mb-2 animate-pulse text-5xl">🎤</p>
+      <p className="mb-2 font-display text-2xl text-white">{t('play.recording')}</p>
+      <p className="mb-4 font-editorial text-sm italic text-white/55">{t('play.recordingHint')}</p>
 
-      <p className="font-display text-5xl text-spritz-deep mb-2">{seconds}s</p>
+      <p className="mb-2 font-display text-5xl tabular-nums" style={{ color: TEL_CORAIL }}>
+        {seconds}s
+      </p>
 
-      <div className="h-3 border-2 border-ink rounded bg-cream-2 overflow-hidden mb-4">
+      <div className="mb-4 h-2.5 overflow-hidden rounded-full bg-white/[0.08]">
         <div
-          className="h-full bg-spritz-deep transition-[width] duration-100 ease-out"
-          style={{ width: `${levelPct}%` }}
+          className="h-full transition-[width] duration-100 ease-out"
+          style={{ width: `${levelPct}%`, backgroundColor: TEL_CORAIL }}
         />
       </div>
 
-      <Button variant="primary" size="lg" onClick={onSubmit} className="w-full mb-2">
+      <button
+        type="button"
+        onClick={onSubmit}
+        className="mb-2 w-full rounded-2xl px-4 py-3 font-bold text-[#0B0B0F] transition-transform active:scale-[0.98]"
+        style={{ backgroundColor: TEL_CORAIL }}
+      >
         ✓ {t('play.recordingSubmit')}
-      </Button>
-      <Button variant="ghost" size="sm" onClick={onCancel} className="w-full">
+      </button>
+      <button
+        type="button"
+        onClick={onCancel}
+        className="w-full rounded-2xl border border-white/15 px-4 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/[0.06]"
+      >
         {t('common.cancel')}
-      </Button>
-    </Card>
+      </button>
+    </div>
   );
 }
 
