@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Test Deezer — lecture d'un morceau entier</title>
+<!--
+  À QUOI SERT CETTE PAGE
+
+  Avant d'engager le moindre développement Deezer, une seule question compte :
+  leur SDK JavaScript joue-t-il encore un MORCEAU ENTIER dans un navigateur,
+  avec un compte Premium ? L'API REST, elle, ne rend que 30 secondes — ça, on
+  le sait déjà, et ça ne nous sert à rien.
+
+  La documentation publique du SDK a disparu (les pages /sdk et /plugins
+  renvoient une 404) mais le fichier est toujours servi par leur CDN et
+  contient encore les fonctions de lecture. D'où ce test : trancher par la
+  preuve plutôt que par la documentation.
+
+  CE QUE LA PAGE FAIT
+    1. charge le SDK depuis le CDN Deezer ;
+    2. ouvre la fenêtre de connexion Deezer — c'est TOI qui t'y connectes,
+       la page ne voit jamais ton mot de passe ;
+    3. lance un morceau et mesure combien de temps il joue réellement.
+
+  COMMENT LIRE LE RÉSULTAT
+    · lecture qui dépasse 40 s  → le SDK fonctionne, Deezer est jouable.
+    · arrêt net vers 30 s       → on n'a que l'extrait : Deezer est inutilisable
+                                  pour un blind test.
+    · erreur au chargement      → le SDK est mort, dossier clos.
+-->
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; background:#0b0b0f; color:#fff; font:16px/1.5 system-ui, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  p.sous { color:#a0a0b0; margin:0 0 28px; }
+  button { font:inherit; font-weight:700; padding:12px 20px; border-radius:12px;
+           border:1px solid #3a3a48; background:#191922; color:#fff; cursor:pointer; margin:0 8px 8px 0; }
+  button:hover:not(:disabled) { border-color:#FF5C4D; }
+  button:disabled { opacity:.4; cursor:default; }
+  #etat { margin:20px 0; padding:16px; border-radius:12px; background:#191922; border:1px solid #2a2a36; }
+  .grand { font-size:34px; font-weight:700; color:#FF5C4D; font-variant-numeric: tabular-nums; }
+  #journal { margin-top:20px; padding:14px; border-radius:12px; background:#121218;
+             border:1px solid #2a2a36; font-family: ui-monospace, monospace; font-size:12.5px;
+             white-space:pre-wrap; max-height:320px; overflow:auto; color:#c8c8d4; }
+  .verdict { margin-top:18px; padding:16px; border-radius:12px; font-weight:700; }
+  .ok { background:#12301a; border:1px solid #2f7a45; }
+  .ko { background:#301414; border:1px solid #7a2f2f; }
+  code { background:#20202a; padding:2px 6px; border-radius:6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Test Deezer</h1>
+  <p class="sous">Le SDK joue-t-il un morceau entier, ou seulement l'extrait de 30 secondes ?</p>
+
+  <p>Renseigne l'<strong>App ID</strong> de ton application Deezer
+     (créée sur developers.deezer.com, avec ce domaine autorisé en redirection) :</p>
+  <p><input id="appId" placeholder="App ID Deezer" style="font:inherit;padding:10px;border-radius:10px;
+        border:1px solid #3a3a48;background:#121218;color:#fff;width:220px" /></p>
+
+  <p>
+    <button id="bInit">1. Charger le SDK</button>
+    <button id="bLogin" disabled>2. Me connecter à Deezer</button>
+    <button id="bPlay" disabled>3. Jouer un morceau</button>
+    <button id="bStop" disabled>Arrêter</button>
+  </p>
+
+  <div id="etat">
+    <div>Temps de lecture écoulé</div>
+    <div class="grand"><span id="secondes">0.0</span> s</div>
+    <div id="piste" style="color:#a0a0b0"></div>
+  </div>
+
+  <div id="verdict"></div>
+  <div id="journal">En attente…</div>
+</main>
+
+<script>
+const J = document.getElementById('journal');
+const log = (m) => { J.textContent += '\n' + new Date().toLocaleTimeString() + '  ' + m; J.scrollTop = J.scrollHeight; };
+J.textContent = 'Prêt.';
+
+// « Poisson d'or » — un titre du catalogue Deezer ; n'importe quel identifiant
+// de morceau fait l'affaire pour le test.
+const ID_MORCEAU = 3135556; // Daft Punk — Harder, Better, Faster, Stronger
+
+let debut = null, minuteur = null, maxSecondes = 0;
+
+function chrono(actif) {
+  clearInterval(minuteur);
+  if (!actif) return;
+  debut = Date.now();
+  minuteur = setInterval(() => {
+    const s = (Date.now() - debut) / 1000;
+    maxSecondes = Math.max(maxSecondes, s);
+    document.getElementById('secondes').textContent = s.toFixed(1);
+    if (s > 40) rendreVerdict(true);
+  }, 100);
+}
+
+function rendreVerdict(ok) {
+  const d = document.getElementById('verdict');
+  if (d.dataset.fige) return;
+  d.dataset.fige = '1';
+  d.className = 'verdict ' + (ok ? 'ok' : 'ko');
+  d.textContent = ok
+    ? '✓ Lecture au-delà de 40 s : le SDK joue le morceau entier. Deezer est exploitable.'
+    : '✗ Lecture arrêtée autour de 30 s : on n’a que l’extrait. Deezer est inutilisable pour un blind test.';
+}
+
+document.getElementById('bInit').onclick = () => {
+  const appId = document.getElementById('appId').value.trim();
+  if (!appId) { log('!! renseigne l’App ID d’abord'); return; }
+  log('chargement du SDK depuis cdns-files.dzcdn.net…');
+  const s = document.createElement('script');
+  s.src = 'https://cdns-files.dzcdn.net/js/min/dz.js';
+  s.onerror = () => { log('!! le SDK n’a pas pu être chargé — dossier clos'); rendreVerdict(false); };
+  s.onload = () => {
+    log('SDK chargé, version ' + (window.DZ && DZ.version ? DZ.version : 'inconnue'));
+    DZ.init({
+      appId,
+      channelUrl: location.origin + '/channel.html',
+      player: {
+        container: document.createElement('div'),
+        onload: () => { log('lecteur prêt'); document.getElementById('bLogin').disabled = false; },
+      },
+      callback: (r) => log('init → ' + JSON.stringify(r).slice(0, 200)),
+    });
+  };
+  document.head.appendChild(s);
+};
+
+document.getElementById('bLogin').onclick = () => {
+  log('ouverture de la fenêtre de connexion Deezer (c’est toi qui t’y connectes)…');
+  DZ.login((rep) => {
+    log('login → ' + JSON.stringify(rep).slice(0, 300));
+    if (rep && rep.authResponse) {
+      DZ.api('/user/me', (u) => {
+        log('connecté : ' + (u.name ?? '?') + ' — statut ' + (u.status ?? '?'));
+        document.getElementById('bPlay').disabled = false;
+      });
+    } else log('!! connexion refusée ou annulée');
+  }, { perms: 'basic_access,offline_access,manage_library,listening_history' });
+};
+
+document.getElementById('bPlay').onclick = () => {
+  log('lecture du morceau ' + ID_MORCEAU + '…');
+  DZ.Event.subscribe('player_position', (a) => {
+    const s = Array.isArray(a) ? a[0] : a;
+    if (typeof s === 'number') {
+      maxSecondes = Math.max(maxSecondes, s);
+      document.getElementById('secondes').textContent = s.toFixed(1);
+      if (s > 40) rendreVerdict(true);
+    }
+  });
+  DZ.Event.subscribe('track_end', () => {
+    log('fin de piste à ' + maxSecondes.toFixed(1) + ' s');
+    chrono(false);
+    rendreVerdict(maxSecondes > 40);
+  });
+  DZ.player.playTracks([ID_MORCEAU], 0, (r) => {
+    log('playTracks → ' + JSON.stringify(r).slice(0, 200));
+    document.getElementById('piste').textContent =
+      r && r.tracks && r.tracks[0] ? r.tracks[0].title + ' — ' + (r.tracks[0].artist?.name ?? '') : '';
+  });
+  chrono(true);
+  document.getElementById('bStop').disabled = false;
+};
+
+document.getElementById('bStop').onclick = () => {
+  try { DZ.player.pause(); } catch (e) { /* ignore */ }
+  chrono(false);
+  log('arrêt manuel à ' + maxSecondes.toFixed(1) + ' s');
+};
+</script>
+</body>
+</html>
