@@ -24,10 +24,26 @@ import { QuestionType, MediaType } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
+import { requireOwner } from '../middleware/proprietaire.js';
 
 const router: Router = Router();
 
 router.use(requireAuth, requireWorkspace);
+
+/**
+ * feat/profil-client — LECTURE POUR TOUS, ECRITURE POUR LE PROPRIETAIRE.
+ *
+ * Le client joue avec NOS playlists ; il n en cree pas et ne modifie pas les
+ * siennes. On laisse passer les GET (la console lit la liste au lancement
+ * d une soiree) et on ferme tout le reste au proprietaire du compte.
+ */
+router.use((req, res, next) => {
+  if (req.method === 'GET') {
+    next();
+    return;
+  }
+  void requireOwner(req, res, next);
+});
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 

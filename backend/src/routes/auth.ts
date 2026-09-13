@@ -325,7 +325,7 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
           data: {
             workspace_id: referrer.workspace_id,
             user_id: userId,
-            role: Role.HOST,
+            role: Role.CLIENT,
             status: 'APPROVED',
             email: req.userEmail ?? null,
             approved_at: new Date(),

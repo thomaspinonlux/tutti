@@ -48,7 +48,7 @@ model WorkspaceMember {
   id                       String       @id @default(uuid()) @db.Uuid
   workspace_id             String       @db.Uuid
   user_id                  String       @db.Uuid // référence auth.users.id (Supabase Auth)
-  role                     Role         @default(HOST)
+  role                     Role         @default(CLIENT)
   /// Phase 4 — Mode C : statut d'approbation manuelle.
   /// PENDING par défaut sauf si l'email est en whitelist ou si un
   /// invitation_code valide est utilisé à la création (→ APPROVED auto).
@@ -116,9 +116,15 @@ model WorkspaceMember {
   @@map("workspace_members")
 }
 
+/// feat/profil-client — QUI A LE DROIT DE QUOI.
+///   OWNER    : le back-office, le catalogue, les playlists. Nous.
+///   CLIENT   : joue avec nos playlists, ne cree rien, n entre pas dans le
+///              back-office. C est le compte vendu ou offert.
+///   ANIMATOR : anime une soiree pour le compte d un OWNER.
+/// « HOST » s appelait ainsi quand tout le monde avait tous les droits.
 enum Role {
   OWNER
-  HOST
+  CLIENT
   ANIMATOR
 
   @@map("role")

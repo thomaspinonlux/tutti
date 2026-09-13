@@ -16,7 +16,7 @@ import { Badge, Button, Card } from '../../ui/index.js';
 
 interface Member {
   id: string;
-  role: 'OWNER' | 'HOST' | 'ANIMATOR';
+  role: 'OWNER' | 'CLIENT' | 'ANIMATOR';
   email: string | null;
   created_at: string;
   is_me: boolean;

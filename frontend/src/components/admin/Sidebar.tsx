@@ -29,6 +29,12 @@ interface NavItem {
     | 'nav.account';
   icon: JSX.Element;
   superAdminOnly?: boolean;
+  /**
+   * feat/profil-client — entree reservee au PROPRIETAIRE du compte. Le client
+   * joue avec nos playlists : le catalogue et les quiz ne le concernent pas,
+   * et le serveur les lui refuse de toute facon (requireOwner).
+   */
+  proprietaireSeul?: boolean;
   // Masqué pour les super admins : ils gèrent leurs playlists/quizzes perso
   // depuis les onglets « personnelles » de la Bibliothèque.
   hideForSuperAdmin?: boolean;
@@ -36,8 +42,8 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/admin/dashboard', i18nKey: 'nav.dashboard', icon: <DashIcon /> },
-  { to: '/admin/tracks', i18nKey: 'nav.tracks', icon: <DiscIcon />, hideForSuperAdmin: true },
-  { to: '/admin/quizz', i18nKey: 'nav.quizz', icon: <BulbIcon />, hideForSuperAdmin: true },
+  { to: '/admin/tracks', i18nKey: 'nav.tracks', icon: <DiscIcon />, hideForSuperAdmin: true, proprietaireSeul: true },
+  { to: '/admin/quizz', i18nKey: 'nav.quizz', icon: <BulbIcon />, hideForSuperAdmin: true, proprietaireSeul: true },
   // Bibliothèque officielle Tutti — gérée uniquement par les super admins V1.
   { to: '/admin/library', i18nKey: 'nav.library', icon: <LibraryIcon />, superAdminOnly: true },
   // fix/admin-users-integration — page super-admin gestion utilisateurs.
@@ -51,11 +57,15 @@ export function Sidebar(): JSX.Element {
   const navigate = useNavigate();
   const { user, signOut } = useAuthStore();
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [estProprietaire, setEstProprietaire] = useState(true);
 
   // Phase 4 — détecte le rôle super admin pour afficher l'entrée de nav.
   useEffect(() => {
     void getMe()
-      .then((me) => setIsSuperAdmin(me.isSuperAdmin))
+      .then((me) => {
+        setIsSuperAdmin(me.isSuperAdmin);
+        setEstProprietaire(me.role === 'OWNER' || me.isSuperAdmin);
+      })
       .catch(() => {
         /* ignore — pas grave si on ne sait pas, on cache l'entrée */
       });
@@ -99,7 +109,9 @@ export function Sidebar(): JSX.Element {
         </NavLink>
         {NAV.filter(
           (item) =>
-            (!item.superAdminOnly || isSuperAdmin) && !(item.hideForSuperAdmin && isSuperAdmin),
+            (!item.superAdminOnly || isSuperAdmin) &&
+            !(item.hideForSuperAdmin && isSuperAdmin) &&
+            (!item.proprietaireSeul || estProprietaire),
         ).map((item) => (
           <NavLink
             key={item.to}
