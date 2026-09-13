@@ -29,3 +29,23 @@
 --
 -- Vérification : les 87 identifiants Apple des deux nouvelles playlists
 -- résolvent tous dans le store FR (87/87).
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Complément du 13/09 — les sagas répondues par leur nom court
+--
+-- Thomas : « seigneur des anneaux -> lord of the rings ».
+--
+-- Un joueur répond « Le Seigneur des Anneaux », pas « Le Seigneur des Anneaux :
+-- La Communauté de l'Anneau ». Les alias ne contenaient que l'intitulé complet,
+-- donc la bonne réponse était refusée. Corrigé pour :
+--   • Le Seigneur des Anneaux (Communauté de l'Anneau + Retour du Roi)
+--   • Pirates des Caraïbes
+--   • Top Gun: Maverick  → « top gun » accepté
+--   • La Reine des Neiges 2 → « la reine des neiges » accepté
+-- (Star Wars et Rocky III avaient déjà été traités.)
+--
+-- CORRIGÉ AUSSI À LA SOURCE, pour que ça ne revienne pas : le générateur
+-- d'alias (src/lib/aliasGeneration.ts) réclame désormais deux champs de plus,
+-- franchise_fr et franchise_en, à remplir uniquement quand l'œuvre porte un
+-- sous-titre ou un numéro. backfillWorkTranslations.ts les verse dans
+-- work_aliases. Les œuvres autonomes (Titanic, Le Roi Lion) renvoient null.

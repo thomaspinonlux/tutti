@@ -230,6 +230,8 @@ async function main(): Promise<void> {
       const newWorkAliases = mergeNormalizedAliases(t.work_aliases, [
         r.work_title_fr,
         r.work_title_en,
+        r.franchise_fr,
+        r.franchise_en,
       ]);
       const newWorkTitle =
         t.work_title ??
@@ -285,6 +287,8 @@ async function main(): Promise<void> {
           const newWorkAliases = mergeNormalizedAliases(t.work_aliases, [
             r.work_title_fr,
             r.work_title_en,
+            r.franchise_fr,
+            r.franchise_en,
           ]);
           // work_title = réponse AFFICHÉE en jeu (guess_mode='work') → on garde
           // la forme lisible (casse + accents), PAS la forme normalisée.

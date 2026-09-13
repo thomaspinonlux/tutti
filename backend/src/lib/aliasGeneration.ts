@@ -405,6 +405,14 @@ export interface WorkTranslationResult {
   work_title_fr: string | null;
   /** Nom de l'œuvre en anglais (VO). Null si inconnu/inapplicable. */
   work_title_en: string | null;
+  /**
+   * Nom COURT de la franchise en français, quand l'œuvre porte un sous-titre
+   * ou un numéro d'épisode. « Le Seigneur des Anneaux » pour « Le Seigneur des
+   * Anneaux : La Communauté de l'Anneau ». Null si l'œuvre est autonome.
+   */
+  franchise_fr: string | null;
+  /** Idem en anglais (VO) : « The Lord of the Rings ». */
+  franchise_en: string | null;
   latency_ms: number;
   usage: { input_tokens: number; output_tokens: number } | null;
   error: string | null;
@@ -424,6 +432,8 @@ export async function generateWorkTranslation(
       official_title_other_lang: null,
       work_title_fr: null,
       work_title_en: null,
+      franchise_fr: null,
+      franchise_en: null,
       latency_ms: 0,
       usage: null,
       error: 'ANTHROPIC_API_KEY_MISSING',
@@ -461,6 +471,8 @@ export async function generateWorkTranslation(
       official_title_other_lang: null,
       work_title_fr: null,
       work_title_en: null,
+      franchise_fr: null,
+      franchise_en: null,
       latency_ms: Date.now() - t0,
       usage: null,
       error: msg,
@@ -487,18 +499,21 @@ Chanson à analyser (source en ${sourceLang}) :
 - Artiste : "${artist}"
 ${workContext}
 
-Réponds en JSON strict avec EXACTEMENT ces 3 clés :
+Réponds en JSON strict avec EXACTEMENT ces 5 clés :
 
 {
   "official_title_other_lang": "<titre OFFICIEL commercialisé en ${otherLang}>" | null,
   "work_title_fr": "<nom de l'œuvre en français>" | null,
-  "work_title_en": "<nom de l'œuvre en anglais (VO)>" | null
+  "work_title_en": "<nom de l'œuvre en anglais (VO)>" | null,
+  "franchise_fr": "<nom court de la saga en français>" | null,
+  "franchise_en": "<nom court de la saga en anglais>" | null
 }
 
 RÈGLES STRICTES :
 1. "official_title_other_lang" = le titre RÉELLEMENT commercialisé/officiel en ${otherLang} (ex: "Let It Go" → "Libérée délivrée", "Circle of Life" → "L'histoire de la vie"). JAMAIS une traduction littérale inventée. Si aucune version officielle localisée n'existe (garder le titre original, cas fréquent pour les animes ou les VO non doublées), réponds null. Un FAUX null (tu ne connais pas) vaut mieux qu'une traduction inventée.
 2. "work_title_fr" / "work_title_en" = le nom COURT et usuel de l'œuvre dans chaque langue (ex: "La Reine des Neiges" / "Frozen"). Si l'œuvre garde le même nom dans les deux langues (ex: "Titanic"), répète-le dans les deux champs. Null UNIQUEMENT si l'œuvre est inconnue/non identifiable.
-3. Pas de préambule, pas de markdown, UNIQUEMENT le JSON.
+3. "franchise_fr" / "franchise_en" = le nom COURT de la saga, À REMPLIR UNIQUEMENT si l'œuvre porte un sous-titre ou un numéro d'épisode. Un joueur en soirée répond par le nom de la saga, pas par l'intitulé complet : "Le Seigneur des Anneaux : La Communauté de l'Anneau" → "Le Seigneur des Anneaux" / "The Lord of the Rings" ; "Pirates des Caraïbes : La Malédiction du Black Pearl" → "Pirates des Caraïbes" / "Pirates of the Caribbean" ; "Star Wars : Un nouvel espoir" → "Star Wars" / "Star Wars". Si l'œuvre est autonome et se suffit à elle-même ("Titanic", "Le Roi Lion"), réponds null aux deux — ne répète pas le titre.
+4. Pas de préambule, pas de markdown, UNIQUEMENT le JSON.
 
 Maintenant, pour "${title}" par "${artist}", génère le JSON :`;
 }
@@ -507,8 +522,16 @@ function parseWorkTranslationJson(text: string): {
   official_title_other_lang: string | null;
   work_title_fr: string | null;
   work_title_en: string | null;
+  franchise_fr: string | null;
+  franchise_en: string | null;
 } {
-  const empty = { official_title_other_lang: null, work_title_fr: null, work_title_en: null };
+  const empty = {
+    official_title_other_lang: null,
+    work_title_fr: null,
+    work_title_en: null,
+    franchise_fr: null,
+    franchise_en: null,
+  };
   if (!text) return empty;
   const cleaned = text
     .trim()
@@ -532,6 +555,8 @@ function parseWorkTranslationJson(text: string): {
       official_title_other_lang: clean(p.official_title_other_lang),
       work_title_fr: clean(p.work_title_fr),
       work_title_en: clean(p.work_title_en),
+      franchise_fr: clean(p.franchise_fr),
+      franchise_en: clean(p.franchise_en),
     };
   } catch (err) {
     console.error(
