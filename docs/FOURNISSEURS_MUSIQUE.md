@@ -42,3 +42,26 @@ qui touche à la lecture.
 
 > Je ne suis pas juriste — le point 3 mérite une lecture par un
 > professionnel avant toute décision d'exploitation.
+
+## Tidal — écarté
+
+Le SDK Web existe mais la lecture n'est pas ouverte aux tiers. L'équipe
+Tidal écrit elle-même négocier encore avec les maisons de disques
+(« working with label partners to find a solution »). Fin 2025, les
+développeurs ne rapportent que de l'extrait. Aucune date annoncée.
+
+## Amazon Music — écarté
+
+L'API est en bêta fermée, sur invitation : « Access to the APIs will be
+limited until the implementation is validated and approved by Amazon
+Music. » Programme de partenariat, pas d'inscription ouverte.
+
+## Ce que tout cela dit
+
+Le mur n'est pas Apple, il est chez les ayants droit : aucune plateforme
+ne laisse un tiers diffuser un morceau entier sans abonnement personnel
+authentifié. Apple est la seule à avoir tranché en publiant MusicKit.
+La conséquence produit est structurelle : chaque client joue avec son
+propre abonnement, ou avec un abonnement qu'on lui prête.
+
+Non vérifié à ce jour : Qobuz (fournisseur marginal pour notre cible).
