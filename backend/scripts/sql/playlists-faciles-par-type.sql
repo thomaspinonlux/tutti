@@ -1,0 +1,31 @@
+-- playlists-faciles-par-type.sql — 13 septembre 2026
+--
+-- Thomas : « je veux juste un niveau par type et des musiques faciles et
+-- connues avec les titres des films comme réponse en français et en anglais ».
+--
+-- Appliqué directement en base le 13/09/2026. Conservé ici pour mémoire.
+--
+-- Résultat : exactement trois playlists « devine l'œuvre » visibles, toutes
+-- EASY, toutes 100 % Apple Music, toutes avec alias FR + EN :
+--   1. Musiques de film — Faciles        70 titres  (existait déjà)
+--   2. Génériques de séries — Faciles    40 titres  (créée ici)
+--   3. Dessins animés — Faciles          47 titres  (créée ici)
+--
+-- Les séries viennent de official-pl-series-tv, après passage de
+-- enrichAppleMusicIds.ts qui a fait monter la couverture Apple de 19 à 52/85.
+-- Les dessins animés viennent de official-pl-generiques-disney (103/116 après
+-- enrichissement), un à deux titres par film pour éviter les répétitions.
+--
+-- Le catalogue éditorial Apple n'a servi qu'aux films : sa seule playlist de
+-- séries, « Entendu à la télé », contient des chansons entendues dans des
+-- séries et non des génériques — inutilisable pour deviner la série.
+--
+-- Corrections de données faites au passage :
+--   • « Eye of the Tiger » était rattaché à Rocky IV. C'est Rocky III (1982) —
+--     Rocky IV, c'est « Burning Heart ». Corrigé sur les 3 playlists Apple.
+--   • « Rocky » accepté seul pour Rocky et Rocky III.
+--   • « Star Wars » accepté seul, plus « La Guerre des étoiles ».
+--   • « Les Blues Brothers » ajouté en titre français.
+--
+-- Vérification : les 87 identifiants Apple des deux nouvelles playlists
+-- résolvent tous dans le store FR (87/87).
