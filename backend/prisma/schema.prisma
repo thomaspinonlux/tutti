@@ -254,6 +254,44 @@ model MusicProviderCredential {
   @@map("music_provider_credentials")
 }
 
+
+/// feat/parc-comptes-apple — PARC DE COMPTES APPLE MUSIC PARTAGÉS.
+///
+/// Thomas : « on enregistre les identifiants des comptes apple dans le système
+/// pour que 6 parties puissent être faites simultanément ».
+///
+/// Un abonnement Apple Music = UN flux simultané. Pour faire tourner N soirées
+/// en même temps, il faut N comptes. Ce parc les détient et en réserve un par
+/// session ; au-delà, le lancement est refusé proprement au lieu de couper le
+/// son d'une partie déjà en cours.
+///
+/// IMPORTANT — ON NE STOCKE AUCUN MOT DE PASSE. Apple ne délivre jamais de
+/// jeton contre un couple e-mail/mot de passe : le Music User Token ne
+/// s'obtient que par `music.authorize()`, c'est-à-dire une connexion faite par
+/// une personne dans la fenêtre Apple. Le parc conserve CE jeton, obtenu une
+/// fois par compte depuis le back-office.
+model AppleMusicAccount {
+  id               String    @id @default(uuid()) @db.Uuid
+  /// Nom lisible donné par le propriétaire : « Compte 1 », « Bar Nord »…
+  libelle          String    @db.VarChar(80)
+  /// E-mail du compte, pour s'y retrouver. Jamais de mot de passe.
+  account_email    String?   @db.VarChar(200)
+  /// Music User Token (chiffré au repos comme MusicProviderCredential).
+  music_user_token String
+  /// Apple fait expirer le jeton : au-delà, il faut re-signer dans la fenêtre.
+  expires_at       DateTime? @db.Timestamptz(6)
+  /// Décoché = compte mis de côté sans être supprimé (abonnement suspendu…).
+  actif            Boolean   @default(true)
+  /// Dernière fois où le jeton a été vu fonctionnel.
+  verifie_le       DateTime? @db.Timestamptz(6)
+  created_at       DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime  @updatedAt @db.Timestamptz(6)
+
+  sessions Session[]
+
+  @@map("apple_music_accounts")
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  PLAYLISTS (Tutti Tracks)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -647,6 +685,10 @@ model Session {
   /// décidé au lancement. false = partie 100 % écrite : le buzzer vocal
   /// disparaît du téléphone des joueurs, seule la saisie clavier reste.
   voice_enabled       Boolean       @default(true)
+  /// feat/parc-comptes-apple — compte Apple Music RÉSERVÉ à cette session.
+  /// Un abonnement ne porte qu'un flux : deux sessions ne peuvent pas partager
+  /// le même compte. Libéré à la fin de la partie.
+  apple_music_account_id String?    @db.Uuid
   // Cap technique de participants par session (15 V1 pour B2C).
   max_participants    Int           @default(15)
   created_at          DateTime      @default(now()) @db.Timestamptz(6)
@@ -659,6 +701,8 @@ model Session {
   ended_at            DateTime?     @db.Timestamptz(6)
 
   establishment      Establishment        @relation(fields: [establishment_id], references: [id], onDelete: Cascade)
+  /// feat/parc-comptes-apple — compte du parc réservé le temps de la partie.
+  apple_music_account AppleMusicAccount?  @relation(fields: [apple_music_account_id], references: [id], onDelete: SetNull)
   participants       Participant[]
   rounds             SessionRound[] // succession de manches
   score_events       ScoreEvent[]
@@ -668,6 +712,7 @@ model Session {
 
   @@index([short_code])
   @@index([establishment_id])
+  @@index([apple_music_account_id])
   @@map("sessions")
 }
 

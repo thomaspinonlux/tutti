@@ -17,6 +17,7 @@
 
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
+import { reserverCompteApple, ParcCompletError } from '../lib/parcComptesApple.js';
 import { prisma } from '../lib/prisma.js';
 import {
   AppleTokenError,
@@ -203,23 +204,54 @@ router.get(
           .json({ error: { code: 'NO_ACTIVE_SESSION', message: 'Aucune session active' } });
         return;
       }
-      const cred = await prisma.musicProviderCredential.findUnique({
-        where: { workspace_id_provider: { workspace_id: workspaceId, provider: 'apple_music' } },
-        select: { access_token: true, expires_at: true },
-      });
-      if (!cred) {
-        res
-          .status(409)
-          .json({ error: { code: 'NOT_CONNECTED', message: 'Apple Music non connecté' } });
-        return;
+      // feat/parc-comptes-apple — LE PARC PASSE D'ABORD.
+      //
+      // Un abonnement Apple Music ne porte qu'un flux : si un parc de comptes
+      // partagés existe, la session en réserve un pour elle seule, ce qui permet
+      // N soirées en parallèle. Sans parc (ou parc vide), on retombe sur le
+      // compte connecté à l'espace, comportement d'origine inchangé.
+      let musicUserToken: string | null = null;
+      let expireLe: Date | null = null;
+      try {
+        const compte = await reserverCompteApple(session.id);
+        musicUserToken = compte.music_user_token;
+        console.info(
+          `[Apple] session=${session.id} → compte du parc « ${compte.libelle} » réservé`,
+        );
+      } catch (err: unknown) {
+        if (err instanceof ParcCompletError) {
+          // Parc existant mais saturé : on refuse clairement plutôt que de
+          // couper le son d'une partie déjà en cours.
+          if (err.comptesTotal > 0) {
+            res.status(409).json({ error: { code: err.code, message: err.message } });
+            return;
+          }
+          // comptesTotal === 0 → aucun parc configuré : repli historique.
+        } else {
+          throw err;
+        }
+      }
+      if (!musicUserToken) {
+        const cred = await prisma.musicProviderCredential.findUnique({
+          where: { workspace_id_provider: { workspace_id: workspaceId, provider: 'apple_music' } },
+          select: { access_token: true, expires_at: true },
+        });
+        if (!cred) {
+          res
+            .status(409)
+            .json({ error: { code: 'NOT_CONNECTED', message: 'Apple Music non connecté' } });
+          return;
+        }
+        musicUserToken = cred.access_token;
+        expireLe = cred.expires_at;
       }
       const { token, expiresAt } = getAppleDeveloperToken();
       res.set('Cache-Control', 'no-store');
       res.json({
         developer_token: token,
         developer_token_expires_at: expiresAt.toISOString(),
-        music_user_token: cred.access_token,
-        music_user_token_expires_at: cred.expires_at?.toISOString() ?? null,
+        music_user_token: musicUserToken,
+        music_user_token_expires_at: expireLe?.toISOString() ?? null,
       });
     } catch (err: unknown) {
       if (err instanceof AppleTokenError) {

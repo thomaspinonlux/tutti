@@ -199,6 +199,9 @@ router.post(
         data: {
           status: 'ENDED',
           ended_at: new Date(),
+          // feat/parc-comptes-apple — la partie finie REND SON COMPTE au parc :
+          // une autre salle peut démarrer dans la foulée.
+          apple_music_account_id: null,
           is_paused: false,
         },
       });
@@ -1124,6 +1127,9 @@ router.post(
         data: {
           status: 'ENDED',
           ended_at: new Date(),
+          // feat/parc-comptes-apple — la partie finie REND SON COMPTE au parc :
+          // une autre salle peut démarrer dans la foulée.
+          apple_music_account_id: null,
           is_paused: false,
         },
       });

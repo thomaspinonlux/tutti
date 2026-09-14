@@ -29,6 +29,7 @@ import gameplayQuizzRouter from './routes/gameplayQuizz.js';
 import sessionMasterRouter from './routes/sessionMaster.js';
 import spotifyAuthRouter from './music/spotify/auth.js';
 import appleAuthRouter from './routes/appleAuth.js';
+import comptesAppleRouter from './routes/comptesApple.js';
 import { logAppleMusicKeyStatus } from './lib/appleDeveloperToken.js';
 import spotifyApiRouter from './routes/spotify.js';
 import adminRouter from './routes/admin.js';
@@ -144,6 +145,8 @@ app.use('/api/sessions/:id/quizz', gameplayQuizzRouter);
 app.use('/api/sessions/:id/master', sessionMasterRouter);
 app.use('/api/auth/spotify', spotifyAuthRouter);
 app.use('/api/auth/apple', appleAuthRouter);
+// feat/parc-comptes-apple — parc de comptes partagés (propriétaire seulement).
+app.use('/api/comptes-apple', comptesAppleRouter);
 app.use('/api/spotify', spotifyApiRouter);
 // feat/tv-carousel-polish — cover mosaïque dynamique. Route publique
 // (servie aussi au /screen TV sans auth). Cache headers agressifs côté
