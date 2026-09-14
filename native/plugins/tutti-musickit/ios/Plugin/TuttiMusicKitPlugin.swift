@@ -185,16 +185,59 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 TuttiJournal.shared.note("musickit", "SESSION AUDIO NON ACTIVÉE", ["erreur": error.localizedDescription], niveau: "error")
             }
         }
-        // Une interruption (appel, autre app qui prend le son) ou un changement
-        // de sortie (HDMI branché / débranché) est journalisé : si un gel suit,
-        // on saura qu'iOS venait de toucher à la session audio.
-        NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: nil) { notif in
-            let type = (notif.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt).flatMap(AVAudioSession.InterruptionType.init) 
-            TuttiJournal.shared.note("musickit", "session audio INTERROMPUE", ["type": type == .began ? "début" : "fin"], niveau: "warn")
+        // fix/session-audio-jamais-reactivee — UNE INTERRUPTION DOIT ÊTRE
+        // RÉPARÉE, PAS SEULEMENT JOURNALISÉE.
+        //
+        // Soirée du 14/09, journal de l'iPad : toutes les portes d'autorisation
+        // « autorise », abonnement actif, authorize() à 0 ms — puis
+        // « session audio INTERROMPUE {"type":"début"} » à t+30 s, et plus
+        // aucun son. Aucune ligne « fin » derrière : personne ne remettait la
+        // session en service. iOS coupe la session (appel, autre app, Siri,
+        // bascule HDMI) et n'y revient JAMAIS tout seul — c'est à nous de la
+        // réactiver quand l'interruption se termine. Sans ça l'écran attend une
+        // lecture qui ne produira aucun son : le gel que Thomas voit.
+        NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: nil) { [weak self] notif in
+            let type = (notif.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt).flatMap(AVAudioSession.InterruptionType.init)
+            let options = (notif.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt).map(AVAudioSession.InterruptionOptions.init(rawValue:))
+            let reprendre = options?.contains(.shouldResume) ?? false
+            TuttiJournal.shared.note(
+                "musickit",
+                "session audio INTERROMPUE",
+                ["type": type == .began ? "début" : "fin", "reprendre": reprendre],
+                niveau: "warn"
+            )
+            guard type == .ended else { return }
+            self?.reactiverSessionAudio(reprendre: reprendre)
         }
         NotificationCenter.default.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: nil) { _ in
             let sorties = AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")
             TuttiJournal.shared.note("musickit", "sortie audio changée", ["sortie": sorties])
+        }
+    }
+
+
+    /// fix/session-audio-jamais-reactivee — remet la session audio en service
+    /// après une interruption. Appelée sur `.ended`, et en filet avant chaque
+    /// lecture : `setActive(true)` sur une session déjà active ne coûte rien,
+    /// alors qu'une session restée inactive coûte toute la soirée.
+    private func reactiverSessionAudio(reprendre: Bool) {
+        let jeton = TuttiJournal.shared.debut("musickit", "sessionAudio.reactiver")
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let session = AVAudioSession.sharedInstance()
+                try session.setCategory(.playback, mode: .default, options: [])
+                try session.setActive(true, options: [])
+                TuttiJournal.shared.fin("musickit", jeton, [
+                    "reprendre": reprendre,
+                    "sortie": session.currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ","),
+                ])
+                if reprendre {
+                    Task { try? await self.player.play() }
+                }
+            } catch {
+                TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
+                TuttiJournal.shared.note("musickit", "SESSION AUDIO NON RÉACTIVÉE", ["erreur": error.localizedDescription], niveau: "error")
+            }
         }
     }
 
@@ -338,6 +381,9 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.reject("Apple Music n'est pas disponible à l'instant (\(feuVert.raison))")
             return
         }
+        // fix/session-audio-jamais-reactivee — filet : si une interruption a
+        // laissé la session inactive, on la remet en service avant de jouer.
+        reactiverSessionAudio(reprendre: false)
         let jetonPlay = TuttiJournal.shared.debut("musickit", "play", ["id": catalogId, "residentMo": TuttiJournal.memoireResidenteMo()])
         Task {
             defer { self.rendreLaMain() }
