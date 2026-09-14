@@ -90,6 +90,11 @@ export async function launchOfficialPlaylistForSession(
   opts: {
     preferProvider: PlayProvider;
     difficulty?: LaunchLevel;
+    /**
+     * feat/vocal-par-manche — mode de réponse pour CETTE manche seulement.
+     * null/absent : la manche suit le réglage de la partie.
+     */
+    voiceEnabled?: boolean | null;
   },
 ): Promise<LaunchOfficialPlaylistResult> {
   const detail = playlistDetail;
@@ -554,6 +559,7 @@ export async function launchOfficialPlaylistForSession(
       status: 'PENDING',
       current_track_index: 0,
       selected_track_ids: pick.selectedTrackIds,
+      voice_enabled: opts.voiceEnabled ?? null,
     },
     include: {
       playlist: {

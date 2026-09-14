@@ -1146,6 +1146,13 @@ router.post(
 
 const createRoundSchema = z.object({
   playlist_id: z.string().uuid(),
+  /**
+   * feat/vocal-par-manche — mode de réponse pour CETTE manche uniquement.
+   * Absent ou null : la manche suit le réglage de la partie, qui reste le
+   * défaut de toutes les playlists. Une valeur ici est un choix volontaire
+   * fait au lancement de cette playlist et ne vaut que pour elle.
+   */
+  voice_enabled: z.boolean().nullish(),
 });
 
 router.post(
@@ -1224,6 +1231,7 @@ router.post(
           position: (lastRound?.position ?? 0) + 1,
           status: 'PENDING',
           selected_track_ids: selected,
+          voice_enabled: parsed.data.voice_enabled ?? null,
         },
         include: {
           playlist: {

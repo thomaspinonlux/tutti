@@ -129,10 +129,23 @@ export async function launchLibraryPlaylist(
   // feat/thematic-level-filter — niveau choisi sur une thématique (clone-filtré
   // côté backend). undefined = tous niveaux (Mix / décennies / legacy plates).
   difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM',
+  /**
+   * feat/vocal-par-manche — mode de réponse pour CETTE manche uniquement.
+   * undefined/null : la manche suit le réglage pris au démarrage de la partie,
+   * qui reste le défaut de toutes les playlists.
+   */
+  voiceEnabled?: boolean | null,
 ): Promise<LaunchResult> {
   return api<LaunchResult>(`/api/library/playlists/${encodeURIComponent(id)}/launch`, {
     method: 'POST',
-    body: { session_id: sessionId, preferProvider, ...(difficulty ? { difficulty } : {}) },
+    body: {
+      session_id: sessionId,
+      preferProvider,
+      ...(difficulty ? { difficulty } : {}),
+      ...(voiceEnabled === null || voiceEnabled === undefined
+        ? {}
+        : { voice_enabled: voiceEnabled }),
+    },
   });
 }
 

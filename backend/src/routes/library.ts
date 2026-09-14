@@ -202,6 +202,12 @@ const launchBody = z.object({
   // (Mix, décennies, legacy plates). Garde-fou côté route : pool < 15 → Mix.
   // feat/two-mix-options — MIX_EM = mix Facile/Moyen (pool E+M, tirage plat).
   difficulty: z.enum(['EASY', 'MEDIUM', 'EXPERT', 'MIX_EM']).optional(),
+  /**
+   * feat/vocal-par-manche — mode de réponse pour CETTE manche uniquement.
+   * Absent : la manche suit le réglage pris au démarrage de la partie, qui
+   * reste le défaut de toutes les playlists.
+   */
+  voice_enabled: z.boolean().nullish(),
 });
 
 router.post(
@@ -253,7 +259,11 @@ router.post(
         detail,
         session.id,
         session.establishment_id,
-        { preferProvider, difficulty: parsed.data.difficulty },
+        {
+          preferProvider,
+          difficulty: parsed.data.difficulty,
+          voiceEnabled: parsed.data.voice_enabled,
+        },
       );
       res.json({
         round: result.round,

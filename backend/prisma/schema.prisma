@@ -738,6 +738,12 @@ model SessionRound {
   /// SessionPlayedTrack (PR C). Array vide → fallback rétro-compat sur la
   /// totalité de playlist.playlist_tracks.
   selected_track_ids  String[]    @default([]) @db.Uuid
+  /// feat/vocal-par-manche — mode de réponse CHOISI POUR CETTE MANCHE.
+  /// null = on suit le réglage de la partie (Session.voice_enabled), qui
+  /// reste le défaut de toutes les playlists. Une valeur ici est un choix
+  /// volontaire fait au lancement de CETTE playlist : elle ne vaut que pour
+  /// elle, la manche suivante repart du défaut de la partie.
+  voice_enabled       Boolean?
   started_at          DateTime?   @db.Timestamptz(6)
   ended_at            DateTime?   @db.Timestamptz(6)
   created_at          DateTime    @default(now()) @db.Timestamptz(6)

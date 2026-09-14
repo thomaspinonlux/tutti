@@ -227,6 +227,24 @@ async function findRepresentativeSession(workspaceId: string) {
  * incluant _count.playlist_tracks) au format SessionWithParticipants pour le
  * frontend. Convertit aussi _count.playlist_tracks → tracks_count.
  */
+/**
+ * feat/vocal-par-manche — mode de reponse REELLEMENT en vigueur.
+ *
+ * Thomas : « si on change sur une playlist alors cela ne se fait que sur une
+ * playlist ». Le reglage pris au demarrage de la partie est le defaut de
+ * toutes les manches ; une manche qui porte sa propre valeur l'emporte, et
+ * seulement pour elle. La manche suivante repart du defaut.
+ */
+export function vocalEffectif(session: {
+  voice_enabled: boolean;
+  rounds: Array<{ status: string; voice_enabled: boolean | null }>;
+}): boolean {
+  const enCours =
+    session.rounds.find((r) => r.status === 'PLAYING') ??
+    [...session.rounds].reverse().find((r) => r.status === 'ENDED');
+  return enCours?.voice_enabled ?? session.voice_enabled;
+}
+
 function serializeSession(
   session: Awaited<ReturnType<typeof findRepresentativeSession>>,
 ): SessionWithParticipants {
@@ -247,9 +265,11 @@ function serializeSession(
     has_animator: session.has_animator,
     is_paused: session.is_paused,
     buzz_window_seconds: session.buzz_window_seconds,
-    // feat/option-vocal — la TV et la console doivent savoir si la partie est
-    // en mode 100 % ecrit.
-    voice_enabled: session.voice_enabled,
+    // feat/option-vocal + feat/vocal-par-manche — la TV et la console doivent
+    // savoir si on est en mode 100 % ecrit. La manche en cours peut avoir son
+    // propre reglage (choix volontaire au lancement de CETTE playlist) ; sinon
+    // on retombe sur le defaut de la partie.
+    voice_enabled: vocalEffectif(session),
     max_participants: session.max_participants,
     created_at: session.created_at.toISOString(),
     started_at: session.started_at ? session.started_at.toISOString() : null,
@@ -271,6 +291,7 @@ function serializeSession(
       position: r.position,
       status: r.status,
       current_track_index: r.current_track_index,
+      voice_enabled: r.voice_enabled,
       started_at: r.started_at ? r.started_at.toISOString() : null,
       ended_at: r.ended_at ? r.ended_at.toISOString() : null,
       created_at: r.created_at.toISOString(),

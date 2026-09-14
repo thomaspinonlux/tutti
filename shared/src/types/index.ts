@@ -202,6 +202,12 @@ export interface SessionRound {
   position: number;
   status: RoundStatus;
   current_track_index: number;
+  /**
+   * feat/vocal-par-manche — mode de réponse choisi POUR CETTE MANCHE.
+   * null = la manche suit le réglage de la partie, qui reste le défaut de
+   * toutes les playlists.
+   */
+  voice_enabled: boolean | null;
   started_at: string | null;
   ended_at: string | null;
   created_at: string;

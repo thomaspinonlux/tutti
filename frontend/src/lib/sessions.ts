@@ -163,10 +163,20 @@ export async function startSession(id: string): Promise<Session> {
 export async function createRound(
   sessionId: string,
   playlistId: string,
+  /** feat/vocal-par-manche — mode de réponse pour CETTE manche uniquement. */
+  voiceEnabled?: boolean | null,
 ): Promise<SessionRoundWithPlaylist> {
   const data = await api<{ round: SessionRoundWithPlaylist }>(
     `/api/sessions/${encodeURIComponent(sessionId)}/rounds`,
-    { method: 'POST', body: { playlist_id: playlistId } },
+    {
+      method: 'POST',
+      body: {
+        playlist_id: playlistId,
+        ...(voiceEnabled === null || voiceEnabled === undefined
+          ? {}
+          : { voice_enabled: voiceEnabled }),
+      },
+    },
   );
   return data.round;
 }

@@ -148,7 +148,6 @@ export function RoundSelectionScreen({
   loading,
   joinCode,
   sessionId,
-  appleLibraryAvailable,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   // fix/playlists-personnelles-retirees — DEMANDE DE THOMAS (03/09) : seul
@@ -162,19 +161,10 @@ export function RoundSelectionScreen({
   // youtube | spotify | apple_music. BUG 3 — défaut APPLE MUSIC quand le
   // workspace a une connexion Apple active ; sinon YouTube (ordre de repli
   // apple_music → youtube → spotify).
-  const [provider, setProvider] = useState<'youtube' | 'spotify' | 'apple_music'>(
-    appleLibraryAvailable ? 'apple_music' : 'youtube',
-  );
-  // true dès que le host change manuellement de source → on ne force plus le
-  // défaut Apple (respecte le choix explicite).
-  const providerTouchedRef = useRef(false);
-  // appleLibraryAvailable peut passer de false→true après le fetch du statut :
-  // aligne le défaut sur Apple tant que le host n'a pas choisi lui-même.
-  useEffect(() => {
-    if (!providerTouchedRef.current && appleLibraryAvailable && provider === 'youtube') {
-      setProvider('apple_music');
-    }
-  }, [appleLibraryAvailable, provider]);
+  // feat/apple-seul — plus de sélecteur de source dans cet écran. Le
+  // fournisseur est choisi au démarrage de la session ; ici c'est Apple Music,
+  // point. Spotify est sorti du produit, YouTube sera traité à part.
+  const provider = 'apple_music' as const;
   // feat/theme-level-picker — null = étape THÈME (grille) ; sinon = étape NIVEAU
   // du thème sélectionné (cartes Facile/Moyen/Difficile/Mix).
   const [selectedThemeKey, setSelectedThemeKey] = useState<string | null>(null);
@@ -495,70 +485,12 @@ export function RoundSelectionScreen({
             </div>
           )}
 
-          {/* feat/watertight-provider — sélecteur de SOURCE en haut de la
-              bibliothèque, TOUJOURS visible (défaut YouTube). Capsule 2
-              segments ; Spotify grisé/non cliquable si host non connecté
-              Spotify. La source pilote le fetch catalogue ET le tirage (clone
-              100% mono-provider côté backend — jamais de mix). */}
-          {librarySubTab === 'tracks' && (
-            <div className="mb-3">
-              <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-white/50 mb-1">
-                {t('host.session.sourceLabel')}
-              </p>
-              <div
-                className="inline-flex border border-white/15 rounded-full overflow-hidden"
-                role="tablist"
-                aria-label={t('host.session.sourceLabel')}
-              >
-                {(appleLibraryAvailable
-                  ? (['apple_music', 'youtube', 'spotify'] as const)
-                  : (['youtube', 'spotify'] as const)
-                ).map((pv) => {
-                  const active = provider === pv;
-                  // fix/source-tabs-forced-source — Spotify est sorti du flow
-                  // officiel (cf. preferredProvider) : onglet TOUJOURS grisé,
-                  // même si le workspace a une connexion Spotify active.
-                  const locked =
-                    pv === 'spotify' || (pv === 'apple_music' && !appleLibraryAvailable);
-                  const activeColor =
-                    pv === 'spotify'
-                      ? 'bg-basil text-cream'
-                      : pv === 'apple_music'
-                        ? 'bg-raspberry text-cream'
-                        : 'bg-spritz text-cream';
-                  return (
-                    <button
-                      key={pv}
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      disabled={locked}
-                      onClick={() => {
-                        if (locked) return;
-                        providerTouchedRef.current = true;
-                        setProvider(pv);
-                      }}
-                      title={locked ? t('host.session.sourceSpotifyLocked') : undefined}
-                      className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
-                        active
-                          ? activeColor
-                          : locked
-                            ? 'bg-white/[0.04] text-white/25 cursor-not-allowed'
-                            : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
-                      }`}
-                    >
-                      {pv === 'spotify'
-                        ? '🟢 Spotify'
-                        : pv === 'apple_music'
-                          ? '🍎 Apple'
-                          : '▶️ YouTube'}
-                      {locked ? ' 🔒' : ''}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* feat/apple-seul — LE SÉLECTEUR DE SOURCE EST RETIRÉ.
+              Thomas : « on va les enlever […] maintenant par défaut on fait
+              apple music ». Le choix du fournisseur se fait au démarrage de la
+              session, plus playlist par playlist, et Spotify sort du produit.
+              `provider` reste câblé sur apple_music : le fetch catalogue et le
+              tirage restent mono-source côté backend. */}
 
           {librarySubTab === 'tracks' ? (
             categorized === null ? (

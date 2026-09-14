@@ -55,7 +55,7 @@ import {
   startSession,
   toggleParticipantMaster,
   hidePodium,
-  setVoiceMode,
+
 } from '../lib/sessions.js';
 import {
   abandonSession,
@@ -1543,6 +1543,16 @@ function HostPageInner(): JSX.Element {
         difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM';
       };
   const [pendingFirstPlay, setPendingFirstPlay] = useState<PendingFirstPlay | null>(null);
+  /**
+   * feat/vocal-par-manche — mode de réponse CHOISI POUR LA MANCHE À VENIR.
+   *
+   * Thomas : « le choix fait au début de session reste le choix par défaut pour
+   * toutes les playlists […] si on change sur une playlist alors cela ne se
+   * fait que sur une playlist ». null = on suit le défaut de la partie. Une
+   * valeur = choix volontaire, envoyé au lancement, valable pour cette manche
+   * seulement — remis à null dès la manche suivante.
+   */
+  const [vocalManche, setVocalManche] = useState<boolean | null>(null);
 
   const handlePickPlaylist = (playlist: Playlist): void => {
     if (!session) return;
@@ -1855,7 +1865,7 @@ function HostPageInner(): JSX.Element {
       step('envoi de la demande de lancement');
       if (pendingFirstPlay.source === 'perso') {
         const round = await withTimeout(
-          createRound(session.id, pendingFirstPlay.playlistId),
+          createRound(session.id, pendingFirstPlay.playlistId, vocalManche),
           'création de la manche',
         );
         roundId = round.id;
@@ -1866,6 +1876,7 @@ function HostPageInner(): JSX.Element {
             session.id,
             pendingFirstPlay.prefer,
             pendingFirstPlay.difficulty,
+            vocalManche,
           ),
           'lancement de la playlist',
         );
@@ -1877,6 +1888,9 @@ function HostPageInner(): JSX.Element {
       await withTimeout(playTrack(session.id, roundId), 'premier morceau');
       step('premier morceau demandé');
       setPendingFirstPlay(null);
+      // Le choix ne vaut que pour CETTE manche : la suivante repart du défaut
+      // de la partie.
+      setVocalManche(null);
     } catch (err: unknown) {
       step('ÉCHEC', { err: (err as Error).message });
       setError((err as Error).message);
@@ -2499,17 +2513,19 @@ function HostPageInner(): JSX.Element {
             // que la musique partait normalement.
             audioProvider === 'youtube' ? youtube.getPlayerState : undefined
           }
-          vocalActif={session?.voice_enabled !== false}
+          vocalActif={vocalManche ?? session?.voice_enabled !== false}
           onToggleVocal={(actif) => {
             if (!session) return;
-            // feat/option-vocal — mise a jour optimiste : l interrupteur
-            // repond tout de suite, le serveur confirme et previent les
-            // telephones deja connectes.
-            setSession((prev) => (prev ? { ...prev, voice_enabled: actif } : prev));
-            void setVoiceMode(session.id, actif).catch((err: unknown) => {
-              setSession((prev) => (prev ? { ...prev, voice_enabled: !actif } : prev));
-              setError((err as Error).message);
-            });
+            // feat/vocal-par-manche — L INTERRUPTEUR NE TOUCHE PLUS A LA PARTIE.
+            //
+            // Avant, il appelait setVoiceMode() qui ecrit sessions.voice_enabled ;
+            // le serveur refuse ce changement des que la partie est lancee
+            // (409 SESSION_DEJA_LANCEE), donc a partir de la 2e playlist le
+            // bouton s affichait, basculait une demi-seconde, puis revenait en
+            // arriere avec une erreur. Desormais le choix est garde ici et
+            // part avec le lancement : il ne vaut que pour cette manche, et la
+            // suivante repart du defaut pris au demarrage de la partie.
+            setVocalManche(actif === (session.voice_enabled !== false) ? null : actif);
           }}
         />
       </>
