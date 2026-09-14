@@ -206,8 +206,27 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 ["type": type == .began ? "début" : "fin", "reprendre": reprendre],
                 niveau: "warn"
             )
-            guard type == .ended else { return }
-            self?.reactiverSessionAudio(reprendre: reprendre)
+            // fix/le-filet-coupait-le-son — ON NE RÉACTIVE PLUS RIEN ICI.
+            //
+            // Journal du 14/09 17:30, à chaque « morceau suivant » :
+            //   757223  ▶ sessionAudio.reactiver     (file d'arrière-plan)
+            //   757398  ■ play.lancer  demarre:true   (le morceau part)
+            //   757992  ■ sessionAudio.reactiver     (setActive terminé, 600 ms APRÈS)
+            //   758020  session audio INTERROMPUE début
+            //   +2 s    web : SON NON VÉRIFIÉ isPlaying:false position:0
+            //
+            // ApplicationMusicPlayer ne joue PAS dans notre AVAudioSession : la
+            // lecture vit dans le service Musique d'iOS. Quand NOTRE session
+            // (catégorie .playback, non mixable) est activée après le départ du
+            // morceau, iOS nous donne la priorité audio et met le lecteur
+            // Musique en pause — c'est le silence que Thomas voyait à chaque
+            // morceau, et « Relancer le son » ne marchait que parce que, cette
+            // fois, setActive finissait AVANT play. Le « début » d'interruption
+            // observé ici est la conséquence normale d'un play (Musique prend
+            // le son), pas la cause d'un gel : ma lecture du 14/09 matin était
+            // fausse. Réactiver sur `.ended` reposerait le même piège si un
+            // morceau tourne à ce moment-là. L'observateur redevient un journal.
+            _ = self
         }
         NotificationCenter.default.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: nil) { _ in
             let sorties = AVAudioSession.sharedInstance().currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")
@@ -216,10 +235,11 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     }
 
 
-    /// fix/session-audio-jamais-reactivee — remet la session audio en service
-    /// après une interruption. Appelée sur `.ended`, et en filet avant chaque
-    /// lecture : `setActive(true)` sur une session déjà active ne coûte rien,
-    /// alors qu'une session restée inactive coûte toute la soirée.
+    /// PLUS APPELÉE — conservée pour mémoire. Activer notre AVAudioSession
+    /// (.playback, non mixable) pendant qu'ApplicationMusicPlayer joue met le
+    /// lecteur Musique en pause : voir le journal cité dans l'observateur
+    /// d'interruption. Ne la rebrancher qu'avec la preuve qu'aucun morceau ne
+    /// tourne au moment de l'appel.
     private func reactiverSessionAudio(reprendre: Bool) {
         let jeton = TuttiJournal.shared.debut("musickit", "sessionAudio.reactiver")
         DispatchQueue.global(qos: .userInitiated).async {
@@ -381,9 +401,6 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.reject("Apple Music n'est pas disponible à l'instant (\(feuVert.raison))")
             return
         }
-        // fix/session-audio-jamais-reactivee — filet : si une interruption a
-        // laissé la session inactive, on la remet en service avant de jouer.
-        reactiverSessionAudio(reprendre: false)
         let jetonPlay = TuttiJournal.shared.debut("musickit", "play", ["id": catalogId, "residentMo": TuttiJournal.memoireResidenteMo()])
         Task {
             defer { self.rendreLaMain() }
