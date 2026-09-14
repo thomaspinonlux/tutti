@@ -26,6 +26,7 @@ interface NavItem {
     | 'nav.library'
     | 'nav.users'
     | 'nav.settings'
+    | 'nav.comptesApple'
     | 'nav.account';
   icon: JSX.Element;
   superAdminOnly?: boolean;
@@ -48,6 +49,14 @@ const NAV: NavItem[] = [
   { to: '/admin/library', i18nKey: 'nav.library', icon: <LibraryIcon />, superAdminOnly: true },
   // fix/admin-users-integration — page super-admin gestion utilisateurs.
   { to: '/admin/users', i18nKey: 'nav.users', icon: <UsersIcon />, superAdminOnly: true },
+  // feat/parc-comptes-apple — parc de comptes partagés : propriétaire seul.
+  {
+    to: '/admin/comptes-apple',
+    i18nKey: 'nav.comptesApple',
+    icon: <CogIcon />,
+    hideForSuperAdmin: true,
+    proprietaireSeul: true,
+  },
   { to: '/admin/settings', i18nKey: 'nav.settings', icon: <CogIcon /> },
   { to: '/admin/account', i18nKey: 'nav.account', icon: <UserIcon /> },
 ];

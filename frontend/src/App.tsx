@@ -26,6 +26,7 @@ import { DashboardPage } from './pages/admin/DashboardPage.js';
 import { TracksPage } from './pages/admin/TracksPage.js';
 import { QuizzPage } from './pages/admin/QuizzPage.js';
 import { SettingsPage } from './pages/admin/SettingsPage.js';
+import { ComptesApplePage } from './pages/admin/ComptesApplePage.js';
 import { AccountPage } from './pages/admin/AccountPage.js';
 import { SuperAdminPage } from './pages/admin/SuperAdminPage.js';
 import { VoiceAnalyticsPage } from './pages/admin/VoiceAnalyticsPage.js';
@@ -135,6 +136,9 @@ function App(): JSX.Element {
             }
           />
           <Route path="settings" element={<SettingsPage />} />
+          {/* feat/parc-comptes-apple — propriétaire seulement (l'API refuse le
+              reste). Invisible pour ceux qui lancent les parties. */}
+          <Route path="comptes-apple" element={<ComptesApplePage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="import-playlist" element={<ImportPlaylistPage />} />
           <Route
