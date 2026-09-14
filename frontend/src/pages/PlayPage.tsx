@@ -1110,12 +1110,6 @@ export function PlayPage(): JSX.Element {
                 isMaster={isMaster}
                 isPaused={isPaused}
                 vocalActif={vocalActif}
-                // fix/engrenage-mort — IL OUVRAIT UN PANNEAU DÉJÀ FERMÉ.
-                // Le bouton ⚙ de l'animateur appelait la fermeture au lieu de
-                // l'ouverture : aucun changement d'état, aucun rendu, bouton
-                // parfaitement mort en soirée.
-                onOpenMasterMenu={isMaster ? () => setMasterPickerOpen(true) : undefined}
-                onMasterPause={isMaster ? handleMasterPause : undefined}
               />
 
               {/* feat/manette-console-master — plus de self-claim depuis le tel.
@@ -1427,10 +1421,6 @@ interface PlayingViewExtraProps {
   roundPosition: number | null;
   /** True si le joueur est master (affiche l'icône Modérer). */
   isMaster: boolean;
-  /** Callback pour ouvrir le menu master. */
-  onOpenMasterMenu?: () => void;
-  /** Callback pour le bouton pause (master uniquement V1). */
-  onMasterPause?: () => void;
   /** Pause active (overlay). */
   isPaused: boolean;
   /** Classement cumule de la partie — sert au classement du titre (animateur). */
@@ -1457,8 +1447,6 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
     totalParticipants,
     roundPosition,
     isMaster,
-    onOpenMasterMenu,
-    onMasterPause,
     isPaused,
     cumulative,
     vocalActif = true,
@@ -2062,12 +2050,7 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
       )}
 
       {/* Header tel : logo + manche + connection + boutons (master) */}
-      <PhoneHeader
-        roundPosition={roundPosition}
-        isMaster={isMaster}
-        onModerate={onOpenMasterMenu}
-        onPause={onMasterPause}
-      />
+      <PhoneHeader roundPosition={roundPosition} />
 
       {/* Player info bar : pseudo + équipe + score */}
       <PlayerInfoBar
@@ -2199,17 +2182,7 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
 
 // ── Sous-composants tel (maquette 07) ──────────────────────────────────────
 
-function PhoneHeader({
-  roundPosition,
-  isMaster,
-  onModerate,
-  onPause,
-}: {
-  roundPosition: number | null;
-  isMaster: boolean;
-  onModerate?: () => void;
-  onPause?: () => void;
-}): JSX.Element {
+function PhoneHeader({ roundPosition }: { roundPosition: number | null }): JSX.Element {
   return (
     <div className={`relative ${TEL_PANNEAU} px-4 py-3.5 flex items-center justify-between`}>
       <div className="flex items-center gap-2">
@@ -2233,26 +2206,11 @@ function PhoneHeader({
           className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse-buzz"
           title="Connecté"
         />
-        {isMaster && onModerate && (
-          <button
-            type="button"
-            onClick={onModerate}
-            aria-label="Modérer"
-            className="w-7 h-7 rounded-full border border-white/20 bg-white/[0.08] flex items-center justify-center text-sm text-white hover:bg-white/[0.16]"
-          >
-            ⚙
-          </button>
-        )}
-        {isMaster && onPause && (
-          <button
-            type="button"
-            onClick={onPause}
-            aria-label="Pause"
-            className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-sm text-white hover:bg-white/[0.12]"
-          >
-            ⏸
-          </button>
-        )}
+        {/* feat/console-simple — ⚙ et ⏸ RETIRÉS de l'en-tête. Thomas :
+            « nous avons déjà les commandes plus bas — pourquoi les avoir en
+            doublon ? ». La télécommande complète (MasterMenu) est rendue sur
+            la même page pour l'animateur : pause, choix de playlist, révéler,
+            suivant, scores. Ces deux boutons en refaisaient une partie. */}
       </div>
       {/* feat/telephone-au-style-tv — le filet multicolore devient le liseré
           corail de la TV : un seul accent, comme sur l'écran de la salle. */}
