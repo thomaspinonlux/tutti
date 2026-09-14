@@ -2342,10 +2342,15 @@ function HostPageInner(): JSX.Element {
   const teams = (session.teams_config as Team[] | null) ?? [];
   const playUrl = `${getShareableOrigin()}/play?session=${session.short_code}`;
   const isModeB = !session.has_animator;
+  // feat/console-jamais-morte — Thomas : « je ne peux pas choisir la playlist
+  // sur la console et sur le téléphone — il faut des boutons de choix sur les
+  // deux ». En mode B, la sélection de playlist passait par la vue publique
+  // (« X choisit la prochaine playlist… ») : la console attendait le téléphone
+  // sans rien pouvoir faire. La phase roundSelection rend désormais l'écran
+  // de sélection sur la console AUSSI ; le téléphone garde le sien. Le premier
+  // qui lance gagne, l'autre écran suit par le socket.
   const inGameplay =
-    effectivePhase === 'roundPlaying' ||
-    effectivePhase === 'roundSelection' ||
-    effectivePhase === 'intermission';
+    effectivePhase === 'roundPlaying' || effectivePhase === 'intermission';
 
   console.info(
     `[HostPage] Decision : isModeB=${isModeB} inGameplay=${inGameplay} → ` +
@@ -2449,6 +2454,9 @@ function HostPageInner(): JSX.Element {
           onSeekForward={() => handleConsoleSeek(10_000)}
           onAudioKick={handleAudioUnlockTap}
           onEndRound={() => void handleEndCurrentRound()}
+          // feat/console-jamais-morte — « Terminer la partie » à côté de
+          // « Terminer la manche », même quand l'animateur est au téléphone.
+          onEndSession={() => void handleEndSession()}
           lyricsAvailable={canShowLyrics}
           lyricsOn={lyricsOn}
           onToggleLyrics={toggleLyrics}
@@ -2718,10 +2726,10 @@ function HostPageInner(): JSX.Element {
                   onToggleMaster={handleToggleMaster}
                 />
               )}
-            {/* En mode A : bouton terminer accessible sur l'iPad. En mode B :
-                c'est le master qui termine depuis son tel (cf. brief). */}
-            {session.has_animator &&
-              (effectivePhase === 'roundPlaying' ||
+            {/* feat/console-jamais-morte — le bouton terminer est sur l'iPad
+                dans les deux modes : l'animateur au téléphone peut aussi
+                terminer, mais la console ne doit jamais en être privée. */}
+            {(effectivePhase === 'roundPlaying' ||
                 effectivePhase === 'roundSelection' ||
                 effectivePhase === 'intermission') && (
                 <Button

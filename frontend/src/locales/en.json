@@ -657,7 +657,8 @@
     "btnEndRound": "End round",
     "trackRankingTitle": "Ranking on this track",
     "trackRankingEmpty": "Nobody has found it yet.",
-    "trackRankingTotal": "total {{total}}"
+    "trackRankingTotal": "total {{total}}",
+    "btnEndSession": "End game"
   },
   "play": {
     "missingCode": "Invalid link. Ask the host to scan the QR code.",

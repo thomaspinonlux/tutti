@@ -657,7 +657,8 @@
     "btnEndRound": "Terminer la manche",
     "trackRankingTitle": "Classement sur ce titre",
     "trackRankingEmpty": "Personne n'a encore trouvé.",
-    "trackRankingTotal": "total {{total}}"
+    "trackRankingTotal": "total {{total}}",
+    "btnEndSession": "Terminer la partie"
   },
   "play": {
     "missingCode": "Lien invalide. Demande à l'animateur de te scanner le QR code.",
