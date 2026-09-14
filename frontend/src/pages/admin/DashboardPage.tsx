@@ -143,10 +143,6 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
   // les flags de permission ; on appelle getMe direct ici).
   const [canUseTracks, setCanUseTracks] = useState(true);
   const [canUseQuizz, setCanUseQuizz] = useState(true);
-  // feat/console-simple — les cartes « Catalogue » et « Quizz » mènent à la
-  // gestion des playlists, réservée au propriétaire. Pour un client, l'accueil
-  // se résume à : Écran TV, Nouvelle partie. Rien d'autre à comprendre.
-  const [estProprietaire, setEstProprietaire] = useState(false);
   useEffect(() => {
     let cancelled = false;
     void import('../../lib/me.js').then(({ getMe }) =>
@@ -155,7 +151,6 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
           if (cancelled) return;
           setCanUseTracks(me.can_use_tracks);
           setCanUseQuizz(me.can_use_quizz);
-          setEstProprietaire(me.role === 'OWNER' || me.isSuperAdmin);
         })
         .catch(() => {
           /* fallback : laisse true (rétro-compat) */
@@ -186,9 +181,11 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
               pour fonctionner cross-browser/profil (pas dépendant des cookies
               admin). Le polling /api/workspace/screen-state/:workspaceId lit
               la DB et calcule l'état déterministe. */}
+          {/* feat/deux-cartes — Thomas : « Écran TV doit être Écran joueurs, et
+              un vrai bouton avec une tête de bouton ». Fini le lien souligné. */}
           <Button
             type="button"
-            variant="ghost"
+            variant="primary"
             size="lg"
             onClick={() =>
               window.open(
@@ -200,9 +197,8 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
           >
             📺 {t('dashboard.openTvScreen')}
           </Button>
-          <Link to="/admin/sessions/new">
-            <Button size="lg">▶ {t('dashboard.newSession')}</Button>
-          </Link>
+          {/* feat/deux-cartes — le bouton « Nouvelle session » quitte l'en-tête :
+              on lance depuis les cartes Tutti Blind Test / Tutti Quizz. */}
         </div>
       </header>
 
@@ -223,23 +219,35 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
         </Card>
       )}
 
-      {/* feat/officielles-seulement — la carte Catalogue (playlists perso)
-          disparaît : seules les playlists officielles restent. */}
-      {estProprietaire && (
+      {/* feat/deux-cartes — Thomas : « il faut le bouton Tutti Quizz et Tutti
+          Blind Test, mais au lieu de marquer lancer playlist on utilise le
+          bouton Lancer nouvelle session ». Les deux cartes mènent au wizard de
+          session ; la playlist se choisit ensuite. Visibles par tous, clients
+          compris : c'est LEUR point d'entrée. */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <GameCard
-          to={canUseQuizz ? '/admin/quizz' : null}
+          to={canUseTracks ? '/admin/sessions/new' : null}
+          tone="spritz"
+          icon={<VinylIllustration />}
+          title={t('dashboard.tracksTitle')}
+          tagline={t('dashboard.tracksTagline')}
+          description={t('dashboard.tracksDescription')}
+          cta={t('dashboard.launchNewSession')}
+          disabled={!canUseTracks}
+          disabledTooltip={t('dashboard.accessForbidden')}
+        />
+        <GameCard
+          to={canUseQuizz ? '/admin/sessions/new?type=quizz' : null}
           tone="basil"
           icon={<BulbIllustration />}
           title={t('dashboard.quizzTitle')}
           tagline={t('dashboard.quizzTagline')}
           description={t('dashboard.quizzDescription')}
-          cta={t('dashboard.quizzCta')}
+          cta={t('dashboard.launchNewSession')}
           disabled={!canUseQuizz}
           disabledTooltip={t('dashboard.accessForbidden')}
         />
       </div>
-      )}
     </>
   );
 }
@@ -306,6 +314,17 @@ function GameCard({
 
 // ───── Illustrations Pop Cocktail ──────────────────────────────────────────
 
+
+function VinylIllustration(): JSX.Element {
+  return (
+    <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
+      <circle cx="32" cy="32" r="28" fill="#0B0B0F" stroke="#FF5C4D" strokeWidth="3" />
+      <circle cx="32" cy="32" r="18" fill="none" stroke="#3a3a48" strokeWidth="2" />
+      <circle cx="32" cy="32" r="9" fill="#FF5C4D" />
+      <circle cx="32" cy="32" r="2.5" fill="#0B0B0F" />
+    </svg>
+  );
+}
 
 function BulbIllustration(): JSX.Element {
   return (

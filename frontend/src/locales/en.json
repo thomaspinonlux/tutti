@@ -163,7 +163,7 @@
   "dashboard": {
     "welcomeTo": "Welcome to",
     "chooseGame": "Which game?",
-    "tracksTitle": "Tutti Tracks",
+    "tracksTitle": "Tutti Blind Test",
     "tracksTagline": "Voice-first music blind test",
     "tracksDescription": "Listen, guess, score. With Spotify or our demo catalogue.",
     "tracksCta": "Start Tracks",
@@ -172,12 +172,13 @@
     "quizzDescription": "MCQ, true/false, free text, estimations. Bilingual FR/EN.",
     "quizzCta": "Start Quizz",
     "newSession": "New session",
-    "openTvScreen": "TV Screen",
+    "openTvScreen": "Players screen",
     "noticeSessionEnded": "Game ended. The final podium is showing on the TV screen for 5 minutes.",
     "noticeSessionCancelled": "Session cancelled. You can create a new one anytime.",
     "noAccessTitle": "No access granted",
     "noAccessHint": "No game mode is enabled on your account. Contact support.",
-    "accessForbidden": "Access not allowed"
+    "accessForbidden": "Access not allowed",
+    "launchNewSession": "Start a new session"
   },
   "tracks": {
     "title": "Tutti Tracks",

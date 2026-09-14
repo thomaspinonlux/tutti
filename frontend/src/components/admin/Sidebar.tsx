@@ -112,13 +112,8 @@ export function Sidebar(): JSX.Element {
       </div>
 
       <nav className="flex-1 px-3 py-5 space-y-1">
-        <NavLink
-          to="/admin/sessions/new"
-          className="flex items-center gap-2 px-3 py-2 mb-3 rounded border-2 border-hairline bg-spritz text-ink font-bold text-sm hover:bg-spritz-deep hover:text-white transition-colors shadow-pop-sm"
-        >
-          <span>▶</span>
-          <span>{t('dashboard.newSession')}</span>
-        </NavLink>
+        {/* feat/deux-cartes — « Nouvelle session » retiré de la colonne : on
+            lance depuis les cartes de l'accueil. */}
         {NAV.filter(
           (item) =>
             (!item.superAdminOnly || isSuperAdmin) &&
