@@ -3428,22 +3428,10 @@ function RoundPlayingScreen({
               errorCode={spotifyErrorCode}
             />
           )}
-          {showSpotifyStatus && spotifyStatus === 'ready' && currentTrack && (
-            <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
-              🔊 {t('host.forceAudioOnDevice')}
-            </Button>
-          )}
-          {/* fix/bouton-relancer-le-son-absent-en-apple — VÉRIFIÉ dans le code : ce
-              bouton n'existait que pour YouTube et Spotify. Avec Apple Music
-              (la source de toutes les playlists musicales), la console iPad
-              n'avait donc AUCUN bouton pour relancer le son, alors que la
-              télécommande en avait un. Même bouton, même action, quel que soit
-              le fournisseur. */}
-          {(currentTrack?.provider === 'youtube' || currentTrack?.provider === 'apple_music') && (
-            <Button variant="secondary" size="sm" onClick={onForceAudio} className="mt-2">
-              🔊 {t('host.forceAudioOnDevice')}
-            </Button>
-          )}
+          {/* feat/console-simple — « Forcer audio sur cet appareil » RETIRÉ :
+              il appelait exactement la même fonction que « Relancer le son »
+              de la barre de commandes (onAudioKick={onForceAudio}). Deux
+              boutons, une action — Thomas l'avait vu. Un seul reste. */}
           {isDemoProvider && (
             <p className="my-3 font-mono text-xs text-white/45">{t('host.demoProviderHint')}</p>
           )}

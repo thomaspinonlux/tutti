@@ -23,7 +23,6 @@ import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from '
 import { useTranslation } from 'react-i18next';
 import type { CurrentTrackState } from '@tutti/shared';
 import { Button } from '../ui/index.js';
-import { PwaInstallButton } from '../PwaInstallButton.js';
 
 export interface MasterProgress {
   position_ms: number;
@@ -565,7 +564,10 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         </p>
       )}
 
-      <PwaInstallButton className="mt-3" />
+      {/* feat/console-simple — « Installer Tutti » retiré du téléphone de
+          l'animateur : c'est un invité avec son téléphone pour une soirée, il
+          n'installe rien. Le bouton reste dans le back-office (barre latérale),
+          hors du déroulé d'une partie. */}
 
       {/* Signature multicolore — identique au pied de la console iPad. */}
       <div className="absolute bottom-0 left-0 right-0 flex h-1">
