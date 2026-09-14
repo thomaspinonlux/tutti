@@ -63,7 +63,11 @@ export function SessionConfigPage(): JSX.Element {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const playlistId = params.get('playlist'); // optionnel — pré-créé round 1 si présent
+  // feat/session-d-abord — le paramètre ?playlist= n'est plus honoré : on ne
+  // pré-crée plus de manche depuis une playlist. La session se crée nue, la
+  // playlist se choisit ensuite sur la console ou le téléphone.
+  const playlistId: string | null = null;
+  void params;
 
   const [name, setName] = useState('');
   const [playlistName, setPlaylistName] = useState<string | null>(null);

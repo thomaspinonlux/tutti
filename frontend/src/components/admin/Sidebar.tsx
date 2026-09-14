@@ -43,7 +43,10 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/admin/dashboard', i18nKey: 'nav.dashboard', icon: <DashIcon /> },
-  { to: '/admin/tracks', i18nKey: 'nav.tracks', icon: <DiscIcon />, hideForSuperAdmin: true, proprietaireSeul: true },
+  // feat/officielles-seulement — Thomas : « on enlève les playlists
+  // personnelles, on garde que les playlists officielles ». L'entrée
+  // Catalogue (playlists perso) sort du menu ; la route reste pour un retour
+  // éventuel, mais plus rien n'y mène.
   { to: '/admin/quizz', i18nKey: 'nav.quizz', icon: <BulbIcon />, hideForSuperAdmin: true, proprietaireSeul: true },
   // Bibliothèque officielle Tutti — gérée uniquement par les super admins V1.
   { to: '/admin/library', i18nKey: 'nav.library', icon: <LibraryIcon />, superAdminOnly: true },
@@ -219,21 +222,6 @@ function DashIcon(): JSX.Element {
   );
 }
 
-function DiscIcon(): JSX.Element {
-  return (
-    <svg
-      viewBox="0 0 20 20"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <circle cx="10" cy="10" r="7" />
-      <circle cx="10" cy="10" r="2" />
-    </svg>
-  );
-}
 
 function BulbIcon(): JSX.Element {
   return (

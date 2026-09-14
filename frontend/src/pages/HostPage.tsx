@@ -2710,7 +2710,7 @@ function HostPageInner(): JSX.Element {
                 ← {t('host.backDashboard')}
               </Button>
             )}
-            <PwaSafetyControls />
+            {session.has_animator && <PwaSafetyControls />}
             <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
             {/* feat/ecran-joueurs — bouton direct « Écran TV » retiré (voir plus
                 haut) : un seul bouton « Écran Joueurs » via TvCastButton. */}
@@ -2726,10 +2726,12 @@ function HostPageInner(): JSX.Element {
                   onToggleMaster={handleToggleMaster}
                 />
               )}
-            {/* feat/console-jamais-morte — le bouton terminer est sur l'iPad
-                dans les deux modes : l'animateur au téléphone peut aussi
-                terminer, mais la console ne doit jamais en être privée. */}
-            {(effectivePhase === 'roundPlaying' ||
+            {/* feat/boutons-propres — Thomas : « pas un petit bouton de merde
+                tout en haut ». En mode B, terminer la partie se fait par le
+                vrai bouton de l'écran de sélection ou de la barre de commandes,
+                jamais par cette pastille d'en-tête. */}
+            {session.has_animator &&
+              (effectivePhase === 'roundPlaying' ||
                 effectivePhase === 'roundSelection' ||
                 effectivePhase === 'intermission') && (
                 <Button

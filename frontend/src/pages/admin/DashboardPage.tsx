@@ -223,19 +223,10 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
         </Card>
       )}
 
+      {/* feat/officielles-seulement — la carte Catalogue (playlists perso)
+          disparaît : seules les playlists officielles restent. */}
       {estProprietaire && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <GameCard
-          to={canUseTracks ? '/admin/tracks' : null}
-          tone="spritz"
-          icon={<VinylIllustration />}
-          title={t('dashboard.tracksTitle')}
-          tagline={t('dashboard.tracksTagline')}
-          description={t('dashboard.tracksDescription')}
-          cta={t('dashboard.tracksCta')}
-          disabled={!canUseTracks}
-          disabledTooltip={t('dashboard.accessForbidden')}
-        />
         <GameCard
           to={canUseQuizz ? '/admin/quizz' : null}
           tone="basil"
@@ -315,20 +306,6 @@ function GameCard({
 
 // ───── Illustrations Pop Cocktail ──────────────────────────────────────────
 
-function VinylIllustration(): JSX.Element {
-  return (
-    <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden>
-      <circle cx="60" cy="60" r="56" fill="#1a1410" stroke="#1a1410" strokeWidth="2" />
-      <circle cx="60" cy="60" r="42" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
-      <circle cx="60" cy="60" r="34" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
-      <circle cx="60" cy="60" r="26" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
-      <circle cx="60" cy="60" r="18" fill="#ee6c2a" stroke="#1a1410" strokeWidth="2" />
-      <circle cx="60" cy="60" r="3" fill="#1a1410" />
-      <path d="M82 40 L92 28" stroke="#c8336e" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="92" cy="28" r="3" fill="#c8336e" />
-    </svg>
-  );
-}
 
 function BulbIllustration(): JSX.Element {
   return (

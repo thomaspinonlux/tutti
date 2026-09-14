@@ -284,13 +284,9 @@ export function PlaylistEditPage(): JSX.Element {
             >
               {playlist.is_published ? t('playlists.unpublish') : t('playlists.publish')}
             </Button>
-            {playlist.tracks.length > 0 && (
-              <Link to={`/admin/sessions/new?playlist=${playlist.id}`} className="block">
-                <Button variant="primary" size="sm" className="w-full">
-                  ▶ {t('playlists.launchSession')}
-                </Button>
-              </Link>
-            )}
+            {/* feat/session-d-abord — « Lancer une session » depuis une
+                playlist retiré. Thomas : « d'abord une session / inscription,
+                puis choix des playlists ». Le seul chemin est Nouvelle partie. */}
             <Button
               variant="secondary"
               size="sm"
