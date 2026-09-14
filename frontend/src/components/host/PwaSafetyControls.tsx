@@ -16,7 +16,7 @@
  * standard (la barre URL fournit déjà reload/devtools).
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePwa } from '../../lib/usePwa.js';
 
@@ -50,6 +50,27 @@ export function PwaSafetyControls(): JSX.Element | null {
     }
   };
 
+  // feat/console-simple — LE BOUTON DEBUG N'EST PAS POUR LE CLIENT.
+  // Thomas : « on clean les écrans avec les boutons inutiles pour avoir un
+  // outil simple à utiliser ». Le journal audio est un outil de diagnostic
+  // pour nous ; il reste accessible aux super-admins, invisible aux autres.
+  const [voitDebug, setVoitDebug] = useState(false);
+  useEffect(() => {
+    let annule = false;
+    void import('../../lib/me.js').then(({ getMe }) =>
+      getMe()
+        .then((me) => {
+          if (!annule) setVoitDebug(me.isSuperAdmin);
+        })
+        .catch(() => {
+          /* pas d'info : on n'affiche pas */
+        }),
+    );
+    return () => {
+      annule = true;
+    };
+  }, []);
+
   const debugActive = (() => {
     try {
       return localStorage.getItem('debugAudio') === 'true';
@@ -72,6 +93,7 @@ export function PwaSafetyControls(): JSX.Element | null {
         {confirmReload ? '⚠️ ' : '🔄 '}
         {confirmReload ? t('host.pwaSafety.reloadConfirmShort') : t('host.pwaSafety.reloadShort')}
       </button>
+      {voitDebug && (
       <button
         type="button"
         onClick={handleToggleDebug}
@@ -83,6 +105,7 @@ export function PwaSafetyControls(): JSX.Element | null {
       >
         🐛 {debugActive ? t('host.pwaSafety.debugOn') : t('host.pwaSafety.debugOff')}
       </button>
+      )}
     </div>
   );
 }

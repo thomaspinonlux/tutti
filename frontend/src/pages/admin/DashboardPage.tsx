@@ -143,6 +143,10 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
   // les flags de permission ; on appelle getMe direct ici).
   const [canUseTracks, setCanUseTracks] = useState(true);
   const [canUseQuizz, setCanUseQuizz] = useState(true);
+  // feat/console-simple — les cartes « Catalogue » et « Quizz » mènent à la
+  // gestion des playlists, réservée au propriétaire. Pour un client, l'accueil
+  // se résume à : Écran TV, Nouvelle partie. Rien d'autre à comprendre.
+  const [estProprietaire, setEstProprietaire] = useState(false);
   useEffect(() => {
     let cancelled = false;
     void import('../../lib/me.js').then(({ getMe }) =>
@@ -151,6 +155,7 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
           if (cancelled) return;
           setCanUseTracks(me.can_use_tracks);
           setCanUseQuizz(me.can_use_quizz);
+          setEstProprietaire(me.role === 'OWNER' || me.isSuperAdmin);
         })
         .catch(() => {
           /* fallback : laisse true (rétro-compat) */
@@ -218,6 +223,7 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
         </Card>
       )}
 
+      {estProprietaire && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <GameCard
           to={canUseTracks ? '/admin/tracks' : null}
@@ -242,6 +248,7 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
           disabledTooltip={t('dashboard.accessForbidden')}
         />
       </div>
+      )}
     </>
   );
 }
