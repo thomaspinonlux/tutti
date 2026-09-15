@@ -1084,12 +1084,54 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     }
 
     /// Demande l'état réel à Apple SANS L'ATTENDRE. Un seul appel en vol.
+    ///
+    /// fix/fil-principal-pris-en-otage-par-la-lecture-d-etat — LE
+    /// RAFRAÎCHISSEMENT NE PART PLUS PENDANT UNE COMMANDE, ET PLUS QUATRE FOIS
+    /// PAR SECONDE.
+    ///
+    /// Journal de l'iPad du 15/09, 08:33 — la manche démarre à 08:33:09
+    /// (« premier morceau demandé »), et dans la seconde :
+    ///     FIL PRINCIPAL BLOQUÉ  getStatus.lecture [principal] depuis 1 957 ms
+    ///     …                     depuis  6 993 ms
+    ///     …                     depuis 12 025 ms
+    ///     …                     depuis 37 213 ms
+    /// Une seule lecture d'état, sur le fil principal, l'a tenu plus de
+    /// 37 secondes : l'écran est gelé pendant tout ce temps.
+    ///
+    /// Mécanisme : `lireEtat()` touche `player.queue.currentEntry` — la file du
+    /// lecteur — PENDANT que la commande de lecture remplace cette même file.
+    /// MusicKit sérialise les deux, et comme la lecture d'état s'exécute sur le
+    /// fil principal (ces propriétés l'exigent), c'est l'interface qui attend.
+    /// Le commentaire d'origine promettait « aucune attente nulle part » : il
+    /// protégeait l'APPELANT, pas le fil principal lui-même.
+    ///
+    /// Deux verrous désormais :
+    ///   1. aucune lecture d'état tant qu'une commande est en cours — la fiche
+    ///      avance à l'horloge, ce qu'elle sait déjà faire ;
+    ///   2. au plus une lecture toutes les 2 secondes, au lieu de quatre par
+    ///      seconde : autant d'occasions en moins de tomber sur la file au
+    ///      mauvais moment, et la position reste juste (elle vient de l'horloge).
+    private var derniereLectureA: Double = 0
+    private let intervalleLectureSec: Double = 2.0
+
     private func rafraichirEnFond() {
+        // 1. Jamais pendant une commande : c'est là que la file est remplacée.
+        verrouCommande.lock()
+        let occupe = commandeEnCours
+        verrouCommande.unlock()
+        if occupe { return }
+
         verrouFiche.lock()
         if rafraichissementEnVol {
             verrouFiche.unlock()
             return
         }
+        // 2. Au plus une lecture toutes les 2 s.
+        if maintenant() - derniereLectureA < intervalleLectureSec {
+            verrouFiche.unlock()
+            return
+        }
+        derniereLectureA = maintenant()
         rafraichissementEnVol = true
         verrouFiche.unlock()
         DispatchQueue.main.async { [weak self] in
@@ -1179,15 +1221,27 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         let jeton = TuttiJournal.shared.debut("musickit", "getStatus.lecture", silencieux: true)
         defer { TuttiJournal.shared.finSiLent("musickit", jeton, seuilMs: 200) }
         let enLecture = player.state.playbackStatus == .playing
-        // fix/live-sync-check — identité du morceau RÉELLEMENT en lecture.
-        // La console la compare en continu au morceau attendu par le jeu :
-        // divergence = resynchronisation automatique.
+        let position = player.playbackTime
+        // fix/fil-principal-pris-en-otage-par-la-lecture-d-etat — LA FILE N'EST
+        // PLUS INTERROGÉE DANS LES PREMIÈRES SECONDES D'UN MORCEAU.
+        //
+        // `player.queue.currentEntry` est la propriété qui gèle : elle attend
+        // que MusicKit ait fini de remanier la file. Juste après une commande,
+        // c'est précisément ce qu'il est en train de faire. On la lit seulement
+        // une fois le morceau installé — au-delà du délai de grâce, quand la
+        // file ne bouge plus. Avant ça, le morceau commandé fait foi de toute
+        // façon (c'est la règle du délai de grâce, plus bas).
+        verrouFiche.lock()
+        let depuisCommande = maintenant() - ficheCommandeeA
+        verrouFiche.unlock()
         var nowPlayingId = ""
-        if let entry = player.queue.currentEntry, let item = entry.item {
-            if case let .song(song) = item {
-                nowPlayingId = song.id.rawValue
+        if depuisCommande > delaiGraceCommandeSec {
+            if let entry = player.queue.currentEntry, let item = entry.item {
+                if case let .song(song) = item {
+                    nowPlayingId = song.id.rawValue
+                }
             }
         }
-        return EtatLu(enLecture: enLecture, positionSec: player.playbackTime, nowPlayingId: nowPlayingId)
+        return EtatLu(enLecture: enLecture, positionSec: position, nowPlayingId: nowPlayingId)
     }
 }

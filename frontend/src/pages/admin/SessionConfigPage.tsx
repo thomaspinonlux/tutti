@@ -63,7 +63,13 @@ export function SessionConfigPage(): JSX.Element {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const playlistId = params.get('playlist'); // optionnel — pré-créé round 1 si présent
+  // feat/session-d-abord — le paramètre ?playlist= n'est plus honoré : on ne
+  // pré-crée plus de manche depuis une playlist. La session se crée nue, la
+  // playlist se choisit ensuite sur la console ou le téléphone.
+  const playlistId: string | null = null;
+  // feat/deux-cartes — la carte Tutti Quizz ouvre le même wizard avec
+  // ?type=quizz : la partie créée est un Quizz, pas un blind test.
+  const typeDePartie: 'TRACKS' | 'QUIZZ' = params.get('type') === 'quizz' ? 'QUIZZ' : 'TRACKS';
 
   const [name, setName] = useState('');
   const [playlistName, setPlaylistName] = useState<string | null>(null);
@@ -111,7 +117,7 @@ export function SessionConfigPage(): JSX.Element {
     try {
       const session = await createSession({
         name: name.trim() || undefined,
-        game_type: 'TRACKS',
+        game_type: typeDePartie,
         mode,
         teams_config: mode === 'TEAMS' ? teams : undefined,
         language,

@@ -405,6 +405,7 @@ function IPadFooter({
   onSeekForward,
   onAudioKick,
   onEndRound,
+  onEndSession,
   lyricsAvailable,
   lyricsOn,
   onToggleLyrics,
@@ -427,6 +428,9 @@ function IPadFooter({
   onSeekForward?: () => void;
   onAudioKick?: () => void;
   onEndRound?: () => void;
+  /** feat/console-jamais-morte — terminer la PARTIE depuis la console, même
+   *  quand l'animateur pilote depuis son téléphone. */
+  onEndSession?: () => void;
   lyricsAvailable?: boolean;
   lyricsOn?: boolean;
   onToggleLyrics?: () => void;
@@ -548,6 +552,11 @@ function IPadFooter({
         {onEndRound && (
           <Button variant="secondary" size="sm" onClick={onEndRound} disabled={busy}>
             ⏹ {t('screen.btnEndRound')}
+          </Button>
+        )}
+        {onEndSession && (
+          <Button variant="danger" size="sm" onClick={onEndSession} disabled={busy}>
+            🛑 {t('screen.btnEndSession')}
           </Button>
         )}
         <Button
@@ -966,6 +975,9 @@ export interface MainScreenViewProps {
   onSeekForward?: () => void;
   onAudioKick?: () => void;
   onEndRound?: () => void;
+  /** feat/console-jamais-morte — terminer la PARTIE depuis la console, même
+   *  quand l'animateur pilote depuis son téléphone. */
+  onEndSession?: () => void;
   lyricsAvailable?: boolean;
   lyricsOn?: boolean;
   onToggleLyrics?: () => void;
@@ -994,6 +1006,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
     onSeekForward,
     onAudioKick,
     onEndRound,
+    onEndSession,
     lyricsAvailable,
     lyricsOn,
     onToggleLyrics,
@@ -1199,6 +1212,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
         onSeekForward={onSeekForward}
         onAudioKick={onAudioKick}
         onEndRound={onEndRound}
+        onEndSession={onEndSession}
         lyricsAvailable={lyricsAvailable}
         lyricsOn={lyricsOn}
         onToggleLyrics={onToggleLyrics}

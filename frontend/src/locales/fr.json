@@ -163,7 +163,7 @@
   "dashboard": {
     "welcomeTo": "Bienvenue dans",
     "chooseGame": "Quel jeu veux-tu animer ?",
-    "tracksTitle": "Tutti Tracks",
+    "tracksTitle": "Tutti Blind Test",
     "tracksTagline": "Le blind test musical à la voix",
     "tracksDescription": "Écoute, devine, marque des points. Avec Spotify ou notre catalogue démo.",
     "tracksCta": "Lancer Tracks",
@@ -172,12 +172,13 @@
     "quizzDescription": "QCM, vrai/faux, réponse libre, estimations. Bilingue FR/EN.",
     "quizzCta": "Lancer Quizz",
     "newSession": "Nouvelle session",
-    "openTvScreen": "Écran TV",
+    "openTvScreen": "Écran joueurs",
     "noticeSessionEnded": "Partie terminée. Le podium final s'affiche sur l'écran TV pendant 5 minutes.",
     "noticeSessionCancelled": "Session annulée. Tu peux en créer une nouvelle quand tu veux.",
     "noAccessTitle": "Aucun accès accordé",
     "noAccessHint": "Aucun mode de jeu n'est activé sur ton compte. Contacte le support.",
-    "accessForbidden": "Accès non autorisé"
+    "accessForbidden": "Accès non autorisé",
+    "launchNewSession": "Lancer nouvelle session"
   },
   "tracks": {
     "title": "Tutti Tracks",
@@ -657,7 +658,8 @@
     "btnEndRound": "Terminer la manche",
     "trackRankingTitle": "Classement sur ce titre",
     "trackRankingEmpty": "Personne n'a encore trouvé.",
-    "trackRankingTotal": "total {{total}}"
+    "trackRankingTotal": "total {{total}}",
+    "btnEndSession": "Terminer la partie"
   },
   "play": {
     "missingCode": "Lien invalide. Demande à l'animateur de te scanner le QR code.",
