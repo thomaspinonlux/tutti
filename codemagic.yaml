@@ -35,23 +35,19 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 90
 
-    # feat/auto-testflight — DÉCLENCHEMENT AUTOMATIQUE sur push main quand la
-    # partie NATIVE change (plugins Swift, config Capacitor, ce fichier). Le
-    # site web, lui, se déploie par Vercel et l'app le charge en direct : un
-    # push purement frontend/backend ne déclenche PAS de build TestFlight.
-    # Le bouton « Start new build » manuel continue de marcher en plus.
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
-      cancel_previous_builds: true
-    when:
-      changeset:
-        includes:
-          - 'native/**'
-          - 'codemagic.yaml'
+    # fix/build-saute-en-silence — LE GARDE-FOU `when.changeset` EST RETIRÉ.
+    #
+    # Il servait à ne pas builder l'app pour un simple changement web. Mais
+    # Codemagic l'applique AUSSI aux builds lancés à la main, et il ne regarde
+    # que le dernier commit. Le 14/09, Thomas lance deux builds (61 et 62) sur
+    # c18a927 — un commit purement frontend : « Build skipped :| No changes in
+    # the watched files were detected », 29 s, rien n'est parti chez Apple. Le
+    # correctif natif attendu (432fe3c) était deux commits plus tôt et n'a
+    # jamais été construit. Une demi-heure perdue pour un garde-fou silencieux.
+    #
+    # Le déclenchement automatique sur push disparaît avec lui : le build est
+    # MANUEL, comme le dit le bas de ce fichier, et un clic sur « Start new
+    # build » construit toujours, sans condition.
 
     # Intégration App Store Connect (créée dans le dashboard Codemagic).
     # Fournit la clé API pour : signature auto, incrément de build, publication.
