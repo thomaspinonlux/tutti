@@ -341,10 +341,11 @@ export function RoundSelectionScreen({
         <h2 className="font-display text-3xl text-white">
           {isFirstRound ? t('host.pickFirstRound') : t('host.pickNextRound')}
         </h2>
-        {/* feat/boutons-propres — un vrai bouton, pas une pastille grise. */}
-        <Button variant="danger" size="md" onClick={() => void onEndSession()} disabled={loading}>
-          🛑 {t('host.endBlindTest')}
-        </Button>
+        {!isFirstRound && (
+          <Button variant="ghost" size="sm" onClick={() => void onEndSession()} disabled={loading}>
+            {t('host.endBlindTest')}
+          </Button>
+        )}
       </header>
 
       {/* feat/player-browse-library — demandes 💡 des joueurs, au-dessus de la

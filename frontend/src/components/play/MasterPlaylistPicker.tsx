@@ -96,12 +96,8 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
   // On démarre sur youtube puis on bascule sur Apple Music dès qu'une couverture
   // Apple est détectée (cf. effet plus bas), tant que l'animateur n'a pas choisi
   // lui-même. Sans couverture Apple → on reste sur youtube (repli propre).
-  // feat/apple-seul — même règle que la console : Apple Music, point. Avant,
-  // le sélecteur démarrait sur YouTube puis basculait sur Apple « dès qu'une
-  // couverture existait » ; sur des playlists 100 % Apple sans identifiant
-  // YouTube, la première liste affichée était vide ou tronquée. Spotify est
-  // sorti du produit, YouTube sera traité à part.
-  const provider: Provider = 'apple_music';
+  const [provider, setProvider] = useState<Provider>('youtube');
+  const providerTouchedRef = useRef(false);
   const [official, setOfficial] = useState<LibraryPlaylistSummary[] | null>(null);
   const [selected, setSelected] = useState<LibraryPlaylistSummary | null>(null);
 
@@ -136,6 +132,12 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
   // Défaut Apple Music : dès qu'au moins une playlist officielle a une couverture
   // Apple, on met Apple Music en source par défaut (tant que l'animateur n'a pas
   // choisi). Sinon on reste sur youtube. Miroir du comportement de la console.
+  useEffect(() => {
+    if (providerTouchedRef.current || provider !== 'youtube') return;
+    if (official && official.some((p) => (p.apple_music_count ?? 0) > 0)) {
+      setProvider('apple_music');
+    }
+  }, [official, provider]);
 
   // Reset à la fermeture.
   useEffect(() => {
@@ -295,7 +297,40 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
         {/* Onglet officiel : source + recherche (masqué pendant le choix de niveau) */}
         {tab === 'official' && !selected && (
           <div className="flex items-center gap-2 mb-3 flex-wrap">
-            {/* feat/apple-seul — capsule Apple / YouTube / Spotify retirée. */}
+            <div className="inline-flex border-2 border-white/15 rounded-lg overflow-hidden">
+              {(['apple_music', 'youtube', 'spotify'] as const).map((pv) => {
+                // fix/source-tabs-forced-source — Spotify est hors du flow
+                // officiel (cf. preferredProvider) : onglet grisé, non cliquable.
+                const locked = pv === 'spotify';
+                return (
+                  <button
+                    key={pv}
+                    type="button"
+                    disabled={locked}
+                    aria-disabled={locked}
+                    title={locked ? t('playlists.sourceSpotifyDisabled') : undefined}
+                    onClick={() => {
+                      if (locked) return;
+                      providerTouchedRef.current = true;
+                      setProvider(pv);
+                    }}
+                    className={`px-3 py-1.5 text-xs font-medium ${
+                      locked
+                        ? 'cursor-not-allowed bg-transparent text-white/25'
+                        : provider === pv
+                          ? 'bg-white/[0.14] text-white'
+                          : 'bg-transparent text-white/55'
+                    }`}
+                  >
+                    {pv === 'youtube'
+                      ? '▶ YouTube'
+                      : pv === 'spotify'
+                        ? '♪ Spotify'
+                        : ' Apple Music'}
+                  </button>
+                );
+              })}
+            </div>
             <input
               type="search"
               value={q}
@@ -340,7 +375,13 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
             <Carte>
               <p className="font-display text-lg text-white">{selected.name_fr}</p>
               <p className="font-mono text-xs text-white/50 mt-1">
-                Source : Apple Music · niveau ?
+                Source :{' '}
+                {provider === 'youtube'
+                  ? 'YouTube'
+                  : provider === 'spotify'
+                    ? 'Spotify'
+                    : 'Apple Music'}{' '}
+                · niveau ?
               </p>
             </Carte>
             <div className="grid grid-cols-2 gap-2">
@@ -403,7 +444,11 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                         <p className="truncate font-display text-base text-white">{p.name_fr}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Puce>
-                            {p.apple_music_count ?? 0}{' '}
+                            {provider === 'youtube'
+                              ? p.youtube_count
+                              : provider === 'spotify'
+                                ? p.spotify_count
+                                : (p.apple_music_count ?? 0)}{' '}
                             {t('playlists.tracksCount')}
                           </Puce>
                           {p.locked && <Puce>🔒</Puce>}

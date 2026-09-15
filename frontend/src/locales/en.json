@@ -163,7 +163,7 @@
   "dashboard": {
     "welcomeTo": "Welcome to",
     "chooseGame": "Which game?",
-    "tracksTitle": "Tutti Blind Test",
+    "tracksTitle": "Tutti Tracks",
     "tracksTagline": "Voice-first music blind test",
     "tracksDescription": "Listen, guess, score. With Spotify or our demo catalogue.",
     "tracksCta": "Start Tracks",
@@ -172,13 +172,12 @@
     "quizzDescription": "MCQ, true/false, free text, estimations. Bilingual FR/EN.",
     "quizzCta": "Start Quizz",
     "newSession": "New session",
-    "openTvScreen": "Players screen",
+    "openTvScreen": "TV Screen",
     "noticeSessionEnded": "Game ended. The final podium is showing on the TV screen for 5 minutes.",
     "noticeSessionCancelled": "Session cancelled. You can create a new one anytime.",
     "noAccessTitle": "No access granted",
     "noAccessHint": "No game mode is enabled on your account. Contact support.",
-    "accessForbidden": "Access not allowed",
-    "launchNewSession": "Start a new session"
+    "accessForbidden": "Access not allowed"
   },
   "tracks": {
     "title": "Tutti Tracks",
@@ -658,8 +657,7 @@
     "btnEndRound": "End round",
     "trackRankingTitle": "Ranking on this track",
     "trackRankingEmpty": "Nobody has found it yet.",
-    "trackRankingTotal": "total {{total}}",
-    "btnEndSession": "End game"
+    "trackRankingTotal": "total {{total}}"
   },
   "play": {
     "missingCode": "Invalid link. Ask the host to scan the QR code.",

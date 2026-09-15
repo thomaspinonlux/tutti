@@ -43,10 +43,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/admin/dashboard', i18nKey: 'nav.dashboard', icon: <DashIcon /> },
-  // feat/officielles-seulement — Thomas : « on enlève les playlists
-  // personnelles, on garde que les playlists officielles ». L'entrée
-  // Catalogue (playlists perso) sort du menu ; la route reste pour un retour
-  // éventuel, mais plus rien n'y mène.
+  { to: '/admin/tracks', i18nKey: 'nav.tracks', icon: <DiscIcon />, hideForSuperAdmin: true, proprietaireSeul: true },
   { to: '/admin/quizz', i18nKey: 'nav.quizz', icon: <BulbIcon />, hideForSuperAdmin: true, proprietaireSeul: true },
   // Bibliothèque officielle Tutti — gérée uniquement par les super admins V1.
   { to: '/admin/library', i18nKey: 'nav.library', icon: <LibraryIcon />, superAdminOnly: true },
@@ -112,8 +109,13 @@ export function Sidebar(): JSX.Element {
       </div>
 
       <nav className="flex-1 px-3 py-5 space-y-1">
-        {/* feat/deux-cartes — « Nouvelle session » retiré de la colonne : on
-            lance depuis les cartes de l'accueil. */}
+        <NavLink
+          to="/admin/sessions/new"
+          className="flex items-center gap-2 px-3 py-2 mb-3 rounded border-2 border-hairline bg-spritz text-ink font-bold text-sm hover:bg-spritz-deep hover:text-white transition-colors shadow-pop-sm"
+        >
+          <span>▶</span>
+          <span>{t('dashboard.newSession')}</span>
+        </NavLink>
         {NAV.filter(
           (item) =>
             (!item.superAdminOnly || isSuperAdmin) &&
@@ -217,6 +219,21 @@ function DashIcon(): JSX.Element {
   );
 }
 
+function DiscIcon(): JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <circle cx="10" cy="10" r="7" />
+      <circle cx="10" cy="10" r="2" />
+    </svg>
+  );
+}
 
 function BulbIcon(): JSX.Element {
   return (
