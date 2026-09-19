@@ -16,6 +16,8 @@ import {
   phoneticScore,
   combinedScore,
   matchAnswer,
+  teteDeLOeuvre,
+  donneLaFormeCourte,
 } from './voiceMatching.js';
 
 // ───── normalizeText ──────────────────────────────────────────────────────
@@ -188,5 +190,47 @@ describe('matchAnswer', () => {
     assert.ok(r.scores.artist_title_combined >= r.scores.title_combined);
     assert.equal(typeof r.scores.title_lev, 'number');
     assert.equal(typeof r.scores.artist_title_phon, 'number');
+  });
+});
+
+// ───── Les corrections du 19/09, mesurees sur les refus du 18/09 ──────────
+
+describe('les espaces ne font pas une reponse fausse', () => {
+  it('accepte « murder on the dance floor » pour Murder on the Dancefloor', () => {
+    // Refuse a 77 % le 18/09.
+    assert.equal(combinedScore('murder on the dance floor', 'Murder on the Dancefloor'), 100);
+  });
+
+  it('accepte « tatayoyo » pour Tata Yoyo', () => {
+    // Refuse a 73 % le 18/09.
+    assert.equal(combinedScore('tatayoyo', 'Tata Yoyo'), 100);
+  });
+
+  it('ne rapproche pas deux reponses reellement differentes', () => {
+    assert.ok(combinedScore('mulan', 'Braveheart') < 80);
+    assert.ok(combinedScore('coldplay', 'Kaiser Chiefs') < 80);
+  });
+});
+
+describe('forme courte du titre d une oeuvre', () => {
+  it('coupe sur le developpement', () => {
+    assert.equal(teteDeLOeuvre('Snow White and the Seven Dwarfs'), 'Snow White');
+    assert.equal(teteDeLOeuvre('Blanche-Neige et les sept nains'), 'Blanche-Neige');
+  });
+
+  it('coupe sur le sous-titre', () => {
+    assert.equal(teteDeLOeuvre('Star Wars: A New Hope'), 'Star Wars');
+  });
+
+  it('ne coupe pas un titre sans coupure', () => {
+    assert.equal(teteDeLOeuvre('Another One Bites the Dust'), null);
+    assert.equal(teteDeLOeuvre('Braveheart'), null);
+  });
+
+  it('accepte la forme courte, refuse une autre oeuvre', () => {
+    // Refusee trois fois le 18/09.
+    assert.ok(donneLaFormeCourte('snow white', 'Snow White and the Seven Dwarfs'));
+    assert.ok(!donneLaFormeCourte('alice in wonderland', 'Snow White and the Seven Dwarfs'));
+    assert.ok(!donneLaFormeCourte('mulan', 'Snow White and the Seven Dwarfs'));
   });
 });

@@ -324,6 +324,24 @@ export function combinedScore(transcript: string, expected: string): number {
     }
     if (contenu) combined = Math.max(combined, 90);
   }
+  // Boost #1 bis — LES ESPACES NE SONT PAS UNE REPONSE FAUSSE.
+  //
+  // Soiree du 18/09 : « murder on the dance floor » refuse a 77 % pour
+  // *Murder on the Dancefloor*, « tatayoyo » refuse a 73 % pour *Tata Yoyo*.
+  // Le joueur a donne la bonne reponse, lettre pour lettre ; seule la coupure
+  // des mots differe, et personne ne sait ou Apple met l espace. On compare
+  // donc aussi les deux chaines soudees : quand la suite de lettres est
+  // identique, c est juste, point.
+  //
+  // Aucun risque d acceptation a tort : deux reponses differentes ne donnent
+  // pas la meme suite de lettres. On exige 4 lettres au minimum pour ne pas
+  // faire passer « ou » pour « o u ».
+  const soude = (v: string): string => v.replace(/[^\p{L}\p{N}]/gu, '');
+  const st = soude(nt);
+  const se = soude(ne);
+  if (se.length >= 4 && st === se) {
+    combined = 100;
+  }
   // Boost #2 — token-overlap (ordre libre).
   const expTokens = ne.split(' ').filter((t) => t.length >= 2);
   if (expTokens.length >= 2) {
@@ -432,6 +450,62 @@ export function couvreAssezDuTitre(transcript: string, titre: string, artiste: s
   if (dansLeBloc.length === 0) return false;
   if (dansLeBloc.join('').length < 5) return false;
   return dansLeBloc.length / attendus.length >= 2 / 3;
+}
+
+/**
+ * feat/forme-courte-de-l-oeuvre — « SNOW WHITE » EST LE NOM DU FILM.
+ *
+ * Soiree du 18/09 : « snow white » refuse trois fois pour *Snow White and the
+ * Seven Dwarfs*. Personne ne dit le titre complet d un film a rallonge — on
+ * dit *Star Wars*, pas *Star Wars: A New Hope*, et *Blanche-Neige*, pas
+ * *Blanche-Neige et les sept nains*.
+ *
+ * La regle de titre partiel existante ne couvrait pas ce cas : elle exige les
+ * deux tiers des mots ET que l artiste soit reconnu. En mode « devine l
+ * oeuvre », l artiste est le compositeur du generique : aucun joueur ne le
+ * dit. La forme courte n etait donc jamais rattrapable.
+ *
+ * On ne prend pas n importe quel debut de titre : seulement la TETE, c est a
+ * dire ce qui precede un sous-titre (« : », « - ») ou un developpement
+ * (« and the », « et les »). *Snow White* and the Seven Dwarfs, *Star Wars*:
+ * A New Hope, *Le Seigneur des anneaux* : la Communaute de l anneau. Un debut
+ * arbitraire comme « another one » pour *Another One Bites the Dust* ne passe
+ * pas : il n y a pas de coupure.
+ *
+ * Et l appelant verifie que cette tete ne designe pas AUSSI une autre oeuvre
+ * de la manche — sinon « Star Wars » vaudrait n importe lequel des episodes.
+ */
+const COUPURES_OEUVRE =
+  /\s*(?::|\s[–—-]\s|\set\sles?\s|\set\sla\s|\sand\sthe\s|\sand\sa\s|,\s)/iu;
+
+/**
+ * Tete d un titre d oeuvre : ce qui precede le sous-titre ou le developpement.
+ * `null` si le titre n a pas de coupure, ou si la tete est trop courte pour
+ * designer quoi que ce soit.
+ */
+export function teteDeLOeuvre(titre: string): string | null {
+  if (!titre) return null;
+  const m = COUPURES_OEUVRE.exec(titre);
+  if (!m || m.index <= 0) return null;
+  const tete = titre.slice(0, m.index).trim();
+  // Il doit rester quelque chose a deviner APRES la coupure, sinon ce n est
+  // pas une forme courte, c est le titre entier.
+  if (titre.slice(m.index + m[0].length).trim().length === 0) return null;
+  // Une tete d une lettre ou faite uniquement de mots-outils ne prouve rien.
+  const normalisee = normalizeText(tete);
+  if (normalisee.replace(/[^\p{L}\p{N}]/gu, '').length < 4) return null;
+  return tete;
+}
+
+/**
+ * Le transcript donne-t-il la forme courte de cette oeuvre ?
+ * Reserve aux morceaux joues en mode « devine l oeuvre » — l appelant le
+ * verifie avec `track.work_title`.
+ */
+export function donneLaFormeCourte(transcript: string, titreOeuvre: string, seuil = 80): boolean {
+  const tete = teteDeLOeuvre(titreOeuvre);
+  if (!tete) return false;
+  return combinedScore(transcript, tete) >= seuil;
 }
 
 /** Ce que le transcript a permis de reconnaître. */

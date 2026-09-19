@@ -38,7 +38,7 @@ import {
 } from '../lib/assemblyai.js';
 import { decouperArtiste } from '../lib/aliases.js';
 import type { MatchTarget } from '../lib/voiceMatching.js';
-import { matchAnswer, couvreAssezDuTitre } from '../lib/voiceMatching.js';
+import { matchAnswer, couvreAssezDuTitre, donneLaFormeCourte } from '../lib/voiceMatching.js';
 import { getCumulativeScores } from '../lib/scores.js';
 import type { GameMode, Team } from '@tutti/shared';
 
@@ -875,7 +875,38 @@ async function runMatchAndCommit(
   // morceau). L artiste doit en plus etre bon : le titre partiel ne se suffit
   // jamais a lui-meme.
   let titreParFragment = false;
-  if (meilleurTitre < VOICE_MATCH_THRESHOLD && meilleurArtiste >= VOICE_MATCH_THRESHOLD) {
+
+  // feat/forme-courte-de-l-oeuvre — « SNOW WHITE » VAUT *SNOW WHITE AND THE
+  // SEVEN DWARFS*.
+  //
+  // Refuse trois fois le 18/09. En mode « devine l oeuvre » l artiste est le
+  // compositeur du generique : la regle de titre partiel, qui exige l artiste,
+  // ne pouvait jamais s appliquer. On accepte donc la TETE du titre — ce qui
+  // precede le sous-titre ou le developpement — a la meme condition que le
+  // fragment : qu elle ne designe pas aussi une autre oeuvre de la manche.
+  if (meilleurTitre < VOICE_MATCH_THRESHOLD && track.work_title) {
+    const courte = transcriptions.some((tr) =>
+      donneLaFormeCourte(tr, track.work_title as string, VOICE_MATCH_THRESHOLD),
+    );
+    if (courte) {
+      const autres = await titresDeLaManche(args.roundId, track.id);
+      const ambigu = transcriptions.some((tr) =>
+        autres.some(({ titre }) => donneLaFormeCourte(tr, titre, VOICE_MATCH_THRESHOLD)),
+      );
+      if (ambigu) {
+        console.info(
+          `[Voix] forme courte refusee (ambigue dans la manche) : "${transcriptions[0]?.slice(0, 60)}"`,
+        );
+      } else {
+        titreParFragment = true;
+        console.info(
+          `[Voix] forme courte acceptee : "${transcriptions[0]?.slice(0, 60)}" -> "${track.work_title}"`,
+        );
+      }
+    }
+  }
+
+  if (!titreParFragment && meilleurTitre < VOICE_MATCH_THRESHOLD && meilleurArtiste >= VOICE_MATCH_THRESHOLD) {
     // Le titre OFFICIEL seulement : les alias contiennent souvent le nom de
     // l artiste, et un bout d alias donnerait le titre a qui n a dit que le
     // chanteur.
