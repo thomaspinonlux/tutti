@@ -485,11 +485,88 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                     // Décision désormais prise sur la position réelle
                     // (cf. lancerSurFileVivante).
                     let j3 = TuttiJournal.shared.debut("musickit", "play.lancer")
-                    let chemin: String? = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                        try await self.lancerSurFileVivante(song, catalogId)
+                    var chemin: String? = nil
+                    var refusApple: Error? = nil
+                    do {
+                        chemin = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                            try await self.lancerSurFileVivante(song, catalogId)
+                        }
+                    } catch {
+                        // On NE relance PAS depuis le catch général : ce chemin-ci
+                        // a un repli qui marche, cf. juste en dessous.
+                        refusApple = error
                     }
                     demarre = chemin != nil
-                    TuttiJournal.shared.fin("musickit", j3, ["demarre": demarre == true, "chemin": chemin ?? "delai-depasse"])
+                    TuttiJournal.shared.fin("musickit", j3, [
+                        "demarre": demarre == true,
+                        "chemin": chemin ?? (refusApple == nil ? "delai-depasse" : "refus-apple"),
+                        "refus": refusApple?.localizedDescription ?? ""
+                    ])
+
+                    // fix/refus-apple-error-1 — QUAND APPLE REFUSE LA FILE,
+                    // ON REMPLACE LA FILE AU LIEU D'ABANDONNER LE MORCEAU.
+                    //
+                    // Soirée du 18/09, journal de 23:03:52 à 23:04:26 (build 64) :
+                    //     ▶ play {id:635770202}  Hotel California — trouvé, 391 s
+                    //     ▶ play.lancer
+                    //     ■ play {erreur:"MPMusicPlayerControllerErrorDomain error 1"}
+                    //     ■ play {erreur: error 1}            ← relance, même chemin
+                    //     play REFUSÉ {id:6781027364}          Somebody To Love
+                    //     ■ play {erreur: error 1}
+                    //     … redémarrage de l'app …
+                    //     ▶ play {id:6781027364} → play.queue= → play.player.play()
+                    //     ■ play {ok:true, dureeMs:2003}       ← LE MÊME MORCEAU PASSE
+                    //
+                    // Même iPad, même abonnement, même titre : refusé par
+                    // insert+skip, accepté par queue= + play(). Les trois titres
+                    // sont bien diffusables dans le store FR (vérifié un par un) —
+                    // ce n'est donc ni un droit ni une disponibilité. L'erreur 1
+                    // d'Apple veut dire « descripteur de file non fourni » : la
+                    // file du lecteur est dans un état qu'Apple ne sait plus
+                    // reprendre, et seule une file REMPLACÉE la remet d'aplomb.
+                    //
+                    // Le repli reste borné, et c'est voulu : uniquement sur un
+                    // refus RÉEL d'Apple (jamais sur un délai dépassé, où
+                    // player.play() risquerait le gel de l'iPad décrit plus haut),
+                    // une seule fois, et le gel est de toute façon impossible
+                    // puisque courseAvecDelai tient l'échéance.
+                    if demarre != true, refusApple != nil {
+                        TuttiJournal.shared.note(
+                            "musickit",
+                            "APPLE REFUSE LA FILE — repli sur file remplacée",
+                            ["id": catalogId, "refus": refusApple?.localizedDescription ?? ""],
+                            niveau: "warn"
+                        )
+                        let j5 = TuttiJournal.shared.debut("musickit", "play.repliFileRemplacee")
+                        var repli: Bool? = nil
+                        do {
+                            repli = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                                try await self.surLePrincipal { self.player.queue = [song] }
+                                try await self.surLePrincipal { try await self.player.play() }
+                                return true
+                            }
+                        } catch {
+                            TuttiJournal.shared.note(
+                                "musickit",
+                                "LE REPLI AUSSI EST REFUSÉ — le morceau est perdu",
+                                ["id": catalogId, "erreur": error.localizedDescription],
+                                niveau: "error"
+                            )
+                        }
+                        demarre = repli == true
+                        TuttiJournal.shared.fin("musickit", j5, ["demarre": demarre == true])
+                        if demarre == true {
+                            // Le refus est réparé : il ne doit pas compter comme
+                            // une panne Apple, sinon la console se met en pause
+                            // pour rien sur le morceau suivant — c'est ce qui a
+                            // coûté Somebody To Love à 23:04:03.
+                            self.oublierPauseApresErreur()
+                        } else {
+                            // Là, c'est une vraie panne : on reprend la pause que
+                            // le catch général posait avant ce repli.
+                            self.noterPauseApresErreur()
+                        }
+                    }
                 }
                 guard demarre == true else {
                     // Apple n'a pas démarré dans le délai : on le DIT au lieu de
@@ -919,6 +996,14 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     private func noterPauseApresErreur() {
         verrouVol.lock(); defer { verrouVol.unlock() }
         pauseJusqua = ProcessInfo.processInfo.systemUptime + pauseApresErreurSec
+    }
+
+    /// Le refus a ete rattrape : la pause de 8 s n'a plus lieu d'etre.
+    /// Sans ca, le 18/09 a 23:04:03, le titre suivant etait refuse d'avance
+    /// (« pause apres erreur Apple, encore 6 s ») alors que rien n'etait casse.
+    private func oublierPauseApresErreur() {
+        verrouVol.lock(); defer { verrouVol.unlock() }
+        pauseJusqua = 0
     }
 
     /// fetchSong instrumente : le compteur suit la requete REELLE, pas la course.

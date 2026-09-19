@@ -938,6 +938,26 @@ model VoiceTranscript {
   latency_ms     Int?
   created_at     DateTime @default(now()) @db.Timestamptz(6)
 
+  /// feat/tracer-toutes-les-reponses — le verdict complet, pas deux booleens.
+  /// Manche et rang du morceau dans la manche.
+  session_round_id String? @db.Uuid
+  track_index      Int?
+  /// ACCEPTEE, SOUS_LE_SEUIL, FRAGMENT_AMBIGU, MORCEAU_DEPASSE,
+  /// ALREADY_ANSWERED, AUCUNE_PAROLE, PHASE_2_EXPIRED.
+  decision         String?
+  /// Cible retenue par le moteur : 'title', 'artist', 'artist_title'.
+  cible            String?
+  score_titre      Int?
+  score_artiste    Int?
+  score_combo      Int?
+  seuil            Int?
+  /// Photo de ce qui etait attendu a cet instant : le catalogue bouge, le
+  /// verdict d hier doit rester relisible demain.
+  titre_attendu    String?
+  artiste_attendu  String?
+  /// 'clavier' ou 'vocal'.
+  mode_reponse     String?
+
   session     Session     @relation(fields: [session_id], references: [id], onDelete: Cascade)
   participant Participant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
   track       Track       @relation(fields: [track_id], references: [id], onDelete: Cascade)
@@ -945,6 +965,8 @@ model VoiceTranscript {
   @@index([session_id])
   @@index([track_id])
   @@index([level])
+  @@index([session_id, decision])
+  @@index([session_round_id])
   // perf/tableau-de-bord-vocal — les statistiques filtrent sur la date et cette
   // table est la plus volumineuse du jeu (une ligne par tentative de chaque
   // joueur sur chaque morceau) : sans cet index, ouvrir le tableau de bord en

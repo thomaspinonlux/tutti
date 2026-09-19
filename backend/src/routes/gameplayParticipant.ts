@@ -562,6 +562,15 @@ interface CascadeMatchCommitArgs {
   expectedTrackId?: string;
 }
 
+/** Verdict rendu sur une reponse — ecrit tel quel dans voice_transcripts. */
+type Decision =
+  | 'ACCEPTEE'
+  | 'SOUS_LE_SEUIL'
+  | 'MORCEAU_DEPASSE'
+  | 'ALREADY_ANSWERED'
+  | 'AUCUNE_PAROLE'
+  | 'PHASE_2_EXPIRED';
+
 interface CascadeMatchCommitResult {
   matched: boolean;
   scored: boolean;
@@ -638,6 +647,68 @@ async function titresDeLaManche(roundId: string, sauf: string): Promise<TitreDeM
   return tous.filter((t) => t.trackId !== sauf);
 }
 
+/**
+ * feat/tracer-toutes-les-reponses — UNE LIGNE PAR REPONSE, QUOI QU IL ARRIVE.
+ *
+ * Avant, trois refus sortaient AVANT l ecriture (reponse arrivee apres le
+ * changement de morceau, joueur ayant deja trouve, transcription vide) : ces
+ * reponses-la n existaient nulle part, et une reponse refusee ne disait ni
+ * pourquoi, ni contre quoi elle avait ete comparee.
+ *
+ * Soiree du 18/09 : 897 reponses clavier, 307 acceptees — 590 refus qu on ne
+ * pouvait pas juger. On ecrit desormais le verdict complet.
+ */
+async function tracerReponse(champs: {
+  sessionId: string;
+  participantId: string;
+  trackId: string;
+  roundId: string;
+  trackIndex: number | null;
+  texte: string;
+  source: string;
+  latencyMs?: number;
+  decision: Decision;
+  cible: MatchTarget | null;
+  scoreTitre?: number;
+  scoreArtiste?: number;
+  scoreCombo?: number;
+  titreAttendu?: string | null;
+  artisteAttendu?: string | null;
+}): Promise<void> {
+  const accepte = champs.decision === 'ACCEPTEE';
+  const modeClavier = champs.source === 'clavier' || champs.source === 'manual-text';
+  await prisma.voiceTranscript
+    .create({
+      data: {
+        session_id: champs.sessionId,
+        participant_id: champs.participantId,
+        track_id: champs.trackId,
+        transcript: `[${champs.source}] ${champs.texte.slice(0, 980)}`,
+        matched_artist: accepte && (champs.cible === 'artist' || champs.cible === 'artist_title'),
+        matched_title: accepte && (champs.cible === 'title' || champs.cible === 'artist_title'),
+        confidence:
+          champs.scoreTitre === undefined && champs.scoreArtiste === undefined
+            ? null
+            : Math.max(champs.scoreTitre ?? 0, champs.scoreArtiste ?? 0, champs.scoreCombo ?? 0) /
+              100,
+        level: champs.source,
+        latency_ms: champs.latencyMs,
+        session_round_id: champs.roundId,
+        track_index: champs.trackIndex,
+        decision: champs.decision,
+        cible: champs.cible,
+        score_titre: champs.scoreTitre,
+        score_artiste: champs.scoreArtiste,
+        score_combo: champs.scoreCombo,
+        seuil: VOICE_MATCH_THRESHOLD,
+        titre_attendu: champs.titreAttendu ?? null,
+        artiste_attendu: champs.artisteAttendu ?? null,
+        mode_reponse: modeClavier ? 'clavier' : 'vocal',
+      },
+    })
+    .catch((err) => console.warn('[trace-reponse] ecriture impossible :', err));
+}
+
 async function runMatchAndCommit(
   args: CascadeMatchCommitArgs,
 ): Promise<CascadeMatchCommitResult | { error: string; status: number }> {
@@ -653,6 +724,21 @@ async function runMatchAndCommit(
     console.info(
       `[voix] réponse périmée (visait ${args.expectedTrackId}, en cours ${active.track_id}) — ignorée`,
     );
+    if (args.persistTranscript) {
+      await tracerReponse({
+        sessionId: args.sessionId,
+        participantId: args.participantId,
+        // On trace contre le morceau que le joueur VISAIT, pas celui qui tourne.
+        trackId: args.expectedTrackId,
+        roundId: args.roundId,
+        trackIndex: active.track_index,
+        texte: args.transcript,
+        source: args.source,
+        latencyMs: args.latencyMs,
+        decision: 'MORCEAU_DEPASSE',
+        cible: null,
+      });
+    }
     return {
       matched: false,
       scored: false,
@@ -664,6 +750,20 @@ async function runMatchAndCommit(
   }
 
   if (hasCorrectAnswer(args.roundId, args.participantId)) {
+    if (args.persistTranscript) {
+      await tracerReponse({
+        sessionId: args.sessionId,
+        participantId: args.participantId,
+        trackId: active.track_id,
+        roundId: args.roundId,
+        trackIndex: active.track_index,
+        texte: args.transcript,
+        source: args.source,
+        latencyMs: args.latencyMs,
+        decision: 'ALREADY_ANSWERED',
+        cible: null,
+      });
+    }
     return {
       matched: false,
       scored: false,
@@ -682,6 +782,20 @@ async function runMatchAndCommit(
     .map((t) => (typeof t === 'string' ? t.trim() : ''))
     .filter((t) => t !== '');
   if (transcriptions.length === 0) {
+    if (args.persistTranscript) {
+      await tracerReponse({
+        sessionId: args.sessionId,
+        participantId: args.participantId,
+        trackId: active.track_id,
+        roundId: args.roundId,
+        trackIndex: active.track_index,
+        texte: args.transcript ?? '',
+        source: args.source,
+        latencyMs: args.latencyMs,
+        decision: 'AUCUNE_PAROLE',
+        cible: null,
+      });
+    }
     return {
       matched: false,
       scored: false,
@@ -806,34 +920,25 @@ async function runMatchAndCommit(
           : { score: meilleurTitre, target: 'title' };
   }
 
-  // Log voice_transcript (optionnel — frontend peut en spammer plusieurs L1 par
-  // tap, on persiste uniquement les "commits" intéressants).
-  if (args.persistTranscript) {
-    await prisma.voiceTranscript
-      .create({
-        data: {
-          session_id: args.sessionId,
-          participant_id: args.participantId,
-          track_id: track.id,
-          transcript: `[${args.source}] ${transcriptions.join(' | ').slice(0, 980)}`,
-          // fix/artiste-seul-jamais-reconnu — les trois cibles sont distinctes :
-          // 'title' → titre seul, 'artist' → artiste seul, 'artist_title' → les
-          // deux. Auparavant matched_title etait vrai des que QUELQUE CHOSE
-          // matchait, meme quand seul l artiste avait ete reconnu — et l artiste
-          // seul ne pouvait de toute facon jamais matcher.
-          matched_artist:
-            best.score >= VOICE_MATCH_THRESHOLD &&
-            (best.target === 'artist' || best.target === 'artist_title'),
-          matched_title:
-            best.score >= VOICE_MATCH_THRESHOLD &&
-            (best.target === 'title' || best.target === 'artist_title'),
-          confidence: best.score / 100,
-          level: args.source,
-          latency_ms: args.latencyMs,
-        },
-      })
-      .catch((err) => console.warn('[voice-cascade] log error:', err));
-  }
+  // feat/tracer-toutes-les-reponses — l ecriture se fait desormais AU VERDICT,
+  // plus a mi-chemin : une ligne ecrite ici ne savait pas encore si la reponse
+  // allait etre acceptee, refusee sous le seuil, ou perdue en phase 2.
+  const traceCommune = {
+    sessionId: args.sessionId,
+    participantId: args.participantId,
+    trackId: track.id,
+    roundId: args.roundId,
+    trackIndex: active.track_index,
+    texte: transcriptions.join(' | '),
+    source: args.source,
+    latencyMs: args.latencyMs,
+    scoreTitre: Math.round(meilleurTitre),
+    scoreArtiste: Math.round(meilleurArtiste),
+    scoreCombo: Math.round(meilleurCombo),
+    titreAttendu: track.canonical_title,
+    artisteAttendu: track.artist?.canonical_name ?? null,
+  };
+
 
   console.info(
     `[Voice] ${args.level} ${args.source}: ${transcriptions.map((t) => `"${t.slice(0, 80)}"`).join(' | ')} score=${best.score}% target=${best.target} threshold=${VOICE_MATCH_THRESHOLD}`,
@@ -841,6 +946,9 @@ async function runMatchAndCommit(
 
   if (best.score < VOICE_MATCH_THRESHOLD) {
     // Pas de commit — frontend décide quoi faire (escalade ou abandon).
+    if (args.persistTranscript) {
+      await tracerReponse({ ...traceCommune, decision: 'SOUS_LE_SEUIL', cible: best.target });
+    }
     return {
       matched: false,
       scored: false,
@@ -879,6 +987,9 @@ async function runMatchAndCommit(
     score_speed_bonus: tentativeScore.speed_bonus,
   });
   if (!registered) {
+    if (args.persistTranscript) {
+      await tracerReponse({ ...traceCommune, decision: 'PHASE_2_EXPIRED', cible: best.target });
+    }
     return {
       matched: true,
       scored: false,
@@ -901,6 +1012,12 @@ async function runMatchAndCommit(
     buzzTimeMs: registered.entry.answered_at_ms,
     transcriptPreview: `[${args.source}] ${args.transcript.slice(0, 200)}`,
   });
+
+  // feat/tracer-toutes-les-reponses — une acceptee se trace comme un refus :
+  // sans ca, un taux d acceptation ne veut rien dire.
+  if (args.persistTranscript) {
+    await tracerReponse({ ...traceCommune, decision: 'ACCEPTEE', cible: best.target });
+  }
 
   // Compute cumulative pour broadcast (cf. /voice-answer existant).
   const sessionForCumul = await prisma.session.findUnique({

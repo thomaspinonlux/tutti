@@ -491,4 +491,105 @@ router.get('/voice-analytics', async (req: Request, res: Response): Promise<void
   }
 });
 
+// ───── Le verdict rendu sur chaque reponse d une soiree ──────────────────
+//
+// GET /api/admin/sessions/:id/reponses
+//
+// feat/tracer-toutes-les-reponses — repond a la seule question qui compte
+// apres une soiree : le moteur a-t-il eu raison de refuser ?
+//
+// Renvoie le taux d acceptation, la repartition des verdicts, le detail par
+// joueur, et surtout les REFUS LES PLUS PROCHES : ceux qui ont frole le seuil
+// sont les erreurs du moteur, pas celles des joueurs.
+
+router.get(
+  '/sessions/:id/reponses',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const sessionId = req.params.id;
+  try {
+    const lignes = await prisma.voiceTranscript.findMany({
+      where: { session_id: sessionId },
+      select: {
+        transcript: true,
+        matched_artist: true,
+        matched_title: true,
+        confidence: true,
+        decision: true,
+        cible: true,
+        score_titre: true,
+        score_artiste: true,
+        score_combo: true,
+        seuil: true,
+        titre_attendu: true,
+        artiste_attendu: true,
+        mode_reponse: true,
+        track_index: true,
+        created_at: true,
+        participant: { select: { id: true, pseudo: true } },
+        track: { select: { canonical_title: true, artist: { select: { canonical_name: true } } } },
+      },
+      orderBy: { created_at: 'asc' },
+    });
+
+    const acceptee = (l: (typeof lignes)[number]): boolean =>
+      l.decision ? l.decision === 'ACCEPTEE' : l.matched_artist || l.matched_title;
+
+    const total = lignes.length;
+    const acceptees = lignes.filter(acceptee).length;
+
+    const parVerdict = new Map<string, number>();
+    const parJoueur = new Map<string, { pseudo: string; total: number; acceptees: number }>();
+    for (const l of lignes) {
+      // Les lignes d avant la tracabilite complete n ont pas de verdict ecrit :
+      // on le deduit, sans pretendre qu il a ete enregistre.
+      const verdict = l.decision ?? (acceptee(l) ? 'ACCEPTEE' : 'REFUSEE_AVANT_TRACAGE');
+      parVerdict.set(verdict, (parVerdict.get(verdict) ?? 0) + 1);
+      const cle = l.participant.id;
+      const j = parJoueur.get(cle) ?? { pseudo: l.participant.pseudo, total: 0, acceptees: 0 };
+      j.total += 1;
+      if (acceptee(l)) j.acceptees += 1;
+      parJoueur.set(cle, j);
+    }
+
+    const scoreDe = (l: (typeof lignes)[number]): number =>
+      Math.max(l.score_titre ?? 0, l.score_artiste ?? 0, l.score_combo ?? 0, (l.confidence ?? 0) * 100);
+
+    const refusLesPlusProches = lignes
+      .filter((l) => !acceptee(l))
+      .sort((x, y) => scoreDe(y) - scoreDe(x))
+      .slice(0, 40)
+      .map((l) => ({
+        joueur: l.participant.pseudo,
+        reponse: l.transcript,
+        attendu_titre: l.titre_attendu ?? l.track.canonical_title,
+        attendu_artiste: l.artiste_attendu ?? l.track.artist?.canonical_name ?? null,
+        score: Math.round(scoreDe(l)),
+        seuil: l.seuil,
+        verdict: l.decision ?? 'REFUSEE_AVANT_TRACAGE',
+        mode: l.mode_reponse,
+        a: l.created_at,
+      }));
+
+    res.json({
+      session_id: sessionId,
+      total,
+      acceptees,
+      refusees: total - acceptees,
+      taux_acceptation: total > 0 ? Number(((acceptees / total) * 100).toFixed(1)) : null,
+      par_verdict: Object.fromEntries(parVerdict),
+      par_joueur: [...parJoueur.values()]
+        .map((j) => ({
+          ...j,
+          taux: j.total > 0 ? Number(((j.acceptees / j.total) * 100).toFixed(1)) : null,
+        }))
+        .sort((x, y) => y.total - x.total),
+      refus_les_plus_proches: refusLesPlusProches,
+    });
+  } catch (err) {
+    console.error('[admin] reponses de la soiree :', err);
+    res.status(500).json({ error: { code: 'INTERNAL', message: 'Lecture impossible' } });
+  }
+  },
+);
+
 export default router;
