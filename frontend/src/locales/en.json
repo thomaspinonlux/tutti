@@ -520,7 +520,7 @@
     "masterAssign": "Make animator",
     "masterRevoke": "Remove animator",
     "masterIs": "Animator:",
-    "masterNone": "No animator picked",
+    "masterNone": "⚠ Nobody holds the remote",
     "masterChange": "Change animator",
     "roleLabel": "Role",
     "rolePlayer": "Player",

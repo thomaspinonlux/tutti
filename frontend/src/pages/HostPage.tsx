@@ -3085,6 +3085,19 @@ function HostPageInner(): JSX.Element {
 
 // ── Sous-écrans ─────────────────────────────────────────────────────────────
 
+/**
+ * fix/personne-na-la-manette — QUAND PERSONNE NE PILOTE, CA SE VOIT.
+ *
+ * Soiree du 18/09, partie KOMP-YMWH : douze joueurs connectes, deux heures de
+ * salon ouvert, et aucun participant promu animateur. Le telephone cense
+ * piloter etait un joueur ordinaire : chacune de ses commandes revenait en
+ * 403, sans rien afficher. La console, elle, affichait « pas d animateur »
+ * dans un petit bouton gris que personne ne regarde. La partie a ete refaite
+ * de zero.
+ *
+ * Le badge passe desormais en alerte tant que la manette n est donnee a
+ * personne — et seulement dans ce cas.
+ */
 function MasterBadge({
   master,
   participants,
@@ -3096,12 +3109,18 @@ function MasterBadge({
 }): JSX.Element {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const personneNePilote = !master;
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 text-xs font-mono px-3 py-1.5 border-2 border-ink rounded bg-cream-2 hover:bg-cream"
+        className={[
+          'flex items-center gap-2 text-xs font-mono px-3 py-1.5 border-2 rounded',
+          personneNePilote
+            ? 'border-raspberry bg-raspberry/15 text-raspberry font-bold animate-pulse hover:bg-raspberry/25'
+            : 'border-ink bg-cream-2 hover:bg-cream',
+        ].join(' ')}
       >
         <span aria-hidden>👑</span>
         <span>

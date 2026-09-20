@@ -678,13 +678,50 @@ export function PlayPage(): JSX.Element {
   };
 
   // ── Master actions (mode B) ───────────────────────────────────────────
+  /**
+   * fix/refus-de-la-telecommande-muet — UN REFUS SE VOIT, ET SE REPARE.
+   *
+   * Soiree du 18/09 : la telecommande envoyait ses commandes, le serveur les
+   * refusait en 403, et l ecran ne changeait pas d un pixel. L animateur a cru
+   * l application bloquee, a force la fermeture, puis a refait la partie de
+   * zero — les douze joueurs deja connectes ont du re-scanner le QR code.
+   *
+   * Les trois refus n ont pas la meme suite :
+   *   WRONG_SESSION / PARTICIPANT_INVALID — la telecommande parle d une partie
+   *     qui n est plus la bonne : on efface son identite et on la renvoie a l
+   *     ecran d entree, ou il suffit de re-scanner ;
+   *   NOT_MASTER — la manette ne lui a jamais ete donnee : on le dit, et on
+   *     remet l ecran en mode joueur pour qu il cesse d appuyer dans le vide.
+   */
+  const refusTelecommande = (err: unknown): boolean => {
+    if (!(err instanceof ApiError) || err.status !== 403) return false;
+    if (err.code === 'WRONG_SESSION' || err.code === 'PARTICIPANT_INVALID') {
+      clearParticipantContext(shortCode);
+      setIsMaster(false);
+      setMasterPickerOpen(false);
+      setError(err.message);
+      setStep('pseudo');
+      return true;
+    }
+    if (err.code === 'NOT_MASTER') {
+      setIsMaster(false);
+      setMyRole('PLAYER');
+      setMasterPickerOpen(false);
+      setError(err.message);
+      return true;
+    }
+    return false;
+  };
+
   const masterCall = async (fn: () => Promise<unknown>): Promise<void> => {
     if (!identity || busy) return;
     setBusy(true);
     try {
       await fn();
     } catch (err: unknown) {
-      pushToast(setToasts, (err as Error).message, 'raspberry');
+      if (!refusTelecommande(err)) {
+        pushToast(setToasts, (err as Error).message, 'raspberry');
+      }
     } finally {
       setBusy(false);
     }

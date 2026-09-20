@@ -520,7 +520,7 @@
     "masterAssign": "Désigner animateur",
     "masterRevoke": "Retirer animateur",
     "masterIs": "Animateur :",
-    "masterNone": "Pas d'animateur désigné",
+    "masterNone": "⚠ Personne n'a la manette",
     "masterChange": "Changer d'animateur",
     "roleLabel": "Rôle",
     "rolePlayer": "Joueur",
