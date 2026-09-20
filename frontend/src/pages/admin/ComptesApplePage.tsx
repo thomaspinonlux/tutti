@@ -1,6 +1,10 @@
 /**
  * ComptesApplePage.tsx — feat/parc-comptes-apple
  *
+ * fix/on-ecrit-blanc-sur-blanc — cette page est sombre, mais ses deux champs
+ * de saisie prenaient le theme clair du back-office : texte encre sur fond
+ * sombre, donc invisible pendant la frappe. Les champs sont en theme sombre.
+ *
  * Parc de comptes Apple Music partagés. RÉSERVÉ AU PROPRIÉTAIRE : cet écran
  * n'apparaît pas pour les clients, et l'API le refuse de toute façon
  * (requireOwner). Les personnes qui lancent une partie ne voient jamais cette
@@ -133,6 +137,7 @@ export function ComptesApplePage(): JSX.Element {
               Nom du compte
             </label>
             <Input
+              dark
               value={libelle}
               onChange={(e) => setLibelle(e.target.value)}
               placeholder="Compte 1"
@@ -144,6 +149,7 @@ export function ComptesApplePage(): JSX.Element {
               E-mail (facultatif, pour s&apos;y retrouver)
             </label>
             <Input
+              dark
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="compte1@exemple.com"
