@@ -1062,5 +1062,26 @@
     "updateHint": "Recharge pour profiter des dernières améliorations.",
     "updateNow": "Recharger",
     "updateLater": "Plus tard"
+  },
+  "quizTheme": {
+    "title": "Choisis un thème",
+    "level": "Niveau",
+    "added": "{{theme}} ajouté — {{count}} questions",
+    "questions": "{{count}} questions",
+    "niveau": {
+      "MIX": "Tous niveaux",
+      "EASY": "Facile",
+      "MEDIUM": "Moyen",
+      "EXPERT": "Expert"
+    },
+    "blockEnded": "Fin de la manche",
+    "blockEndedHint": "Choisis un autre thème pour continuer, ou termine la partie.",
+    "noThemeYet": "Aucun thème choisi pour l'instant.",
+    "waitingMaster": "Le maître du jeu choisit un thème…",
+    "startQuestions": "Lancer les questions",
+    "continue": "Question suivante",
+    "addTheme": "Ajouter un thème",
+    "hide": "Fermer",
+    "scanToJoin": "Scanne pour jouer"
   }
 }

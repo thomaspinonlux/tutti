@@ -68,7 +68,9 @@ export function SignupPage(): JSX.Element {
         },
       });
 
-      navigate('/admin', { replace: true });
+      // feat/parcours-client-simplifie — un nouveau compte est un client :
+      // il arrive directement sur la réservation de son créneau.
+      navigate('/admin/reserver', { replace: true });
     } catch (err: unknown) {
       const msg = err instanceof ApiError ? err.message : (err as Error).message;
       setError(msg ?? t('auth.unknownError'));

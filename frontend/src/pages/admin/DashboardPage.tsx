@@ -10,6 +10,7 @@
  * après navigate depuis /host". À retirer après diagnostic confirmé.
  */
 
+import { ProchainePartie } from '../../components/admin/ProchainePartie.js';
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -201,6 +202,9 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
               on lance depuis les cartes Tutti Blind Test / Tutti Quizz. */}
         </div>
       </header>
+
+      {/* feat/parcours-client-simplifie — le jour J : un clic, la console. */}
+      <ProchainePartie />
 
       <GettingStartedChecklist />
 

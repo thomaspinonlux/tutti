@@ -50,6 +50,8 @@ import { buildThemeSections, flattenThemes } from '../lib/officialThemes.js';
 import { JoinQrCorner } from '../components/host/JoinQrCorner.js';
 import { classesNom } from '../components/game/ClassementDuTitre.js';
 import { AutoScrollList } from '../components/screen/AutoScrollList.js';
+import type { CurrentQuestionState } from '@tutti/shared';
+import { ScreenQuizView, type QuizTvReveal } from '../components/screen/ScreenQuizView.js';
 
 // fix/tv-1s-poll — 1 s en partie : l'écran ne peut jamais avoir plus d'une
 // seconde de retard sur le serveur, même si le canal temps réel est mort.
@@ -72,6 +74,12 @@ export function ScreenPage(): JSX.Element {
   );
   const [error, setError] = useState<string | null>(null);
   const idleStreakRef = useRef(0);
+  // feat/quiz-comme-le-blind-test — le quiz sur la TV, piloté par socket.
+  const [quizTv, setQuizTv] = useState<{
+    question: CurrentQuestionState | null;
+    reveal: QuizTvReveal | null;
+    finDeManche: boolean;
+  } | null>(null);
 
   // Auto-detect workspaceId via cookies Supabase si pas en param URL
   // fix/tv-freeze — BATTEMENT DE COEUR pour le chien de garde NATIF.
@@ -408,7 +416,24 @@ export function ScreenPage(): JSX.Element {
     };
     socket.on('track:progress', onProgress);
 
+    // feat/quiz-comme-le-blind-test — le quiz s'affiche sur la TV.
+    const onQuizStart = (m: { state: CurrentQuestionState }): void =>
+      setQuizTv({ question: m.state, reveal: null, finDeManche: false });
+    const onQuizReveal = (m: QuizTvReveal): void =>
+      setQuizTv((q) => (q ? { ...q, reveal: m } : q));
+    const onQuizFinManche = (): void =>
+      setQuizTv({ question: null, reveal: null, finDeManche: true });
+    const onFinPartie = (): void => setQuizTv(null);
+    socket.on('quizz:question_start', onQuizStart);
+    socket.on('quizz:question_revealed', onQuizReveal);
+    socket.on('quizz:block_ended', onQuizFinManche);
+    socket.on('session:ended', onFinPartie);
+
     return () => {
+      socket.off('quizz:question_start', onQuizStart);
+      socket.off('quizz:question_revealed', onQuizReveal);
+      socket.off('quizz:block_ended', onQuizFinManche);
+      socket.off('session:ended', onFinPartie);
       events.forEach((ev) => socket.off(ev, trigger));
       socket.off('track:start', onTrackStart);
       socket.off('track:progress', onProgress);
@@ -487,6 +512,19 @@ export function ScreenPage(): JSX.Element {
       <div className="min-h-screen flex items-center justify-center">
         <p className="font-mono text-ink-soft">{t('common.loading')}</p>
       </div>
+    );
+  }
+
+  // Quiz en cours : la partie n'a pas de manche musicale, l'état serveur
+  // reste LOBBY — la question vient des événements du quiz.
+  if (quizTv && screenState.state === 'LOBBY') {
+    return (
+      <ScreenQuizView
+        joinCode={screenState.joinCode}
+        question={quizTv.question}
+        reveal={quizTv.reveal}
+        finDeManche={quizTv.finDeManche}
+      />
     );
   }
 

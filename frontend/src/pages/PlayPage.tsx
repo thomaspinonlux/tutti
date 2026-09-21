@@ -95,6 +95,7 @@ import {
 } from '../components/play/MasterAdjustPointsSheet.js';
 
 import { PlayQuizzView } from '../components/play/quizz/PlayQuizzView.js';
+import { MasterQuizzMenu } from '../components/play/quizz/MasterQuizzMenu.js';
 import { VinylBuzzer } from '../components/play/VinylBuzzer.js';
 import { ClassementDuTitre } from '../components/game/ClassementDuTitre.js';
 import { remoteLog } from '../lib/remoteLog.js';
@@ -1071,12 +1072,21 @@ export function PlayPage(): JSX.Element {
                 {/* feat/tv-playlist-carousel — proposer une playlist depuis le
                   lobby. Modal qui charge le catalogue OfficialPlaylist + POST
                   /api/sessions/by-code/:short_code/proposals. */}
-                <ProposePlaylistButton shortCode={shortCode} token={identity.token} />
+                {view?.game_type !== 'QUIZZ' && (
+                  <ProposePlaylistButton shortCode={shortCode} token={identity.token} />
+                )}
               </PanneauJoueur>
+              {/* feat/quiz-comme-le-blind-test — au quiz, celui qui a la manette
+                  choisit les thèmes et lance les questions depuis le lobby. */}
+              {isMaster && view?.game_type === 'QUIZZ' && (
+                <div className="mt-4">
+                  <MasterQuizzMenu sessionId={identity.sessionId} token={identity.token} phase="waiting" />
+                </div>
+              )}
               {/* feat/animator-full-control — l'animateur désigné lance la 1ʳᵉ manche
                   DEPUIS LE LOBBY (bibliothèque + niveau + source ou playlist perso).
                   Le backend passe la session WAITING → PLAYING. */}
-              {isMaster && (
+              {isMaster && view?.game_type !== 'QUIZZ' && (
                 <div
                   className="mt-4 rounded-[20px] border p-5 text-center"
                   style={{ backgroundColor: `${TEL_CORAIL}14`, borderColor: `${TEL_CORAIL}55` }}

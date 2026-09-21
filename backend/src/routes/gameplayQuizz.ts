@@ -19,26 +19,21 @@
 
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
-import type { QuestionType, GameMode, Team } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { verifyParticipantToken } from '../lib/participantToken.js';
 import { broadcastToSession } from '../socket/index.js';
+import { trySubmitAnswer } from '../lib/gameStateQuizz.js';
+import { clearAutoReveal, revealCurrentQuestion } from '../lib/gameplayQuizzCore.js';
 import {
-  clearActiveQuestion,
-  getActiveQuestion,
-  setActiveQuestion,
-  trySubmitAnswer,
-} from '../lib/gameStateQuizz.js';
-import {
-  buildAndBroadcastQuestion,
-  clearAutoReveal,
-  findQuestionAtIndex,
-  revealCurrentQuestion,
-  scheduleAutoReveal,
-} from '../lib/gameplayQuizzCore.js';
-import { getCumulativeScores } from '../lib/scores.js';
+  QuizzErreur,
+  ajouterTheme,
+  lancerQuestion,
+  listerThemes,
+  questionSuivante,
+  revelerQuestion,
+} from '../lib/quizzPilotage.js';
 
 const router: Router = Router({ mergeParams: true });
 
@@ -53,146 +48,109 @@ async function ensureOwnSession(sessionId: string, workspaceId: string) {
   });
 }
 
-// ── POST /play-question (host) ───────────────────────────────────────────
+// ── Pilotage console — feat/quiz-comme-le-blind-test ──────────────────────
+// Toute la logique vit dans lib/quizzPilotage (partagée avec la manette).
 
-const playQuestionSchema = z.object({
-  question_index: z.number().int().min(0),
+function repondreErreur(res: Response, err: unknown): void {
+  if (err instanceof QuizzErreur) {
+    res.status(err.status).json({ error: { code: err.code, message: err.message } });
+    return;
+  }
+  console.error('[Quizz] erreur de pilotage :', err);
+  res.status(500).json({ error: { code: 'INTERNAL', message: 'Erreur du quiz' } });
+}
+
+/** Les thèmes proposés, avec le nombre de questions par niveau. */
+router.get('/themes', requireAuth, requireWorkspace, async (_req: Request, res: Response): Promise<void> => {
+  res.json({ themes: await listerThemes() });
 });
+
+const themeSchema = z.object({
+  pack_id: z.string().uuid(),
+  niveau: z.enum(['EASY', 'MEDIUM', 'EXPERT', 'MIX']).optional(),
+  nombre: z.number().int().min(1).max(50).optional(),
+});
+
+/** Ajoute un thème (une manche) à la partie. */
+router.post(
+  '/themes',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = themeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Thème invalide' } });
+      return;
+    }
+    if (!(await ensureOwnSession(req.params.id, req.workspaceId!))) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    try {
+      res.json({ manche: await ajouterTheme(req.params.id, parsed.data.pack_id, parsed.data) });
+    } catch (err: unknown) {
+      repondreErreur(res, err);
+    }
+  },
+);
+
+const playQuestionSchema = z.object({ question_index: z.number().int().min(0) });
 
 router.post(
   '/play-question',
   requireAuth,
   requireWorkspace,
   async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-    const workspaceId = req.workspaceId!;
     const parsed = playQuestionSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
       return;
     }
-    const session = await ensureOwnSession(req.params.id, workspaceId);
-    if (!session) {
+    if (!(await ensureOwnSession(req.params.id, req.workspaceId!))) {
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
       return;
     }
-    if (!session.question_set_id) {
-      res.status(409).json({
-        error: { code: 'NO_QUESTION_SET', message: 'Pas de question_set lié à la session' },
-      });
-      return;
+    try {
+      res.json({ state: await lancerQuestion(req.params.id, parsed.data.question_index) });
+    } catch (err: unknown) {
+      repondreErreur(res, err);
     }
-    const set = await prisma.questionSet.findUnique({
-      where: { id: session.question_set_id },
-      select: { is_bilingual: true },
-    });
-    const question = await findQuestionAtIndex(session.question_set_id, parsed.data.question_index);
-    if (!question || !set) {
-      res.status(404).json({ error: { code: 'NO_QUESTION', message: 'Question introuvable' } });
-      return;
-    }
-
-    const state = buildAndBroadcastQuestion(req.params.id, question, set.is_bilingual);
-    setActiveQuestion(req.params.id, {
-      question_index: question.position,
-      question_id: question.id,
-      question_type: question.type as QuestionType,
-      time_limit_ms: question.time_limit_sec * 1000,
-      points: question.points,
-      expected_participants: session.participants.map((p) => p.id),
-    });
-    scheduleAutoReveal(req.params.id, question.time_limit_sec * 1000, () => {
-      void revealCurrentQuestion(req.params.id);
-    });
-
-    res.json({ state });
   },
 );
 
-// ── POST /next-question (host) ───────────────────────────────────────────
-
+/** Question suivante — ou fin de manche (la partie continue). */
 router.post(
   '/next-question',
   requireAuth,
   requireWorkspace,
   async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-    const workspaceId = req.workspaceId!;
-    const session = await ensureOwnSession(req.params.id, workspaceId);
-    if (!session) {
+    if (!(await ensureOwnSession(req.params.id, req.workspaceId!))) {
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
       return;
     }
-    if (!session.question_set_id) {
-      res
-        .status(409)
-        .json({ error: { code: 'NO_QUESTION_SET', message: 'Pas de question_set lié' } });
-      return;
+    try {
+      res.json(await questionSuivante(req.params.id));
+    } catch (err: unknown) {
+      repondreErreur(res, err);
     }
-    const active = getActiveQuestion(req.params.id);
-    const nextIndex = active ? active.question_index + 1 : 0;
-    const set = await prisma.questionSet.findUnique({
-      where: { id: session.question_set_id },
-      select: { is_bilingual: true, _count: { select: { questions: true } } },
-    });
-    if (!set) {
-      res.status(404).json({ error: { code: 'NO_SET', message: 'Pack introuvable' } });
-      return;
-    }
-    if (nextIndex >= set._count.questions) {
-      // Plus de questions → end session avec podium.
-      clearActiveQuestion(req.params.id);
-      clearAutoReveal(req.params.id);
-      const updated = await prisma.session.update({
-        where: { id: req.params.id },
-        data: { status: 'ENDED', ended_at: new Date() },
-      });
-      const teams = (updated.teams_config as Team[] | null) ?? null;
-      const cumulative = await getCumulativeScores({
-        sessionId: updated.id,
-        mode: updated.mode as GameMode,
-        teams,
-        participants: session.participants.map((p) => ({ id: p.id, pseudo: '', team_id: null })),
-      });
-      broadcastToSession(req.params.id, 'session:ended', { session: updated, cumulative });
-      res.json({ ended: true, session: updated, cumulative });
-      return;
-    }
-    const question = await findQuestionAtIndex(session.question_set_id, nextIndex);
-    if (!question) {
-      res.status(404).json({ error: { code: 'NO_QUESTION', message: 'Question introuvable' } });
-      return;
-    }
-    const state = buildAndBroadcastQuestion(req.params.id, question, set.is_bilingual);
-    setActiveQuestion(req.params.id, {
-      question_index: question.position,
-      question_id: question.id,
-      question_type: question.type as QuestionType,
-      time_limit_ms: question.time_limit_sec * 1000,
-      points: question.points,
-      expected_participants: session.participants.map((p) => p.id),
-    });
-    scheduleAutoReveal(req.params.id, question.time_limit_sec * 1000, () => {
-      void revealCurrentQuestion(req.params.id);
-    });
-
-    res.json({ state });
   },
 );
-
-// ── POST /reveal-question (host) ─────────────────────────────────────────
 
 router.post(
   '/reveal-question',
   requireAuth,
   requireWorkspace,
   async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-    const workspaceId = req.workspaceId!;
-    const session = await ensureOwnSession(req.params.id, workspaceId);
-    if (!session) {
+    if (!(await ensureOwnSession(req.params.id, req.workspaceId!))) {
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
       return;
     }
-    await revealCurrentQuestion(req.params.id);
-    res.json({ ok: true });
+    try {
+      await revelerQuestion(req.params.id);
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      repondreErreur(res, err);
+    }
   },
 );
 

@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation, useOutletContext } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useOutletContext } from 'react-router-dom';
 import { Sidebar } from '../../components/admin/Sidebar.js';
 import { MobileNav } from '../../components/admin/MobileNav.js';
 // MinScreen retiré — admin utilisable depuis tout écran (iPhone 375px inclus).
@@ -127,6 +127,12 @@ export function AdminLayout(): JSX.Element {
   // connaître, et l'accord du propriétaire sur ce créneau valide son compte.
   const surLaReservation = location.pathname.startsWith('/admin/reserver');
   if (!meLoading && me && !me.isSuperAdmin && !(surLaReservation && me.memberStatus === 'PENDING')) {
+    // feat/parcours-client-simplifie — un compte en attente qui arrive sur
+    // l'accueil (connexion après confirmation de l'e-mail) va directement
+    // réserver son créneau, au lieu d'un écran d'attente.
+    if (me.memberStatus === 'PENDING' && location.pathname.replace(/\/$/, '') === '/admin') {
+      return <Navigate to="/admin/reserver" replace />;
+    }
     if (me.memberStatus === 'PENDING' || me.memberStatus === 'REJECTED') {
       return (
         <PendingApprovalScreen

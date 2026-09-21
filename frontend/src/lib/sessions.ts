@@ -419,20 +419,78 @@ export async function playQuestion(
   return data.state;
 }
 
-export async function nextQuestion(sessionId: string): Promise<{
-  state?: CurrentQuestionState;
-  ended?: boolean;
-  session?: Session;
-  cumulative?: CumulativeScore[];
-}> {
-  return api<{
-    state?: CurrentQuestionState;
-    ended?: boolean;
-    session?: Session;
-    cumulative?: CumulativeScore[];
-  }>(`/api/sessions/${encodeURIComponent(sessionId)}/quizz/next-question`, {
-    method: 'POST',
-  });
+/**
+ * Question suivante. En fin de manche la partie continue : `fin_de_manche`
+ * invite à choisir un autre thème ou à terminer (comme au blind test).
+ */
+export async function nextQuestion(
+  sessionId: string,
+): Promise<{ state?: CurrentQuestionState; fin_de_manche?: boolean }> {
+  return api<{ state?: CurrentQuestionState; fin_de_manche?: boolean }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/quizz/next-question`,
+    { method: 'POST' },
+  );
+}
+
+// ───── Quiz : thèmes (feat/quiz-comme-le-blind-test) ───────────────────────
+
+export type NiveauQuiz = 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX';
+
+export interface ThemeQuiz {
+  id: string;
+  nom_fr: string;
+  nom_en: string;
+  categorie: string | null;
+  niveaux: Record<'EASY' | 'MEDIUM' | 'EXPERT', number>;
+  total: number;
+}
+
+export interface MancheAjoutee {
+  set_id: string;
+  debut: number;
+  fin: number;
+  nombre: number;
+  theme: string;
+}
+
+export async function listerThemesQuiz(sessionId: string): Promise<ThemeQuiz[]> {
+  const data = await api<{ themes: ThemeQuiz[] }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/quizz/themes`,
+  );
+  return data.themes;
+}
+
+export async function ajouterThemeQuiz(
+  sessionId: string,
+  packId: string,
+  niveau: NiveauQuiz,
+): Promise<MancheAjoutee> {
+  const data = await api<{ manche: MancheAjoutee }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/quizz/themes`,
+    { method: 'POST', body: { pack_id: packId, niveau } },
+  );
+  return data.manche;
+}
+
+export async function masterListerThemesQuiz(sessionId: string, token: string): Promise<ThemeQuiz[]> {
+  const data = await api<{ themes: ThemeQuiz[] }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/themes/liste`,
+    { method: 'POST', body: { token }, anonymous: true },
+  );
+  return data.themes;
+}
+
+export async function masterAjouterThemeQuiz(
+  sessionId: string,
+  token: string,
+  packId: string,
+  niveau: NiveauQuiz,
+): Promise<MancheAjoutee> {
+  const data = await api<{ manche: MancheAjoutee }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/themes`,
+    { method: 'POST', body: { token, pack_id: packId, niveau }, anonymous: true },
+  );
+  return data.manche;
 }
 
 export async function revealQuestion(sessionId: string): Promise<void> {
@@ -773,12 +831,7 @@ export async function masterPlayQuestion(
 export async function masterNextQuestion(
   sessionId: string,
   token: string,
-): Promise<{
-  state?: CurrentQuestionState;
-  ended?: boolean;
-  session?: Session;
-  cumulative?: CumulativeScore[];
-}> {
+): Promise<{ state?: CurrentQuestionState; fin_de_manche?: boolean }> {
   return api(`/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/next-question`, {
     method: 'POST',
     body: { token },

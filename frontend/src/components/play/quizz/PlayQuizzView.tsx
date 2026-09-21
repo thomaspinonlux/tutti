@@ -65,6 +65,9 @@ export function PlayQuizzView({
   const [reveal, setReveal] = useState<QuizzReveal | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // feat/quiz-comme-le-blind-test — fin de manche : la manette propose un
+  // nouveau thème (gardé ici : le menu est remonté à chaque phase).
+  const [finDeManche, setFinDeManche] = useState(false);
 
   // ── Sockets ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -76,7 +79,9 @@ export function PlayQuizzView({
       setSubmittedValue(null);
       setReveal(null);
       setError(null);
+      setFinDeManche(false);
     };
+    const onBlockEnded = (): void => setFinDeManche(true);
     const onRevealed = (msg: QuizzReveal): void => {
       setReveal(msg);
       setLocalPhase('revealed');
@@ -84,10 +89,12 @@ export function PlayQuizzView({
 
     socket.on('quizz:question_start', onStart);
     socket.on('quizz:question_revealed', onRevealed);
+    socket.on('quizz:block_ended', onBlockEnded);
 
     return () => {
       socket.off('quizz:question_start', onStart);
       socket.off('quizz:question_revealed', onRevealed);
+      socket.off('quizz:block_ended', onBlockEnded);
     };
   }, [socket]);
 
@@ -130,7 +137,7 @@ export function PlayQuizzView({
             {t('playQuizz.waitingHint')}
           </p>
         </Card>
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} />}
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
       </div>
     );
   }
@@ -148,7 +155,7 @@ export function PlayQuizzView({
           myParticipantId={participantId}
           mySubmitted={submittedValue}
         />
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} />}
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
       </div>
     );
   }
@@ -176,7 +183,7 @@ export function PlayQuizzView({
           {error}
         </p>
       )}
-      {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} />}
+      {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
     </div>
   );
 }

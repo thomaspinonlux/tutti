@@ -99,10 +99,8 @@ import { PreviewModal } from '../components/host/library/PreviewModal.js';
 import {
   getLibraryPlaylist,
   launchLibraryPlaylist,
-  launchLibraryQuizPack,
   type LibraryPlaylistDetail,
   type LibraryPlaylistSummary,
-  type LibraryQuizPackSummary,
   type PreferProvider,
 } from '../lib/library.js';
 import { PreGameStartScreen } from './host/PreGameStartScreen.js';
@@ -955,7 +953,7 @@ function HostPageInner(): JSX.Element {
   // can_use_quizz est true (migration 20260508160000) donc cohérent. Si
   // /api/me retourne false explicitement → on cache. Backend POST /launch
   // reste la vraie sécurité (403 QUIZZ_NOT_ALLOWED).
-  const [canUseQuizz, setCanUseQuizz] = useState(true);
+  const [, setCanUseQuizz] = useState(true);
   useEffect(() => {
     let cancelled = false;
     void getMe()
@@ -1729,28 +1727,6 @@ function HostPageInner(): JSX.Element {
     }
   };
 
-  // feat/quiz-launch-host-ui — clone le pack officiel + crée nouvelle session
-  // game_type=QUIZZ, puis redirige vers /host?session=<short_code>. La session
-  // courante (TRACKS) reste intacte côté backend, mais le host bascule sur
-  // la nouvelle session quizz. Pas de PreGameStartScreen pour quizz : pas
-  // d'audio à débloquer, le SessionConfigPage s'occupera du démarrage.
-  const handlePickQuizOfficial = async (pack: LibraryQuizPackSummary): Promise<void> => {
-    if (pack.locked) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const lang: 'fr' | 'en' = pack.locale_primary.startsWith('en') ? 'en' : 'fr';
-      const result = await launchLibraryQuizPack(pack.id, lang);
-      // Hard navigation pour reset complet du HostPage state (la nouvelle
-      // session est game_type=QUIZZ, pas de round, pas d'audio).
-      navigate(`/host?session=${result.session.short_code}`);
-    } catch (err: unknown) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const handleConfirmLaunchOfficial = (): void => {
     if (!session || !previewPlaylist || !hostProviders) return;
     // feat/watertight-provider — la SOURCE choisie via le toggle UI est
@@ -2335,6 +2311,13 @@ function HostPageInner(): JSX.Element {
         onSessionUpdate={(s) => setSession(s)}
         onCumulativeUpdate={(c) => setCumulative(c)}
         publicView={!session.has_animator}
+        enTete={
+          <MasterBadge
+            master={currentMaster}
+            participants={session.participants}
+            onToggleMaster={handleToggleMaster}
+          />
+        }
       />
     );
   }
@@ -2823,8 +2806,11 @@ function HostPageInner(): JSX.Element {
                 onPickOfficial={handlePickOfficial}
                 spotifyLibraryAvailable={spotifyAllowlisted && !!hostProviders?.spotify.connected}
                 appleLibraryAvailable={!!hostProviders?.apple?.connected}
-                onPickQuizOfficial={handlePickQuizOfficial}
-                canUseQuizz={canUseQuizz}
+                // feat/quiz-comme-le-blind-test — plus d'onglet Quiz dans une
+                // partie de blind test : il créait une AUTRE partie et
+                // terminait celle-ci (joueurs perdus). Le quiz s'ouvre depuis
+                // le tableau de bord, puis on y choisit ses thèmes.
+                canUseQuizz={false}
                 onCreateExpress={() => setExpressModalOpen(true)}
                 onEndSession={handleEndSession}
                 loading={busy}

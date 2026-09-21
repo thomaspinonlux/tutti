@@ -11,11 +11,13 @@
  *   - revealed       : réponse révélée + leaderboard
  *   - ended          : session terminée
  *
- * V0 : pas de round multi — on travaille direct sur session.question_set_id
- * et un index incrémental.
+ * feat/quiz-comme-le-blind-test — comme le blind test : la partie d'abord
+ * (QR code, joueurs, manette), puis on choisit un THÈME et un niveau ; ses
+ * questions s'ajoutent à la partie. En fin de manche, on choisit un autre
+ * thème ou on termine. La partie n'est plus jamais tuée par un choix de thème.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
 import type {
@@ -27,14 +29,19 @@ import type {
   SessionWithParticipants,
 } from '@tutti/shared';
 import {
+  ajouterThemeQuiz,
   endSession,
+  listerThemesQuiz,
   nextQuestion,
   playQuestion,
   revealQuestion,
   startSession,
 } from '../lib/sessions.js';
+import { getShareableOrigin } from '../lib/platform.js';
+import { QRCode } from '../components/host/QRCode.js';
+import { ChoixThemeQuiz } from '../components/quizz/ChoixThemeQuiz.js';
 import { getQuestionSet } from '../lib/questionSets.js';
-import { Badge, Button, Card, TitleHandwritten, Underline } from '../components/ui/index.js';
+import { Button, Card, TitleHandwritten, Underline } from '../components/ui/index.js';
 import { QuestionConsole } from '../components/host/quizz/QuestionConsole.js';
 import { QuizzAnswersList } from '../components/host/quizz/QuizzAnswersList.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
@@ -64,6 +71,8 @@ interface Props {
    * pas de boutons de pilotage (le master pilote depuis son tel).
    */
   publicView?: boolean;
+  /** Badge « qui a la manette » (fourni par HostPage, comme au blind test). */
+  enTete?: ReactNode;
 }
 
 export function HostQuizzView({
@@ -73,6 +82,7 @@ export function HostQuizzView({
   onSessionUpdate,
   onCumulativeUpdate,
   publicView = false,
+  enTete,
 }: Props): JSX.Element {
   const { t } = useTranslation();
 
@@ -84,16 +94,25 @@ export function HostQuizzView({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Charge le pack lié à la session.
+  // Les questions de la partie : vides tant qu'aucun thème n'est choisi.
+  const [setId, setSetId] = useState<string | null>(session.question_set_id ?? null);
+  const [versionPack, setVersionPack] = useState(0);
+  const [finDeManche, setFinDeManche] = useState(false);
+  const [choixOuvert, setChoixOuvert] = useState(false);
+
   useEffect(() => {
-    if (!session.question_set_id) {
-      setPackError(t('hostQuizz.noPackError'));
-      return;
-    }
-    getQuestionSet(session.question_set_id)
-      .then(setPack)
+    if (session.question_set_id) setSetId(session.question_set_id);
+  }, [session.question_set_id]);
+
+  useEffect(() => {
+    if (!setId) return;
+    getQuestionSet(setId)
+      .then((p) => {
+        setPack(p);
+        setPackError(null);
+      })
       .catch((err: unknown) => setPackError((err as Error).message));
-  }, [session.question_set_id, t]);
+  }, [setId, versionPack]);
 
   // ── Socket listeners ────────────────────────────────────────────────────
   useEffect(() => {
@@ -103,6 +122,17 @@ export function HostQuizzView({
       setActiveQuestion(msg.state);
       setSubmittedSet(new Set());
       setLastReveal(null);
+      setFinDeManche(false);
+    };
+    // Thème ajouté (depuis la console OU la manette) : on relit les questions.
+    const onThemeAdded = (msg: { set_id: string }): void => {
+      setSetId(msg.set_id);
+      setVersionPack((v) => v + 1);
+      setFinDeManche(false);
+    };
+    const onBlockEnded = (): void => {
+      setFinDeManche(true);
+      setActiveQuestion(null);
     };
     const onAnswerSubmitted = (msg: { participant_id: string }): void => {
       setSubmittedSet((s) => new Set([...s, msg.participant_id]));
@@ -121,12 +151,16 @@ export function HostQuizzView({
     socket.on('quizz:answer_submitted', onAnswerSubmitted);
     socket.on('quizz:question_revealed', onQuestionRevealed);
     socket.on('session:ended', onSessionEnded);
+    socket.on('quizz:theme_added', onThemeAdded);
+    socket.on('quizz:block_ended', onBlockEnded);
 
     return () => {
       socket.off('quizz:question_start', onQuestionStart);
       socket.off('quizz:answer_submitted', onAnswerSubmitted);
       socket.off('quizz:question_revealed', onQuestionRevealed);
       socket.off('session:ended', onSessionEnded);
+      socket.off('quizz:theme_added', onThemeAdded);
+      socket.off('quizz:block_ended', onBlockEnded);
     };
   }, [socket, session, onSessionUpdate, onCumulativeUpdate]);
 
@@ -152,9 +186,9 @@ export function HostQuizzView({
     setError(null);
     try {
       const result = await nextQuestion(session.id);
-      if (result.ended && result.session) {
-        onSessionUpdate({ ...session, ...result.session });
-        if (result.cumulative) onCumulativeUpdate(result.cumulative);
+      if (result.fin_de_manche) {
+        // La partie continue : on propose un autre thème.
+        setFinDeManche(true);
         setActiveQuestion(null);
       }
       // Sinon le state arrivera via socket onQuestionStart.
@@ -197,6 +231,25 @@ export function HostQuizzView({
 
   // ── Render branches ─────────────────────────────────────────────────────
 
+  const choixTheme = (
+    <ChoixThemeQuiz
+      charger={() => listerThemesQuiz(session.id)}
+      ajouter={(packId, niveau) => ajouterThemeQuiz(session.id, packId, niveau)}
+      onAjoute={(m) => {
+        setSetId(m.set_id);
+        setVersionPack((v) => v + 1);
+        setFinDeManche(false);
+        setChoixOuvert(false);
+      }}
+    />
+  );
+  const barreHaut = (
+    <div className="fixed top-3 right-3 z-30 flex gap-2 items-center">
+      {!publicView && <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />}
+      {enTete}
+    </div>
+  );
+
   if (packError) {
     return (
       <div className="max-w-md mx-auto p-6">
@@ -207,7 +260,7 @@ export function HostQuizzView({
     );
   }
 
-  if (!pack) {
+  if (setId && !pack) {
     return (
       <div className="p-6">
         <p className="font-mono text-ink-soft">{t('common.loading')}</p>
@@ -217,30 +270,44 @@ export function HostQuizzView({
 
   // Session ENDED
   if (session.status === 'ENDED') {
-    return <EndedView pack={pack} cumulative={cumulative} mode={session.mode} />;
+    return <EndedView nom={pack?.name ?? 'Quiz'} cumulative={cumulative} mode={session.mode} />;
   }
 
-  // Session WAITING (pas démarrée)
+  // Session WAITING (pas démarrée) : QR code, joueurs, choix du thème.
   if (session.status === 'WAITING') {
     return (
-      <WaitingView
-        pack={pack}
-        participants={session.participants}
-        onStart={publicView ? null : () => void handleStartSession()}
-        busy={busy}
-        error={error}
-      />
+      <>
+        {barreHaut}
+        <WaitingView
+          shortCode={session.short_code}
+          nombreQuestions={pack?.questions.length ?? 0}
+          participants={session.participants}
+          choixTheme={publicView ? null : choixTheme}
+          onStart={publicView ? null : () => void handleStartSession()}
+          busy={busy}
+          error={error}
+        />
+      </>
+    );
+  }
+
+  if (!pack) {
+    // Partie démarrée sans thème (ne devrait pas arriver) : on en propose un.
+    return (
+      <div className="max-w-2xl mx-auto p-8 space-y-4">
+        {barreHaut}
+        <p className="font-editorial italic text-ink-soft">
+          {publicView ? t('quizTheme.waitingMaster') : t('quizTheme.noThemeYet')}
+        </p>
+        {!publicView && choixTheme}
+      </div>
     );
   }
 
   // Session PLAYING
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4 h-screen relative">
-      {!publicView && (
-        <div className="absolute top-2 right-2 z-30">
-          <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
-        </div>
-      )}
+      {barreHaut}
       <main className="min-w-0 overflow-hidden">
         {activeQuestion ? (
           <QuestionConsole
@@ -256,7 +323,10 @@ export function HostQuizzView({
           />
         ) : (
           <NoActiveQuestion
-            pack={pack}
+            nom={pack.questions[0]?.category ?? pack.name}
+            finDeManche={finDeManche}
+            publicView={publicView}
+            choixTheme={publicView ? null : choixTheme}
             onNext={publicView ? null : () => void handleNext()}
             busy={busy}
             error={error}
@@ -292,6 +362,23 @@ export function HostQuizzView({
           <QuizzAnswersList participants={session.participants} submittedSet={submittedSet} />
         )}
 
+        {!publicView && activeQuestion && activeQuestion.phase !== 'asking' && (
+          <Card size="sm">
+            {choixOuvert ? (
+              <>
+                {choixTheme}
+                <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => setChoixOuvert(false)}>
+                  {t('quizTheme.hide')}
+                </Button>
+              </>
+            ) : (
+              <Button variant="secondary" size="sm" className="w-full" onClick={() => setChoixOuvert(true)}>
+                {t('quizTheme.addTheme')}
+              </Button>
+            )}
+          </Card>
+        )}
+
         {!publicView && (
           <Button
             variant="ghost"
@@ -311,100 +398,127 @@ export function HostQuizzView({
 // ── Vues internes ─────────────────────────────────────────────────────────
 
 function WaitingView({
-  pack,
+  shortCode,
+  nombreQuestions,
   participants,
+  choixTheme,
   onStart,
   busy,
   error,
 }: {
-  pack: QuestionSetWithQuestions;
+  shortCode: string;
+  nombreQuestions: number;
   participants: Participant[];
+  choixTheme: ReactNode | null;
   onStart: (() => void) | null;
   busy: boolean;
   error: string | null;
 }): JSX.Element {
   const { t } = useTranslation();
   const connected = participants.filter((p) => !p.is_kicked);
+  const playUrl = `${getShareableOrigin()}/play?session=${shortCode}`;
 
   return (
-    <div className="max-w-3xl mx-auto p-8 space-y-6">
-      <header className="text-center">
-        <TitleHandwritten as="h1" className="text-5xl mb-3">
-          <Underline>{pack.name}</Underline>
-        </TitleHandwritten>
-        <Badge tone={pack.is_bilingual ? 'plum' : 'basil'}>
-          {pack.is_bilingual
-            ? `${pack.language_1.toUpperCase()} · ${(pack.language_2 ?? '').toUpperCase()}`
-            : pack.language_1.toUpperCase()}
-        </Badge>
-        <p className="font-mono text-sm text-ink-soft mt-2">
-          {pack.questions.length} {t('quizz.questionsCount')}
+    <div className="max-w-5xl mx-auto p-6 grid gap-6 lg:grid-cols-[auto_1fr]">
+      <Card size="lg" className="text-center">
+        <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
+          {t('quizTheme.scanToJoin')}
         </p>
-      </header>
-
-      <Card size="lg">
-        <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
-          {t('hostQuizz.connected', { count: connected.length })}
-        </p>
-        {connected.length === 0 ? (
-          <p className="font-editorial italic text-ink-soft">{t('hostQuizz.waitingForPlayers')}</p>
-        ) : (
-          <ul className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {connected.map((p) => (
-              <li
-                key={p.id}
-                className="px-3 py-1.5 border-2 border-ink rounded font-medium text-sm bg-cream"
-              >
-                {p.pseudo}
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="inline-block rounded-xl bg-white p-3">
+          <QRCode value={playUrl} size={240} />
+        </div>
+        <p className="font-mono text-3xl font-bold tracking-[0.2em] mt-3">{shortCode}</p>
       </Card>
 
-      {error && (
-        <p role="alert" className="text-raspberry text-sm">
-          {error}
-        </p>
-      )}
+      <div className="space-y-4">
+        <Card size="md">
+          <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
+            {t('hostQuizz.connected', { count: connected.length })}
+          </p>
+          {connected.length === 0 ? (
+            <p className="font-editorial italic text-ink-soft">{t('hostQuizz.waitingForPlayers')}</p>
+          ) : (
+            <ul className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {connected.map((p) => (
+                <li
+                  key={p.id}
+                  className="px-3 py-1.5 border-2 border-ink rounded font-medium text-sm bg-cream truncate"
+                >
+                  {p.is_master ? '👑 ' : ''}
+                  {p.pseudo}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
 
-      {onStart && (
-        <div className="flex justify-center">
-          <Button onClick={onStart} disabled={busy || connected.length === 0} size="lg">
-            {busy ? t('common.saving') : t('hostQuizz.startSession')}
-          </Button>
-        </div>
-      )}
+        <Card size="md">
+          <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
+            {t('quizTheme.title')}
+            {nombreQuestions > 0 && ` · ${nombreQuestions} ${t('quizz.questionsCount')}`}
+          </p>
+          {choixTheme ?? (
+            <p className="font-editorial italic text-ink-soft">{t('quizTheme.waitingMaster')}</p>
+          )}
+        </Card>
+
+        {error && (
+          <p role="alert" className="text-raspberry text-sm">
+            {error}
+          </p>
+        )}
+
+        {onStart && (
+          <div className="flex justify-center">
+            <Button onClick={onStart} disabled={busy || nombreQuestions === 0} size="lg">
+              {busy ? t('common.saving') : t('quizTheme.startQuestions')}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 function NoActiveQuestion({
-  pack,
+  nom,
+  finDeManche,
+  publicView,
+  choixTheme,
   onNext,
   busy,
   error,
 }: {
-  pack: QuestionSetWithQuestions;
+  nom: string;
+  finDeManche: boolean;
+  publicView: boolean;
+  choixTheme: ReactNode | null;
   onNext: (() => void) | null;
   busy: boolean;
   error: string | null;
 }): JSX.Element {
   const { t } = useTranslation();
   return (
-    <div className="max-w-xl mx-auto p-8 text-center space-y-4">
+    <div className="max-w-2xl mx-auto p-8 text-center space-y-4">
       <TitleHandwritten as="h2" className="text-4xl">
-        <Underline>{pack.name}</Underline>
+        <Underline>{finDeManche ? t('quizTheme.blockEnded') : nom}</Underline>
       </TitleHandwritten>
-      <p className="font-mono text-sm text-ink-soft">{t('hostQuizz.readyToStart')}</p>
+      <p className="font-mono text-sm text-ink-soft">
+        {finDeManche
+          ? publicView
+            ? t('quizTheme.waitingMaster')
+            : t('quizTheme.blockEndedHint')
+          : t('hostQuizz.readyToStart')}
+      </p>
       {error && (
         <p role="alert" className="text-raspberry text-sm">
           {error}
         </p>
       )}
+      {finDeManche && choixTheme && <div className="text-left">{choixTheme}</div>}
       {onNext && (
         <Button onClick={onNext} disabled={busy} size="lg">
-          {t('hostQuizz.firstQuestion')}
+          {finDeManche ? t('quizTheme.continue') : t('hostQuizz.firstQuestion')}
         </Button>
       )}
     </div>
@@ -412,11 +526,11 @@ function NoActiveQuestion({
 }
 
 function EndedView({
-  pack,
+  nom,
   cumulative,
   mode,
 }: {
-  pack: QuestionSetWithQuestions;
+  nom: string;
   cumulative: CumulativeScore[];
   mode: string;
 }): JSX.Element {
@@ -439,7 +553,7 @@ function EndedView({
         <TitleHandwritten as="h1" className="text-5xl mb-2">
           <Underline>{t('hostQuizz.endedTitle')}</Underline>
         </TitleHandwritten>
-        <p className="font-editorial italic text-ink-soft">{pack.name}</p>
+        <p className="font-editorial italic text-ink-soft">{nom}</p>
         <p className="font-mono text-xs text-ink-soft uppercase tracking-wider mt-1">
           {mode === 'TEAMS' ? t('hostQuizz.byTeams') : t('hostQuizz.solo')}
         </p>
