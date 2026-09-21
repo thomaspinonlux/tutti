@@ -382,7 +382,16 @@ router.post('/initialize', requireAuth, async (req: Request, res: Response): Pro
         data: {
           workspace_id: workspace.id,
           user_id: userId,
-          role: Role.OWNER,
+          // fix/inscrit-devenait-proprietaire — UN INSCRIT EST UN CLIENT.
+          //
+          // Depuis le passage HOST -> CLIENT (13/09), OWNER veut dire « le
+          // back-office, le catalogue : nous ». Mais toute nouvelle inscription
+          // recevait encore OWNER de son espace. Or requireOwner ne regarde
+          // que le rôle : un inconnu validé aurait eu accès au parc des comptes
+          // Apple Music, à toutes les réservations et aux codes gratuits.
+          // Deux inscriptions réelles en ont hérité (14/09 et 18/09), toutes
+          // deux encore en attente — corrigées en base avec ce commit.
+          role: Role.CLIENT,
           status: approval.status,
           email: req.userEmail ?? null,
           invitation_code_used: approval.invitationCodeUsed,

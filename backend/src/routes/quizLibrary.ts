@@ -14,6 +14,7 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { Prisma, QuestionType, MediaType, GameType, GameMode, SessionStatus } from '@prisma/client';
+import { refusHorsCreneau } from '../lib/creneauClient.js';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
@@ -160,6 +161,14 @@ router.post(
       res.status(403).json({
         error: { code: 'QUIZZ_NOT_ALLOWED', message: 'Accès Quizz non autorisé' },
       });
+      return;
+    }
+
+    // feat/reservation-de-creneaux — même garde que le blind test : sans
+    // elle, un client pouvait jouer hors créneau en passant par le quiz.
+    const refus = await refusHorsCreneau(userId, req.userEmail, workspaceId);
+    if (refus) {
+      res.status(refus.status).json({ error: { code: refus.code, message: refus.message } });
       return;
     }
 
