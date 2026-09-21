@@ -32,6 +32,9 @@ import {
 import type { Team, GameMode as GameModeType, ParticipantRole } from '@tutti/shared';
 import { isAnimatorRole } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
+import { isSuperAdminEmail } from '../lib/superAdmin.js';
+import { STATUTS_JOUABLES } from '../lib/reservations.js';
+import { lireReglages } from '../lib/reservationsCommun.js';
 import { clearLyricsOverlay } from '../lib/lyrics/lyricsOverlayStore.js';
 import { getUsableLyrics } from '../lib/lyrics/lyricsStore.js';
 import {
@@ -147,8 +150,39 @@ router.post(
       if (req.userId) {
         const member = await prisma.workspaceMember.findFirst({
           where: { user_id: req.userId },
-          select: { can_use_tracks: true, can_use_quizz: true },
+          select: { can_use_tracks: true, can_use_quizz: true, role: true },
         });
+        // feat/reservation-de-creneaux — UN CLIENT JOUE PENDANT SON CRÉNEAU.
+        //
+        // Sans cette garde, une réservation ne voudrait rien dire : un client
+        // pourrait ouvrir une partie à n'importe quelle heure et prendre un
+        // compte Apple Music promis à quelqu'un d'autre. Le propriétaire et
+        // les super-admins ne sont pas concernés.
+        if (member?.role === 'CLIENT' && !isSuperAdminEmail(req.userEmail)) {
+          const reglages = await lireReglages();
+          const maintenant = new Date();
+          const ouverture = new Date(maintenant.getTime() + reglages.ouverture_avant_minutes * 60_000);
+          const creneau = await prisma.reservation.findFirst({
+            where: {
+              workspace_id: workspaceId,
+              statut: { in: [...STATUTS_JOUABLES] },
+              debut: { lte: ouverture },
+              fin: { gte: maintenant },
+            },
+            select: { id: true },
+          });
+          if (!creneau) {
+            res.status(403).json({
+              error: {
+                code: 'AUCUN_CRENEAU',
+                message:
+                  "Aucun créneau réservé en ce moment. Réserve une partie depuis l'espace Réservation — tu pourras l'ouvrir " +
+                  `${reglages.ouverture_avant_minutes} min avant le début.`,
+              },
+            });
+            return;
+          }
+        }
         if (member) {
           if (parsed.data.game_type === 'TRACKS' && !member.can_use_tracks) {
             res.status(403).json({

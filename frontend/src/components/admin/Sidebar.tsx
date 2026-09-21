@@ -27,6 +27,8 @@ interface NavItem {
     | 'nav.users'
     | 'nav.settings'
     | 'nav.comptesApple'
+    | 'nav.reservations'
+    | 'nav.reserver'
     | 'nav.account';
   icon: JSX.Element;
   superAdminOnly?: boolean;
@@ -36,6 +38,8 @@ interface NavItem {
    * et le serveur les lui refuse de toute facon (requireOwner).
    */
   proprietaireSeul?: boolean;
+  /** feat/reservation-de-creneaux — entrée réservée au CLIENT (réserver). */
+  clientSeul?: boolean;
   // Masqué pour les super admins : ils gèrent leurs playlists/quizzes perso
   // depuis les onglets « personnelles » de la Bibliothèque.
   hideForSuperAdmin?: boolean;
@@ -60,6 +64,10 @@ const NAV: NavItem[] = [
     hideForSuperAdmin: true,
     proprietaireSeul: true,
   },
+  // feat/reservation-de-creneaux — le propriétaire traite les demandes, le
+  // client réserve. Pas de hideForSuperAdmin : Thomas est l'un et l'autre.
+  { to: '/admin/reservations', i18nKey: 'nav.reservations', icon: <DashIcon />, proprietaireSeul: true },
+  { to: '/admin/reserver', i18nKey: 'nav.reserver', icon: <DashIcon />, clientSeul: true },
   { to: '/admin/settings', i18nKey: 'nav.settings', icon: <CogIcon /> },
   { to: '/admin/account', i18nKey: 'nav.account', icon: <UserIcon /> },
 ];
@@ -118,7 +126,8 @@ export function Sidebar(): JSX.Element {
           (item) =>
             (!item.superAdminOnly || isSuperAdmin) &&
             !(item.hideForSuperAdmin && isSuperAdmin) &&
-            (!item.proprietaireSeul || estProprietaire),
+            (!item.proprietaireSeul || estProprietaire) &&
+            (!item.clientSeul || !estProprietaire),
         ).map((item) => (
           <NavLink
             key={item.to}

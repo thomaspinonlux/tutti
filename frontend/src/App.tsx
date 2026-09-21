@@ -27,6 +27,8 @@ import { TracksPage } from './pages/admin/TracksPage.js';
 import { QuizzPage } from './pages/admin/QuizzPage.js';
 import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { ComptesApplePage } from './pages/admin/ComptesApplePage.js';
+import { ReservationsPage } from './pages/admin/ReservationsPage.js';
+import { ReserverPage } from './pages/admin/ReserverPage.js';
 import { AccountPage } from './pages/admin/AccountPage.js';
 import { SuperAdminPage } from './pages/admin/SuperAdminPage.js';
 import { VoiceAnalyticsPage } from './pages/admin/VoiceAnalyticsPage.js';
@@ -139,6 +141,11 @@ function App(): JSX.Element {
           {/* feat/parc-comptes-apple — propriétaire seulement (l'API refuse le
               reste). Invisible pour ceux qui lancent les parties. */}
           <Route path="comptes-apple" element={<ComptesApplePage />} />
+          {/* feat/reservation-de-creneaux — le client demande et paie ; le
+              propriétaire accepte en fixant le prix. /admin/reserver reste
+              ouvert aux comptes EN ATTENTE (cf. AdminLayout). */}
+          <Route path="reserver" element={<ReserverPage />} />
+          <Route path="reservations" element={<ReservationsPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="import-playlist" element={<ImportPlaylistPage />} />
           <Route

@@ -90,7 +90,9 @@
     "users": "Utilisateurs",
     "settings": "Paramètres",
     "account": "Compte",
-    "comptesApple": "Comptes Apple Music"
+    "comptesApple": "Comptes Apple Music",
+    "reservations": "Réservations",
+    "reserver": "Réserver une partie"
   },
   "library": {
     "eyebrow": "Catalogue Tutti",

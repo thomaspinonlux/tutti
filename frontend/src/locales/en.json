@@ -90,7 +90,9 @@
     "users": "Users",
     "settings": "Settings",
     "account": "Account",
-    "comptesApple": "Apple Music accounts"
+    "comptesApple": "Apple Music accounts",
+    "reservations": "Bookings",
+    "reserver": "Book a game"
   },
   "library": {
     "eyebrow": "Tutti catalogue",

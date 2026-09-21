@@ -22,10 +22,14 @@ interface NavEntry {
 export function MobileNav(): JSX.Element {
   const { t } = useTranslation();
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [estProprietaire, setEstProprietaire] = useState(true);
 
   useEffect(() => {
     void getMe()
-      .then((me) => setIsSuperAdmin(me.isSuperAdmin))
+      .then((me) => {
+        setIsSuperAdmin(me.isSuperAdmin);
+        setEstProprietaire(me.role === 'OWNER' || me.isSuperAdmin);
+      })
       .catch(() => {
         /* ignore */
       });
@@ -35,6 +39,10 @@ export function MobileNav(): JSX.Element {
     { to: '/admin/dashboard', label: t('nav.dashboard'), icon: '🏠' },
     { to: '/admin/tracks', label: t('nav.tracks'), icon: '🎵' },
     { to: '/admin/quizz', label: t('nav.quizz'), icon: '💡' },
+    // feat/reservation-de-creneaux — même entrée, deux destinations.
+    estProprietaire
+      ? { to: '/admin/reservations', label: t('nav.reservations'), icon: '📅' }
+      : { to: '/admin/reserver', label: t('nav.reserver'), icon: '📅' },
     { to: '/admin/settings', label: t('nav.settings'), icon: '⚙️' },
     { to: '/admin/account', label: t('nav.account'), icon: '👤' },
   ];

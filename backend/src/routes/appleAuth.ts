@@ -17,6 +17,7 @@
 
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
+import { isSuperAdminEmail } from '../lib/superAdmin.js';
 import { reserverCompteApple, ParcCompletError } from '../lib/parcComptesApple.js';
 import { prisma } from '../lib/prisma.js';
 import {
@@ -213,7 +214,14 @@ router.get(
       let musicUserToken: string | null = null;
       let expireLe: Date | null = null;
       try {
-        const compte = await reserverCompteApple(session.id);
+        // feat/reservation-de-creneaux — une partie CLIENT ne prend jamais le
+        // dernier compte libre : il reste à la brasserie.
+        const membre = await prisma.workspaceMember.findFirst({
+          where: { user_id: req.userId, workspace_id: workspaceId },
+          select: { role: true },
+        });
+        const estClient = membre?.role === 'CLIENT' && !isSuperAdminEmail(req.userEmail);
+        const compte = await reserverCompteApple(session.id, { garderUnPourLeProprietaire: estClient });
         musicUserToken = compte.music_user_token;
         console.info(
           `[Apple] session=${session.id} → compte du parc « ${compte.libelle} » réservé`,
@@ -222,7 +230,7 @@ router.get(
         if (err instanceof ParcCompletError) {
           // Parc existant mais saturé : on refuse clairement plutôt que de
           // couper le son d'une partie déjà en cours.
-          if (err.comptesTotal > 0) {
+          if (err.comptesTotal > 0 || err.gardePourProprietaire) {
             res.status(409).json({ error: { code: err.code, message: err.message } });
             return;
           }

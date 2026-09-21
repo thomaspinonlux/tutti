@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Outlet, useOutletContext } from 'react-router-dom';
+import { Outlet, useLocation, useOutletContext } from 'react-router-dom';
 import { Sidebar } from '../../components/admin/Sidebar.js';
 import { MobileNav } from '../../components/admin/MobileNav.js';
 // MinScreen retiré — admin utilisable depuis tout écran (iPhone 375px inclus).
@@ -59,6 +59,7 @@ function useFondAdminSombre(): void {
 }
 
 export function AdminLayout(): JSX.Element {
+  const location = useLocation();
   useFondAdminSombre();
   const [establishment, setEstablishment] = useState<Establishment | null>(null);
   const [me, setMe] = useState<MeResponse | null>(null);
@@ -120,7 +121,12 @@ export function AdminLayout(): JSX.Element {
   }, [me]);
 
   // Phase 4e — pending / rejected → écran bloquant
-  if (!meLoading && me && !me.isSuperAdmin) {
+  //
+  // feat/reservation-de-creneaux — SAUF la page de réservation pour un compte
+  // EN ATTENTE : c'est en demandant un créneau qu'un nouveau client se fait
+  // connaître, et l'accord du propriétaire sur ce créneau valide son compte.
+  const surLaReservation = location.pathname.startsWith('/admin/reserver');
+  if (!meLoading && me && !me.isSuperAdmin && !(surLaReservation && me.memberStatus === 'PENDING')) {
     if (me.memberStatus === 'PENDING' || me.memberStatus === 'REJECTED') {
       return (
         <PendingApprovalScreen

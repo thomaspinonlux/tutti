@@ -45,6 +45,9 @@ import youtubeAuthRouter from './routes/youtubeAuth.js';
 import screenStateRouter from './routes/screenState.js';
 import clientLogRouter from './routes/clientLog.js';
 import tvRouter from './routes/tv.js';
+import reservationsRouter from './routes/reservations.js';
+import adminReservationsRouter from './routes/adminReservations.js';
+import stripeWebhookRouter from './routes/stripeWebhook.js';
 import { prisma } from './lib/prisma.js';
 import { initSocketIO } from './socket/index.js';
 
@@ -74,6 +77,9 @@ app.use(
     credentials: true,
   }),
 );
+// feat/reservation-de-creneaux — le webhook Stripe AVANT express.json : sa
+// signature porte sur les octets bruts, que le parseur JSON consommerait.
+app.use('/api/stripe/webhook', stripeWebhookRouter);
 app.use(express.json({ limit: '1mb' }));
 
 // ───── Routes ─────────────────────────────────────────────────────────────
@@ -186,6 +192,11 @@ app.use('/api/auth/youtube', youtubeAuthRouter);
 app.use('/api/workspace', screenStateRouter);
 app.use('/api', clientLogRouter);
 app.use('/api/tv', tvRouter);
+app.use('/api/reservations', reservationsRouter);
+// Hors de /api/admin : ce routeur-là impose le super-admin à tout ce qui y
+// entre, alors que la gestion des réservations relève du propriétaire (même
+// choix que /api/comptes-apple).
+app.use('/api/gestion-reservations', adminReservationsRouter);
 
 // 404 par défaut
 app.use((_req, res) => {

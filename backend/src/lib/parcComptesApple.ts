@@ -22,11 +22,15 @@ export class ParcCompletError extends Error {
   constructor(
     readonly comptesTotal: number,
     readonly comptesOccupes: number,
+    /** Refus parce que le dernier compte libre est gardé pour le propriétaire. */
+    readonly gardePourProprietaire = false,
   ) {
     super(
       comptesTotal === 0
         ? "Aucun compte Apple Music n'est enregistré : ajoutez-en un depuis le back-office."
-        : `Les ${comptesTotal} comptes Apple Music sont déjà utilisés par ${comptesOccupes} parties en cours.`,
+        : gardePourProprietaire
+          ? 'Toutes les parties clientes possibles sont déjà en cours. Réessaie dans un moment.'
+          : `Les ${comptesTotal} comptes Apple Music sont déjà utilisés par ${comptesOccupes} parties en cours.`,
     );
   }
 }
@@ -40,7 +44,17 @@ const SESSIONS_VIVANTES = ['WAITING', 'PLAYING'] as const;
  * La réservation est faite dans une transaction SERIALIZABLE : deux salles qui
  * lancent à la même seconde ne peuvent pas se voir attribuer le même compte.
  */
-export async function reserverCompteApple(sessionId: string): Promise<{
+export async function reserverCompteApple(
+  sessionId: string,
+  options: {
+    /**
+     * feat/reservation-de-creneaux — Thomas : « on garde un compte disponible
+     * pour la brasserie ». Vrai pour une partie CLIENT : elle ne peut pas
+     * prendre le DERNIER compte libre, qui reste au propriétaire.
+     */
+    garderUnPourLeProprietaire?: boolean;
+  } = {},
+): Promise<{
   id: string;
   libelle: string;
   music_user_token: string;
@@ -80,6 +94,13 @@ export async function reserverCompteApple(sessionId: string): Promise<{
       if (!libre) {
         const total = await tx.appleMusicAccount.count({ where: { actif: true } });
         throw new ParcCompletError(total, prisIds.length);
+      }
+      if (options.garderUnPourLeProprietaire) {
+        const libres = await tx.appleMusicAccount.count({ where: { actif: true, id: { notIn: prisIds } } });
+        if (libres <= 1) {
+          const total = await tx.appleMusicAccount.count({ where: { actif: true } });
+          throw new ParcCompletError(total, prisIds.length, true);
+        }
       }
 
       await tx.session.update({

@@ -72,6 +72,20 @@ export function PendingApprovalScreen({ status, email, onApproved }: Props): JSX
             </p>
           )}
 
+          {/* feat/reservation-de-creneaux — un compte en attente peut déjà
+              demander un créneau : l'accord du propriétaire sur ce créneau
+              valide le compte. */}
+          {status === 'PENDING' && (
+            <div className="mt-6">
+              <a
+                href="/admin/reserver"
+                className="inline-block w-full font-display italic font-black text-lg px-5 py-3 border-2 border-ink rounded bg-spritz text-white"
+              >
+                Réserver une partie
+              </a>
+            </div>
+          )}
+
           {status === 'PENDING' && (
             <form onSubmit={handleSubmitCode} className="space-y-3 text-left mt-6">
               <p className="font-mono text-xs uppercase tracking-wider text-ink-soft">
