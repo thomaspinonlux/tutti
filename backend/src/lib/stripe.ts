@@ -83,12 +83,33 @@ export async function creerCheckout(d: CheckoutDemande): Promise<{ id: string; u
     // La réservation est retrouvée par ces métadonnées dans le webhook.
     metadata: { reservation_id: d.reservationId },
     payment_intent_data: { metadata: { reservation_id: d.reservationId } },
+    // feat/stripe-facture-tva — FACTURE ET TVA (revue du 21/09 avec le
+    // planificateur Stripe). Thomas : « on mettra un prix TTC ».
+    //  - le prix saisi à l'acceptation est TTC : la TVA est DANS le prix
+    //    (tax_behavior inclusive), Stripe Tax la calcule et l'affiche ;
+    //  - le bar peut saisir son n° de TVA et sa raison sociale : ils figurent
+    //    sur la facture ;
+    //  - une facture PDF est générée après chaque paiement ;
+    //  - adresse de facturation demandée (nécessaire au calcul de la TVA).
+    // Paramètres validés par une vraie création de session en mode test.
+    customer_creation: 'always',
+    billing_address_collection: 'required',
+    tax_id_collection: { enabled: true },
+    automatic_tax: { enabled: true },
+    invoice_creation: {
+      enabled: true,
+      invoice_data: {
+        description: d.libelle,
+        metadata: { reservation_id: d.reservationId },
+      },
+    },
     line_items: [
       {
         quantity: 1,
         price_data: {
           currency: d.devise,
           unit_amount: d.montantCents,
+          tax_behavior: 'inclusive',
           product_data: { name: d.libelle },
         },
       },
@@ -101,7 +122,7 @@ export async function creerCheckout(d: CheckoutDemande): Promise<{ id: string; u
       Authorization: `Bearer ${cle}`,
       'Content-Type': 'application/x-www-form-urlencoded',
       // Deux clics sur « Payer » ne créent pas deux paiements.
-      'Idempotency-Key': `reservation-${d.reservationId}-${d.montantCents}`,
+      'Idempotency-Key': `reservation-v2-${d.reservationId}-${d.montantCents}`,
     },
     body: corps,
   });

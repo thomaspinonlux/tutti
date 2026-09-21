@@ -60,6 +60,17 @@ router.post('/', express.raw({ type: 'application/json', limit: '1mb' }), async 
       );
     }
   }
+  // feat/stripe-facture-tva — paiement refusé après coup (virement, prélèvement)
+  // ou page de paiement expirée (24 h) : la réservation reste ACCEPTEE, le
+  // client peut repayer ; on le trace pour que ça se voie dans les logs.
+  if (evenement.type === 'checkout.session.async_payment_failed' || evenement.type === 'checkout.session.expired') {
+    const objet = evenement.data?.object ?? {};
+    const metadata = (objet.metadata ?? {}) as Record<string, unknown>;
+    console.warn(
+      `[Stripe] ${evenement.type === 'checkout.session.expired' ? 'page de paiement expirée' : 'paiement ÉCHOUÉ'} réservation=${String(metadata.reservation_id ?? '?')} checkout=${String(objet.id ?? '?')}`,
+    );
+  }
+
   // Toujours 200 une fois la signature vérifiée : sinon Stripe relance en boucle.
   res.json({ recu: true });
 });

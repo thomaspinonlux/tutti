@@ -55,3 +55,14 @@ describe('encodage du formulaire Stripe', () => {
     assert.deepEqual(encoderFormulaire({ a: undefined, b: null, c: 'x' }), ['c=x']);
   });
 });
+
+it('encoderFormulaire — paramètres facture et TVA imbriqués', () => {
+  const corps = encoderFormulaire({
+    automatic_tax: { enabled: true },
+    invoice_creation: { enabled: true, invoice_data: { metadata: { reservation_id: 'r1' } } },
+    line_items: [{ price_data: { tax_behavior: 'inclusive' } }],
+  }).map(decodeURIComponent);
+  assert.ok(corps.includes('automatic_tax[enabled]=true'));
+  assert.ok(corps.includes('invoice_creation[invoice_data][metadata][reservation_id]=r1'));
+  assert.ok(corps.includes('line_items[0][price_data][tax_behavior]=inclusive'));
+});
