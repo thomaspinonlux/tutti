@@ -57,11 +57,13 @@ const NAV: NavItem[] = [
   // fix/admin-users-integration — page super-admin gestion utilisateurs.
   { to: '/admin/users', i18nKey: 'nav.users', icon: <UsersIcon />, superAdminOnly: true },
   // feat/parc-comptes-apple — parc de comptes partagés : propriétaire seul.
+  // fix/menu-comptes-apple — l'entrée était cachée aux super-admins
+  // (hideForSuperAdmin) : Thomas, super-admin ET propriétaire, n'y accédait
+  // que par l'adresse tapée à la main. Visible pour lui désormais.
   {
     to: '/admin/comptes-apple',
     i18nKey: 'nav.comptesApple',
     icon: <CogIcon />,
-    hideForSuperAdmin: true,
     proprietaireSeul: true,
   },
   // feat/reservation-de-creneaux — le propriétaire traite les demandes, le

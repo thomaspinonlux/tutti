@@ -46,6 +46,11 @@ export function MobileNav(): JSX.Element {
     { to: '/admin/settings', label: t('nav.settings'), icon: '⚙️' },
     { to: '/admin/account', label: t('nav.account'), icon: '👤' },
   ];
+  // fix/menu-comptes-apple — le parc Apple Music, accessible aussi sur
+  // tablette / téléphone (propriétaire uniquement, comme dans la colonne).
+  if (estProprietaire) {
+    entries.splice(4, 0, { to: '/admin/comptes-apple', label: t('nav.comptesApple'), icon: '🍎' });
+  }
   if (isSuperAdmin) {
     // fix/admin-users-integration — Users + Modération exposés en mobile aussi.
     entries.push({ to: '/admin/users', label: t('nav.users'), icon: '👥' });
