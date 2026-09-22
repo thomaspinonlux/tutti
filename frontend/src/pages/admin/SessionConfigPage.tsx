@@ -46,9 +46,21 @@ const TEAM_COLORS = [
   '#f5f5dc', // crème
 ] as const;
 const DEFAULT_TEAM_NAMES = [
-  'Pinots', 'Basilics', 'Frambois', 'Citrons', 'Prunes', 'Pamplemousses',
-  'Myrtilles', 'Menthes', 'Noisettes', 'Cerises', 'Lavandes', 'Kiwis',
-  'Pêches', 'Poivres', 'Vanilles',
+  'Pinots',
+  'Basilics',
+  'Frambois',
+  'Citrons',
+  'Prunes',
+  'Pamplemousses',
+  'Myrtilles',
+  'Menthes',
+  'Noisettes',
+  'Cerises',
+  'Lavandes',
+  'Kiwis',
+  'Pêches',
+  'Poivres',
+  'Vanilles',
 ];
 
 function newTeam(idx: number): Team {
@@ -122,7 +134,7 @@ export function SessionConfigPage(): JSX.Element {
         teams_config: mode === 'TEAMS' ? teams : undefined,
         language,
         has_animator: hasAnimator,
-        voice_enabled: vocalActif,
+        voice_enabled: typeDePartie === 'TRACKS' ? vocalActif : undefined,
       });
       // Si une playlist est passée en paramètre, on pré-crée la 1ʳᵉ manche
       // pour qu'elle soit prête au démarrage. L'host n'aura plus qu'à
@@ -144,7 +156,9 @@ export function SessionConfigPage(): JSX.Element {
   return (
     <div className="max-w-3xl mx-auto">
       <TitleHandwritten as="h1" className="mb-3">
-        <Underline>{typeDePartie === 'QUIZZ' ? t('sessionConfig.titleQuiz') : t('sessionConfig.title')}</Underline>
+        <Underline>
+          {typeDePartie === 'QUIZZ' ? t('sessionConfig.titleQuiz') : t('sessionConfig.title')}
+        </Underline>
       </TitleHandwritten>
       {playlistName && (
         <p className="font-editorial italic text-ink-2 mb-8">
@@ -201,51 +215,55 @@ export function SessionConfigPage(): JSX.Element {
         </div>
 
         {/* ── feat/option-vocal : vocal + ecrit, ou ecrit seul ──────── */}
-        <div>
-          <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-3">
-            {t('sessionConfig.answerModeChoice')}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setVocalActif(true)}
-              aria-pressed={vocalActif}
-              className={[
-                'text-left p-5 border-3 rounded shadow-pop transition-all',
-                vocalActif
-                  ? 'border-spritz-deep bg-spritz/10 -rotate-[0.4deg]'
-                  : 'border-hairline bg-cream-2 hover:bg-cream',
-              ].join(' ')}
-            >
-              <p className="font-display text-2xl mb-1">
-                {vocalActif && '✓ '}
-                {t('sessionConfig.modeVoiceTitle')}
-              </p>
-              <p className="font-editorial italic text-sm text-ink-2">
-                {t('sessionConfig.modeVoiceBody')}
-              </p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setVocalActif(false)}
-              aria-pressed={!vocalActif}
-              className={[
-                'text-left p-5 border-3 rounded shadow-pop transition-all',
-                !vocalActif
-                  ? 'border-spritz-deep bg-spritz/10 rotate-[0.4deg]'
-                  : 'border-hairline bg-cream-2 hover:bg-cream',
-              ].join(' ')}
-            >
-              <p className="font-display text-2xl mb-1">
-                {!vocalActif && '✓ '}
-                {t('sessionConfig.modeWrittenTitle')}
-              </p>
-              <p className="font-editorial italic text-sm text-ink-2">
-                {t('sessionConfig.modeWrittenBody')}
-              </p>
-            </button>
+        {/* fix/quiz-sans-choix-vocal — au quiz on répond en touchant ou en
+            écrivant : pas de buzzer vocal, le choix n'a pas de sens. */}
+        {typeDePartie === 'TRACKS' && (
+          <div>
+            <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-3">
+              {t('sessionConfig.answerModeChoice')}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setVocalActif(true)}
+                aria-pressed={vocalActif}
+                className={[
+                  'text-left p-5 border-3 rounded shadow-pop transition-all',
+                  vocalActif
+                    ? 'border-spritz-deep bg-spritz/10 -rotate-[0.4deg]'
+                    : 'border-hairline bg-cream-2 hover:bg-cream',
+                ].join(' ')}
+              >
+                <p className="font-display text-2xl mb-1">
+                  {vocalActif && '✓ '}
+                  {t('sessionConfig.modeVoiceTitle')}
+                </p>
+                <p className="font-editorial italic text-sm text-ink-2">
+                  {t('sessionConfig.modeVoiceBody')}
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setVocalActif(false)}
+                aria-pressed={!vocalActif}
+                className={[
+                  'text-left p-5 border-3 rounded shadow-pop transition-all',
+                  !vocalActif
+                    ? 'border-spritz-deep bg-spritz/10 rotate-[0.4deg]'
+                    : 'border-hairline bg-cream-2 hover:bg-cream',
+                ].join(' ')}
+              >
+                <p className="font-display text-2xl mb-1">
+                  {!vocalActif && '✓ '}
+                  {t('sessionConfig.modeWrittenTitle')}
+                </p>
+                <p className="font-editorial italic text-sm text-ink-2">
+                  {t('sessionConfig.modeWrittenBody')}
+                </p>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <Card>
           <Input
@@ -281,7 +299,9 @@ export function SessionConfigPage(): JSX.Element {
               <p className="text-xs font-mono uppercase tracking-wider text-ink/70">
                 {t('sessionConfig.teams')}
               </p>
-              <span className="font-mono text-xs text-ink-soft">{teams.length}/{MAX_EQUIPES}</span>
+              <span className="font-mono text-xs text-ink-soft">
+                {teams.length}/{MAX_EQUIPES}
+              </span>
             </div>
             <ul className="space-y-2 mb-3">
               {teams.map((team, idx) => (

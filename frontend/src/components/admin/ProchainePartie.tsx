@@ -70,7 +70,8 @@ export function ProchainePartie(): JSX.Element | null {
         mode: 'SOLO',
         language: 'fr',
         has_animator: false,
-        voice_enabled: true,
+        // Choix voix/clavier : blind test seulement (le quiz n'a pas de vocal).
+        voice_enabled: type === 'TRACKS' ? true : undefined,
       });
       navigate(`/host?session=${encodeURIComponent(session.short_code)}`);
     } catch (e: unknown) {
