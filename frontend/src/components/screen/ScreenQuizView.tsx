@@ -6,6 +6,7 @@
  * socket du quiz (la TV n'avait aucune vue quiz : elle restait sur le lobby).
  */
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { CurrentQuestionState } from '@tutti/shared';
 import { QRCode } from '../host/QRCode.js';
 import { getShareableOrigin } from '../../lib/platform.js';
@@ -25,12 +26,13 @@ interface Props {
 const LETTRES = ['A', 'B', 'C', 'D', 'E', 'F'];
 const CORAIL = '#FF5C4D';
 
-function afficherReponse(q: CurrentQuestionState | null, brut: string): string {
-  if (q?.type === 'TRUE_FALSE') return brut === 'true' ? 'Vrai' : brut === 'false' ? 'Faux' : brut;
-  return brut;
-}
 
 export function ScreenQuizView({ joinCode, question, reveal, finDeManche }: Props): JSX.Element {
+  const { t } = useTranslation();
+  const vrai = t('quizTheme.tvTrue');
+  const faux = t('quizTheme.tvFalse');
+  const afficherReponse = (q: CurrentQuestionState | null, brut: string): string =>
+    q?.type === 'TRUE_FALSE' ? (brut === 'true' ? vrai : brut === 'false' ? faux : brut) : brut;
   const [maintenant, setMaintenant] = useState(Date.now());
   useEffect(() => {
     const id = window.setInterval(() => setMaintenant(Date.now()), 250);
@@ -48,7 +50,7 @@ export function ScreenQuizView({ joinCode, question, reveal, finDeManche }: Prop
           Quiz
         </p>
         <h1 className="font-display text-7xl mb-10 text-center">
-          {finDeManche ? 'Fin de la manche' : 'Prochaine question…'}
+          {finDeManche ? t('quizTheme.blockEnded') : t('quizTheme.tvNext')}
         </h1>
         <div className="rounded-2xl bg-white p-4">
           <QRCode value={playUrl} size={220} />
@@ -63,14 +65,14 @@ export function ScreenQuizView({ joinCode, question, reveal, finDeManche }: Prop
   const revele = !!reveal;
   const bonne = reveal ? afficherReponse(question, reveal.reveal.answer) : null;
   const choix =
-    question.type === 'TRUE_FALSE' ? ['Vrai', 'Faux'] : question.type === 'MCQ' ? question.choices : [];
+    question.type === 'TRUE_FALSE' ? [vrai, faux] : question.type === 'MCQ' ? question.choices : [];
   const gagnants = reveal?.results.filter((r) => r.is_correct) ?? [];
 
   return (
     <div className={fond}>
       <div className="absolute top-6 left-8 right-8 flex items-center justify-between">
         <p className="font-mono text-lg uppercase tracking-[0.25em] text-white/60">
-          {question.category ?? 'Quiz'} · Question {question.question_index + 1}
+          {question.category ?? 'Quiz'} · {t('quizTheme.tvQuestion', { n: question.question_index + 1 })}
         </p>
         {!revele && (
           <p className="font-display text-6xl tabular-nums" style={{ color: restant <= 5 ? CORAIL : 'white' }}>
@@ -108,7 +110,7 @@ export function ScreenQuizView({ joinCode, question, reveal, finDeManche }: Prop
           })}
         </ul>
       ) : (
-        !revele && <p className="font-editorial italic text-3xl text-white/60">Réponds sur ton téléphone</p>
+        !revele && <p className="font-editorial italic text-3xl text-white/60">{t('quizTheme.tvAnswerOnPhone')}</p>
       )}
 
       {revele && (
@@ -120,11 +122,13 @@ export function ScreenQuizView({ joinCode, question, reveal, finDeManche }: Prop
           )}
           <p className="font-mono text-xl text-white/70">
             {gagnants.length === 0
-              ? 'Personne n’a trouvé'
-              : `Trouvé par : ${gagnants
-                  .slice(0, 8)
-                  .map((g) => g.pseudo)
-                  .join(', ')}${gagnants.length > 8 ? ` +${gagnants.length - 8}` : ''}`}
+              ? t('quizTheme.tvNobody')
+              : t('quizTheme.tvFoundBy', {
+                  names: `${gagnants
+                    .slice(0, 8)
+                    .map((g) => g.pseudo)
+                    .join(', ')}${gagnants.length > 8 ? ` +${gagnants.length - 8}` : ''}`,
+                })}
           </p>
         </div>
       )}

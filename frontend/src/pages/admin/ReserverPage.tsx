@@ -187,36 +187,36 @@ export function ReserverPage(): JSX.Element {
         <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-4">Nouveau créneau</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
           <label className="block">
-            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">Jour</span>
+            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-ink/70">Jour</span>
             <input
               type="date"
               min={aujourdhui}
               value={jour}
               onChange={(e) => setJour(e.target.value)}
               disabled={occupe}
-              className="w-full px-3 py-2 border-2 rounded bg-white/[0.06] border-white/10 text-white [color-scheme:dark]"
+              className="w-full px-3 py-2 border-2 rounded bg-white border-ink text-ink"
             />
           </label>
           <label className="block">
-            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">Début</span>
+            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-ink/70">Début</span>
             <input
               type="time"
               step={900}
               value={heureDebut}
               onChange={(e) => setHeureDebut(e.target.value)}
               disabled={occupe}
-              className="w-full px-3 py-2 border-2 rounded bg-white/[0.06] border-white/10 text-white [color-scheme:dark]"
+              className="w-full px-3 py-2 border-2 rounded bg-white border-ink text-ink"
             />
           </label>
           <label className="block">
-            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">Fin</span>
+            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-ink/70">Fin</span>
             <input
               type="time"
               step={900}
               value={heureFin}
               onChange={(e) => setHeureFin(e.target.value)}
               disabled={occupe}
-              className="w-full px-3 py-2 border-2 rounded bg-white/[0.06] border-white/10 text-white [color-scheme:dark]"
+              className="w-full px-3 py-2 border-2 rounded bg-white border-ink text-ink"
             />
           </label>
         </div>
@@ -238,7 +238,6 @@ export function ReserverPage(): JSX.Element {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           <Input
-            dark
             label="Code partie offerte (facultatif)"
             value={code}
             onChange={(e) => setCode(e.target.value)}
@@ -246,7 +245,6 @@ export function ReserverPage(): JSX.Element {
             disabled={occupe}
           />
           <Input
-            dark
             label="Message (facultatif)"
             value={message}
             onChange={(e) => setMessage(e.target.value)}

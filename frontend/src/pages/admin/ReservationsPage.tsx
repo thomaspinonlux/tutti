@@ -156,7 +156,6 @@ export function ReservationsPage(): JSX.Element {
                 {!r.code_gratuit && (
                   <div className="w-32">
                     <Input
-                      dark
                       label="Prix (€)"
                       inputMode="decimal"
                       value={prix[r.id] ?? ''}
@@ -208,7 +207,6 @@ export function ReservationsPage(): JSX.Element {
         <div className="flex flex-wrap gap-3 items-end mb-4">
           <div className="flex-1 min-w-[200px]">
             <Input
-              dark
               label="Pour qui / pourquoi"
               value={nouveauCode.note}
               onChange={(e) => setNouveauCode((c) => ({ ...c, note: e.target.value }))}
@@ -218,7 +216,6 @@ export function ReservationsPage(): JSX.Element {
           </div>
           <div className="w-32">
             <Input
-              dark
               label="Utilisations"
               inputMode="numeric"
               value={nouveauCode.utilisations}
@@ -270,7 +267,6 @@ export function ReservationsPage(): JSX.Element {
         <div className="flex flex-wrap gap-3 items-end">
           <div className="w-44">
             <Input
-              dark
               label="Durée min (minutes)"
               inputMode="numeric"
               value={reglages.min}
@@ -280,7 +276,6 @@ export function ReservationsPage(): JSX.Element {
           </div>
           <div className="w-44">
             <Input
-              dark
               label="Durée max (minutes)"
               inputMode="numeric"
               value={reglages.max}
@@ -290,7 +285,6 @@ export function ReservationsPage(): JSX.Element {
           </div>
           <div className="w-52">
             <Input
-              dark
               label="Ouverture avant (minutes)"
               inputMode="numeric"
               value={reglages.ouverture}

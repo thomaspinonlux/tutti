@@ -9,6 +9,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { createSession } from '../../lib/sessions.js';
 import {
   lireReglagesReservation,
@@ -26,6 +27,7 @@ function memeJour(a: Date, b: Date): boolean {
 
 export function ProchainePartie(): JSX.Element | null {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [resa, setResa] = useState<Reservation | null>(null);
   const [ouvertureMin, setOuvertureMin] = useState(30);
   const [maintenant, setMaintenant] = useState(() => new Date());
@@ -57,7 +59,7 @@ export function ProchainePartie(): JSX.Element | null {
   const debut = new Date(resa.debut);
   const ouvreA = new Date(debut.getTime() - ouvertureMin * 60_000);
   const ouvert = maintenant >= ouvreA;
-  const titre = memeJour(debut, maintenant) ? 'Ta partie d’aujourd’hui' : 'Ta prochaine partie';
+  const titre = memeJour(debut, maintenant) ? t('quizTheme.nextToday') : t('quizTheme.nextLater');
 
   const lancer = async (type: 'TRACKS' | 'QUIZZ'): Promise<void> => {
     setEnCours(type);
@@ -84,34 +86,32 @@ export function ProchainePartie(): JSX.Element | null {
 
       {resa.statut === 'ACCEPTEE' ? (
         <>
-          <p className="text-sm mb-3">Créneau accepté : il reste à le régler.</p>
+          <p className="text-sm mb-3">{t('quizTheme.toPay')}</p>
           <Link to="/admin/reserver" className="underline font-semibold">
-            Payer mon créneau →
+            {t('quizTheme.payLink')}
           </Link>
         </>
       ) : ouvert ? (
         <div className="flex flex-wrap gap-2 items-center">
           <Button size="lg" disabled={!!enCours} onClick={() => void lancer('TRACKS')}>
-            {enCours === 'TRACKS' ? '…' : '▶ Lancer le blind test'}
+            {enCours === 'TRACKS' ? '…' : t('quizTheme.launchTracks')}
           </Button>
           <Button size="lg" variant="secondary" disabled={!!enCours} onClick={() => void lancer('QUIZZ')}>
-            {enCours === 'QUIZZ' ? '…' : '▶ Lancer le quiz'}
+            {enCours === 'QUIZZ' ? '…' : t('quizTheme.launchQuiz')}
           </Button>
           <Link to="/admin/sessions/new" className="text-sm underline ml-2">
-            Autres réglages (équipes, animateur…)
+            {t('quizTheme.otherSettings')}
           </Link>
         </div>
       ) : (
         <p className="text-sm">
-          Le bouton « Lancer » apparaît à{' '}
-          <strong>
-            {ouvreA.toLocaleTimeString('fr-FR', {
+          {t('quizTheme.opensAt', {
+            time: ouvreA.toLocaleTimeString(i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR', {
               hour: '2-digit',
               minute: '2-digit',
               timeZone: 'Europe/Luxembourg',
-            })}
-          </strong>
-          .
+            }),
+          })}
         </p>
       )}
       {erreur && (

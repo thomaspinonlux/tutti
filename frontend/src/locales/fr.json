@@ -266,7 +266,8 @@
     "modeVoiceTitle": "À la voix et au clavier",
     "modeVoiceBody": "Les joueurs buzzent et disent leur réponse. Le clavier reste disponible pour ceux qui préfèrent écrire.",
     "modeWrittenTitle": "Au clavier seulement",
-    "modeWrittenBody": "Pas de buzzer vocal, pas de micro demandé : les joueurs tapent leur réponse. Utile en salle bruyante."
+    "modeWrittenBody": "Pas de buzzer vocal, pas de micro demandé : les joueurs tapent leur réponse. Utile en salle bruyante.",
+    "titleQuiz": "Nouveau quiz"
   },
   "rules": {
     "title": "Comment jouer",
@@ -1082,6 +1083,21 @@
     "continue": "Question suivante",
     "addTheme": "Ajouter un thème",
     "hide": "Fermer",
-    "scanToJoin": "Scanne pour jouer"
+    "scanToJoin": "Scanne pour jouer",
+    "tvNext": "Prochaine question…",
+    "tvQuestion": "Question {{n}}",
+    "tvTrue": "Vrai",
+    "tvFalse": "Faux",
+    "tvAnswerOnPhone": "Réponds sur ton téléphone",
+    "tvNobody": "Personne n’a trouvé",
+    "tvFoundBy": "Trouvé par : {{names}}",
+    "nextToday": "Ta partie d’aujourd’hui",
+    "nextLater": "Ta prochaine partie",
+    "toPay": "Créneau accepté : il reste à le régler.",
+    "payLink": "Payer mon créneau →",
+    "launchTracks": "▶ Lancer le blind test",
+    "launchQuiz": "▶ Lancer le quiz",
+    "otherSettings": "Autres réglages (équipes, animateur…)",
+    "opensAt": "Le bouton « Lancer » apparaît à {{time}}."
   }
 }

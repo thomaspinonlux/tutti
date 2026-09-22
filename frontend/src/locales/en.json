@@ -266,7 +266,8 @@
     "modeVoiceTitle": "Voice and keyboard",
     "modeVoiceBody": "Players buzz in and say their answer. The keyboard stays available for those who prefer typing.",
     "modeWrittenTitle": "Keyboard only",
-    "modeWrittenBody": "No voice buzzer, no microphone prompt: players type their answer. Handy in a noisy room."
+    "modeWrittenBody": "No voice buzzer, no microphone prompt: players type their answer. Handy in a noisy room.",
+    "titleQuiz": "New quiz"
   },
   "rules": {
     "title": "How to play",
@@ -1082,6 +1083,21 @@
     "continue": "Next question",
     "addTheme": "Add a theme",
     "hide": "Close",
-    "scanToJoin": "Scan to play"
+    "scanToJoin": "Scan to play",
+    "tvNext": "Next question…",
+    "tvQuestion": "Question {{n}}",
+    "tvTrue": "True",
+    "tvFalse": "False",
+    "tvAnswerOnPhone": "Answer on your phone",
+    "tvNobody": "Nobody got it",
+    "tvFoundBy": "Found by: {{names}}",
+    "nextToday": "Your game today",
+    "nextLater": "Your next game",
+    "toPay": "Slot accepted: payment is still due.",
+    "payLink": "Pay for my slot →",
+    "launchTracks": "▶ Start the blind test",
+    "launchQuiz": "▶ Start the quiz",
+    "otherSettings": "Other settings (teams, animator…)",
+    "opensAt": "The “Start” button appears at {{time}}."
   }
 }

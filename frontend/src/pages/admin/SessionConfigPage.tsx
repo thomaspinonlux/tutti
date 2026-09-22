@@ -144,7 +144,7 @@ export function SessionConfigPage(): JSX.Element {
   return (
     <div className="max-w-3xl mx-auto">
       <TitleHandwritten as="h1" className="mb-3">
-        <Underline>{t('sessionConfig.title')}</Underline>
+        <Underline>{typeDePartie === 'QUIZZ' ? t('sessionConfig.titleQuiz') : t('sessionConfig.title')}</Underline>
       </TitleHandwritten>
       {playlistName && (
         <p className="font-editorial italic text-ink-2 mb-8">
