@@ -226,15 +226,24 @@ router.post(
         });
       }
 
+      // feat/quizz-sans-equipes — LE QUIZ NE SE JOUE PAS EN ÉQUIPE.
+      // Thomas : « pas d'équipe pour quizz - ils feront des équipes avec un
+      // téléphone chacun ». Au quiz, chacun répond sur son écran et marque
+      // pour lui ; les joueurs qui veulent jouer à plusieurs se groupent
+      // autour d'un téléphone. On force donc l'individuel, quoi qu'envoie le
+      // client — un vieil onglet ouvert, par exemple.
+      const enEquipes = parsed.data.game_type !== 'QUIZZ' && parsed.data.mode === 'TEAMS';
+
       const session = await prisma.session.create({
         data: {
           establishment_id: establishment.id,
           name: parsed.data.name ?? null,
           game_type: parsed.data.game_type as GameType,
-          mode: parsed.data.mode as GameMode,
-          teams_config: parsed.data.teams_config
-            ? (parsed.data.teams_config as Prisma.InputJsonValue)
-            : Prisma.JsonNull,
+          mode: (enEquipes ? 'TEAMS' : 'SOLO') as GameMode,
+          teams_config:
+            enEquipes && parsed.data.teams_config
+              ? (parsed.data.teams_config as Prisma.InputJsonValue)
+              : Prisma.JsonNull,
           language: parsed.data.language,
           question_set_id: parsed.data.question_set_id ?? null,
           has_animator: parsed.data.has_animator,
@@ -819,7 +828,10 @@ router.patch(
     try {
       const updateData: Prisma.SessionUpdateInput = {};
       if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-      if (parsed.data.mode) updateData.mode = parsed.data.mode as GameMode;
+      // Le quiz reste en individuel, même si la partie est modifiée après coup.
+      if (parsed.data.mode) {
+        updateData.mode = (own.game_type === 'QUIZZ' ? 'SOLO' : parsed.data.mode) as GameMode;
+      }
       if (parsed.data.teams_config !== undefined) {
         updateData.teams_config = parsed.data.teams_config
           ? (parsed.data.teams_config as Prisma.InputJsonValue)

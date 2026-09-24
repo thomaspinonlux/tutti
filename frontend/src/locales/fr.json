@@ -267,7 +267,8 @@
     "modeVoiceBody": "Les joueurs buzzent et disent leur réponse. Le clavier reste disponible pour ceux qui préfèrent écrire.",
     "modeWrittenTitle": "Au clavier seulement",
     "modeWrittenBody": "Pas de buzzer vocal, pas de micro demandé : les joueurs tapent leur réponse. Utile en salle bruyante.",
-    "titleQuiz": "Nouveau quiz"
+    "titleQuiz": "Nouveau quiz",
+    "modeQuizzHint": "Au quiz, chacun répond sur son téléphone et marque pour lui. Pour jouer à plusieurs, groupez-vous autour d’un seul téléphone."
   },
   "rules": {
     "title": "Comment jouer",

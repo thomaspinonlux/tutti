@@ -267,7 +267,8 @@
     "modeVoiceBody": "Players buzz in and say their answer. The keyboard stays available for those who prefer typing.",
     "modeWrittenTitle": "Keyboard only",
     "modeWrittenBody": "No voice buzzer, no microphone prompt: players type their answer. Handy in a noisy room.",
-    "titleQuiz": "New quiz"
+    "titleQuiz": "New quiz",
+    "modeQuizzHint": "In the quiz everyone answers on their own phone and scores for themselves. To play as a group, gather around a single phone."
   },
   "rules": {
     "title": "How to play",
