@@ -104,7 +104,7 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, is_kicked: true, session_id: true },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
@@ -122,12 +122,17 @@ router.post(
 
     // Si le joueur a déjà une bonne réponse pour ce track, on refuse — il a
     // déjà ses points, pas besoin de re-buzzer.
-    if (hasCorrectAnswer(req.params.roundId, auth.participantId)) {
+    if (hasCorrectAnswer(req.params.roundId, auth.participantId, participant.team_id)) {
       console.info(
         `[Server][Buzz] Refused | session=${req.params.id} | playerId=${auth.participantId} | reason=ALREADY_ANSWERED`,
       );
       res.status(409).json({
-        error: { code: 'ALREADY_ANSWERED', message: 'Tu as déjà trouvé ce morceau' },
+        error: {
+          code: 'ALREADY_ANSWERED',
+          message: participant.team_id
+            ? 'Ton équipe a déjà trouvé ce morceau'
+            : 'Tu as déjà trouvé ce morceau',
+        },
       });
       return;
     }
@@ -220,7 +225,7 @@ router.post(
     }
 
     // Si le joueur a déjà trouvé ce track, on n'enregistre rien (re-buzz tardif).
-    if (hasCorrectAnswer(req.params.roundId, auth.participantId)) {
+    if (hasCorrectAnswer(req.params.roundId, auth.participantId, participant.team_id)) {
       res.json({ matched: false, alreadyAnswered: true });
       return;
     }
@@ -749,7 +754,7 @@ async function runMatchAndCommit(
     };
   }
 
-  if (hasCorrectAnswer(args.roundId, args.participantId)) {
+  if (hasCorrectAnswer(args.roundId, args.participantId, args.participantTeamId)) {
     if (args.persistTranscript) {
       await tracerReponse({
         sessionId: args.sessionId,

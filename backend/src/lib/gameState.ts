@@ -187,9 +187,22 @@ export function closeBuzz(roundId: string, participantId: string): ActiveBuzz | 
  * ce track. Si oui, on ne lui réattribue pas de points (un seul score
  * par track par joueur).
  */
-export function hasCorrectAnswer(roundId: string, participantId: string): boolean {
+export function hasCorrectAnswer(
+  roundId: string,
+  participantId: string,
+  teamId?: string | null,
+): boolean {
   const state = activeTracks.get(roundId);
   if (!state) return false;
+  // feat/equipe-une-seule-reponse — EN ÉQUIPE, C'EST L'ÉQUIPE QUI RÉPOND.
+  // Thomas : tout le monde peut parler dans son téléphone, mais seule la
+  // première bonne réponse de l'équipe compte. Sinon une équipe de six
+  // marquait six fois sur le même morceau.
+  if (teamId) {
+    return state.correct_answers.some(
+      (a) => a.participant_id === participantId || a.team_id === teamId,
+    );
+  }
   return state.correct_answers.some((a) => a.participant_id === participantId);
 }
 
@@ -230,6 +243,11 @@ export function registerCorrectAnswer(
   // fois les points et faisaient reculer d'un rang tous les autres. Le contrôle
   // doit être ici, au moment exact de l'écriture.
   if (state.correct_answers.some((a) => a.participant_id === args.participant_id)) {
+    return null;
+  }
+  // feat/equipe-une-seule-reponse — une équipe ne marque qu'une fois par
+  // morceau : la première bonne réponse de l'équipe ferme la porte aux autres.
+  if (args.team_id && state.correct_answers.some((a) => a.team_id === args.team_id)) {
     return null;
   }
 
