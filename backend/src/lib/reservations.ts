@@ -68,6 +68,12 @@ export interface Reglages {
   duree_min_minutes: number;
   duree_max_minutes: number;
   ouverture_avant_minutes: number;
+  /** feat/reservation-automatique — tarif horaire (0 = non fixé). */
+  tarif_horaire_cents: number;
+  tarif_horaire_soir_cents: number;
+  heure_soiree_debut: number;
+  jours_soiree: string;
+  validation_automatique: boolean;
 }
 
 /** Message lisible si le créneau demandé n'est pas acceptable, sinon null. */

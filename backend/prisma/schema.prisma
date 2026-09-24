@@ -383,6 +383,20 @@ model ReglagesReservation {
   /// Le client peut ouvrir sa partie un peu avant le début, le temps que les
   /// joueurs scannent le QR code.
   ouverture_avant_minutes Int     @default(30)
+  /// feat/reservation-automatique — TARIF À L'HEURE, au prorata des minutes.
+  /// 0 = tarif non fixé : on retombe sur la validation manuelle par le
+  /// propriétaire (aucune réservation ne peut être payée toute seule).
+  tarif_horaire_cents      Int     @default(0)
+  /// Tarif horaire majoré des soirées de fin de semaine.
+  tarif_horaire_soir_cents Int     @default(0)
+  /// Heure (locale Europe/Luxembourg) à partir de laquelle le tarif soirée
+  /// s'applique, les jours listés ci-dessous.
+  heure_soiree_debut       Int     @default(18)
+  /// Jours du tarif soirée, en ISO (1 = lundi … 7 = dimanche), séparés par
+  /// des virgules. Par défaut vendredi et samedi.
+  jours_soiree             String  @default("5,6") @db.VarChar(20)
+  /// true = le client réserve, paie et joue sans intervention du propriétaire.
+  validation_automatique   Boolean @default(false)
   updated_at             DateTime @updatedAt @db.Timestamptz(6)
 
   @@map("reglages_reservation")

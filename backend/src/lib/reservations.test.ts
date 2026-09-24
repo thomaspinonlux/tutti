@@ -13,7 +13,7 @@ import {
 
 const h = (heure: number, minute = 0): Date => new Date(Date.UTC(2026, 9, 2, heure, minute));
 const iv = (a: number, b: number) => ({ debut: h(a), fin: h(b) });
-const reglages = { duree_min_minutes: 60, duree_max_minutes: 360, ouverture_avant_minutes: 30 };
+const reglages = { duree_min_minutes: 60, duree_max_minutes: 360, ouverture_avant_minutes: 30, tarif_horaire_cents: 0, tarif_horaire_soir_cents: 0, heure_soiree_debut: 18, jours_soiree: '5,6', validation_automatique: false };
 
 describe('capacité : un compte reste à la brasserie', () => {
   it('3 comptes → 2 parties clients', () => assert.equal(capaciteClients(3), 2));

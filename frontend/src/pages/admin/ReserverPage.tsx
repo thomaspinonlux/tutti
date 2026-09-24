@@ -25,6 +25,7 @@ import {
   texteCreneau,
   texteMontant,
   verifierDisponibilite,
+  devisCreneau,
   type ReglagesPublics,
   type Reservation,
 } from '../../lib/reservations.js';
@@ -59,6 +60,8 @@ export function ReserverPage(): JSX.Element {
   const [occupe, setOccupe] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  // feat/reservation-automatique — prix calculé pendant la saisie.
+  const [prixCents, setPrixCents] = useState<number | null>(null);
 
   const recharger = useCallback(async (): Promise<void> => {
     try {
@@ -111,6 +114,21 @@ export function ReserverPage(): JSX.Element {
     return () => window.clearTimeout(id);
   }, [creneau, dureeHorsBornes]);
 
+  // Le prix suit le créneau saisi, comme la disponibilité.
+  useEffect(() => {
+    setPrixCents(null);
+    if (!creneau || dureeHorsBornes || !reglages?.tarif_horaire_cents) return;
+    const id = window.setTimeout(() => {
+      devisCreneau(creneau.debut.toISOString(), creneau.fin.toISOString())
+        .then((d) => setPrixCents(d.prix_cents))
+        .catch(() => setPrixCents(null));
+    }, 400);
+    return () => window.clearTimeout(id);
+  }, [creneau, dureeHorsBornes, reglages]);
+
+  const auto = !!reglages?.reservation_automatique;
+  const gratuitAvecCode = code.trim().length > 0;
+
   const envoyer = async (): Promise<void> => {
     if (!creneau) {
       setErreur('Choisis un jour, une heure de début et une heure de fin.');
@@ -120,15 +138,25 @@ export function ReserverPage(): JSX.Element {
     setErreur(null);
     setInfo(null);
     try {
-      await demanderCreneau({
+      const { reservation } = await demanderCreneau({
         debut: creneau.debut.toISOString(),
         fin: creneau.fin.toISOString(),
         message: message.trim() || undefined,
         code: code.trim() || undefined,
       });
-      setInfo('Demande envoyée. Tu recevras un e-mail dès qu’elle sera acceptée.');
       setCode('');
       setMessage('');
+      // Réservation automatique : on enchaîne directement sur le paiement.
+      if (reservation.statut === 'ACCEPTEE' && (reservation.prix_cents ?? 0) > 0) {
+        const { url } = await payerReservation(reservation.id);
+        window.location.href = url;
+        return;
+      }
+      setInfo(
+        reservation.statut === 'GRATUITE'
+          ? 'Créneau confirmé — partie offerte. À très vite !'
+          : 'Demande envoyée. Tu recevras un e-mail dès qu’elle sera acceptée.',
+      );
       await recharger();
     } catch (err: unknown) {
       setErreur((err as Error).message);
@@ -174,6 +202,20 @@ export function ReserverPage(): JSX.Element {
         J, tu ouvres ta partie depuis ton compte
         {reglages ? ` jusqu’à ${reglages.ouverture_avant_minutes} min avant le début` : ''}.
       </p>
+
+      {reglages?.reservation_automatique && (
+        <Card size="lg" className="mb-6">
+          <p className="font-mono text-sm">
+            Réservation immédiate : choisis ton créneau, paie en ligne, et joue. Pas d’accord à attendre.
+          </p>
+          <p className="font-editorial italic text-sm text-ink-soft mt-1">
+            Tarif à l’heure : {(reglages.tarif_horaire_cents / 100).toFixed(2).replace('.', ',')} € de l’heure,
+            {' '}
+            {(reglages.tarif_horaire_soir_cents / 100).toFixed(2).replace('.', ',')} € à partir de{' '}
+            {reglages.heure_soiree_debut} h le vendredi et le samedi.
+          </p>
+        </Card>
+      )}
 
       {reglages && reglages.capacite === 0 && (
         <Card size="lg" className="mb-6">
@@ -236,6 +278,15 @@ export function ReserverPage(): JSX.Element {
           </p>
         )}
 
+        {/* feat/reservation-automatique — le prix s'affiche avant d'envoyer. */}
+        {prixCents !== null && !dureeHorsBornes && (
+          <p className="font-mono text-sm mb-3">
+            Prix : <strong>{(prixCents / 100).toFixed(2).replace('.', ',')} €</strong> TTC
+            {gratuitAvecCode && <span className="text-basil"> — offert avec ton code</span>}
+            {auto && !gratuitAvecCode && <span className="text-ink-soft"> · paiement à l’étape suivante</span>}
+          </p>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           <Input
             dark
@@ -258,7 +309,7 @@ export function ReserverPage(): JSX.Element {
           onClick={() => void envoyer()}
           disabled={occupe || !creneau || dureeHorsBornes || libre === false || reglages?.capacite === 0}
         >
-          {occupe ? 'Envoi…' : 'Demander ce créneau'}
+          {occupe ? 'Envoi…' : auto && !gratuitAvecCode ? 'Réserver et payer' : 'Demander ce créneau'}
         </Button>
       </Card>
 

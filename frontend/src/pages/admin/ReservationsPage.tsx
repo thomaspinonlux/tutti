@@ -34,7 +34,17 @@ export function ReservationsPage(): JSX.Element {
   const [codes, setCodes] = useState<CodeGratuit[]>([]);
   const [prix, setPrix] = useState<Record<string, string>>({});
   const [nouveauCode, setNouveauCode] = useState({ note: '', utilisations: '1' });
-  const [reglages, setReglages] = useState({ min: '', max: '', ouverture: '' });
+  const [reglages, setReglages] = useState({
+    min: '',
+    max: '',
+    ouverture: '',
+    // feat/reservation-automatique — tarif horaire, en euros à l'écran.
+    tarif: '',
+    tarifSoir: '',
+    heureSoir: '',
+    joursSoir: '',
+    auto: false,
+  });
   const [occupe, setOccupe] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -50,6 +60,11 @@ export function ReservationsPage(): JSX.Element {
         min: String(g.duree_min_minutes),
         max: String(g.duree_max_minutes),
         ouverture: String(g.ouverture_avant_minutes),
+        tarif: (g.tarif_horaire_cents / 100).toFixed(2),
+        tarifSoir: (g.tarif_horaire_soir_cents / 100).toFixed(2),
+        heureSoir: String(g.heure_soiree_debut),
+        joursSoir: g.jours_soiree,
+        auto: g.validation_automatique,
       });
     } catch (err: unknown) {
       setErreur((err as Error).message);
@@ -298,6 +313,54 @@ export function ReservationsPage(): JSX.Element {
               disabled={occupe}
             />
           </div>
+          <div className="w-44">
+            <Input
+              dark
+              label="Tarif horaire (€)"
+              inputMode="decimal"
+              value={reglages.tarif}
+              onChange={(e) => setReglages((g) => ({ ...g, tarif: e.target.value }))}
+              disabled={occupe}
+            />
+          </div>
+          <div className="w-52">
+            <Input
+              dark
+              label="Tarif horaire soirée (€)"
+              inputMode="decimal"
+              value={reglages.tarifSoir}
+              onChange={(e) => setReglages((g) => ({ ...g, tarifSoir: e.target.value }))}
+              disabled={occupe}
+            />
+          </div>
+          <div className="w-40">
+            <Input
+              dark
+              label="Soirée à partir de (h)"
+              inputMode="numeric"
+              value={reglages.heureSoir}
+              onChange={(e) => setReglages((g) => ({ ...g, heureSoir: e.target.value }))}
+              disabled={occupe}
+            />
+          </div>
+          <div className="w-48">
+            <Input
+              dark
+              label="Jours soirée (1=lundi)"
+              value={reglages.joursSoir}
+              onChange={(e) => setReglages((g) => ({ ...g, joursSoir: e.target.value }))}
+              disabled={occupe}
+            />
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={reglages.auto}
+              onChange={(e) => setReglages((g) => ({ ...g, auto: e.target.checked }))}
+              disabled={occupe}
+            />
+            Réservation et validation automatiques
+          </label>
           <Button
             onClick={() =>
               void agir(
@@ -306,6 +369,11 @@ export function ReservationsPage(): JSX.Element {
                     duree_min_minutes: Number.parseInt(reglages.min, 10),
                     duree_max_minutes: Number.parseInt(reglages.max, 10),
                     ouverture_avant_minutes: Number.parseInt(reglages.ouverture, 10),
+                    tarif_horaire_cents: Math.round(Number(reglages.tarif.replace(',', '.')) * 100),
+                    tarif_horaire_soir_cents: Math.round(Number(reglages.tarifSoir.replace(',', '.')) * 100),
+                    heure_soiree_debut: Number.parseInt(reglages.heureSoir, 10),
+                    jours_soiree: reglages.joursSoir.trim(),
+                    validation_automatique: reglages.auto,
                   }),
                 'Réglages enregistrés.',
               )
@@ -315,6 +383,9 @@ export function ReservationsPage(): JSX.Element {
             Enregistrer
           </Button>
         </div>
+        <p className="font-editorial italic text-sm text-ink-soft mt-3">
+          Tarif horaire à 0 € = pas de réservation automatique : chaque demande attend ton accord et ton prix.
+        </p>
       </Card>
     </div>
   );

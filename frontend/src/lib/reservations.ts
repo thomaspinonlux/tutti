@@ -33,6 +33,24 @@ export interface ReglagesPublics {
   ouverture_avant_minutes: number;
   capacite: number;
   paiement_ouvert: boolean;
+  /** feat/reservation-automatique — tarif horaire (0 = pas de tarif public). */
+  tarif_horaire_cents: number;
+  tarif_horaire_soir_cents: number;
+  heure_soiree_debut: number;
+  jours_soiree: string;
+  /** true = le client réserve et paie sans attendre notre accord. */
+  reservation_automatique: boolean;
+}
+
+export interface ReglagesGestion {
+  duree_min_minutes: number;
+  duree_max_minutes: number;
+  ouverture_avant_minutes: number;
+  tarif_horaire_cents: number;
+  tarif_horaire_soir_cents: number;
+  heure_soiree_debut: number;
+  jours_soiree: string;
+  validation_automatique: boolean;
 }
 
 export interface CodeGratuit {
@@ -52,6 +70,9 @@ export const lireReglagesReservation = (): Promise<ReglagesPublics> => api('/api
 
 export const verifierDisponibilite = (debut: string, fin: string): Promise<{ libre: boolean }> =>
   api(`/api/reservations/disponibilite?debut=${encodeURIComponent(debut)}&fin=${encodeURIComponent(fin)}`);
+
+export const devisCreneau = (debut: string, fin: string): Promise<{ prix_cents: number | null; automatique: boolean }> =>
+  api(`/api/reservations/devis?debut=${encodeURIComponent(debut)}&fin=${encodeURIComponent(fin)}`);
 
 export const mesReservations = (): Promise<{ reservations: Reservation[] }> => api('/api/reservations/mes');
 
@@ -99,14 +120,10 @@ export const creerCode = (body: {
 export const desactiverCode = (id: string): Promise<unknown> =>
   api(`${G}/codes/${encodeURIComponent(id)}/desactiver`, { method: 'POST' });
 
-export const lireReglagesGestion = (): Promise<Omit<ReglagesPublics, 'capacite' | 'paiement_ouvert'>> =>
-  api(`${G}/reglages`);
+export const lireReglagesGestion = (): Promise<ReglagesGestion> => api(`${G}/reglages`);
 
-export const ecrireReglagesGestion = (body: {
-  duree_min_minutes: number;
-  duree_max_minutes: number;
-  ouverture_avant_minutes: number;
-}): Promise<unknown> => api(`${G}/reglages`, { method: 'PUT', body });
+export const ecrireReglagesGestion = (body: ReglagesGestion): Promise<ReglagesGestion> =>
+  api(`${G}/reglages`, { method: 'PUT', body });
 
 // ── Affichage ──────────────────────────────────────────────────────────────
 

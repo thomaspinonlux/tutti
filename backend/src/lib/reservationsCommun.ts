@@ -20,6 +20,11 @@ export async function lireReglages(): Promise<Reglages> {
     duree_min_minutes: r.duree_min_minutes,
     duree_max_minutes: r.duree_max_minutes,
     ouverture_avant_minutes: r.ouverture_avant_minutes,
+    tarif_horaire_cents: r.tarif_horaire_cents,
+    tarif_horaire_soir_cents: r.tarif_horaire_soir_cents,
+    heure_soiree_debut: r.heure_soiree_debut,
+    jours_soiree: r.jours_soiree,
+    validation_automatique: r.validation_automatique,
   };
 }
 

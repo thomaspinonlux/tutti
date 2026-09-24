@@ -276,8 +276,22 @@ const reglagesSchema = z
     duree_min_minutes: z.number().int().min(15).max(24 * 60),
     duree_max_minutes: z.number().int().min(15).max(24 * 60),
     ouverture_avant_minutes: z.number().int().min(0).max(24 * 60),
+    // feat/reservation-automatique — tarifs et automatisation.
+    tarif_horaire_cents: z.number().int().min(0).max(1_000_000),
+    tarif_horaire_soir_cents: z.number().int().min(0).max(1_000_000),
+    heure_soiree_debut: z.number().int().min(0).max(23),
+    jours_soiree: z
+      .string()
+      .trim()
+      .max(20)
+      .regex(/^([1-7])(,[1-7])*$/, 'Jours de soirée : chiffres de 1 (lundi) à 7, séparés par des virgules'),
+    validation_automatique: z.boolean(),
   })
-  .refine((v) => v.duree_min_minutes <= v.duree_max_minutes, 'Le minimum dépasse le maximum');
+  .refine((v) => v.duree_min_minutes <= v.duree_max_minutes, 'Le minimum dépasse le maximum')
+  .refine(
+    (v) => !v.validation_automatique || v.tarif_horaire_cents > 0,
+    'Fixe un tarif horaire avant d’activer la réservation automatique',
+  );
 
 router.put('/reglages', async (req: Request, res: Response): Promise<void> => {
   const parsed = reglagesSchema.safeParse(req.body);
@@ -294,6 +308,11 @@ router.put('/reglages', async (req: Request, res: Response): Promise<void> => {
     duree_min_minutes: r.duree_min_minutes,
     duree_max_minutes: r.duree_max_minutes,
     ouverture_avant_minutes: r.ouverture_avant_minutes,
+    tarif_horaire_cents: r.tarif_horaire_cents,
+    tarif_horaire_soir_cents: r.tarif_horaire_soir_cents,
+    heure_soiree_debut: r.heure_soiree_debut,
+    jours_soiree: r.jours_soiree,
+    validation_automatique: r.validation_automatique,
   });
 });
 

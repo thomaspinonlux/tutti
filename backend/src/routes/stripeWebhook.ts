@@ -55,6 +55,21 @@ router.post('/', express.raw({ type: 'application/json', limit: '1mb' }), async 
         },
         data: { statut: 'PAYEE', payee_le: new Date(), stripe_payment_intent: paymentIntent },
       });
+      // feat/reservation-automatique — LE PAIEMENT VAUT VALIDATION.
+      // Un nouveau bar qui paie son premier créneau n'attend plus notre
+      // accord : son compte passe d'office en validé.
+      if (maj.count) {
+        const r = await prisma.reservation.findUnique({
+          where: { id: reservationId },
+          select: { workspace_id: true },
+        });
+        if (r) {
+          await prisma.workspaceMember.updateMany({
+            where: { workspace_id: r.workspace_id, status: 'PENDING' },
+            data: { status: 'APPROVED', approved_at: new Date() },
+          });
+        }
+      }
       console.info(
         `[Stripe] paiement encaissé réservation=${reservationId} checkout=${checkoutId} → ${maj.count ? 'PAYEE' : 'déjà traitée ou inconnue'}`,
       );

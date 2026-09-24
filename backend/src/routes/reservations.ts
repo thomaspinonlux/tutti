@@ -26,6 +26,7 @@ import {
   verifierCreneau,
 } from '../lib/reservations.js';
 import { creerCheckout, stripeConfigure, StripeError } from '../lib/stripe.js';
+import { calculerPrixCents, reservationAutomatique } from '../lib/tarifs.js';
 import { getNotificationRecipients, sendNotificationEmail } from '../lib/email.js';
 import { lireReglages, publierReservation, texteCreneau } from '../lib/reservationsCommun.js';
 
@@ -41,6 +42,17 @@ async function membreCourant(userId: string): Promise<{ workspace_id: string; em
   });
 }
 
+/**
+ * feat/reservation-automatique — le paiement (ou un code offert) vaut
+ * validation du compte : plus personne n'attend un accord manuel.
+ */
+async function approuverMembres(workspaceId: string): Promise<void> {
+  await prisma.workspaceMember.updateMany({
+    where: { workspace_id: workspaceId, status: 'PENDING' },
+    data: { status: 'APPROVED', approved_at: new Date() },
+  });
+}
+
 /** Bornes de durée + capacité, pour que l'écran les affiche. */
 router.get('/reglages', async (_req: Request, res: Response): Promise<void> => {
   const [reglages, comptes] = await Promise.all([
@@ -53,6 +65,13 @@ router.get('/reglages', async (_req: Request, res: Response): Promise<void> => {
     ouverture_avant_minutes: reglages.ouverture_avant_minutes,
     capacite: capaciteClients(comptes),
     paiement_ouvert: stripeConfigure(),
+    // feat/reservation-automatique — le client voit le tarif et sait s'il
+    // peut réserver et payer sans attendre notre accord.
+    tarif_horaire_cents: reglages.tarif_horaire_cents,
+    tarif_horaire_soir_cents: reglages.tarif_horaire_soir_cents,
+    heure_soiree_debut: reglages.heure_soiree_debut,
+    jours_soiree: reglages.jours_soiree,
+    reservation_automatique: reservationAutomatique(reglages) && stripeConfigure(),
   });
 });
 
@@ -93,6 +112,18 @@ router.get('/mes', async (req: Request, res: Response): Promise<void> => {
     include: { code_gratuit: { select: { code: true } } },
   });
   res.json({ reservations: lignes.map(publierReservation) });
+});
+
+/** Prix d'un créneau, calculé au prorata des heures (null si tarif non fixé). */
+router.get('/devis', async (req: Request, res: Response): Promise<void> => {
+  const parsed = creneauSchema.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'debut et fin requis' } });
+    return;
+  }
+  const reglages = await lireReglages();
+  const prix = calculerPrixCents(new Date(parsed.data.debut), new Date(parsed.data.fin), reglages);
+  res.json({ prix_cents: prix, automatique: reservationAutomatique(reglages) && stripeConfigure() });
 });
 
 const demandeSchema = creneauSchema.extend({
@@ -148,6 +179,15 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  // feat/reservation-automatique — QUAND LE TARIF EST FIXÉ, PERSONNE N'ATTEND.
+  // Le prix se calcule à l'heure, la demande naît ACCEPTEE (donc payable tout
+  // de suite), et le paiement vaut validation du compte. Avec un code offert,
+  // la partie est confirmée sur-le-champ. Sans tarif ni validation
+  // automatique, on retombe sur la demande classique, décidée à la main.
+  const auto = reservationAutomatique(reglages) && stripeConfigure();
+  const prixAuto = auto ? calculerPrixCents(c.debut, c.fin, reglages) : null;
+  const offerte = auto && codeId !== null;
+
   const reservation = await prisma.reservation.create({
     data: {
       workspace_id: membre.workspace_id,
@@ -157,22 +197,41 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       fin: c.fin,
       message_client: parsed.data.message || null,
       code_gratuit_id: codeId,
+      ...(offerte
+        ? { statut: 'GRATUITE' as const, prix_cents: 0, decidee_le: new Date() }
+        : prixAuto !== null
+          ? { statut: 'ACCEPTEE' as const, prix_cents: prixAuto, decidee_le: new Date() }
+          : {}),
     },
     include: { code_gratuit: { select: { code: true } } },
   });
+
+  // Partie offerte : le code est consommé et le compte est validé tout de
+  // suite — il n'y aura pas de paiement pour le faire.
+  if (offerte && codeId) {
+    await prisma.codeGratuit.update({
+      where: { id: codeId },
+      data: { utilisations: { increment: 1 } },
+    });
+    await approuverMembres(membre.workspace_id);
+  }
 
   // Le propriétaire est prévenu : c'est lui qui décide.
   const duree = formaterDuree(Math.round((c.fin.getTime() - c.debut.getTime()) / 60_000));
   void sendNotificationEmail({
     to: getNotificationRecipients(),
-    subject: `Tutti — nouvelle demande de créneau (${texteCreneau(c.debut, c.fin)})`,
+    subject: auto
+      ? `Tutti — créneau réservé (${texteCreneau(c.debut, c.fin)})`
+      : `Tutti — nouvelle demande de créneau (${texteCreneau(c.debut, c.fin)})`,
     html:
       `<p>Nouvelle demande de <strong>${echapper(reservation.demandeur_email ?? 'client')}</strong>.</p>` +
       `<p>Créneau : <strong>${texteCreneau(c.debut, c.fin)}</strong> (${duree})` +
       (codeId ? ` — <strong>code gratuit</strong>` : '') +
       `</p>` +
       (reservation.message_client ? `<p>Message : ${echapper(reservation.message_client)}</p>` : '') +
-      `<p>À accepter ou refuser dans le back-office, rubrique Réservations.</p>`,
+      (auto
+        ? `<p>Réservation automatique : rien à faire. ${offerte ? 'Partie offerte (code).' : 'Le client paie en ligne.'}</p>`
+        : `<p>À accepter ou refuser dans le back-office, rubrique Réservations.</p>`),
   }).catch(() => undefined);
 
   res.status(201).json({ reservation: publierReservation(reservation) });
