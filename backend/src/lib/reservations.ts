@@ -59,7 +59,11 @@ export function picSimultane(existants: Intervalle[], fenetre: Intervalle): numb
 }
 
 /** Y a-t-il de la place pour `nouveau` à côté des créneaux déjà pris ? */
-export function aDeLaPlace(existants: Intervalle[], nouveau: Intervalle, capacite: number): boolean {
+export function aDeLaPlace(
+  existants: Intervalle[],
+  nouveau: Intervalle,
+  capacite: number,
+): boolean {
   if (capacite <= 0) return false;
   return picSimultane(existants, nouveau) < capacite;
 }
@@ -74,10 +78,22 @@ export interface Reglages {
   heure_soiree_debut: number;
   jours_soiree: string;
   validation_automatique: boolean;
+  /** feat/client-avec-son-compte — grille réduite + validation des comptes. */
+  tarif_horaire_propre_cents: number;
+  tarif_horaire_propre_soir_cents: number;
+  validation_auto_comptes: boolean;
+  /** feat/offre-de-lancement — remise visible sur la page de réservation. */
+  reduction_pct: number;
+  reduction_libelle: string;
+  reduction_fin: Date | null;
 }
 
 /** Message lisible si le créneau demandé n'est pas acceptable, sinon null. */
-export function verifierCreneau(c: Intervalle, reglages: Reglages, maintenant = new Date()): string | null {
+export function verifierCreneau(
+  c: Intervalle,
+  reglages: Reglages,
+  maintenant = new Date(),
+): string | null {
   if (Number.isNaN(c.debut.getTime()) || Number.isNaN(c.fin.getTime())) {
     return 'Date invalide.';
   }
@@ -98,7 +114,11 @@ export function verifierCreneau(c: Intervalle, reglages: Reglages, maintenant = 
 }
 
 /** Le client peut-il lancer sa partie maintenant, pour ce créneau ? */
-export function creneauOuvert(c: Intervalle, ouvertureAvantMinutes: number, maintenant = new Date()): boolean {
+export function creneauOuvert(
+  c: Intervalle,
+  ouvertureAvantMinutes: number,
+  maintenant = new Date(),
+): boolean {
   const ouverture = c.debut.getTime() - ouvertureAvantMinutes * 60_000;
   return maintenant.getTime() >= ouverture && maintenant.getTime() <= c.fin.getTime();
 }
@@ -121,6 +141,9 @@ const ALPHABET_CODE = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 /** Code gratuit lisible à l'oral : TUTTI-XXXX-XXXX. */
 export function genererCode(aleatoire: () => number = Math.random): string {
   const bloc = (): string =>
-    Array.from({ length: 4 }, () => ALPHABET_CODE[Math.floor(aleatoire() * ALPHABET_CODE.length)]).join('');
+    Array.from(
+      { length: 4 },
+      () => ALPHABET_CODE[Math.floor(aleatoire() * ALPHABET_CODE.length)],
+    ).join('');
   return `TUTTI-${bloc()}-${bloc()}`;
 }

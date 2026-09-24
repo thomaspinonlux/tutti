@@ -34,7 +34,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
     const members = await prisma.workspaceMember.findMany({
       orderBy: { created_at: 'desc' },
       include: {
-        workspace: { select: { id: true, name: true, plan: true } },
+        workspace: { select: { id: true, name: true, plan: true, compte_apple_propre: true } },
       },
     });
 
@@ -143,6 +143,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
         tier: m.workspace.plan === 'FREE' ? 'free' : 'premium',
         can_use_tracks: m.can_use_tracks,
         can_use_quizz: m.can_use_quizz,
+        compte_apple_propre: m.workspace.compte_apple_propre,
         workspace: m.workspace,
         sessions_total: totalByWs.get(m.workspace_id) ?? 0,
         sessions_this_month: monthByWs.get(m.workspace_id) ?? 0,
@@ -279,6 +280,7 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response): Promise<
         tier: m.workspace.plan === 'FREE' ? 'free' : 'premium',
         can_use_tracks: m.can_use_tracks,
         can_use_quizz: m.can_use_quizz,
+        compte_apple_propre: m.workspace.compte_apple_propre,
         referral_code: m.referral_code,
         referrer_code: m.referrer_code,
         workspace: {
@@ -323,6 +325,9 @@ const patchBody = z.object({
   // feat/granular-tracks-quizz-access — toggles par mode
   can_use_tracks: z.boolean().optional(),
   can_use_quizz: z.boolean().optional(),
+  /** feat/client-avec-son-compte — cette maison joue avec SON abonnement Apple
+   *  Music : aucun compte du parc mobilisé, grille réduite. */
+  compte_apple_propre: z.boolean().optional(),
 });
 
 router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
@@ -352,6 +357,32 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promis
   if (parsed.data.can_use_quizz !== undefined) {
     data.can_use_quizz = parsed.data.can_use_quizz;
   }
+  // Le réglage porte sur l'ESPACE, pas sur le membre : tous les animateurs de
+  // la maison jouent avec le même abonnement.
+  if (parsed.data.compte_apple_propre !== undefined) {
+    await prisma.workspace.update({
+      where: { id: exists.workspace_id },
+      data: { compte_apple_propre: parsed.data.compte_apple_propre },
+    });
+    console.info(
+      `[Admin] espace ${exists.workspace_id} → compte Apple du client = ${parsed.data.compte_apple_propre} (par ${req.userEmail})`,
+    );
+    if (Object.keys(data).length === 0) {
+      res.json({
+        user: {
+          id: exists.id,
+          is_blocked: exists.is_blocked,
+          blocked_at: exists.blocked_at?.toISOString() ?? null,
+          freemium_sessions_count: exists.freemium_sessions_count,
+          freemium_period_start: exists.freemium_period_start.toISOString(),
+          can_use_tracks: exists.can_use_tracks,
+          can_use_quizz: exists.can_use_quizz,
+          compte_apple_propre: parsed.data.compte_apple_propre,
+        },
+      });
+      return;
+    }
+  }
   if (Object.keys(data).length === 0) {
     res.status(400).json({ error: { code: 'NO_CHANGES', message: 'Aucun changement' } });
     return;
@@ -372,6 +403,7 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promis
       freemium_period_start: updated.freemium_period_start.toISOString(),
       can_use_tracks: updated.can_use_tracks,
       can_use_quizz: updated.can_use_quizz,
+      compte_apple_propre: parsed.data.compte_apple_propre,
     },
   });
 });

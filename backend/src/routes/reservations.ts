@@ -26,7 +26,7 @@ import {
   verifierCreneau,
 } from '../lib/reservations.js';
 import { creerCheckout, stripeConfigure, StripeError } from '../lib/stripe.js';
-import { calculerPrixCents, reservationAutomatique } from '../lib/tarifs.js';
+import { calculerDevis, reductionActive, reservationAutomatique } from '../lib/tarifs.js';
 import { getNotificationRecipients, sendNotificationEmail } from '../lib/email.js';
 import { lireReglages, publierReservation, texteCreneau } from '../lib/reservationsCommun.js';
 
@@ -34,12 +34,25 @@ const router: Router = Router();
 router.use(requireAuth);
 
 /** Le membre de l'utilisateur connecté, QUEL QUE SOIT son statut. */
-async function membreCourant(userId: string): Promise<{ workspace_id: string; email: string | null } | null> {
-  return prisma.workspaceMember.findFirst({
+async function membreCourant(
+  userId: string,
+): Promise<{ workspace_id: string; email: string | null; compte_apple_propre: boolean } | null> {
+  const m = await prisma.workspaceMember.findFirst({
     where: { user_id: userId },
     orderBy: { created_at: 'asc' },
-    select: { workspace_id: true, email: true },
+    select: {
+      workspace_id: true,
+      email: true,
+      workspace: { select: { compte_apple_propre: true } },
+    },
   });
+  return m
+    ? {
+        workspace_id: m.workspace_id,
+        email: m.email,
+        compte_apple_propre: m.workspace.compte_apple_propre,
+      }
+    : null;
 }
 
 /**
@@ -72,6 +85,12 @@ router.get('/reglages', async (_req: Request, res: Response): Promise<void> => {
     heure_soiree_debut: reglages.heure_soiree_debut,
     jours_soiree: reglages.jours_soiree,
     reservation_automatique: reservationAutomatique(reglages) && stripeConfigure(),
+    // feat/offre-de-lancement — le client doit VOIR la remise.
+    reduction_pct: reductionActive(reglages) ? reglages.reduction_pct : 0,
+    reduction_libelle: reductionActive(reglages) ? reglages.reduction_libelle : '',
+    reduction_fin: reductionActive(reglages)
+      ? (reglages.reduction_fin?.toISOString() ?? null)
+      : null,
   });
 });
 
@@ -91,7 +110,14 @@ router.get('/disponibilite', async (req: Request, res: Response): Promise<void> 
   const [comptes, pris] = await Promise.all([
     prisma.appleMusicAccount.count({ where: { actif: true } }),
     prisma.reservation.findMany({
-      where: { statut: { in: [...STATUTS_QUI_OCCUPENT] }, debut: { lt: c.fin }, fin: { gt: c.debut } },
+      where: {
+        statut: { in: [...STATUTS_QUI_OCCUPENT] },
+        // feat/client-avec-son-compte — une partie jouée avec le compte du
+        // client ne prend aucune place dans le parc.
+        compte_client: false,
+        debut: { lt: c.fin },
+        fin: { gt: c.debut },
+      },
       select: { debut: true, fin: true },
     }),
   ]);
@@ -121,9 +147,20 @@ router.get('/devis', async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'debut et fin requis' } });
     return;
   }
-  const reglages = await lireReglages();
-  const prix = calculerPrixCents(new Date(parsed.data.debut), new Date(parsed.data.fin), reglages);
-  res.json({ prix_cents: prix, automatique: reservationAutomatique(reglages) && stripeConfigure() });
+  const [reglages, membre] = await Promise.all([lireReglages(), membreCourant(req.userId!)]);
+  const compteClient = membre?.compte_apple_propre ?? false;
+  const devis = calculerDevis(new Date(parsed.data.debut), new Date(parsed.data.fin), reglages, {
+    compteClient,
+  });
+  res.json({
+    prix_cents: devis?.prix_cents ?? null,
+    prix_plein_cents: devis?.prix_plein_cents ?? null,
+    reduction_pct: devis?.reduction_pct ?? 0,
+    reduction_libelle: devis?.reduction_libelle ?? '',
+    reduction_fin: devis?.reduction_fin ?? null,
+    automatique: reservationAutomatique(reglages) && stripeConfigure(),
+    compte_client: compteClient,
+  });
 });
 
 const demandeSchema = creneauSchema.extend({
@@ -140,7 +177,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   }
   const membre = await membreCourant(req.userId!);
   if (!membre) {
-    res.status(404).json({ error: { code: 'NO_WORKSPACE', message: 'Compte incomplet : reconnecte-toi.' } });
+    res
+      .status(404)
+      .json({ error: { code: 'NO_WORKSPACE', message: 'Compte incomplet : reconnecte-toi.' } });
     return;
   }
   const c = { debut: new Date(parsed.data.debut), fin: new Date(parsed.data.fin) };
@@ -155,10 +194,14 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   // CONSOMMÉ seulement à l'acceptation — un refus ne brûle pas le code.
   let codeId: string | null = null;
   if (parsed.data.code) {
-    const code = await prisma.codeGratuit.findUnique({ where: { code: normaliserCode(parsed.data.code) } });
+    const code = await prisma.codeGratuit.findUnique({
+      where: { code: normaliserCode(parsed.data.code) },
+    });
     const expire = code?.expire_le && code.expire_le.getTime() < Date.now();
     if (!code || !code.actif || expire || code.utilisations >= code.utilisations_max) {
-      res.status(400).json({ error: { code: 'CODE_INVALIDE', message: 'Ce code gratuit n’est pas valable.' } });
+      res
+        .status(400)
+        .json({ error: { code: 'CODE_INVALIDE', message: 'Ce code gratuit n’est pas valable.' } });
       return;
     }
     codeId = code.id;
@@ -168,13 +211,22 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   const [comptes, pris] = await Promise.all([
     prisma.appleMusicAccount.count({ where: { actif: true } }),
     prisma.reservation.findMany({
-      where: { statut: { in: [...STATUTS_QUI_OCCUPENT] }, debut: { lt: c.fin }, fin: { gt: c.debut } },
+      where: {
+        statut: { in: [...STATUTS_QUI_OCCUPENT] },
+        compte_client: false,
+        debut: { lt: c.fin },
+        fin: { gt: c.debut },
+      },
       select: { debut: true, fin: true },
     }),
   ]);
-  if (!aDeLaPlace(pris, c, capaciteClients(comptes))) {
+  // Avec son propre compte Apple Music, le client ne dépend pas du parc.
+  if (!membre.compte_apple_propre && !aDeLaPlace(pris, c, capaciteClients(comptes))) {
     res.status(409).json({
-      error: { code: 'CRENEAU_COMPLET', message: 'Ce créneau est complet. Choisis un autre horaire.' },
+      error: {
+        code: 'CRENEAU_COMPLET',
+        message: 'Ce créneau est complet. Choisis un autre horaire.',
+      },
     });
     return;
   }
@@ -185,7 +237,10 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   // la partie est confirmée sur-le-champ. Sans tarif ni validation
   // automatique, on retombe sur la demande classique, décidée à la main.
   const auto = reservationAutomatique(reglages) && stripeConfigure();
-  const prixAuto = auto ? calculerPrixCents(c.debut, c.fin, reglages) : null;
+  const devisAuto = auto
+    ? calculerDevis(c.debut, c.fin, reglages, { compteClient: membre.compte_apple_propre })
+    : null;
+  const prixAuto = devisAuto?.prix_cents ?? null;
   const offerte = auto && codeId !== null;
 
   const reservation = await prisma.reservation.create({
@@ -197,10 +252,17 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       fin: c.fin,
       message_client: parsed.data.message || null,
       code_gratuit_id: codeId,
+      compte_client: membre.compte_apple_propre,
       ...(offerte
         ? { statut: 'GRATUITE' as const, prix_cents: 0, decidee_le: new Date() }
         : prixAuto !== null
-          ? { statut: 'ACCEPTEE' as const, prix_cents: prixAuto, decidee_le: new Date() }
+          ? {
+              statut: 'ACCEPTEE' as const,
+              prix_cents: prixAuto,
+              prix_plein_cents:
+                devisAuto && devisAuto.reduction_pct > 0 ? devisAuto.prix_plein_cents : null,
+              decidee_le: new Date(),
+            }
           : {}),
     },
     include: { code_gratuit: { select: { code: true } } },
@@ -228,7 +290,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       `<p>Créneau : <strong>${texteCreneau(c.debut, c.fin)}</strong> (${duree})` +
       (codeId ? ` — <strong>code gratuit</strong>` : '') +
       `</p>` +
-      (reservation.message_client ? `<p>Message : ${echapper(reservation.message_client)}</p>` : '') +
+      (reservation.message_client
+        ? `<p>Message : ${echapper(reservation.message_client)}</p>`
+        : '') +
       (auto
         ? `<p>Réservation automatique : rien à faire. ${offerte ? 'Partie offerte (code).' : 'Le client paie en ligne.'}</p>`
         : `<p>À accepter ou refuser dans le back-office, rubrique Réservations.</p>`),
@@ -247,7 +311,10 @@ router.post('/:id/annuler', async (req: Request<{ id: string }>, res: Response):
   }
   if (r.statut !== 'DEMANDEE' && r.statut !== 'ACCEPTEE') {
     res.status(409).json({
-      error: { code: 'NON_ANNULABLE', message: 'Cette réservation ne peut plus être annulée ici : contacte-nous.' },
+      error: {
+        code: 'NON_ANNULABLE',
+        message: 'Cette réservation ne peut plus être annulée ici : contacte-nous.',
+      },
     });
     return;
   }
@@ -264,7 +331,9 @@ router.post('/:id/payer', async (req: Request<{ id: string }>, res: Response): P
     return;
   }
   if (r.statut !== 'ACCEPTEE' || !r.prix_cents || r.prix_cents <= 0) {
-    res.status(409).json({ error: { code: 'NON_PAYABLE', message: 'Rien à payer pour cette réservation.' } });
+    res
+      .status(409)
+      .json({ error: { code: 'NON_PAYABLE', message: 'Rien à payer pour cette réservation.' } });
     return;
   }
   if (!stripeConfigure()) {
@@ -284,7 +353,10 @@ router.post('/:id/payer', async (req: Request<{ id: string }>, res: Response): P
       urlSucces: `${site}/reserver?paiement=ok&r=${r.id}`,
       urlAnnulation: `${site}/reserver?paiement=annule&r=${r.id}`,
     });
-    await prisma.reservation.update({ where: { id: r.id }, data: { stripe_checkout_id: checkout.id } });
+    await prisma.reservation.update({
+      where: { id: r.id },
+      data: { stripe_checkout_id: checkout.id },
+    });
     res.json({ url: checkout.url });
   } catch (err: unknown) {
     const message = err instanceof StripeError ? err.message : 'Paiement indisponible';
@@ -294,7 +366,10 @@ router.post('/:id/payer', async (req: Request<{ id: string }>, res: Response): P
 });
 
 function echapper(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+  );
 }
 
 export default router;

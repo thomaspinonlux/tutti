@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { calculerPrixCents, estSoiree, jourEtHeureLocale } from './tarifs.js';
+import { calculerDevis, calculerPrixCents, estSoiree, jourEtHeureLocale } from './tarifs.js';
 
 const R = {
   tarif_horaire_cents: 2000,
@@ -8,6 +8,12 @@ const R = {
   heure_soiree_debut: 18,
   jours_soiree: '5,6',
   validation_automatique: true,
+  tarif_horaire_propre_cents: 1200,
+  tarif_horaire_propre_soir_cents: 1800,
+  validation_auto_comptes: false,
+  reduction_pct: 0,
+  reduction_libelle: '',
+  reduction_fin: null,
 };
 
 describe('tarifs', () => {
@@ -57,5 +63,62 @@ describe('tarifs', () => {
       tarif_horaire_cents: 0,
     });
     assert.equal(prix, null);
+  });
+
+  it('applique la grille réduite au client qui a son compte', () => {
+    const prix = calculerPrixCents(
+      new Date('2026-09-23T17:00:00Z'),
+      new Date('2026-09-23T20:00:00Z'),
+      R,
+      { compteClient: true },
+    );
+    assert.equal(prix, 3600); // 3 h × 12 €
+  });
+
+  it('grille réduite non fixée → grille normale', () => {
+    const prix = calculerPrixCents(
+      new Date('2026-09-23T17:00:00Z'),
+      new Date('2026-09-23T20:00:00Z'),
+      { ...R, tarif_horaire_propre_cents: 0 },
+      { compteClient: true },
+    );
+    assert.equal(prix, 6000);
+  });
+
+  it('applique l’offre de lancement et garde le prix plein visible', () => {
+    const devis = calculerDevis(
+      new Date('2026-09-23T17:00:00Z'),
+      new Date('2026-09-23T20:00:00Z'),
+      { ...R, reduction_pct: 50, reduction_libelle: 'Offre de lancement' },
+    );
+    assert.equal(devis?.prix_plein_cents, 6000);
+    assert.equal(devis?.prix_cents, 3000);
+    assert.equal(devis?.reduction_libelle, 'Offre de lancement');
+  });
+
+  it('ignore une offre terminée', () => {
+    const devis = calculerDevis(
+      new Date('2026-09-23T17:00:00Z'),
+      new Date('2026-09-23T20:00:00Z'),
+      {
+        ...R,
+        reduction_pct: 50,
+        reduction_libelle: 'Offre de lancement',
+        reduction_fin: new Date('2026-09-01T00:00:00Z'),
+      },
+      { maintenant: new Date('2026-09-23T10:00:00Z') },
+    );
+    assert.equal(devis?.prix_cents, 6000);
+    assert.equal(devis?.reduction_pct, 0);
+  });
+
+  it('cumule remise et grille réduite du client avec son compte', () => {
+    const prix = calculerPrixCents(
+      new Date('2026-09-23T17:00:00Z'),
+      new Date('2026-09-23T20:00:00Z'),
+      { ...R, reduction_pct: 25 },
+      { compteClient: true },
+    );
+    assert.equal(prix, 2700); // 3 h × 12 € − 25 %
   });
 });

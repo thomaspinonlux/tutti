@@ -144,6 +144,23 @@ export function UserDetailPage(): JSX.Element {
     }
   };
 
+  // feat/client-avec-son-compte — bascule la maison sur son propre abonnement.
+  const handleToggleCompteApple = async (): Promise<void> => {
+    if (!user) return;
+    setBusy(true);
+    try {
+      const res = await patchAdminUser(user.id, { compte_apple_propre: !user.compte_apple_propre });
+      const actif = res.compte_apple_propre ?? !user.compte_apple_propre;
+      setUser({ ...user, compte_apple_propre: actif });
+      setSavedFlash(`Compte Apple Music du client ${actif ? 'activé' : 'désactivé'} ✓`);
+      window.setTimeout(() => setSavedFlash(null), 2500);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleResetFreemium = async (): Promise<void> => {
     if (!user) return;
     if (
@@ -266,6 +283,21 @@ export function UserDetailPage(): JSX.Element {
               disabled={busy}
               onChange={() => void handleToggleQuizz()}
               className="w-6 h-6 cursor-pointer accent-basil"
+            />
+          </label>
+          <label className="flex items-center justify-between p-3 border-2 border-hairline rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
+            <div>
+              <p className="font-display text-base">🍎 Compte Apple Music du client</p>
+              <p className="font-editorial italic text-xs text-ink-soft">
+                Il joue avec son propre abonnement : aucun compte du parc mobilisé, tarif réduit.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={user.compte_apple_propre}
+              disabled={busy}
+              onChange={() => void handleToggleCompteApple()}
+              className="w-6 h-6 cursor-pointer accent-spritz"
             />
           </label>
         </div>

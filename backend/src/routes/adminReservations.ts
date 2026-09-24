@@ -66,7 +66,9 @@ const accepterSchema = z.object({
 router.post('/:id/accepter', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   const parsed = accepterSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Prix requis (en centimes)' } });
+    res
+      .status(400)
+      .json({ error: { code: 'VALIDATION_ERROR', message: 'Prix requis (en centimes)' } });
     return;
   }
   try {
@@ -96,9 +98,14 @@ router.post('/:id/accepter', async (req: Request<{ id: string }>, res: Response)
           const code = await tx.codeGratuit.findUnique({ where: { id: r.code_gratuit_id } });
           const expire = code?.expire_le && code.expire_le.getTime() < Date.now();
           if (!code || !code.actif || expire || code.utilisations >= code.utilisations_max) {
-            throw new Error("Le code gratuit de cette demande n'est plus valable : fixe un prix ou refuse.");
+            throw new Error(
+              "Le code gratuit de cette demande n'est plus valable : fixe un prix ou refuse.",
+            );
           }
-          await tx.codeGratuit.update({ where: { id: code.id }, data: { utilisations: { increment: 1 } } });
+          await tx.codeGratuit.update({
+            where: { id: code.id },
+            data: { utilisations: { increment: 1 } },
+          });
           gratuite = true;
         }
 
@@ -156,7 +163,9 @@ router.post('/:id/accepter', async (req: Request<{ id: string }>, res: Response)
       return;
     }
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2034') {
-      res.status(409).json({ error: { code: 'CONFLIT', message: 'Deux décisions en même temps : réessaie.' } });
+      res
+        .status(409)
+        .json({ error: { code: 'CONFLIT', message: 'Deux décisions en même temps : réessaie.' } });
       return;
     }
     const message = err instanceof Error ? err.message : 'Erreur';
@@ -175,12 +184,19 @@ router.post('/:id/refuser', async (req: Request<{ id: string }>, res: Response):
     return;
   }
   if (r.statut !== 'DEMANDEE') {
-    res.status(409).json({ error: { code: 'NON_REFUSABLE', message: `Déjà ${r.statut.toLowerCase()}.` } });
+    res
+      .status(409)
+      .json({ error: { code: 'NON_REFUSABLE', message: `Déjà ${r.statut.toLowerCase()}.` } });
     return;
   }
   const maj = await prisma.reservation.update({
     where: { id: r.id },
-    data: { statut: 'REFUSEE', motif_refus: motif, decidee_le: new Date(), decidee_par: req.userId ?? null },
+    data: {
+      statut: 'REFUSEE',
+      motif_refus: motif,
+      decidee_le: new Date(),
+      decidee_par: req.userId ?? null,
+    },
   });
   if (maj.demandeur_email) {
     void sendNotificationEmail({
@@ -260,10 +276,13 @@ router.post('/codes', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-router.post('/codes/:id/desactiver', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-  await prisma.codeGratuit.updateMany({ where: { id: req.params.id }, data: { actif: false } });
-  res.json({ ok: true });
-});
+router.post(
+  '/codes/:id/desactiver',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    await prisma.codeGratuit.updateMany({ where: { id: req.params.id }, data: { actif: false } });
+    res.json({ ok: true });
+  },
+);
 
 // ── Réglages ──────────────────────────────────────────────────────────────
 
@@ -273,9 +292,21 @@ router.get('/reglages', async (_req: Request, res: Response): Promise<void> => {
 
 const reglagesSchema = z
   .object({
-    duree_min_minutes: z.number().int().min(15).max(24 * 60),
-    duree_max_minutes: z.number().int().min(15).max(24 * 60),
-    ouverture_avant_minutes: z.number().int().min(0).max(24 * 60),
+    duree_min_minutes: z
+      .number()
+      .int()
+      .min(15)
+      .max(24 * 60),
+    duree_max_minutes: z
+      .number()
+      .int()
+      .min(15)
+      .max(24 * 60),
+    ouverture_avant_minutes: z
+      .number()
+      .int()
+      .min(0)
+      .max(24 * 60),
     // feat/reservation-automatique — tarifs et automatisation.
     tarif_horaire_cents: z.number().int().min(0).max(1_000_000),
     tarif_horaire_soir_cents: z.number().int().min(0).max(1_000_000),
@@ -284,13 +315,29 @@ const reglagesSchema = z
       .string()
       .trim()
       .max(20)
-      .regex(/^([1-7])(,[1-7])*$/, 'Jours de soirée : chiffres de 1 (lundi) à 7, séparés par des virgules'),
+      .regex(
+        /^([1-7])(,[1-7])*$/,
+        'Jours de soirée : chiffres de 1 (lundi) à 7, séparés par des virgules',
+      ),
     validation_automatique: z.boolean(),
+    // feat/client-avec-son-compte — grille réduite du client qui joue avec
+    // son propre abonnement Apple Music, et validation des comptes.
+    tarif_horaire_propre_cents: z.number().int().min(0).max(1_000_000),
+    tarif_horaire_propre_soir_cents: z.number().int().min(0).max(1_000_000),
+    validation_auto_comptes: z.boolean(),
+    // feat/offre-de-lancement — remise affichée, prix plein barré.
+    reduction_pct: z.number().int().min(0).max(90),
+    reduction_libelle: z.string().trim().max(60),
+    reduction_fin: z.string().datetime({ offset: true }).nullable(),
   })
   .refine((v) => v.duree_min_minutes <= v.duree_max_minutes, 'Le minimum dépasse le maximum')
   .refine(
     (v) => !v.validation_automatique || v.tarif_horaire_cents > 0,
     'Fixe un tarif horaire avant d’activer la réservation automatique',
+  )
+  .refine(
+    (v) => v.reduction_pct === 0 || v.reduction_libelle.length > 0,
+    'Donne un nom à l’offre : il s’affiche à côté du prix barré',
   );
 
 router.put('/reglages', async (req: Request, res: Response): Promise<void> => {
@@ -299,21 +346,16 @@ router.put('/reglages', async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Réglages invalides' } });
     return;
   }
-  const r = await prisma.reglagesReservation.upsert({
+  const donnees = {
+    ...parsed.data,
+    reduction_fin: parsed.data.reduction_fin ? new Date(parsed.data.reduction_fin) : null,
+  };
+  await prisma.reglagesReservation.upsert({
     where: { id: 1 },
-    update: parsed.data,
-    create: { id: 1, ...parsed.data },
+    update: donnees,
+    create: { id: 1, ...donnees },
   });
-  res.json({
-    duree_min_minutes: r.duree_min_minutes,
-    duree_max_minutes: r.duree_max_minutes,
-    ouverture_avant_minutes: r.ouverture_avant_minutes,
-    tarif_horaire_cents: r.tarif_horaire_cents,
-    tarif_horaire_soir_cents: r.tarif_horaire_soir_cents,
-    heure_soiree_debut: r.heure_soiree_debut,
-    jours_soiree: r.jours_soiree,
-    validation_automatique: r.validation_automatique,
-  });
+  res.json(await lireReglages());
 });
 
 export default router;

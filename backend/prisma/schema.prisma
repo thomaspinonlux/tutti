@@ -24,6 +24,10 @@ model Workspace {
   expires_at DateTime? @db.Timestamptz(6)
   created_at DateTime  @default(now()) @db.Timestamptz(6)
   updated_at DateTime  @updatedAt @db.Timestamptz(6)
+  /// feat/client-avec-son-compte — cette maison joue avec SON abonnement
+  /// Apple Music : aucun compte du parc mobilisé, tarif réduit.
+  compte_apple_propre Boolean @default(false)
+
 
   members           WorkspaceMember[]
   establishments    Establishment[]
@@ -336,6 +340,11 @@ model Reservation {
   statut                StatutReservation @default(DEMANDEE)
   /// Fixé par le propriétaire à l'acceptation. 0 pour une partie gratuite.
   prix_cents            Int?
+  /// Prix avant remise, quand une offre était active. null = pas de remise.
+  prix_plein_cents      Int?
+  /// feat/client-avec-son-compte — partie jouée avec le compte Apple Music du
+  /// client : elle n'occupe aucune place du parc.
+  compte_client         Boolean           @default(false)
   devise                String            @default("eur") @db.VarChar(3)
   code_gratuit_id       String?           @db.Uuid
   message_client        String?           @db.VarChar(500)
@@ -397,6 +406,19 @@ model ReglagesReservation {
   jours_soiree             String  @default("5,6") @db.VarChar(20)
   /// true = le client réserve, paie et joue sans intervention du propriétaire.
   validation_automatique   Boolean @default(false)
+  /// feat/client-avec-son-compte — tarifs réduits des clients qui jouent avec
+  /// leur propre abonnement Apple Music (0 = grille normale).
+  tarif_horaire_propre_cents      Int     @default(0)
+  tarif_horaire_propre_soir_cents Int     @default(0)
+  /// true = un compte créé sur le site est validé tout de suite, sans qu'il
+  /// ait à réserver ni à payer quoi que ce soit.
+  validation_auto_comptes         Boolean @default(false)
+  /// feat/offre-de-lancement — remise affichée sur la page de réservation.
+  /// 0 = aucune remise. Le prix plein reste visible, barré, à côté du prix remisé.
+  reduction_pct            Int       @default(0)
+  reduction_libelle        String    @default("") @db.VarChar(60)
+  /// Fin de l'offre. null = sans limite.
+  reduction_fin            DateTime? @db.Timestamptz(6)
   updated_at             DateTime @updatedAt @db.Timestamptz(6)
 
   @@map("reglages_reservation")

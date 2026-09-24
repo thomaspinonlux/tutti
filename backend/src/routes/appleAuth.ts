@@ -34,6 +34,9 @@ const router: Router = Router();
  *  demande à l'utilisateur de reconnecter (pas de refresh chez Apple). */
 const USER_TOKEN_TTL_MS = 1000 * 60 * 60 * 24 * 180;
 
+/** Signal interne : cet espace n'utilise pas le parc (il a son propre compte). */
+class SansParc extends Error {}
+
 function developerTokenResponse(res: Response): void {
   try {
     const { token, expiresAt } = getAppleDeveloperToken();
@@ -213,7 +216,15 @@ router.get(
       // compte connecté à l'espace, comportement d'origine inchangé.
       let musicUserToken: string | null = null;
       let expireLe: Date | null = null;
+      // feat/client-avec-son-compte — LE CLIENT QUI A SON PROPRE ABONNEMENT NE
+      // TOUCHE PAS AU PARC : on lit directement le compte Apple Music connecté
+      // à son espace, comme avant l'existence du parc.
+      const espace = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: { compte_apple_propre: true },
+      });
       try {
+        if (espace?.compte_apple_propre) throw new SansParc();
         // feat/reservation-de-creneaux — une partie CLIENT ne prend jamais le
         // dernier compte libre : il reste à la brasserie.
         const membre = await prisma.workspaceMember.findFirst({
@@ -221,7 +232,9 @@ router.get(
           select: { role: true },
         });
         const estClient = membre?.role === 'CLIENT' && !isSuperAdminEmail(req.userEmail);
-        const compte = await reserverCompteApple(session.id, { garderUnPourLeProprietaire: estClient });
+        const compte = await reserverCompteApple(session.id, {
+          garderUnPourLeProprietaire: estClient,
+        });
         musicUserToken = compte.music_user_token;
         console.info(
           `[Apple] session=${session.id} → compte du parc « ${compte.libelle} » réservé`,
@@ -235,7 +248,7 @@ router.get(
             return;
           }
           // comptesTotal === 0 → aucun parc configuré : repli historique.
-        } else {
+        } else if (!(err instanceof SansParc)) {
           throw err;
         }
       }

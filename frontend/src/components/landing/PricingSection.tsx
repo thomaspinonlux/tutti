@@ -32,7 +32,34 @@ export function PricingSection(): JSX.Element {
           {t.pricing.intro}
         </p>
 
-        <div className="grid gap-5 md:grid-cols-3 mb-14">
+        {/* feat/offre-de-lancement — la remise se voit avant les prix. */}
+        {t.pricing.offer && (
+          <div className="flex flex-col items-center gap-2 mb-8 text-center">
+            <span
+              className="inline-block rounded-full px-4 py-1"
+              style={{
+                background: 'var(--landing-yellow)',
+                color: 'var(--landing-ink)',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '12px',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {t.pricing.offer.badge}
+            </span>
+            <p style={{ fontSize: '14px', opacity: 0.75, maxWidth: '560px' }}>
+              {t.pricing.offer.text}
+            </p>
+          </div>
+        )}
+
+        <div
+          className={`grid gap-5 mb-14 ${
+            t.pricing.columns.length === 2 ? 'md:grid-cols-2 max-w-3xl mx-auto' : 'md:grid-cols-3'
+          }`}
+        >
           {t.pricing.columns.map((col, idx) => (
             <PricingColumn
               key={col.name}

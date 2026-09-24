@@ -25,12 +25,23 @@ export async function lireReglages(): Promise<Reglages> {
     heure_soiree_debut: r.heure_soiree_debut,
     jours_soiree: r.jours_soiree,
     validation_automatique: r.validation_automatique,
+    tarif_horaire_propre_cents: r.tarif_horaire_propre_cents,
+    tarif_horaire_propre_soir_cents: r.tarif_horaire_propre_soir_cents,
+    validation_auto_comptes: r.validation_auto_comptes,
+    reduction_pct: r.reduction_pct,
+    reduction_libelle: r.reduction_libelle,
+    reduction_fin: r.reduction_fin,
   };
 }
 
 /** « samedi 3 octobre, 20:00 → 23:00 », à l'heure de Luxembourg. */
 export function texteCreneau(debut: Date, fin: Date): string {
-  const jour = debut.toLocaleDateString('fr-FR', { timeZone: FUSEAU, weekday: 'long', day: 'numeric', month: 'long' });
+  const jour = debut.toLocaleDateString('fr-FR', {
+    timeZone: FUSEAU,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
   const heure = (d: Date): string =>
     d.toLocaleTimeString('fr-FR', { timeZone: FUSEAU, hour: '2-digit', minute: '2-digit' });
   return `${jour}, ${heure(debut)} → ${heure(fin)}`;
@@ -46,6 +57,8 @@ export function publierReservation(r: AvecCode): Record<string, unknown> {
     fin: r.fin.toISOString(),
     statut: r.statut,
     prix_cents: r.prix_cents,
+    prix_plein_cents: r.prix_plein_cents,
+    compte_client: r.compte_client,
     devise: r.devise,
     code_gratuit: r.code_gratuit?.code ?? null,
     message_client: r.message_client,

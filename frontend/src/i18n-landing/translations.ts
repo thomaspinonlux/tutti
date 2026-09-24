@@ -76,11 +76,14 @@ export interface LandingTranslations {
     titleEnd: string;
     intro: string;
     bestDeal: string;
+    /** feat/offre-de-lancement — bandeau de la remise, au-dessus des colonnes. */
+    offer?: { badge: string; text: string };
     columns: Array<{
       name: string;
       tag: string;
       highlighted?: boolean;
-      rows: Array<{ label: string; amount: string }>;
+      /** `before` = prix plein, barré à l'écran. */
+      rows: Array<{ label: string; amount: string; before?: string }>;
     }>;
     note: string;
   };
@@ -136,7 +139,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       ctaSecondary: 'Voir comment ça marche',
       metaSpotify: '<strong>Spotify + YouTube</strong> intégrés',
       metaLanguages: '<strong>FR / EN / IT / ES</strong>',
-      metaPrice: 'À partir de <strong>3,99 €</strong>',
+      metaPrice: 'À partir de <strong>2,50 €</strong> de l’heure',
       videoSticker: '2 min de démo',
       videoLabel: 'Démonstration de Tutti',
     },
@@ -250,41 +253,33 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleEnd: ", pas l'abonnement.",
       intro:
         "Pas d'engagement, pas de mensualité. Tu choisis le produit et la durée qui collent à ta soirée. Si la fête s'étend, tu peux étendre la session à tout moment.",
-      bestDeal: 'Le préféré',
+      bestDeal: 'Clé en main',
+      offer: {
+        badge: 'Offre de lancement · −50 %',
+        text: 'Jusqu’au 31 décembre 2026, toutes les heures sont à moitié prix. Les montants barrés sont les tarifs normaux.',
+      },
       columns: [
         {
-          name: 'Tutti Tracks',
-          tag: 'Blind test musical',
+          name: 'Ton compte Apple Music',
+          tag: 'Tu joues avec ton abonnement',
           rows: [
-            { label: '2 heures · Apéro', amount: '4,99' },
-            { label: '4 heures · Soirée', amount: '8,99' },
-            { label: '24 heures · Journée', amount: '24,99' },
-            { label: 'Week-end complet', amount: '44,99' },
+            { label: 'L’heure, en semaine', before: '5,00', amount: '2,50' },
+            { label: 'L’heure, vendredi & samedi soir', before: '9,00', amount: '4,50' },
+            { label: 'Soirée de 3 h (20 h → 23 h)', before: '27,00', amount: '13,50' },
           ],
         },
         {
-          name: 'All-Access',
-          tag: 'Tracks + Quizz · ~30 % de remise',
+          name: 'Compte fourni par Tutti',
+          tag: 'Rien à installer, on s’occupe de la musique',
           highlighted: true,
           rows: [
-            { label: '2 heures · Apéro', amount: '6,99' },
-            { label: '4 heures · Soirée', amount: '11,99' },
-            { label: '24 heures · Journée', amount: '32,99' },
-            { label: 'Week-end complet', amount: '59,99' },
-          ],
-        },
-        {
-          name: 'Tutti Quizz',
-          tag: 'Quiz multimédia',
-          rows: [
-            { label: '2 heures · Apéro', amount: '3,99' },
-            { label: '4 heures · Soirée', amount: '6,99' },
-            { label: '24 heures · Journée', amount: '19,99' },
-            { label: 'Week-end complet', amount: '34,99' },
+            { label: 'L’heure, en semaine', before: '8,00', amount: '4,00' },
+            { label: 'L’heure, vendredi & samedi soir', before: '15,00', amount: '7,50' },
+            { label: 'Soirée de 3 h (20 h → 23 h)', before: '45,00', amount: '22,50' },
           ],
         },
       ],
-      note: "Prix TTC. Paiement sécurisé via Stripe. <strong>Tutti est en phase beta : le service est actuellement gratuit pendant la durée du test public.</strong> Les utilisateurs seront informés au moins 30 jours à l'avance avant la mise en place de la facturation. Week-end = vendredi 18 h → dimanche 20 h.",
+      note: "Prix TTC, au prorata des minutes : tu ne paies que le temps réservé. Paiement sécurisé via Stripe. <strong>Offre de lancement : −50 % sur toutes les heures jusqu'au 31 décembre 2026.</strong> Tarif soirée le vendredi et le samedi à partir de 18 h. Tu réserves ton créneau depuis ton compte, tu paies, tu joues.",
     },
     useCases: {
       eyebrow: 'Pour qui',
@@ -344,7 +339,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'Comment se passe le paiement ?',
-          a: "Le paiement se fait au lancement de chaque session, par carte bancaire via Stripe. Tu choisis le produit (Tracks, Quizz ou All-Access) et la durée (2 h, 4 h, 24 h, week-end). Pas d'abonnement, pas de prélèvement automatique. <strong>Tutti étant en phase beta, le service est actuellement gratuit pour les bêta-testeurs invités.</strong> Les utilisateurs seront prévenus au moins 30 jours avant le passage au modèle payant.",
+          a: "Tu réserves un créneau depuis ton compte et tu paies par carte via Stripe. Le prix se calcule à l'heure, au prorata des minutes, avec un tarif majoré le vendredi et le samedi à partir de 18 h. Pas d'abonnement, pas de prélèvement automatique. <strong>Offre de lancement : −50 % sur toutes les heures jusqu'au 31 décembre 2026.</strong> Si tu joues avec ton propre abonnement Apple Music, le tarif est encore plus bas.",
         },
         {
           q: "Qu'arrive-t-il à mes données personnelles ?",
@@ -410,7 +405,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       ctaSecondary: 'See how it works',
       metaSpotify: '<strong>Spotify + YouTube</strong> built-in',
       metaLanguages: '<strong>EN / FR / IT / ES</strong>',
-      metaPrice: 'From <strong>€3.99</strong>',
+      metaPrice: 'From <strong>€2.50</strong> per hour',
       videoSticker: '2-min demo',
       videoLabel: 'Tutti demo',
     },
@@ -524,41 +519,33 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleEnd: ', never a subscription.',
       intro:
         'No commitment, no monthly fee. Pick the product and length that fit your night. Party going long? Extend the session anytime.',
-      bestDeal: 'Best deal',
+      bestDeal: 'Turnkey',
+      offer: {
+        badge: 'Launch offer · −50%',
+        text: 'Until 31 December 2026 every hour is half price. Struck-through figures are the regular rates.',
+      },
       columns: [
         {
-          name: 'Tutti Tracks',
-          tag: 'Music blind test',
+          name: 'Your Apple Music account',
+          tag: 'You play with your own subscription',
           rows: [
-            { label: '2 hours · Quick', amount: '4.99' },
-            { label: '4 hours · Evening', amount: '8.99' },
-            { label: '24 hours · Day', amount: '24.99' },
-            { label: 'Full weekend', amount: '44.99' },
+            { label: 'Per hour, weekdays', before: '5.00', amount: '2.50' },
+            { label: 'Per hour, Friday & Saturday night', before: '9.00', amount: '4.50' },
+            { label: '3-hour night (8 PM → 11 PM)', before: '27.00', amount: '13.50' },
           ],
         },
         {
-          name: 'All-Access',
-          tag: 'Tracks + Quizz · ~30% off',
+          name: 'Account provided by Tutti',
+          tag: 'Nothing to set up, we handle the music',
           highlighted: true,
           rows: [
-            { label: '2 hours · Quick', amount: '6.99' },
-            { label: '4 hours · Evening', amount: '11.99' },
-            { label: '24 hours · Day', amount: '32.99' },
-            { label: 'Full weekend', amount: '59.99' },
-          ],
-        },
-        {
-          name: 'Tutti Quizz',
-          tag: 'Multimedia quiz',
-          rows: [
-            { label: '2 hours · Quick', amount: '3.99' },
-            { label: '4 hours · Evening', amount: '6.99' },
-            { label: '24 hours · Day', amount: '19.99' },
-            { label: 'Full weekend', amount: '34.99' },
+            { label: 'Per hour, weekdays', before: '8.00', amount: '4.00' },
+            { label: 'Per hour, Friday & Saturday night', before: '15.00', amount: '7.50' },
+            { label: '3-hour night (8 PM → 11 PM)', before: '45.00', amount: '22.50' },
           ],
         },
       ],
-      note: 'Prices include VAT. Secure payment via Stripe. <strong>Tutti is currently in beta: the service is free during the public test period.</strong> Users will be notified at least 30 days before paid sessions go live. Weekend = Friday 6 PM → Sunday 8 PM.',
+      note: 'Prices include VAT and are prorated to the minute: you only pay for the time you book. Secure payment via Stripe. <strong>Launch offer: 50% off every hour until 31 December 2026.</strong> Evening rate applies on Friday and Saturday from 6 PM. Book your slot from your account, pay, play.',
     },
     useCases: {
       eyebrow: 'For whom',
@@ -618,7 +605,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'How does payment work?',
-          a: 'Payment happens at session launch, by card via Stripe. You pick the product (Tracks, Quizz, or All-Access) and the duration (2h, 4h, 24h, weekend). No subscription, no auto-debit. <strong>Since Tutti is in beta, the service is currently free for invited beta testers.</strong> Users will be notified at least 30 days before paid sessions go live.',
+          a: 'You book a slot from your account and pay by card via Stripe. The price is hourly, prorated to the minute, with an evening rate on Friday and Saturday from 6 PM. No subscription, no auto-debit. <strong>Launch offer: 50% off every hour until 31 December 2026.</strong> Playing with your own Apple Music subscription costs even less.',
         },
         {
           q: 'What about my personal data?',

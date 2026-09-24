@@ -26,9 +26,33 @@ import {
   texteMontant,
   verifierDisponibilite,
   devisCreneau,
+  type Devis,
   type ReglagesPublics,
   type Reservation,
 } from '../../lib/reservations.js';
+
+/** « 12,00 € ». */
+function euros(cents: number): string {
+  return `${(cents / 100).toFixed(2).replace('.', ',')} €`;
+}
+
+/** « 3 novembre ». */
+function texteJour(iso: string): string {
+  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+}
+
+/** Tarif horaire : prix plein barré dès qu'une offre tourne. */
+function TarifHoraire({ cents, pct }: { cents: number; pct: number }): JSX.Element {
+  if (pct <= 0) return <strong>{euros(cents)}</strong>;
+  return (
+    <>
+      <span className="line-through opacity-60">{euros(cents)}</span>{' '}
+      <strong className="text-basil not-italic">
+        {euros(Math.round((cents * (100 - pct)) / 100))}
+      </strong>
+    </>
+  );
+}
 
 function dureeLisible(minutes: number): string {
   const h = Math.floor(minutes / 60);
@@ -61,7 +85,8 @@ export function ReserverPage(): JSX.Element {
   const [erreur, setErreur] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   // feat/reservation-automatique — prix calculé pendant la saisie.
-  const [prixCents, setPrixCents] = useState<number | null>(null);
+  const [devis, setDevis] = useState<Devis | null>(null);
+  const prixCents = devis?.prix_cents ?? null;
 
   const recharger = useCallback(async (): Promise<void> => {
     try {
@@ -87,7 +112,8 @@ export function ReserverPage(): JSX.Element {
       const id = window.setTimeout(() => void recharger(), 4000);
       return () => window.clearTimeout(id);
     }
-    if (retour === 'annule') setErreur('Paiement annulé. Ta réservation reste acceptée : tu peux la payer plus tard.');
+    if (retour === 'annule')
+      setErreur('Paiement annulé. Ta réservation reste acceptée : tu peux la payer plus tard.');
     params.delete('paiement');
     params.delete('r');
     setParams(params, { replace: true });
@@ -96,7 +122,9 @@ export function ReserverPage(): JSX.Element {
   }, []);
 
   const creneau = useMemo(() => bornes(jour, heureDebut, heureFin), [jour, heureDebut, heureFin]);
-  const dureeMinutes = creneau ? Math.round((creneau.fin.getTime() - creneau.debut.getTime()) / 60_000) : 0;
+  const dureeMinutes = creneau
+    ? Math.round((creneau.fin.getTime() - creneau.debut.getTime()) / 60_000)
+    : 0;
   const dureeHorsBornes =
     !!creneau &&
     !!reglages &&
@@ -116,12 +144,12 @@ export function ReserverPage(): JSX.Element {
 
   // Le prix suit le créneau saisi, comme la disponibilité.
   useEffect(() => {
-    setPrixCents(null);
+    setDevis(null);
     if (!creneau || dureeHorsBornes || !reglages?.tarif_horaire_cents) return;
     const id = window.setTimeout(() => {
       devisCreneau(creneau.debut.toISOString(), creneau.fin.toISOString())
-        .then((d) => setPrixCents(d.prix_cents))
-        .catch(() => setPrixCents(null));
+        .then(setDevis)
+        .catch(() => setDevis(null));
     }, 400);
     return () => window.clearTimeout(id);
   }, [creneau, dureeHorsBornes, reglages]);
@@ -206,14 +234,26 @@ export function ReserverPage(): JSX.Element {
       {reglages?.reservation_automatique && (
         <Card size="lg" className="mb-6">
           <p className="font-mono text-sm">
-            Réservation immédiate : choisis ton créneau, paie en ligne, et joue. Pas d’accord à attendre.
+            Réservation immédiate : choisis ton créneau, paie en ligne, et joue. Pas d’accord à
+            attendre.
           </p>
           <p className="font-editorial italic text-sm text-ink-soft mt-1">
-            Tarif à l’heure : {(reglages.tarif_horaire_cents / 100).toFixed(2).replace('.', ',')} € de l’heure,
-            {' '}
-            {(reglages.tarif_horaire_soir_cents / 100).toFixed(2).replace('.', ',')} € à partir de{' '}
-            {reglages.heure_soiree_debut} h le vendredi et le samedi.
+            Tarif à l’heure :{' '}
+            <TarifHoraire cents={reglages.tarif_horaire_cents} pct={reglages.reduction_pct} /> de
+            l’heure,{' '}
+            <TarifHoraire cents={reglages.tarif_horaire_soir_cents} pct={reglages.reduction_pct} />{' '}
+            à partir de {reglages.heure_soiree_debut} h le vendredi et le samedi.
           </p>
+          {/* feat/offre-de-lancement — la remise se voit, elle ne se devine pas. */}
+          {reglages.reduction_pct > 0 && (
+            <p className="font-mono text-sm text-basil mt-2">
+              <span className="inline-block rounded-full bg-basil px-2 py-0.5 text-xs text-white mr-2">
+                −{reglages.reduction_pct} %
+              </span>
+              {reglages.reduction_libelle || 'Offre spéciale'}
+              {reglages.reduction_fin && ` — jusqu’au ${texteJour(reglages.reduction_fin)}`}
+            </p>
+          )}
         </Card>
       )}
 
@@ -226,10 +266,14 @@ export function ReserverPage(): JSX.Element {
       )}
 
       <Card size="lg" className="mb-6">
-        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-4">Nouveau créneau</h2>
+        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-4">
+          Nouveau créneau
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
           <label className="block">
-            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">Jour</span>
+            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">
+              Jour
+            </span>
             <input
               type="date"
               min={aujourdhui}
@@ -240,7 +284,9 @@ export function ReserverPage(): JSX.Element {
             />
           </label>
           <label className="block">
-            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">Début</span>
+            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">
+              Début
+            </span>
             <input
               type="time"
               step={900}
@@ -251,7 +297,9 @@ export function ReserverPage(): JSX.Element {
             />
           </label>
           <label className="block">
-            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">Fin</span>
+            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">
+              Fin
+            </span>
             <input
               type="time"
               step={900}
@@ -265,7 +313,8 @@ export function ReserverPage(): JSX.Element {
 
         {creneau && (
           <p className="font-mono text-xs mb-3">
-            {texteCreneau(creneau.debut.toISOString(), creneau.fin.toISOString())} · {dureeLisible(dureeMinutes)}
+            {texteCreneau(creneau.debut.toISOString(), creneau.fin.toISOString())} ·{' '}
+            {dureeLisible(dureeMinutes)}
             {dureeHorsBornes && reglages && (
               <span className="text-raspberry">
                 {' '}
@@ -273,17 +322,36 @@ export function ReserverPage(): JSX.Element {
                 {dureeLisible(reglages.duree_max_minutes)}
               </span>
             )}
-            {!dureeHorsBornes && libre === true && <span className="text-basil"> — disponible</span>}
-            {!dureeHorsBornes && libre === false && <span className="text-raspberry"> — complet sur cet horaire</span>}
+            {!dureeHorsBornes && libre === true && (
+              <span className="text-basil"> — disponible</span>
+            )}
+            {!dureeHorsBornes && libre === false && (
+              <span className="text-raspberry"> — complet sur cet horaire</span>
+            )}
           </p>
         )}
 
         {/* feat/reservation-automatique — le prix s'affiche avant d'envoyer. */}
         {prixCents !== null && !dureeHorsBornes && (
           <p className="font-mono text-sm mb-3">
-            Prix : <strong>{(prixCents / 100).toFixed(2).replace('.', ',')} €</strong> TTC
+            Prix :{' '}
+            {devis && devis.reduction_pct > 0 && devis.prix_plein_cents !== null && (
+              <span className="text-ink-soft line-through mr-2">
+                {euros(devis.prix_plein_cents)}
+              </span>
+            )}
+            <strong>{euros(prixCents)}</strong> TTC
+            {devis && devis.reduction_pct > 0 && (
+              <span className="text-basil">
+                {' '}
+                — {devis.reduction_libelle || 'Offre spéciale'} −{devis.reduction_pct} % (tu
+                économises {euros((devis.prix_plein_cents ?? 0) - prixCents)})
+              </span>
+            )}
             {gratuitAvecCode && <span className="text-basil"> — offert avec ton code</span>}
-            {auto && !gratuitAvecCode && <span className="text-ink-soft"> · paiement à l’étape suivante</span>}
+            {auto && !gratuitAvecCode && (
+              <span className="text-ink-soft"> · paiement à l’étape suivante</span>
+            )}
           </p>
         )}
 
@@ -307,9 +375,15 @@ export function ReserverPage(): JSX.Element {
         </div>
         <Button
           onClick={() => void envoyer()}
-          disabled={occupe || !creneau || dureeHorsBornes || libre === false || reglages?.capacite === 0}
+          disabled={
+            occupe || !creneau || dureeHorsBornes || libre === false || reglages?.capacite === 0
+          }
         >
-          {occupe ? 'Envoi…' : auto && !gratuitAvecCode ? 'Réserver et payer' : 'Demander ce créneau'}
+          {occupe
+            ? 'Envoi…'
+            : auto && !gratuitAvecCode
+              ? 'Réserver et payer'
+              : 'Demander ce créneau'}
         </Button>
       </Card>
 
@@ -325,11 +399,15 @@ export function ReserverPage(): JSX.Element {
       )}
 
       <Card size="lg">
-        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">Mes réservations</h2>
+        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
+          Mes réservations
+        </h2>
         {liste === null ? (
           <p className="font-mono text-sm text-ink-soft">Chargement…</p>
         ) : liste.length === 0 ? (
-          <p className="font-editorial italic text-sm text-ink-soft">Aucune réservation pour l’instant.</p>
+          <p className="font-editorial italic text-sm text-ink-soft">
+            Aucune réservation pour l’instant.
+          </p>
         ) : (
           <ul className="divide-y divide-cream-4">
             {liste.map((r) => (
@@ -344,8 +422,13 @@ export function ReserverPage(): JSX.Element {
                   </p>
                 </div>
                 {r.statut === 'ACCEPTEE' && (r.prix_cents ?? 0) > 0 && (
-                  <Button onClick={() => void payer(r.id)} disabled={occupe || !reglages?.paiement_ouvert}>
-                    {reglages?.paiement_ouvert ? `Payer ${texteMontant(r.prix_cents)}` : 'Paiement bientôt ouvert'}
+                  <Button
+                    onClick={() => void payer(r.id)}
+                    disabled={occupe || !reglages?.paiement_ouvert}
+                  >
+                    {reglages?.paiement_ouvert
+                      ? `Payer ${texteMontant(r.prix_cents)}`
+                      : 'Paiement bientôt ouvert'}
                   </Button>
                 )}
                 {(r.statut === 'DEMANDEE' || r.statut === 'ACCEPTEE') && (

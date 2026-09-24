@@ -25,6 +25,9 @@ export interface AdminUserSummary {
   tier: Tier;
   can_use_tracks: boolean;
   can_use_quizz: boolean;
+  /** feat/client-avec-son-compte — cette maison joue avec SON abonnement Apple
+   *  Music : aucun compte du parc mobilisé, tarif réduit. */
+  compte_apple_propre: boolean;
   workspace: { id: string; name: string; plan: string };
   sessions_total: number;
   sessions_this_month: number;
@@ -75,6 +78,7 @@ export interface AdminUserPatchResult {
   freemium_period_start: string;
   can_use_tracks: boolean;
   can_use_quizz: boolean;
+  compte_apple_propre?: boolean;
 }
 
 export async function patchAdminUser(
@@ -84,6 +88,7 @@ export async function patchAdminUser(
     reset_freemium?: boolean;
     can_use_tracks?: boolean;
     can_use_quizz?: boolean;
+    compte_apple_propre?: boolean;
   },
 ): Promise<AdminUserPatchResult> {
   const data = await api<{ user: AdminUserPatchResult }>(

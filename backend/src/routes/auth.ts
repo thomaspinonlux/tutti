@@ -197,7 +197,25 @@ async function resolveApprovalStatus(args: {
     }
   }
 
-  // 4) Sinon : PENDING (file d'attente super admin)
+  // 4) feat/client-avec-son-compte — VALIDATION AUTOMATIQUE DES COMPTES.
+  //    Quand le propriétaire l'a activée, un compte créé sur le site est
+  //    valide tout de suite : le client peut se connecter et préparer sa
+  //    soirée sans être obligé de réserver ni de payer. La réservation d'un
+  //    créneau reste exigée pour LANCER une partie.
+  const reglagesInscription = await prisma.reglagesReservation.findUnique({
+    where: { id: 1 },
+    select: { validation_auto_comptes: true },
+  });
+  if (reglagesInscription?.validation_auto_comptes) {
+    return {
+      status: 'APPROVED',
+      invitationCodeUsed: null,
+      invitationCodeId: null,
+      approvedAt: new Date(),
+    };
+  }
+
+  // 5) Sinon : PENDING (file d'attente super admin)
   return {
     status: 'PENDING',
     invitationCodeUsed: null,

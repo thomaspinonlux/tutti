@@ -44,6 +44,14 @@ export function ReservationsPage(): JSX.Element {
     heureSoir: '',
     joursSoir: '',
     auto: false,
+    // feat/client-avec-son-compte — grille réduite + validation des comptes.
+    tarifPropre: '',
+    tarifPropreSoir: '',
+    autoComptes: false,
+    // feat/offre-de-lancement — remise affichée au client.
+    reductionPct: '',
+    reductionLibelle: '',
+    reductionFin: '',
   });
   const [occupe, setOccupe] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -51,7 +59,11 @@ export function ReservationsPage(): JSX.Element {
 
   const recharger = useCallback(async (): Promise<void> => {
     try {
-      const [r, c, g] = await Promise.all([listerReservations(), listerCodes(), lireReglagesGestion()]);
+      const [r, c, g] = await Promise.all([
+        listerReservations(),
+        listerCodes(),
+        lireReglagesGestion(),
+      ]);
       setLignes(r.reservations);
       setCapacite(r.capacite);
       setComptes(r.comptes_actifs);
@@ -65,6 +77,12 @@ export function ReservationsPage(): JSX.Element {
         heureSoir: String(g.heure_soiree_debut),
         joursSoir: g.jours_soiree,
         auto: g.validation_automatique,
+        tarifPropre: (g.tarif_horaire_propre_cents / 100).toFixed(2),
+        tarifPropreSoir: (g.tarif_horaire_propre_soir_cents / 100).toFixed(2),
+        autoComptes: g.validation_auto_comptes,
+        reductionPct: String(g.reduction_pct),
+        reductionLibelle: g.reduction_libelle,
+        reductionFin: g.reduction_fin ? g.reduction_fin.slice(0, 10) : '',
       });
     } catch (err: unknown) {
       setErreur((err as Error).message);
@@ -104,13 +122,18 @@ export function ReservationsPage(): JSX.Element {
     const cents = Math.round(euros * 100);
     void agir(
       () => accepterReservation(r.id, cents),
-      cents === 0 ? 'Acceptée — partie offerte.' : `Acceptée à ${texteMontant(cents)} : le client est prévenu par e-mail.`,
+      cents === 0
+        ? 'Acceptée — partie offerte.'
+        : `Acceptée à ${texteMontant(cents)} : le client est prévenu par e-mail.`,
     );
   };
 
   const refuser = (r: ReservationGestion): void => {
     const motif = window.prompt('Motif du refus (facultatif, envoyé au client) :') ?? undefined;
-    void agir(() => refuserReservation(r.id, motif || undefined), 'Demande refusée, client prévenu.');
+    void agir(
+      () => refuserReservation(r.id, motif || undefined),
+      'Demande refusée, client prévenu.',
+    );
   };
 
   const annuler = (r: ReservationGestion): void => {
@@ -118,14 +141,18 @@ export function ReservationsPage(): JSX.Element {
     void agir(async () => {
       const res = await annulerReservationGestion(r.id);
       if (res.rembourser_dans_stripe) {
-        window.alert('Cette réservation était payée : pense à rembourser le client depuis ton tableau de bord Stripe.');
+        window.alert(
+          'Cette réservation était payée : pense à rembourser le client depuis ton tableau de bord Stripe.',
+        );
       }
     }, 'Réservation annulée.');
   };
 
   const demandes = (lignes ?? []).filter((r) => r.statut === 'DEMANDEE');
   const planning = (lignes ?? []).filter(
-    (r) => ['ACCEPTEE', 'PAYEE', 'GRATUITE'].includes(r.statut) && new Date(r.fin).getTime() > Date.now(),
+    (r) =>
+      ['ACCEPTEE', 'PAYEE', 'GRATUITE'].includes(r.statut) &&
+      new Date(r.fin).getTime() > Date.now(),
   );
 
   return (
@@ -166,7 +193,9 @@ export function ReservationsPage(): JSX.Element {
                     {r.client} · {r.email ?? 'e-mail inconnu'}
                     {r.code_gratuit && ` · code ${r.code_gratuit}`}
                   </p>
-                  {r.message_client && <p className="font-editorial text-xs mt-1">« {r.message_client} »</p>}
+                  {r.message_client && (
+                    <p className="font-editorial text-xs mt-1">« {r.message_client} »</p>
+                  )}
                 </div>
                 {!r.code_gratuit && (
                   <div className="w-32">
@@ -219,7 +248,9 @@ export function ReservationsPage(): JSX.Element {
       </Card>
 
       <Card size="lg" className="mb-6">
-        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">Codes parties offertes</h2>
+        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
+          Codes parties offertes
+        </h2>
         <div className="flex flex-wrap gap-3 items-end mb-4">
           <div className="flex-1 min-w-[200px]">
             <Input
@@ -244,8 +275,14 @@ export function ReservationsPage(): JSX.Element {
           <Button
             onClick={() =>
               void agir(async () => {
-                const n = Math.max(1, Math.min(1000, Number.parseInt(nouveauCode.utilisations, 10) || 1));
-                const cree = await creerCode({ note: nouveauCode.note.trim() || undefined, utilisations_max: n });
+                const n = Math.max(
+                  1,
+                  Math.min(1000, Number.parseInt(nouveauCode.utilisations, 10) || 1),
+                );
+                const cree = await creerCode({
+                  note: nouveauCode.note.trim() || undefined,
+                  utilisations_max: n,
+                });
                 setNouveauCode({ note: '', utilisations: '1' });
                 setInfo(`Code créé : ${cree.code.code}`);
               })
@@ -270,7 +307,11 @@ export function ReservationsPage(): JSX.Element {
                   </p>
                 </div>
                 {c.actif && (
-                  <Button variant="ghost" onClick={() => void agir(() => desactiverCode(c.id), 'Code désactivé.')} disabled={occupe}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => void agir(() => desactiverCode(c.id), 'Code désactivé.')}
+                    disabled={occupe}
+                  >
                     Désactiver
                   </Button>
                 )}
@@ -352,6 +393,56 @@ export function ReservationsPage(): JSX.Element {
               disabled={occupe}
             />
           </div>
+          <div className="w-52">
+            <Input
+              dark
+              label="Tarif compte du client (€/h)"
+              inputMode="decimal"
+              value={reglages.tarifPropre}
+              onChange={(e) => setReglages((g) => ({ ...g, tarifPropre: e.target.value }))}
+              disabled={occupe}
+            />
+          </div>
+          <div className="w-56">
+            <Input
+              dark
+              label="Tarif compte du client soirée (€/h)"
+              inputMode="decimal"
+              value={reglages.tarifPropreSoir}
+              onChange={(e) => setReglages((g) => ({ ...g, tarifPropreSoir: e.target.value }))}
+              disabled={occupe}
+            />
+          </div>
+          {/* feat/offre-de-lancement — remise affichée, prix plein barré. */}
+          <div className="w-32">
+            <Input
+              dark
+              label="Remise (%)"
+              inputMode="numeric"
+              value={reglages.reductionPct}
+              onChange={(e) => setReglages((g) => ({ ...g, reductionPct: e.target.value }))}
+              disabled={occupe}
+            />
+          </div>
+          <div className="w-60">
+            <Input
+              dark
+              label="Nom de l’offre"
+              value={reglages.reductionLibelle}
+              onChange={(e) => setReglages((g) => ({ ...g, reductionLibelle: e.target.value }))}
+              disabled={occupe}
+            />
+          </div>
+          <div className="w-48">
+            <Input
+              dark
+              type="date"
+              label="Fin de l’offre"
+              value={reglages.reductionFin}
+              onChange={(e) => setReglages((g) => ({ ...g, reductionFin: e.target.value }))}
+              disabled={occupe}
+            />
+          </div>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -360,6 +451,15 @@ export function ReservationsPage(): JSX.Element {
               disabled={occupe}
             />
             Réservation et validation automatiques
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={reglages.autoComptes}
+              onChange={(e) => setReglages((g) => ({ ...g, autoComptes: e.target.checked }))}
+              disabled={occupe}
+            />
+            Valider les nouveaux comptes automatiquement
           </label>
           <Button
             onClick={() =>
@@ -370,10 +470,24 @@ export function ReservationsPage(): JSX.Element {
                     duree_max_minutes: Number.parseInt(reglages.max, 10),
                     ouverture_avant_minutes: Number.parseInt(reglages.ouverture, 10),
                     tarif_horaire_cents: Math.round(Number(reglages.tarif.replace(',', '.')) * 100),
-                    tarif_horaire_soir_cents: Math.round(Number(reglages.tarifSoir.replace(',', '.')) * 100),
+                    tarif_horaire_soir_cents: Math.round(
+                      Number(reglages.tarifSoir.replace(',', '.')) * 100,
+                    ),
                     heure_soiree_debut: Number.parseInt(reglages.heureSoir, 10),
                     jours_soiree: reglages.joursSoir.trim(),
                     validation_automatique: reglages.auto,
+                    tarif_horaire_propre_cents: Math.round(
+                      Number(reglages.tarifPropre.replace(',', '.') || '0') * 100,
+                    ),
+                    tarif_horaire_propre_soir_cents: Math.round(
+                      Number(reglages.tarifPropreSoir.replace(',', '.') || '0') * 100,
+                    ),
+                    validation_auto_comptes: reglages.autoComptes,
+                    reduction_pct: Number.parseInt(reglages.reductionPct || '0', 10),
+                    reduction_libelle: reglages.reductionLibelle.trim(),
+                    reduction_fin: reglages.reductionFin
+                      ? new Date(`${reglages.reductionFin}T23:59:59`).toISOString()
+                      : null,
                   }),
                 'Réglages enregistrés.',
               )
@@ -384,7 +498,11 @@ export function ReservationsPage(): JSX.Element {
           </Button>
         </div>
         <p className="font-editorial italic text-sm text-ink-soft mt-3">
-          Tarif horaire à 0 € = pas de réservation automatique : chaque demande attend ton accord et ton prix.
+          Tarif horaire à 0 € = pas de réservation automatique : chaque demande attend ton accord et
+          ton prix. Le tarif « compte du client » s’applique aux maisons que tu as basculées sur
+          leur propre abonnement Apple Music (page Utilisateurs) ; à 0 €, elles paient la grille
+          normale. Une remise supérieure à 0 % affiche partout le prix plein barré et le nom de
+          l’offre.
         </p>
       </Card>
     </div>

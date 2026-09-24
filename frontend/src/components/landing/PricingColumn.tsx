@@ -8,6 +8,8 @@ import { motion } from 'framer-motion';
 interface PricingRow {
   label: string;
   amount: string;
+  /** feat/offre-de-lancement — prix plein, barré à côté du prix remisé. */
+  before?: string;
 }
 
 interface PricingColumnProps {
@@ -108,6 +110,20 @@ export function PricingColumn({
                 letterSpacing: '-0.01em',
               }}
             >
+              {row.before && (
+                <span
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    opacity: 0.45,
+                    textDecoration: 'line-through',
+                    marginRight: 8,
+                  }}
+                >
+                  {row.before}
+                  <sup style={{ fontSize: '10px', marginLeft: 1 }}>€</sup>
+                </span>
+              )}
               {row.amount}
               <sup style={{ fontSize: '12px', fontWeight: 500, opacity: 0.7, marginLeft: 1 }}>
                 €

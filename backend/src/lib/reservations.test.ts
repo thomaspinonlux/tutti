@@ -13,7 +13,22 @@ import {
 
 const h = (heure: number, minute = 0): Date => new Date(Date.UTC(2026, 9, 2, heure, minute));
 const iv = (a: number, b: number) => ({ debut: h(a), fin: h(b) });
-const reglages = { duree_min_minutes: 60, duree_max_minutes: 360, ouverture_avant_minutes: 30, tarif_horaire_cents: 0, tarif_horaire_soir_cents: 0, heure_soiree_debut: 18, jours_soiree: '5,6', validation_automatique: false };
+const reglages = {
+  duree_min_minutes: 60,
+  duree_max_minutes: 360,
+  ouverture_avant_minutes: 30,
+  tarif_horaire_cents: 0,
+  tarif_horaire_soir_cents: 0,
+  heure_soiree_debut: 18,
+  jours_soiree: '5,6',
+  validation_automatique: false,
+  tarif_horaire_propre_cents: 0,
+  tarif_horaire_propre_soir_cents: 0,
+  validation_auto_comptes: false,
+  reduction_pct: 0,
+  reduction_libelle: '',
+  reduction_fin: null,
+};
 
 describe('capacité : un compte reste à la brasserie', () => {
   it('3 comptes → 2 parties clients', () => assert.equal(capaciteClients(3), 2));
@@ -22,8 +37,10 @@ describe('capacité : un compte reste à la brasserie', () => {
 });
 
 describe('chevauchement', () => {
-  it('bord contre bord ne se chevauche pas', () => assert.equal(chevauchent(iv(20, 22), iv(22, 23)), false));
-  it('recouvrement partiel se chevauche', () => assert.equal(chevauchent(iv(20, 22), iv(21, 23)), true));
+  it('bord contre bord ne se chevauche pas', () =>
+    assert.equal(chevauchent(iv(20, 22), iv(22, 23)), false));
+  it('recouvrement partiel se chevauche', () =>
+    assert.equal(chevauchent(iv(20, 22), iv(21, 23)), true));
 });
 
 describe('pic simultané', () => {
@@ -56,13 +73,16 @@ describe('place disponible avec 3 comptes (capacité 2)', () => {
 describe('créneau demandé', () => {
   const maintenant = h(12);
   it('valide', () => assert.equal(verifierCreneau(iv(20, 23), reglages, maintenant), null));
-  it('fin avant début', () => assert.match(verifierCreneau(iv(22, 20), reglages, maintenant) ?? '', /après/));
-  it('dans le passé', () => assert.match(verifierCreneau(iv(8, 10), reglages, maintenant) ?? '', /futur/));
+  it('fin avant début', () =>
+    assert.match(verifierCreneau(iv(22, 20), reglages, maintenant) ?? '', /après/));
+  it('dans le passé', () =>
+    assert.match(verifierCreneau(iv(8, 10), reglages, maintenant) ?? '', /futur/));
   it('trop court', () => {
     const c = { debut: h(20), fin: h(20, 30) };
     assert.match(verifierCreneau(c, reglages, maintenant) ?? '', /minimum/);
   });
-  it('trop long', () => assert.match(verifierCreneau(iv(13, 23), reglages, maintenant) ?? '', /maximum/));
+  it('trop long', () =>
+    assert.match(verifierCreneau(iv(13, 23), reglages, maintenant) ?? '', /maximum/));
 });
 
 describe('ouverture de la partie', () => {
@@ -74,7 +94,8 @@ describe('ouverture de la partie', () => {
 });
 
 describe('codes gratuits', () => {
-  it('normalise espaces et casse', () => assert.equal(normaliserCode(' tutti-ab2c -x7yz '), 'TUTTI-AB2C-X7YZ'));
+  it('normalise espaces et casse', () =>
+    assert.equal(normaliserCode(' tutti-ab2c -x7yz '), 'TUTTI-AB2C-X7YZ'));
   it('génère au bon format, sans caractères ambigus', () => {
     const code = genererCode();
     assert.match(code, /^TUTTI-[A-HJKMNP-Z2-9]{4}-[A-HJKMNP-Z2-9]{4}$/);
