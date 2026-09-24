@@ -75,6 +75,20 @@ interface Props {
   enTete?: ReactNode;
 }
 
+/**
+ * fix/quiz-sur-fond-sombre — LA CONSOLE DU QUIZ EST SOMBRE, COMME LE RESTE.
+ * Le blind test, la TV et le téléphone sont sur fond nuit ; seul le quiz
+ * restait crème, aveuglant dans un bar. La classe `theme-console` bascule les
+ * jetons de couleur (crème ↔ nuit) pour toute la page.
+ */
+function useFondConsoleSombre(): void {
+  useEffect(() => {
+    const racine = document.documentElement;
+    racine.classList.add('theme-console');
+    return () => racine.classList.remove('theme-console');
+  }, []);
+}
+
 export function HostQuizzView({
   session,
   cumulative,
@@ -85,6 +99,7 @@ export function HostQuizzView({
   enTete,
 }: Props): JSX.Element {
   const { t } = useTranslation();
+  useFondConsoleSombre();
 
   const [pack, setPack] = useState<QuestionSetWithQuestions | null>(null);
   const [packError, setPackError] = useState<string | null>(null);

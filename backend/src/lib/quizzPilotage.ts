@@ -183,7 +183,9 @@ export async function ajouterTheme(
           answer_lang2: reponse2,
           answer_aliases_lang1: alias1,
           answer_aliases_lang2: alias2,
-          time_limit_sec: 30,
+          // fix/quiz-15-secondes — Thomas : à 30 s, les joueurs ont le temps
+          // de chercher la réponse sur internet.
+          time_limit_sec: 15,
           points: 100,
           media_type: q.media_type ?? MediaType.NONE,
           media_url: q.media_url,
