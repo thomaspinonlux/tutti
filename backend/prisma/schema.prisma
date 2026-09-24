@@ -27,6 +27,9 @@ model Workspace {
   /// feat/client-avec-son-compte — cette maison joue avec SON abonnement
   /// Apple Music : aucun compte du parc mobilisé, tarif réduit.
   compte_apple_propre Boolean @default(false)
+  /// feat/acces-gratuit — laissez-passer : cette maison peut ouvrir une partie
+  /// sans créneau payé. Pour un ami, un essai, un partenaire.
+  acces_gratuit       Boolean @default(false)
 
 
   members           WorkspaceMember[]

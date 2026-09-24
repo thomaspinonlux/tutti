@@ -37,6 +37,15 @@ export async function refusHorsCreneau(
   });
   if (membre?.role !== 'CLIENT') return null;
 
+  // feat/acces-gratuit — LE LAISSEZ-PASSER. Coché depuis la fiche du client,
+  // il autorise à ouvrir une partie sans créneau payé : un ami, un essai, un
+  // partenaire. Décoché (le cas par défaut), le créneau payé reste exigé.
+  const espace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { acces_gratuit: true },
+  });
+  if (espace?.acces_gratuit) return null;
+
   const reglages = await lireReglages();
   const maintenant = new Date();
   const ouverture = new Date(maintenant.getTime() + reglages.ouverture_avant_minutes * 60_000);

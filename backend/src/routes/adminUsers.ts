@@ -34,7 +34,15 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
     const members = await prisma.workspaceMember.findMany({
       orderBy: { created_at: 'desc' },
       include: {
-        workspace: { select: { id: true, name: true, plan: true, compte_apple_propre: true } },
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            plan: true,
+            compte_apple_propre: true,
+            acces_gratuit: true,
+          },
+        },
       },
     });
 
@@ -144,6 +152,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
         can_use_tracks: m.can_use_tracks,
         can_use_quizz: m.can_use_quizz,
         compte_apple_propre: m.workspace.compte_apple_propre,
+        acces_gratuit: m.workspace.acces_gratuit,
         workspace: m.workspace,
         sessions_total: totalByWs.get(m.workspace_id) ?? 0,
         sessions_this_month: monthByWs.get(m.workspace_id) ?? 0,
@@ -281,6 +290,7 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response): Promise<
         can_use_tracks: m.can_use_tracks,
         can_use_quizz: m.can_use_quizz,
         compte_apple_propre: m.workspace.compte_apple_propre,
+        acces_gratuit: m.workspace.acces_gratuit,
         referral_code: m.referral_code,
         referrer_code: m.referrer_code,
         workspace: {
@@ -328,6 +338,8 @@ const patchBody = z.object({
   /** feat/client-avec-son-compte — cette maison joue avec SON abonnement Apple
    *  Music : aucun compte du parc mobilisé, grille réduite. */
   compte_apple_propre: z.boolean().optional(),
+  /** feat/acces-gratuit — cette maison joue sans payer de créneau. */
+  acces_gratuit: z.boolean().optional(),
 });
 
 router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
@@ -359,13 +371,20 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promis
   }
   // Le réglage porte sur l'ESPACE, pas sur le membre : tous les animateurs de
   // la maison jouent avec le même abonnement.
-  if (parsed.data.compte_apple_propre !== undefined) {
+  if (parsed.data.compte_apple_propre !== undefined || parsed.data.acces_gratuit !== undefined) {
     await prisma.workspace.update({
       where: { id: exists.workspace_id },
-      data: { compte_apple_propre: parsed.data.compte_apple_propre },
+      data: {
+        ...(parsed.data.compte_apple_propre !== undefined
+          ? { compte_apple_propre: parsed.data.compte_apple_propre }
+          : {}),
+        ...(parsed.data.acces_gratuit !== undefined
+          ? { acces_gratuit: parsed.data.acces_gratuit }
+          : {}),
+      },
     });
     console.info(
-      `[Admin] espace ${exists.workspace_id} → compte Apple du client = ${parsed.data.compte_apple_propre} (par ${req.userEmail})`,
+      `[Admin] espace ${exists.workspace_id} → compte Apple du client = ${parsed.data.compte_apple_propre} · accès gratuit = ${parsed.data.acces_gratuit} (par ${req.userEmail})`,
     );
     if (Object.keys(data).length === 0) {
       res.json({
@@ -378,6 +397,7 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promis
           can_use_tracks: exists.can_use_tracks,
           can_use_quizz: exists.can_use_quizz,
           compte_apple_propre: parsed.data.compte_apple_propre,
+          acces_gratuit: parsed.data.acces_gratuit,
         },
       });
       return;
@@ -404,6 +424,7 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response): Promis
       can_use_tracks: updated.can_use_tracks,
       can_use_quizz: updated.can_use_quizz,
       compte_apple_propre: parsed.data.compte_apple_propre,
+      acces_gratuit: parsed.data.acces_gratuit,
     },
   });
 });

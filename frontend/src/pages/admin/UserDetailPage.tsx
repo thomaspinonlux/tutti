@@ -161,6 +161,23 @@ export function UserDetailPage(): JSX.Element {
     }
   };
 
+  // feat/acces-gratuit — laissez-passer : jouer sans créneau payé.
+  const handleToggleAccesGratuit = async (): Promise<void> => {
+    if (!user) return;
+    setBusy(true);
+    try {
+      const res = await patchAdminUser(user.id, { acces_gratuit: !user.acces_gratuit });
+      const actif = res.acces_gratuit ?? !user.acces_gratuit;
+      setUser({ ...user, acces_gratuit: actif });
+      setSavedFlash(`Parties gratuites ${actif ? 'autorisées' : 'retirées'} ✓`);
+      window.setTimeout(() => setSavedFlash(null), 2500);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleResetFreemium = async (): Promise<void> => {
     if (!user) return;
     if (
@@ -298,6 +315,22 @@ export function UserDetailPage(): JSX.Element {
               disabled={busy}
               onChange={() => void handleToggleCompteApple()}
               className="w-6 h-6 cursor-pointer accent-spritz"
+            />
+          </label>
+          <label className="flex items-center justify-between p-3 border-2 border-hairline rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
+            <div>
+              <p className="font-display text-base">🎟️ Parties gratuites</p>
+              <p className="font-editorial italic text-xs text-ink-soft">
+                Il ouvre ses parties sans réserver ni payer de créneau. Sinon, le créneau payé est
+                obligatoire.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={user.acces_gratuit}
+              disabled={busy}
+              onChange={() => void handleToggleAccesGratuit()}
+              className="w-6 h-6 cursor-pointer accent-raspberry"
             />
           </label>
         </div>

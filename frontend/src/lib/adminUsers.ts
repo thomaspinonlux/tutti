@@ -28,6 +28,8 @@ export interface AdminUserSummary {
   /** feat/client-avec-son-compte — cette maison joue avec SON abonnement Apple
    *  Music : aucun compte du parc mobilisé, tarif réduit. */
   compte_apple_propre: boolean;
+  /** feat/acces-gratuit — cette maison ouvre ses parties sans créneau payé. */
+  acces_gratuit: boolean;
   workspace: { id: string; name: string; plan: string };
   sessions_total: number;
   sessions_this_month: number;
@@ -79,6 +81,7 @@ export interface AdminUserPatchResult {
   can_use_tracks: boolean;
   can_use_quizz: boolean;
   compte_apple_propre?: boolean;
+  acces_gratuit?: boolean;
 }
 
 export async function patchAdminUser(
@@ -89,6 +92,7 @@ export async function patchAdminUser(
     can_use_tracks?: boolean;
     can_use_quizz?: boolean;
     compte_apple_propre?: boolean;
+    acces_gratuit?: boolean;
   },
 ): Promise<AdminUserPatchResult> {
   const data = await api<{ user: AdminUserPatchResult }>(

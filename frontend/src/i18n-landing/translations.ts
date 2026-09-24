@@ -256,7 +256,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       bestDeal: 'Clé en main',
       offer: {
         badge: 'Offre de lancement · −50 %',
-        text: 'Jusqu’au 31 décembre 2026, toutes les heures sont à moitié prix. Les montants barrés sont les tarifs normaux.',
+        text: 'Jusqu’au 31 octobre 2026, toutes les heures sont à moitié prix. Les montants barrés sont les tarifs normaux.',
       },
       columns: [
         {
@@ -279,7 +279,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           ],
         },
       ],
-      note: "Prix TTC, au prorata des minutes : tu ne paies que le temps réservé. Paiement sécurisé via Stripe. <strong>Offre de lancement : −50 % sur toutes les heures jusqu'au 31 décembre 2026.</strong> Tarif soirée le vendredi et le samedi à partir de 18 h. Tu réserves ton créneau depuis ton compte, tu paies, tu joues.",
+      note: "Prix TTC, au prorata des minutes : tu ne paies que le temps réservé. Paiement sécurisé via Stripe. <strong>Offre de lancement : −50 % sur toutes les heures jusqu'au 31 octobre 2026.</strong> Tarif soirée le vendredi et le samedi à partir de 18 h. Tu réserves ton créneau depuis ton compte, tu paies, tu joues.",
     },
     useCases: {
       eyebrow: 'Pour qui',
@@ -339,7 +339,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'Comment se passe le paiement ?',
-          a: "Tu réserves un créneau depuis ton compte et tu paies par carte via Stripe. Le prix se calcule à l'heure, au prorata des minutes, avec un tarif majoré le vendredi et le samedi à partir de 18 h. Pas d'abonnement, pas de prélèvement automatique. <strong>Offre de lancement : −50 % sur toutes les heures jusqu'au 31 décembre 2026.</strong> Si tu joues avec ton propre abonnement Apple Music, le tarif est encore plus bas.",
+          a: "Tu réserves un créneau depuis ton compte et tu paies par carte via Stripe. Le prix se calcule à l'heure, au prorata des minutes, avec un tarif majoré le vendredi et le samedi à partir de 18 h. Pas d'abonnement, pas de prélèvement automatique. <strong>Offre de lancement : −50 % sur toutes les heures jusqu'au 31 octobre 2026.</strong> Si tu joues avec ton propre abonnement Apple Music, le tarif est encore plus bas.",
         },
         {
           q: "Qu'arrive-t-il à mes données personnelles ?",
@@ -522,7 +522,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       bestDeal: 'Turnkey',
       offer: {
         badge: 'Launch offer · −50%',
-        text: 'Until 31 December 2026 every hour is half price. Struck-through figures are the regular rates.',
+        text: 'Until 31 October 2026 every hour is half price. Struck-through figures are the regular rates.',
       },
       columns: [
         {
@@ -545,7 +545,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           ],
         },
       ],
-      note: 'Prices include VAT and are prorated to the minute: you only pay for the time you book. Secure payment via Stripe. <strong>Launch offer: 50% off every hour until 31 December 2026.</strong> Evening rate applies on Friday and Saturday from 6 PM. Book your slot from your account, pay, play.',
+      note: 'Prices include VAT and are prorated to the minute: you only pay for the time you book. Secure payment via Stripe. <strong>Launch offer: 50% off every hour until 31 October 2026.</strong> Evening rate applies on Friday and Saturday from 6 PM. Book your slot from your account, pay, play.',
     },
     useCases: {
       eyebrow: 'For whom',
@@ -605,7 +605,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'How does payment work?',
-          a: 'You book a slot from your account and pay by card via Stripe. The price is hourly, prorated to the minute, with an evening rate on Friday and Saturday from 6 PM. No subscription, no auto-debit. <strong>Launch offer: 50% off every hour until 31 December 2026.</strong> Playing with your own Apple Music subscription costs even less.',
+          a: 'You book a slot from your account and pay by card via Stripe. The price is hourly, prorated to the minute, with an evening rate on Friday and Saturday from 6 PM. No subscription, no auto-debit. <strong>Launch offer: 50% off every hour until 31 October 2026.</strong> Playing with your own Apple Music subscription costs even less.',
         },
         {
           q: 'What about my personal data?',
