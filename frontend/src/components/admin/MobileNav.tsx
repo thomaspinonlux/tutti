@@ -22,7 +22,9 @@ interface NavEntry {
 export function MobileNav(): JSX.Element {
   const { t } = useTranslation();
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [estProprietaire, setEstProprietaire] = useState(true);
+  // fix/menu-qui-clignote — rôle inconnu au départ (cf. Sidebar) : aucune
+  // entrée liée au rôle tant que /api/me n'a pas répondu.
+  const [estProprietaire, setEstProprietaire] = useState<boolean | null>(null);
 
   useEffect(() => {
     void getMe()
@@ -40,15 +42,17 @@ export function MobileNav(): JSX.Element {
     { to: '/admin/tracks', label: t('nav.tracks'), icon: '🎵' },
     { to: '/admin/quizz', label: t('nav.quizz'), icon: '💡' },
     // feat/reservation-de-creneaux — même entrée, deux destinations.
-    estProprietaire
-      ? { to: '/admin/reservations', label: t('nav.reservations'), icon: '📅' }
-      : { to: '/admin/reserver', label: t('nav.reserver'), icon: '📅' },
+    ...(estProprietaire === null
+      ? []
+      : estProprietaire
+        ? [{ to: '/admin/reservations', label: t('nav.reservations'), icon: '📅' }]
+        : [{ to: '/admin/reserver', label: t('nav.reserver'), icon: '📅' }]),
     { to: '/admin/settings', label: t('nav.settings'), icon: '⚙️' },
     { to: '/admin/account', label: t('nav.account'), icon: '👤' },
   ];
   // fix/menu-comptes-apple — le parc Apple Music, accessible aussi sur
   // tablette / téléphone (propriétaire uniquement, comme dans la colonne).
-  if (estProprietaire) {
+  if (estProprietaire === true) {
     entries.splice(4, 0, { to: '/admin/comptes-apple', label: t('nav.comptesApple'), icon: '🍎' });
   }
   if (isSuperAdmin) {

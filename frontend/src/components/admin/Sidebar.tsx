@@ -79,7 +79,12 @@ export function Sidebar(): JSX.Element {
   const navigate = useNavigate();
   const { user, signOut } = useAuthStore();
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [estProprietaire, setEstProprietaire] = useState(true);
+  // fix/menu-qui-clignote — RÔLE INCONNU AU DÉPART.
+  // On partait du principe « propriétaire » : pendant la seconde d'attente de
+  // /api/me, un client non validé voyait passer « Comptes Apple Music » et
+  // « Réservations », puis elles disparaissaient. Les entrées qui dépendent du
+  // rôle n'apparaissent plus qu'une fois le rôle connu.
+  const [estProprietaire, setEstProprietaire] = useState<boolean | null>(null);
 
   // Phase 4 — détecte le rôle super admin pour afficher l'entrée de nav.
   useEffect(() => {
@@ -128,8 +133,8 @@ export function Sidebar(): JSX.Element {
           (item) =>
             (!item.superAdminOnly || isSuperAdmin) &&
             !(item.hideForSuperAdmin && isSuperAdmin) &&
-            (!item.proprietaireSeul || estProprietaire) &&
-            (!item.clientSeul || !estProprietaire),
+            (!item.proprietaireSeul || estProprietaire === true) &&
+            (!item.clientSeul || estProprietaire === false),
         ).map((item) => (
           <NavLink
             key={item.to}
