@@ -131,8 +131,82 @@ export function normalizeText(text: string, motsProteges?: Set<string>): string 
   const tokens = bruts.filter((tok) => !STOPWORDS.has(tok) || motsProteges?.has(tok));
   // Un titre entierement compose de mots-outils (« Yeah! », « Oh la la ») ne
   // doit pas devenir une chaine vide : on garde alors les mots tels quels.
-  if (tokens.length === 0) return bruts.join(' ');
-  return tokens.join(' ');
+  if (tokens.length === 0) return bruts.map(enChiffre).join(' ');
+  return tokens.map(enChiffre).join(' ');
+}
+
+/**
+ * fix/sept-nains — « 7 » ET « SEPT » SONT LE MÊME MOT.
+ *
+ * Soirée du 25/09, quatre réponses perdues sur *Blanche-Neige et les sept
+ * nains* : l'alias français est bien en base, mais le transcripteur écrit
+ * « les 7 nains » quand le catalogue dit « les sept nains ». Deux écritures
+ * du même mot, deux résultats. On ramène donc tous les nombres à leur
+ * chiffre, des deux côtés — « sept », « seven », « siete » et « 7 » sont
+ * désormais la même chose.
+ */
+const NOMBRES: Record<string, string> = {
+  zero: '0',
+  un: '1',
+  une: '1',
+  deux: '2',
+  trois: '3',
+  quatre: '4',
+  cinq: '5',
+  six: '6',
+  sept: '7',
+  huit: '8',
+  neuf: '9',
+  dix: '10',
+  onze: '11',
+  douze: '12',
+  treize: '13',
+  quatorze: '14',
+  quinze: '15',
+  seize: '16',
+  vingt: '20',
+  trente: '30',
+  quarante: '40',
+  cinquante: '50',
+  soixante: '60',
+  cent: '100',
+  mille: '1000',
+  one: '1',
+  two: '2',
+  three: '3',
+  four: '4',
+  five: '5',
+  seven: '7',
+  eight: '8',
+  nine: '9',
+  ten: '10',
+  eleven: '11',
+  twelve: '12',
+  thirteen: '13',
+  fourteen: '14',
+  fifteen: '15',
+  sixteen: '16',
+  twenty: '20',
+  thirty: '30',
+  forty: '40',
+  fifty: '50',
+  sixty: '60',
+  hundred: '100',
+  thousand: '1000',
+  uno: '1',
+  dos: '2',
+  tres: '3',
+  cuatro: '4',
+  cinco: '5',
+  siete: '7',
+  ocho: '8',
+  nueve: '9',
+  diez: '10',
+};
+
+/** Le mot, ramené à son chiffre quand c'en est un. */
+function enChiffre(mot: string): string {
+  return NOMBRES[mot] ?? mot;
 }
 
 // ───── Levenshtein ────────────────────────────────────────────────────────
@@ -392,13 +466,111 @@ export function combinedScore(transcript: string, expected: string): number {
 
 /** Mots-outils : presents dans des centaines de titres, ils ne prouvent rien. */
 const MOTS_OUTILS = new Set([
-  'le','la','les','un','une','des','du','de','d','l','au','aux','et','ou','a','en','dans','sur',
-  'pour','par','avec','sans','mon','ma','mes','ton','ta','tes','son','sa','ses','ce','cet','cette',
-  'qui','que','quoi','ne','pas','plus','je','tu','il','elle','on','nous','vous','ils','elles','me',
-  'te','se','y','si','the','an','of','to','in','on','at','for','with','and','or','but','my','your',
-  'his','her','its','our','their','you','he','she','it','we','they','is','are','was','were','be',
-  'am','do','not','no','all','up','down','out','so','that','this','i','im','dont','el','los','las',
-  'del','una','mi','su',
+  'le',
+  'la',
+  'les',
+  'un',
+  'une',
+  'des',
+  'du',
+  'de',
+  'd',
+  'l',
+  'au',
+  'aux',
+  'et',
+  'ou',
+  'a',
+  'en',
+  'dans',
+  'sur',
+  'pour',
+  'par',
+  'avec',
+  'sans',
+  'mon',
+  'ma',
+  'mes',
+  'ton',
+  'ta',
+  'tes',
+  'son',
+  'sa',
+  'ses',
+  'ce',
+  'cet',
+  'cette',
+  'qui',
+  'que',
+  'quoi',
+  'ne',
+  'pas',
+  'plus',
+  'je',
+  'tu',
+  'il',
+  'elle',
+  'on',
+  'nous',
+  'vous',
+  'ils',
+  'elles',
+  'me',
+  'te',
+  'se',
+  'y',
+  'si',
+  'the',
+  'an',
+  'of',
+  'to',
+  'in',
+  'on',
+  'at',
+  'for',
+  'with',
+  'and',
+  'or',
+  'but',
+  'my',
+  'your',
+  'his',
+  'her',
+  'its',
+  'our',
+  'their',
+  'you',
+  'he',
+  'she',
+  'it',
+  'we',
+  'they',
+  'is',
+  'are',
+  'was',
+  'were',
+  'be',
+  'am',
+  'do',
+  'not',
+  'no',
+  'all',
+  'up',
+  'down',
+  'out',
+  'so',
+  'that',
+  'this',
+  'i',
+  'im',
+  'dont',
+  'el',
+  'los',
+  'las',
+  'del',
+  'una',
+  'mi',
+  'su',
 ]);
 
 /**
@@ -475,8 +647,7 @@ export function couvreAssezDuTitre(transcript: string, titre: string, artiste: s
  * Et l appelant verifie que cette tete ne designe pas AUSSI une autre oeuvre
  * de la manche — sinon « Star Wars » vaudrait n importe lequel des episodes.
  */
-const COUPURES_OEUVRE =
-  /\s*(?::|\s[–—-]\s|\set\sles?\s|\set\sla\s|\sand\sthe\s|\sand\sa\s|,\s)/iu;
+const COUPURES_OEUVRE = /\s*(?::|\s[–—-]\s|\set\sles?\s|\set\sla\s|\sand\sthe\s|\sand\sa\s|,\s)/iu;
 
 /**
  * Tete d un titre d oeuvre : ce qui precede le sous-titre ou le developpement.
@@ -506,6 +677,91 @@ export function donneLaFormeCourte(transcript: string, titreOeuvre: string, seui
   const tete = teteDeLOeuvre(titreOeuvre);
   if (!tete) return false;
   return combinedScore(transcript, tete) >= seuil;
+}
+
+/**
+ * feat/un-mot-d-ecart — UN MOT DE TRAVERS SUR UN TITRE LONG, C'EST JUSTE.
+ *
+ * Soirée du 25/09 : « Should I start or should I go » refusé pour *Should I
+ * Stay or Should I Go*, « Give Love a Bad Name » pour *You Give Love a Bad
+ * Name*, « Can't Get Enough » pour *Just Can't Get Enough*. Le joueur
+ * connaît le morceau ; il manque ou il change UN mot sur six.
+ *
+ * La règle ne vaut que sur les titres d'au moins quatre mots : en dessous,
+ * un mot d'écart change le titre (*Beautiful Liar* / *Beautiful Life*,
+ * *End of the Road* / *End of World*), et la mesure sur l'historique le
+ * confirme. Les mots comparés le sont à la lettre près (ou presque, pour
+ * absorber une faute), et l'ordre doit tenir.
+ */
+export function unSeulMotDEcart(transcript: string, attendu: string): boolean {
+  const a = normalizeText(attendu).split(' ').filter(Boolean);
+  const t = normalizeText(transcript).split(' ').filter(Boolean);
+  if (a.length < 4 || t.length < 3) return false;
+  // Trop de mots en plus : le joueur récite autre chose, pas ce titre.
+  if (t.length > a.length + 1) return false;
+
+  const memeMot = (x: string, y: string): boolean =>
+    x === y || (Math.max(x.length, y.length) >= 5 && levenshteinDistance(x, y) <= 1);
+
+  // Distance d'édition au niveau des MOTS : une substitution, un oubli ou un
+  // ajout comptent pour un.
+  let prev = Array.from({ length: t.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = new Array<number>(t.length + 1);
+    cur[0] = i;
+    for (let j = 1; j <= t.length; j++) {
+      const cout = memeMot(a[i - 1]!, t[j - 1]!) ? 0 : 1;
+      cur[j] = Math.min(cur[j - 1]! + 1, prev[j]! + 1, prev[j - 1]! + cout);
+    }
+    prev = cur;
+  }
+  return prev[t.length]! <= 1;
+}
+
+/**
+ * feat/faute-de-frappe — CE QUI EST TAPÉ SE TAPE MAL.
+ *
+ * Soirée du 25/09 : « dirty danxing », « wawing flaag », « sarurday nught
+ * fver », « cramberries » — quatre bonnes réponses perdues pour une touche à
+ * côté. Au clavier, l'erreur est une LETTRE, pas un son : le score phonétique
+ * (40 % de la note) fait chuter la note alors que le mot est presque exact.
+ *
+ * On compare donc, pour les réponses tapées seulement, la suite de lettres
+ * brute. Il faut une réponse d'une longueur suffisante — sinon « flag » vaut
+ * *Wavin' Flag* — et une ressemblance très haute, qui ne laisse passer que
+ * la faute de frappe.
+ */
+export function ressembleAUneFauteDeFrappe(transcript: string, attendu: string): boolean {
+  const a = normalizeText(attendu).split(' ').filter(Boolean);
+  const t = normalizeText(transcript).split(' ').filter(Boolean);
+  if (a.length === 0 || t.length === 0) return false;
+  // Il faut TOUT le titre : « flag » n'est pas une faute de frappe de
+  // *Wavin' Flag*, c'est un morceau de réponse.
+  if (t.length < a.length || t.length > a.length + 1) return false;
+  const lettres = a.join('');
+  if (lettres.length < 8) return false;
+
+  /** Ce qu'on pardonne sur un mot : une touche, deux sur un mot long. */
+  const pardon = (mot: string): number => (mot.length <= 4 ? 1 : 2);
+
+  let total = 0;
+  let j = 0;
+  for (const mot of a) {
+    // Le mot correspondant peut être décalé d'un cran (un mot en trop).
+    let trouve = -1;
+    for (let k = j; k < Math.min(j + 2, t.length); k++) {
+      if (levenshteinDistance(mot, t[k]!) <= pardon(mot)) {
+        trouve = k;
+        break;
+      }
+    }
+    if (trouve < 0) return false;
+    total += levenshteinDistance(mot, t[trouve]!);
+    j = trouve + 1;
+  }
+  // Trois lettres de travers au total : au-delà, ce n'est plus une faute de
+  // frappe, c'est une autre réponse.
+  return total <= 3;
 }
 
 /** Ce que le transcript a permis de reconnaître. */
@@ -540,10 +796,24 @@ export function matchAnswer(
   expected: { title: string; artist: string },
   /** Seuil de reconnaissance d une moitie (defaut = celui du serveur). */
   seuil = 80,
+  /** La réponse a été TAPÉE : on tolère alors la faute de frappe. */
+  options: { clavier?: boolean } = {},
 ): MatchResult {
   const titleLev = levenshteinScore(transcript, expected.title);
   const titlePhon = phoneticScore(transcript, expected.title);
-  const titleCombined = combinedScore(transcript, expected.title);
+  let titleCombined = combinedScore(transcript, expected.title);
+  // Un seul mot d'écart sur un titre long, et la faute de frappe au clavier :
+  // deux façons de dire juste que la note brute punissait.
+  if (titleCombined < seuil && unSeulMotDEcart(transcript, expected.title)) {
+    titleCombined = Math.max(titleCombined, seuil + 10);
+  }
+  if (
+    titleCombined < seuil &&
+    options.clavier &&
+    ressembleAUneFauteDeFrappe(transcript, expected.title)
+  ) {
+    titleCombined = Math.max(titleCombined, seuil + 10);
+  }
 
   const combo = `${expected.artist} ${expected.title}`;
   const comboLev = levenshteinScore(transcript, combo);
@@ -568,7 +838,14 @@ export function matchAnswer(
   // La regle du jeu (gameScoring.ts) est pourtant explicite : artiste OU titre
   // trouve -> points de position ; les deux -> bonus double. Ce moteur ne savait
   // pas exprimer « artiste seul ».
-  const artistCombined = combinedScore(transcript, expected.artist);
+  let artistCombined = combinedScore(transcript, expected.artist);
+  if (
+    artistCombined < seuil &&
+    options.clavier &&
+    ressembleAUneFauteDeFrappe(transcript, expected.artist)
+  ) {
+    artistCombined = Math.max(artistCombined, seuil + 10);
+  }
 
   // fix/bonus-double-imerite — LA CIBLE SE DECIDE SUR CHAQUE MOITIE, PAS SUR
   // LE COMBO.

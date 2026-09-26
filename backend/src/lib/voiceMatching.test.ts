@@ -11,13 +11,15 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  normalizeText,
-  levenshteinScore,
-  phoneticScore,
   combinedScore,
-  matchAnswer,
-  teteDeLOeuvre,
   donneLaFormeCourte,
+  levenshteinScore,
+  matchAnswer,
+  normalizeText,
+  phoneticScore,
+  ressembleAUneFauteDeFrappe,
+  teteDeLOeuvre,
+  unSeulMotDEcart,
 } from './voiceMatching.js';
 
 // ───── normalizeText ──────────────────────────────────────────────────────
@@ -43,7 +45,7 @@ describe('normalizeText', () => {
   // « L'été indien » donnait « ete indien » mais la transcription collee
   // « lété indien » donnait « lete indien » : 55 %, refuse. Les trois
   // graphies convergent desormais.
-  it('soude l elision quelle que soit sa graphie (l’ l\' l␣ collé)', () => {
+  it("soude l elision quelle que soit sa graphie (l’ l' l␣ collé)", () => {
     assert.equal(normalizeText("L'été indien"), 'lete indien');
     assert.equal(normalizeText('l’été indien'), 'lete indien');
     assert.equal(normalizeText('l été indien'), 'lete indien');
@@ -232,5 +234,63 @@ describe('forme courte du titre d une oeuvre', () => {
     assert.ok(donneLaFormeCourte('snow white', 'Snow White and the Seven Dwarfs'));
     assert.ok(!donneLaFormeCourte('alice in wonderland', 'Snow White and the Seven Dwarfs'));
     assert.ok(!donneLaFormeCourte('mulan', 'Snow White and the Seven Dwarfs'));
+  });
+});
+
+describe('fix/sept-nains — les nombres écrits valent les chiffres', () => {
+  it('« 7 nains » vaut « sept nains »', () => {
+    assert.equal(normalizeText('les 7 nains'), normalizeText('les sept nains'));
+    assert.ok(combinedScore('Blanche neige des 7 nains', 'blanche neige et les sept nains') >= 80);
+  });
+
+  it('marche aussi en anglais', () => {
+    assert.equal(normalizeText('seven dwarfs'), normalizeText('7 dwarfs'));
+  });
+});
+
+describe('feat/un-mot-d-ecart — un mot de travers sur un titre long', () => {
+  it('rattrape un mot changé', () => {
+    assert.ok(unSeulMotDEcart('Should I start or should I go', 'Should I Stay or Should I Go'));
+  });
+
+  it('rattrape un mot oublié', () => {
+    assert.ok(unSeulMotDEcart('Give Love A Bad Name', 'You Give Love A Bad Name'));
+    assert.ok(unSeulMotDEcart("I Can't Get Enough", "Just Can't Get Enough"));
+  });
+
+  it('refuse sur un titre court : un mot y change tout', () => {
+    assert.ok(!unSeulMotDEcart('Beautiful Life', 'Beautiful Liar'));
+    assert.ok(!unSeulMotDEcart('End of world', 'End of the Road'));
+  });
+
+  it('refuse deux mots de travers', () => {
+    assert.ok(!unSeulMotDEcart('Should I run or should I stop', 'Should I Stay or Should I Go'));
+  });
+
+  it('refuse une récitation plus longue que le titre', () => {
+    assert.ok(
+      !unSeulMotDEcart(
+        'Should I Stay or Should I Go plus deux trois quatre',
+        'Should I Stay or Should I Go',
+      ),
+    );
+  });
+});
+
+describe('feat/faute-de-frappe — une touche à côté reste une bonne réponse', () => {
+  it('accepte la lettre de travers', () => {
+    assert.ok(ressembleAUneFauteDeFrappe('dirty danxing', 'Dirty Dancing'));
+    assert.ok(ressembleAUneFauteDeFrappe('sarurday nught fver', 'Saturday Night Fever'));
+    assert.ok(ressembleAUneFauteDeFrappe('wawing flaag', "Wavin' Flag"));
+    assert.ok(ressembleAUneFauteDeFrappe('cramberries', 'The Cranberries'));
+  });
+
+  it('refuse un simple fragment du titre', () => {
+    assert.ok(!ressembleAUneFauteDeFrappe('flag', "Wavin' Flag"));
+    assert.ok(!ressembleAUneFauteDeFrappe('dance', 'La dernière danse'));
+  });
+
+  it('refuse un titre trop court pour juger', () => {
+    assert.ok(!ressembleAUneFauteDeFrappe('lovy', 'Lovely'));
   });
 });

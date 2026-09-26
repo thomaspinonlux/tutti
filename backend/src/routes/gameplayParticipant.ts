@@ -38,7 +38,12 @@ import {
 } from '../lib/assemblyai.js';
 import { decouperArtiste } from '../lib/aliases.js';
 import type { MatchTarget } from '../lib/voiceMatching.js';
-import { matchAnswer, couvreAssezDuTitre, donneLaFormeCourte } from '../lib/voiceMatching.js';
+import {
+  matchAnswer,
+  couvreAssezDuTitre,
+  donneLaFormeCourte,
+  ressembleAUneFauteDeFrappe,
+} from '../lib/voiceMatching.js';
 import { getCumulativeScores } from '../lib/scores.js';
 import type { GameMode, Team } from '@tutti/shared';
 
@@ -848,6 +853,9 @@ async function runMatchAndCommit(
   // La question du jeu est « a-t-il dit l artiste ? a-t-il dit le titre ? ».
   // On prend donc le meilleur score de chaque moitie sur TOUTES les paires,
   // puis on decide. Independant de l ordre des alias, et de l ordre des mots.
+  // feat/faute-de-frappe — la tolerance aux lettres de travers ne vaut que
+  // pour ce qui est TAPE : au micro, l erreur est un son, pas une touche.
+  const auClavier = args.source === 'clavier' || args.source === 'manual-text';
   let meilleurTitre = 0;
   let meilleurArtiste = 0;
   let meilleurCombo = 0;
@@ -860,10 +868,13 @@ async function runMatchAndCommit(
   for (const transcript of transcriptions) {
     for (const title of titleCandidates) {
       for (const artist of artistCandidates) {
-        const r = matchAnswer(transcript, { title, artist }, VOICE_MATCH_THRESHOLD);
+        const r = matchAnswer(transcript, { title, artist }, VOICE_MATCH_THRESHOLD, {
+          clavier: auClavier,
+        });
         if (r.scores.title_combined > meilleurTitre) meilleurTitre = r.scores.title_combined;
         if (r.scores.artist_combined > meilleurArtiste) meilleurArtiste = r.scores.artist_combined;
-        if (r.scores.artist_title_combined > meilleurCombo) meilleurCombo = r.scores.artist_title_combined;
+        if (r.scores.artist_title_combined > meilleurCombo)
+          meilleurCombo = r.scores.artist_title_combined;
       }
     }
   }
@@ -911,7 +922,40 @@ async function runMatchAndCommit(
     }
   }
 
-  if (!titreParFragment && meilleurTitre < VOICE_MATCH_THRESHOLD && meilleurArtiste >= VOICE_MATCH_THRESHOLD) {
+  // feat/faute-de-frappe — meme garde que pour les fragments : une reponse
+  // tapee qui ressemble AUSSI a un autre morceau de la manche ne prouve rien.
+  if (auClavier && meilleurTitre >= VOICE_MATCH_THRESHOLD) {
+    const parFrappe = transcriptions.some(
+      (tr) =>
+        ressembleAUneFauteDeFrappe(tr, track.canonical_title) &&
+        !transcriptions.some(
+          (t2) =>
+            matchAnswer(
+              t2,
+              { title: track.canonical_title, artist: track.artist.canonical_name },
+              VOICE_MATCH_THRESHOLD,
+            ).scores.title_combined >= VOICE_MATCH_THRESHOLD,
+        ),
+    );
+    if (parFrappe) {
+      const autres = await titresDeLaManche(args.roundId, track.id);
+      const ambigu = transcriptions.some((tr) =>
+        autres.some(({ titre }) => ressembleAUneFauteDeFrappe(tr, titre)),
+      );
+      if (ambigu) {
+        console.info(
+          `[Voix] faute de frappe refusee (ambigue dans la manche) : "${transcriptions[0]?.slice(0, 60)}"`,
+        );
+        meilleurTitre = 0;
+      }
+    }
+  }
+
+  if (
+    !titreParFragment &&
+    meilleurTitre < VOICE_MATCH_THRESHOLD &&
+    meilleurArtiste >= VOICE_MATCH_THRESHOLD
+  ) {
     // Le titre OFFICIEL seulement : les alias contiennent souvent le nom de
     // l artiste, et un bout d alias donnerait le titre a qui n a dit que le
     // chanteur.
@@ -940,7 +984,10 @@ async function runMatchAndCommit(
   const artistePasse = meilleurArtiste >= VOICE_MATCH_THRESHOLD;
   let best: { score: number; target: MatchTarget };
   if (artistePasse && titrePasse) {
-    best = { score: Math.max(meilleurTitre, meilleurArtiste, VOICE_MATCH_THRESHOLD), target: 'artist_title' };
+    best = {
+      score: Math.max(meilleurTitre, meilleurArtiste, VOICE_MATCH_THRESHOLD),
+      target: 'artist_title',
+    };
   } else if (artistePasse) {
     best = { score: meilleurArtiste, target: 'artist' };
   } else if (titrePasse) {
@@ -974,7 +1021,6 @@ async function runMatchAndCommit(
     titreAttendu: track.canonical_title,
     artisteAttendu: track.artist?.canonical_name ?? null,
   };
-
 
   console.info(
     `[Voice] ${args.level} ${args.source}: ${transcriptions.map((t) => `"${t.slice(0, 80)}"`).join(' | ')} score=${best.score}% target=${best.target} threshold=${VOICE_MATCH_THRESHOLD}`,
