@@ -63,7 +63,8 @@ const PAUSE_MS = 250;
 const DUREE_MIN_S = 60;
 const DUREE_MAX_S = 600;
 /** Albums dont le nom trahit une version qui n'est pas l'originale. */
-const ALBUM_PIEGE = /karaok|tribute|hommage|in the style of|made famous by|cover version|reprise instrumentale/i;
+const ALBUM_PIEGE =
+  /karaok|tribute|hommage|in the style of|made famous by|cover version|reprise instrumentale/i;
 
 const args = process.argv.slice(2);
 const drapeau = (n: string): boolean => args.includes(`--${n}`);
@@ -76,6 +77,8 @@ const SANS_ECRITURE = drapeau('dry-run');
 const PLAYLIST = option('playlist');
 const DEPUIS_JOURS = option('depuis') ? Number.parseInt(option('depuis')!, 10) : undefined;
 const SORTIE_JSON = option('json');
+/** Ne reprend que les lignes actuellement marquées injouables. */
+const SEULEMENT_INJOUABLES = drapeau('injouables');
 
 /** Réduit un libellé à sa substance : minuscules, sans accents ni ponctuation. */
 function reduire(s: string | null): string {
@@ -98,7 +101,10 @@ function reduireEdition(s: string | null): string {
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .replace(/\(.*?\)|\[.*?\]/g, ' ')
-    .replace(/\b(remaster(ed)?|live|radio edit|single version|feat|featuring|version|mono|stereo|19\d\d|20\d\d)\b/g, ' ')
+    .replace(
+      /\b(remaster(ed)?|live|radio edit|single version|feat|featuring|version|mono|stereo|19\d\d|20\d\d)\b/g,
+      ' ',
+    )
     .replace(/[^a-z0-9]/g, '');
 }
 
@@ -157,6 +163,9 @@ async function main(): Promise<void> {
   const lignes = await prisma.officialPlaylistTrack.findMany({
     where: {
       apple_music_id: { not: null },
+      ...(SEULEMENT_INJOUABLES
+        ? { is_playable: false, NOT: { playability_reason: { startsWith: 'hors-sujet' } } }
+        : {}),
       ...(PLAYLIST ? { playlist: { slug: PLAYLIST } } : {}),
       ...(DEPUIS_JOURS
         ? {
@@ -311,7 +320,9 @@ async function main(): Promise<void> {
     );
   }
 
-  console.info(`[VérifApple] écrit : ${aEcarter.length} écarté(s), ${aRetablir.length} confirmé(s).`);
+  console.info(
+    `[VérifApple] écrit : ${aEcarter.length} écarté(s), ${aRetablir.length} confirmé(s).`,
+  );
   await prisma.$disconnect();
 }
 
