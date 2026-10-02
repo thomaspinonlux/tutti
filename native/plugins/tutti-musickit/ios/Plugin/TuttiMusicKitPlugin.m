@@ -15,4 +15,10 @@ CAP_PLUGIN(TuttiMusicKitPlugin, "TuttiMusicKit",
     CAP_PLUGIN_METHOD(skipToNext, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(getStatus, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(configurerJournal, CAPPluginReturnPromise);
+    // feat/ambiance-salon — SANS CES DEUX LIGNES, LES MÉTHODES N'EXISTENT PAS
+    // CÔTÉ JS. Le Swift compile, le binaire part sur TestFlight, et l'appel
+    // depuis la WebView échoue silencieusement : une méthode absente de cette
+    // liste n'est pas enregistrée auprès du bridge Capacitor.
+    CAP_PLUGIN_METHOD(playPlaylist, CAPPluginReturnPromise);
+    CAP_PLUGIN_METHOD(stopAmbiance, CAPPluginReturnPromise);
 )
