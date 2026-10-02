@@ -1006,7 +1006,12 @@
     "youtubePremiumToggle": "J'ai YouTube Premium (lecture sans pub)",
     "youtubePremiumHint": "Détection auto via API non disponible côté Google. Coche manuellement si tu as Premium.",
     "youtubeConnectedToast": "YouTube connecté avec succès.",
-    "youtubeErrorToast": "Erreur lors de la connexion YouTube"
+    "youtubeErrorToast": "Erreur lors de la connexion YouTube",
+    "ambianceTitle": "Musique d'ambiance pendant l'attente",
+    "ambianceDescription": "Pendant que les joueurs scannent le QR code, la console joue cette playlist Apple Music. Plus besoin de basculer sur une autre appli — et le premier morceau de la partie démarre plus sûrement.",
+    "ambiancePlaylistLabel": "Playlist Apple Music",
+    "ambiancePlaylistHint": "Collez l'identifiant (pl.u-…) ou l'URL de partage de la playlist. Laissez vide pour utiliser la boucle intégrée.",
+    "ambianceShuffle": "Lire en aléatoire"
   },
   "account": {
     "title": "Mon compte",

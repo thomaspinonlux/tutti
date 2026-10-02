@@ -824,6 +824,125 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         call.resolve()
     }
 
+    // MARK: - Musique d'ambiance du salon d'attente
+    //
+    // feat/ambiance-salon — PENDANT QUE LES JOUEURS SE CONNECTENT, LA SALLE
+    // NE DOIT PAS ÊTRE SILENCIEUSE.
+    //
+    // Avant : l'animateur basculait l'iPad sur une autre appli de musique le
+    // temps que tout le monde scanne le QR code, puis revenait sur Tutti.
+    // Deux ennuis : le geste à chaque partie, et surtout iOS qui suspend le
+    // contexte audio de la WebView pendant l'aller-retour — c'est exactement
+    // ce que tout lib/audioUnlock.ts essaie de rattraper, et c'est la cause
+    // la plus fréquente d'un premier morceau qui ne part pas.
+    //
+    // Ici on reste dans l'app : une playlist du catalogue Apple Music, en
+    // aléatoire, en boucle. CE N'EST PAS le chemin de jeu — play() n'est pas
+    // touché. L'ambiance occupe la même file (ApplicationMusicPlayer est un
+    // singleton), donc elle doit être RENDUE AVANT la partie : stopAmbiance()
+    // vide la file et remet aléatoire/boucle à zéro, pour que le premier
+    // morceau retrouve exactement l'état qu'il connaît aujourd'hui.
+
+    @objc func playPlaylist(_ call: CAPPluginCall) {
+        guard let playlistId = call.getString("playlistId") else {
+            call.reject("playlistId requis")
+            return
+        }
+        let aleatoire = call.getBool("shuffle") ?? true
+        guard prendreLaMain() else {
+            TuttiJournal.shared.note("musickit", "playPlaylist IGNORÉ — une commande est déjà en cours", ["id": playlistId], niveau: "warn")
+            call.reject("Une lecture est déjà en cours de démarrage")
+            return
+        }
+        let feuVert = peutInterrogerApple()
+        guard feuVert.ok else {
+            rendreLaMain()
+            TuttiJournal.shared.note("musickit", "playPlaylist REFUSÉ — \(feuVert.raison)", ["id": playlistId], niveau: "warn")
+            call.reject("Apple Music n'est pas disponible à l'instant (\(feuVert.raison))")
+            return
+        }
+        let jeton = TuttiJournal.shared.debut("musickit", "playPlaylist", ["id": playlistId, "aleatoire": aleatoire])
+        Task {
+            defer { self.rendreLaMain() }
+            do {
+                // RÈGLE — aucun appel Apple n'est attendu sans échéance.
+                let trouve = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.chercherPlaylist(playlistId)
+                }
+                guard let playlist = trouve ?? nil, let pistes = playlist.tracks, !pistes.isEmpty else {
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "playlist-introuvable-ou-vide"])
+                    call.reject("Playlist d'ambiance introuvable ou vide (\(playlistId))")
+                    return
+                }
+                let pret = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.surLePrincipal {
+                        self.player.queue = ApplicationMusicPlayer.Queue(for: pistes)
+                        self.player.state.shuffleMode = aleatoire ? .songs : .off
+                        self.player.state.repeatMode = MusicPlayer.RepeatMode.all
+                    }
+                    return true
+                }
+                guard pret == true else {
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "file-non-remplie"])
+                    call.reject("Apple Music n'a pas accepté la playlist d'ambiance")
+                    return
+                }
+                let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.surLePrincipal { try await self.player.play() }
+                    return true
+                }
+                guard demarre == true else {
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "apple-ne-demarre-pas"])
+                    call.reject("Apple Music n'a pas démarré la playlist d'ambiance")
+                    return
+                }
+                self.noterEtat(enLecture: true, position: nil, confirme: true)
+                TuttiJournal.shared.fin("musickit", jeton, ["pistes": pistes.count])
+                call.resolve(["ok": true, "pistes": pistes.count])
+            } catch {
+                TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
+                call.reject("Ambiance échouée : \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Rend le lecteur à la partie : file vidée, aléatoire et boucle annulés.
+    /// Appelé au lancement de la session — après quoi le chemin de jeu retrouve
+    /// une file vide, c'est-à-dire l'état exact qu'il connaît déjà.
+    @objc func stopAmbiance(_ call: CAPPluginCall) {
+        let jeton = TuttiJournal.shared.debut("musickit", "stopAmbiance")
+        Task {
+            _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
+                try await self.surLePrincipal {
+                    self.player.stop()
+                    self.player.state.shuffleMode = .off
+                    self.player.state.repeatMode = nil
+                    self.player.queue = ApplicationMusicPlayer.Queue()
+                }
+                return true
+            }
+            self.noterEtat(enLecture: false, position: 0, confirme: true)
+            TuttiJournal.shared.fin("musickit", jeton)
+            call.resolve()
+        }
+    }
+
+    /// Playlist du catalogue avec ses pistes. Même instrumentation que
+    /// chercherMorceau : le compteur suit la requête réelle, pas la course.
+    private func chercherPlaylist(_ playlistId: String) async throws -> Playlist? {
+        let depart = ProcessInfo.processInfo.systemUptime
+        verrouVol.lock(); recherchesEnVolDepuis.append(depart); verrouVol.unlock()
+        defer {
+            verrouVol.lock()
+            if let i = recherchesEnVolDepuis.firstIndex(of: depart) { recherchesEnVolDepuis.remove(at: i) }
+            verrouVol.unlock()
+        }
+        var requete = MusicCatalogResourceRequest<Playlist>(matching: \.id, equalTo: MusicItemID(playlistId))
+        requete.properties = [.tracks]
+        let reponse = try await requete.response()
+        return reponse.items.first
+    }
+
     // fix/ecran-fige-sur-apple-music — ON N'ATTEND PLUS JAMAIS APPLE.
     //
     // Constaté en direct le 04/09 (journal natif, playlist Britpop 90) :

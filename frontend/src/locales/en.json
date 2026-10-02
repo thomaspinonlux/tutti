@@ -1006,7 +1006,12 @@
     "youtubePremiumToggle": "I have YouTube Premium (ad-free playback)",
     "youtubePremiumHint": "Auto-detection via Google API not available. Toggle manually if you have Premium.",
     "youtubeConnectedToast": "YouTube connected successfully.",
-    "youtubeErrorToast": "Error connecting YouTube"
+    "youtubeErrorToast": "Error connecting YouTube",
+    "ambianceTitle": "Lobby background music",
+    "ambianceDescription": "While players scan the QR code, the console plays this Apple Music playlist. No more switching to another app — and the first track of the game starts more reliably.",
+    "ambiancePlaylistLabel": "Apple Music playlist",
+    "ambiancePlaylistHint": "Paste the playlist id (pl.u-…) or its share URL. Leave empty to use the built-in loop.",
+    "ambianceShuffle": "Shuffle"
   },
   "account": {
     "title": "My account",

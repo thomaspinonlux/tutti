@@ -30,4 +30,16 @@ export interface TuttiMusicKitPlugin {
   queueNext(options: { catalogId: string }): Promise<{ ok: boolean }>;
   /** feat/next-track-preload — saute sur le morceau préchargé (démarrage instantané). */
   skipToNext(): Promise<{ ok: boolean }>;
+  /**
+   * feat/ambiance-salon — joue une playlist du catalogue Apple Music en
+   * aléatoire et en boucle, pendant que les joueurs scannent le QR code.
+   * Occupe la même file que le jeu : à rendre avec stopAmbiance() avant de
+   * lancer la partie.
+   */
+  playPlaylist(options: { playlistId: string; shuffle?: boolean }): Promise<{
+    ok: boolean;
+    pistes: number;
+  }>;
+  /** feat/ambiance-salon — vide la file et annule aléatoire/boucle. */
+  stopAmbiance(): Promise<void>;
 }

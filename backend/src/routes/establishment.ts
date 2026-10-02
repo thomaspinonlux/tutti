@@ -3,7 +3,8 @@
  *
  * - GET    /api/establishment        : retourne l'establishment courant
  * - PATCH  /api/establishment        : édite name, branding_color, default_language,
- *                                       active_provider, branding_logo URL
+ *                                       active_provider, branding_logo URL, et la
+ *                                       musique d'ambiance du salon d'attente
  *
  * Tous les champs sont optionnels dans le PATCH (partial update). Le contrôle
  * tenant (workspace_id) passe par requireAuth + requireWorkspace.
@@ -14,6 +15,19 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
+
+/**
+ * Extrait l'identifiant d'une playlist Apple Music. Accepte :
+ *   pl.u-abcd1234
+ *   https://music.apple.com/fr/playlist/soiree/pl.u-abcd1234
+ *   https://music.apple.com/fr/playlist/soiree/pl.u-abcd1234?l=fr
+ * Renvoie null pour une chaîne vide (= réglage effacé).
+ */
+function normaliserIdPlaylist(brut: string): string | null {
+  if (brut === '') return null;
+  const trouve = /pl\.[A-Za-z0-9_-]+/u.exec(brut);
+  return trouve ? trouve[0] : brut;
+}
 
 const router: Router = Router();
 
@@ -38,6 +52,23 @@ const patchBodySchema = z.object({
     .min(1, { message: 'Au moins une source doit être sélectionnée' })
     .max(5)
     .optional(),
+  /**
+   * feat/ambiance-salon — playlist Apple Music jouée pendant que les joueurs
+   * scannent le QR code. On accepte l'identifiant brut (pl.xxxx) ET l'URL
+   * copiée depuis l'app Apple Music : c'est ce que l'animateur a sous la main.
+   * Vide ou null = pas de playlist, l'app retombe sur la boucle MP3.
+   */
+  ambiance_playlist_id: z
+    .string()
+    .trim()
+    .max(300)
+    .transform(normaliserIdPlaylist)
+    .refine((v) => v === null || /^pl\.[A-Za-z0-9_-]+$/u.test(v), {
+      message: 'Attendu : un identifiant pl.xxxx ou une URL de playlist Apple Music',
+    })
+    .nullable()
+    .optional(),
+  ambiance_aleatoire: z.boolean().optional(),
 });
 
 router.get('/', async (req: Request, res: Response): Promise<void> => {

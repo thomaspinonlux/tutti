@@ -2,7 +2,7 @@
  * /admin/settings — édition de l'établissement courant.
  *
  * Champs : nom, couleur d'accent, logo (upload Supabase Storage),
- * langue par défaut, source musicale active.
+ * langue par défaut, source musicale active, musique d'ambiance du salon.
  *
  * Critère étape 6 : changer le nom puis valider, le nouveau nom doit
  * apparaître dans la sidebar et le dashboard sans rechargement.
@@ -57,6 +57,10 @@ export function SettingsPage(): JSX.Element {
   const [name, setName] = useState('');
   const [brandingColor, setBrandingColor] = useState('');
   const [defaultLanguage, setDefaultLanguage] = useState<'fr' | 'en'>('fr');
+  // feat/ambiance-salon — collée telle quelle depuis l'app Apple Music : le
+  // backend extrait l'identifiant pl.xxxx de l'URL.
+  const [ambiancePlaylist, setAmbiancePlaylist] = useState('');
+  const [ambianceAleatoire, setAmbianceAleatoire] = useState(true);
   const [activeProviders, setActiveProviders] = useState<Array<(typeof PROVIDER_IDS)[number]>>([
     'demo',
   ]);
@@ -95,6 +99,8 @@ export function SettingsPage(): JSX.Element {
     setName(establishment.name);
     setBrandingColor(establishment.branding_color ?? '');
     setDefaultLanguage((establishment.default_language as 'fr' | 'en') ?? 'fr');
+    setAmbiancePlaylist(establishment.ambiance_playlist_id ?? '');
+    setAmbianceAleatoire(establishment.ambiance_aleatoire !== false);
     const incoming = establishment.active_providers as Array<(typeof PROVIDER_IDS)[number]>;
     setActiveProviders(incoming.length > 0 ? incoming : ['demo']);
   }, [establishment]);
@@ -206,6 +212,8 @@ export function SettingsPage(): JSX.Element {
           branding_color: brandingColor || null,
           default_language: defaultLanguage,
           active_providers: activeProviders,
+          ambiance_playlist_id: ambiancePlaylist.trim() || null,
+          ambiance_aleatoire: ambianceAleatoire,
         },
       });
       await refetch();
@@ -529,6 +537,41 @@ export function SettingsPage(): JSX.Element {
                 </button>
               ))}
             </div>
+          </label>
+        </Card>
+
+        {/* feat/ambiance-salon — de la musique pendant que les joueurs scannent
+            le QR code, sans quitter l'app. Vide = boucle intégrée. */}
+        <Card>
+          <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+            {t('settings.ambianceTitle')}
+          </p>
+          <p className="font-editorial italic text-sm text-ink-2 mb-4">
+            {t('settings.ambianceDescription')}
+          </p>
+          <label className="block mb-3">
+            <span className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-2 block">
+              {t('settings.ambiancePlaylistLabel')}
+            </span>
+            <input
+              type="text"
+              value={ambiancePlaylist}
+              onChange={(e) => setAmbiancePlaylist(e.target.value)}
+              placeholder="https://music.apple.com/fr/playlist/…/pl.u-…"
+              className="w-full px-3 py-2 border-2 border-hairline rounded bg-cream text-ink"
+            />
+            <span className="text-xs text-ink-2 mt-1 block">
+              {t('settings.ambiancePlaylistHint')}
+            </span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={ambianceAleatoire}
+              onChange={(e) => setAmbianceAleatoire(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <span className="text-sm text-ink">{t('settings.ambianceShuffle')}</span>
           </label>
         </Card>
 

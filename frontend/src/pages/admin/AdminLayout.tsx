@@ -30,6 +30,9 @@ export interface Establishment {
   branding_logo: string | null;
   default_language: string;
   active_providers: string[];
+  /** feat/ambiance-salon — playlist Apple Music jouée pendant l'attente (pl.xxxx). */
+  ambiance_playlist_id: string | null;
+  ambiance_aleatoire: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -126,7 +129,12 @@ export function AdminLayout(): JSX.Element {
   // EN ATTENTE : c'est en demandant un créneau qu'un nouveau client se fait
   // connaître, et l'accord du propriétaire sur ce créneau valide son compte.
   const surLaReservation = location.pathname.startsWith('/admin/reserver');
-  if (!meLoading && me && !me.isSuperAdmin && !(surLaReservation && me.memberStatus === 'PENDING')) {
+  if (
+    !meLoading &&
+    me &&
+    !me.isSuperAdmin &&
+    !(surLaReservation && me.memberStatus === 'PENDING')
+  ) {
     // feat/parcours-client-simplifie — un compte en attente qui arrive sur
     // l'accueil (connexion après confirmation de l'e-mail) va directement
     // réserver son créneau, au lieu d'un écran d'attente.

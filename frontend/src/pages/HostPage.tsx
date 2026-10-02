@@ -55,7 +55,6 @@ import {
   startSession,
   toggleParticipantMaster,
   hidePodium,
-
 } from '../lib/sessions.js';
 import {
   abandonSession,
@@ -77,7 +76,8 @@ import { useExternalPlayerScreen, USE_NATIVE_TV } from '../lib/useExternalPlayer
 import { externalScreen } from '../lib/externalScreen.js';
 import { remoteLog, installRemoteErrorCapture } from '../lib/remoteLog.js';
 import { useNouvelleVersion } from '../lib/useNouvelleVersion.js';
-import { useSelectionBackgroundMusic } from '../lib/useSelectionBackgroundMusic.js';
+import { useLobbyAmbiance } from '../lib/useLobbyAmbiance.js';
+import { getReglageAmbiance, type ReglageAmbiance } from '../lib/ambiance.js';
 import { isCapacitorNative, getShareableOrigin } from '../lib/platform.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
 import { unlockAudioSync } from '../lib/audioUnlock.js';
@@ -798,9 +798,15 @@ function HostPageInner(): JSX.Element {
   // de sélection, en continu, sans coupure entre les deux écrans. Elle
   // s'arrête au lancement d'un morceau (phase roundPlaying). Le hook vivait
   // dans RoundSelectionScreen (sélection uniquement) → remonté ici.
-  useSelectionBackgroundMusic({
-    enabled: effectivePhase === 'intermission' || effectivePhase === 'roundSelection',
-  });
+  //
+  // feat/ambiance-salon — la phase 'waiting' y a été ajoutée : c'est l'écran du
+  // QR code, pendant que les joueurs se connectent. Sans elle la salle était
+  // silencieuse et il fallait rebasculer l'iPad sur une autre appli de musique
+  // puis revenir — ce qui suspend le contexte audio de l'app
+  // (cf. lib/audioUnlock.ts) et met en péril le lancement du premier morceau.
+  //
+  // Le hook lui-même est appelé plus bas : il a besoin de `appleConnected`,
+  // déclaré avec le reste de la couche audio.
 
   // feat/tv-join-qr-codes (D) — toggle overlay QR géant sur la TV pendant la
   // partie. Flag piloté par l'animateur, lu par la TV via screen-state.
@@ -925,6 +931,26 @@ function HostPageInner(): JSX.Element {
       })
       .finally(() => setAppleStatusLoaded(true));
   }, []);
+
+  // feat/ambiance-salon — musique de salle pendant que les joueurs se
+  // connectent (cf. le commentaire sur effectivePhase plus haut). Playlist
+  // Apple Music si l'établissement en a réglé une, sinon la boucle intégrée.
+  const [ambiance, setAmbiance] = useState<ReglageAmbiance>({
+    playlistId: null,
+    aleatoire: true,
+  });
+  useEffect(() => {
+    void getReglageAmbiance().then(setAmbiance);
+  }, []);
+  const salon = useLobbyAmbiance({
+    enabled:
+      effectivePhase === 'waiting' ||
+      effectivePhase === 'intermission' ||
+      effectivePhase === 'roundSelection',
+    playlistId: ambiance.playlistId,
+    aleatoire: ambiance.aleatoire,
+    appleConnected,
+  });
   // BONUS — récupère le Music User Token dès qu'Apple est connecté + workspace
   // connu (session active requise côté backend). Best-effort : un échec laisse
   // le token null → le hook remontera APPLE_NOT_AUTHORIZED au lieu de jouer des
@@ -1182,7 +1208,7 @@ function HostPageInner(): JSX.Element {
               joue: actual,
             });
             setError(
-              "Apple Music ne repart pas sur ce morceau. Passe au suivant, ou appuie sur « Relancer le son ».",
+              'Apple Music ne repart pas sur ce morceau. Passe au suivant, ou appuie sur « Relancer le son ».',
             );
           }
           return;
@@ -1195,10 +1221,15 @@ function HostPageInner(): JSX.Element {
         console.warn(
           `[Synchro] le lecteur joue encore l'ancien titre → relance ${relancesRef.current}/3 de ${expected}`,
         );
-        remoteLog('lancement', `relance ${relancesRef.current}/3 — le lecteur annonce encore l'ancien titre`, {
-          attendu: expected,
-          joue: actual,
-        }, 'warn');
+        remoteLog(
+          'lancement',
+          `relance ${relancesRef.current}/3 — le lecteur annonce encore l'ancien titre`,
+          {
+            attendu: expected,
+            joue: actual,
+          },
+          'warn',
+        );
         resyncCountRef.current = 0;
         void apple.play(expected);
       } else if (resyncCountRef.current === 3) {
@@ -1452,6 +1483,11 @@ function HostPageInner(): JSX.Element {
     // source active. L'état persiste pour toute la session (instance MusicKit
     // non recréée entre les morceaux).
     void apple.activate();
+    // feat/ambiance-salon — RENDRE LE LECTEUR AVANT DE JOUER.
+    // La playlist d'ambiance occupe la même file qu'ApplicationMusicPlayer :
+    // on la vide ici, pas au démontage du hook, qui arriverait après le
+    // premier morceau. Sans playlist d'ambiance, c'est un no-op.
+    void salon.arreter();
     setBusy(true);
     try {
       // fix/ipad-pwa-audio-persistent-player — n'active le pipeline Spotify
@@ -2001,12 +2037,17 @@ function HostPageInner(): JSX.Element {
     dernierRefusIdRef.current = refus.id;
     refusConsecutifsRef.current += 1;
     const titre = currentTrack.title || refus.id;
-    remoteLog('lancement', 'Apple refuse le morceau — passage au suivant', {
-      id: refus.id,
-      titre,
-      erreur: refus.message,
-      refusConsecutifs: refusConsecutifsRef.current,
-    }, 'warn');
+    remoteLog(
+      'lancement',
+      'Apple refuse le morceau — passage au suivant',
+      {
+        id: refus.id,
+        titre,
+        erreur: refus.message,
+        refusConsecutifs: refusConsecutifsRef.current,
+      },
+      'warn',
+    );
     if (/non autoris/i.test(refus.message)) {
       // Pas un problème de morceau : sauter ne servirait à rien. Le geste à
       // faire dépend du statut rendu par iOS, et il n'est pas le même :
@@ -2023,12 +2064,16 @@ function HostPageInner(): JSX.Element {
           "iOS n'a jamais demandé l'accès à Apple Music pour Tutti — ferme complètement l'app et rouvre-la pour que la fenêtre d'autorisation s'affiche.",
         );
       } else {
-        setError("Apple Music n'est pas autorisé sur cet iPad — Réglages → Tutti → Musique et Apple Music.");
+        setError(
+          "Apple Music n'est pas autorisé sur cet iPad — Réglages → Tutti → Musique et Apple Music.",
+        );
       }
       return;
     }
     if (refusConsecutifsRef.current > 3) {
-      setError(`Apple Music refuse trois morceaux d'affilée (« ${titre} »). Vérifie la connexion Apple Music, ou change de playlist.`);
+      setError(
+        `Apple Music refuse trois morceaux d'affilée (« ${titre} »). Vérifie la connexion Apple Music, ou change de playlist.`,
+      );
       return;
     }
     // fix/cascade-de-morceaux-sautes — UN SEUL ÉCHEC NE CONDAMNE PAS LE MORCEAU.
@@ -2332,8 +2377,7 @@ function HostPageInner(): JSX.Element {
   // sans rien pouvoir faire. La phase roundSelection rend désormais l'écran
   // de sélection sur la console AUSSI ; le téléphone garde le sien. Le premier
   // qui lance gagne, l'autre écran suit par le socket.
-  const inGameplay =
-    effectivePhase === 'roundPlaying' || effectivePhase === 'intermission';
+  const inGameplay = effectivePhase === 'roundPlaying' || effectivePhase === 'intermission';
 
   console.info(
     `[HostPage] Decision : isModeB=${isModeB} inGameplay=${inGameplay} → ` +

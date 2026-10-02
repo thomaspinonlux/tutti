@@ -19,7 +19,9 @@ interface NativeMusicKitBridge {
   queueNext?(options: { catalogId: string }): Promise<{ ok: boolean }>;
   /** `expectedId` (build ≥ 52) : le pont vérifie le saut et se replie sur une
    *  lecture directe s'il est tombé sur un autre morceau. */
-  skipToNext?(options?: { expectedId?: string }): Promise<{ ok: boolean; verifie?: boolean; repli?: boolean }>;
+  skipToNext?(options?: {
+    expectedId?: string;
+  }): Promise<{ ok: boolean; verifie?: boolean; repli?: boolean }>;
   pause(): Promise<void>;
   resume(): Promise<void>;
   seek(options: { ms: number }): Promise<void>;
@@ -30,6 +32,12 @@ interface NativeMusicKitBridge {
     durationMs: number;
     nowPlayingId?: string;
   }>;
+  /** feat/ambiance-salon — absents des binaires antérieurs : appels gardés try/catch. */
+  playPlaylist?(options: { playlistId: string; shuffle?: boolean }): Promise<{
+    ok: boolean;
+    pistes: number;
+  }>;
+  stopAmbiance?(): Promise<void>;
 }
 
 function bridge(): NativeMusicKitBridge | null {
@@ -94,6 +102,27 @@ export const nativeMusicKit = {
       return r?.ok === true;
     } catch {
       return false;
+    }
+  },
+  /**
+   * feat/ambiance-salon — playlist Apple Music en aléatoire pendant l'attente.
+   * Renvoie false si le binaire est trop ancien, si la playlist est introuvable
+   * ou si Apple refuse : l'appelant retombe alors sur la boucle MP3.
+   */
+  async playPlaylist(playlistId: string, shuffle = true): Promise<boolean> {
+    try {
+      const r = await bridge()?.playPlaylist?.({ playlistId, shuffle });
+      return r?.ok === true;
+    } catch {
+      return false;
+    }
+  },
+  /** feat/ambiance-salon — rend le lecteur à la partie (file vidée). */
+  async stopAmbiance(): Promise<void> {
+    try {
+      await bridge()?.stopAmbiance?.();
+    } catch {
+      // Binaire sans la méthode : rien à rendre, le jeu part sur une file vide.
     }
   },
 };
