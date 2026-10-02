@@ -182,9 +182,18 @@ async function main(): Promise<void> {
   }
 
   // 3. hors décennie
+  //
+  // Deux écarts assumés, décidés par Thomas le 02/10/2026 :
+  //   - « Années 70 » accepte à partir de 1964 : les classiques rock de la fin
+  //     des années 60 (Whole Lotta Love, Born to Be Wild, A Whiter Shade of
+  //     Pale…) sont des titres « 70s » pour les joueurs, on les y laisse.
+  //   - les playlists « Bandes originales » sont exclues : l'année stockée est
+  //     celle de la chanson, pas celle du film (« All Star » 1999 est bien
+  //     dans les BO des années 2000 — c'est Shrek, 2001).
+  const HORS_REGLE_DECENNIE = /Bandes originales|Musiques? de [Ff]ilm/;
   const bornes: Array<[RegExp, number, number]> = [
     [/Années 60/, 1960, 1969],
-    [/Années 70/, 1970, 1979],
+    [/Années 70/, 1964, 1979],
     [/Années 80/, 1980, 1989],
     [/Années 90/, 1990, 1999],
     [/Années 2000/, 2000, 2009],
@@ -193,6 +202,7 @@ async function main(): Promise<void> {
   ];
   for (const t of pistes) {
     const n = nom.get(t.playlist_id) ?? '';
+    if (HORS_REGLE_DECENNIE.test(n)) continue;
     const b = bornes.find(([r]) => r.test(n));
     if (!b || t.year == null) continue;
     if (t.year < b[1] || t.year > b[2]) {

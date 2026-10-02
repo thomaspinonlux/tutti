@@ -127,6 +127,21 @@ const DECENNIES: Array<[RegExp, number, number, string]> = [
   [/Années 2010/, 2010, 2019, 'Années 2010'],
   [/Années 2020/, 2020, 2100, 'Années 2020'],
 ];
+/**
+ * Deux écarts assumés, décidés par Thomas le 02/10/2026.
+ *
+ * TOLERANCE_DEBUT : une playlist « Années 70 » garde les classiques rock de
+ * 1964-1969 (Whole Lotta Love, Born to Be Wild, A Whiter Shade of Pale…) —
+ * pour un joueur ce sont des titres « 70s ». La tolérance ne vaut que pour
+ * décider si un morceau est à sa place, jamais pour choisir sa destination.
+ *
+ * HORS_REGLE_DECENNIE : dans les playlists de bandes originales, l'année
+ * stockée est celle de la chanson, pas celle du film (« All Star » 1999 est
+ * bien dans les BO des années 2000 — c'est Shrek, 2001).
+ */
+const TOLERANCE_DEBUT: Record<string, number> = { 'Années 70': 1964 };
+const HORS_REGLE_DECENNIE = /Bandes originales|Musiques? de [Ff]ilm/;
+
 const decennieDe = (an: number): string | null => {
   const d = DECENNIES.find(([, min, max]) => an >= min && an <= max);
   return d ? d[3] : null;
@@ -195,9 +210,10 @@ async function main(): Promise<void> {
   for (const t of pistes) {
     if (aRetirer.has(t.id) || t.year == null) continue;
     const n = nom.get(t.playlist_id) ?? '';
+    if (HORS_REGLE_DECENNIE.test(n)) continue;
     const d = DECENNIES.find(([r]) => r.test(n));
     if (!d) continue;
-    if (t.year >= d[1] && t.year <= d[2]) continue;
+    if (t.year >= (TOLERANCE_DEBUT[d[3]] ?? d[1]) && t.year <= d[2]) continue;
     const bonne = decennieDe(t.year);
     if (!bonne) {
       sansDestination.push({ piste: t, de: n });
