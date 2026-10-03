@@ -108,12 +108,184 @@ function reduireEdition(s: string | null): string {
     .replace(/[^a-z0-9]/g, '');
 }
 
-/** Vrai si l'un des deux libellés contient l'autre — tolérant aux éditions. */
+/**
+ * fix/verif-trop-stricte — LA COMPARAISON NE DOIT PAS INVENTER DES FAUTES.
+ *
+ * Premier passage sur le catalogue entier (03/10) : 660 morceaux écartés, dont
+ * une large majorité de faux positifs, tous du même petit nombre de causes.
+ *
+ *   « 1901 » ≠ « 1901 »            : reduireEdition effaçait 19\d\d comme une
+ *                                    année d'édition — le titre devenait vide.
+ *                                    Idem 1979, 1999, 1944.
+ *   « 30 Seconds to Mars »         ≠ « Thirty Seconds to Mars »
+ *   « Nine to Five »               ≠ « 9 to 5 »
+ *   « Siouxsie and the Banshees »  ≠ « Siouxsie & The Banshees »
+ *   « Ricchi e Poveri »            ≠ « Ricchi & Poveri »
+ *   « Luis Fonsi ft. Daddy Yankee »≠ « Luis Fonsi & Daddy Yankee »
+ *   « Peabo Bryson & Roberta Flack »≠ « Roberta Flack & Peabo Bryson » (ordre)
+ *   « Bruno Mars »                 ≠ « Mark Ronson » (Apple crédite le premier
+ *                                    nom, l'invité est dans le titre)
+ *   « Game of Thrones (Main Title) »≠ « Main Title »
+ *
+ * Écarter un bon morceau coûte plus cher que d'en laisser passer un douteux :
+ * le premier prive la soirée d'un titre connu, le second sera attrapé par le
+ * chien de garde de la console. La comparaison est donc volontairement
+ * indulgente, et seuls les écarts francs sont signalés — ceux où l'identifiant
+ * pointe réellement sur une AUTRE chanson (« Lou » de Slimane qui joue
+ * « À fleur de toi »).
+ */
+const NOMBRES: Record<string, string> = {
+  zero: '0',
+  one: '1',
+  two: '2',
+  three: '3',
+  four: '4',
+  five: '5',
+  six: '6',
+  seven: '7',
+  eight: '8',
+  nine: '9',
+  ten: '10',
+  eleven: '11',
+  twelve: '12',
+  thirteen: '13',
+  fourteen: '14',
+  fifteen: '15',
+  sixteen: '16',
+  seventeen: '17',
+  eighteen: '18',
+  nineteen: '19',
+  twenty: '20',
+  thirty: '30',
+  forty: '40',
+  fifty: '50',
+  hundred: '100',
+  un: '1',
+  une: '1',
+  deux: '2',
+  trois: '3',
+  quatre: '4',
+  cinq: '5',
+  sept: '7',
+  huit: '8',
+  neuf: '9',
+  dix: '10',
+  onze: '11',
+  douze: '12',
+  treize: '13',
+  quinze: '15',
+  vingt: '20',
+  trente: '30',
+  quarante: '40',
+  cinquante: '50',
+  cent: '100',
+  mille: '1000',
+};
+
+/** Mots qui ne distinguent jamais deux interprètes ni deux titres. */
+const LIAISONS = new Set([
+  'and',
+  'et',
+  'e',
+  'y',
+  'with',
+  'avec',
+  'ft',
+  'feat',
+  'featuring',
+  'vs',
+  'x',
+  'the',
+  'les',
+  'le',
+  'la',
+  'los',
+  'il',
+  'de',
+  'du',
+  'des',
+  'of',
+  'a',
+  'an',
+]);
+
+/** Découpe en mots nus : sans accents, sans ponctuation, chiffres unifiés. */
+function mots(v: string | null): string[] {
+  return (v ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/gu, '')
+    .replace(/[^a-z0-9]+/gu, ' ')
+    .trim()
+    .split(' ')
+    .filter(Boolean)
+    .map((m) => NOMBRES[m] ?? m)
+    .filter((m) => !LIAISONS.has(m));
+}
+
+/** Les mots de `petit` sont-ils tous dans `grand` ? (ordre indifférent) */
+function inclusDans(petit: string[], grand: string[]): boolean {
+  if (petit.length === 0) return false;
+  const sac = new Set(grand);
+  return petit.every((m) => sac.has(m));
+}
+
+/**
+ * Deux libellés désignent-ils la même œuvre ? On teste le texte entier ET le
+ * texte amputé de ses parenthèses, dans les deux sens : « Game of Thrones
+ * (Main Title) » et « Main Title » se retrouvent ainsi.
+ */
 function memeOeuvre(a: string | null, b: string | null): boolean {
-  const x = reduireEdition(a);
-  const y = reduireEdition(b);
+  const variantes = (v: string | null): string[][] => {
+    const brut = mots(v);
+    const sansParentheses = mots((v ?? '').replace(/\(.*?\)|\[.*?\]/gu, ' '));
+    const dansParentheses = mots(((v ?? '').match(/\((.*?)\)|\[(.*?)\]/u) ?? [])[1] ?? '');
+    return [brut, sansParentheses, dansParentheses].filter((m) => m.length > 0);
+  };
+  const va = variantes(a);
+  const vb = variantes(b);
+  if (va.length === 0 || vb.length === 0) return false;
+  for (const x of va) {
+    for (const y of vb) {
+      if (inclusDans(x, y) || inclusDans(y, x)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * L'interprète correspond-il ? On accepte que l'ordre change, que l'invité
+ * manque, et on regarde AUSSI le titre rendu par Apple : la mention « feat. »
+ * y migre souvent (« Best Part » crédité à Daniel Caesar, H.E.R. étant dans
+ * le titre).
+ */
+/** Deux libellés à quelques lettres près : variante d'orthographe, pas erreur. */
+function presqueLeMemeTexte(a: string | null, b: string | null): boolean {
+  const x = mots(a).join('');
+  const y = mots(b).join('');
   if (!x || !y) return false;
-  return x === y || x.includes(y) || y.includes(x);
+  const court = x.length < y.length ? x : y;
+  const long = x.length < y.length ? y : x;
+  if (long.startsWith(court) && court.length >= 5) return true;
+  if (Math.abs(x.length - y.length) > 4) return false;
+  let distance = 0;
+  const m = Array.from({ length: y.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= x.length; i++) {
+    let prev = m[0]!;
+    m[0] = i;
+    for (let j = 1; j <= y.length; j++) {
+      const tmp = m[j]!;
+      m[j] = Math.min(m[j]! + 1, m[j - 1]! + 1, prev + (x[i - 1] === y[j - 1] ? 0 : 1));
+      prev = tmp;
+    }
+  }
+  distance = m[y.length]!;
+  return distance <= Math.max(1, Math.floor(long.length * 0.15));
+}
+
+function memeArtiste(attendu: string | null, chezApple: string, titreApple: string): boolean {
+  if (memeOeuvre(attendu, chezApple)) return true;
+  return inclusDans(mots(attendu), [...mots(chezApple), ...mots(titreApple)]);
 }
 
 interface FicheApple {
@@ -222,6 +394,8 @@ async function main(): Promise<void> {
   }
 
   const verdicts: Verdict[] = [];
+  /** Signalés pour relecture, mais laissés jouables. */
+  const aRelire: Verdict[] = [];
 
   for (const l of lignes) {
     const appleId = l.apple_music_id!;
@@ -229,22 +403,50 @@ async function main(): Promise<void> {
     const fiche = catalogue.get(appleId);
     let motif: string | null = null;
     let detail: string | undefined;
+    const base = {
+      id: l.id,
+      slug: l.playlist.slug,
+      position: l.position,
+      libelle: `${l.title} — ${l.artist}`,
+      appleId,
+    };
 
     if (!fiche) {
       motif = 'apple_id_absent_store_fr';
       detail = `absent de la boutique ${STOREFRONT}`;
-    } else if (!memeOeuvre(l.title, fiche.titre)) {
+    } else if (!memeOeuvre(l.title, fiche.titre) && !presqueLeMemeTexte(l.title, fiche.titre)) {
+      // Seul écart de titre FRANC : l'identifiant pointe sur une autre chanson
+      // (« Lou » de Slimane qui joue « À fleur de toi »). Les variantes
+      // d'orthographe (« Living on a Prayer » / « Livin' On a Prayer »,
+      // « Mélo » / « M3lo ») ne sont pas des erreurs.
       motif = 'apple_titre_different';
       detail = `Apple joue « ${fiche.titre} »`;
-    } else if (!memeOeuvre(l.artist, fiche.artiste)) {
-      motif = 'apple_artiste_different';
-      detail = `Apple crédite « ${fiche.artiste} »`;
     } else if (ALBUM_PIEGE.test(fiche.album)) {
       motif = 'apple_version_non_originale';
       detail = `album « ${fiche.album} »`;
-    } else if (fiche.dureeS > 0 && (fiche.dureeS < DUREE_MIN_S || fiche.dureeS > DUREE_MAX_S)) {
-      motif = 'apple_duree_hors_bornes';
+    } else if (fiche.dureeS > 0 && fiche.dureeS < DUREE_MIN_S) {
+      // fix/verif-trop-stricte — SEULE LA DURÉE TROP COURTE EST ÉLIMINATOIRE.
+      // Un morceau de 20 minutes (Autobahn, Chariots of Fire, Maggot Brain) se
+      // lit parfaitement : on n'en joue que les premières secondes. Les écarter
+      // privait la soirée de classiques pour rien. Un morceau de 40 s, lui, est
+      // fini avant que la salle ait buzzé.
+      motif = 'apple_duree_trop_courte';
       detail = `${fiche.dureeS} s`;
+    } else if (!memeArtiste(l.artist, fiche.artiste, fiche.titre)) {
+      // fix/verif-trop-stricte — L'ÉCART D'ARTISTE NE CONDAMNE PLUS.
+      //
+      // Dans notre catalogue le champ artiste vaut souvent « Bande originale »,
+      // « Disney », « Comptine » ou le nom d'un spectacle : Apple rend alors
+      // l'interprète réel, et l'écart est mécanique, pas fautif (128 lignes sur
+      // 239 au passage du 03/10). Restent les vrais cas — une reprise servie à
+      // la place de l'original — mais ils ne se distinguent pas des autres par
+      // ce seul test. On signale, on n'écarte pas : le morceau reste jouable et
+      // la ligne part dans le rapport pour relecture humaine.
+      aRelire.push({
+        ...base,
+        motif: 'apple_artiste_different',
+        detail: `Apple crédite « ${fiche.artiste} »`,
+      });
     }
 
     verdicts.push({
@@ -274,7 +476,10 @@ async function main(): Promise<void> {
   }
 
   if (SORTIE_JSON) {
-    writeFileSync(SORTIE_JSON, JSON.stringify({ aEcarter, total: verdicts.length }, null, 1));
+    writeFileSync(
+      SORTIE_JSON,
+      JSON.stringify({ aEcarter, aRelire, total: verdicts.length }, null, 1),
+    );
     console.info(`[VérifApple] rapport détaillé → ${SORTIE_JSON}`);
   }
 
