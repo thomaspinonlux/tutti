@@ -288,37 +288,51 @@ async function main(): Promise<void> {
   }
 
   const maintenant = new Date();
-  const PAQUET = 200;
 
-  for (let i = 0; i < aEcarter.length; i += PAQUET) {
-    await Promise.all(
-      aEcarter.slice(i, i + PAQUET).map((v) =>
-        prisma.officialPlaylistTrack.update({
-          where: { id: v.id },
-          data: {
-            is_playable: false,
-            playability_reason: v.motif,
-            playability_checked_at: maintenant,
-          },
-        }),
-      ),
-    );
-  }
+  // fix/verif-catalogue-complet — ÉCRITURE PAR LOTS SQL, PAS 24 000 UPDATE.
+  //
+  // L'ancienne boucle lançait 200 `update` en parallèle par paquet. La chaîne
+  // de connexion du projet est en `connection_limit=1` : au-delà d'une poignée
+  // d'écritures simultanées, Prisma rend `P2024 Timed out fetching a new
+  // connection from the connection pool` et le script meurt au milieu, en
+  // laissant la moitié du catalogue sans verdict. C'est ce qui s'est produit
+  // le 02/10 sur un passage de 100 lignes seulement.
+  //
+  // Un `UPDATE ... WHERE id IN (...)` par lot écrit la même chose en une
+  // requête, sans concurrence, et passe à l'échelle du catalogue entier.
+  const LOT_ECRITURE = 500;
 
-  for (let i = 0; i < aRetablir.length; i += PAQUET) {
-    await Promise.all(
-      aRetablir.slice(i, i + PAQUET).map((v) =>
-        prisma.officialPlaylistTrack.update({
-          where: { id: v.id },
-          data: {
-            is_playable: true,
-            playability_reason: null,
-            playability_checked_at: maintenant,
-          },
-        }),
-      ),
-    );
+  const ecrire = async (ids: string[], jouable: boolean, motif: string | null): Promise<void> => {
+    for (let i = 0; i < ids.length; i += LOT_ECRITURE) {
+      const tranche = ids.slice(i, i + LOT_ECRITURE);
+      const liste = tranche.map((id) => `'${id}'`).join(',');
+      const motifSql = motif === null ? 'NULL' : `'${motif.replace(/'/gu, "''")}'`;
+      await prisma.$executeRawUnsafe(
+        `UPDATE official_playlist_tracks
+            SET is_playable = ${jouable ? 'true' : 'false'},
+                playability_reason = ${motifSql},
+                playability_checked_at = $1
+          WHERE id IN (${liste})`,
+        maintenant,
+      );
+    }
+  };
+
+  // Les écartés sont groupés par motif : une poignée de requêtes au total.
+  const idsParMotif = new Map<string, string[]>();
+  for (const v of aEcarter) {
+    const k = v.motif ?? 'apple_refus';
+    idsParMotif.set(k, [...(idsParMotif.get(k) ?? []), v.id]);
   }
+  for (const [motif, ids] of idsParMotif) {
+    await ecrire(ids, false, motif);
+    console.info(`[VérifApple] écarté ${ids.length} × ${motif}`);
+  }
+  await ecrire(
+    aRetablir.map((v) => v.id),
+    true,
+    null,
+  );
 
   console.info(
     `[VérifApple] écrit : ${aEcarter.length} écarté(s), ${aRetablir.length} confirmé(s).`,

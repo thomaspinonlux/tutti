@@ -2070,10 +2070,23 @@ function HostPageInner(): JSX.Element {
       }
       return;
     }
+    // fix/jamais-de-console-bloquee — ON SAUTE TOUJOURS, ON NE S'ARRÊTE JAMAIS.
+    //
+    // Avant, au-delà de trois refus la console affichait un message et
+    // RENDAIT LA MAIN SANS SAUTER : plus rien ne se passait tant que
+    // l'animateur n'intervenait pas. Soirée du 02/10 : l'app a dû être
+    // relancée à la main deux fois (22 h 24 et 22 h 37).
+    //
+    // Pire, l'arithmétique trahissait le message : chaque morceau en échec
+    // consommait DEUX incréments (un pour le rattrapage, un pour le saut), si
+    // bien que le seuil « trois morceaux d'affilée » tombait en réalité dès le
+    // DEUXIÈME. Le compteur ne sert donc plus qu'à prévenir l'animateur ; il
+    // n'interrompt plus rien.
     if (refusConsecutifsRef.current > 3) {
       setError(
-        `Apple Music refuse trois morceaux d'affilée (« ${titre} »). Vérifie la connexion Apple Music, ou change de playlist.`,
+        `Apple Music enchaîne les refus (« ${titre} ») — on passe au suivant. Si ça continue, vérifie la connexion Apple Music ou change de playlist.`,
       );
+      void handleSkipTrack();
       return;
     }
     // fix/cascade-de-morceaux-sautes — UN SEUL ÉCHEC NE CONDAMNE PAS LE MORCEAU.
@@ -2108,6 +2121,77 @@ function HostPageInner(): JSX.Element {
     // Un morceau qui démarre remet le compteur de refus à zéro.
     if (apple.isPlaying) refusConsecutifsRef.current = 0;
   }, [apple.isPlaying]);
+
+  // ── Chien de garde : la salle ne reste JAMAIS dans le silence ──────────────
+  //
+  // fix/jamais-de-console-bloquee — DERNIER FILET, VOLONTAIREMENT AVEUGLE AUX
+  // CAUSES.
+  //
+  // Tous les rattrapages existants partent d'un refus REÇU : le pont natif
+  // rejette, `refusNatif` se pose, la console réagit. Ils ne couvrent donc pas
+  // le cas où le pont ne répond jamais — et il n'y a aucun délai de garde côté
+  // JavaScript autour de `nativeMusicKit.play()`. Quand MusicKit reste pendu
+  // sur un appel que Swift ne peut pas annuler, la promesse ne se résout
+  // jamais, aucun refus n'est signalé, et la console attend indéfiniment un
+  // événement qui ne viendra pas. C'est le scénario du 02/10.
+  //
+  // Celui-ci ne cherche pas à savoir POURQUOI rien ne joue. Il constate le
+  // silence et passe au suivant. C'est moins fin que les autres chemins, et
+  // c'est exactement ce qu'on veut d'un dernier filet : il attrape aussi les
+  // pannes qu'on n'a pas prévues.
+  const dernierSonVuARef = useRef<number>(Date.now());
+  const sautAveugleFaitRef = useRef<string>('');
+  useEffect(() => {
+    if (phase !== 'roundPlaying' || !session || !playingRound || !currentTrack) return;
+    if (session.is_paused) return; // pause voulue par l'animateur : pas une panne
+
+    const SILENCE_MAX_MS = 25_000;
+    dernierSonVuARef.current = Date.now();
+
+    const id = window.setInterval(() => {
+      if (audioPausedRef.current) {
+        dernierSonVuARef.current = Date.now();
+        return;
+      }
+      const joue =
+        audioProvider === 'apple_music'
+          ? apple.isPlaying
+          : audioProvider === 'spotify'
+            ? spotify.isPlaying
+            : youtube.isPlaying;
+      if (joue) {
+        dernierSonVuARef.current = Date.now();
+        return;
+      }
+      const silence = Date.now() - dernierSonVuARef.current;
+      if (silence < SILENCE_MAX_MS) return;
+
+      // Un seul saut aveugle par morceau : si le suivant est muet lui aussi,
+      // c'est son propre compteur qui repartira, et on avancera de nouveau.
+      const vise = currentTrack.provider_track_id ?? '';
+      if (sautAveugleFaitRef.current === vise) return;
+      sautAveugleFaitRef.current = vise;
+      dernierSonVuARef.current = Date.now();
+
+      remoteLog(
+        'lancement',
+        'SILENCE PROLONGÉ — passage au suivant sans attendre de refus',
+        { id: vise, titre: currentTrack.title, silenceMs: silence, source: audioProvider },
+        'error',
+      );
+      setError(`Aucun son depuis ${Math.round(silence / 1000)} s — passage au morceau suivant.`);
+      void handleSkipTrack();
+    }, 1000);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    phase,
+    session?.id,
+    session?.is_paused,
+    playingRound?.id,
+    currentTrack?.provider_track_id,
+    audioProvider,
+  ]);
 
   const handleSkipTrack = async (): Promise<void> => {
     console.info('[Skip Track] Click — session:', session?.id, '| round:', playingRound?.id);

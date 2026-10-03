@@ -101,6 +101,59 @@ export interface UseAppleMusicPlayerResult {
   unblockAudio: () => Promise<boolean>;
 }
 
+/**
+ * fix/jamais-de-console-bloquee — AUCUN APPEL NATIF N'EST ATTENDU SANS ÉCHÉANCE.
+ *
+ * Le pont Swift borne déjà ses propres appels Apple à 6 s, mais cette borne
+ * n'est pas une garantie dure : `withThrowingTaskGroup` attend ses tâches
+ * filles, et l'annulation en Swift est coopérative — MusicKit ne l'honore pas.
+ * Quand `player.play()` reste pendu (le fichier Swift en documente lui-même un
+ * cas à 48 s), la promesse rendue au JavaScript ne se résout JAMAIS : aucun
+ * refus n'est signalé, et toute la cascade de rattrapage de la console, qui
+ * part d'un refus reçu, ne démarre pas.
+ *
+ * On transforme donc l'attente infinie en refus ordinaire, que la console sait
+ * déjà traiter (nouvel essai, puis passage au suivant).
+ */
+const DELAI_DE_GARDE_MS = 9000;
+
+function avecDelaiDeGarde<T extends { ok: boolean; verifie?: boolean }>(
+  promesse: Promise<T>,
+  delaiMs: number,
+  catalogId: string,
+): Promise<T> {
+  return new Promise<T>((resoudre, rejeter) => {
+    let repondu = false;
+    const minuteur = window.setTimeout(() => {
+      if (repondu) return;
+      repondu = true;
+      remoteLog(
+        'apple',
+        'LE PONT NATIF NE RÉPOND PAS — on traite comme un refus',
+        { id: catalogId, delaiMs },
+        'error',
+      );
+      rejeter(
+        new Error(`Apple Music ne répond pas (${Math.round(delaiMs / 1000)} s) — morceau suivant`),
+      );
+    }, delaiMs);
+    promesse.then(
+      (v) => {
+        if (repondu) return;
+        repondu = true;
+        window.clearTimeout(minuteur);
+        resoudre(v);
+      },
+      (e: unknown) => {
+        if (repondu) return;
+        repondu = true;
+        window.clearTimeout(minuteur);
+        rejeter(e as Error);
+      },
+    );
+  });
+}
+
 export function useAppleMusicPlayer({
   enabled,
   initialVolume = 0.5,
@@ -399,7 +452,11 @@ export function useAppleMusicPlayer({
             return false;
           }
           queueChangeAllowedUntilRef.current = Date.now() + 4000;
-          const r = await nativeMusicKit.play(catalogId);
+          const r = await avecDelaiDeGarde(
+            nativeMusicKit.play(catalogId),
+            DELAI_DE_GARDE_MS,
+            catalogId,
+          );
           preparedNextRef.current = null; // nouvelle file → l'ancien préchargé est perdu
           if (!r.ok) {
             remoteLog('apple', 'lecture native refusée par le pont', { id: catalogId }, 'error');
@@ -411,7 +468,12 @@ export function useAppleMusicPlayer({
           if (r.verifie === false) {
             // Le pont a lancé la lecture mais Apple n'a pas annoncé ce morceau
             // dans les 3 s : on le journalise tel quel, sans relancer ici.
-            remoteLog('apple', 'lecture acceptée mais NON vérifiée par le pont', { id: catalogId }, 'warn');
+            remoteLog(
+              'apple',
+              'lecture acceptée mais NON vérifiée par le pont',
+              { id: catalogId },
+              'warn',
+            );
           }
           // diag/son-qui-ne-part-pas — ON VÉRIFIE QUE LE SON AVANCE VRAIMENT.
           // « lecture acceptée » ne veut pas dire « on entend quelque chose ».
@@ -429,7 +491,12 @@ export function useAppleMusicPlayer({
           // l'animateur. On dit la vraie raison et la console passe au suivant.
           const message = (err as Error)?.message ?? String(err);
           console.warn('[Apple] lecture native refusée :', message);
-          remoteLog('apple', 'Apple ne peut pas lire ce morceau', { id: catalogId, erreur: message }, 'error');
+          remoteLog(
+            'apple',
+            'Apple ne peut pas lire ce morceau',
+            { id: catalogId, erreur: message },
+            'error',
+          );
           setErrorCode('APPLE_PLAY_FAILED');
           setRefusNatif({ id: catalogId, message });
           return false;

@@ -1058,10 +1058,39 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     // le lancer par-dessus le premier.
     private let verrouCommande = NSLock()
     private var commandeEnCours = false
+    /// fix/jamais-de-console-bloquee — instant où la main a été prise.
+    private var commandePriseA: Double = 0
+    /// Au-delà, la commande en cours est considérée comme perdue.
+    private let mainPerdueApresSec: Double = 20.0
+
+    /// fix/jamais-de-console-bloquee — UNE MAIN JAMAIS RENDUE NE CONDAMNE PLUS
+    /// LA SOIRÉE.
+    ///
+    /// `rendreLaMain()` est appelé par un `defer` à l'intérieur du Task : il ne
+    /// s'exécute que si ce Task se termine. Or `courseAvecDelai` ne garantit
+    /// pas la sortie à 6 s — `withThrowingTaskGroup` attend ses tâches filles,
+    /// et MusicKit n'honore pas l'annulation coopérative. Un `player.play()`
+    /// pendu (cas documenté plus haut, 48 s) laissait donc `commandeEnCours`
+    /// à true POUR TOUJOURS : toutes les lectures suivantes étaient refusées
+    /// avec « Une lecture est déjà en cours de démarrage », message que la
+    /// console classe comme temporaire et réessaie en boucle. Plus un seul
+    /// morceau ne partait jusqu'au redémarrage manuel de l'app.
+    ///
+    /// Au-delà de 20 s, on considère la commande perdue et on reprend la main.
     private func prendreLaMain() -> Bool {
         verrouCommande.lock(); defer { verrouCommande.unlock() }
-        if commandeEnCours { return false }
+        if commandeEnCours {
+            let depuis = ProcessInfo.processInfo.systemUptime - commandePriseA
+            guard depuis > mainPerdueApresSec else { return false }
+            TuttiJournal.shared.note(
+                "musickit",
+                "COMMANDE PERDUE — on reprend la main de force",
+                ["depuisS": Int(depuis)],
+                niveau: "error"
+            )
+        }
         commandeEnCours = true
+        commandePriseA = ProcessInfo.processInfo.systemUptime
         return true
     }
     private func rendreLaMain() {
