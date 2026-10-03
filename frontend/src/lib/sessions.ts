@@ -64,6 +64,17 @@ export async function setVoiceMode(id: string, voiceEnabled: boolean): Promise<v
   });
 }
 
+/**
+ * feat/pilote-automatique — allume ou éteint le pilote.
+ * Basculable EN COURS DE PARTIE, contrairement au mode vocal.
+ */
+export async function setPiloteAuto(id: string, piloteAuto: boolean): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(id)}/pilote-auto`, {
+    method: 'POST',
+    body: { pilote_auto: piloteAuto },
+  });
+}
+
 /** feat/classement-final-persistant — ferme le podium final (console). */
 export async function hidePodium(id: string): Promise<void> {
   await api(`/api/sessions/${encodeURIComponent(id)}/hide-podium`, { method: 'POST' });
@@ -472,7 +483,10 @@ export async function ajouterThemeQuiz(
   return data.manche;
 }
 
-export async function masterListerThemesQuiz(sessionId: string, token: string): Promise<ThemeQuiz[]> {
+export async function masterListerThemesQuiz(
+  sessionId: string,
+  token: string,
+): Promise<ThemeQuiz[]> {
   const data = await api<{ themes: ThemeQuiz[] }>(
     `/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/themes/liste`,
     { method: 'POST', body: { token }, anonymous: true },

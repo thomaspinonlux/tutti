@@ -39,6 +39,7 @@ import {
   createRound,
   endRound,
   endSession,
+  setPiloteAuto,
   getPublicSession,
   getSession,
   giveAnswer,
@@ -245,6 +246,8 @@ function HostPageInner(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [busy, setBusy] = useState(false);
+  /** feat/pilote-automatique — `busy` lisible depuis un minuteur sans re-rendu. */
+  const busyRef = useRef(false);
   const [expressModalOpen, setExpressModalOpen] = useState(false);
   const [forcedSelection, setForcedSelection] = useState(false);
   const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
@@ -587,6 +590,11 @@ function HostPageInner(): JSX.Element {
               .then((res) => setCumulative(res.cumulative))
               .catch(() => {});
           }
+        });
+        // feat/pilote-automatique — l'état arrive par socket pour que la TV et le
+        // téléphone master sachent que la partie tourne seule.
+        socket.on('session:pilote_auto', ({ pilote_auto }: { pilote_auto: boolean }) => {
+          setSession((prev) => (prev ? { ...prev, pilote_auto } : prev));
         });
         socket.on(
           'track:phase_changed',
@@ -1355,6 +1363,9 @@ function HostPageInner(): JSX.Element {
 
   // feat/tv-native — tient à jour les refs lues par la boucle de poussée TV.
   useEffect(() => {
+    busyRef.current = busy;
+  }, [busy]);
+  useEffect(() => {
     currentTrackRef.current = currentTrack;
     appleRef.current = apple;
     audioPositionRef.current = audioPositionMs;
@@ -2122,6 +2133,100 @@ function HostPageInner(): JSX.Element {
     if (apple.isPlaying) refusConsecutifsRef.current = 0;
   }, [apple.isPlaying]);
 
+  // ── Pilote automatique ────────────────────────────────────────────────────
+  //
+  // feat/pilote-automatique — LA CONSOLE ENCHAÎNE SEULE, SANS TOUCHER AU
+  // CHEMIN DE LANCEMENT.
+  //
+  // Ce que le pilote fait : il appuie sur « Morceau suivant » à la place de
+  // l'animateur, dès que la réponse est révélée et après un temps de lecture.
+  // Quand la liste est épuisée, c'est le serveur qui termine la manche
+  // (`advanceToNextOrEndRound` renvoie `ended: true`), exactement comme sur un
+  // appui humain — le pilote n'a rien de spécial à faire.
+  //
+  // Ce que le pilote NE fait PAS, volontairement : choisir et lancer la manche
+  // suivante. Lancer une manche n'est pas un appel unique ; il faut poser
+  // `pendingFirstPlay`, ce qui remplace tout l'écran par PreGameStartScreen.
+  // Un pilote qui ferait ça ferait clignoter un plein écran à chaque manche.
+  // Le choix de la playlist reviendra au VOTE des joueurs, et c'est à ce
+  // moment-là qu'on démêlera ce chemin — pour une bonne raison, pas pour
+  // contourner.
+  //
+  // Trois gardes, tirées de la lecture du code :
+  //   `busy`  — tous les handlers le posent, et les commandes audio refusent
+  //             quand il est vrai : un pilote qui n'attend pas se fait avaler
+  //             ses appels sans message.
+  //   la révélation — on n'enchaîne jamais avant que la salle ait vu la
+  //             réponse, sinon le pilote vole le moment qui fait la soirée.
+  //   un seul saut par morceau — sinon un re-rendu déclenche deux « suivant ».
+  const piloteActif = session?.pilote_auto === true;
+  const dernierAutoRef = useRef<string>('');
+  useEffect(() => {
+    if (!piloteActif) return;
+    if (effectivePhase !== 'roundPlaying') return;
+    if (!session || !playingRound || !currentTrack) return;
+    if (session.is_paused) return;
+
+    const DELAI_APRES_REVELATION_MS = 6000;
+
+    const id = window.setInterval(() => {
+      if (busyRef.current) return;
+      const t = currentTrackRef.current;
+      if (!t) return;
+      // On attend que la réponse ait été montrée à la salle.
+      if (t.phase !== 'phase3-revealed') return;
+      const cle = `${playingRound.id}|${t.track_index}`;
+      if (dernierAutoRef.current === cle) return;
+
+      const revelationA = reveleDepuisRef.current;
+      if (!revelationA || Date.now() - revelationA < DELAI_APRES_REVELATION_MS) return;
+
+      dernierAutoRef.current = cle;
+      remoteLog(
+        'pilote',
+        'morceau suivant — pilote automatique',
+        { round: playingRound.id, index: t.track_index },
+        'info',
+      );
+      void handleNextTrack();
+    }, 1000);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    piloteActif,
+    effectivePhase,
+    session?.id,
+    session?.is_paused,
+    playingRound?.id,
+    currentTrack?.track_index,
+  ]);
+
+  /** Instant où la réponse du morceau courant a été révélée (null tant qu'elle ne l'est pas). */
+  const reveleDepuisRef = useRef<number | null>(null);
+  useEffect(() => {
+    reveleDepuisRef.current = currentTrack?.phase === 'phase3-revealed' ? Date.now() : null;
+  }, [currentTrack?.phase, currentTrack?.track_index]);
+
+  const [piloteBusy, setPiloteBusy] = useState(false);
+  const basculerPilote = async (): Promise<void> => {
+    if (!session || piloteBusy) return;
+    const vise = !piloteActif;
+    setPiloteBusy(true);
+    // Le clic lui-même sert de geste utilisateur : c'est le seul moment où le
+    // pilote peut débloquer l'audio, puisqu'ensuite plus personne ne touche
+    // l'iPad (cf. la doctrine de lib/audioUnlock.ts).
+    if (vise) unlockAudioSync('pilote-auto-bouton');
+    setSession((prev) => (prev ? { ...prev, pilote_auto: vise } : prev));
+    try {
+      await setPiloteAuto(session.id, vise);
+    } catch (err: unknown) {
+      setSession((prev) => (prev ? { ...prev, pilote_auto: !vise } : prev));
+      setError((err as Error).message);
+    } finally {
+      setPiloteBusy(false);
+    }
+  };
+
   // ── Chien de garde : la salle ne reste JAMAIS dans le silence ──────────────
   //
   // fix/jamais-de-console-bloquee — DERNIER FILET, VOLONTAIREMENT AVEUGLE AUX
@@ -2822,6 +2927,27 @@ function HostPageInner(): JSX.Element {
               </Button>
             )}
             {session.has_animator && <PwaSafetyControls />}
+            {/* feat/pilote-automatique — interrupteur visible pendant toute la
+                partie. Ce n'est pas une action mais un MODE : l'animateur part
+                au bar, l'allume, revient, l'éteint. D'où un libellé qui dit
+                l'état plutôt qu'un pictogramme à deviner. */}
+            {(effectivePhase === 'roundPlaying' ||
+              effectivePhase === 'intermission' ||
+              effectivePhase === 'roundSelection') && (
+              <button
+                type="button"
+                onClick={() => void basculerPilote()}
+                disabled={piloteBusy}
+                aria-pressed={piloteActif}
+                className={`px-3 py-1.5 rounded-full border-2 text-sm font-medium transition-colors ${
+                  piloteActif
+                    ? 'bg-basil text-cream border-basil shadow-pop-sm'
+                    : 'bg-cream text-ink border-hairline hover:bg-cream-2'
+                } ${piloteBusy ? 'opacity-50' : ''}`}
+              >
+                {piloteActif ? '🤖 Pilote auto — ON' : '🤖 Pilote auto'}
+              </button>
+            )}
             <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
             {/* feat/ecran-joueurs — bouton direct « Écran TV » retiré (voir plus
                 haut) : un seul bouton « Écran Joueurs » via TvCastButton. */}

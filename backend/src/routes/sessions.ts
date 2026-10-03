@@ -1057,6 +1057,49 @@ router.post(
   },
 );
 
+// feat/pilote-automatique — LA CONSOLE ENCHAÎNE SEULE.
+//
+// Contrairement à /voice-mode juste en dessous, cet interrupteur se bascule
+// EN COURS DE PARTIE, et c'est tout l'intérêt : l'animateur part servir au bar,
+// allume le pilote, revient dix minutes plus tard et le coupe. Il n'y a donc
+// pas de garde `status: 'WAITING'` ici — ce serait exactement l'inverse du
+// besoin.
+//
+// L'état est diffusé pour que la TV et le téléphone master affichent que la
+// partie tourne toute seule : sans ça, personne dans la salle ne comprend
+// pourquoi les morceaux s'enchaînent sans que personne ne touche l'iPad.
+router.post(
+  '/:id/pilote-auto',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = z.object({ pilote_auto: z.boolean() }).safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'pilote_auto requis' } });
+      return;
+    }
+    const own = await ensureOwnSession(req.params.id, req.workspaceId!);
+    if (!own) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    try {
+      await prisma.session.update({
+        where: { id: own.id },
+        data: { pilote_auto: parsed.data.pilote_auto },
+      });
+      broadcastToSession(own.id, 'session:pilote_auto', {
+        session_id: own.id,
+        pilote_auto: parsed.data.pilote_auto,
+      });
+      res.json({ ok: true, pilote_auto: parsed.data.pilote_auto });
+    } catch (err: unknown) {
+      console.error('[POST /sessions/:id/pilote-auto] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur' } });
+    }
+  },
+);
+
 // feat/option-vocal — L ANIMATEUR CHANGE D AVIS AVANT DE LANCER.
 // La reconnaissance vocale se decide a la creation de la partie, mais la
 // salle se juge sur place : trop bruyante, un micro qui refuse, un groupe

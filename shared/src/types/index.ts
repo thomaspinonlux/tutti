@@ -186,6 +186,8 @@ export interface Session {
    * lancement, modifiable tant que la partie n'a pas démarré.
    */
   voice_enabled: boolean;
+  /** feat/pilote-automatique — la console enchaîne seule (basculable en partie). */
+  pilote_auto: boolean;
   /** Cap technique de participants par session (15 par défaut V1 B2C). */
   max_participants: number;
   created_at: string;

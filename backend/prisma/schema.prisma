@@ -825,6 +825,11 @@ model Session {
   /// décidé au lancement. false = partie 100 % écrite : le buzzer vocal
   /// disparaît du téléphone des joueurs, seule la saisie clavier reste.
   voice_enabled       Boolean       @default(true)
+  /// feat/pilote-automatique — la console enchaîne seule : morceau suivant dès
+  /// la réponse révélée, fin de manche quand la liste est épuisée. L'animateur
+  /// l'allume et l'éteint EN COURS DE PARTIE, contrairement aux autres
+  /// interrupteurs de session qui se figent au lancement.
+  pilote_auto         Boolean       @default(false)
   /// feat/parc-comptes-apple — compte Apple Music RÉSERVÉ à cette session.
   /// Un abonnement ne porte qu'un flux : deux sessions ne peuvent pas partager
   /// le même compte. Libéré à la fin de la partie.
