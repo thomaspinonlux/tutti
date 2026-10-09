@@ -35,6 +35,25 @@
  * Il ne touche pas non plus aux lignes dont le motif a été posé par un humain
  * (`MOTIFS_PROTEGES`) : une décision relue ne doit pas être effacée par une
  * machine.
+ *
+ * ET IL NE TOURNE JAMAIS PENDANT UNE PARTIE
+ * -----------------------------------------
+ * Thomas, le 09/10/2026 : « que se passe-t-il si l'on joue pendant ce
+ * temps-là ? »
+ *
+ * Une manche en cours ne lit PAS cette table : au lancement, les morceaux ont
+ * été recopiés dans `tracks`, et c'est de là que vient l'identifiant envoyé à
+ * MusicKit. Écrire ici ne peut donc pas couper le son d'une soirée.
+ *
+ * Mais la base est ouverte avec `connection_limit=1` : tout le serveur passe
+ * par UNE seule connexion. Une écriture de masse n'interromprait pas la
+ * musique, elle ferait attendre quelques dizaines de millisecondes le buzz
+ * qui arrive au même instant. Pour une poignée de titres revus, ce n'est pas
+ * un échange acceptable.
+ *
+ * Donc : avant chaque passage, et de nouveau entre chaque lot, on regarde
+ * s'il y a une partie en cours. Si oui, on s'arrête net et on revient plus
+ * tard — le catalogue peut attendre six heures, pas la salle.
  */
 
 import { prisma } from './prisma.js';
@@ -89,15 +108,43 @@ async function interroger(ids: string[]): Promise<Map<string, FicheApple> | null
   return null;
 }
 
+/**
+ * Une partie est-elle en cours ? Une session `PLAYING` suffit : on ne prend
+ * aucun risque sur l'unique connexion à la base pendant une soirée.
+ *
+ * Une session oubliée en `PLAYING` ne peut pas bloquer le contrôle pour
+ * toujours : `sessionAutoClose.ts` ferme toute session sans activité depuis
+ * deux heures.
+ */
+async function partieEnCours(): Promise<boolean> {
+  const n = await prisma.session.count({ where: { status: 'PLAYING' } });
+  return n > 0;
+}
+
 export interface BilanControle {
   examinees: number;
   conformes: number;
   ecartees: number;
   nonConclues: number;
   parMotif: Record<string, number>;
+  /** Passage abandonné parce qu'une partie a commencé. */
+  reporte: boolean;
 }
 
 export async function controlerCatalogueApple(origine = 'cron'): Promise<BilanControle> {
+  const vide: BilanControle = {
+    examinees: 0,
+    conformes: 0,
+    ecartees: 0,
+    nonConclues: 0,
+    parMotif: {},
+    reporte: true,
+  };
+  if (await partieEnCours()) {
+    console.info(`[Cron][AppleCatalogue:${origine}] partie en cours — passage reporté`);
+    return vide;
+  }
+
   const perime = new Date(Date.now() - PERIME_APRES_JOURS * 86_400_000);
   const lignes = await prisma.officialPlaylistTrack.findMany({
     where: {
@@ -124,6 +171,7 @@ export async function controlerCatalogueApple(origine = 'cron'): Promise<BilanCo
     ecartees: 0,
     nonConclues: 0,
     parMotif: {},
+    reporte: false,
   };
   if (aVoir.length === 0) return bilan;
 
@@ -131,6 +179,15 @@ export async function controlerCatalogueApple(origine = 'cron'): Promise<BilanCo
   const catalogue = new Map<string, FicheApple>();
   const lotsPerdus = new Set<string>();
   for (let i = 0; i < ids.length; i += TAILLE_LOT) {
+    // Une soirée peut commencer pendant le passage : on relâche la main sans
+    // rien écrire. Les lignes déjà interrogées seront reprises au passage
+    // suivant, leur date de contrôle n'ayant pas bougé.
+    if (i % (TAILLE_LOT * 10) === 0 && (await partieEnCours())) {
+      console.info(
+        `[Cron][AppleCatalogue:${origine}] partie démarrée — passage interrompu à ${i}/${ids.length}`,
+      );
+      return { ...bilan, reporte: true };
+    }
     const lot = ids.slice(i, i + TAILLE_LOT);
     const trouve = await interroger(lot);
     if (trouve === null) {
@@ -203,29 +260,38 @@ export async function controlerCatalogueApple(origine = 'cron'): Promise<BilanCo
 // Cron pour éviter N passages en parallèle.
 
 const INTERVALLE_MS = 6 * 60 * 60 * 1000; // 6 h
+/** Un passage reporté pour cause de partie en cours revient au bout de ça. */
+const REESSAI_MS = 30 * 60 * 1000; // 30 min
 let minuterie: ReturnType<typeof setInterval> | null = null;
+
+/**
+ * Lance un passage, et si une partie l'a empêché, en reprogramme un dans une
+ * demi-heure. Une soirée dure deux ou trois heures : sans ce rattrapage, un
+ * établissement qui joue tous les soirs ferait sauter un passage sur deux.
+ */
+function passer(origine: string): void {
+  void controlerCatalogueApple(origine)
+    .then((bilan) => {
+      if (bilan.reporte) setTimeout(() => passer('rattrapage'), REESSAI_MS);
+    })
+    .catch((err) => {
+      console.error(`[Cron][AppleCatalogue:${origine}] passage en échec`, err);
+    });
+}
 
 export function startAppleCatalogueCron(): void {
   if (minuterie) {
     console.warn('[Cron][AppleCatalogue] déjà démarré, on ne relance pas');
     return;
   }
-  console.info(`[Cron][AppleCatalogue] programmé toutes les ${INTERVALLE_MS / 3_600_000} h`);
+  console.info(
+    `[Cron][AppleCatalogue] programmé toutes les ${INTERVALLE_MS / 3_600_000} h, ` +
+      'jamais pendant une partie',
+  );
   // Premier passage 15 min après le démarrage : le boot et les migrations
   // d'abord, et on évite de taper la boutique à chaque redéploiement.
-  setTimeout(
-    () => {
-      void controlerCatalogueApple('demarrage').catch((err) => {
-        console.error('[Cron][AppleCatalogue] premier passage en échec', err);
-      });
-    },
-    15 * 60 * 1000,
-  );
-  minuterie = setInterval(() => {
-    void controlerCatalogueApple('cron').catch((err) => {
-      console.error('[Cron][AppleCatalogue] passage en échec', err);
-    });
-  }, INTERVALLE_MS);
+  setTimeout(() => passer('demarrage'), 15 * 60 * 1000);
+  minuterie = setInterval(() => passer('cron'), INTERVALLE_MS);
 }
 
 export function stopAppleCatalogueCron(): void {
