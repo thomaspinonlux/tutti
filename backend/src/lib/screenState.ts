@@ -264,6 +264,11 @@ function serializeSession(
     question_set_id: session.question_set_id ?? null,
     has_animator: session.has_animator,
     is_paused: session.is_paused,
+    // feat/pilote-auto — l'ecran TV et la console lisent le meme etat de
+    // session. Sans ce champ la compilation du backend echouait depuis le
+    // 03/10 (TS2741) et PLUS AUCUN deploiement ne passait : le pilote
+    // automatique etait dans le depot mais jamais en production.
+    pilote_auto: session.pilote_auto,
     buzz_window_seconds: session.buzz_window_seconds,
     // feat/option-vocal + feat/vocal-par-manche — la TV et la console doivent
     // savoir si on est en mode 100 % ecrit. La manche en cours peut avoir son

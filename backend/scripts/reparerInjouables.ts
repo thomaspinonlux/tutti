@@ -23,11 +23,27 @@
  * `memeOeuvre` ET `memeArtiste` (fichier `_comparaisonApple.ts`, partagé avec
  * le vérificateur pour que les deux jugent à l'identique).
  *
+ * LE CAS DES PLAYLISTS « DEVINE L'ŒUVRE »
+ * ---------------------------------------
+ * Toutes les playlists de génériques, de musiques de film et de jeux vidéo
+ * sont en `guess_mode = 'work'` : la réponse à trouver est le FILM, la SÉRIE
+ * ou le JEU, pas l'interprète. Or Apple Music FR ne porte souvent qu'un
+ * ré-enregistrement (le City of Prague Philharmonic Orchestra pour « Back to
+ * the Future », 8-Bit Arcade pour Metroid) : le test sur l'artiste refusait
+ * tout, et 171 lignes restaient sans identifiant — donc absentes du jeu,
+ * puisque le lancement saute une ligne sans identifiant pour la source active.
+ *
+ * Avec `--mode-oeuvre`, le test sur l'artiste est abandonné et remplacé par un
+ * refus des versions détournées (remix, 8-bit, boîte à musique, berceuse,
+ * arrangement pour piano) : sur une manche « devine l'œuvre », un
+ * ré-enregistrement orchestral se reconnaît, un remix trap ne se reconnaît pas.
+ *
  * Usage :
  *   pnpm tsx scripts/reparerInjouables.ts --dry-run
  *   pnpm tsx scripts/reparerInjouables.ts
  *   pnpm tsx scripts/reparerInjouables.ts --json=rapport.json
  *   pnpm tsx scripts/reparerInjouables.ts --limite=50
+ *   pnpm tsx scripts/reparerInjouables.ts --mode-oeuvre   # playlists guess_mode=work
  *
  * Env requis : DATABASE_URL + les clés Apple Music (recherche catalogue).
  */
@@ -48,6 +64,30 @@ const option = (n: string): string | undefined => {
 const SANS_ECRITURE = drapeau('dry-run');
 const SORTIE_JSON = option('json');
 const LIMITE = option('limite') ? Number.parseInt(option('limite')!, 10) : undefined;
+/** Playlists « devine l'œuvre » : l'interprète n'est pas la réponse. */
+const MODE_OEUVRE = drapeau('mode-oeuvre');
+
+/**
+ * Versions qui ne se reconnaissent PAS, même quand on cherche l'œuvre et non
+ * l'interprète. Un ré-enregistrement orchestral de « Retour vers le futur »
+ * reste le thème de Retour vers le futur ; un remix trap d'Among Us, une
+ * version boîte à musique ou un arrangement berceuse, non.
+ */
+const VERSION_DETOURNEE =
+  /remix|8[-\s]?bit|chiptune|lo[-\s]?fi|music box|bo[iî]te [aà] musique|lullab|berceuse|felt piano|arr\.? for piano|piano (arrangement|rendition|version)|a cappella|acoustic|metal version|epic version|cover/i;
+
+/**
+ * Marque d'une source légitime pour une œuvre : la bande originale elle-même,
+ * ou une édition qui dit de quel film / série / jeu elle vient.
+ *
+ * Sans ce garde-fou, l'essai à blanc du 09/10 proposait « PING PONG » de
+ * Tiakola pour le thème de Pong, « I Get Lost (Main Title) » d'Eric Clapton
+ * pour le générique de Lost, et « Peaceful Sleep » pour « Lisa » de NieR.
+ * Chercher l'œuvre sans vérifier la source, c'est remplacer une erreur par
+ * une autre.
+ */
+const SOURCE_LEGITIME =
+  /original (motion picture |television (series )?|game |video game |)sound ?track|bande[-\s]originale|\bost\b|\(from ["«\u201c]|\(de ["«\u201c]|\(extrait d/i;
 
 /** Bornes de durée acceptables pour un blind test (mêmes que le vérificateur). */
 const DUREE_MIN_S = 60;
@@ -76,6 +116,9 @@ interface Issue {
 async function main(): Promise<void> {
   const lignes = (await prisma.officialPlaylistTrack.findMany({
     where: {
+      ...(MODE_OEUVRE
+        ? { playlist: { guess_mode: 'work' } }
+        : { NOT: { playlist: { guess_mode: 'work' } } }),
       OR: [
         {
           is_playable: false,
@@ -119,7 +162,10 @@ async function main(): Promise<void> {
 
     let candidats: Awaited<ReturnType<AppleMusicProvider['search']>> = [];
     try {
-      candidats = await apple.search(`${l.artist} ${l.title}`, { limit: 10 });
+      // En mode œuvre, le champ artiste vaut souvent « Bande originale » :
+      // l'ajouter à la requête ne fait que brouiller la recherche.
+      const requete = MODE_OEUVRE ? l.title : `${l.artist} ${l.title}`;
+      candidats = await apple.search(requete, { limit: 10 });
     } catch (err) {
       issues.push({
         slug: l.playlist.slug,
@@ -137,7 +183,19 @@ async function main(): Promise<void> {
     const bon = candidats.find((c) => {
       const titreOk = memeOeuvre(l.title, c.title) || presqueLeMemeTexte(l.title, c.title);
       if (!titreOk) return false;
-      if (!memeArtiste(l.artist, c.artist, c.title)) return false;
+      if (MODE_OEUVRE) {
+        // L'interprète n'est pas la réponse, mais la SOURCE doit rester
+        // crédible : soit le compositeur / la distribution attendus, soit une
+        // édition qui se présente comme la bande originale de l'œuvre.
+        const sourceOk =
+          memeArtiste(l.artist, c.artist, c.title) ||
+          SOURCE_LEGITIME.test(`${c.title} ${c.album ?? ''}`);
+        if (!sourceOk) return false;
+        // Une version détournée ne se reconnaît pas, même pour l'œuvre.
+        if (VERSION_DETOURNEE.test(`${c.title} ${c.album ?? ''} ${c.artist}`)) return false;
+      } else if (!memeArtiste(l.artist, c.artist, c.title)) {
+        return false;
+      }
       if (ALBUM_PIEGE.test(c.album ?? '')) return false;
       const dureeS = Math.round((c.duration_ms ?? 0) / 1000);
       if (dureeS > 0 && dureeS < DUREE_MIN_S) return false;
