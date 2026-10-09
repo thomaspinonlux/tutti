@@ -2039,6 +2039,12 @@ function HostPageInner(): JSX.Element {
       const vise = refus.id;
       window.setTimeout(() => {
         if (currentTrackRef.current?.provider_track_id !== vise) return; // l'animateur a changé
+        // fix/ne-pas-relancer-ce-qui-joue — UN REFUS PEUT ÊTRE EN RETARD SUR LA
+        // RÉALITÉ. Le délai de garde déclare un refus au bout de 9 s, mais
+        // l'appel natif continue de son côté : le morceau peut avoir démarré
+        // entre-temps. Relancer alors le MÊME identifiant le fait repartir du
+        // début, en pleine salle. On ne relance que si le silence dure encore.
+        if (appleRef.current.isPlaying) return;
         void appleRef.current.play(vise);
       }, attenteMs);
       return;
@@ -2120,6 +2126,11 @@ function HostPageInner(): JSX.Element {
       const vise = refus.id;
       window.setTimeout(() => {
         if (currentTrackRef.current?.provider_track_id !== vise) return;
+        // Le morceau a pu démarrer depuis : ne pas le faire repartir du début.
+        if (appleRef.current.isPlaying) {
+          setError('');
+          return;
+        }
         void appleRef.current.play(vise);
       }, 9000); // la pause de sécurité du pont natif dure 8 s
       return;
@@ -2244,11 +2255,38 @@ function HostPageInner(): JSX.Element {
   // silence et passe au suivant. C'est moins fin que les autres chemins, et
   // c'est exactement ce qu'on veut d'un dernier filet : il attrape aussi les
   // pannes qu'on n'a pas prévues.
+  //
+  // fix/ne-pas-bruler-la-manche — MAIS IL NE DOIT PAS BRÛLER LA PLAYLIST.
+  //
+  // Thomas, le 09/10/2026 : « si problème de musique trop longue à démarrer tu
+  // as fait buguer la partie ». Exact, et voici par où.
+  //
+  // Sauter au bout de 25 s de silence est juste quand UN morceau ne part pas.
+  // Quand c'est la liaison Apple Music qui est tombée — wifi de la salle,
+  // abonnement, pont natif figé — aucun morceau ne partira, et chaque suivant
+  // repart avec ses 25 s à lui. La console enchaîne alors les sauts : quinze
+  // titres consommés en six minutes, la manche se termine toute seule, et la
+  // salle n'a rien entendu. C'est pire que le blocage qu'on voulait éviter,
+  // parce que la playlist est perdue en plus du silence.
+  //
+  // On compte donc les sauts aveugles d'affilée. Le compteur retombe à zéro
+  // dès qu'on entend quelque chose. Au TROISIÈME, ce n'est plus le morceau,
+  // c'est la source : on arrête de sauter, on le dit clairement à l'animateur,
+  // et on coupe le pilote automatique — personne ne surveille l'iPad quand il
+  // est allumé, et il continuerait à dérouler une manche muette.
   const dernierSonVuARef = useRef<number>(Date.now());
   const sautAveugleFaitRef = useRef<string>('');
+  const sautsAveuglesDAffileeRef = useRef(0);
+  /** Au-delà, le silence n'est plus imputable au morceau mais à la liaison. */
+  const SAUTS_AVEUGLES_MAX = 3;
   useEffect(() => {
     if (phase !== 'roundPlaying' || !session || !playingRound || !currentTrack) return;
     if (session.is_paused) return; // pause voulue par l'animateur : pas une panne
+    // L'écran de décompte d'avant-manche : la manche est déjà PLAYING côté
+    // serveur, mais aucune lecture n'a encore été demandée. Compter le silence
+    // ici reviendrait à rogner le délai du PREMIER morceau de chaque manche.
+    // Le compte part donc à la fermeture de cet écran (d'où la dépendance).
+    if (pendingFirstPlay) return;
 
     const SILENCE_MAX_MS = 25_000;
     dernierSonVuARef.current = Date.now();
@@ -2265,7 +2303,10 @@ function HostPageInner(): JSX.Element {
             ? spotify.isPlaying
             : youtube.isPlaying;
       if (joue) {
+        // On entend quelque chose : la liaison fonctionne, le compteur de
+        // sauts aveugles repart de zéro.
         dernierSonVuARef.current = Date.now();
+        sautsAveuglesDAffileeRef.current = 0;
         return;
       }
       const silence = Date.now() - dernierSonVuARef.current;
@@ -2278,10 +2319,43 @@ function HostPageInner(): JSX.Element {
       sautAveugleFaitRef.current = vise;
       dernierSonVuARef.current = Date.now();
 
+      // Plusieurs morceaux muets de suite : la cause n'est pas le morceau.
+      // Sauter encore ne ferait que consommer la playlist en silence.
+      if (sautsAveuglesDAffileeRef.current >= SAUTS_AVEUGLES_MAX) {
+        remoteLog(
+          'lancement',
+          'SILENCE PERSISTANT — on arrête de sauter, la cause est la liaison',
+          {
+            id: vise,
+            titre: currentTrack.title,
+            silenceMs: silence,
+            source: audioProvider,
+            sautsAveugles: sautsAveuglesDAffileeRef.current,
+          },
+          'error',
+        );
+        setError(
+          `Aucun son depuis ${sautsAveuglesDAffileeRef.current} morceaux — ce n'est pas le morceau, ` +
+            "c'est la liaison Apple Music. Vérifie la connexion de l'iPad puis relance la lecture. " +
+            'La console ne saute plus toute seule pour ne pas brûler la playlist.',
+        );
+        // Le pilote automatique déroulerait la manche sans que personne ne
+        // regarde : on le coupe, l'animateur reprend la main.
+        if (session.pilote_auto) void basculerPilote();
+        return;
+      }
+
+      sautsAveuglesDAffileeRef.current += 1;
       remoteLog(
         'lancement',
         'SILENCE PROLONGÉ — passage au suivant sans attendre de refus',
-        { id: vise, titre: currentTrack.title, silenceMs: silence, source: audioProvider },
+        {
+          id: vise,
+          titre: currentTrack.title,
+          silenceMs: silence,
+          source: audioProvider,
+          sautsAveugles: sautsAveuglesDAffileeRef.current,
+        },
         'error',
       );
       setError(`Aucun son depuis ${Math.round(silence / 1000)} s — passage au morceau suivant.`);
@@ -2296,6 +2370,7 @@ function HostPageInner(): JSX.Element {
     playingRound?.id,
     currentTrack?.provider_track_id,
     audioProvider,
+    pendingFirstPlay,
   ]);
 
   const handleSkipTrack = async (): Promise<void> => {
