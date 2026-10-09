@@ -48,6 +48,7 @@
 import { writeFileSync } from 'node:fs';
 import { PrismaClient } from '@prisma/client';
 import { config } from 'dotenv';
+import { ALBUM_PIEGE, memeArtiste, memeOeuvre, presqueLeMemeTexte } from './_comparaisonApple.js';
 
 config();
 
@@ -59,12 +60,13 @@ const STOREFRONT = 'FR';
 const TAILLE_LOT = 25;
 /** Pause entre deux lots : l'API publique n'aime pas les rafales. */
 const PAUSE_MS = 250;
-/** Bornes de durée acceptables pour un blind test. */
+/**
+ * Durée minimale acceptable pour un blind test. Pas de maximum : un morceau de
+ * vingt minutes (Autobahn, Chariots of Fire) se lit parfaitement puisqu'on n'en
+ * joue que les premières secondes. Un morceau de 40 s, lui, est fini avant que
+ * la salle ait buzzé.
+ */
 const DUREE_MIN_S = 60;
-const DUREE_MAX_S = 600;
-/** Albums dont le nom trahit une version qui n'est pas l'originale. */
-const ALBUM_PIEGE =
-  /karaok|tribute|hommage|in the style of|made famous by|cover version|reprise instrumentale/i;
 
 const args = process.argv.slice(2);
 const drapeau = (n: string): boolean => args.includes(`--${n}`);
@@ -80,219 +82,63 @@ const SORTIE_JSON = option('json');
 /** Ne reprend que les lignes actuellement marquées injouables. */
 const SEULEMENT_INJOUABLES = drapeau('injouables');
 
-/** Réduit un libellé à sa substance : minuscules, sans accents ni ponctuation. */
-function reduire(s: string | null): string {
-  return (s ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]/g, '');
-}
-
 /**
- * Même chose, mais en retirant AUSSI ce qui distingue deux éditions du même
- * morceau : parenthèses, crochets, mentions de remaster, de version, d'année.
- * « Livin' on a Prayer » et « Livin' On a Prayer (2018 Remaster) » se
- * ramènent au même texte — ce sont bien le même enregistrement pour un joueur.
+ * MOTIFS QUE CE SCRIPT NE DOIT PAS EFFACER.
+ *
+ * `original_absent_store_fr` est une décision relue : l'enregistrement
+ * ORIGINAL n'existe pas dans la boutique FR et l'identifiant stocké pointe sur
+ * une reprise. Exemple vérifié le 09/10/2026 : « Laisse tomber les filles » de
+ * France Gall — son catalogue Philips des années 60 est absent d'Apple Music
+ * FR, et l'identifiant jouait Fabienne Delsol. Le titre correspond, donc le
+ * contrôle de titre passerait et la ligne serait remise en jeu : la salle
+ * entendrait une reprise pendant que la réponse affiche France Gall. Ces
+ * lignes sont donc laissées telles quelles, et ne sont PAS recontrôlées.
  */
-function reduireEdition(s: string | null): string {
-  return (s ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/\(.*?\)|\[.*?\]/g, ' ')
-    .replace(
-      /\b(remaster(ed)?|live|radio edit|single version|feat|featuring|version|mono|stereo|19\d\d|20\d\d)\b/g,
-      ' ',
-    )
-    .replace(/[^a-z0-9]/g, '');
-}
+const MOTIFS_PROTEGES = ['original_absent_store_fr'];
 
 /**
  * fix/verif-trop-stricte — LA COMPARAISON NE DOIT PAS INVENTER DES FAUTES.
  *
- * Premier passage sur le catalogue entier (03/10) : 660 morceaux écartés, dont
- * une large majorité de faux positifs, tous du même petit nombre de causes.
+ * Le premier passage sur le catalogue entier (03/10/2026) a écarté 660
+ * morceaux, dont une large majorité de faux positifs : « 1901 » ≠ « 1901 »
+ * (l'année d'édition était effacée du titre), « 30 Seconds to Mars » ≠
+ * « Thirty Seconds to Mars », « Siouxsie and the Banshees » ≠ « Siouxsie &
+ * The Banshees », « Peabo Bryson & Roberta Flack » ≠ l'ordre inverse.
  *
- *   « 1901 » ≠ « 1901 »            : reduireEdition effaçait 19\d\d comme une
- *                                    année d'édition — le titre devenait vide.
- *                                    Idem 1979, 1999, 1944.
- *   « 30 Seconds to Mars »         ≠ « Thirty Seconds to Mars »
- *   « Nine to Five »               ≠ « 9 to 5 »
- *   « Siouxsie and the Banshees »  ≠ « Siouxsie & The Banshees »
- *   « Ricchi e Poveri »            ≠ « Ricchi & Poveri »
- *   « Luis Fonsi ft. Daddy Yankee »≠ « Luis Fonsi & Daddy Yankee »
- *   « Peabo Bryson & Roberta Flack »≠ « Roberta Flack & Peabo Bryson » (ordre)
- *   « Bruno Mars »                 ≠ « Mark Ronson » (Apple crédite le premier
- *                                    nom, l'invité est dans le titre)
- *   « Game of Thrones (Main Title) »≠ « Main Title »
+ * Écarter un bon morceau prive la soirée d'un titre connu : la comparaison
+ * est donc indulgente et ne signale que les écarts francs, ceux où
+ * l'identifiant pointe réellement sur une AUTRE chanson (« Lou » de Slimane
+ * qui joue « À fleur de toi »).
  *
- * Écarter un bon morceau coûte plus cher que d'en laisser passer un douteux :
- * le premier prive la soirée d'un titre connu, le second sera attrapé par le
- * chien de garde de la console. La comparaison est donc volontairement
- * indulgente, et seuls les écarts francs sont signalés — ceux où l'identifiant
- * pointe réellement sur une AUTRE chanson (« Lou » de Slimane qui joue
- * « À fleur de toi »).
+ * Ces fonctions vivent dans `_comparaisonApple.ts` : `reparerInjouables.ts`
+ * et `reparerArtistes.ts` les utilisent aussi, et les trois DOIVENT juger
+ * « même morceau » à l'identique — sinon la réparation propose un
+ * identifiant que la vérification rejette aussitôt.
  */
-const NOMBRES: Record<string, string> = {
-  zero: '0',
-  one: '1',
-  two: '2',
-  three: '3',
-  four: '4',
-  five: '5',
-  six: '6',
-  seven: '7',
-  eight: '8',
-  nine: '9',
-  ten: '10',
-  eleven: '11',
-  twelve: '12',
-  thirteen: '13',
-  fourteen: '14',
-  fifteen: '15',
-  sixteen: '16',
-  seventeen: '17',
-  eighteen: '18',
-  nineteen: '19',
-  twenty: '20',
-  thirty: '30',
-  forty: '40',
-  fifty: '50',
-  hundred: '100',
-  un: '1',
-  une: '1',
-  deux: '2',
-  trois: '3',
-  quatre: '4',
-  cinq: '5',
-  sept: '7',
-  huit: '8',
-  neuf: '9',
-  dix: '10',
-  onze: '11',
-  douze: '12',
-  treize: '13',
-  quinze: '15',
-  vingt: '20',
-  trente: '30',
-  quarante: '40',
-  cinquante: '50',
-  cent: '100',
-  mille: '1000',
-};
-
-/** Mots qui ne distinguent jamais deux interprètes ni deux titres. */
-const LIAISONS = new Set([
-  'and',
-  'et',
-  'e',
-  'y',
-  'with',
-  'avec',
-  'ft',
-  'feat',
-  'featuring',
-  'vs',
-  'x',
-  'the',
-  'les',
-  'le',
-  'la',
-  'los',
-  'il',
-  'de',
-  'du',
-  'des',
-  'of',
-  'a',
-  'an',
-]);
-
-/** Découpe en mots nus : sans accents, sans ponctuation, chiffres unifiés. */
-function mots(v: string | null): string[] {
-  return (v ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/gu, '')
-    .replace(/[^a-z0-9]+/gu, ' ')
-    .trim()
-    .split(' ')
-    .filter(Boolean)
-    .map((m) => NOMBRES[m] ?? m)
-    .filter((m) => !LIAISONS.has(m));
-}
-
-/** Les mots de `petit` sont-ils tous dans `grand` ? (ordre indifférent) */
-function inclusDans(petit: string[], grand: string[]): boolean {
-  if (petit.length === 0) return false;
-  const sac = new Set(grand);
-  return petit.every((m) => sac.has(m));
-}
-
-/**
- * Deux libellés désignent-ils la même œuvre ? On teste le texte entier ET le
- * texte amputé de ses parenthèses, dans les deux sens : « Game of Thrones
- * (Main Title) » et « Main Title » se retrouvent ainsi.
- */
-function memeOeuvre(a: string | null, b: string | null): boolean {
-  const variantes = (v: string | null): string[][] => {
-    const brut = mots(v);
-    const sansParentheses = mots((v ?? '').replace(/\(.*?\)|\[.*?\]/gu, ' '));
-    const dansParentheses = mots(((v ?? '').match(/\((.*?)\)|\[(.*?)\]/u) ?? [])[1] ?? '');
-    return [brut, sansParentheses, dansParentheses].filter((m) => m.length > 0);
-  };
-  const va = variantes(a);
-  const vb = variantes(b);
-  if (va.length === 0 || vb.length === 0) return false;
-  for (const x of va) {
-    for (const y of vb) {
-      if (inclusDans(x, y) || inclusDans(y, x)) return true;
-    }
-  }
-  return false;
-}
-
-/**
- * L'interprète correspond-il ? On accepte que l'ordre change, que l'invité
- * manque, et on regarde AUSSI le titre rendu par Apple : la mention « feat. »
- * y migre souvent (« Best Part » crédité à Daniel Caesar, H.E.R. étant dans
- * le titre).
- */
-/** Deux libellés à quelques lettres près : variante d'orthographe, pas erreur. */
-function presqueLeMemeTexte(a: string | null, b: string | null): boolean {
-  const x = mots(a).join('');
-  const y = mots(b).join('');
-  if (!x || !y) return false;
-  const court = x.length < y.length ? x : y;
-  const long = x.length < y.length ? y : x;
-  if (long.startsWith(court) && court.length >= 5) return true;
-  if (Math.abs(x.length - y.length) > 4) return false;
-  let distance = 0;
-  const m = Array.from({ length: y.length + 1 }, (_, i) => i);
-  for (let i = 1; i <= x.length; i++) {
-    let prev = m[0]!;
-    m[0] = i;
-    for (let j = 1; j <= y.length; j++) {
-      const tmp = m[j]!;
-      m[j] = Math.min(m[j]! + 1, m[j - 1]! + 1, prev + (x[i - 1] === y[j - 1] ? 0 : 1));
-      prev = tmp;
-    }
-  }
-  distance = m[y.length]!;
-  return distance <= Math.max(1, Math.floor(long.length * 0.15));
-}
-
-function memeArtiste(attendu: string | null, chezApple: string, titreApple: string): boolean {
-  if (memeOeuvre(attendu, chezApple)) return true;
-  return inclusDans(mots(attendu), [...mots(chezApple), ...mots(titreApple)]);
-}
 
 interface FicheApple {
   titre: string;
   artiste: string;
   album: string;
   dureeS: number;
+}
+
+/**
+ * Le titre rendu par Apple est-il celui de la ligne, ou l'un de ses alias ?
+ *
+ * fix/titres-alias — La colonne `title_aliases` existe déjà et sert au
+ * matching des réponses des joueurs : elle contient les autres noms légitimes
+ * d'un même morceau. Le vérificateur ne la lisait pas, et écartait des lignes
+ * dont Apple rend simplement l'autre nom : « Enta Omri » / « Anta Oumri »
+ * (translittération), « Everything Sucks » / « Everything Sux »,
+ * « Where Our Blue Is » / « 青のすみか » (titre japonais du même morceau),
+ * « Doctor Who Theme » / « Doctor Who Opening Credits ». Renseigner l'alias
+ * est donc l'acte de relecture qui remet la ligne en jeu, sans toucher à la
+ * réponse attendue côté joueur.
+ */
+function titreReconnu(titre: string | null, alias: string[], chezApple: string): boolean {
+  const candidats = [titre, ...alias];
+  return candidats.some((c) => memeOeuvre(c, chezApple) || presqueLeMemeTexte(c, chezApple));
 }
 
 /** Interroge la boutique FR pour un lot d'identifiants. Renvoie ce qu'elle connaît. */
@@ -332,7 +178,7 @@ interface Verdict {
 }
 
 async function main(): Promise<void> {
-  const lignes = await prisma.officialPlaylistTrack.findMany({
+  const toutes = await prisma.officialPlaylistTrack.findMany({
     where: {
       apple_music_id: { not: null },
       ...(SEULEMENT_INJOUABLES
@@ -359,10 +205,23 @@ async function main(): Promise<void> {
       artist: true,
       apple_music_id: true,
       is_playable: true,
+      playability_reason: true,
+      title_aliases: true,
       playlist: { select: { slug: true } },
     },
     orderBy: [{ playlist_id: 'asc' }, { position: 'asc' }],
   });
+
+  // Un `NOT IN` SQL écarterait aussi les lignes dont le motif est NULL : le
+  // filtre se fait donc ici, où `null` reste `null`.
+  const protegees = toutes.filter((l) => MOTIFS_PROTEGES.includes(l.playability_reason ?? ''));
+  const lignes = toutes.filter((l) => !MOTIFS_PROTEGES.includes(l.playability_reason ?? ''));
+  if (protegees.length > 0) {
+    console.info(
+      `[VérifApple] ${protegees.length} ligne(s) laissée(s) de côté (décision relue) : ` +
+        protegees.map((l) => `${l.title} — ${l.artist}`).join(', '),
+    );
+  }
 
   console.info(
     `[VérifApple] ${lignes.length} ligne(s) à contrôler sur la boutique ${STOREFRONT}` +
@@ -414,7 +273,7 @@ async function main(): Promise<void> {
     if (!fiche) {
       motif = 'apple_id_absent_store_fr';
       detail = `absent de la boutique ${STOREFRONT}`;
-    } else if (!memeOeuvre(l.title, fiche.titre) && !presqueLeMemeTexte(l.title, fiche.titre)) {
+    } else if (!titreReconnu(l.title, l.title_aliases, fiche.titre)) {
       // Seul écart de titre FRANC : l'identifiant pointe sur une autre chanson
       // (« Lou » de Slimane qui joue « À fleur de toi »). Les variantes
       // d'orthographe (« Living on a Prayer » / « Livin' On a Prayer »,
