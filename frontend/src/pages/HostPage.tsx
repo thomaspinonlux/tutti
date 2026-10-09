@@ -2296,9 +2296,17 @@ function HostPageInner(): JSX.Element {
         dernierSonVuARef.current = Date.now();
         return;
       }
+      // fix/chien-de-garde-aveugle-au-son — LIRE L'ÉTAT VIVANT, PAS CELUI DU
+      // MONTAGE. Soirée du 09/10, 21 h 23 → 21 h 29 : chaque morceau coupé à
+      // 25 s pile, toute la manche « Années 90 — International » brûlée, alors
+      // que le journal montrait trois secondes plus tôt « son vérifié : avance,
+      // isPlaying: true ». Le morceau JOUAIT. Mais cet intervalle lisait
+      // `apple.isPlaying` capturé au moment où l'effet s'est monté — avant le
+      // démarrage de la lecture, donc toujours faux. `appleRef` est remis à
+      // jour à chaque rendu : c'est lui qu'il faut lire ici.
       const joue =
         audioProvider === 'apple_music'
-          ? apple.isPlaying
+          ? appleRef.current.isPlaying
           : audioProvider === 'spotify'
             ? spotify.isPlaying
             : youtube.isPlaying;
