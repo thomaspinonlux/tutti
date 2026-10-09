@@ -244,6 +244,19 @@ httpServer.listen(PORT, () => {
       startSessionAutoCloseCron();
     });
   }
+
+  // fix/catalogue-qui-derive — controle automatique du catalogue Apple.
+  // Un identifiant qui joue une AUTRE chanson ne se voit qu'en soiree, et le
+  // catalogue derive tout seul : un disque sort de la boutique francaise, un
+  // editeur remplace une edition. Ce passage reprend toutes les six heures les
+  // lignes non revues depuis trente jours et ecarte du jeu celles qui ne
+  // jouent plus le bon morceau. Il ne remplace jamais un identifiant : choisir
+  // un autre enregistrement se relit (scripts/reparerInjouables.ts).
+  if (NODE_ENV === 'production') {
+    void import('./lib/appleCatalogueCheck.js').then(({ startAppleCatalogueCron }) => {
+      startAppleCatalogueCron();
+    });
+  }
 });
 
 // Gestion propre des arrêts

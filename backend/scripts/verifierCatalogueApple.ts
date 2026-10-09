@@ -48,7 +48,12 @@
 import { writeFileSync } from 'node:fs';
 import { PrismaClient } from '@prisma/client';
 import { config } from 'dotenv';
-import { ALBUM_PIEGE, memeArtiste, memeOeuvre, presqueLeMemeTexte } from './_comparaisonApple.js';
+import {
+  ALBUM_PIEGE,
+  memeArtiste,
+  memeOeuvre,
+  presqueLeMemeTexte,
+} from '../src/lib/comparaisonApple.js';
 
 config();
 
@@ -110,7 +115,7 @@ const MOTIFS_PROTEGES = ['original_absent_store_fr'];
  * l'identifiant pointe réellement sur une AUTRE chanson (« Lou » de Slimane
  * qui joue « À fleur de toi »).
  *
- * Ces fonctions vivent dans `_comparaisonApple.ts` : `reparerInjouables.ts`
+ * Ces fonctions vivent dans `src/lib/comparaisonApple.ts` : `reparerInjouables.ts`
  * et `reparerArtistes.ts` les utilisent aussi, et les trois DOIVENT juger
  * « même morceau » à l'identique — sinon la réparation propose un
  * identifiant que la vérification rejette aussitôt.

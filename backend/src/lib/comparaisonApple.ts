@@ -1,5 +1,5 @@
 /**
- * scripts/_comparaisonApple.ts — comparaison tolérante entre une ligne du
+ * src/lib/comparaisonApple.ts — comparaison tolérante entre une ligne du
  * catalogue Tutti et une fiche rendue par la boutique Apple Music.
  *
  * POURQUOI CE FICHIER EXISTE
@@ -13,10 +13,13 @@
  * connu : la comparaison doit être indulgente et ne signaler que les écarts
  * francs, ceux où l'identifiant pointe réellement sur une AUTRE chanson.
  *
- * Ces fonctions sont partagées par le vérificateur (qui écarte) et par
- * `reparerInjouables.ts` (qui cherche le bon identifiant) : les deux doivent
- * juger « même morceau » exactement de la même façon, sinon la réparation
- * propose des identifiants que la vérification rejette aussitôt.
+ * Ces fonctions sont partagées par le contrôle automatique du serveur
+ * (`appleCatalogueCheck.ts`), par le vérificateur en ligne de commande (qui
+ * écarte) et par les scripts de réparation (qui cherchent le bon
+ * identifiant) : tous doivent juger « même morceau » exactement de la même
+ * façon, sinon la réparation propose des identifiants que la vérification
+ * rejette aussitôt. C'est la raison pour laquelle ce fichier vit dans `src/` :
+ * le serveur ne peut pas importer depuis `scripts/`.
  */
 
 /** Albums dont le nom trahit une version qui n'est pas l'originale. */

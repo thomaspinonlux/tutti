@@ -20,7 +20,7 @@
  * et la ligne part dans le rapport.
  *
  * IL NE DEVINE RIEN : un remplacement n'a lieu que si le candidat satisfait
- * `memeOeuvre` ET `memeArtiste` (fichier `_comparaisonApple.ts`, partagé avec
+ * `memeOeuvre` ET `memeArtiste` (fichier `src/lib/comparaisonApple.ts`, partagé avec
  * le vérificateur pour que les deux jugent à l'identique).
  *
  * LE CAS DES PLAYLISTS « DEVINE L'ŒUVRE »
@@ -52,7 +52,14 @@ import { writeFileSync } from 'node:fs';
 import 'dotenv/config';
 import { AppleMusicProvider } from '../src/music/apple/AppleMusicProvider.js';
 import { prisma } from '../src/lib/prisma.js';
-import { ALBUM_PIEGE, memeArtiste, memeOeuvre, presqueLeMemeTexte } from './_comparaisonApple.js';
+import {
+  ALBUM_PIEGE,
+  inclusDans,
+  memeArtiste,
+  memeOeuvre,
+  mots,
+  presqueLeMemeTexte,
+} from '../src/lib/comparaisonApple.js';
 
 const args = process.argv.slice(2);
 const drapeau = (n: string): boolean => args.includes(`--${n}`);
@@ -74,7 +81,7 @@ const MODE_OEUVRE = drapeau('mode-oeuvre');
  * version boîte à musique ou un arrangement berceuse, non.
  */
 const VERSION_DETOURNEE =
-  /remix|8[-\s]?bit|chiptune|lo[-\s]?fi|music box|bo[iî]te [aà] musique|lullab|berceuse|felt piano|arr\.? for piano|piano (arrangement|rendition|version)|a cappella|acoustic|metal version|epic version|cover/i;
+  /remix|8\s*-?\s*bit|chiptune|lo\s*-?\s*fi|jazz version|music box|bo[iî]te [aà] musique|lullab|berceuse|felt piano|arr\.? for piano|piano (arrangement|rendition|version)|a cappella|acoustic|metal version|epic version|cover/i;
 
 /**
  * Marque d'une source légitime pour une œuvre : la bande originale elle-même,
@@ -86,6 +93,39 @@ const VERSION_DETOURNEE =
  * Chercher l'œuvre sans vérifier la source, c'est remplacer une erreur par
  * une autre.
  */
+/**
+ * Mots qui ne désignent aucune œuvre en particulier. « Theme », « Main
+ * Title », « Générique » : s'ils sont seuls, tout correspond à tout.
+ *
+ * L'essai à blanc du 09/10 proposait « Theme (From "American Beauty") » pour
+ * le générique d'Urgences, et « Peaceful Sleep (From "Nier Automata") » pour
+ * « Lisa » de NieR : dans les deux cas le mot distinctif de NOTRE titre
+ * (« ER », « Lisa ») était absent du candidat. On l'exige désormais.
+ */
+const MOTS_CREUX = new Set([
+  'theme',
+  'themes',
+  'title',
+  'titles',
+  'main',
+  'opening',
+  'ending',
+  'credits',
+  'intro',
+  'generique',
+  'generiques',
+  'soundtrack',
+  'ost',
+  'song',
+  'musique',
+  'music',
+  'bande',
+  'originale',
+  'original',
+  'version',
+  'from',
+]);
+
 const SOURCE_LEGITIME =
   /original (motion picture |television (series )?|game |video game |)sound ?track|bande[-\s]originale|\bost\b|\(from ["«\u201c]|\(de ["«\u201c]|\(extrait d/i;
 
@@ -191,6 +231,15 @@ async function main(): Promise<void> {
           memeArtiste(l.artist, c.artist, c.title) ||
           SOURCE_LEGITIME.test(`${c.title} ${c.album ?? ''}`);
         if (!sourceOk) return false;
+        // Le ou les mots qui DÉSIGNENT l'œuvre doivent se retrouver chez le
+        // candidat, titre ou album. Sans cela « Theme » correspond à tout.
+        const significatifs = mots(l.title).filter((m) => !MOTS_CREUX.has(m));
+        if (
+          significatifs.length > 0 &&
+          !inclusDans(significatifs, mots(`${c.title} ${c.album ?? ''}`))
+        ) {
+          return false;
+        }
         // Une version détournée ne se reconnaît pas, même pour l'œuvre.
         if (VERSION_DETOURNEE.test(`${c.title} ${c.album ?? ''} ${c.artist}`)) return false;
       } else if (!memeArtiste(l.artist, c.artist, c.title)) {

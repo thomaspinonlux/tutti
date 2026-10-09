@@ -44,7 +44,7 @@ import {
   memeOeuvre,
   mots,
   presqueLeMemeTexte,
-} from './_comparaisonApple.js';
+} from '../src/lib/comparaisonApple.js';
 
 const args = process.argv.slice(2);
 const drapeau = (n: string): boolean => args.includes(`--${n}`);
