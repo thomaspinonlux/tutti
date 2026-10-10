@@ -51,8 +51,7 @@ export function useNouvelleVersion(peutRecharger: boolean, ecran: string): void 
     let arrete = false;
 
     const recharger = (): void => {
-      remoteLog('version', 'nouvelle version en ligne → rechargement', { ecran, ancienne: locale });
-      window.setTimeout(() => window.location.reload(), 300);
+      void rechargerQuandLeCacheEstPret(ecran, locale);
     };
 
     const verifier = async (): Promise<void> => {
@@ -90,7 +89,99 @@ export function useNouvelleVersion(peutRecharger: boolean, ecran: string): void 
   useEffect(() => {
     if (peutRecharger && nouvelleDisponible.current) {
       remoteLog('version', 'moment sûr atteint → rechargement', { ecran });
-      window.setTimeout(() => window.location.reload(), 300);
+      void rechargerQuandLeCacheEstPret(ecran, empreinteChargee() ?? '');
     }
   }, [peutRecharger, ecran]);
+}
+
+/**
+ * fix/boucle-de-rechargement — UN RECHARGEMENT N'APPORTE LA NOUVELLE VERSION
+ * QUE SI LE CACHE L'A DÉJÀ.
+ *
+ * Soirée du 09/10, 21 h 33 et 21 h 36 : des téléphones de joueurs ont
+ * rechargé la page huit à dix fois en vingt secondes. Journal, en boucle :
+ *   nouvelle version détectée (ancienne index-Dtx0fhaI, nouvelle index-h88S0j10)
+ *   → rechargement
+ *   nouvelle version détectée (ancienne index-Dtx0fhaI, …)   ← la MÊME
+ *
+ * La détection va bien sur le réseau (fetch no-store), mais le rechargement
+ * passe par le service worker, qui sert l'index.html de son cache
+ * (`navigateFallback`) : l'ANCIENNE page revient, la détection la revoit
+ * ancienne, et on recharge encore. Jusqu'à ce que le service worker ait fini
+ * de se mettre à jour, chaque rechargement est perdu — et pendant ce temps le
+ * joueur ne peut rien faire, et chaque page remontée tire sur le serveur.
+ *
+ * Donc, avant de recharger : on demande au service worker de se mettre à
+ * jour, et on attend qu'il ait PRIS LE CONTRÔLE (`controllerchange`) — c'est
+ * le signal que le cache sert désormais la nouvelle page. Et on garde la
+ * trace de la tentative : si la page revient avec la même empreinte après un
+ * rechargement récent, on ne recharge plus à l'aveugle, on attend ce signal.
+ */
+const CLE_TENTATIVE = 'tutti:rechargement-tente';
+const DELAI_ENTRE_TENTATIVES_MS = 2 * 60 * 1000;
+const ATTENTE_SW_MAX_MS = 20_000;
+
+function tentativeRecente(empreinte: string): boolean {
+  try {
+    const brut = sessionStorage.getItem(CLE_TENTATIVE);
+    if (!brut) return false;
+    const { empreinte: e, quand } = JSON.parse(brut) as { empreinte: string; quand: number };
+    return e === empreinte && Date.now() - quand < DELAI_ENTRE_TENTATIVES_MS;
+  } catch {
+    return false;
+  }
+}
+
+function noterTentative(empreinte: string): void {
+  try {
+    sessionStorage.setItem(CLE_TENTATIVE, JSON.stringify({ empreinte, quand: Date.now() }));
+  } catch {
+    /* stockage indisponible : on recharge quand même, une fois */
+  }
+}
+
+async function attendreNouveauServiceWorker(): Promise<'pret' | 'sans-sw' | 'delai'> {
+  if (!('serviceWorker' in navigator)) return 'sans-sw';
+  const reg = await navigator.serviceWorker.getRegistration().catch(() => undefined);
+  if (!reg) return 'sans-sw';
+  return new Promise((resoudre) => {
+    let fini = false;
+    const conclure = (v: 'pret' | 'delai'): void => {
+      if (fini) return;
+      fini = true;
+      navigator.serviceWorker.removeEventListener('controllerchange', surChangement);
+      resoudre(v);
+    };
+    const surChangement = (): void => conclure('pret');
+    navigator.serviceWorker.addEventListener('controllerchange', surChangement);
+    // Un worker déjà en attente n'a besoin que du signal pour s'activer.
+    reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
+    void reg.update().catch(() => undefined);
+    window.setTimeout(() => conclure('delai'), ATTENTE_SW_MAX_MS);
+  });
+}
+
+async function rechargerQuandLeCacheEstPret(ecran: string, ancienne: string): Promise<void> {
+  if (tentativeRecente(ancienne)) {
+    // Le rechargement précédent a ramené la même page : le cache n'était pas
+    // prêt. On ne tourne pas en rond, on attend le service worker.
+    remoteLog('version', 'rechargement récent sans effet → on attend le cache', {
+      ecran,
+      ancienne,
+    });
+    const etat = await attendreNouveauServiceWorker();
+    if (etat !== 'pret') {
+      remoteLog('version', 'cache toujours pas prêt — on reste sur cette version', {
+        ecran,
+        ancienne,
+        etat,
+      });
+      return;
+    }
+  } else {
+    const etat = await attendreNouveauServiceWorker();
+    remoteLog('version', 'nouvelle version en ligne → rechargement', { ecran, ancienne, etat });
+  }
+  noterTentative(ancienne);
+  window.setTimeout(() => window.location.reload(), 300);
 }

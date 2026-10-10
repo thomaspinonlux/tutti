@@ -41,7 +41,13 @@ function Carte({
   );
 }
 
-function Puce({ children }: { children: React.ReactNode; tone?: string; tilt?: number }): JSX.Element {
+function Puce({
+  children,
+}: {
+  children: React.ReactNode;
+  tone?: string;
+  tilt?: number;
+}): JSX.Element {
   return (
     <span className="inline-block rounded-full border border-white/15 bg-white/[0.07] px-2.5 py-0.5 font-mono text-[11px] text-white/75">
       {children}
@@ -221,14 +227,25 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
   }, [props.open, tab, selected, filteredOfficial]);
 
   const tvFocusId =
-    tab === 'official'
-      ? (selected?.id ?? idCentre ?? filteredOfficial?.[0]?.id ?? null)
-      : null;
+    tab === 'official' ? (selected?.id ?? idCentre ?? filteredOfficial?.[0]?.id ?? null) : null;
+  // fix/telephones-qui-se-prennent-pour-l-animateur — Soirée du 09/10 : les
+  // journaux serveur montrent « Oldies », « Momo » puis « Mimi », trois simples
+  // joueurs, refusés en NOT_MASTER deux fois par seconde pendant vingt secondes
+  // chacun. La route visée était /master/screen/focus. Ce composant est monté
+  // pour TOUS les participants (fermé), et cet effet envoyait « focus = null »
+  // dès le montage — donc une commande d'animateur par joueur et par
+  // chargement de page. Un téléphone pris dans une boucle de rechargement en
+  // envoyait une par rechargement. On n'annonce « plus de focus » que si le
+  // sélecteur a réellement été ouvert avant.
+  const dejaOuvert = useRef(false);
   useEffect(() => {
     if (!props.open) {
-      void masterSetScreenFocus(props.sessionId, props.token, null).catch(() => {});
+      if (dejaOuvert.current) {
+        void masterSetScreenFocus(props.sessionId, props.token, null).catch(() => {});
+      }
       return;
     }
+    dejaOuvert.current = true;
     const push = (): void => {
       void masterSetScreenFocus(props.sessionId, props.token, tvFocusId).catch(() => {});
     };
@@ -271,25 +288,27 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
 
         {/* Onglets — masqués : un seul onglet (bibliothèque officielle) pour le moment. */}
         <div className="hidden gap-2 mb-3">
-          {// fix/playlists-personnelles-retirees — seule la bibliothèque
-          // officielle est proposée pour le moment (demande de Thomas 03/09).
-          ([{ k: 'official' as Tab, label: 'Bibliothèque officielle' }] as const).map((o) => (
-            <button
-              key={o.k}
-              type="button"
-              onClick={() => {
-                setTab(o.k);
-                setSelected(null);
-              }}
-              className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
-                tab === o.k
-                  ? 'border-white/25 bg-white/[0.12] text-white'
-                  : 'border-white/12 text-white/60 hover:bg-white/[0.08]'
-              }`}
-            >
-              {o.label}
-            </button>
-          ))}
+          {
+            // fix/playlists-personnelles-retirees — seule la bibliothèque
+            // officielle est proposée pour le moment (demande de Thomas 03/09).
+            ([{ k: 'official' as Tab, label: 'Bibliothèque officielle' }] as const).map((o) => (
+              <button
+                key={o.k}
+                type="button"
+                onClick={() => {
+                  setTab(o.k);
+                  setSelected(null);
+                }}
+                className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
+                  tab === o.k
+                    ? 'border-white/25 bg-white/[0.12] text-white'
+                    : 'border-white/12 text-white/60 hover:bg-white/[0.08]'
+                }`}
+              >
+                {o.label}
+              </button>
+            ))
+          }
         </div>
 
         {/* Onglet officiel : source + recherche (masqué pendant le choix de niveau) */}
@@ -403,8 +422,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                         <p className="truncate font-display text-base text-white">{p.name_fr}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Puce>
-                            {p.apple_music_count ?? 0}{' '}
-                            {t('playlists.tracksCount')}
+                            {p.apple_music_count ?? 0} {t('playlists.tracksCount')}
                           </Puce>
                           {p.locked && <Puce>🔒</Puce>}
                         </div>
