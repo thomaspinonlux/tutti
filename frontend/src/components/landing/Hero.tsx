@@ -119,7 +119,7 @@ export function Hero(): JSX.Element {
         >
           <div className="landing-video-sticker">{t.hero.videoSticker}</div>
           <LazyVideo
-            src="/videos/Tutti_demo_Spotify.mp4"
+            src="/videos/tutti-demo.mp4"
             poster="/videos/tutti-demo-poster.jpg"
             ariaLabel={t.hero.videoLabel}
           />

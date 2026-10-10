@@ -59,6 +59,13 @@ export function Nav(): JSX.Element {
           >
             {t.nav.faq}
           </a>
+          <a
+            href={t.nav.guideHref}
+            className="hidden md:inline text-sm font-medium transition-colors hover:[color:var(--landing-rose)]"
+            style={{ color: 'var(--landing-ink-soft)' }}
+          >
+            {t.nav.guide}
+          </a>
           <LangSwitch />
           <Link to="/auth/login" className="landing-cta-mini">
             {t.nav.signin}

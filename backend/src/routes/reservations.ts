@@ -29,6 +29,7 @@ import { creerCheckout, stripeConfigure, StripeError } from '../lib/stripe.js';
 import { calculerDevis, reductionActive, reservationAutomatique } from '../lib/tarifs.js';
 import { getNotificationRecipients, sendNotificationEmail } from '../lib/email.js';
 import { lireReglages, publierReservation, texteCreneau } from '../lib/reservationsCommun.js';
+import { envoyerConfirmationReservation } from '../lib/confirmationReservation.js';
 
 const router: Router = Router();
 router.use(requireAuth);
@@ -276,6 +277,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       data: { utilisations: { increment: 1 } },
     });
     await approuverMembres(membre.workspace_id);
+    // feat/guide-reservation — partie confirmée : confirmation + mode d'emploi.
+    void envoyerConfirmationReservation(reservation.id);
   }
 
   // Le propriétaire est prévenu : c'est lui qui décide.

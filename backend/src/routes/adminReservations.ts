@@ -148,7 +148,8 @@ router.post('/:id/accepter', async (req: Request<{ id: string }>, res: Response)
             ? `<p>Cette partie est <strong>offerte</strong> : rien à payer.</p>`
             : `<p>Prix : <strong>${(resultat.prix_cents! / 100).toFixed(2).replace('.', ',')} €</strong>. ` +
               `Règle-le depuis <a href="https://tuttiparty.app/reserver">ton espace réservation</a> pour le confirmer.</p>`) +
-          `<p>Le jour J, tu pourras ouvrir ta partie depuis ton compte Tutti.</p>`,
+          `<p>Le jour J, tu pourras ouvrir ta partie depuis ton compte Tutti.</p>` +
+          `<p>Le mode d’emploi de la soirée : <a href="https://tuttiparty.app/guide.html?lang=fr">tuttiparty.app/guide.html</a>.</p>`,
       }).catch(() => undefined);
     }
     res.json({ reservation: publierReservation(resultat) });

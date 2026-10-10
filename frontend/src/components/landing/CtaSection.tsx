@@ -46,7 +46,7 @@ export function CtaSection(): JSX.Element {
           viewport={{ once: true, margin: '-60px' }}
           transition={{ duration: 0.5, delay: 0.2, ease: 'easeOut' }}
         >
-          <Link to="/auth/login" className="landing-btn-primary">
+          <Link to="/auth/signup" className="landing-btn-primary">
             {t.cta.button}
           </Link>
         </motion.div>

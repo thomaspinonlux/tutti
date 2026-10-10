@@ -15,6 +15,8 @@ export interface LandingTranslations {
     pricing: string;
     faq: string;
     signin: string;
+    guide: string;
+    guideHref: string;
     home: string;
   };
   hero: {
@@ -127,18 +129,20 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       pricing: 'Tarifs',
       faq: 'FAQ',
       signin: 'Se connecter',
+      guide: 'Mode d’emploi',
+      guideHref: '/guide.html?lang=fr',
       home: 'Tutti — Accueil',
     },
     hero: {
-      betaBadge: 'En phase beta — accès sur invitation',
+      betaBadge: 'Ouvert à tous — réserve ta soirée en ligne',
       titleStart: 'Le blind test & quiz ',
       titleEm: 'premium',
       titleEnd: ' pour vos soirées.',
-      sub: "Tutti rassemble deux jeux taillés pour vos soirées privées : <strong>Tutti Tracks</strong>, le blind test musical via Spotify et YouTube, et <strong>Tutti Quizz</strong>, le quiz multimédia multi-formats. Tes amis scannent un QR code, et c'est parti. Sans installation, sans création de compte côté joueurs.",
+      sub: "Tutti rassemble deux jeux taillés pour vos soirées : <strong>Tutti Tracks</strong>, le blind test musical, et <strong>Tutti Quizz</strong>, le quiz multi-formats. Tes amis scannent un QR code, et c'est parti. Sans installation, sans création de compte côté joueurs.",
       ctaPrimary: 'Démarrer une partie',
       ctaSecondary: 'Voir comment ça marche',
-      metaSpotify: '<strong>Spotify + YouTube</strong> intégrés',
-      metaLanguages: '<strong>FR / EN / IT / ES</strong>',
+      metaSpotify: '<strong>119 playlists</strong> prêtes à jouer',
+      metaLanguages: '<strong>FR / EN</strong>',
       metaPrice: 'À partir de <strong>2,50 €</strong> de l’heure',
       videoSticker: '2 min de démo',
       videoLabel: 'Démonstration de Tutti',
@@ -156,11 +160,11 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         nameEm: 'Tracks',
         desc: 'Le blind test premium qui transforme ton salon en plateau de jeu. Buzz, chante, tape la réponse — Tutti Tracks comprend la voix grâce à Whisper, et tolère les fautes et les accents.',
         features: [
-          'Spotify Premium et YouTube intégrés',
+          '119 playlists officielles, plus de 8 400 titres',
           'Réponse à la voix ou par texte',
           'Bibliothèque officielle de playlists thématiques',
-          'Crée tes propres listes en cherchant sur Spotify ou YouTube',
-          'Importe tes playlists Spotify existantes',
+          'Par époque, par genre et par thème',
+          'Les paroles à l’écran pour chanter tous ensemble',
           'Scoring temps réel, podium, ajustement manuel',
         ],
         cta: 'Lancer un blind test →',
@@ -192,7 +196,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           num: '01',
           icon: '🎧',
           title: 'Choisis ta partie',
-          desc: 'Sélectionne un blind test ou un quiz. Pioche dans la bibliothèque officielle Tutti, importe une de tes playlists Spotify, ou crée ta propre liste de morceaux et tes propres questions.',
+          desc: 'Sélectionne un blind test ou un quiz. Pioche dans la bibliothèque officielle Tutti, ou crée ta propre liste de morceaux et tes propres questions.',
         },
         {
           num: '02',
@@ -215,9 +219,9 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleEnd: ', pas pour configurer.',
       items: [
         {
-          tag: 'Multi-source',
-          title: 'Spotify + YouTube',
-          desc: 'Combine les deux dans la même partie de Tutti Tracks. La musique est lue depuis ton propre compte authentifié. Aucun fichier audio stocké ni redistribué par Tutti.',
+          tag: 'Ambiance',
+          title: 'Les paroles sur la télé',
+          desc: 'Après la réponse, la musique continue et les paroles s’affichent en grand sur la télé : tout le monde chante.',
         },
         {
           tag: 'Reconnaissance vocale',
@@ -232,7 +236,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         {
           tag: 'Création custom',
           title: 'Tes listes, tes questions',
-          desc: 'Crée tes propres playlists de blind test en cherchant directement sur Spotify ou YouTube. Rédige tes propres quiz en QCM, vrai/faux, réponse libre ou estimation.',
+          desc: 'Crée tes propres playlists de blind test et rédige tes propres quiz en QCM, vrai/faux, réponse libre ou estimation.',
         },
         {
           tag: 'Sans friction',
@@ -241,8 +245,8 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           tag: 'International',
-          title: '4 langues prises en charge',
-          desc: 'Interface en français, anglais, italien et espagnol. Chaque langue a sa propre bibliothèque de contenu officiel adaptée.',
+          title: 'Français et anglais',
+          desc: 'Interface en français et en anglais. Tu choisis la langue de chaque partie au lancement.',
         },
       ],
     },
@@ -260,8 +264,8 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       },
       columns: [
         {
-          name: 'Ton compte Apple Music',
-          tag: 'Tu joues avec ton abonnement',
+          name: 'Ton propre abonnement',
+          tag: 'Tu joues avec ton compte musical, sur demande',
           rows: [
             { label: 'L’heure, en semaine', before: '5,00', amount: '2,50' },
             { label: 'L’heure, vendredi & samedi soir', before: '9,00', amount: '4,50' },
@@ -307,11 +311,11 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       items: [
         {
           q: "Qu'est-ce que Tutti ?",
-          a: "Tutti est une plateforme premium éditée depuis le Luxembourg par Kleos Sàrl. Elle propose deux produits pour vos soirées privées : <strong>Tutti Tracks</strong> (blind test musical avec Spotify et YouTube) et <strong>Tutti Quizz</strong> (quiz multimédia multi-formats). Les joueurs rejoignent la partie en scannant un QR code, sans installer d'application ni créer de compte.",
+          a: "Tutti est une plateforme premium éditée depuis le Luxembourg par Kleos Sàrl. Elle propose deux produits pour vos soirées : <strong>Tutti Tracks</strong> (blind test musical) et <strong>Tutti Quizz</strong> (quiz multimédia multi-formats). Les joueurs rejoignent la partie en scannant un QR code, sans installer d'application ni créer de compte.",
         },
         {
-          q: 'Faut-il un compte Spotify Premium ?',
-          a: "Pour utiliser Spotify comme source de musique sur Tutti Tracks, oui — l'animateur (la personne qui pilote la soirée) doit avoir un compte Spotify Premium. La musique est lue directement depuis son compte authentifié via le SDK officiel de Spotify. <strong>Tutti ne stocke ni ne redistribue aucun fichier audio.</strong> Si l'animateur n'a pas Spotify Premium, YouTube est une alternative gratuite. Les joueurs n'ont besoin d'aucun compte.",
+          q: 'Faut-il un abonnement musical ?',
+          a: "Non. Avec le compte fourni par Tutti, on s'occupe de la musique : tu réserves ton créneau et tu joues. <strong>Les joueurs n'ont besoin d'aucun compte.</strong>",
         },
         {
           q: 'Mes invités doivent-ils créer un compte ou installer une application ?',
@@ -323,7 +327,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'Quelles sont les sources de contenu pour Tutti Tracks et Tutti Quizz ?',
-          a: '<strong>Pour Tutti Tracks :</strong> tu peux jouer avec la bibliothèque officielle Tutti (playlists thématiques par catégorie, décennie ou langue), créer ta propre liste en cherchant directement sur Spotify et YouTube depuis l’app, ou importer une de tes playlists Spotify existantes. <strong>Pour Tutti Quizz :</strong> tu as accès à la bibliothèque officielle (packs multilingues prêts à jouer) et tu peux créer tes propres quiz en mélangeant QCM, vrai/faux, réponse libre et estimation.',
+          a: '<strong>Pour Tutti Tracks :</strong> la bibliothèque officielle Tutti, 119 playlists classées par époque, par genre et par thème, soit plus de 8 400 titres. Tu peux aussi créer tes propres listes. <strong>Pour Tutti Quizz :</strong> tu as accès à la bibliothèque officielle (packs prêts à jouer) et tu peux créer tes propres quiz en mélangeant QCM, vrai/faux, réponse libre et estimation.',
         },
         {
           q: 'Combien de joueurs peuvent participer ?',
@@ -331,15 +335,15 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'Quelles langues sont supportées ?',
-          a: "L'interface de Tutti est disponible en <strong>français, anglais, italien et espagnol</strong>. Chaque langue dispose de sa propre bibliothèque de contenu officiel adaptée. Tu peux changer la langue à tout moment, même au milieu d'une partie.",
+          a: "L'interface de Tutti est disponible en <strong>français et en anglais</strong>. Tu choisis la langue de chaque partie au moment de la lancer.",
         },
         {
           q: 'Est-ce que la musique a de la pub ?',
-          a: "Avec Spotify Premium, jamais. Avec YouTube, ça dépend du compte de l'animateur — si vous avez YouTube Premium, pas de pub. Sinon, on essaie de minimiser l'impact en ne lisant qu'un extrait court de chaque morceau.",
+          a: 'Non, aucune publicité pendant la partie.',
         },
         {
           q: 'Comment se passe le paiement ?',
-          a: "Tu réserves un créneau depuis ton compte et tu paies par carte via Stripe. Le prix se calcule à l'heure, au prorata des minutes, avec un tarif majoré le vendredi et le samedi à partir de 18 h. Pas d'abonnement, pas de prélèvement automatique. <strong>Offre de lancement : −50 % sur toutes les heures jusqu'au 31 octobre 2026.</strong> Si tu joues avec ton propre abonnement Apple Music, le tarif est encore plus bas.",
+          a: "Tu réserves un créneau depuis ton compte et tu paies par carte via Stripe. Le prix se calcule à l'heure, au prorata des minutes, avec un tarif majoré le vendredi et le samedi à partir de 18 h. Pas d'abonnement, pas de prélèvement automatique. <strong>Offre de lancement : −50 % sur toutes les heures jusqu'au 31 octobre 2026.</strong> Si tu joues avec ton propre abonnement musical (sur demande), le tarif est encore plus bas.",
         },
         {
           q: "Qu'arrive-t-il à mes données personnelles ?",
@@ -355,8 +359,8 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleStart: 'Prêt à mettre tes amis ',
       titleEm: 'au défi',
       titleEnd: ' ?',
-      sub: 'Demande ton accès beta et lance ta première soirée Tutti dans la semaine.',
-      button: 'Demander un accès',
+      sub: 'Crée ton compte, réserve ton créneau et lance ta première soirée Tutti.',
+      button: 'Créer mon compte',
     },
     footer: {
       tagline:
@@ -370,6 +374,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
             { label: 'Fonctionnalités', href: '#features' },
             { label: 'Tarifs', href: '#pricing' },
             { label: 'FAQ', href: '#faq' },
+            { label: 'Mode d’emploi', href: '/guide.html?lang=fr' },
           ],
         },
         legal: {
@@ -393,18 +398,20 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       pricing: 'Pricing',
       faq: 'FAQ',
       signin: 'Sign in',
+      guide: 'User guide',
+      guideHref: '/guide.html?lang=en',
       home: 'Tutti — Home',
     },
     hero: {
-      betaBadge: 'Currently in beta — invite-only access',
+      betaBadge: 'Open to everyone — book your night online',
       titleStart: 'The ',
       titleEm: 'premium',
       titleEnd: ' blind test & quiz for your parties.',
-      sub: "Tutti brings together two games built for your private parties: <strong>Tutti Tracks</strong>, the music blind test via Spotify and YouTube, and <strong>Tutti Quizz</strong>, the multimedia quiz in multiple formats. Your friends scan a QR code, and you're off. No install, no account needed for players.",
+      sub: "Tutti brings together two games built for your parties: <strong>Tutti Tracks</strong>, the music blind test, and <strong>Tutti Quizz</strong>, the multi-format quiz. Your friends scan a QR code, and you're off. No install, no account needed for players.",
       ctaPrimary: 'Start a game',
       ctaSecondary: 'See how it works',
-      metaSpotify: '<strong>Spotify + YouTube</strong> built-in',
-      metaLanguages: '<strong>EN / FR / IT / ES</strong>',
+      metaSpotify: '<strong>119 playlists</strong> ready to play',
+      metaLanguages: '<strong>EN / FR</strong>',
       metaPrice: 'From <strong>€2.50</strong> per hour',
       videoSticker: '2-min demo',
       videoLabel: 'Tutti demo',
@@ -422,11 +429,11 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         nameEm: 'Tracks',
         desc: 'The premium music blind test that turns any living room into a game show. Buzz, sing, type the answer — Tutti Tracks understands voice via Whisper and forgives typos and accents.',
         features: [
-          'Spotify Premium and YouTube built-in',
+          '119 official playlists, over 8,400 tracks',
           'Voice or text answers',
           'Official library of themed playlists',
-          'Build your own lists by searching Spotify or YouTube directly',
-          'Import your existing Spotify playlists',
+          'By era, by genre and by theme',
+          'Lyrics on screen so everyone sings along',
           'Real-time scoring, podium, manual host adjustments',
         ],
         cta: 'Start a blind test →',
@@ -458,7 +465,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           num: '01',
           icon: '🎧',
           title: 'Pick your game',
-          desc: 'Pick a blind test or a quiz. Choose from the official Tutti library, import one of your Spotify playlists, or build your own track list and questions.',
+          desc: 'Pick a blind test or a quiz. Choose from the official Tutti library, or build your own track list and questions.',
         },
         {
           num: '02',
@@ -481,9 +488,9 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleEnd: ', not to configure.',
       items: [
         {
-          tag: 'Multi-source',
-          title: 'Spotify + YouTube',
-          desc: 'Mix both in a single Tutti Tracks game. Music plays from your own authenticated account. No audio files stored or redistributed by Tutti.',
+          tag: 'Atmosphere',
+          title: 'Lyrics on the TV',
+          desc: 'After the answer, the music keeps playing and the lyrics show up large on the TV: everyone sings.',
         },
         {
           tag: 'Voice recognition',
@@ -498,7 +505,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         {
           tag: 'Custom creation',
           title: 'Your lists, your questions',
-          desc: 'Build your own blind test lists by searching Spotify or YouTube directly. Write your own quiz in MCQ, true/false, free answer or estimation.',
+          desc: 'Build your own blind test playlists and write your own quiz in MCQ, true/false, free answer or estimation.',
         },
         {
           tag: 'Frictionless',
@@ -507,8 +514,8 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           tag: 'International',
-          title: '4 languages supported',
-          desc: 'Interface in English, French, Italian and Spanish. Each language has its own adapted official content library.',
+          title: 'English and French',
+          desc: 'Interface in English and French. You choose the language of each game when you start it.',
         },
       ],
     },
@@ -526,8 +533,8 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       },
       columns: [
         {
-          name: 'Your Apple Music account',
-          tag: 'You play with your own subscription',
+          name: 'Your own subscription',
+          tag: 'You play with your own music account, on request',
           rows: [
             { label: 'Per hour, weekdays', before: '5.00', amount: '2.50' },
             { label: 'Per hour, Friday & Saturday night', before: '9.00', amount: '4.50' },
@@ -573,11 +580,11 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       items: [
         {
           q: 'What is Tutti?',
-          a: 'Tutti is a premium platform built in Luxembourg by Kleos Sàrl. It offers two products for your private parties: <strong>Tutti Tracks</strong> (music blind test with Spotify and YouTube) and <strong>Tutti Quizz</strong> (multi-format multimedia quiz). Players join a game by scanning a QR code — no app to install, no account to create.',
+          a: 'Tutti is a premium platform built in Luxembourg by Kleos Sàrl. It offers two products for your parties: <strong>Tutti Tracks</strong> (music blind test) and <strong>Tutti Quizz</strong> (multi-format multimedia quiz). Players join a game by scanning a QR code — no app to install, no account to create.',
         },
         {
-          q: 'Do I need a Spotify Premium account?',
-          a: "To use Spotify as a music source on Tutti Tracks, yes — the host (the person running the night) needs their own Spotify Premium account. Music plays directly from that authenticated account via Spotify's official SDK. <strong>Tutti never stores or redistributes any audio files.</strong> If the host doesn't have Spotify Premium, YouTube is a free alternative. Players never need any account.",
+          q: 'Do I need a music subscription?',
+          a: 'No. With the account provided by Tutti, we handle the music: you book your slot and play. <strong>Players never need any account.</strong>',
         },
         {
           q: 'Do my guests need to create an account or install an app?',
@@ -589,7 +596,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'What are the content sources for Tutti Tracks and Tutti Quizz?',
-          a: '<strong>For Tutti Tracks:</strong> play with the official Tutti library (themed playlists by category, decade, or language), build your own list by searching Spotify or YouTube directly inside the app, or import one of your existing Spotify playlists. <strong>For Tutti Quizz:</strong> use the official library (multilingual packs ready to play) or build your own quiz mixing MCQ, true/false, free answer, and estimation.',
+          a: '<strong>For Tutti Tracks:</strong> the official Tutti library, 119 playlists sorted by era, genre and theme, over 8,400 tracks. You can also build your own lists. <strong>For Tutti Quizz:</strong> use the official library (packs ready to play) or build your own quiz mixing MCQ, true/false, free answer, and estimation.',
         },
         {
           q: 'How many players can join?',
@@ -597,15 +604,15 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'What languages are supported?',
-          a: "Tutti's interface is available in <strong>English, French, Italian, and Spanish</strong>. Each language has its own adapted official content library. You can switch language at any time, even mid-game.",
+          a: "Tutti's interface is available in <strong>English and French</strong>. You choose the language of each game when you start it.",
         },
         {
           q: 'Are there ads on the music?',
-          a: "With Spotify Premium, never. With YouTube, it depends on the host's account — if you have YouTube Premium, no ads. Otherwise, we try to minimize the impact by playing only short clips of each track.",
+          a: 'No, there are no ads during the game.',
         },
         {
           q: 'How does payment work?',
-          a: 'You book a slot from your account and pay by card via Stripe. The price is hourly, prorated to the minute, with an evening rate on Friday and Saturday from 6 PM. No subscription, no auto-debit. <strong>Launch offer: 50% off every hour until 31 October 2026.</strong> Playing with your own Apple Music subscription costs even less.',
+          a: 'You book a slot from your account and pay by card via Stripe. The price is hourly, prorated to the minute, with an evening rate on Friday and Saturday from 6 PM. No subscription, no auto-debit. <strong>Launch offer: 50% off every hour until 31 October 2026.</strong> Playing with your own music subscription (on request) costs even less.',
         },
         {
           q: 'What about my personal data?',
@@ -621,8 +628,8 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleStart: 'Ready to ',
       titleEm: 'challenge',
       titleEnd: ' your friends?',
-      sub: 'Request beta access and host your first Tutti night within the week.',
-      button: 'Request access',
+      sub: 'Create your account, book your slot and host your first Tutti night.',
+      button: 'Create my account',
     },
     footer: {
       tagline:
@@ -636,6 +643,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
             { label: 'Features', href: '#features' },
             { label: 'Pricing', href: '#pricing' },
             { label: 'FAQ', href: '#faq' },
+            { label: 'User guide', href: '/guide.html?lang=en' },
           ],
         },
         legal: {

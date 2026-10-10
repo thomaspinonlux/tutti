@@ -76,13 +76,14 @@ export default defineConfig({
         // Les gros chunks lazy (parseurs Excel/PDF de l'import « Coller une
         // liste ») sont chargés à la demande → on les exclut du précache pour
         // ne pas alourdir l'install PWA de ~900 Ko inutiles.
-        globIgnores: ['**/{xlsx,pdf}-*.js'],
+        globIgnores: ['**/{xlsx,pdf}-*.js', 'guide.html', 'guide/**'],
         // 5MB cap pour éviter de précacher des fichiers énormes (vidéos
         // landing dans public/videos/).
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // NE PAS intercepter /api/* (live data) ni /socket.io/* (websocket).
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
+        // Le mode d'emploi (/guide.html + PDF) est une page statique hors appli.
+        navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//, /^\/guide/],
         // fix/csp-meta-tag-and-cover-fallback — SW nouvellement installé
         // devient actif immédiatement (skipWaiting) + reprend le contrôle
         // des onglets ouverts (clientsClaim). Combiné : nouveau deploy =

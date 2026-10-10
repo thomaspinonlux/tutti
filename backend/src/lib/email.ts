@@ -55,6 +55,8 @@ interface SendArgs {
   to: string[];
   subject: string;
   html: string;
+  /** Pièces jointes hébergées (Resend va chercher le fichier à l'URL `path`). */
+  attachments?: Array<{ filename: string; path: string }>;
 }
 
 export interface SendResult {
@@ -96,6 +98,7 @@ export async function sendNotificationEmail(args: SendArgs): Promise<SendResult>
       to: args.to,
       subject: args.subject,
       html: args.html,
+      ...(args.attachments?.length ? { attachments: args.attachments } : {}),
     });
     if (result.error) {
       // Resend SDK loggue déjà sa propre erreur, mais on expose une trace
@@ -243,4 +246,75 @@ export function renderWelcomeEmailHtml(vars: WelcomeEmailVars): string {
     Une question ? Réponds à cet email ou écris à <a href="mailto:contact@tuttiparty.app" style="color:#7a8a9a">contact@tuttiparty.app</a>
   </p>
 </div>`;
+}
+
+// ───── Confirmation de réservation + mode d'emploi (feat/guide-reservation) ─
+//
+// Envoyé au client dès que son créneau est confirmé : paiement Stripe
+// encaissé (webhook) ou partie offerte par code. Le mode d'emploi part en
+// pièce jointe PDF et en lien vers la page du site (/guide.html).
+
+export const GUIDE_URL = 'https://tuttiparty.app/guide.html';
+export const GUIDE_PDF = {
+  fr: {
+    filename: 'Tutti-mode-emploi.pdf',
+    path: 'https://tuttiparty.app/guide/tutti-mode-emploi-fr.pdf',
+  },
+  en: { filename: 'Tutti-user-guide.pdf', path: 'https://tuttiparty.app/guide/tutti-guide-en.pdf' },
+} as const;
+
+interface ConfirmationVars {
+  locale: string;
+  /** Texte du créneau, ex. « vendredi 17 octobre, 20:00 → 23:00 ». */
+  creneau: string;
+  /** null = partie offerte. */
+  prixCents: number | null;
+}
+
+export function confirmationReservationEmail(vars: ConfirmationVars): {
+  subject: string;
+  html: string;
+  attachments: Array<{ filename: string; path: string }>;
+} {
+  const en = vars.locale.startsWith('en');
+  const creneau = escapeHtml(vars.creneau);
+  const prix =
+    vars.prixCents === null || vars.prixCents === 0
+      ? null
+      : en
+        ? `€${(vars.prixCents / 100).toFixed(2)}`
+        : `${(vars.prixCents / 100).toFixed(2).replace('.', ',')} €`;
+  const bouton = (href: string, texte: string): string =>
+    `<a href="${href}" style="background:#FF5C4D;color:#fff;padding:12px 22px;text-decoration:none;border-radius:999px;display:inline-block;font-weight:bold">${texte}</a>`;
+  const cadre = (corps: string): string =>
+    `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:28px;background:#F6EEDF;color:#1D1813;line-height:1.6;font-size:15px">${corps}` +
+    `<p style="color:#6B5E51;font-size:12px;margin-top:36px;border-top:1px solid #E3D6C2;padding-top:14px">Tutti — Kleos Sàrl, Luxembourg · contact@tuttiparty.app</p></div>`;
+  if (en) {
+    return {
+      subject: `Tutti — your game is booked (${vars.creneau})`,
+      attachments: [GUIDE_PDF.en],
+      html: cadre(
+        `<h1 style="font-size:24px;margin:0 0 12px">Your game is booked 🎉</h1>` +
+          `<p>Slot: <strong>${creneau}</strong>${prix ? ` — paid: <strong>${prix}</strong>` : ' — <strong>free game</strong>'}.</p>` +
+          `<p>On the day, the start button appears on your dashboard <strong>30 minutes before</strong> the slot.</p>` +
+          `<h2 style="font-size:18px;margin:24px 0 6px">Your user guide</h2>` +
+          `<p>Everything you need for the night — connecting the TV, choosing who hosts, how points work — is in the guide attached to this email (PDF), and online:</p>` +
+          `<p>${bouton(`${GUIDE_URL}?lang=en`, 'Read the user guide')}</p>` +
+          `<p style="margin-top:20px">${bouton('https://tuttiparty.app/admin', 'My dashboard')}</p>`,
+      ),
+    };
+  }
+  return {
+    subject: `Tutti — ta partie est réservée (${vars.creneau})`,
+    attachments: [GUIDE_PDF.fr],
+    html: cadre(
+      `<h1 style="font-size:24px;margin:0 0 12px">Ta partie est réservée 🎉</h1>` +
+        `<p>Créneau : <strong>${creneau}</strong>${prix ? ` — payé : <strong>${prix}</strong>` : ' — <strong>partie offerte</strong>'}.</p>` +
+        `<p>Le jour J, le bouton de lancement apparaît sur ton tableau de bord <strong>30 minutes avant</strong> le début.</p>` +
+        `<h2 style="font-size:18px;margin:24px 0 6px">Ton mode d’emploi</h2>` +
+        `<p>Tout ce qu’il faut pour la soirée — brancher la télé, choisir qui anime, les règles des points — est dans le mode d’emploi joint à cet e-mail (PDF), et en ligne :</p>` +
+        `<p>${bouton(`${GUIDE_URL}?lang=fr`, 'Lire le mode d’emploi')}</p>` +
+        `<p style="margin-top:20px">${bouton('https://tuttiparty.app/admin', 'Mon tableau de bord')}</p>`,
+    ),
+  };
 }
