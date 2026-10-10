@@ -407,11 +407,39 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             do {
                 let j1 = TuttiJournal.shared.debut("musickit", "play.fetchSong")
                 // RÈGLE — aucun appel Apple n'est attendu sans échéance.
-                let trouve = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                //
+                // fix/introuvable-qui-ne-l-est-pas — UN DÉLAI DÉPASSÉ N'EST PAS
+                // UN MORCEAU ABSENT. Soirée du 09/10, 21 h 44, « Be My Lover » :
+                //     ▶ play                      21:44:59.67
+                //     erreur: introuvable         21:45:05.57   ← 5,9 s = la borne
+                //     ▶ play (relance console)    21:45:07.69
+                //     ■ play.verif 309 ms, vu     21:45:08.42   ← le même id, trouvé
+                // La recherche n'avait pas répondu en 6 s ; `courseAvecDelai`
+                // rend nil, et nil était lu comme « pas dans le catalogue ». La
+                // console a cru le morceau mort, l'a relancé 9 s plus tard, et
+                // Apple l'a servi en 309 ms. On distingue donc les deux cas, on
+                // refait UNE fois la recherche quand c'est le délai qui a parlé,
+                // et le message dit la vraie cause.
+                var trouve = try await self.courseAvecDelai(self.delaiCommandeApple) {
                     try await self.chercherMorceau(catalogId)
                 }
-                guard let song = trouve ?? nil else {
-                    TuttiJournal.shared.fin("musickit", j1, ["trouve": false])
+                if trouve == nil {
+                    TuttiJournal.shared.note("musickit", "recherche sans réponse en \(Int(self.delaiCommandeApple)) s — second essai", ["id": catalogId], niveau: "warn")
+                    trouve = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                        try await self.chercherMorceau(catalogId)
+                    }
+                }
+                guard let reponse = trouve else {
+                    // Deux fois sans réponse : Apple n'a pas parlé, le morceau
+                    // n'est pas en cause.
+                    TuttiJournal.shared.fin("musickit", j1, ["trouve": false, "cause": "delai"])
+                    TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": "apple-sans-reponse"])
+                    call.reject("Apple Music n'a pas répondu (2 × \(Int(self.delaiCommandeApple)) s) pour l'id \(catalogId)")
+                    return
+                }
+                guard let song = reponse else {
+                    // Apple a répondu, et la réponse est vide : là, il est absent.
+                    TuttiJournal.shared.fin("musickit", j1, ["trouve": false, "cause": "absent"])
                     TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": "introuvable"])
                     call.reject("Morceau introuvable pour l'id \(catalogId)")
                     return

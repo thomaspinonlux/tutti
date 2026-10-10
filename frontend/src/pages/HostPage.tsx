@@ -1188,8 +1188,10 @@ function HostPageInner(): JSX.Element {
     derniereRelanceRef.current = 0;
     const id = window.setInterval(() => {
       if (Date.now() - appleTrackChangedAtRef.current < 3000) return; // grâce
-      if (!apple.isPlaying) return; // pause volontaire : rien à corriger
-      const actual = apple.readNowPlayingId();
+      // fix/chien-de-garde-aveugle-au-son — même défaut que le chien de garde :
+      // `apple` est capturé au montage de l'effet, `appleRef` est vivant.
+      if (!appleRef.current.isPlaying) return; // pause volontaire : rien à corriger
+      const actual = appleRef.current.readNowPlayingId();
       if (!actual || actual === expected) {
         resyncCountRef.current = 0;
         return;
