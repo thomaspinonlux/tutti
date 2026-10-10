@@ -144,7 +144,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       metaSpotify: '<strong>119 playlists</strong> prêtes à jouer',
       metaLanguages: '<strong>FR / EN</strong>',
       metaPrice: 'À partir de <strong>2,50 €</strong> de l’heure',
-      videoSticker: '2 min de démo',
+      videoSticker: 'Tutti en 26 secondes',
       videoLabel: 'Démonstration de Tutti',
     },
     products: {
@@ -412,7 +412,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       metaSpotify: '<strong>119 playlists</strong> ready to play',
       metaLanguages: '<strong>EN / FR</strong>',
       metaPrice: 'From <strong>€2.50</strong> per hour',
-      videoSticker: '2-min demo',
+      videoSticker: 'Tutti in 26 seconds',
       videoLabel: 'Tutti demo',
     },
     products: {

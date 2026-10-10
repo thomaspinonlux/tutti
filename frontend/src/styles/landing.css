@@ -165,6 +165,16 @@
   aspect-ratio: 16 / 9;
   background: var(--landing-cream-deep);
 }
+/* Présentation animée verticale (9:16), fond noir de l'app. */
+.landing-hero-video--vertical {
+  aspect-ratio: 9 / 16;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  border-radius: 28px;
+  background: #0b0b0f;
+  transform: rotate(-1deg);
+}
 .landing-hero-video video,
 .landing-hero-video img.landing-poster {
   width: 100%;

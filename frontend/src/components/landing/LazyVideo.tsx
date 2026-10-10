@@ -17,6 +17,8 @@ interface LazyVideoProps {
   poster: string;
   ariaLabel: string;
   type?: string;
+  /** Vidéo verticale (format réseaux sociaux 9:16). */
+  vertical?: boolean;
 }
 
 export function LazyVideo({
@@ -24,6 +26,7 @@ export function LazyVideo({
   poster,
   ariaLabel,
   type = 'video/mp4',
+  vertical = false,
 }: LazyVideoProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -63,7 +66,12 @@ export function LazyVideo({
   }, [shouldLoad]);
 
   return (
-    <div ref={containerRef} className="landing-hero-video">
+    <div
+      ref={containerRef}
+      className={
+        vertical ? 'landing-hero-video landing-hero-video--vertical' : 'landing-hero-video'
+      }
+    >
       <video
         ref={videoRef}
         autoPlay

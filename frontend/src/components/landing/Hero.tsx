@@ -115,12 +115,13 @@ export function Hero(): JSX.Element {
           initial="hidden"
           animate="visible"
           transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
-          className="relative"
+          className="relative mx-auto w-full max-w-[340px]"
         >
           <div className="landing-video-sticker">{t.hero.videoSticker}</div>
           <LazyVideo
-            src="/videos/tutti-demo.mp4"
-            poster="/videos/tutti-demo-poster.jpg"
+            src="/videos/tutti-reel.mp4"
+            poster="/videos/tutti-reel-poster.jpg"
+            vertical
             ariaLabel={t.hero.videoLabel}
           />
         </motion.div>
