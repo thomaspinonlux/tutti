@@ -10,7 +10,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { createSession } from '../../lib/sessions.js';
 import {
   lireReglagesReservation,
   mesReservations,
@@ -33,11 +32,6 @@ export function ProchainePartie(): JSX.Element | null {
   const [ouvertureMin, setOuvertureMin] = useState(30);
   const [maintenant, setMaintenant] = useState(() => new Date());
   const [enCours, setEnCours] = useState<'TRACKS' | 'QUIZZ' | null>(null);
-  const [erreur, setErreur] = useState<string | null>(null);
-  // feat/parcours-rapide — Thomas : le lancement doit proposer les deux choix
-  // qui comptent : qui anime, et voix + clavier ou clavier seul.
-  const [avecAnimateur, setAvecAnimateur] = useState(false);
-  const [vocal, setVocal] = useState(true);
   const { me } = useEstablishment();
   const estClient = !!me && me.role !== 'OWNER' && !me.isSuperAdmin;
 
@@ -84,23 +78,12 @@ export function ProchainePartie(): JSX.Element | null {
   const ouvert = maintenant >= ouvreA;
   const titre = memeJour(debut, maintenant) ? t('quizTheme.nextToday') : t('quizTheme.nextLater');
 
-  const lancer = async (type: 'TRACKS' | 'QUIZZ'): Promise<void> => {
+  // feat/parcours-rapide — Thomas : les réglages font partie du fil de
+  // lancement. « Lancer » ouvre l'écran de réglages déjà rempli (animateur,
+  // voix ou clavier, solo ou équipes, langue) ; un clic de plus lance la partie.
+  const lancer = (type: 'TRACKS' | 'QUIZZ'): void => {
     setEnCours(type);
-    setErreur(null);
-    try {
-      const session = await createSession({
-        game_type: type,
-        mode: 'SOLO',
-        language: 'fr',
-        has_animator: avecAnimateur,
-        // Choix voix/clavier : blind test seulement (le quiz n'a pas de vocal).
-        voice_enabled: type === 'TRACKS' ? vocal : undefined,
-      });
-      navigate(`/host?session=${encodeURIComponent(session.short_code)}`);
-    } catch (e: unknown) {
-      setErreur((e as Error).message);
-      setEnCours(null);
-    }
+    navigate(type === 'QUIZZ' ? '/admin/sessions/new?type=quizz' : '/admin/sessions/new');
   };
 
   return (
@@ -117,56 +100,22 @@ export function ProchainePartie(): JSX.Element | null {
         </>
       ) : ouvert ? (
         <>
-          <div className="grid gap-4 mb-5">
-            <Choix
-              titre="Qui anime ?"
-              options={[
-                {
-                  actif: !avecAnimateur,
-                  libelle: 'Tout le monde joue',
-                  aide: 'Un joueur pilote depuis son téléphone, sans voir les réponses.',
-                  choisir: () => setAvecAnimateur(false),
-                },
-                {
-                  actif: avecAnimateur,
-                  libelle: 'Avec animateur',
-                  aide: 'Une personne pilote, voit les réponses et ne joue pas.',
-                  choisir: () => setAvecAnimateur(true),
-                },
-              ]}
-            />
-            <Choix
-              titre="Comment les joueurs répondent (blind test)"
-              options={[
-                {
-                  actif: vocal,
-                  libelle: 'À la voix et au clavier',
-                  aide: 'Ils buzzent et disent leur réponse.',
-                  choisir: () => setVocal(true),
-                },
-                {
-                  actif: !vocal,
-                  libelle: 'Au clavier seulement',
-                  aide: 'Pas de micro : utile en salle bruyante.',
-                  choisir: () => setVocal(false),
-                },
-              ]}
-            />
-          </div>
           <div className="flex flex-wrap gap-2 items-center">
-            <Button size="lg" disabled={!!enCours} onClick={() => void lancer('TRACKS')}>
+            <Button size="lg" disabled={!!enCours} onClick={() => lancer('TRACKS')}>
               {enCours === 'TRACKS' ? '…' : t('quizTheme.launchTracks')}
             </Button>
             <Button
               size="lg"
               variant="secondary"
               disabled={!!enCours}
-              onClick={() => void lancer('QUIZZ')}
+              onClick={() => lancer('QUIZZ')}
             >
               {enCours === 'QUIZZ' ? '…' : t('quizTheme.launchQuiz')}
             </Button>
-            <Link to="/admin/sessions/new" className="text-sm underline ml-2">
-              {t('quizTheme.otherSettings')}
+            <Link to="/admin/sessions/new">
+              <Button size="lg" variant="ghost">
+                ⚙️ {t('quizTheme.otherSettings')}
+              </Button>
             </Link>
           </div>
         </>
@@ -181,45 +130,6 @@ export function ProchainePartie(): JSX.Element | null {
           })}
         </p>
       )}
-      {erreur && (
-        <p role="alert" className="text-raspberry text-sm mt-2">
-          {erreur}
-        </p>
-      )}
     </Card>
-  );
-}
-
-/** Deux gros boutons côte à côte : un choix, visible d'un coup d'œil. */
-function Choix({
-  titre,
-  options,
-}: {
-  titre: string;
-  options: Array<{ actif: boolean; libelle: string; aide: string; choisir: () => void }>;
-}): JSX.Element {
-  return (
-    <div>
-      <p className="font-semibold mb-2">{titre}</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {options.map((o) => (
-          <button
-            key={o.libelle}
-            type="button"
-            onClick={o.choisir}
-            aria-pressed={o.actif}
-            className={`text-left rounded-xl border-2 px-4 py-3 transition-colors ${
-              o.actif ? 'border-ink bg-ink text-cream' : 'border-ink/30 hover:border-ink'
-            }`}
-          >
-            <span className="block font-semibold text-base">
-              {o.actif ? '✓ ' : ''}
-              {o.libelle}
-            </span>
-            <span className="block text-sm opacity-80">{o.aide}</span>
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }

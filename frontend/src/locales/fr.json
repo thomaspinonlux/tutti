@@ -260,7 +260,7 @@
     "teamAdd": "Ajouter une équipe",
     "teamRemove": "Retirer cette équipe",
     "language": "Langue par défaut",
-    "create": "Créer la partie",
+    "create": "▶ Lancer la partie",
     "creating": "Création…",
     "answerModeChoice": "Comment les joueurs répondent",
     "modeVoiceTitle": "À la voix et au clavier",
@@ -1106,7 +1106,7 @@
     "payLink": "Payer mon créneau →",
     "launchTracks": "▶ Lancer le blind test",
     "launchQuiz": "▶ Lancer le quiz",
-    "otherSettings": "Autres réglages (équipes, animateur…)",
+    "otherSettings": "Réglages",
     "opensAt": "Le bouton « Lancer » apparaît à {{time}}."
   }
 }

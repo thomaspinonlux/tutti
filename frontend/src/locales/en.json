@@ -260,7 +260,7 @@
     "teamAdd": "Add a team",
     "teamRemove": "Remove team",
     "language": "Default language",
-    "create": "Create the game",
+    "create": "▶ Start the game",
     "creating": "Creating…",
     "answerModeChoice": "How players answer",
     "modeVoiceTitle": "Voice and keyboard",
@@ -1106,7 +1106,7 @@
     "payLink": "Pay for my slot →",
     "launchTracks": "▶ Start the blind test",
     "launchQuiz": "▶ Start the quiz",
-    "otherSettings": "Other settings (teams, animator…)",
+    "otherSettings": "Settings",
     "opensAt": "The “Start” button appears at {{time}}."
   }
 }
