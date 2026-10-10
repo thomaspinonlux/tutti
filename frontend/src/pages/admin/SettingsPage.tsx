@@ -34,6 +34,7 @@ import {
 import { canUseInAppOAuth, connectViaInAppBrowser } from '../../lib/nativeOAuth.js';
 import { Button, Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { WorkspaceMembersCard } from '../../components/admin/settings/WorkspaceMembersCard.js';
+import { getMe } from '../../lib/me.js';
 
 const PROVIDER_IDS = ['demo', 'spotify', 'youtube', 'deezer', 'apple_music'] as const;
 type ProviderRow = {
@@ -53,6 +54,18 @@ type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 export function SettingsPage(): JSX.Element {
   const { t } = useTranslation();
   const { establishment, refetch, loading, error: fetchError } = useEstablishment();
+  // Un client ne voit pas les réglages de sources musicales ; celui qui joue
+  // avec son propre abonnement garde la carte de connexion Apple Music.
+  const [estProprietaire, setEstProprietaire] = useState(false);
+  const [compteApplePropre, setCompteApplePropre] = useState(false);
+  useEffect(() => {
+    void getMe()
+      .then((me) => {
+        setEstProprietaire(me.role === 'OWNER' || me.isSuperAdmin);
+        setCompteApplePropre(me.workspace?.compte_apple_propre === true);
+      })
+      .catch(() => undefined);
+  }, []);
 
   const [name, setName] = useState('');
   const [brandingColor, setBrandingColor] = useState('');
@@ -575,250 +588,259 @@ export function SettingsPage(): JSX.Element {
           </label>
         </Card>
 
-        <Card tone={spotify?.connected ? 'basil' : 'default'}>
-          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-            <div>
-              <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
-                {t('settings.spotifyTitle')}
-              </p>
-              <p className="font-editorial italic text-sm text-ink-2">
-                {t('settings.spotifyDescription')}
-              </p>
-            </div>
-            {spotify?.connected ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                {/* feat/spotify-refresh-scopes — relance l'OAuth (show_dialog=true
+        {/* Sources musicales : réglages du propriétaire, invisibles pour un client. */}
+        {estProprietaire && (
+          <Card tone={spotify?.connected ? 'basil' : 'default'}>
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+              <div>
+                <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+                  {t('settings.spotifyTitle')}
+                </p>
+                <p className="font-editorial italic text-sm text-ink-2">
+                  {t('settings.spotifyDescription')}
+                </p>
+              </div>
+              {spotify?.connected ? (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* feat/spotify-refresh-scopes — relance l'OAuth (show_dialog=true
                     déjà activé côté backend) pour ré-accorder les scopes actuels
                     sans avoir à déconnecter/reconnecter à la main. Utile quand le
                     token a été accordé avant l'ajout d'un scope (ex. lecture des
                     playlists). */}
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled={spotifyBusy}
+                    onClick={() => void handleSpotifyConnect()}
+                    title="Relance l'autorisation Spotify pour mettre à jour les permissions (lecture des playlists, etc.)"
+                  >
+                    {spotifyBusy ? t('common.loading') : '🔄 Mettre à jour les autorisations'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={spotifyBusy}
+                    onClick={() => void handleSpotifyDisconnect()}
+                  >
+                    {t('settings.spotifyDisconnect')}
+                  </Button>
+                </div>
+              ) : (
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="primary"
                   size="sm"
                   disabled={spotifyBusy}
                   onClick={() => void handleSpotifyConnect()}
-                  title="Relance l'autorisation Spotify pour mettre à jour les permissions (lecture des playlists, etc.)"
                 >
-                  {spotifyBusy ? t('common.loading') : '🔄 Mettre à jour les autorisations'}
+                  {spotifyBusy ? t('common.loading') : t('settings.spotifyConnect')}
                 </Button>
+              )}
+            </div>
+            {spotify?.connected && spotify.account_email && (
+              <p className="font-mono text-xs text-ink-soft">
+                {t('settings.spotifyAccount')}:{' '}
+                <span className="text-ink">{spotify.account_email}</span>
+              </p>
+            )}
+            {spotifyToast && (
+              <p
+                role="alert"
+                className={`mt-3 text-sm font-medium ${
+                  spotifyToast.kind === 'success' ? 'text-basil-deep' : 'text-raspberry'
+                }`}
+              >
+                {spotifyToast.msg}
+              </p>
+            )}
+          </Card>
+        )}
+
+        {/* ── Apple Music connect (feat/apple-music étape 5) ──────────── */}
+        {(estProprietaire || compteApplePropre) && (
+          <Card tone={apple?.connected ? 'basil' : 'default'}>
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+              <div>
+                <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+                  Apple Music
+                </p>
+                <p className="font-editorial italic text-sm text-ink-2">
+                  Connecte ton compte Apple Music (abonnement actif requis) pour lire les morceaux
+                  depuis la console.
+                </p>
+              </div>
+              {apple?.connected ? (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  disabled={spotifyBusy}
-                  onClick={() => void handleSpotifyDisconnect()}
+                  disabled={appleBusy}
+                  onClick={() => void handleAppleDisconnect()}
                 >
-                  {t('settings.spotifyDisconnect')}
+                  {appleBusy ? t('common.loading') : 'Déconnecter'}
                 </Button>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                disabled={spotifyBusy}
-                onClick={() => void handleSpotifyConnect()}
-              >
-                {spotifyBusy ? t('common.loading') : t('settings.spotifyConnect')}
-              </Button>
-            )}
-          </div>
-          {spotify?.connected && spotify.account_email && (
-            <p className="font-mono text-xs text-ink-soft">
-              {t('settings.spotifyAccount')}:{' '}
-              <span className="text-ink">{spotify.account_email}</span>
-            </p>
-          )}
-          {spotifyToast && (
-            <p
-              role="alert"
-              className={`mt-3 text-sm font-medium ${
-                spotifyToast.kind === 'success' ? 'text-basil-deep' : 'text-raspberry'
-              }`}
-            >
-              {spotifyToast.msg}
-            </p>
-          )}
-        </Card>
-
-        {/* ── Apple Music connect (feat/apple-music étape 5) ──────────── */}
-        <Card tone={apple?.connected ? 'basil' : 'default'}>
-          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-            <div>
-              <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
-                Apple Music
-              </p>
-              <p className="font-editorial italic text-sm text-ink-2">
-                Connecte ton compte Apple Music (abonnement actif requis) pour lire les morceaux
-                depuis la console.
-              </p>
-            </div>
-            {apple?.connected ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={appleBusy}
-                onClick={() => void handleAppleDisconnect()}
-              >
-                {appleBusy ? t('common.loading') : 'Déconnecter'}
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                disabled={appleBusy || (apple !== null && !apple.configured)}
-                onClick={() => void handleAppleConnect()}
-                title={
-                  apple !== null && !apple.configured
-                    ? 'Apple Music non configuré côté serveur (clé MusicKit manquante).'
-                    : undefined
-                }
-              >
-                {appleBusy ? t('common.loading') : 'Connecter Apple Music'}
-              </Button>
-            )}
-          </div>
-          {apple !== null && !apple.configured && (
-            <p className="font-mono text-xs text-ink-soft">
-              ⚠️ Apple Music n'est pas encore configuré côté serveur (clé MusicKit / env APPLE_*).
-              La connexion sera possible une fois le backend déployé.
-            </p>
-          )}
-          {appleToast && (
-            <p
-              role="alert"
-              className={`mt-3 text-sm font-medium ${
-                appleToast.kind === 'success' ? 'text-basil-deep' : 'text-raspberry'
-              }`}
-            >
-              {appleToast.msg}
-            </p>
-          )}
-        </Card>
-
-        {/* ── YouTube Premium connect (Phase 3.5) ─────────────────────── */}
-        <Card tone={youtube?.connected ? 'basil' : 'default'}>
-          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-            <div>
-              <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
-                {t('settings.youtubeTitle')}
-              </p>
-              <p className="font-editorial italic text-sm text-ink-2">
-                {t('settings.youtubeDescription')}
-              </p>
-            </div>
-            {youtube?.connected ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={youtubeBusy}
-                onClick={() => void handleYouTubeDisconnect()}
-              >
-                {t('settings.youtubeDisconnect')}
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                disabled={youtubeBusy}
-                onClick={() => void handleYouTubeConnect()}
-              >
-                {youtubeBusy ? t('common.loading') : t('settings.youtubeConnect')}
-              </Button>
-            )}
-          </div>
-          {youtube?.connected && (
-            <>
-              {youtube.account_email && (
-                <p className="font-mono text-xs text-ink-soft mb-2">
-                  {t('settings.youtubeAccount')}:{' '}
-                  <span className="text-ink">{youtube.account_email}</span>
-                </p>
+              ) : (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  disabled={appleBusy || (apple !== null && !apple.configured)}
+                  onClick={() => void handleAppleConnect()}
+                  title={
+                    apple !== null && !apple.configured
+                      ? 'Apple Music non configuré côté serveur (clé MusicKit manquante).'
+                      : undefined
+                  }
+                >
+                  {appleBusy ? t('common.loading') : 'Connecter Apple Music'}
+                </Button>
               )}
-              <label className="flex items-center gap-2 text-sm font-mono">
-                <input
-                  type="checkbox"
-                  checked={youtube.premium ?? false}
-                  disabled={youtubeBusy}
-                  onChange={(e) => void handleYouTubePremiumToggle(e.target.checked)}
-                  className="w-4 h-4 accent-spritz-deep"
-                />
-                <span>{t('settings.youtubePremiumToggle')}</span>
-              </label>
-              <p className="font-editorial italic text-xs text-ink-soft mt-1">
-                {t('settings.youtubePremiumHint')}
+            </div>
+            {apple !== null && !apple.configured && (
+              <p className="font-mono text-xs text-ink-soft">
+                ⚠️ Apple Music n'est pas encore configuré côté serveur (clé MusicKit / env APPLE_*).
+                La connexion sera possible une fois le backend déployé.
               </p>
-            </>
-          )}
-          {youtubeToast && (
-            <p
-              role="alert"
-              className={`mt-3 text-sm font-medium ${
-                youtubeToast.kind === 'success' ? 'text-basil-deep' : 'text-raspberry'
-              }`}
-            >
-              {youtubeToast.msg}
-            </p>
-          )}
-        </Card>
+            )}
+            {appleToast && (
+              <p
+                role="alert"
+                className={`mt-3 text-sm font-medium ${
+                  appleToast.kind === 'success' ? 'text-basil-deep' : 'text-raspberry'
+                }`}
+              >
+                {appleToast.msg}
+              </p>
+            )}
+          </Card>
+        )}
 
-        <Card>
-          <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-3">
-            {t('settings.activeProviders')}
-          </p>
-          <p className="font-editorial italic text-xs text-ink-soft mb-3">
-            {t('settings.activeProvidersHint')}
-          </p>
-          <ul className="space-y-2">
-            {providers.map((p) => {
-              const checked = activeProviders.includes(p.id);
-              const disabled = !p.enabled;
-              const isPremium = p.id === 'youtube' && (youtube?.premium ?? false);
-              return (
-                <li key={p.id}>
-                  <label
-                    className={`flex items-center gap-3 px-3 py-2 border-2 rounded transition-colors ${
-                      disabled
-                        ? 'border-ink/20 bg-ink/5 cursor-not-allowed opacity-60'
-                        : checked
-                          ? 'border-hairline bg-spritz/20 cursor-pointer'
-                          : 'border-hairline bg-panel hover:bg-cream-2 cursor-pointer'
-                    }`}
+        {estProprietaire && (
+          <>
+            {/* ── YouTube Premium connect (Phase 3.5) ─────────────────────── */}
+            <Card tone={youtube?.connected ? 'basil' : 'default'}>
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                <div>
+                  <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
+                    {t('settings.youtubeTitle')}
+                  </p>
+                  <p className="font-editorial italic text-sm text-ink-2">
+                    {t('settings.youtubeDescription')}
+                  </p>
+                </div>
+                {youtube?.connected ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={youtubeBusy}
+                    onClick={() => void handleYouTubeDisconnect()}
                   >
+                    {t('settings.youtubeDisconnect')}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    disabled={youtubeBusy}
+                    onClick={() => void handleYouTubeConnect()}
+                  >
+                    {youtubeBusy ? t('common.loading') : t('settings.youtubeConnect')}
+                  </Button>
+                )}
+              </div>
+              {youtube?.connected && (
+                <>
+                  {youtube.account_email && (
+                    <p className="font-mono text-xs text-ink-soft mb-2">
+                      {t('settings.youtubeAccount')}:{' '}
+                      <span className="text-ink">{youtube.account_email}</span>
+                    </p>
+                  )}
+                  <label className="flex items-center gap-2 text-sm font-mono">
                     <input
                       type="checkbox"
-                      checked={checked}
-                      disabled={disabled}
-                      onChange={() => toggleProvider(p.id)}
+                      checked={youtube.premium ?? false}
+                      disabled={youtubeBusy}
+                      onChange={(e) => void handleYouTubePremiumToggle(e.target.checked)}
                       className="w-4 h-4 accent-spritz-deep"
                     />
-                    <span className="font-medium flex-1">{t(p.i18n)}</span>
-                    {isPremium && checked && (
-                      <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-basil text-ink">
-                        Premium
-                      </span>
-                    )}
-                    {p.id === 'spotify' && !p.enabled && (
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-raspberry">
-                        {t('settings.spotifyConnectFirst')}
-                      </span>
-                    )}
-                    {(p.id === 'deezer' || p.id === 'apple_music') && (
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft">
-                        {t('settings.providerComingSoon')}
-                      </span>
-                    )}
+                    <span>{t('settings.youtubePremiumToggle')}</span>
                   </label>
-                </li>
-              );
-            })}
-          </ul>
-        </Card>
+                  <p className="font-editorial italic text-xs text-ink-soft mt-1">
+                    {t('settings.youtubePremiumHint')}
+                  </p>
+                </>
+              )}
+              {youtubeToast && (
+                <p
+                  role="alert"
+                  className={`mt-3 text-sm font-medium ${
+                    youtubeToast.kind === 'success' ? 'text-basil-deep' : 'text-raspberry'
+                  }`}
+                >
+                  {youtubeToast.msg}
+                </p>
+              )}
+            </Card>
+
+            <Card>
+              <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-3">
+                {t('settings.activeProviders')}
+              </p>
+              <p className="font-editorial italic text-xs text-ink-soft mb-3">
+                {t('settings.activeProvidersHint')}
+              </p>
+              <ul className="space-y-2">
+                {providers.map((p) => {
+                  const checked = activeProviders.includes(p.id);
+                  const disabled = !p.enabled;
+                  const isPremium = p.id === 'youtube' && (youtube?.premium ?? false);
+                  return (
+                    <li key={p.id}>
+                      <label
+                        className={`flex items-center gap-3 px-3 py-2 border-2 rounded transition-colors ${
+                          disabled
+                            ? 'border-ink/20 bg-ink/5 cursor-not-allowed opacity-60'
+                            : checked
+                              ? 'border-hairline bg-spritz/20 cursor-pointer'
+                              : 'border-hairline bg-panel hover:bg-cream-2 cursor-pointer'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={disabled}
+                          onChange={() => toggleProvider(p.id)}
+                          className="w-4 h-4 accent-spritz-deep"
+                        />
+                        <span className="font-medium flex-1">{t(p.i18n)}</span>
+                        {isPremium && checked && (
+                          <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-basil text-ink">
+                            Premium
+                          </span>
+                        )}
+                        {p.id === 'spotify' && !p.enabled && (
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-raspberry">
+                            {t('settings.spotifyConnectFirst')}
+                          </span>
+                        )}
+                        {(p.id === 'deezer' || p.id === 'apple_music') && (
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft">
+                            {t('settings.providerComingSoon')}
+                          </span>
+                        )}
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+          </>
+        )}
 
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={saveState === 'saving'}>

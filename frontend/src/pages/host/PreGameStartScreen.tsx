@@ -82,7 +82,6 @@ export function PreGameStartScreen({
   playlistName,
   trackCount,
   badge,
-  providerLabel,
   busy = false,
   onStart,
   onCancel,
@@ -205,11 +204,6 @@ export function PreGameStartScreen({
           </p>
           <p className="font-mono text-cream/80 text-base md:text-lg mb-12">
             {t('preGame.trackCount', { count: trackCount })}
-            {providerLabel && (
-              <span className="ml-2 px-2 py-0.5 border border-cream/40 rounded-full text-xs uppercase tracking-wider">
-                {providerLabel}
-              </span>
-            )}
           </p>
 
           <Button

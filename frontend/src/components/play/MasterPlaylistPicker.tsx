@@ -358,9 +358,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
             </button>
             <Carte>
               <p className="font-display text-lg text-white">{selected.name_fr}</p>
-              <p className="font-mono text-xs text-white/50 mt-1">
-                Source : Apple Music · niveau ?
-              </p>
+              <p className="font-mono text-xs text-white/50 mt-1">{t('play.pickLevel')}</p>
             </Carte>
             <div className="grid grid-cols-2 gap-2">
               {LEVELS.map((lvl) => {

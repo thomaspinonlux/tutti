@@ -192,60 +192,47 @@ interface WelcomeEmailVars {
 
 /** Renvoie le sujet localisé. */
 export function welcomeEmailSubject(locale: string): string {
-  return locale.startsWith('en')
-    ? 'Welcome to Tutti — your signup is confirmed'
-    : 'Bienvenue sur Tutti — ton inscription est bien reçue';
+  return locale.startsWith('en') ? 'Welcome to Tutti' : 'Bienvenue sur Tutti';
 }
 
 export function renderWelcomeEmailHtml(vars: WelcomeEmailVars): string {
-  const isEn = vars.locale.startsWith('en');
-  // Salutation personnalisée si firstName fourni, sinon générique.
-  const firstNameTrim = vars.firstName?.trim();
-  const greetingFr = firstNameTrim ? `Salut ${escapeHtml(firstNameTrim)},` : 'Salut,';
-  const greetingEn = firstNameTrim ? `Hi ${escapeHtml(firstNameTrim)},` : 'Hi there,';
-  if (isEn) {
-    return `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fefae0;color:#1a1a1a">
-  <h1 style="color:#7a8a9a;margin:0 0 16px;font-size:28px">🎉 Welcome to Tutti</h1>
-  <p style="font-size:16px;line-height:1.6">${greetingEn}</p>
-  <p style="font-size:16px;line-height:1.6">Thanks for signing up to <strong>Tutti</strong>, the music blind test &amp; quizz platform for parties with friends.</p>
-  <p style="font-size:16px;line-height:1.6">We've received your registration. You can now access the platform and launch your first session.</p>
-  <h3 style="color:#7a8a9a;margin-top:32px">Getting started:</h3>
-  <ol style="line-height:1.8;font-size:15px;padding-left:20px">
-    <li>Create your first session from the dashboard</li>
-    <li>Pick an official Tutti playlist or create your own</li>
-    <li>Your friends scan the QR code to join from their phones</li>
-    <li>Launch the blind test and enjoy!</li>
-  </ol>
-  <p style="margin-top:32px"><a href="https://tuttiparty.app/host" style="background:#e76f51;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold">Create my first session</a></p>
-  <h3 style="color:#7a8a9a;margin-top:32px">Free tier</h3>
-  <p style="line-height:1.6;font-size:15px">You get 3 sessions per month on the free plan. Go Premium for unlimited sessions.</p>
-  <p style="color:#999;font-size:12px;margin-top:48px;border-top:1px solid #e0e0e0;padding-top:16px">
-    Tutti — published by Kleos Sàrl, Luxembourg<br/>
-    A question? Reply to this email or write to <a href="mailto:contact@tuttiparty.app" style="color:#7a8a9a">contact@tuttiparty.app</a>
-  </p>
-</div>`;
+  const en = vars.locale.startsWith('en');
+  const prenom = vars.firstName?.trim();
+  const bouton = (href: string, texte: string): string =>
+    `<a href="${href}" style="background:#FF5C4D;color:#fff;padding:12px 22px;text-decoration:none;border-radius:999px;display:inline-block;font-weight:bold">${texte}</a>`;
+  const cadre = (corps: string, pied: string): string =>
+    `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:28px;background:#F6EEDF;color:#1D1813;line-height:1.6;font-size:15px">${corps}` +
+    `<p style="color:#6B5E51;font-size:12px;margin-top:36px;border-top:1px solid #E3D6C2;padding-top:14px">${pied}</p></div>`;
+  if (en) {
+    return cadre(
+      `<h1 style="font-size:24px;margin:0 0 12px">Welcome to Tutti 🎉</h1>` +
+        `<p>${prenom ? `Hi ${escapeHtml(prenom)},` : 'Hi there,'}</p>` +
+        `<p>Your sign-up is confirmed: you can book your night right now. Tutti is a blind test and quiz night on your TV: your guests play from their phones, with nothing to install.</p>` +
+        `<h2 style="font-size:18px;margin:24px 0 6px">How it works</h2>` +
+        `<ol style="padding-left:20px;margin:0">` +
+        `<li>Book a slot: pick the day, start and end time, and pay by card.</li>` +
+        `<li>On the day, the start button appears on your dashboard 30 minutes before.</li>` +
+        `<li>Your guests scan the QR code on the TV and play.</li>` +
+        `</ol>` +
+        `<p style="margin-top:22px">${bouton('https://tuttiparty.app/admin/reserver', 'Book a game')}</p>` +
+        `<p style="margin-top:18px">Everything is explained step by step in the <a href="https://tuttiparty.app/guide.html?lang=en" style="color:#C23B2E">user guide</a>.</p>`,
+      `Tutti — Kleos Sàrl, Luxembourg<br/>A question? Reply to this email or write to contact@tuttiparty.app`,
+    );
   }
-  // FR default
-  return `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fefae0;color:#1a1a1a">
-  <h1 style="color:#7a8a9a;margin:0 0 16px;font-size:28px">🎉 Bienvenue sur Tutti</h1>
-  <p style="font-size:16px;line-height:1.6">${greetingFr}</p>
-  <p style="font-size:16px;line-height:1.6">Merci de t'être inscrit sur <strong>Tutti</strong>, la plateforme de blind test musical &amp; quizz pour soirées entre amis.</p>
-  <p style="font-size:16px;line-height:1.6">Nous avons bien reçu ta demande d'inscription. Tu peux dès maintenant accéder à la plateforme et lancer ta première session.</p>
-  <h3 style="color:#7a8a9a;margin-top:32px">Pour bien démarrer :</h3>
-  <ol style="line-height:1.8;font-size:15px;padding-left:20px">
-    <li>Crée ta première session depuis le dashboard</li>
-    <li>Sélectionne une playlist officielle Tutti ou crée la tienne</li>
-    <li>Tes amis scannent le QR code pour rejoindre depuis leur smartphone</li>
-    <li>Lance le blind test et amuse-toi !</li>
-  </ol>
-  <p style="margin-top:32px"><a href="https://tuttiparty.app/host" style="background:#e76f51;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold">Créer ma première session</a></p>
-  <h3 style="color:#7a8a9a;margin-top:32px">Tier Gratuit</h3>
-  <p style="line-height:1.6;font-size:15px">Tu disposes de 3 sessions par mois en gratuit. Pour des sessions illimitées, passe en Premium.</p>
-  <p style="color:#999;font-size:12px;margin-top:48px;border-top:1px solid #e0e0e0;padding-top:16px">
-    Tutti — édité par Kleos Sàrl, Luxembourg<br/>
-    Une question ? Réponds à cet email ou écris à <a href="mailto:contact@tuttiparty.app" style="color:#7a8a9a">contact@tuttiparty.app</a>
-  </p>
-</div>`;
+  return cadre(
+    `<h1 style="font-size:24px;margin:0 0 12px">Bienvenue sur Tutti 🎉</h1>` +
+      `<p>${prenom ? `Salut ${escapeHtml(prenom)},` : 'Salut,'}</p>` +
+      `<p>Ton inscription est bien reçue : tu peux réserver ta soirée dès maintenant. Tutti, c’est une soirée blind test et quiz sur ta télé : tes invités jouent avec leur téléphone, sans rien installer.</p>` +
+      `<h2 style="font-size:18px;margin:24px 0 6px">Comment ça marche</h2>` +
+      `<ol style="padding-left:20px;margin:0">` +
+      `<li>Réserve un créneau : le jour, l’heure de début et de fin, puis paiement par carte.</li>` +
+      `<li>Le jour J, le bouton de lancement apparaît sur ton tableau de bord 30 minutes avant.</li>` +
+      `<li>Tes invités scannent le QR code sur la télé et jouent.</li>` +
+      `</ol>` +
+      `<p style="margin-top:22px">${bouton('https://tuttiparty.app/admin/reserver', 'Réserver une partie')}</p>` +
+      `<p style="margin-top:18px">Tout est expliqué pas à pas dans le <a href="https://tuttiparty.app/guide.html?lang=fr" style="color:#C23B2E">mode d’emploi</a>.</p>`,
+    `Tutti — Kleos Sàrl, Luxembourg<br/>Une question ? Réponds à cet e-mail ou écris à contact@tuttiparty.app`,
+  );
 }
 
 // ───── Confirmation de réservation + mode d'emploi (feat/guide-reservation) ─

@@ -15,6 +15,8 @@ export interface MeResponse {
     id: string;
     name: string;
     plan: string;
+    /** Le client joue avec son propre abonnement musical (activé par le propriétaire). */
+    compte_apple_propre?: boolean;
     establishments?: unknown[];
   } | null;
   role: string | null;

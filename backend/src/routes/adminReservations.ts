@@ -147,7 +147,7 @@ router.post('/:id/accepter', async (req: Request<{ id: string }>, res: Response)
           (gratuite
             ? `<p>Cette partie est <strong>offerte</strong> : rien à payer.</p>`
             : `<p>Prix : <strong>${(resultat.prix_cents! / 100).toFixed(2).replace('.', ',')} €</strong>. ` +
-              `Règle-le depuis <a href="https://tuttiparty.app/reserver">ton espace réservation</a> pour le confirmer.</p>`) +
+              `Règle-le depuis <a href="https://tuttiparty.app/admin/reserver">ton espace réservation</a> pour le confirmer.</p>`) +
           `<p>Le jour J, tu pourras ouvrir ta partie depuis ton compte Tutti.</p>` +
           `<p>Le mode d’emploi de la soirée : <a href="https://tuttiparty.app/guide.html?lang=fr">tuttiparty.app/guide.html</a>.</p>`,
       }).catch(() => undefined);
@@ -206,7 +206,7 @@ router.post('/:id/refuser', async (req: Request<{ id: string }>, res: Response):
       html:
         `<p>Ton créneau du <strong>${texteCreneau(maj.debut, maj.fin)}</strong> n'a pas pu être accepté.</p>` +
         (motif ? `<p>${motif.replace(/[<>&]/g, '')}</p>` : '') +
-        `<p>Tu peux en demander un autre depuis <a href="https://tuttiparty.app/reserver">ton espace réservation</a>.</p>`,
+        `<p>Tu peux en demander un autre depuis <a href="https://tuttiparty.app/admin/reserver">ton espace réservation</a>.</p>`,
     }).catch(() => undefined);
   }
   res.json({ ok: true });

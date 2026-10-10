@@ -85,15 +85,6 @@ export function PreviewModal({
               {report.playable} / {report.total}
             </p>
             <p className="text-sm">{t('host.session.modal.preview.tracksAvailable')}</p>
-            {report.via_spotify > 0 && (
-              <p className="text-xs font-mono mt-1">via Spotify : {report.via_spotify}</p>
-            )}
-            {report.via_youtube > 0 && (
-              <p className="text-xs font-mono">via YouTube : {report.via_youtube}</p>
-            )}
-            {report.via_apple > 0 && (
-              <p className="text-xs font-mono">via Apple Music : {report.via_apple}</p>
-            )}
             {ratio < 0.5 && !appleLowCoverage && (
               <p className="text-xs font-bold mt-2">
                 ⚠️ {t('host.session.modal.preview.warningLow')}
@@ -106,13 +97,13 @@ export function PreviewModal({
           {appleLowCoverage && (
             <div className="px-3 py-3 border-2 rounded-lg mb-3 border-spritz text-spritz-deep bg-spritz/10">
               <p className="text-sm font-bold">
-                ⚠️ {report.playable}/{report.total} jouables en Apple Music — bascule conseillée sur
-                YouTube.
+                ⚠️{' '}
+                {t('host.session.modal.preview.lowCoverageTitle', {
+                  playable: report.playable,
+                  total: report.total,
+                })}
               </p>
-              <p className="text-xs mt-1">
-                Cette playlist n'est pas assez couverte en Apple Music : lancer maintenant créerait
-                une manche à trous. Changez la source sur « YouTube » pour une couverture complète.
-              </p>
+              <p className="text-xs mt-1">{t('host.session.modal.preview.lowCoverageBody')}</p>
             </div>
           )}
 

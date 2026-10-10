@@ -16,8 +16,6 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEstablishment } from './AdminLayout.js';
 import { Button, Card, TitleHandwritten, Swirl, Underline } from '../../components/ui/index.js';
-import { GettingStartedChecklist } from '../../components/admin/dashboard/GettingStartedChecklist.js';
-import { ContentBlockerHintBanner } from '../../components/ContentBlockerHintBanner.js';
 
 // ───── DEBUG : ErrorBoundary temporaire ──────────────────────────────────
 // À retirer après confirmation du diagnostic.
@@ -206,13 +204,6 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
       {/* feat/parcours-client-simplifie — le jour J : un clic, la console. */}
       <ProchainePartie />
 
-      <GettingStartedChecklist />
-
-      {/* feat/detect-content-blocker-youtube — banner pédagogique (Safari only,
-          dismissible via localStorage). N'apparaît qu'au 1er visit Safari pour
-          prévenir le blocage YouTube avant qu'il ne se produise. */}
-      <ContentBlockerHintBanner />
-
       {noAccess && (
         <Card tone="cream" size="lg" className="text-center mb-6 border-raspberry">
           <p className="text-3xl mb-2" aria-hidden>
@@ -317,7 +308,6 @@ function GameCard({
 }
 
 // ───── Illustrations Pop Cocktail ──────────────────────────────────────────
-
 
 function VinylIllustration(): JSX.Element {
   return (

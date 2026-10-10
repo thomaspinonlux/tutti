@@ -74,8 +74,22 @@ router.get(
         select: { expires_at: true, created_at: true, account_email: true },
       });
       const expired = cred?.expires_at ? cred.expires_at.getTime() < Date.now() : false;
+      // feat/parc-pour-les-clients — un client sans abonnement propre joue avec
+      // le parc de comptes Tutti (réservé au lancement, cf. /token-public). Sans
+      // ça, la console le croyait « non connecté » et bloquait le lancement.
+      let viaParc = false;
+      if (!(cred && !expired)) {
+        const espace = await prisma.workspace.findUnique({
+          where: { id: workspaceId },
+          select: { compte_apple_propre: true },
+        });
+        if (!espace?.compte_apple_propre) {
+          viaParc = (await prisma.appleMusicAccount.count({ where: { actif: true } })) > 0;
+        }
+      }
       res.json({
-        connected: !!cred && !expired,
+        connected: (!!cred && !expired) || viaParc,
+        via_parc: viaParc,
         configured: isAppleMusicConfigured(),
         account_email: cred?.account_email ?? null,
         expires_at: cred?.expires_at ?? null,

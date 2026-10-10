@@ -175,15 +175,6 @@ export function SignupPage(): JSX.Element {
                 <Link to="/privacy" className="text-spritz-deep hover:underline" target="_blank">
                   {t('auth.privacyLink')}
                 </Link>
-                . {t('auth.termsYouTubeSuffix')}{' '}
-                <a
-                  href="https://www.youtube.com/t/terms"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="text-spritz-deep hover:underline"
-                >
-                  {t('auth.termsYouTubeLink')}
-                </a>
                 .
               </span>
             </label>

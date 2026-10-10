@@ -153,7 +153,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleEm: 'deux jeux',
       titleEnd: ' pour vos soirées.',
       intro:
-        'Chaque produit a sa propre signature, ses formules et sa bibliothèque de contenu officielle. Tu peux jouer à un seul, ou combiner les deux dans la même soirée avec le pack All-Access.',
+        'Chaque jeu a sa propre bibliothèque de contenu officielle. Un créneau réservé te permet de jouer à l’un, à l’autre ou aux deux dans la même soirée.',
       tracks: {
         tag: '♪ Blind test musical',
         nameStart: 'Tutti ',
@@ -176,9 +176,9 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         desc: 'Le quiz multi-formats pensé pour animer une soirée entière. QCM, vrai/faux, réponse libre, estimation — chaque format change le rythme du jeu et fait monter la tension.',
         features: [
           '4 formats de questions (QCM, vrai/faux, réponse libre, estimation)',
-          'Bibliothèque officielle multilingue (cinéma, géo, culture, etc.)',
-          'Crée tes propres quiz en quelques minutes',
-          'Partage tes quiz publiquement ou en privé',
+          '27 thèmes et 781 questions vérifiées (cinéma, sport, musique…)',
+          '15 secondes par question, pour garder le rythme',
+          'Niveaux : facile, moyen, expert ou tous niveaux',
           'Scoring temps réel, podium animé',
           'Idéal pour pendaison de crémaillère, EVJF, anniversaires',
         ],
@@ -196,7 +196,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           num: '01',
           icon: '🎧',
           title: 'Choisis ta partie',
-          desc: 'Sélectionne un blind test ou un quiz. Pioche dans la bibliothèque officielle Tutti, ou crée ta propre liste de morceaux et tes propres questions.',
+          desc: 'Réserve ton créneau, puis choisis un blind test ou un quiz dans la bibliothèque officielle Tutti : 119 playlists et 27 thèmes de quiz.',
         },
         {
           num: '02',
@@ -225,7 +225,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           tag: 'Reconnaissance vocale',
-          title: 'Whisper intégré',
+          title: 'Réponds à voix haute',
           desc: "Buzz, dis l'artiste et le titre — Tutti comprend, même avec ton accent ou tes hésitations. Les enregistrements vocaux ne sont jamais conservés.",
         },
         {
@@ -234,9 +234,9 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           desc: "Playlists thématiques par décennie ou genre, packs de quiz par sujet et par langue. Le tout sélectionné à la main par l'équipe Tutti.",
         },
         {
-          tag: 'Création custom',
-          title: 'Tes listes, tes questions',
-          desc: 'Crée tes propres playlists de blind test et rédige tes propres quiz en QCM, vrai/faux, réponse libre ou estimation.',
+          tag: 'Animation',
+          title: 'Avec ou sans animateur',
+          desc: 'Tout le monde joue, ou une personne mène la soirée depuis la console ou son téléphone : pause, morceau suivant, correction des points.',
         },
         {
           tag: 'Sans friction',
@@ -256,7 +256,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleEm: 'la session',
       titleEnd: ", pas l'abonnement.",
       intro:
-        "Pas d'engagement, pas de mensualité. Tu choisis le produit et la durée qui collent à ta soirée. Si la fête s'étend, tu peux étendre la session à tout moment.",
+        "Pas d'engagement, pas de mensualité. Tu réserves le créneau qui colle à ta soirée, d'une heure à six heures, et tu ne paies que le temps réservé.",
       bestDeal: 'Clé en main',
       offer: {
         badge: 'Offre de lancement · −50 %',
@@ -327,7 +327,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'Quelles sont les sources de contenu pour Tutti Tracks et Tutti Quizz ?',
-          a: '<strong>Pour Tutti Tracks :</strong> la bibliothèque officielle Tutti, 119 playlists classées par époque, par genre et par thème, soit plus de 8 400 titres. Tu peux aussi créer tes propres listes. <strong>Pour Tutti Quizz :</strong> tu as accès à la bibliothèque officielle (packs prêts à jouer) et tu peux créer tes propres quiz en mélangeant QCM, vrai/faux, réponse libre et estimation.',
+          a: '<strong>Pour Tutti Tracks :</strong> la bibliothèque officielle Tutti, 119 playlists classées par époque, par genre et par thème, soit plus de 8 400 titres. <strong>Pour Tutti Quizz :</strong> la bibliothèque officielle, 27 thèmes et 781 questions en QCM, vrai/faux, réponse libre et estimation.',
         },
         {
           q: 'Combien de joueurs peuvent participer ?',
@@ -382,7 +382,6 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           links: [
             { label: 'Confidentialité', href: '/privacy' },
             { label: 'CGU', href: '/terms' },
-            { label: 'Mentions légales', href: '/legal' },
           ],
         },
         contact: { title: 'Contact' },
@@ -422,7 +421,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleEm: 'two games',
       titleEnd: ' for your parties.',
       intro:
-        'Each product has its own signature, pricing and official content library. Play just one, or combine both in the same evening with the All-Access pack.',
+        'Each game has its own official content library. One booked slot lets you play either one, or both, in the same evening.',
       tracks: {
         tag: '♪ Music blind test',
         nameStart: 'Tutti ',
@@ -445,9 +444,9 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         desc: 'The multi-format quiz built to power a whole evening. Multiple choice, true/false, free answer, estimation — each format changes the rhythm and raises the tension.',
         features: [
           '4 question formats (MCQ, true/false, free answer, estimation)',
-          'Official multilingual library (cinema, geography, culture, etc.)',
-          'Build your own quiz in minutes',
-          'Share your quiz publicly or privately',
+          '27 themes and 781 checked questions (cinema, sport, music…)',
+          '15 seconds per question, to keep the pace',
+          'Levels: easy, medium, expert or all levels',
           'Real-time scoring, animated podium',
           'Ideal for housewarmings, bachelor parties, birthdays',
         ],
@@ -465,7 +464,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           num: '01',
           icon: '🎧',
           title: 'Pick your game',
-          desc: 'Pick a blind test or a quiz. Choose from the official Tutti library, or build your own track list and questions.',
+          desc: 'Book your slot, then pick a blind test or a quiz from the official Tutti library: 119 playlists and 27 quiz themes.',
         },
         {
           num: '02',
@@ -494,7 +493,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           tag: 'Voice recognition',
-          title: 'Whisper built-in',
+          title: 'Answer out loud',
           desc: 'Buzz, speak the artist and song title — Tutti understands, even with your accent or hesitations. Voice recordings are never stored.',
         },
         {
@@ -503,9 +502,9 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           desc: 'Themed playlists by decade or genre, quiz packs by topic and language. All hand-picked by the Tutti team.',
         },
         {
-          tag: 'Custom creation',
-          title: 'Your lists, your questions',
-          desc: 'Build your own blind test playlists and write your own quiz in MCQ, true/false, free answer or estimation.',
+          tag: 'Hosting',
+          title: 'With or without a host',
+          desc: 'Everyone plays, or one person runs the night from the console or their phone: pause, next track, fix the points.',
         },
         {
           tag: 'Frictionless',
@@ -525,7 +524,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       titleEm: 'session',
       titleEnd: ', never a subscription.',
       intro:
-        'No commitment, no monthly fee. Pick the product and length that fit your night. Party going long? Extend the session anytime.',
+        'No commitment, no monthly fee. Book the slot that fits your night, from one to six hours, and only pay for the time you book.',
       bestDeal: 'Turnkey',
       offer: {
         badge: 'Launch offer · −50%',
@@ -596,7 +595,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'What are the content sources for Tutti Tracks and Tutti Quizz?',
-          a: '<strong>For Tutti Tracks:</strong> the official Tutti library, 119 playlists sorted by era, genre and theme, over 8,400 tracks. You can also build your own lists. <strong>For Tutti Quizz:</strong> use the official library (packs ready to play) or build your own quiz mixing MCQ, true/false, free answer, and estimation.',
+          a: '<strong>For Tutti Tracks:</strong> the official Tutti library, 119 playlists sorted by era, genre and theme, over 8,400 tracks. <strong>For Tutti Quizz:</strong> the official library, 27 themes and 781 questions in MCQ, true/false, free answer and estimate formats.',
         },
         {
           q: 'How many players can join?',
@@ -651,7 +650,6 @@ export const translations: Record<LandingLang, LandingTranslations> = {
           links: [
             { label: 'Privacy', href: '/privacy' },
             { label: 'Terms', href: '/terms' },
-            { label: 'Legal notice', href: '/legal' },
           ],
         },
         contact: { title: 'Contact' },

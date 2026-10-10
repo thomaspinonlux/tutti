@@ -17,8 +17,8 @@ interface Props {
 export function NoProviderModal({
   open,
   onClose,
-  onConnectSpotify,
-  onConnectYoutube,
+  onConnectSpotify: _onConnectSpotify,
+  onConnectYoutube: _onConnectYoutube,
 }: Props): JSX.Element | null {
   const { t } = useTranslation();
   if (!open) return null;
@@ -41,16 +41,8 @@ export function NoProviderModal({
           <p className="font-editorial italic text-ink-soft text-center mb-5">
             {t('host.session.modal.noProvider.body')}
           </p>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button onClick={onConnectSpotify} className="flex-1">
-              🎵 {t('host.session.modal.noProvider.connectSpotify')}
-            </Button>
-            <Button variant="secondary" onClick={onConnectYoutube} className="flex-1">
-              ▶ {t('host.session.modal.noProvider.connectYoutube')}
-            </Button>
-          </div>
           <Button variant="ghost" size="sm" onClick={onClose} className="w-full mt-3">
-            {t('common.cancel')}
+            {t('common.close')}
           </Button>
         </Card>
       </div>

@@ -1,11 +1,8 @@
 /**
- * /terms — Terms of Service (FR + EN).
+ * /terms — Conditions d'utilisation (FR + EN).
  *
- * feat/youtube-compliance — page publique requise par YouTube API Services
- * Developer Policies. Lien depuis footer + signup checkbox obligatoire.
- *
- * Source de référence : version EN (Thomas — Kleos Sàrl). FR = traduction
- * fidèle. En cas de divergence, EN prime pour la conformité Google.
+ * Mise à jour du 10 octobre 2026 : modèle de réservation de créneaux à
+ * l'heure, payés par carte via Stripe ; plus de services API YouTube.
  */
 
 import { useTranslation } from 'react-i18next';
@@ -17,6 +14,8 @@ export function TermsPage(): JSX.Element {
   return isFr ? <TermsFr /> : <TermsEn />;
 }
 
+const lien = 'text-spritz-deep hover:underline';
+
 // ───── FR ─────────────────────────────────────────────────────────────────
 
 function TermsFr(): JSX.Element {
@@ -24,14 +23,14 @@ function TermsFr(): JSX.Element {
     <LegalLayout
       title="Conditions d’utilisation"
       subtitle="Les règles qui régissent votre utilisation de Tutti."
-      lastUpdated="Dernière mise à jour : 22 mai 2026"
+      lastUpdated="Dernière mise à jour : 10 octobre 2026"
     >
       <p>
         Les présentes Conditions d’utilisation («&nbsp;Conditions&nbsp;») régissent votre accès et
         votre utilisation de <strong>Tutti</strong>, une plateforme de blind test et de quiz
         exploitée par <strong>Kleos Sàrl</strong> («&nbsp;Kleos&nbsp;», «&nbsp;nous&nbsp;»), société
         immatriculée au Luxembourg (RCS Luxembourg B185164), accessible sur{' '}
-        <a href="https://tuttiparty.app" className="text-spritz-deep hover:underline">
+        <a href="https://tuttiparty.app" className={lien}>
           https://tuttiparty.app
         </a>{' '}
         (le «&nbsp;Service&nbsp;»).
@@ -41,68 +40,50 @@ function TermsFr(): JSX.Element {
         Si vous n’êtes pas d’accord, n’utilisez pas le Service.
       </p>
 
-      <LegalSection title="1. Acceptation des Conditions d’utilisation de YouTube">
+      <LegalSection title="1. Description du Service">
         <p>
-          Tutti utilise les services API YouTube, notamment l’API YouTube Data v3 et l’API YouTube
-          IFrame Player.
-        </p>
-        <p>
-          <strong>
-            En utilisant Tutti, vous acceptez d’être lié par les Conditions d’utilisation de
-            YouTube, disponibles à l’adresse{' '}
-            <a
-              href="https://www.youtube.com/t/terms"
-              className="text-spritz-deep hover:underline"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              https://www.youtube.com/t/terms
-            </a>
-            .
-          </strong>
-        </p>
-        <p>
-          Votre utilisation du contenu et des fonctionnalités YouTube via Tutti est également
-          soumise à la Politique de confidentialité de Google, disponible à l’adresse{' '}
-          <a
-            href="http://www.google.com/policies/privacy"
-            className="text-spritz-deep hover:underline"
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            http://www.google.com/policies/privacy
-          </a>
-          .
-        </p>
-      </LegalSection>
-
-      <LegalSection title="2. Description du Service">
-        <p>
-          Tutti permet aux hosts de créer et d’animer des blind tests musicaux et des quiz
-          multimédias. Les hosts peuvent&nbsp;:
+          Tutti permet à un organisateur d’animer des soirées de blind test musical et de quiz.
+          L’organisateur&nbsp;:
         </p>
         <ul className="list-disc pl-6 space-y-1">
+          <li>réserve un créneau horaire depuis son compte&nbsp;;</li>
           <li>
-            rechercher des morceaux via l’API YouTube Data v3 et construire des playlists&nbsp;;
+            lance, pendant ce créneau, des parties de blind test ou de quiz à partir de la
+            bibliothèque officielle de Tutti&nbsp;;
           </li>
           <li>
-            lancer des sessions live dans lesquelles les vidéos YouTube sont lues via le YouTube
-            IFrame Player officiel&nbsp;;
-          </li>
-          <li>
-            inviter des joueurs à rejoindre les sessions via QR code, sans nécessiter la création
-            d’un compte.
+            invite des joueurs à rejoindre la partie via QR code, sans qu’ils aient à créer de
+            compte.
           </li>
         </ul>
       </LegalSection>
 
-      <LegalSection title="3. Comptes">
+      <LegalSection title="2. Comptes">
         <p>
-          Pour animer des sessions, vous devez créer un compte avec des informations exactes
-          (prénom, nom, e-mail). Vous êtes responsable de la confidentialité de vos identifiants et
-          de toute activité sous votre compte. Vous devez avoir l’âge de la majorité dans votre
-          juridiction, ou avoir le consentement d’un parent ou tuteur légal.
+          Pour réserver et animer des parties, vous devez créer un compte avec des informations
+          exactes (prénom, nom, e-mail). Vous êtes responsable de la confidentialité de vos
+          identifiants et de toute activité sous votre compte. Vous devez avoir l’âge de la majorité
+          dans votre juridiction, ou avoir le consentement d’un parent ou tuteur légal.
         </p>
+      </LegalSection>
+
+      <LegalSection title="3. Réservations, prix et paiement">
+        <ul className="list-disc pl-6 space-y-1">
+          <li>
+            Le Service est payant à l’heure, par créneau réservé. Le prix TTC est affiché avant le
+            paiement, calculé au prorata des minutes réservées.
+          </li>
+          <li>
+            Le paiement se fait par carte bancaire via Stripe. Le créneau est confirmé dès le
+            paiement, et une facture est fournie.
+          </li>
+          <li>Un code de partie offerte, le cas échéant, se saisit au moment de la réservation.</li>
+          <li>
+            Une réservation qui n’est pas encore payée peut être annulée depuis votre compte. Pour
+            toute question sur une réservation payée, écrivez-nous à contact@tuttiparty.app.
+          </li>
+          <li>Il n’y a ni abonnement ni prélèvement automatique.</li>
+        </ul>
       </LegalSection>
 
       <LegalSection title="4. Utilisation acceptable">
@@ -110,14 +91,10 @@ function TermsFr(): JSX.Element {
           En utilisant le Service, vous acceptez de <strong>ne pas</strong>&nbsp;:
         </p>
         <ul className="list-disc pl-6 space-y-1">
-          <li>violer les Conditions d’utilisation de YouTube ou toute loi applicable&nbsp;;</li>
+          <li>violer toute loi applicable&nbsp;;</li>
           <li>
-            télécharger, mettre en cache, copier ou stocker du contenu audio ou vidéo YouTube en
-            dehors du YouTube IFrame Player officiel&nbsp;;
-          </li>
-          <li>
-            tenter de contourner, désactiver ou interférer avec la publicité, la monétisation ou
-            toute mesure technique de YouTube&nbsp;;
+            enregistrer, copier ou redistribuer la musique ou le contenu diffusés pendant les
+            parties&nbsp;;
           </li>
           <li>
             utiliser le Service pour porter atteinte aux droits de propriété intellectuelle
@@ -128,34 +105,25 @@ function TermsFr(): JSX.Element {
         </ul>
       </LegalSection>
 
-      <LegalSection title="5. Contenu et attribution">
+      <LegalSection title="5. Musique, contenu et usage public">
         <p>
-          Tutti affiche le contenu YouTube via le YouTube IFrame Player officiel et fournit
-          l’attribution (titre, artiste/chaîne et lien vers la vidéo YouTube d’origine). Tout
-          contenu YouTube reste la propriété de ses ayants droit respectifs et est soumis aux
-          Conditions d’utilisation de YouTube.
+          La musique et les contenus diffusés pendant les parties restent la propriété de leurs
+          ayants droit. Tutti ne stocke ni ne redistribue aucun fichier audio.
         </p>
         <p>
-          Le contenu que vous créez dans Tutti (playlists, packs de quiz) reste votre propriété,
-          mais vous nous accordez une licence limitée pour l’héberger et l’afficher dans la mesure
-          nécessaire au fonctionnement du Service.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="6. Abonnements et paiements">
-        <p>
-          Certaines fonctionnalités peuvent nécessiter un abonnement payant. Les conditions de
-          tarification et de facturation vous seront présentées avant l’achat. Le cas échéant, les
-          conditions de paiement sont décrites au point de vente.
+          Tutti est destiné à un usage privé. Une diffusion publique ou commerciale (bar,
+          restaurant, événement payant) peut nécessiter des licences musicales (SACEM ou équivalent
+          local), que l’organisateur doit obtenir lui-même. Contactez-nous à contact@tuttiparty.app
+          pour un usage professionnel.
         </p>
       </LegalSection>
 
-      <LegalSection title="7. Garanties et limitation de responsabilité">
+      <LegalSection title="6. Garanties et limitation de responsabilité">
         <p>
           Le Service est fourni «&nbsp;en l’état&nbsp;» et «&nbsp;tel que disponible&nbsp;», sans
           garantie d’aucune sorte, dans toute la mesure permise par la loi. Nous ne garantissons pas
-          que le Service sera ininterrompu, exempt d’erreurs, ou qu’un contenu YouTube particulier
-          restera disponible.
+          que le Service sera ininterrompu ou exempt d’erreurs, ni qu’un morceau ou un contenu
+          particulier restera disponible.
         </p>
         <p>
           Dans toute la mesure permise par la loi, Kleos Sàrl ne pourra être tenue responsable de
@@ -163,16 +131,15 @@ function TermsFr(): JSX.Element {
         </p>
       </LegalSection>
 
-      <LegalSection title="8. Résiliation">
+      <LegalSection title="7. Résiliation">
         <p>
-          Nous pouvons suspendre ou résilier votre accès au Service à tout moment si vous violez ces
-          Conditions ou les Conditions d’utilisation de YouTube. Vous pouvez cesser d’utiliser le
-          Service et demander la suppression de votre compte à tout moment (voir notre Politique de
-          confidentialité).
+          Nous pouvons suspendre ou résilier votre accès au Service si vous violez ces Conditions.
+          Vous pouvez cesser d’utiliser le Service et demander la suppression de votre compte à tout
+          moment (voir notre Politique de confidentialité).
         </p>
       </LegalSection>
 
-      <LegalSection title="9. Modifications de ces Conditions">
+      <LegalSection title="8. Modifications de ces Conditions">
         <p>
           Nous pouvons modifier ces Conditions de temps à autre. Nous mettrons à jour la date
           «&nbsp;Dernière mise à jour&nbsp;» et, le cas échéant, vous en informerons. Votre
@@ -181,7 +148,7 @@ function TermsFr(): JSX.Element {
         </p>
       </LegalSection>
 
-      <LegalSection title="10. Droit applicable">
+      <LegalSection title="9. Droit applicable">
         <p>
           Ces Conditions sont régies par les lois du Grand-Duché de Luxembourg, sans égard aux
           principes de conflits de lois, et soumises à la compétence des tribunaux luxembourgeois
@@ -189,12 +156,12 @@ function TermsFr(): JSX.Element {
         </p>
       </LegalSection>
 
-      <LegalSection title="11. Contact">
+      <LegalSection title="10. Contact">
         <p>
           <strong>Kleos Sàrl</strong>
           <br />
           E-mail&nbsp;:{' '}
-          <a href="mailto:contact@tuttiparty.app" className="text-spritz-deep hover:underline">
+          <a href="mailto:contact@tuttiparty.app" className={lien}>
             contact@tuttiparty.app
           </a>
           <br />
@@ -212,167 +179,127 @@ function TermsEn(): JSX.Element {
     <LegalLayout
       title="Terms of Service"
       subtitle="The rules that govern your use of Tutti."
-      lastUpdated="Last updated: 22 May 2026"
+      lastUpdated="Last updated: 10 October 2026"
     >
       <p>
         These Terms of Service (“Terms”) govern your access to and use of <strong>Tutti</strong>, a
-        blind test and quiz platform operated by <strong>Kleos Sàrl</strong> (“Kleos”, “we”, “us”,
-        “our”), a company registered in Luxembourg (RCS Luxembourg B185164), accessible at{' '}
-        <a href="https://tuttiparty.app" className="text-spritz-deep hover:underline">
+        blind test and quiz platform operated by <strong>Kleos Sàrl</strong> (“Kleos”, “we”), a
+        company registered in Luxembourg (RCS Luxembourg B185164), available at{' '}
+        <a href="https://tuttiparty.app" className={lien}>
           https://tuttiparty.app
         </a>{' '}
         (the “Service”).
       </p>
       <p>
-        By creating an account or otherwise using the Service, you agree to be bound by these Terms.
-        If you do not agree, do not use the Service.
+        By creating an account or using the Service, you agree to be bound by these Terms. If you do
+        not agree, do not use the Service.
       </p>
 
-      <LegalSection title="1. Agreement to YouTube Terms of Service">
-        <p>
-          Tutti uses YouTube API Services, including the YouTube Data API v3 and the YouTube IFrame
-          Player API.
-        </p>
-        <p>
-          <strong>
-            By using Tutti, you are agreeing to be bound by the YouTube Terms of Service, available
-            at{' '}
-            <a
-              href="https://www.youtube.com/t/terms"
-              className="text-spritz-deep hover:underline"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              https://www.youtube.com/t/terms
-            </a>
-            .
-          </strong>
-        </p>
-        <p>
-          Your use of YouTube content and features through Tutti is also subject to the Google
-          Privacy Policy, available at{' '}
-          <a
-            href="http://www.google.com/policies/privacy"
-            className="text-spritz-deep hover:underline"
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            http://www.google.com/policies/privacy
-          </a>
-          .
-        </p>
-      </LegalSection>
-
-      <LegalSection title="2. Description of the Service">
-        <p>
-          Tutti allows hosts to create and run musical blind tests and multimedia quizzes. Hosts
-          can:
-        </p>
+      <LegalSection title="1. Description of the Service">
+        <p>Tutti lets an organiser host music blind test and quiz nights. The organiser:</p>
         <ul className="list-disc pl-6 space-y-1">
-          <li>search for tracks using the YouTube Data API v3 and build playlists;</li>
-          <li>
-            launch live sessions in which YouTube videos are played through the official YouTube
-            IFrame Player;
-          </li>
-          <li>
-            invite players to join sessions via a QR code, without requiring players to create an
-            account.
-          </li>
+          <li>books a time slot from their account;</li>
+          <li>during that slot, runs blind test or quiz games from Tutti’s official library;</li>
+          <li>invites players to join via QR code, without them having to create an account.</li>
         </ul>
       </LegalSection>
 
-      <LegalSection title="3. Accounts">
+      <LegalSection title="2. Accounts">
         <p>
-          To host sessions, you must create an account with accurate information (first name, last
-          name, email). You are responsible for maintaining the confidentiality of your credentials
-          and for all activity under your account. You must be of the age of majority in your
-          jurisdiction, or have the consent of a parent or legal guardian.
+          To book and host games, you must create an account with accurate information (first name,
+          last name, email). You are responsible for keeping your credentials confidential and for
+          all activity under your account. You must be of legal age in your jurisdiction, or have
+          the consent of a parent or legal guardian.
         </p>
       </LegalSection>
 
-      <LegalSection title="4. Acceptable Use">
+      <LegalSection title="3. Bookings, prices and payment">
+        <ul className="list-disc pl-6 space-y-1">
+          <li>
+            The Service is paid by the hour, per booked slot. The price including VAT is shown
+            before payment, prorated to the minutes booked.
+          </li>
+          <li>
+            Payment is by card via Stripe. The slot is confirmed as soon as payment is made, and an
+            invoice is provided.
+          </li>
+          <li>A free game code, where applicable, is entered when booking.</li>
+          <li>
+            A booking that has not been paid yet can be cancelled from your account. For any
+            question about a paid booking, write to contact@tuttiparty.app.
+          </li>
+          <li>There is no subscription and no automatic debit.</li>
+        </ul>
+      </LegalSection>
+
+      <LegalSection title="4. Acceptable use">
         <p>
-          When using the Service, you agree <strong>not</strong> to:
+          By using the Service, you agree <strong>not</strong> to:
         </p>
         <ul className="list-disc pl-6 space-y-1">
-          <li>violate the YouTube Terms of Service or any applicable law;</li>
-          <li>
-            download, cache, copy, or store YouTube audio or video content outside the official
-            YouTube IFrame Player;
-          </li>
-          <li>
-            attempt to circumvent, disable, or interfere with YouTube’s advertising, monetisation,
-            or any technical measures;
-          </li>
-          <li>use the Service to infringe the intellectual property rights of others;</li>
+          <li>break any applicable law;</li>
+          <li>record, copy or redistribute the music or content played during games;</li>
+          <li>use the Service to infringe others’ intellectual property rights;</li>
           <li>attempt to gain unauthorised access to the Service or its related systems;</li>
-          <li>use the Service to transmit harmful, abusive, or unlawful content.</li>
+          <li>use the Service to transmit harmful, abusive or illegal content.</li>
         </ul>
       </LegalSection>
 
-      <LegalSection title="5. Content and Attribution">
+      <LegalSection title="5. Music, content and public use">
         <p>
-          Tutti displays YouTube content via the official YouTube IFrame Player and provides
-          attribution (title, artist/channel, and a link back to the original YouTube video). All
-          YouTube content remains the property of its respective rights holders and is subject to
-          the YouTube Terms of Service.
+          The music and content played during games remain the property of their rights holders.
+          Tutti does not store or redistribute any audio files.
         </p>
         <p>
-          Content you create within Tutti (playlists, quiz packs) remains yours, but you grant us a
-          limited licence to host and display it as necessary to operate the Service.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="6. Subscriptions and Payments">
-        <p>
-          Certain features may require a paid subscription. Pricing and billing terms will be
-          presented to you before purchase. Where applicable, payment terms are described at the
-          point of sale.
+          Tutti is intended for private use. Public or commercial use (bar, restaurant, paid event)
+          may require music licences (SACEM or the local equivalent), which the organiser must
+          obtain themselves. Contact us at contact@tuttiparty.app for professional use.
         </p>
       </LegalSection>
 
-      <LegalSection title="7. Disclaimers and Limitation of Liability">
+      <LegalSection title="6. Warranties and limitation of liability">
         <p>
-          The Service is provided “as is” and “as available”, without warranties of any kind, to the
-          maximum extent permitted by law. We do not guarantee that the Service will be
-          uninterrupted, error-free, or that any particular YouTube content will remain available.
+          The Service is provided “as is” and “as available”, without warranty of any kind, to the
+          fullest extent permitted by law. We do not guarantee that the Service will be
+          uninterrupted or error-free, or that any particular track or content will remain
+          available.
         </p>
         <p>
-          To the maximum extent permitted by law, Kleos Sàrl shall not be liable for any indirect,
-          incidental, or consequential damages arising from your use of the Service.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="8. Termination">
-        <p>
-          We may suspend or terminate your access to the Service at any time if you breach these
-          Terms or the YouTube Terms of Service. You may stop using the Service and request deletion
-          of your account at any time (see our Privacy Policy).
+          To the fullest extent permitted by law, Kleos Sàrl shall not be liable for any indirect,
+          incidental or consequential damages arising from your use of the Service.
         </p>
       </LegalSection>
 
-      <LegalSection title="9. Changes to These Terms">
+      <LegalSection title="7. Termination">
         <p>
-          We may modify these Terms from time to time. We will update the “Last updated” date and,
-          where appropriate, notify you. Your continued use of the Service after changes become
-          effective constitutes acceptance of the revised Terms.
+          We may suspend or terminate your access to the Service if you breach these Terms. You may
+          stop using the Service and ask for your account to be deleted at any time (see our Privacy
+          Policy).
         </p>
       </LegalSection>
 
-      <LegalSection title="10. Governing Law">
+      <LegalSection title="8. Changes to these Terms">
+        <p>
+          We may change these Terms from time to time. We will update the “Last updated” date and,
+          where appropriate, notify you. Your continued use of the Service after changes means you
+          accept the revised Terms.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="9. Governing law">
         <p>
           These Terms are governed by the laws of the Grand Duchy of Luxembourg, without regard to
-          conflict of law principles, and subject to the jurisdiction of the competent courts of
+          conflict-of-laws principles, and subject to the jurisdiction of the competent courts of
           Luxembourg.
         </p>
       </LegalSection>
 
-      <LegalSection title="11. Contact">
+      <LegalSection title="10. Contact">
         <p>
           <strong>Kleos Sàrl</strong>
           <br />
           Email:{' '}
-          <a href="mailto:contact@tuttiparty.app" className="text-spritz-deep hover:underline">
+          <a href="mailto:contact@tuttiparty.app" className={lien}>
             contact@tuttiparty.app
           </a>
           <br />

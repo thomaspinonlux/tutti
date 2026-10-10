@@ -1757,18 +1757,17 @@ function HostPageInner(): JSX.Element {
   const handleProposalLaunch = async (officialPlaylistId: string): Promise<void> => {
     if (!session) return;
     const providers = await fetchHostProviders();
-    const hasAny = providers.spotify.connected || providers.youtube.connected;
-    if (!hasAny) {
+    if (!providers.apple?.connected) {
       setNoProviderOpen(true);
       return;
     }
     try {
-      // Proposition joueur → source YouTube (défaut du pivot). Relu au launch.
-      pickedProviderRef.current = 'youtube';
-      setAudioProvider('youtube'); // BUG 1
+      // Proposition joueur → même source que le reste du catalogue (Apple Music).
+      pickedProviderRef.current = 'apple_music';
+      setAudioProvider('apple_music');
       pickedDifficultyRef.current = undefined;
       const detail = await getLibraryPlaylist(officialPlaylistId);
-      const report = computePlayability(detail.tracks, providers, 'youtube');
+      const report = computePlayability(detail.tracks, providers, 'apple_music');
       setPreviewPlaylist(detail);
       setPreviewReport(report);
     } catch (err) {
@@ -2963,9 +2962,9 @@ function HostPageInner(): JSX.Element {
           bouton « recharger » ne fait que reboucler → dead-end. Le player
           YouTube web ne s'initialise pas dans la WebView native ; la source
           fiable en natif est Apple Music. On masque donc la modale en natif. */}
-      {youtube.blockedByContentFilter && !isCapacitorNative() && (
-        <ContentBlockerWarning isStandalone={isStandalone} />
-      )}
+      {youtube.blockedByContentFilter &&
+        currentTrack?.provider === 'youtube' &&
+        !isCapacitorNative() && <ContentBlockerWarning isStandalone={isStandalone} />}
 
       {/* fix/prevent-safari-reader-mode — role="application" évite que Safari
           détecte la page host comme article éditorial et propose son mode

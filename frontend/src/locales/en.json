@@ -64,7 +64,7 @@
     "linkSignUp": "Create an account",
     "continueWithSeparator": "or with",
     "invitedTitle": "You were invited to join a team",
-    "invitedHint": "Referral code: {{code}}. You'll join the existing workspace as HOST.",
+    "invitedHint": "Referral code: {{code}}.",
     "forgotPasswordLink": "Forgot password?",
     "forgotPasswordTitle": "Forgot password",
     "forgotPasswordTagline": "We'll send you a magic link to reset your password.",
@@ -167,7 +167,7 @@
     "chooseGame": "Which game?",
     "tracksTitle": "Tutti Blind Test",
     "tracksTagline": "Voice-first music blind test",
-    "tracksDescription": "Listen, guess, score. With Spotify or our demo catalogue.",
+    "tracksDescription": "Listen, guess, score. 119 playlists ready to play.",
     "tracksCta": "Start Tracks",
     "quizzTitle": "Tutti Quizz",
     "quizzTagline": "Bilingual multimedia quiz",
@@ -396,15 +396,17 @@
       },
       "modal": {
         "noProvider": {
-          "title": "Connect an account before launching",
-          "body": "To play this playlist, you need a Spotify Premium or YouTube account.",
+          "title": "The music can't start",
+          "body": "The music isn't available right now. Try again in a moment; if it keeps happening, write to contact@tuttiparty.app.",
           "connectSpotify": "Connect Spotify",
           "connectYoutube": "Connect YouTube"
         },
         "preview": {
           "title": "Session preview",
           "tracksAvailable": "tracks playable with your accounts",
-          "warningLow": "Less than half of the tracks are playable. Connect another provider to improve the ratio.",
+          "warningLow": "Less than half of the tracks are available: pick another playlist instead.",
+          "lowCoverageTitle": "Only {{playable}} of {{total}} tracks are available.",
+          "lowCoverageBody": "Starting this playlist now would give an incomplete round: pick another one instead.",
           "cancel": "Cancel",
           "start": "Start session"
         }
@@ -666,6 +668,7 @@
     "btnEndSession": "End game"
   },
   "play": {
+    "pickLevel": "Choose the level",
     "missingCode": "Invalid link. Ask the host to scan the QR code.",
     "notFound": "Session not found. Check the code.",
     "alreadyStarted": "This game is already running or finished.",

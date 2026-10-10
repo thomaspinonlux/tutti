@@ -39,8 +39,13 @@ export function MobileNav(): JSX.Element {
 
   const entries: NavEntry[] = [
     { to: '/admin/dashboard', label: t('nav.dashboard'), icon: '🏠' },
-    { to: '/admin/tracks', label: t('nav.tracks'), icon: '🎵' },
-    { to: '/admin/quizz', label: t('nav.quizz'), icon: '💡' },
+    // Mes playlists et Quizz : propriétaire uniquement, comme dans la colonne.
+    ...(estProprietaire === true
+      ? [
+          { to: '/admin/tracks', label: t('nav.tracks'), icon: '🎵' },
+          { to: '/admin/quizz', label: t('nav.quizz'), icon: '💡' },
+        ]
+      : []),
     // feat/reservation-de-creneaux — même entrée, deux destinations.
     ...(estProprietaire === null
       ? []
@@ -53,7 +58,11 @@ export function MobileNav(): JSX.Element {
   // fix/menu-comptes-apple — le parc Apple Music, accessible aussi sur
   // tablette / téléphone (propriétaire uniquement, comme dans la colonne).
   if (estProprietaire === true) {
-    entries.splice(4, 0, { to: '/admin/comptes-apple', label: t('nav.comptesApple'), icon: '🍎' });
+    entries.splice(
+      entries.findIndex((e) => e.to === '/admin/settings'),
+      0,
+      { to: '/admin/comptes-apple', label: t('nav.comptesApple'), icon: '🍎' },
+    );
   }
   if (isSuperAdmin) {
     // fix/admin-users-integration — Users + Modération exposés en mobile aussi.
