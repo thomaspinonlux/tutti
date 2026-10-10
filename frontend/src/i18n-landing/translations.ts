@@ -327,7 +327,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'Combien de joueurs peuvent participer ?',
-          a: "Tutti est conçu pour fluidifier les sessions de 2 à 30 joueurs simultanés. Au-delà, l'expérience reste fonctionnelle mais le format perd un peu de son rythme — on recommande alors de jouer en équipes.",
+          a: "Il n'y a pas de limite de joueurs : chacun rejoint avec son téléphone, autant que la salle en compte. Au-delà d'une trentaine de joueurs, on recommande le mode équipes pour garder le rythme.",
         },
         {
           q: 'Quelles langues sont supportées ?',
@@ -593,7 +593,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'How many players can join?',
-          a: "Tutti is built for smooth sessions with 2 to 30 simultaneous players. Beyond that, it still works but the rhythm changes a bit — we'd recommend team mode at that point.",
+          a: "There's no player limit: everyone joins with their own phone, as many as the room holds. Beyond thirty or so players, we recommend team mode to keep the pace.",
         },
         {
           q: 'What languages are supported?',

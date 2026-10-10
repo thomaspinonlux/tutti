@@ -175,7 +175,7 @@
     "quizzCta": "Lancer Quizz",
     "newSession": "Nouvelle session",
     "openTvScreen": "Écran joueurs",
-    "noticeSessionEnded": "Partie terminée. Le podium final s'affiche sur l'écran TV pendant 5 minutes.",
+    "noticeSessionEnded": "Partie terminée. Le podium final reste affiché sur l'écran TV jusqu'à ce que tu le fermes.",
     "noticeSessionCancelled": "Session annulée. Tu peux en créer une nouvelle quand tu veux.",
     "noAccessTitle": "Aucun accès accordé",
     "noAccessHint": "Aucun mode de jeu n'est activé sur ton compte. Contacte le support.",

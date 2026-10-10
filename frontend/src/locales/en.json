@@ -175,7 +175,7 @@
     "quizzCta": "Start Quizz",
     "newSession": "New session",
     "openTvScreen": "Players screen",
-    "noticeSessionEnded": "Game ended. The final podium is showing on the TV screen for 5 minutes.",
+    "noticeSessionEnded": "Game ended. The final podium stays on the TV screen until you close it.",
     "noticeSessionCancelled": "Session cancelled. You can create a new one anytime.",
     "noAccessTitle": "No access granted",
     "noAccessHint": "No game mode is enabled on your account. Contact support.",

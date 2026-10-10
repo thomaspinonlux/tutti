@@ -1,5 +1,7 @@
 # Tutti — Point playlists officielles
 
+> **Document périmé (état du 27/08/2026).** Au 10/10/2026, la base compte **119 playlists publiques et 8 439 titres différents** (22 914 entrées, un titre pouvant figurer dans plusieurs playlists), tous jouables sur Apple Music FR. Les colonnes Spotify ci-dessous ne sont plus d'actualité : la lecture passe par Apple Music.
+
 **111 playlists · 5482 tracks · 5007 avec Spotify (91%)**
 
 |   # | Playlist                                   | slug                        | Tracks |      Spotify |
