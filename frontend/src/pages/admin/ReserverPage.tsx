@@ -282,7 +282,7 @@ export function ReserverPage(): JSX.Element {
       {reserve ? (
         <Card size="lg" className="mb-6 border-basil">
           <p className="font-display text-2xl mb-2">C’est réservé 🎉</p>
-          <ol className="list-decimal pl-5 space-y-1 text-sm mb-4">
+          <ol className="list-decimal pl-5 space-y-2 text-base mb-5">
             <li>Tu reçois un e-mail de confirmation avec le mode d’emploi en PDF.</li>
             <li>
               Le jour J, le bouton de lancement apparaît sur ton tableau de bord
@@ -295,7 +295,7 @@ export function ReserverPage(): JSX.Element {
               <Button>Lire le mode d’emploi</Button>
             </a>
             <Link to="/admin">
-              <Button variant="ghost">Mon tableau de bord</Button>
+              <Button variant="secondary">Mon tableau de bord</Button>
             </Link>
           </div>
         </Card>
@@ -304,12 +304,12 @@ export function ReserverPage(): JSX.Element {
           {(params.get('bienvenue') === '1' || (liste !== null && liste.length === 0)) && (
             <Card size="lg" className="mb-6">
               <p className="font-display text-xl mb-2">Bienvenue sur Tutti 👋</p>
-              <ol className="list-decimal pl-5 space-y-1 text-sm">
+              <ol className="list-decimal pl-5 space-y-2 text-base">
                 <li>Choisis ta soirée ci-dessous : le prix s’affiche tout de suite.</li>
                 <li>Paie par carte : c’est réservé, sans attente.</li>
                 <li>Le jour J, tu lances la partie et tes invités jouent avec leur téléphone.</li>
               </ol>
-              <p className="text-sm mt-3">
+              <p className="text-base mt-3">
                 Tout est expliqué dans le{' '}
                 <a
                   href="/guide.html?lang=fr"
@@ -323,7 +323,7 @@ export function ReserverPage(): JSX.Element {
               </p>
             </Card>
           )}
-          <p className="font-editorial text-sm text-ink-soft mb-6">
+          <p className="text-base text-white/80 mb-6">
             {reglages?.reservation_automatique
               ? 'Choisis ton créneau et paie en ligne : c’est réservé tout de suite.'
               : 'Choisis ton créneau et envoie ta demande. Nous la validons, puis tu règles en ligne.'}{' '}
@@ -335,11 +335,11 @@ export function ReserverPage(): JSX.Element {
 
       {reglages?.reservation_automatique && (
         <Card size="lg" className="mb-6">
-          <p className="font-mono text-sm">
+          <p className="text-base font-semibold">
             Réservation immédiate : choisis ton créneau, paie en ligne, et joue. Pas d’accord à
             attendre.
           </p>
-          <p className="font-editorial italic text-sm text-ink-soft mt-1">
+          <p className="text-base text-white/85 mt-2">
             Tarif à l’heure :{' '}
             <TarifHoraire cents={reglages.tarif_horaire_cents} pct={reglages.reduction_pct} /> de
             l’heure,{' '}
@@ -348,7 +348,7 @@ export function ReserverPage(): JSX.Element {
           </p>
           {/* feat/offre-de-lancement — la remise se voit, elle ne se devine pas. */}
           {reglages.reduction_pct > 0 && (
-            <p className="font-mono text-sm text-basil mt-2">
+            <p className="text-base text-basil mt-3">
               <span className="inline-block rounded-full bg-basil px-2 py-0.5 text-xs text-white mr-2">
                 −{reglages.reduction_pct} %
               </span>
@@ -368,9 +368,7 @@ export function ReserverPage(): JSX.Element {
       )}
 
       <Card size="lg" className="mb-6">
-        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
-          Choisis ta soirée
-        </h2>
+        <h2 className="font-display text-2xl mb-4">Choisis ta soirée</h2>
         <div className="flex flex-wrap gap-2 mb-3">
           {propositions(new Date()).map((p) => (
             <button
@@ -378,10 +376,10 @@ export function ReserverPage(): JSX.Element {
               type="button"
               onClick={() => setJour(p.jour)}
               disabled={occupe}
-              className={`px-3 py-1.5 rounded-full border-2 text-sm font-medium ${
+              className={`px-5 py-2.5 rounded-full border-2 text-base font-semibold ${
                 jour === p.jour
                   ? 'bg-spritz border-spritz text-white'
-                  : 'border-white/20 text-white/80 hover:border-white/50'
+                  : 'border-white/40 text-white hover:border-white'
               }`}
             >
               {p.libelle}
@@ -389,7 +387,7 @@ export function ReserverPage(): JSX.Element {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <span className="text-xs font-mono uppercase tracking-wider text-white/50 mr-1">
+          <span className="text-sm font-semibold uppercase tracking-wider text-white/80 mr-1">
             Durée
           </span>
           {[120, 180, 240].map((min) => {
@@ -400,10 +398,10 @@ export function ReserverPage(): JSX.Element {
                 type="button"
                 onClick={() => setHeureFin(ajouterMinutes(heureDebut, min))}
                 disabled={occupe}
-                className={`px-3 py-1 rounded-full border-2 text-sm ${
+                className={`px-5 py-2 rounded-full border-2 text-base font-semibold ${
                   actif
                     ? 'bg-spritz border-spritz text-white'
-                    : 'border-white/20 text-white/80 hover:border-white/50'
+                    : 'border-white/40 text-white hover:border-white'
                 }`}
               >
                 {min / 60} h
@@ -413,7 +411,7 @@ export function ReserverPage(): JSX.Element {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
           <label className="block">
-            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">
+            <span className="block text-sm font-semibold uppercase tracking-wider mb-1 text-white/80">
               Jour
             </span>
             <input
@@ -422,11 +420,11 @@ export function ReserverPage(): JSX.Element {
               value={jour}
               onChange={(e) => setJour(e.target.value)}
               disabled={occupe}
-              className="w-full px-3 py-2 border-2 rounded bg-white/[0.06] border-white/10 text-white [color-scheme:dark]"
+              className="w-full px-3 py-3 text-lg border-2 rounded bg-white/[0.06] border-white/25 text-white [color-scheme:dark]"
             />
           </label>
           <label className="block">
-            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">
+            <span className="block text-sm font-semibold uppercase tracking-wider mb-1 text-white/80">
               Début
             </span>
             <input
@@ -435,11 +433,11 @@ export function ReserverPage(): JSX.Element {
               value={heureDebut}
               onChange={(e) => setHeureDebut(e.target.value)}
               disabled={occupe}
-              className="w-full px-3 py-2 border-2 rounded bg-white/[0.06] border-white/10 text-white [color-scheme:dark]"
+              className="w-full px-3 py-3 text-lg border-2 rounded bg-white/[0.06] border-white/25 text-white [color-scheme:dark]"
             />
           </label>
           <label className="block">
-            <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">
+            <span className="block text-sm font-semibold uppercase tracking-wider mb-1 text-white/80">
               Fin
             </span>
             <input
@@ -448,13 +446,13 @@ export function ReserverPage(): JSX.Element {
               value={heureFin}
               onChange={(e) => setHeureFin(e.target.value)}
               disabled={occupe}
-              className="w-full px-3 py-2 border-2 rounded bg-white/[0.06] border-white/10 text-white [color-scheme:dark]"
+              className="w-full px-3 py-3 text-lg border-2 rounded bg-white/[0.06] border-white/25 text-white [color-scheme:dark]"
             />
           </label>
         </div>
 
         {creneau && (
-          <p className="font-mono text-xs mb-3">
+          <p className="text-base mb-3">
             {texteCreneau(creneau.debut.toISOString(), creneau.fin.toISOString())} ·{' '}
             {dureeLisible(dureeMinutes)}
             {dureeHorsBornes && reglages && (
@@ -475,7 +473,7 @@ export function ReserverPage(): JSX.Element {
 
         {/* feat/reservation-automatique — le prix s'affiche avant d'envoyer. */}
         {prixCents !== null && !dureeHorsBornes && (
-          <p className="font-mono text-sm mb-3">
+          <p className="text-lg mb-4">
             Prix :{' '}
             {devis && devis.reduction_pct > 0 && devis.prix_plein_cents !== null && (
               <span className="text-ink-soft line-through mr-2">
@@ -498,13 +496,14 @@ export function ReserverPage(): JSX.Element {
         )}
 
         {!codeOuvert && (
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => setCodeOuvert(true)}
-            className="block text-sm underline text-white/70 mb-4"
+            className="mb-4"
           >
-            J’ai un code partie offerte ou un message
-          </button>
+            🎁 J’ai un code partie offerte
+          </Button>
         )}
         {codeOuvert && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -527,6 +526,7 @@ export function ReserverPage(): JSX.Element {
           </div>
         )}
         <Button
+          size="lg"
           onClick={() => void envoyer()}
           disabled={
             occupe || !creneau || dureeHorsBornes || libre === false || reglages?.capacite === 0
@@ -542,19 +542,17 @@ export function ReserverPage(): JSX.Element {
 
       {erreur && (
         <Card size="lg" className="mb-6">
-          <p className="font-mono text-sm text-raspberry">{erreur}</p>
+          <p className="text-base text-raspberry">{erreur}</p>
         </Card>
       )}
       {info && (
         <Card size="lg" className="mb-6">
-          <p className="font-mono text-sm">{info}</p>
+          <p className="text-base">{info}</p>
         </Card>
       )}
 
       <Card size="lg">
-        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
-          Mes réservations
-        </h2>
+        <h2 className="font-display text-2xl mb-3">Mes réservations</h2>
         {liste === null ? (
           <p className="font-mono text-sm text-ink-soft">Chargement…</p>
         ) : liste.length === 0 ? (
@@ -566,8 +564,8 @@ export function ReserverPage(): JSX.Element {
             {liste.map((r) => (
               <li key={r.id} className="py-3 flex flex-wrap items-center gap-3">
                 <div className="flex-1 min-w-[220px]">
-                  <p className="font-mono text-sm">{texteCreneau(r.debut, r.fin)}</p>
-                  <p className="font-mono text-[11px] text-ink-soft">
+                  <p className="text-base font-semibold">{texteCreneau(r.debut, r.fin)}</p>
+                  <p className="text-sm text-white/70">
                     {LIBELLE_STATUT[r.statut]}
                     {r.prix_cents !== null && ` · ${texteMontant(r.prix_cents)}`}
                     {r.code_gratuit && ' · code offert'}
