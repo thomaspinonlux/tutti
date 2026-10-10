@@ -18,6 +18,7 @@ import {
   type Reservation,
 } from '../../lib/reservations.js';
 import { Button, Card } from '../ui/index.js';
+import { useEstablishment } from '../../pages/admin/AdminLayout.js';
 
 const JOUABLES = new Set(['PAYEE', 'GRATUITE']);
 
@@ -33,6 +34,8 @@ export function ProchainePartie(): JSX.Element | null {
   const [maintenant, setMaintenant] = useState(() => new Date());
   const [enCours, setEnCours] = useState<'TRACKS' | 'QUIZZ' | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const { me } = useEstablishment();
+  const estClient = !!me && me.role !== 'OWNER' && !me.isSuperAdmin;
 
   useEffect(() => {
     let vivant = true;
@@ -42,7 +45,9 @@ export function ProchainePartie(): JSX.Element | null {
         setOuvertureMin(reglages.ouverture_avant_minutes);
         const now = new Date();
         const prochaine = reservations
-          .filter((r) => (JOUABLES.has(r.statut) || r.statut === 'ACCEPTEE') && new Date(r.fin) > now)
+          .filter(
+            (r) => (JOUABLES.has(r.statut) || r.statut === 'ACCEPTEE') && new Date(r.fin) > now,
+          )
           .sort((a, b) => a.debut.localeCompare(b.debut))[0];
         setResa(prochaine ?? null);
       })
@@ -54,7 +59,21 @@ export function ProchainePartie(): JSX.Element | null {
     };
   }, []);
 
-  if (!resa) return null;
+  // feat/parcours-rapide — un client sans partie prévue voit d'abord où réserver.
+  if (!resa) {
+    if (!estClient) return null;
+    return (
+      <Card size="lg" className="mb-6">
+        <p className="font-display text-xl mb-1">Pas encore de soirée prévue</p>
+        <p className="text-sm mb-4">
+          Choisis ton créneau et paie en ligne : c’est réservé tout de suite.
+        </p>
+        <Link to="/admin/reserver">
+          <Button>Réserver ma soirée</Button>
+        </Link>
+      </Card>
+    );
+  }
 
   const debut = new Date(resa.debut);
   const ouvreA = new Date(debut.getTime() - ouvertureMin * 60_000);
@@ -97,7 +116,12 @@ export function ProchainePartie(): JSX.Element | null {
           <Button size="lg" disabled={!!enCours} onClick={() => void lancer('TRACKS')}>
             {enCours === 'TRACKS' ? '…' : t('quizTheme.launchTracks')}
           </Button>
-          <Button size="lg" variant="secondary" disabled={!!enCours} onClick={() => void lancer('QUIZZ')}>
+          <Button
+            size="lg"
+            variant="secondary"
+            disabled={!!enCours}
+            onClick={() => void lancer('QUIZZ')}
+          >
             {enCours === 'QUIZZ' ? '…' : t('quizTheme.launchQuiz')}
           </Button>
           <Link to="/admin/sessions/new" className="text-sm underline ml-2">

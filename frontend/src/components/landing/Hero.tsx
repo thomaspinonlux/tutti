@@ -88,7 +88,7 @@ export function Hero(): JSX.Element {
             transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
             className="flex flex-wrap gap-[14px] mb-12"
           >
-            <Link to="/auth/login" className="landing-btn-primary">
+            <Link to="/auth/signup" className="landing-btn-primary">
               {t.hero.ctaPrimary}
             </Link>
             <a href="#how" className="landing-btn-secondary">

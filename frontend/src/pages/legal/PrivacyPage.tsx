@@ -49,9 +49,7 @@ function PrivacyFr(): JSX.Element {
           <ul className="list-disc pl-6 space-y-1">
             <li>
               <strong>Informations de compte</strong>&nbsp;: prénom, nom, adresse e-mail et mot de
-              passe (stocké sous forme hachée) lors de la création du compte. Si vous vous inscrivez
-              avec Google ou Microsoft, nous recevons votre nom et votre adresse e-mail de ce
-              service.
+              passe (stocké sous forme hachée) lors de la création du compte.
             </li>
             <li>
               <strong>Réservations</strong>&nbsp;: date et horaires du créneau réservé, prix, statut
@@ -138,11 +136,6 @@ function PrivacyFr(): JSX.Element {
               'Voir prestataires',
             ],
             ['Resend', 'E-mails transactionnels', 'Voir prestataire'],
-            [
-              'Google, Microsoft',
-              'Connexion avec un compte Google ou Microsoft (si vous la choisissez)',
-              'Voir prestataires',
-            ],
           ]}
         />
         <p>
@@ -188,30 +181,6 @@ function PrivacyFr(): JSX.Element {
             nous contactant à l’adresse indiquée en Section 8. Après vérification de la demande,
             nous supprimerons vos données personnelles, sauf celles dont la conservation est requise
             par la loi.
-          </p>
-        </LegalSubSection>
-        <LegalSubSection title="6.2 Connexion avec Google ou Microsoft">
-          <p>
-            Si vous vous connectez avec Google ou Microsoft, vous pouvez retirer l’accès de Tutti à
-            tout moment depuis les paramètres de votre compte Google (
-            <a
-              href="https://myaccount.google.com/connections"
-              className={lien}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              myaccount.google.com/connections
-            </a>
-            ) ou Microsoft (
-            <a
-              href="https://account.live.com/consent/Manage"
-              className={lien}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              account.live.com/consent/Manage
-            </a>
-            ).
           </p>
         </LegalSubSection>
       </LegalSection>
@@ -280,8 +249,7 @@ function PrivacyEn(): JSX.Element {
           <ul className="list-disc pl-6 space-y-1">
             <li>
               <strong>Account information</strong>: first name, last name, email address and
-              password (stored hashed) when you create an account. If you sign up with Google or
-              Microsoft, we receive your name and email address from that service.
+              password (stored hashed) when you create an account.
             </li>
             <li>
               <strong>Bookings</strong>: date and times of the booked slot, price, booking status,
@@ -359,11 +327,6 @@ function PrivacyEn(): JSX.Element {
               'See providers',
             ],
             ['Resend', 'Transactional emails', 'See provider'],
-            [
-              'Google, Microsoft',
-              'Sign-in with a Google or Microsoft account (if you choose it)',
-              'See providers',
-            ],
           ]}
         />
         <p>
@@ -402,30 +365,6 @@ function PrivacyEn(): JSX.Element {
             You can ask to access, correct or delete your data by contacting us at the address in
             Section 8. Once the request is verified, we will delete your personal data, except data
             we are required by law to keep.
-          </p>
-        </LegalSubSection>
-        <LegalSubSection title="6.2 Sign-in with Google or Microsoft">
-          <p>
-            If you sign in with Google or Microsoft, you can remove Tutti’s access at any time from
-            your Google account settings (
-            <a
-              href="https://myaccount.google.com/connections"
-              className={lien}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              myaccount.google.com/connections
-            </a>
-            ) or Microsoft account settings (
-            <a
-              href="https://account.live.com/consent/Manage"
-              className={lien}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              account.live.com/consent/Manage
-            </a>
-            ).
           </p>
         </LegalSubSection>
       </LegalSection>

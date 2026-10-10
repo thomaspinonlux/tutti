@@ -13,7 +13,7 @@
  * client se fait connaître.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import {
   LIBELLE_STATUT,
@@ -71,11 +71,68 @@ function bornes(jour: string, debut: string, fin: string): { debut: Date; fin: D
   return { debut: d, fin: f };
 }
 
+/** « 2026-10-17 » en heure locale. */
+function isoJour(d: Date): string {
+  const p = (n: number): string => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/**
+ * feat/parcours-rapide — Thomas : « on leur propose un créneau ». Quelques
+ * soirées toutes prêtes (ce soir, demain, le prochain vendredi et samedi) ;
+ * le prochain vendredi est pré-sélectionné.
+ */
+function propositions(maintenant: Date): Array<{ libelle: string; jour: string }> {
+  const res: Array<{ libelle: string; jour: string }> = [];
+  const vus = new Set<string>();
+  const ajouter = (libelle: string, d: Date): void => {
+    const j = isoJour(d);
+    if (vus.has(j)) return;
+    vus.add(j);
+    res.push({ libelle, jour: j });
+  };
+  const jourNom = (d: Date): string =>
+    d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  if (maintenant.getHours() < 19) ajouter('Ce soir', maintenant);
+  const demain = new Date(maintenant.getTime() + 24 * 3600_000);
+  ajouter('Demain', demain);
+  for (const cible of [5, 6]) {
+    const d = new Date(maintenant);
+    let ecart = (cible - d.getDay() + 7) % 7;
+    if (ecart === 0 && maintenant.getHours() >= 19) ecart = 7;
+    d.setDate(d.getDate() + ecart);
+    ajouter(
+      jourNom(d).replace(/^./, (c) => c.toUpperCase()),
+      d,
+    );
+  }
+  return res;
+}
+
+/** Le prochain vendredi soir encore réservable (aujourd'hui avant 19 h compris). */
+function vendrediPropose(maintenant: Date): string {
+  const d = new Date(maintenant);
+  let ecart = (5 - d.getDay() + 7) % 7;
+  if (ecart === 0 && maintenant.getHours() >= 19) ecart = 7;
+  d.setDate(d.getDate() + ecart);
+  return isoJour(d);
+}
+
+/** « 20:00 » + 180 min → « 23:00 ». */
+function ajouterMinutes(heure: string, minutes: number): string {
+  const [h, m] = heure.split(':').map(Number);
+  const total = ((h ?? 0) * 60 + (m ?? 0) + minutes) % (24 * 60);
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+
 export function ReserverPage(): JSX.Element {
   const [params, setParams] = useSearchParams();
   const [reglages, setReglages] = useState<ReglagesPublics | null>(null);
   const [liste, setListe] = useState<Reservation[] | null>(null);
-  const [jour, setJour] = useState('');
+  const [jour, setJour] = useState(() => vendrediPropose(new Date()));
+  const [codeOuvert, setCodeOuvert] = useState(false);
+  // Fin du parcours : paiement revenu de Stripe ou partie offerte confirmée.
+  const [reserve, setReserve] = useState(false);
   const [heureDebut, setHeureDebut] = useState('20:00');
   const [heureFin, setHeureFin] = useState('23:00');
   const [code, setCode] = useState('');
@@ -108,7 +165,7 @@ export function ReserverPage(): JSX.Element {
     const retour = params.get('paiement');
     if (!retour) return;
     if (retour === 'ok') {
-      setInfo('Paiement reçu par Stripe — la confirmation arrive dans quelques secondes.');
+      setReserve(true);
       const id = window.setTimeout(() => void recharger(), 4000);
       return () => window.clearTimeout(id);
     }
@@ -180,11 +237,8 @@ export function ReserverPage(): JSX.Element {
         window.location.href = url;
         return;
       }
-      setInfo(
-        reservation.statut === 'GRATUITE'
-          ? 'Créneau confirmé — partie offerte. À très vite !'
-          : 'Demande envoyée. Tu recevras un e-mail dès qu’elle sera acceptée.',
-      );
+      if (reservation.statut === 'GRATUITE') setReserve(true);
+      else setInfo('Demande envoyée. Tu recevras un e-mail dès qu’elle sera acceptée.');
       await recharger();
     } catch (err: unknown) {
       setErreur((err as Error).message);
@@ -225,11 +279,59 @@ export function ReserverPage(): JSX.Element {
       <TitleHandwritten as="h1" className="mb-2">
         <Underline>Réserver une partie</Underline>
       </TitleHandwritten>
-      <p className="font-editorial text-sm text-ink-soft mb-6">
-        Choisis ton créneau et envoie ta demande. Nous la validons, puis tu règles en ligne. Le jour
-        J, tu ouvres ta partie depuis ton compte
-        {reglages ? ` jusqu’à ${reglages.ouverture_avant_minutes} min avant le début` : ''}.
-      </p>
+      {reserve ? (
+        <Card size="lg" className="mb-6 border-basil">
+          <p className="font-display text-2xl mb-2">C’est réservé 🎉</p>
+          <ol className="list-decimal pl-5 space-y-1 text-sm mb-4">
+            <li>Tu reçois un e-mail de confirmation avec le mode d’emploi en PDF.</li>
+            <li>
+              Le jour J, le bouton de lancement apparaît sur ton tableau de bord
+              {reglages ? ` ${reglages.ouverture_avant_minutes} minutes avant le début` : ''}.
+            </li>
+            <li>Tes invités scannent le QR code sur la télé et jouent.</li>
+          </ol>
+          <div className="flex flex-wrap gap-3">
+            <a href="/guide.html?lang=fr" target="_blank" rel="noreferrer">
+              <Button>Lire le mode d’emploi</Button>
+            </a>
+            <Link to="/admin">
+              <Button variant="ghost">Mon tableau de bord</Button>
+            </Link>
+          </div>
+        </Card>
+      ) : (
+        <>
+          {(params.get('bienvenue') === '1' || (liste !== null && liste.length === 0)) && (
+            <Card size="lg" className="mb-6">
+              <p className="font-display text-xl mb-2">Bienvenue sur Tutti 👋</p>
+              <ol className="list-decimal pl-5 space-y-1 text-sm">
+                <li>Choisis ta soirée ci-dessous : le prix s’affiche tout de suite.</li>
+                <li>Paie par carte : c’est réservé, sans attente.</li>
+                <li>Le jour J, tu lances la partie et tes invités jouent avec leur téléphone.</li>
+              </ol>
+              <p className="text-sm mt-3">
+                Tout est expliqué dans le{' '}
+                <a
+                  href="/guide.html?lang=fr"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline text-spritz"
+                >
+                  mode d’emploi
+                </a>
+                .
+              </p>
+            </Card>
+          )}
+          <p className="font-editorial text-sm text-ink-soft mb-6">
+            {reglages?.reservation_automatique
+              ? 'Choisis ton créneau et paie en ligne : c’est réservé tout de suite.'
+              : 'Choisis ton créneau et envoie ta demande. Nous la validons, puis tu règles en ligne.'}{' '}
+            Le jour J, tu ouvres ta partie depuis ton compte
+            {reglages ? ` jusqu’à ${reglages.ouverture_avant_minutes} min avant le début` : ''}.
+          </p>
+        </>
+      )}
 
       {reglages?.reservation_automatique && (
         <Card size="lg" className="mb-6">
@@ -266,9 +368,49 @@ export function ReserverPage(): JSX.Element {
       )}
 
       <Card size="lg" className="mb-6">
-        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-4">
-          Nouveau créneau
+        <h2 className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-3">
+          Choisis ta soirée
         </h2>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {propositions(new Date()).map((p) => (
+            <button
+              key={p.jour}
+              type="button"
+              onClick={() => setJour(p.jour)}
+              disabled={occupe}
+              className={`px-3 py-1.5 rounded-full border-2 text-sm font-medium ${
+                jour === p.jour
+                  ? 'bg-spritz border-spritz text-white'
+                  : 'border-white/20 text-white/80 hover:border-white/50'
+              }`}
+            >
+              {p.libelle}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span className="text-xs font-mono uppercase tracking-wider text-white/50 mr-1">
+            Durée
+          </span>
+          {[120, 180, 240].map((min) => {
+            const actif = ajouterMinutes(heureDebut, min) === heureFin;
+            return (
+              <button
+                key={min}
+                type="button"
+                onClick={() => setHeureFin(ajouterMinutes(heureDebut, min))}
+                disabled={occupe}
+                className={`px-3 py-1 rounded-full border-2 text-sm ${
+                  actif
+                    ? 'bg-spritz border-spritz text-white'
+                    : 'border-white/20 text-white/80 hover:border-white/50'
+                }`}
+              >
+                {min / 60} h
+              </button>
+            );
+          })}
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
           <label className="block">
             <span className="block text-xs font-mono uppercase tracking-wider mb-1 text-white/50">
@@ -355,24 +497,35 @@ export function ReserverPage(): JSX.Element {
           </p>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          <Input
-            dark
-            label="Code partie offerte (facultatif)"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="TUTTI-XXXX-XXXX"
-            disabled={occupe}
-          />
-          <Input
-            dark
-            label="Message (facultatif)"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Anniversaire, nombre de joueurs…"
-            disabled={occupe}
-          />
-        </div>
+        {!codeOuvert && (
+          <button
+            type="button"
+            onClick={() => setCodeOuvert(true)}
+            className="block text-sm underline text-white/70 mb-4"
+          >
+            J’ai un code partie offerte ou un message
+          </button>
+        )}
+        {codeOuvert && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <Input
+              dark
+              label="Code partie offerte (facultatif)"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="TUTTI-XXXX-XXXX"
+              disabled={occupe}
+            />
+            <Input
+              dark
+              label="Message (facultatif)"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Anniversaire, nombre de joueurs…"
+              disabled={occupe}
+            />
+          </div>
+        )}
         <Button
           onClick={() => void envoyer()}
           disabled={
