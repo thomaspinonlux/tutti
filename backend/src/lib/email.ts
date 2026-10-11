@@ -101,7 +101,9 @@ export async function sendNotificationEmail(args: SendArgs): Promise<SendResult>
       subject: args.subject,
       html: args.html,
       ...(args.attachments?.length ? { attachments: args.attachments } : {}),
-      ...(args.replyTo ? { replyTo: args.replyTo } : {}),
+      // Les e-mails partent de noreply@… : une réponse du client arrive sur la
+      // boîte Tutti (contact@tuttiparty.app), sauf adresse de réponse fournie.
+      replyTo: args.replyTo ?? process.env.MAIL_REPLY_TO ?? 'contact@tuttiparty.app',
     });
     if (result.error) {
       // Resend SDK loggue déjà sa propre erreur, mais on expose une trace
