@@ -29,6 +29,7 @@ import { HowItWorks } from '../components/landing/HowItWorks.js';
 import { FeaturesGrid } from '../components/landing/FeaturesGrid.js';
 import { PricingSection } from '../components/landing/PricingSection.js';
 import { UseCasesSection } from '../components/landing/UseCasesSection.js';
+import { ProSection } from '../components/landing/ProSection.js';
 import { FAQ } from '../components/landing/FAQ.js';
 import { CtaSection } from '../components/landing/CtaSection.js';
 import { Footer } from '../components/landing/Footer.js';
@@ -53,6 +54,7 @@ export function HomePage(): JSX.Element {
           <FeaturesGrid />
           <PricingSection />
           <UseCasesSection />
+          <ProSection />
           <FAQ />
           <CtaSection />
         </main>

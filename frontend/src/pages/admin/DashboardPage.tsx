@@ -11,6 +11,7 @@
  */
 
 import { ProchainePartie } from '../../components/admin/ProchainePartie.js';
+import { ContactProCard } from '../../components/admin/ContactProCard.js';
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -242,6 +243,11 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
           disabled={!canUseQuizz}
           disabledTooltip={t('dashboard.accessForbidden')}
         />
+      </div>
+
+      {/* feat/contact-pro — les professionnels peuvent nous écrire. */}
+      <div className="mt-8">
+        <ContactProCard />
       </div>
     </>
   );

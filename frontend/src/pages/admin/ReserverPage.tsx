@@ -14,6 +14,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { ContactProCard } from '../../components/admin/ContactProCard.js';
 import { Button, Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import {
   LIBELLE_STATUT,
@@ -550,6 +551,8 @@ export function ReserverPage(): JSX.Element {
           <p className="text-base">{info}</p>
         </Card>
       )}
+
+      <ContactProCard />
 
       <Card size="lg">
         <h2 className="font-display text-2xl mb-3">Mes réservations</h2>

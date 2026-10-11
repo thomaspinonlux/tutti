@@ -44,6 +44,7 @@ import libraryPublicRouter from './routes/libraryPublic.js';
 import youtubeAuthRouter from './routes/youtubeAuth.js';
 import screenStateRouter from './routes/screenState.js';
 import clientLogRouter from './routes/clientLog.js';
+import contactProRouter from './routes/contactPro.js';
 import tvRouter from './routes/tv.js';
 import reservationsRouter from './routes/reservations.js';
 import adminReservationsRouter from './routes/adminReservations.js';
@@ -191,6 +192,7 @@ app.use('/api/library-public', libraryPublicRouter);
 app.use('/api/auth/youtube', youtubeAuthRouter);
 app.use('/api/workspace', screenStateRouter);
 app.use('/api', clientLogRouter);
+app.use('/api', contactProRouter);
 app.use('/api/tv', tvRouter);
 app.use('/api/reservations', reservationsRouter);
 // Hors de /api/admin : ce routeur-là impose le super-admin à tout ce qui y

@@ -17,6 +17,7 @@ export interface LandingTranslations {
     signin: string;
     guide: string;
     guideHref: string;
+    pro: string;
     home: string;
   };
   hero: {
@@ -130,6 +131,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       faq: 'FAQ',
       signin: 'Se connecter',
       guide: 'Mode d’emploi',
+      pro: 'Professionnels',
       guideHref: '/guide.html?lang=fr',
       home: 'Tutti — Accueil',
     },
@@ -351,7 +353,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'Puis-je utiliser Tutti dans un cadre commercial ?',
-          a: 'Tutti est destiné à un usage privé entre amis ou en famille. Une utilisation publique ou commerciale (bar, événement payant, restaurant) nécessite des licences musicales spécifiques (SACEM ou équivalent local) que tu dois obtenir indépendamment. Contacte-nous à <a class="landing-faq-link" href="mailto:contact@tuttiparty.app">contact@tuttiparty.app</a> pour discuter d’un usage professionnel.',
+          a: 'Tutti est destiné à un usage privé entre amis ou en famille. Une utilisation publique ou commerciale (bar, événement payant, restaurant) nécessite des licences musicales spécifiques (SACEM ou équivalent local) que tu dois obtenir indépendamment. Bar, restaurant ou société d’événementiel : <a class="landing-faq-link" href="#pro">écris-nous via le formulaire Professionnels</a>, nous préparons une formule adaptée.',
         },
       ],
     },
@@ -375,6 +377,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
             { label: 'Tarifs', href: '#pricing' },
             { label: 'FAQ', href: '#faq' },
             { label: 'Mode d’emploi', href: '/guide.html?lang=fr' },
+            { label: 'Professionnels', href: '#pro' },
           ],
         },
         legal: {
@@ -398,6 +401,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       faq: 'FAQ',
       signin: 'Sign in',
       guide: 'User guide',
+      pro: 'Professionals',
       guideHref: '/guide.html?lang=en',
       home: 'Tutti — Home',
     },
@@ -619,7 +623,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
         },
         {
           q: 'Can I use Tutti in a commercial setting?',
-          a: 'Tutti is intended for private use among friends or family. Public or commercial use (bars, ticketed events, restaurants) requires specific music licenses (SACEM or local equivalent) that you must secure independently. Reach out to <a class="landing-faq-link" href="mailto:contact@tuttiparty.app">contact@tuttiparty.app</a> to discuss professional use.',
+          a: 'Tutti is intended for private use among friends or family. Public or commercial use (bars, ticketed events, restaurants) requires specific music licenses (SACEM or local equivalent) that you must secure independently. Bar, restaurant or events company: <a class="landing-faq-link" href="#pro">write to us through the Professionals form</a> and we’ll set up a suitable offer.',
         },
       ],
     },
@@ -643,6 +647,7 @@ export const translations: Record<LandingLang, LandingTranslations> = {
             { label: 'Pricing', href: '#pricing' },
             { label: 'FAQ', href: '#faq' },
             { label: 'User guide', href: '/guide.html?lang=en' },
+            { label: 'Professionals', href: '#pro' },
           ],
         },
         legal: {

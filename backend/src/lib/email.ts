@@ -57,6 +57,8 @@ interface SendArgs {
   html: string;
   /** Pièces jointes hébergées (Resend va chercher le fichier à l'URL `path`). */
   attachments?: Array<{ filename: string; path: string }>;
+  /** Adresse de réponse (ex. le demandeur d'un formulaire de contact). */
+  replyTo?: string;
 }
 
 export interface SendResult {
@@ -99,6 +101,7 @@ export async function sendNotificationEmail(args: SendArgs): Promise<SendResult>
       subject: args.subject,
       html: args.html,
       ...(args.attachments?.length ? { attachments: args.attachments } : {}),
+      ...(args.replyTo ? { replyTo: args.replyTo } : {}),
     });
     if (result.error) {
       // Resend SDK loggue déjà sa propre erreur, mais on expose une trace
