@@ -13,6 +13,7 @@
 import type { CurrentTrackState, GameTrackPhase, ParticipantRole } from '@tutti/shared';
 import { DEFAULT_SESSION_SIZE } from '@tutti/shared';
 import { prisma } from './prisma.js';
+import { SongRegistry, dedupeBySong, type SongInfo } from './songIdentity.js';
 import type { Tier } from '../config/levelWeights.js';
 import { broadcastToSession, emitTrackAnswer } from '../socket/index.js';
 import { getUsableLyrics } from './lyrics/lyricsStore.js';
@@ -377,6 +378,47 @@ export interface RandomPickResult {
  * proprement en ignorant le filtre (pool complet).
  */
 /**
+ * feat/jamais-deux-fois-la-meme-chanson — titre + artiste de chaque morceau,
+ * pour reconnaître la même chanson sous deux identifiants différents.
+ */
+async function loadSongInfo(trackIds: string[]): Promise<Map<string, SongInfo>> {
+  const map = new Map<string, SongInfo>();
+  if (trackIds.length === 0) return map;
+  try {
+    const rows = await prisma.track.findMany({
+      where: { id: { in: trackIds } },
+      select: {
+        id: true,
+        canonical_title: true,
+        song_title: true,
+        artist: { select: { canonical_name: true } },
+      },
+    });
+    for (const row of rows) {
+      map.set(row.id, {
+        title: row.song_title ?? row.canonical_title,
+        artist: row.artist?.canonical_name,
+      });
+    }
+  } catch (err: unknown) {
+    console.warn('[loadSongInfo] lecture impossible, dédoublonnage ignoré:', err);
+  }
+  return map;
+}
+
+/**
+ * feat/jamais-deux-fois-la-meme-chanson — UN SEUL EXEMPLAIRE PAR CHANSON dans
+ * la manche. Mélange d'abord (l'exemplaire gardé est tiré au hasard), puis
+ * retire les doublons (ex. « Under Pressure » de Queen ET de Queen & David
+ * Bowie dans la même playlist, partie du 16/10/2026).
+ */
+async function uneFoisParChanson(ids: string[]): Promise<string[]> {
+  const shuffled = [...ids];
+  fisherYates(shuffled);
+  return dedupeBySong(shuffled, await loadSongInfo(shuffled));
+}
+
+/**
  * feat/jamais-deux-fois-le-meme-titre — CANDIDATS RÉELLEMENT INÉDITS.
  *
  * Règle de jeu : dans UNE MÊME PARTIE, un titre ne repasse jamais — même s'il
@@ -393,28 +435,76 @@ async function filterAlreadyPlayed(sessionId: string, candidateIds: string[]): P
   try {
     const playedRows = await prisma.sessionPlayedTrack.findMany({
       where: { session_id: sessionId },
-      select: { track: { select: { id: true, song_id: true } } },
+      select: {
+        track: {
+          select: {
+            id: true,
+            song_id: true,
+            canonical_title: true,
+            song_title: true,
+            artist: { select: { canonical_name: true } },
+          },
+        },
+      },
     });
     const playedTrackIds = new Set<string>();
     const playedSongIds = new Set<string>();
+    // feat/jamais-deux-fois-la-meme-chanson — la même chanson peut exister en
+    // plusieurs exemplaires (album, best-of, remaster) sans song_id commun :
+    // on compare aussi titre nettoyé + artiste (lib/songIdentity).
+    const playedSongs = new SongRegistry();
     for (const row of playedRows) {
       if (!row.track) continue;
       playedTrackIds.add(row.track.id);
       if (row.track.song_id) playedSongIds.add(row.track.song_id);
+      playedSongs.add({
+        title: row.track.song_title ?? row.track.canonical_title,
+        artist: row.track.artist?.canonical_name,
+      });
+    }
+    // Manches déjà tirées mais pas encore terminées (file d'attente de
+    // l'animateur) : leurs morceaux vont passer, ils comptent comme joués.
+    const pendingRounds = await prisma.sessionRound.findMany({
+      where: { session_id: sessionId, status: { not: 'ENDED' } },
+      select: { selected_track_ids: true },
+    });
+    const pendingIds = [...new Set(pendingRounds.flatMap((r) => r.selected_track_ids ?? []))];
+    if (pendingIds.length > 0) {
+      const pendingInfo = await loadSongInfo(pendingIds);
+      for (const id of pendingIds) {
+        playedTrackIds.add(id);
+        const info = pendingInfo.get(id);
+        if (info) playedSongs.add(info);
+      }
     }
     if (playedTrackIds.size === 0) return candidateIds;
 
     const candidateRows = await prisma.track.findMany({
       where: { id: { in: candidateIds } },
-      select: { id: true, song_id: true },
+      select: {
+        id: true,
+        song_id: true,
+        canonical_title: true,
+        song_title: true,
+        artist: { select: { canonical_name: true } },
+      },
     });
     const songByTrack = new Map<string, string | null>();
-    for (const row of candidateRows) songByTrack.set(row.id, row.song_id);
+    const infoByTrack = new Map<string, SongInfo>();
+    for (const row of candidateRows) {
+      songByTrack.set(row.id, row.song_id);
+      infoByTrack.set(row.id, {
+        title: row.song_title ?? row.canonical_title,
+        artist: row.artist?.canonical_name,
+      });
+    }
 
     return candidateIds.filter((id) => {
       if (playedTrackIds.has(id)) return false;
       const songId = songByTrack.get(id);
       if (songId && playedSongIds.has(songId)) return false;
+      const info = infoByTrack.get(id);
+      if (info && playedSongs.has(info)) return false;
       return true;
     });
   } catch (err: unknown) {
@@ -462,6 +552,8 @@ export async function pickRandomTrackIdsForRound(
       `[pickRandomTrackIdsForRound] playlist ENTIÈREMENT jouée (playlist=${playlistId} session=${sessionId}) → recyclage inévitable de ${candidates.length} morceaux. Étoffer cette playlist.`,
     );
   }
+
+  candidates = await uneFoisParChanson(candidates);
 
   const eligibleSize = candidates.length;
   if (eligibleSize === 0) {
@@ -617,6 +709,8 @@ export async function pickWeightedTrackIdsForRound(
       `[pickWeightedTrackIdsForRound] playlist ENTIÈREMENT jouée (playlist=${playlistId} session=${sessionId}) → recyclage inévitable de ${candidates.length} morceaux. Étoffer cette playlist.`,
     );
   }
+
+  candidates = await uneFoisParChanson(candidates);
 
   const eligibleSize = candidates.length;
   if (eligibleSize === 0) {
