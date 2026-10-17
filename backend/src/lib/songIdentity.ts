@@ -69,20 +69,76 @@ export function artistKeys(artist: string | null | undefined): string[] {
   return [...out];
 }
 
+/**
+ * Mots d'artiste trop courants pour identifier quelqu'un (« The Jimi Hendrix
+ * Experience » et « Jimi Hendrix » partagent « hendrix » ; « London Symphony
+ * Orchestra » ne doit rien partager avec « Royal Philharmonic Orchestra »).
+ */
+const MOTS_VIDES = new Set([
+  'the', 'and', 'les', 'feat', 'featuring', 'with', 'avec', 'orchestra', 'orchestre', 'symphony',
+  'symphonic', 'philharmonic', 'philharmonique', 'national', 'royal', 'london', 'city', 'cast',
+  'band', 'chorus', 'choir', 'ensemble', 'music', 'original', 'bande', 'originale', 'soundtrack',
+  'motion', 'picture', 'version', 'group', 'brothers', 'sisters', 'boys', 'girls', 'big', 'lil',
+  'little', 'des', 'del', 'los', 'las', 'his', 'her', 'their', 'friends', 'crew', 'gang',
+]);
+
+/** Crédits génériques : l'interprète n'est pas connu, seul le titre compte. */
+const CREDIT_GENERIQUE = /^(bande originale|disney|comptine|soundtrack|original soundtrack|various artists|artistes divers|cast|.* cast)$/;
+
+/** « P!nk » s'écrit aussi « Pink ». */
+function artisteNormalise(artist: string | null | undefined): string {
+  return basic((artist ?? '').replace(/!/g, 'i'));
+}
+
+function artistTokens(artist: string | null | undefined): Set<string> {
+  const out = new Set<string>();
+  const mots = artisteNormalise(artist).split(' ').filter((w) => w.length > 0);
+  for (const w of mots) {
+    if (w.length >= 3 && !MOTS_VIDES.has(w)) out.add(w);
+  }
+  // Sigle : « OMD » = « Orchestral Manoeuvres in the Dark ».
+  const sigle = mots
+    .filter((w) => w.length >= 3 && !MOTS_VIDES.has(w))
+    .map((w) => w[0])
+    .join('');
+  if (sigle.length >= 2) out.add(`#${sigle}`);
+  if (mots.length === 1 && mots[0]!.length >= 2 && mots[0]!.length <= 5) out.add(`#${mots[0]}`);
+  return out;
+}
+
+function creditGenerique(artist: string | null | undefined): boolean {
+  const b = basic(artist ?? '').replace(/^the /, '');
+  return b.length === 0 || CREDIT_GENERIQUE.test(b);
+}
+
 export interface SongInfo {
   title: string | null | undefined;
   artist: string | null | undefined;
 }
 
 /** Index des chansons déjà vues : titre → ensembles d'artistes. */
+interface Entree {
+  keys: Set<string>;
+  tokens: Set<string>;
+  generique: boolean;
+}
+
 export class SongRegistry {
-  private byTitle = new Map<string, Set<string>[]>();
+  private byTitle = new Map<string, Entree[]>();
+
+  private entree(info: SongInfo): Entree {
+    return {
+      keys: new Set(artistKeys((info.artist ?? '').replace(/!/g, 'i'))),
+      tokens: artistTokens(info.artist),
+      generique: creditGenerique(info.artist),
+    };
+  }
 
   add(info: SongInfo): void {
     const t = songTitleKey(info.title);
     if (!t) return;
     const list = this.byTitle.get(t) ?? [];
-    list.push(new Set(artistKeys(info.artist)));
+    list.push(this.entree(info));
     this.byTitle.set(t, list);
   }
 
@@ -91,10 +147,17 @@ export class SongRegistry {
     if (!t) return false;
     const list = this.byTitle.get(t);
     if (!list) return false;
-    const keys = artistKeys(info.artist);
-    // Artiste inconnu des deux côtés : même titre = même chanson.
-    if (keys.length === 0) return true;
-    return list.some((set) => set.size === 0 || keys.some((k) => set.has(k)));
+    const e = this.entree(info);
+    return list.some((p) => {
+      // Crédit générique d'un côté (« Bande originale », « Disney ») : même titre = même chanson.
+      if (e.generique || p.generique) return true;
+      // Un artiste crédité en commun (« Queen » / « Queen & David Bowie »).
+      for (const k of e.keys) if (p.keys.has(k)) return true;
+      // Un nom propre en commun (« Jimi Hendrix » / « The Jimi Hendrix Experience »,
+      // « Khaled » / « Cheb Khaled & Faudel »).
+      for (const k of e.tokens) if (p.tokens.has(k)) return true;
+      return false;
+    });
   }
 }
 

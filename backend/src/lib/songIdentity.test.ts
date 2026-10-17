@@ -48,3 +48,34 @@ test('dedupeBySong : doublon dans la manche et déjà joué', () => {
   deja.add({ title: 'Rock the Night (Remastered)', artist: 'Europe' });
   assert.deepEqual(dedupeBySong(['a', 'b', 'c', 'd'], info, deja), ['a', 'c']);
 });
+
+test('crédits écrits autrement = même chanson', () => {
+  const r = new SongRegistry();
+  r.add({ title: 'Purple Haze', artist: 'The Jimi Hendrix Experience' });
+  r.add({ title: 'Abdel Kader', artist: 'Khaled' });
+  r.add({ title: 'Enola Gay', artist: 'OMD' });
+  r.add({ title: 'Let It Go', artist: 'Bande originale' });
+  assert.equal(r.has({ title: 'Purple Haze', artist: 'Jimi Hendrix' }), true);
+  assert.equal(r.has({ title: 'Abdel Kader (Live)', artist: 'Cheb Khaled & Faudel & Rachid Taha' }), true);
+  assert.equal(r.has({ title: 'Let It Go', artist: 'Idina Menzel' }), true);
+});
+
+test('même titre, chansons différentes = autorisé', () => {
+  const r = new SongRegistry();
+  r.add({ title: 'Hello', artist: 'Adele' });
+  r.add({ title: 'Bailando', artist: 'Enrique Iglesias' });
+  r.add({ title: 'Main Title', artist: 'John Williams & London Symphony Orchestra' });
+  assert.equal(r.has({ title: 'Hello', artist: 'Lionel Richie' }), false);
+  assert.equal(r.has({ title: 'Bailando', artist: 'Loona' }), false);
+  assert.equal(r.has({ title: 'Main Title', artist: 'Danny Elfman' }), false);
+  assert.equal(r.has({ title: 'Main Title', artist: 'Jerry Goldsmith & Royal Philharmonic Orchestra' }), false);
+});
+
+test('sigle et orthographe : OMD, P!nk', () => {
+  const r = new SongRegistry();
+  r.add({ title: 'Enola Gay', artist: 'OMD' });
+  r.add({ title: 'So What', artist: 'P!nk' });
+  assert.equal(r.has({ title: 'Enola Gay', artist: 'Orchestral Manoeuvres in the Dark' }), true);
+  assert.equal(r.has({ title: 'So What', artist: 'Pink' }), true);
+  assert.equal(r.has({ title: 'So What', artist: 'Miles Davis' }), false);
+});
