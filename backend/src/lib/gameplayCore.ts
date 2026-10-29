@@ -13,7 +13,7 @@
 import type { CurrentTrackState, GameTrackPhase, ParticipantRole } from '@tutti/shared';
 import { DEFAULT_SESSION_SIZE } from '@tutti/shared';
 import { prisma } from './prisma.js';
-import { SongRegistry, dedupeBySong, type SongInfo } from './songIdentity.js';
+import { SongRegistry, dedupeBySong, onePerArtist, type SongInfo } from './songIdentity.js';
 import type { Tier } from '../config/levelWeights.js';
 import { broadcastToSession, emitTrackAnswer } from '../socket/index.js';
 import { getUsableLyrics } from './lyrics/lyricsStore.js';
@@ -415,7 +415,12 @@ async function loadSongInfo(trackIds: string[]): Promise<Map<string, SongInfo>> 
 async function uneFoisParChanson(ids: string[]): Promise<string[]> {
   const shuffled = [...ids];
   fisherYates(shuffled);
-  return dedupeBySong(shuffled, await loadSongInfo(shuffled));
+  const info = await loadSongInfo(shuffled);
+  // feat/un-artiste-par-manche — puis UN SEUL titre par artiste (règle de
+  // Thomas, partie du 23/10/2026 : Cranberries x5 dans une manche). Si la
+  // playlist n'a pas assez d'artistes différents, la manche est plus courte
+  // plutôt que de répéter un artiste.
+  return onePerArtist(dedupeBySong(shuffled, info), info);
 }
 
 /**

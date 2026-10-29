@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { songTitleKey, artistKeys, SongRegistry, dedupeBySong, type SongInfo } from './songIdentity.js';
+import { songTitleKey, artistKeys, SongRegistry, dedupeBySong, onePerArtist, type SongInfo } from './songIdentity.js';
 
 test('titre : les éditions sont ignorées', () => {
   assert.equal(songTitleKey('Under Pressure'), 'under pressure');
@@ -78,4 +78,29 @@ test('sigle et orthographe : OMD, P!nk', () => {
   assert.equal(r.has({ title: 'Enola Gay', artist: 'Orchestral Manoeuvres in the Dark' }), true);
   assert.equal(r.has({ title: 'So What', artist: 'Pink' }), true);
   assert.equal(r.has({ title: 'So What', artist: 'Miles Davis' }), false);
+});
+
+test('un artiste par manche : Cranberries x5 → 1 seul', () => {
+  const info = new Map<string, SongInfo>([
+    ['a', { title: 'Zombie', artist: 'The Cranberries' }],
+    ['b', { title: 'Linger', artist: 'The Cranberries' }],
+    ['c', { title: 'Dreams (Remastered 2026)', artist: 'The Cranberries' }],
+    ['d', { title: 'Smells Like Teen Spirit', artist: 'Nirvana' }],
+    ['e', { title: 'Heart-Shaped Box', artist: 'Nirvana' }],
+    ['f', { title: 'Under Pressure', artist: 'Queen & David Bowie' }],
+    ['g', { title: 'Radio Ga Ga', artist: 'Queen' }],
+    ['h', { title: "Let's Dance", artist: 'David Bowie' }],
+    ['i', { title: 'So What', artist: 'P!nk' }],
+    ['j', { title: 'Try', artist: 'Pink' }],
+  ]);
+  assert.deepEqual(onePerArtist(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'], info), ['a', 'd', 'f', 'i']);
+});
+
+test('un artiste par manche : crédits génériques non comptés', () => {
+  const info = new Map<string, SongInfo>([
+    ['a', { title: 'Let It Go', artist: 'Bande originale' }],
+    ['b', { title: 'Hakuna Matata', artist: 'Bande originale' }],
+    ['c', { title: 'Hello', artist: 'Adele' }],
+  ]);
+  assert.deepEqual(onePerArtist(['a', 'b', 'c', 'x'], info), ['a', 'b', 'c', 'x']);
 });

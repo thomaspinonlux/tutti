@@ -186,3 +186,33 @@ export function dedupeBySong(
   }
   return out;
 }
+
+/**
+ * feat/un-artiste-par-manche — UN SEUL TITRE PAR ARTISTE dans une manche.
+ *
+ * Partie du 23/10/2026 au Komptoir : « The Cranberries » est sorti 5 fois sur
+ * 15 titres dans la manche « Rock — Années 90 — International ». Règle de
+ * Thomas : un artiste ne passe qu'UNE fois par manche.
+ *
+ * Garde l'ordre de `ids` (déjà mélangé par l'appelant → le titre gardé pour
+ * chaque artiste est tiré au hasard) et écarte tout titre dont un artiste
+ * crédité est déjà présent (« Queen » / « Queen & David Bowie » = même artiste).
+ * Les crédits génériques (« Bande originale », « Disney », « Comptine »…) ne
+ * comptent pas comme un artiste.
+ */
+export function onePerArtist(ids: string[], infoById: Map<string, SongInfo>): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const id of ids) {
+    const info = infoById.get(id);
+    if (!info || creditGenerique(info.artist)) {
+      out.push(id);
+      continue;
+    }
+    const keys = artistKeys((info.artist ?? '').replace(/!/g, 'i'));
+    if (keys.some((k) => seen.has(k))) continue;
+    for (const k of keys) seen.add(k);
+    out.push(id);
+  }
+  return out;
+}
