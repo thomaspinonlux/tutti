@@ -110,7 +110,11 @@ export function CourseTvPage(): JSX.Element {
           changerPhase('fini');
         }
       }
-      dessiner(toile.current, voitures.current, phaseRef.current, Math.ceil((departA.current - t) / 1000));
+      try {
+        dessiner(toile.current, voitures.current, phaseRef.current, Math.ceil((departA.current - t) / 1000));
+      } catch (err) {
+        console.error('[course] dessin en échec :', err);
+      }
       if (t - dernierEnvoi > 200 && socketRef.current) {
         dernierEnvoi = t;
         const cl = classement(voitures.current);
@@ -261,8 +265,15 @@ function dessiner(c: HTMLCanvasElement | null, voitures: Voiture[], phase: Phase
     ctx.translate(v.x, v.y);
     ctx.rotate(v.angle);
     ctx.fillStyle = v.couleur;
+    // Rectangle arrondi tracé à la main : roundRect() n'existe pas sur les
+    // navigateurs de TV plus anciens, et une erreur ici arrêtait toute la course.
     ctx.beginPath();
-    ctx.roundRect(-18, -10, 36, 20, 6);
+    ctx.moveTo(-12, -10);
+    ctx.arcTo(18, -10, 18, 10, 6);
+    ctx.arcTo(18, 10, -18, 10, 6);
+    ctx.arcTo(-18, 10, -18, -10, 6);
+    ctx.arcTo(-18, -10, 18, -10, 6);
+    ctx.closePath();
     ctx.fill();
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(2, -7, 9, 14);
