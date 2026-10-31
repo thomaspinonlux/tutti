@@ -83,7 +83,10 @@ export default defineConfig({
         // NE PAS intercepter /api/* (live data) ni /socket.io/* (websocket).
         navigateFallback: '/index.html',
         // Le mode d'emploi (/guide.html + PDF) est une page statique hors appli.
-        navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//, /^\/guide/],
+        // feat/course-test — la course est toujours chargée depuis le réseau :
+        // un téléphone qui a gardé une ancienne version de Tutti en mémoire ne
+        // connaissait pas /course et renvoyait le joueur sur l'accueil (31/10).
+        navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//, /^\/guide/, /^\/course/],
         // fix/csp-meta-tag-and-cover-fallback — SW nouvellement installé
         // devient actif immédiatement (skipWaiting) + reprend le contrôle
         // des onglets ouverts (clientsClaim). Combiné : nouveau deploy =
