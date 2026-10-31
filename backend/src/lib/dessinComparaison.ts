@@ -22,7 +22,7 @@ export function masquerMot(mot: string): string {
 const ARTICLES = new Set(['le', 'la', 'les', 'l', 'un', 'une', 'des', 'du', 'de', 'd', 'the', 'a', 'an']);
 
 /** Forme comparable : minuscules, sans accents, sans articles, sans pluriel. */
-function formeComparable(texte: string): string[] {
+export function formeComparable(texte: string): string[] {
   const sansLigatures = texte.replace(/œ/gi, 'oe').replace(/æ/gi, 'ae');
   return normalize(sansLigatures.replace(/['’]/g, ' '))
     .split(' ')

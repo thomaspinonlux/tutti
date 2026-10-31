@@ -26,6 +26,7 @@ import { verifyParticipantToken } from '../lib/participantToken.js';
 import { broadcastToSession } from '../socket/index.js';
 import { getActiveQuestion, trySubmitAnswer } from '../lib/gameStateQuizz.js';
 import { etatPublic, motPourDessinateur, proposer } from '../lib/dessin.js';
+import { ecrire, etatPublicEcrireVoter, mesChoix, voter } from '../lib/ecrireVoter.js';
 import { clearAutoReveal, revealCurrentQuestion } from '../lib/gameplayQuizzCore.js';
 import {
   QuizzErreur,
@@ -159,7 +160,8 @@ router.post(
 
 const submitSchema = z.object({
   token: z.string(),
-  value: z.string().max(500),
+  // P'tit Bac : la grille entière part en une fois (JSON).
+  value: z.string().max(1500),
 });
 
 router.post(
@@ -225,6 +227,32 @@ router.post(
       return;
     }
 
+    // feat/jeux-de-salon — Bluff / Réponse drôle : on écrit d'abord (on peut
+    // corriger jusqu'au vote), on vote ensuite par POST /vote.
+    const typeActif = getActiveQuestion(req.params.id)?.question_type;
+    if (typeActif === 'BLUFF' || typeActif === 'FUNNY') {
+      const r = ecrire(req.params.id, payload.participant_id, participant.pseudo, parsed.data.value);
+      if (r.statut === 'refuse') {
+        const messages: Record<typeof r.raison, string> = {
+          PAS_EN_ECRITURE: "Le temps d'écrire est terminé",
+          VIDE: 'Écris quelque chose',
+          C_EST_LA_VERITE: "C'est la bonne réponse ! Invente plutôt un mensonge crédible",
+        };
+        res.status(409).json({ error: { code: r.raison, message: messages[r.raison] } });
+        return;
+      }
+      broadcastToSession(req.params.id, 'quizz:answer_submitted', {
+        participant_id: payload.participant_id,
+        pseudo: participant.pseudo,
+      });
+      if (r.tousOntEcrit) {
+        clearAutoReveal(req.params.id);
+        await revealCurrentQuestion(req.params.id); // ouvre le vote
+      }
+      res.json({ ok: true, allAnswered: r.tousOntEcrit });
+      return;
+    }
+
     const result = trySubmitAnswer(req.params.id, payload.participant_id, parsed.data.value);
     if (!result.ok) {
       const codeMap: Record<typeof result.reason, number> = {
@@ -254,6 +282,70 @@ router.post(
     res.json({ ok: true, allAnswered: result.allAnswered });
   },
 );
+
+// ── feat/jeux-de-salon — vote (Bluff / Réponse drôle) ─────────────────────
+
+const voteSchema = z.object({ token: z.string(), choix_id: z.string().max(10) });
+
+router.post('/vote', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const parsed = voteSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+    return;
+  }
+  let payload: { participant_id: string; session_id: string };
+  try {
+    payload = verifyParticipantToken(parsed.data.token);
+  } catch {
+    res.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Token invalide' } });
+    return;
+  }
+  if (payload.session_id !== req.params.id) {
+    res.status(403).json({ error: { code: 'WRONG_SESSION', message: 'Token / session ne correspond pas' } });
+    return;
+  }
+  const participant = await prisma.participant.findUnique({
+    where: { id: payload.participant_id },
+    select: { pseudo: true, is_kicked: true, session_id: true },
+  });
+  if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
+    res.status(403).json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+    return;
+  }
+  const r = voter(req.params.id, payload.participant_id, participant.pseudo, parsed.data.choix_id);
+  if (r.statut === 'refuse') {
+    const messages: Record<typeof r.raison, string> = {
+      PAS_EN_VOTE: 'Le vote est terminé',
+      CHOIX_INCONNU: 'Choix inconnu',
+      SON_PROPRE_CHOIX: 'Tu ne peux pas voter pour ta propre réponse',
+      DEJA_VOTE: 'Tu as déjà voté',
+    };
+    res.status(409).json({ error: { code: r.raison, message: messages[r.raison] } });
+    return;
+  }
+  if (r.tousOntVote) {
+    clearAutoReveal(req.params.id);
+    await revealCurrentQuestion(req.params.id);
+  }
+  res.json({ ok: true });
+});
+
+/** Où en est le Bluff / la Réponse drôle (écran rechargé en plein jeu). */
+router.get('/etat-jeu', (req: Request<{ id: string }>, res: Response): void => {
+  res.json({ jeu: etatPublicEcrireVoter(req.params.id) });
+});
+
+/** Les choix écrits par ce joueur (grisés sur son téléphone pendant le vote). */
+router.post('/mes-choix', (req: Request<{ id: string }>, res: Response): void => {
+  const token = typeof req.body?.token === 'string' ? req.body.token : '';
+  try {
+    const p = verifyParticipantToken(token);
+    if (p.session_id !== req.params.id) throw new Error('session');
+    res.json({ choix: mesChoix(req.params.id, p.participant_id) });
+  } catch {
+    res.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Token invalide' } });
+  }
+});
 
 // ── feat/dessin-a-deviner — reprise du dessin après rechargement ──────────
 

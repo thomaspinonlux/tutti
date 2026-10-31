@@ -38,6 +38,8 @@ import {
   scheduleAutoReveal,
 } from './gameplayQuizzCore.js';
 import { choisirDessinateur, demarrerDessin, fermerDessin, masquerMot } from './dessin.js';
+import { demarrerEcriture, fermerEcrireVoter } from './ecrireVoter.js';
+import { tirerLettre } from './petitBac.js';
 
 export type NiveauQuiz = 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX';
 
@@ -49,6 +51,24 @@ export const QUESTIONS_PAR_MANCHE = 15;
  * bien trop court pour un dessin).
  */
 export const SECONDES_PAR_DESSIN = 75;
+
+/**
+ * feat/jeux-de-salon — temps de réponse et taille de manche par jeu. Bluff et
+ * Réponse drôle : ce temps est celui de l'ÉCRITURE ; le vote suit (25 s).
+ */
+const SECONDES_PAR_TYPE: Partial<Record<PrismaQuestionType, number>> = {
+  [PrismaQuestionType.DRAWING]: SECONDES_PAR_DESSIN,
+  [PrismaQuestionType.BLUFF]: 45,
+  [PrismaQuestionType.FUNNY]: 50,
+  [PrismaQuestionType.PETIT_BAC]: 90,
+  [PrismaQuestionType.ESTIMATION]: 20,
+};
+const QUESTIONS_PAR_TYPE: Partial<Record<PrismaQuestionType, number>> = {
+  [PrismaQuestionType.BLUFF]: 8,
+  [PrismaQuestionType.FUNNY]: 8,
+  [PrismaQuestionType.PETIT_BAC]: 4,
+  [PrismaQuestionType.ESTIMATION]: 10,
+};
 
 export class QuizzErreur extends Error {
   constructor(
@@ -112,9 +132,13 @@ export async function ajouterTheme(
   // feat/dessin-a-deviner — une manche de dessin = chacun dessine une fois
   // (entre 4 et 12 dessins), pas 15 dessins de 75 s d'affilée.
   const themeDessin = pack.questions.length > 0 && pack.questions.every((q) => q.type === PrismaQuestionType.DRAWING);
+  const typeUnique =
+    pack.questions.length > 0 && pack.questions.every((q) => q.type === pack.questions[0]!.type)
+      ? pack.questions[0]!.type
+      : null;
   const nombreParDefaut = themeDessin
     ? Math.max(4, Math.min(12, session.participants.length))
-    : QUESTIONS_PAR_MANCHE;
+    : (typeUnique && QUESTIONS_PAR_TYPE[typeUnique]) || QUESTIONS_PAR_MANCHE;
   const nombre = Math.max(1, Math.min(50, options.nombre ?? nombreParDefaut));
   const langue = session.language?.startsWith('en') ? 'en' : 'fr';
 
@@ -198,7 +222,7 @@ export async function ajouterTheme(
           answer_aliases_lang2: alias2,
           // fix/quiz-15-secondes — Thomas : à 30 s, les joueurs ont le temps
           // de chercher la réponse sur internet.
-          time_limit_sec: q.type === PrismaQuestionType.DRAWING ? SECONDES_PAR_DESSIN : 15,
+          time_limit_sec: SECONDES_PAR_TYPE[q.type] ?? 15,
           points: 100,
           media_type: q.media_type ?? MediaType.NONE,
           media_url: q.media_url,
@@ -266,6 +290,10 @@ async function demarrer(
   }
   clearAutoReveal(sessionId);
   fermerDessin(sessionId);
+  fermerEcrireVoter(sessionId);
+  const ecrireVoter = question.type === PrismaQuestionType.BLUFF || question.type === PrismaQuestionType.FUNNY;
+  const lettre =
+    question.type === PrismaQuestionType.PETIT_BAC ? tirerLettre(sessionId, question.position) : undefined;
   const state = buildAndBroadcastQuestion(
     sessionId,
     question,
@@ -275,7 +303,11 @@ async function demarrer(
           dessinateur: { participant_id: dessinateur.id, pseudo: dessinateur.pseudo },
           indice: masquerMot(question.answer_lang1),
         }
-      : undefined,
+      : ecrireVoter
+        ? { etape: 'ecriture' }
+        : lettre
+          ? { lettre }
+          : undefined,
   );
   setActiveQuestion(sessionId, {
     question_index: question.position,
@@ -285,6 +317,17 @@ async function demarrer(
     points: question.points,
     expected_participants: dessinateur ? participants.filter((p) => p !== dessinateur!.id) : participants,
   });
+  if (ecrireVoter) {
+    demarrerEcriture(
+      sessionId,
+      question.position,
+      question.type as 'BLUFF' | 'FUNNY',
+      question.type === PrismaQuestionType.BLUFF
+        ? { answer_lang1: question.answer_lang1, answer_aliases_lang1: question.answer_aliases_lang1 }
+        : null,
+      participants,
+    );
+  }
   if (dessinateur) {
     demarrerDessin(
       sessionId,

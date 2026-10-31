@@ -353,8 +353,23 @@ export interface RoundProgramResponse {
 
 // ───── Tutti Quizz (étape 15) ─────────────────────────────────────────────
 
-/** DRAWING — feat/dessin-a-deviner : un joueur dessine le mot, les autres devinent. */
-export type QuestionType = 'MCQ' | 'TRUE_FALSE' | 'FREE_TEXT' | 'ESTIMATION' | 'DRAWING';
+/**
+ * DRAWING   — feat/dessin-a-deviner : un joueur dessine le mot, les autres devinent.
+ * BLUFF     — feat/jeux-de-salon : chacun invente une fausse réponse, puis on
+ *             vote pour la vraie parmi les mensonges.
+ * FUNNY     — feat/jeux-de-salon : chacun écrit la réponse la plus drôle, puis
+ *             on vote pour sa préférée.
+ * PETIT_BAC — feat/jeux-de-salon : une lettre, des catégories.
+ */
+export type QuestionType =
+  | 'MCQ'
+  | 'TRUE_FALSE'
+  | 'FREE_TEXT'
+  | 'ESTIMATION'
+  | 'DRAWING'
+  | 'BLUFF'
+  | 'FUNNY'
+  | 'PETIT_BAC';
 export type QuestionMediaType = 'NONE' | 'VIDEO' | 'AUDIO' | 'IMAGE';
 
 export interface QuestionSet {
@@ -457,6 +472,49 @@ export interface CurrentQuestionState {
    * et apostrophes restent. Le mot lui-même n'est JAMAIS dans cet état public.
    */
   indice?: string;
+  /** PETIT_BAC — la lettre tirée (les catégories sont dans `choices`). */
+  lettre?: string;
+  /** BLUFF / FUNNY — étape en cours : on écrit, puis on vote. */
+  etape?: 'ecriture' | 'vote';
+}
+
+/** BLUFF / FUNNY — un choix proposé au vote (auteurs cachés jusqu'à la révélation). */
+export interface ChoixVote {
+  id: string;
+  texte: string;
+}
+
+/** BLUFF / FUNNY — début du vote, diffusé à tous (`quizz:vote_start`). */
+export interface DebutVote {
+  question_index: number;
+  choix: ChoixVote[];
+  /** Fin du vote (ISO). */
+  fin_at: string;
+}
+
+/** BLUFF / FUNNY — détail révélé : qui a écrit quoi, qui a voté quoi. */
+export interface DetailsVote {
+  kind: 'vote';
+  choix: Array<{
+    id: string;
+    texte: string;
+    verite: boolean;
+    auteurs: string[];
+    votants: string[];
+  }>;
+}
+
+/** PETIT_BAC — détail révélé : la grille de chacun, avec les points. */
+export interface DetailsBac {
+  kind: 'bac';
+  lettre: string;
+  categories: string[];
+  lignes: Array<{
+    participant_id: string;
+    pseudo: string;
+    reponses: Array<{ texte: string; points: number }>;
+    total: number;
+  }>;
 }
 
 /** DRAWING — un trait du dessin. Coordonnées entières 0..1000 (x, y, x, y…). */

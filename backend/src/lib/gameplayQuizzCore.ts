@@ -23,6 +23,8 @@ import { getActiveQuestion, revealAnswers } from './gameStateQuizz.js';
 import { computeQuestionScore } from './quizzScoring.js';
 import { matchAnswer } from './quizzMatch.js';
 import { bilanDessin } from './dessin.js';
+import { VOTE_SECONDES, bilanEcrireVoter, etapeEcrireVoter, passerAuVote } from './ecrireVoter.js';
+import { bilanBac, lettreDe } from './petitBac.js';
 
 // Stockage des timers d'auto-reveal par session_id.
 const revealTimers = new Map<string, NodeJS.Timeout>();
@@ -60,7 +62,7 @@ export function buildAndBroadcastQuestion(
   question: Question,
   isBilingual: boolean,
   /** feat/dessin-a-deviner — dessinateur et mot masqué d'une question DRAWING. */
-  extra?: Pick<CurrentQuestionState, 'dessinateur' | 'indice'>,
+  extra?: Pick<CurrentQuestionState, 'dessinateur' | 'indice' | 'lettre' | 'etape'>,
 ): CurrentQuestionState {
   const state: CurrentQuestionState = {
     round_id: '', // pas de round V0 pour QUIZZ
@@ -144,6 +146,20 @@ export async function revealCurrentQuestion(sessionId: string): Promise<void> {
   const active = getActiveQuestion(sessionId);
   if (!active || active.phase === 'revealed') return;
 
+  // feat/jeux-de-salon — BLUFF / FUNNY se jouent en deux temps : la fin de
+  // l'écriture (chrono, tout le monde a écrit, ou bouton de l'animateur)
+  // ouvre le vote ; c'est la fin du vote qui révèle.
+  if (
+    (active.question_type === 'BLUFF' || active.question_type === 'FUNNY') &&
+    etapeEcrireVoter(sessionId) === 'ecriture' &&
+    passerAuVote(sessionId)
+  ) {
+    scheduleAutoReveal(sessionId, VOTE_SECONDES * 1000, () => {
+      void revealCurrentQuestion(sessionId);
+    });
+    return;
+  }
+
   // fix/points-du-quiz-comptes-deux-fois — UNE SEULE RÉVÉLATION À LA FOIS.
   // Trois déclencheurs coexistent : le chrono qui expire, le bouton de
   // l'animateur, et « tout le monde a répondu ». Le contrôle « déjà révélé ? »
@@ -168,6 +184,13 @@ async function revelerInterne(
   // Deuxième contrôle après l'attente : l'état a pu changer entre-temps.
   const encore = getActiveQuestion(sessionId);
   if (!encore || encore.phase === 'revealed') return;
+
+  // feat/jeux-de-salon — Bluff, Réponse drôle et P'tit Bac ont leur propre
+  // décompte (votes, grilles) : traité à part, même diffusion à la fin.
+  if (question.type === 'BLUFF' || question.type === 'FUNNY' || question.type === 'PETIT_BAC') {
+    await revelerJeuDeSalon(sessionId, encore, question);
+    return;
+  }
 
   // V0 simple : on score toujours en langue 1 (lang1).
   const playerLang = 'lang1' as const;
@@ -290,5 +313,98 @@ async function revelerInterne(
     question_index: state.question_index,
     reveal,
     results,
+  });
+}
+
+/**
+ * feat/jeux-de-salon — révélation de Bluff / Réponse drôle / P'tit Bac :
+ * points calculés par leur module, enregistrés comme ceux du quiz, et diffusés
+ * avec le détail (qui a écrit quoi, qui a voté quoi / la grille de chacun).
+ */
+async function revelerJeuDeSalon(
+  sessionId: string,
+  active: NonNullable<ReturnType<typeof getActiveQuestion>>,
+  question: Question,
+): Promise<void> {
+  active.phase = 'revealed';
+  const participants = await prisma.participant.findMany({
+    where: { session_id: sessionId, is_kicked: false },
+    select: { id: true, pseudo: true, team_id: true },
+  });
+  const parId = new Map(participants.map((p) => [p.id, p]));
+
+  type Ligne = { participant_id: string; score: number; trouve: boolean; texte: string };
+  let lignes: Ligne[] = [];
+  let details: unknown = null;
+
+  if (question.type === 'PETIT_BAC') {
+    const lettre = lettreDe(sessionId, active.question_index) ?? '?';
+    const grilles = [...active.answers.values()].map((a) => ({
+      participant_id: a.participant_id,
+      pseudo: parId.get(a.participant_id)?.pseudo ?? '?',
+      valeur: a.value,
+    }));
+    const bac = bilanBac(lettre, question.choices_lang1, grilles);
+    details = bac;
+    lignes = bac.lignes.map((l) => ({
+      participant_id: l.participant_id,
+      score: l.total,
+      trouve: l.total > 0,
+      texte: l.reponses.map((r) => r.texte || '—').join(' · '),
+    }));
+  } else {
+    const bilan = bilanEcrireVoter(sessionId, active.question_index);
+    if (bilan) {
+      details = bilan.details;
+      lignes = [...bilan.scores.entries()].map(([pid, v]) => ({
+        participant_id: pid,
+        score: v.score,
+        trouve: v.trouve,
+        texte: v.texte,
+      }));
+    }
+  }
+
+  await Promise.all(
+    lignes
+      .filter((l) => l.score > 0 && parId.has(l.participant_id))
+      .map((l) =>
+        prisma.scoreEvent.create({
+          data: {
+            session_id: sessionId,
+            session_round_id: null,
+            participant_id: l.participant_id,
+            team_id: parId.get(l.participant_id)?.team_id ?? null,
+            round_index: active.question_index,
+            type: ScoreEventType.CORRECT_ANSWER,
+            points: l.score,
+            answer: l.texte.slice(0, 200),
+            reason: question.type.toLowerCase(),
+          },
+        }),
+      ),
+  );
+
+  const results = lignes
+    .filter((l) => parId.has(l.participant_id))
+    .map((l) => {
+      const p = parId.get(l.participant_id)!;
+      return {
+        participant_id: l.participant_id,
+        pseudo: p.pseudo,
+        team_id: p.team_id ?? null,
+        is_correct: l.trouve,
+        answered_at_ms: 0,
+        score: l.score,
+        submitted: l.texte,
+      };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  broadcastToSession(sessionId, 'quizz:question_revealed', {
+    question_index: active.question_index,
+    reveal: { answer: question.type === 'BLUFF' ? question.answer_lang1 : '' },
+    results,
+    details,
   });
 }

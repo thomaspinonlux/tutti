@@ -10,10 +10,11 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CurrentQuestionState, Participant } from '@tutti/shared';
+import type { CurrentQuestionState, DetailsBac, DetailsVote, Participant } from '@tutti/shared';
 import type { Socket } from 'socket.io-client';
 import { Badge, Button, Card } from '../../ui/index.js';
 import { SceneDessin } from '../../dessin/SceneDessin.js';
+import { SceneBac, SceneEcrireVoter } from '../../jeux/SceneJeux.js';
 
 interface RevealResult {
   participant_id: string;
@@ -30,7 +31,12 @@ interface Props {
   packBilingual: boolean;
   participants: Participant[];
   submittedSet: Set<string>;
-  lastReveal: { question_index: number; results: RevealResult[]; reveal?: { answer: string } } | null;
+  lastReveal: {
+    question_index: number;
+    results: RevealResult[];
+    reveal?: { answer: string };
+    details?: DetailsVote | DetailsBac | null;
+  } | null;
   busy: boolean;
   /** null en publicView (mode B iPad) → masque les boutons. */
   onReveal: (() => void) | null;
@@ -106,8 +112,34 @@ export function QuestionConsole({
         <TimerBar remainingSec={remainingSec} ratio={ratio} isAsking={isAsking} />
       </header>
 
-      {/* feat/dessin-a-deviner — le dessin en direct remplace l'énoncé. */}
-      {state.type === 'DRAWING' && sessionId ? (
+      {/* feat/jeux-de-salon — Bluff / Réponse drôle / P'tit Bac. */}
+      {(state.type === 'BLUFF' || state.type === 'FUNNY' || state.type === 'PETIT_BAC') && sessionId ? (
+        <div className="flex-1 min-h-0 mb-2 overflow-auto">
+          {state.type === 'PETIT_BAC' ? (
+            <SceneBac
+              question={state}
+              details={
+                !isAsking && lastReveal?.question_index === state.question_index && lastReveal.details?.kind === 'bac'
+                  ? lastReveal.details
+                  : null
+              }
+              xl={xl}
+            />
+          ) : (
+            <SceneEcrireVoter
+              socket={socket}
+              sessionId={sessionId}
+              question={state}
+              details={
+                !isAsking && lastReveal?.question_index === state.question_index && lastReveal.details?.kind === 'vote'
+                  ? lastReveal.details
+                  : null
+              }
+              xl={xl}
+            />
+          )}
+        </div>
+      ) : state.type === 'DRAWING' && sessionId ? (
         <div className="flex-1 min-h-0 mb-2">
           <SceneDessin
             socket={socket}
@@ -218,7 +250,7 @@ export function QuestionConsole({
         <div className="flex gap-2">
           {isAsking && onReveal && (
             <Button onClick={onReveal} disabled={busy} variant="secondary">
-              {t('hostQuizz.revealNow')}
+              {state.type === 'BLUFF' || state.type === 'FUNNY' ? t('jeux.etapeSuivante') : t('hostQuizz.revealNow')}
             </Button>
           )}
           {!isAsking && onNext && (

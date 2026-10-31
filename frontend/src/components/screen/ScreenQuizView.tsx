@@ -12,10 +12,14 @@ import { QRCode } from '../host/QRCode.js';
 import { getShareableOrigin } from '../../lib/platform.js';
 import type { Socket } from 'socket.io-client';
 import { SceneDessin } from '../dessin/SceneDessin.js';
+import { SceneBac, SceneEcrireVoter } from '../jeux/SceneJeux.js';
+import type { DetailsBac, DetailsVote } from '@tutti/shared';
 
 export interface QuizTvReveal {
   reveal: { answer: string };
-  results: Array<{ participant_id: string; pseudo: string; is_correct: boolean }>;
+  results: Array<{ participant_id: string; pseudo: string; is_correct: boolean; score?: number; submitted?: string }>;
+  /** feat/jeux-de-salon — détail des votes ou des grilles. */
+  details?: DetailsVote | DetailsBac | null;
 }
 
 interface Props {
@@ -43,8 +47,19 @@ export function ScreenQuizView({
   const { t } = useTranslation();
   const vrai = t('quizTheme.tvTrue');
   const faux = t('quizTheme.tvFalse');
-  const afficherReponse = (q: CurrentQuestionState | null, brut: string): string =>
-    q?.type === 'TRUE_FALSE' ? (brut === 'true' ? vrai : brut === 'false' ? faux : brut) : brut;
+  const afficherReponse = (q: CurrentQuestionState | null, brut: string): string => {
+    if (q?.type === 'TRUE_FALSE') return brut === 'true' ? vrai : brut === 'false' ? faux : brut;
+    // fix/juste-prix-tv — l'estimation arrivait en JSON brut sur la TV.
+    if (q?.type === 'ESTIMATION') {
+      try {
+        const m = JSON.parse(brut) as { target: number; unit?: string };
+        return `${m.target.toLocaleString(undefined, { maximumFractionDigits: 3 })}${m.unit ? ` ${m.unit}` : ''}`;
+      } catch {
+        return brut;
+      }
+    }
+    return brut;
+  };
   const [maintenant, setMaintenant] = useState(Date.now());
   useEffect(() => {
     const id = window.setInterval(() => setMaintenant(Date.now()), 250);
@@ -79,6 +94,30 @@ export function ScreenQuizView({
   const choix =
     question.type === 'TRUE_FALSE' ? [vrai, faux] : question.type === 'MCQ' ? question.choices : [];
   const gagnants = reveal?.results.filter((r) => r.is_correct) ?? [];
+
+  // feat/jeux-de-salon — Bluff / Réponse drôle / P'tit Bac.
+  if ((question.type === 'BLUFF' || question.type === 'FUNNY') && sessionId) {
+    const d = reveal?.details;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white flex flex-col p-10">
+        <SceneEcrireVoter
+          socket={socket}
+          sessionId={sessionId}
+          question={question}
+          details={d && d.kind === 'vote' ? d : null}
+          xl
+        />
+      </div>
+    );
+  }
+  if (question.type === 'PETIT_BAC') {
+    const d = reveal?.details;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white flex flex-col p-10">
+        <SceneBac question={question} details={d && d.kind === 'bac' ? d : null} xl />
+      </div>
+    );
+  }
 
   // feat/dessin-a-deviner — la TV montre le dessin en direct.
   if (question.type === 'DRAWING' && sessionId) {
@@ -153,6 +192,20 @@ export function ScreenQuizView({
               {bonne}
             </p>
           )}
+          {question.type === 'ESTIMATION' && reveal && reveal.results.length > 0 ? (
+            <ol className="font-mono text-2xl text-white/80 space-y-1">
+              {/* fix/juste-prix-tv — les plus proches, avec leur estimation. */}
+              {[...reveal.results]
+                .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+                .slice(0, 3)
+                .map((r, i) => (
+                  <li key={r.participant_id}>
+                    {['🥇', '🥈', '🥉'][i]} {r.pseudo} : {r.submitted ?? '—'}
+                    {question.estimation_unit ? ` ${question.estimation_unit}` : ''}
+                  </li>
+                ))}
+            </ol>
+          ) : (
           <p className="font-mono text-xl text-white/70">
             {gagnants.length === 0
               ? t('quizTheme.tvNobody')
@@ -163,6 +216,7 @@ export function ScreenQuizView({
                     .join(', ')}${gagnants.length > 8 ? ` +${gagnants.length - 8}` : ''}`,
                 })}
           </p>
+          )}
         </div>
       )}
     </div>

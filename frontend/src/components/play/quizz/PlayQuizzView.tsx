@@ -13,11 +13,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
-import type { CurrentQuestionState, QuestionType } from '@tutti/shared';
+import type { CurrentQuestionState, DetailsBac, DetailsVote, QuestionType } from '@tutti/shared';
 import { Button, Card, Badge } from '../../ui/index.js';
 import { submitQuizzAnswer } from '../../../lib/sessions.js';
 import { MasterQuizzMenu } from './MasterQuizzMenu.js';
 import { DessinJoueur } from '../../dessin/DessinJoueur.js';
+import { EcrireVoterJoueur } from '../../jeux/EcrireVoterJoueur.js';
+import { BacJoueur } from '../../jeux/BacJoueur.js';
 
 interface RevealResult {
   participant_id: string;
@@ -33,6 +35,8 @@ interface QuizzReveal {
   question_index: number;
   reveal: { answer: string; answer_alt?: string };
   results: RevealResult[];
+  /** feat/jeux-de-salon — détail des votes ou des grilles. */
+  details?: DetailsVote | DetailsBac | null;
 }
 
 interface Props {
@@ -156,6 +160,20 @@ export function PlayQuizzView({
           myParticipantId={participantId}
           mySubmitted={submittedValue}
         />
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
+      </div>
+    );
+  }
+
+  // feat/jeux-de-salon — Bluff / Réponse drôle / P'tit Bac ont leur vue.
+  if (activeQuestion.type === 'BLUFF' || activeQuestion.type === 'FUNNY' || activeQuestion.type === 'PETIT_BAC') {
+    return (
+      <div className="space-y-3">
+        {activeQuestion.type === 'PETIT_BAC' ? (
+          <BacJoueur sessionId={sessionId} token={token} question={activeQuestion} />
+        ) : (
+          <EcrireVoterJoueur socket={socket} sessionId={sessionId} token={token} question={activeQuestion} />
+        )}
         {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
       </div>
     );
@@ -446,7 +464,7 @@ function EstimationAnswer({
     <div className="space-y-3">
       <div className="text-center">
         <p className="font-display text-5xl">
-          {value} {unit ?? ''}
+          {value.toLocaleString(undefined, { maximumFractionDigits: 2 })} {unit ?? ''}
         </p>
         <p className="font-mono text-xs text-ink-soft mt-1">
           {min} {unit ?? ''} ↔ {max} {unit ?? ''}
@@ -456,9 +474,11 @@ function EstimationAnswer({
         type="range"
         min={min}
         max={max}
-        step={Math.max(1, Math.round((max - min) / 100))}
+        // fix/juste-prix-decimales — un prix à 0,45 $ ou 1,52 € n'était pas
+        // atteignable : le pas était arrondi à 1 au minimum.
+        step={max - min >= 100 ? Math.round((max - min) / 100) : (max - min) / 100}
         value={value}
-        onChange={(e) => setValue(Number.parseInt(e.target.value, 10))}
+        onChange={(e) => setValue(Math.round(Number.parseFloat(e.target.value) * 100) / 100)}
         disabled={disabled}
         className="w-full h-3 accent-spritz"
       />
@@ -495,6 +515,35 @@ function RevealedView({
 
   const tone = isCorrect ? 'basil' : 'raspberry';
   const correctAnswerDisplay = displayAnswer(reveal?.reveal.answer ?? null, question.type);
+
+  // feat/jeux-de-salon — ici pas de « bonne / mauvaise réponse » : on dit ce
+  // que le joueur marque, et pourquoi.
+  if (question.type === 'BLUFF' || question.type === 'FUNNY' || question.type === 'PETIT_BAC') {
+    const details = reveal?.details ?? null;
+    let ligne = '';
+    if (details?.kind === 'vote') {
+      const moi = myResult?.pseudo;
+      const mien = details.choix.find((c) => !!moi && c.auteurs.includes(moi));
+      ligne =
+        question.type === 'BLUFF'
+          ? t('jeux.revealBluff', { verite: reveal?.reveal.answer ?? '—', n: mien?.votants.length ?? 0 })
+          : t('jeux.revealDrole', { n: mien?.votants.length ?? 0 });
+    } else if (details?.kind === 'bac') {
+      const l = details.lignes.find((x) => x.participant_id === myParticipantId);
+      ligne = t('jeux.revealBac', { n: l?.total ?? 0 });
+    }
+    return (
+      <Card tone={score > 0 ? 'basil' : 'cream'} size="md" className="text-center">
+        <p className="font-display text-4xl">{score > 0 ? `+${score} pts` : '0 pt'}</p>
+        {ligne && <p className="font-editorial italic mt-2">{ligne}</p>}
+        {myRank >= 0 && (
+          <p className="font-mono text-xs uppercase tracking-wider mt-2">
+            {t('playQuizz.rankOnQuestion', { rank: myRank + 1 })}
+          </p>
+        )}
+      </Card>
+    );
+  }
 
   // feat/dessin-a-deviner — le dessinateur n'a pas « répondu » : on lui dit
   // combien de joueurs ont trouvé son dessin et ce qu'il marque.

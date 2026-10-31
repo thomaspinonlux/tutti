@@ -58,6 +58,8 @@ interface QuizzReveal {
     score: number;
     submitted: string;
   }>;
+  /** feat/jeux-de-salon — détail des votes ou des grilles. */
+  details?: import('@tutti/shared').DetailsVote | import('@tutti/shared').DetailsBac | null;
 }
 
 interface Props {
