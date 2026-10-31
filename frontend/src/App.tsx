@@ -69,6 +69,13 @@ const PlayPage = lazy(() => import('./pages/PlayPage.js').then((m) => ({ default
 const ScreenPage = lazy(() =>
   import('./pages/ScreenPage.js').then((m) => ({ default: m.ScreenPage })),
 );
+// feat/course-test — jeu de course (test), téléphones-volants.
+const CourseTvPage = lazy(() =>
+  import('./pages/course/CourseTvPage.js').then((m) => ({ default: m.CourseTvPage })),
+);
+const CourseManettePage = lazy(() =>
+  import('./pages/course/CourseManettePage.js').then((m) => ({ default: m.CourseManettePage })),
+);
 const TvJoinPage = lazy(() =>
   import('./pages/TvJoinPage.js').then((m) => ({ default: m.TvJoinPage })),
 );
@@ -91,6 +98,8 @@ function App(): JSX.Element {
       <DebugOverlay />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/course" element={<CourseTvPage />} />
+        <Route path="/course/:code" element={<CourseManettePage />} />
 
         {/* feat/youtube-compliance — pages légales publiques (Privacy/Terms)
             requises par YouTube API Services. Liées depuis footer + signup. */}

@@ -129,3 +129,15 @@ export function connectAsSpectator(shortCode: string): Socket {
     ...RECONNECT_OPTS,
   });
 }
+
+/**
+ * feat/course-test — connexion anonyme au jeu de course (test). Ne donne accès
+ * à aucune partie : seulement aux salons de course.
+ */
+export function connecterJeu(): Socket {
+  return io(SOCKET_URL, {
+    auth: { role: 'jeu' },
+    transports: ['websocket', 'polling'],
+    ...RECONNECT_OPTS,
+  });
+}

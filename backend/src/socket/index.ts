@@ -40,7 +40,10 @@ import { isOriginAllowed } from '../lib/allowedOrigins.js';
 export type SocketIdentity =
   | { kind: 'host'; userId: string; userEmail: string | null }
   | { kind: 'participant'; participantId: string; sessionId: string }
-  | { kind: 'spectator'; sessionId: string };
+  | { kind: 'spectator'; sessionId: string }
+  /** feat/course-test — jeu de course en test : connexion anonyme, ne voit
+   *  AUCUNE partie (aucune room de session), seulement les salons de course. */
+  | { kind: 'jeu' };
 
 const SESSION_INCLUDE = {
   participants: { where: { is_kicked: false }, orderBy: { joined_at: 'asc' as const } },
@@ -194,6 +197,11 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
         });
         if (!session) return next(new Error('SESSION_NOT_FOUND'));
         socket.identity = { kind: 'spectator', sessionId: session.id };
+        return next();
+      }
+
+      if (role === 'jeu') {
+        socket.identity = { kind: 'jeu' };
         return next();
       }
 
