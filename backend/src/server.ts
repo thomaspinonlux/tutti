@@ -28,6 +28,8 @@ import gameplayParticipantRouter from './routes/gameplayParticipant.js';
 import gameplayQuizzRouter from './routes/gameplayQuizz.js';
 // feat/course-test — enregistre les événements socket de la course (test).
 import './lib/course.js';
+// feat/jeux-manette — relais des autres jeux téléphone-manette (test).
+import './lib/manette.js';
 import sessionMasterRouter from './routes/sessionMaster.js';
 import spotifyAuthRouter from './music/spotify/auth.js';
 import appleAuthRouter from './routes/appleAuth.js';
