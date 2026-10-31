@@ -776,6 +776,9 @@ enum QuestionType {
   TRUE_FALSE
   FREE_TEXT
   ESTIMATION
+  /// feat/dessin-a-deviner — un joueur dessine le mot sur son téléphone,
+  /// les autres devinent. answer_lang1 = le mot, aliases = variantes.
+  DRAWING
 
   @@map("question_type")
 }

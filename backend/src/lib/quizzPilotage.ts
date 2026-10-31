@@ -37,11 +37,18 @@ import {
   revealCurrentQuestion,
   scheduleAutoReveal,
 } from './gameplayQuizzCore.js';
+import { choisirDessinateur, demarrerDessin, fermerDessin, masquerMot } from './dessin.js';
 
 export type NiveauQuiz = 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX';
 
 /** Questions par manche : comme une playlist du blind test (15 titres). */
 export const QUESTIONS_PAR_MANCHE = 15;
+
+/**
+ * feat/dessin-a-deviner — temps pour dessiner et deviner (le quiz est à 15 s,
+ * bien trop court pour un dessin).
+ */
+export const SECONDES_PAR_DESSIN = 75;
 
 export class QuizzErreur extends Error {
   constructor(
@@ -102,7 +109,13 @@ export async function ajouterTheme(
   if (!pack) throw new QuizzErreur('NOT_FOUND', 'Thème introuvable', 404);
 
   const niveau = options.niveau ?? 'MIX';
-  const nombre = Math.max(1, Math.min(50, options.nombre ?? QUESTIONS_PAR_MANCHE));
+  // feat/dessin-a-deviner — une manche de dessin = chacun dessine une fois
+  // (entre 4 et 12 dessins), pas 15 dessins de 75 s d'affilée.
+  const themeDessin = pack.questions.length > 0 && pack.questions.every((q) => q.type === PrismaQuestionType.DRAWING);
+  const nombreParDefaut = themeDessin
+    ? Math.max(4, Math.min(12, session.participants.length))
+    : QUESTIONS_PAR_MANCHE;
+  const nombre = Math.max(1, Math.min(50, options.nombre ?? nombreParDefaut));
   const langue = session.language?.startsWith('en') ? 'en' : 'fr';
 
   return prisma.$transaction(
@@ -185,7 +198,7 @@ export async function ajouterTheme(
           answer_aliases_lang2: alias2,
           // fix/quiz-15-secondes — Thomas : à 30 s, les joueurs ont le temps
           // de chercher la réponse sur internet.
-          time_limit_sec: 15,
+          time_limit_sec: q.type === PrismaQuestionType.DRAWING ? SECONDES_PAR_DESSIN : 15,
           points: 100,
           media_type: q.media_type ?? MediaType.NONE,
           media_url: q.media_url,
@@ -235,17 +248,51 @@ export async function lancerQuestion(sessionId: string, index: number): Promise<
   return demarrer(sessionId, question, set.is_bilingual, session.participants.map((p) => p.id));
 }
 
-function demarrer(sessionId: string, question: Question, bilingue: boolean, participants: string[]): unknown {
+async function demarrer(
+  sessionId: string,
+  question: Question,
+  bilingue: boolean,
+  participants: string[],
+): Promise<unknown> {
+  // feat/dessin-a-deviner — une question DRAWING a un dessinateur, qui ne
+  // répond pas : il sort des réponses attendues (sinon « tout le monde a
+  // répondu » n'arriverait jamais avant la fin du temps).
+  let dessinateur: { id: string; pseudo: string } | null = null;
+  if (question.type === PrismaQuestionType.DRAWING) {
+    dessinateur = await choisirDessinateur(sessionId);
+    if (!dessinateur) {
+      throw new QuizzErreur('DESSIN_JOUEURS', 'Il faut au moins 2 joueurs pour le dessin.');
+    }
+  }
   clearAutoReveal(sessionId);
-  const state = buildAndBroadcastQuestion(sessionId, question, bilingue);
+  fermerDessin(sessionId);
+  const state = buildAndBroadcastQuestion(
+    sessionId,
+    question,
+    bilingue,
+    dessinateur
+      ? {
+          dessinateur: { participant_id: dessinateur.id, pseudo: dessinateur.pseudo },
+          indice: masquerMot(question.answer_lang1),
+        }
+      : undefined,
+  );
   setActiveQuestion(sessionId, {
     question_index: question.position,
     question_id: question.id,
     question_type: question.type as QuestionType,
     time_limit_ms: question.time_limit_sec * 1000,
     points: question.points,
-    expected_participants: participants,
+    expected_participants: dessinateur ? participants.filter((p) => p !== dessinateur!.id) : participants,
   });
+  if (dessinateur) {
+    demarrerDessin(
+      sessionId,
+      question.position,
+      { answer_lang1: question.answer_lang1, answer_aliases_lang1: question.answer_aliases_lang1 },
+      dessinateur,
+    );
+  }
   curseurs.set(sessionId, question.position);
   scheduleAutoReveal(sessionId, question.time_limit_sec * 1000, () => {
     void revealCurrentQuestion(sessionId);
@@ -275,7 +322,9 @@ export async function questionSuivante(
     where: { id: session.question_set_id },
     select: { is_bilingual: true },
   });
-  return { state: demarrer(sessionId, question, set?.is_bilingual ?? false, session.participants.map((p) => p.id)) };
+  return {
+    state: await demarrer(sessionId, question, set?.is_bilingual ?? false, session.participants.map((p) => p.id)),
+  };
 }
 
 /** Révéler la réponse maintenant (sans attendre la fin du temps). */

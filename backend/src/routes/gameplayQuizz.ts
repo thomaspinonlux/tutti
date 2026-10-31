@@ -24,7 +24,8 @@ import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { verifyParticipantToken } from '../lib/participantToken.js';
 import { broadcastToSession } from '../socket/index.js';
-import { trySubmitAnswer } from '../lib/gameStateQuizz.js';
+import { getActiveQuestion, trySubmitAnswer } from '../lib/gameStateQuizz.js';
+import { etatPublic, motPourDessinateur, proposer } from '../lib/dessin.js';
 import { clearAutoReveal, revealCurrentQuestion } from '../lib/gameplayQuizzCore.js';
 import {
   QuizzErreur,
@@ -193,6 +194,37 @@ router.post(
       return;
     }
 
+    // feat/dessin-a-deviner — au dessin, on propose autant de fois qu'on
+    // veut : une mauvaise proposition n'est pas une réponse, elle s'affiche
+    // sur la TV et le joueur peut réessayer.
+    if (getActiveQuestion(req.params.id)?.question_type === 'DRAWING') {
+      const r = proposer(req.params.id, payload.participant_id, participant.pseudo, parsed.data.value);
+      if (r.statut === 'refuse') {
+        const messages: Record<typeof r.raison, string> = {
+          PAS_DE_DESSIN: 'Le dessin est terminé',
+          DESSINATEUR: 'Tu dessines : tu ne peux pas deviner',
+          DEJA_TROUVE: 'Tu as déjà trouvé',
+          TROP_VITE: 'Doucement : une proposition à la fois',
+        };
+        res.status(409).json({ error: { code: r.raison, message: messages[r.raison] } });
+        return;
+      }
+      if (r.statut === 'trouve') {
+        broadcastToSession(req.params.id, 'quizz:answer_submitted', {
+          participant_id: payload.participant_id,
+          pseudo: participant.pseudo,
+        });
+        if (r.allAnswered) {
+          clearAutoReveal(req.params.id);
+          await revealCurrentQuestion(req.params.id);
+        }
+        res.json({ ok: true, allAnswered: r.allAnswered, dessin: 'trouve', rang: r.rang });
+        return;
+      }
+      res.json({ ok: true, allAnswered: false, dessin: r.statut });
+      return;
+    }
+
     const result = trySubmitAnswer(req.params.id, payload.participant_id, parsed.data.value);
     if (!result.ok) {
       const codeMap: Record<typeof result.reason, number> = {
@@ -222,5 +254,29 @@ router.post(
     res.json({ ok: true, allAnswered: result.allAnswered });
   },
 );
+
+// ── feat/dessin-a-deviner — reprise du dessin après rechargement ──────────
+
+/** Les traits et propositions du dessin en cours (public : rien de secret). */
+router.get('/dessin', (req: Request<{ id: string }>, res: Response): void => {
+  res.json({ dessin: etatPublic(req.params.id) });
+});
+
+/** Le mot, pour le seul dessinateur (son téléphone a été rechargé). */
+router.post('/dessin/mot', (req: Request<{ id: string }>, res: Response): void => {
+  const token = typeof req.body?.token === 'string' ? req.body.token : '';
+  let payload: { participant_id: string; session_id: string };
+  try {
+    payload = verifyParticipantToken(token);
+  } catch {
+    res.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Token invalide' } });
+    return;
+  }
+  if (payload.session_id !== req.params.id) {
+    res.status(403).json({ error: { code: 'WRONG_SESSION', message: 'Token / session ne correspond pas' } });
+    return;
+  }
+  res.json({ mot: motPourDessinateur(req.params.id, payload.participant_id) });
+});
 
 export default router;

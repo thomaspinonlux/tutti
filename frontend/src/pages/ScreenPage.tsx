@@ -37,6 +37,7 @@ import { getScreenState, type ScreenState } from '../lib/screenState.js';
 import type { RoundRankingEntry, FastestPlayer } from '../lib/sessions.js';
 import { getMe } from '../lib/me.js';
 import { connectAsSpectator } from '../lib/socket.js';
+import type { Socket } from 'socket.io-client';
 import { fetchCurrentLyrics, type LrcLine } from '../lib/lyrics.js';
 import { TvScreenView } from './screen/TvScreenView.js';
 import { screenStateToMainScreenProps } from './screen/adapters/screenStateToMainScreenProps.js';
@@ -80,6 +81,8 @@ export function ScreenPage(): JSX.Element {
     reveal: QuizTvReveal | null;
     finDeManche: boolean;
   } | null>(null);
+  // feat/dessin-a-deviner — la scène du dessin lit les traits sur ce socket.
+  const [socketTv, setSocketTv] = useState<Socket | null>(null);
 
   // Auto-detect workspaceId via cookies Supabase si pas en param URL
   // fix/tv-freeze — BATTEMENT DE COEUR pour le chien de garde NATIF.
@@ -362,6 +365,7 @@ export function ScreenPage(): JSX.Element {
   useEffect(() => {
     if (!joinCode) return;
     const socket = connectAsSpectator(joinCode);
+    setSocketTv(socket);
     const trigger = (): void => {
       console.info('[Screen socket] event reçu → re-poll immédiat');
       triggerPollRef.current?.();
@@ -434,6 +438,7 @@ export function ScreenPage(): JSX.Element {
       socket.off('quizz:question_revealed', onQuizReveal);
       socket.off('quizz:block_ended', onQuizFinManche);
       socket.off('session:ended', onFinPartie);
+      setSocketTv(null);
       events.forEach((ev) => socket.off(ev, trigger));
       socket.off('track:start', onTrackStart);
       socket.off('track:progress', onProgress);
@@ -520,6 +525,8 @@ export function ScreenPage(): JSX.Element {
   if (quizTv && screenState.state === 'LOBBY') {
     return (
       <ScreenQuizView
+        socket={socketTv}
+        sessionId={screenState.sessionId}
         joinCode={screenState.joinCode}
         question={quizTv.question}
         reveal={quizTv.reveal}

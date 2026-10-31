@@ -17,6 +17,7 @@ import type { CurrentQuestionState, QuestionType } from '@tutti/shared';
 import { Button, Card, Badge } from '../../ui/index.js';
 import { submitQuizzAnswer } from '../../../lib/sessions.js';
 import { MasterQuizzMenu } from './MasterQuizzMenu.js';
+import { DessinJoueur } from '../../dessin/DessinJoueur.js';
 
 interface RevealResult {
   participant_id: string;
@@ -154,6 +155,23 @@ export function PlayQuizzView({
           reveal={reveal}
           myParticipantId={participantId}
           mySubmitted={submittedValue}
+        />
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
+      </div>
+    );
+  }
+
+  // feat/dessin-a-deviner — le dessin a sa propre vue : le dessinateur
+  // dessine, les autres proposent autant de fois qu'ils veulent.
+  if (activeQuestion.type === 'DRAWING') {
+    return (
+      <div className="space-y-3">
+        <DessinJoueur
+          socket={socket}
+          sessionId={sessionId}
+          participantId={participantId}
+          token={token}
+          question={activeQuestion}
         />
         {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
       </div>
@@ -477,6 +495,22 @@ function RevealedView({
 
   const tone = isCorrect ? 'basil' : 'raspberry';
   const correctAnswerDisplay = displayAnswer(reveal?.reveal.answer ?? null, question.type);
+
+  // feat/dessin-a-deviner — le dessinateur n'a pas « répondu » : on lui dit
+  // combien de joueurs ont trouvé son dessin et ce qu'il marque.
+  if (question.type === 'DRAWING' && question.dessinateur?.participant_id === myParticipantId) {
+    const trouveurs = (reveal?.results ?? []).filter(
+      (r) => r.participant_id !== myParticipantId && r.is_correct,
+    ).length;
+    return (
+      <Card tone={trouveurs > 0 ? 'basil' : 'cream'} size="md" className="text-center">
+        <p className="font-mono text-xs uppercase tracking-wider mb-1">{t('dessin.tonDessin')}</p>
+        <p className="font-display text-3xl mb-1">{correctAnswerDisplay}</p>
+        <p className="font-editorial italic">{t('dessin.trouvePar', { count: trouveurs })}</p>
+        {score > 0 && <p className="font-display text-3xl mt-1">+{score} pts</p>}
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-3">

@@ -10,6 +10,8 @@ import { useTranslation } from 'react-i18next';
 import type { CurrentQuestionState } from '@tutti/shared';
 import { QRCode } from '../host/QRCode.js';
 import { getShareableOrigin } from '../../lib/platform.js';
+import type { Socket } from 'socket.io-client';
+import { SceneDessin } from '../dessin/SceneDessin.js';
 
 export interface QuizTvReveal {
   reveal: { answer: string };
@@ -17,6 +19,9 @@ export interface QuizTvReveal {
 }
 
 interface Props {
+  /** feat/dessin-a-deviner — socket spectateur, pour les traits du dessin. */
+  socket?: Socket | null;
+  sessionId?: string;
   joinCode: string;
   question: CurrentQuestionState | null;
   reveal: QuizTvReveal | null;
@@ -27,7 +32,14 @@ const LETTRES = ['A', 'B', 'C', 'D', 'E', 'F'];
 const CORAIL = '#FF5C4D';
 
 
-export function ScreenQuizView({ joinCode, question, reveal, finDeManche }: Props): JSX.Element {
+export function ScreenQuizView({
+  socket = null,
+  sessionId,
+  joinCode,
+  question,
+  reveal,
+  finDeManche,
+}: Props): JSX.Element {
   const { t } = useTranslation();
   const vrai = t('quizTheme.tvTrue');
   const faux = t('quizTheme.tvFalse');
@@ -67,6 +79,27 @@ export function ScreenQuizView({ joinCode, question, reveal, finDeManche }: Prop
   const choix =
     question.type === 'TRUE_FALSE' ? [vrai, faux] : question.type === 'MCQ' ? question.choices : [];
   const gagnants = reveal?.results.filter((r) => r.is_correct) ?? [];
+
+  // feat/dessin-a-deviner — la TV montre le dessin en direct.
+  if (question.type === 'DRAWING' && sessionId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white flex flex-col p-8 gap-4">
+        <p className="font-mono text-lg uppercase tracking-[0.25em] text-white/60">
+          {question.category ?? t('dessin.titre')} · {t('quizTheme.tvQuestion', { n: question.question_index + 1 })}
+        </p>
+        <div className="flex-1 min-h-0">
+          <SceneDessin
+            socket={socket}
+            sessionId={sessionId}
+            question={question}
+            revealAnswer={reveal ? reveal.reveal.answer : null}
+            restant={revele ? null : restant}
+            xl
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={fond}>

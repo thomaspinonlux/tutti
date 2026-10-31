@@ -353,7 +353,8 @@ export interface RoundProgramResponse {
 
 // ───── Tutti Quizz (étape 15) ─────────────────────────────────────────────
 
-export type QuestionType = 'MCQ' | 'TRUE_FALSE' | 'FREE_TEXT' | 'ESTIMATION';
+/** DRAWING — feat/dessin-a-deviner : un joueur dessine le mot, les autres devinent. */
+export type QuestionType = 'MCQ' | 'TRUE_FALSE' | 'FREE_TEXT' | 'ESTIMATION' | 'DRAWING';
 export type QuestionMediaType = 'NONE' | 'VIDEO' | 'AUDIO' | 'IMAGE';
 
 export interface QuestionSet {
@@ -449,6 +450,32 @@ export interface CurrentQuestionState {
   phase: 'asking' | 'revealed';
   /** Réponse révélée (visible en phase 'revealed' uniquement). */
   reveal?: { answer: string; answer_alt?: string };
+  /** DRAWING — le joueur qui dessine cette question. */
+  dessinateur?: { participant_id: string; pseudo: string };
+  /**
+   * DRAWING — le mot masqué : chaque lettre devient « _ », les espaces, tirets
+   * et apostrophes restent. Le mot lui-même n'est JAMAIS dans cet état public.
+   */
+  indice?: string;
+}
+
+/** DRAWING — un trait du dessin. Coordonnées entières 0..1000 (x, y, x, y…). */
+export interface TraitDessin {
+  /** Couleur #rrggbb. */
+  c: string;
+  /** Épaisseur, en millièmes de la largeur de la toile. */
+  w: number;
+  /** Points à plat : x0, y0, x1, y1… */
+  p: number[];
+}
+
+/** DRAWING — état du dessin en cours (reprise après rechargement). */
+export interface EtatDessinPublic {
+  question_index: number;
+  dessinateur: { participant_id: string; pseudo: string };
+  traits: TraitDessin[];
+  trouves: Array<{ participant_id: string; pseudo: string }>;
+  propositions: Array<{ pseudo: string; texte: string }>;
 }
 
 /** Réponse soumise par un joueur (avant scoring). */

@@ -11,7 +11,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CurrentQuestionState, Participant } from '@tutti/shared';
+import type { Socket } from 'socket.io-client';
 import { Badge, Button, Card } from '../../ui/index.js';
+import { SceneDessin } from '../../dessin/SceneDessin.js';
 
 interface RevealResult {
   participant_id: string;
@@ -28,13 +30,18 @@ interface Props {
   packBilingual: boolean;
   participants: Participant[];
   submittedSet: Set<string>;
-  lastReveal: { question_index: number; results: RevealResult[] } | null;
+  lastReveal: { question_index: number; results: RevealResult[]; reveal?: { answer: string } } | null;
   busy: boolean;
   /** null en publicView (mode B iPad) → masque les boutons. */
   onReveal: (() => void) | null;
   onNext: (() => void) | null;
   /** true en publicView : agrandit les polices pour la TV. */
   xl?: boolean;
+  /** feat/dessin-a-deviner — socket et partie, pour afficher le dessin. */
+  socket?: Socket | null;
+  sessionId?: string;
+  /** Le mot à dessiner, montré à l'animateur (jamais en publicView). */
+  motAnimateur?: string | null;
 }
 
 export function QuestionConsole({
@@ -47,6 +54,9 @@ export function QuestionConsole({
   onReveal,
   onNext,
   xl = false,
+  socket = null,
+  sessionId,
+  motAnimateur = null,
 }: Props): JSX.Element {
   const { t } = useTranslation();
 
@@ -96,6 +106,21 @@ export function QuestionConsole({
         <TimerBar remainingSec={remainingSec} ratio={ratio} isAsking={isAsking} />
       </header>
 
+      {/* feat/dessin-a-deviner — le dessin en direct remplace l'énoncé. */}
+      {state.type === 'DRAWING' && sessionId ? (
+        <div className="flex-1 min-h-0 mb-2">
+          <SceneDessin
+            socket={socket}
+            sessionId={sessionId}
+            question={state}
+            revealAnswer={isAsking ? null : (state.reveal?.answer ?? lastRevealAnswer(lastReveal, state))}
+            restant={isAsking ? remainingSec : null}
+            motAnimateur={motAnimateur}
+            xl={xl}
+          />
+        </div>
+      ) : (
+      <>
       {/* Énoncé */}
       <Card size="lg" tone={isAsking ? 'cream' : 'spritz'} className="mb-4">
         <p
@@ -180,6 +205,9 @@ export function QuestionConsole({
         )}
       </div>
 
+      </>
+      )}
+
       {/* Footer actions (cachés en publicView mode B) */}
       <footer className="mt-4 flex items-center justify-between gap-3">
         <p className="font-mono text-sm text-ink-soft">
@@ -205,6 +233,15 @@ export function QuestionConsole({
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────
+
+/** Le mot révélé d'un dessin, quand l'état ne le porte pas encore. */
+function lastRevealAnswer(
+  lastReveal: { question_index: number; reveal?: { answer: string } } | null,
+  state: CurrentQuestionState,
+): string | null {
+  if (!lastReveal || lastReveal.question_index !== state.question_index) return null;
+  return lastReveal.reveal?.answer ?? null;
+}
 
 function TimerBar({
   remainingSec,

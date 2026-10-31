@@ -22,6 +22,7 @@ import { broadcastToSession } from '../socket/index.js';
 import { getActiveQuestion, revealAnswers } from './gameStateQuizz.js';
 import { computeQuestionScore } from './quizzScoring.js';
 import { matchAnswer } from './quizzMatch.js';
+import { bilanDessin } from './dessin.js';
 
 // Stockage des timers d'auto-reveal par session_id.
 const revealTimers = new Map<string, NodeJS.Timeout>();
@@ -58,6 +59,8 @@ export function buildAndBroadcastQuestion(
   sessionId: string,
   question: Question,
   isBilingual: boolean,
+  /** feat/dessin-a-deviner — dessinateur et mot masqué d'une question DRAWING. */
+  extra?: Pick<CurrentQuestionState, 'dessinateur' | 'indice'>,
 ): CurrentQuestionState {
   const state: CurrentQuestionState = {
     round_id: '', // pas de round V0 pour QUIZZ
@@ -78,6 +81,7 @@ export function buildAndBroadcastQuestion(
     time_limit_sec: question.time_limit_sec,
     points: question.points,
     phase: 'asking',
+    ...(extra ?? {}),
   };
 
   if (question.type === 'ESTIMATION') {
@@ -210,6 +214,53 @@ async function revelerInterne(
       );
     }
   }
+  // feat/dessin-a-deviner — LE DESSINATEUR MARQUE AUSSI. Sa part grandit
+  // avec la proportion de joueurs qui ont trouvé : tout le monde → les
+  // points pleins de la question, personne → rien (dessin à revoir).
+  let resultatDessinateur: {
+    participant_id: string;
+    pseudo: string;
+    team_id: string | null;
+    is_correct: boolean;
+    answered_at_ms: number;
+    score: number;
+    submitted: string;
+  } | null = null;
+  if (question.type === 'DRAWING') {
+    const bilan = bilanDessin(sessionId, state.question_index);
+    if (bilan) {
+      const attendus = Math.max(1, state.expected_participants.size);
+      const score = bilan.trouves > 0 ? Math.round((state.points * bilan.trouves) / attendus) : 0;
+      const p = participantsById.get(bilan.dessinateurId);
+      if (score > 0) {
+        events.push(
+          prisma.scoreEvent.create({
+            data: {
+              session_id: sessionId,
+              session_round_id: null,
+              participant_id: bilan.dessinateurId,
+              team_id: p?.team_id ?? null,
+              round_index: state.question_index,
+              type: ScoreEventType.CORRECT_ANSWER,
+              points: score,
+              answer: '✏️',
+              reason: 'dessinateur',
+            },
+          }),
+        );
+      }
+      resultatDessinateur = {
+        participant_id: bilan.dessinateurId,
+        pseudo: p?.pseudo ?? bilan.dessinateurPseudo,
+        team_id: p?.team_id ?? null,
+        is_correct: score > 0,
+        answered_at_ms: 0,
+        score,
+        submitted: '✏️',
+      };
+    }
+  }
+
   await Promise.all(events);
 
   const results = [...state.answers.values()].map((ans) => {
@@ -224,6 +275,7 @@ async function revelerInterne(
       submitted: ans.value,
     };
   });
+  if (resultatDessinateur) results.push(resultatDessinateur);
   results.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     return a.answered_at_ms - b.answered_at_ms;

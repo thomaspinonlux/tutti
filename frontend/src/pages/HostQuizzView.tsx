@@ -335,6 +335,13 @@ export function HostQuizzView({
             onReveal={publicView ? null : () => void handleReveal()}
             onNext={publicView ? null : () => void handleNext()}
             xl={publicView}
+            socket={socket}
+            sessionId={session.id}
+            motAnimateur={
+              publicView || activeQuestion.type !== 'DRAWING'
+                ? null
+                : (pack.questions.find((q) => q.position === activeQuestion.question_index)?.answer_lang1 ?? null)
+            }
           />
         ) : (
           <NoActiveQuestion

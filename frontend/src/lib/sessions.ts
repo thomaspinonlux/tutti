@@ -513,12 +513,24 @@ export async function revealQuestion(sessionId: string): Promise<void> {
   });
 }
 
+/**
+ * Réponse du serveur. Au dessin (feat/dessin-a-deviner), `dessin` dit si la
+ * proposition est le mot (« trouve », avec le rang), presque (« proche ») ou
+ * fausse (« rate ») — le joueur peut alors réessayer.
+ */
+export interface ReponseQuizz {
+  ok: boolean;
+  allAnswered: boolean;
+  dessin?: 'trouve' | 'proche' | 'rate';
+  rang?: number;
+}
+
 export async function submitQuizzAnswer(
   sessionId: string,
   token: string,
   value: string,
-): Promise<{ ok: boolean; allAnswered: boolean }> {
-  return api<{ ok: boolean; allAnswered: boolean }>(
+): Promise<ReponseQuizz> {
+  return api<ReponseQuizz>(
     `/api/sessions/${encodeURIComponent(sessionId)}/quizz/submit-answer`,
     { method: 'POST', body: { token, value }, anonymous: true },
   );

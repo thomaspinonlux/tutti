@@ -17,7 +17,7 @@ import type { Question, QuestionType, EstimationAnswer } from '@tutti/shared';
 
 // ── Normalisation FREE_TEXT (cf. lib/voiceMatch.ts pour cohérence) ─────────
 
-function normalize(text: string): string {
+export function normalize(text: string): string {
   return text
     .toLowerCase()
     .normalize('NFD')
@@ -27,7 +27,7 @@ function normalize(text: string): string {
     .trim();
 }
 
-function levenshtein(a: string, b: string): number {
+export function levenshtein(a: string, b: string): number {
   if (a === b) return 0;
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
@@ -93,7 +93,9 @@ export function matchAnswer(
     return { is_correct: submitted.toLowerCase().trim() === expected.toLowerCase().trim() };
   }
 
-  if (type === 'FREE_TEXT') {
+  // feat/dessin-a-deviner — le mot du dessin se compare comme une réponse
+  // libre (la réponse stockée à la révélation est le mot lui-même).
+  if (type === 'FREE_TEXT' || type === 'DRAWING') {
     const expected =
       language === 'lang2' && question.answer_lang2 ? question.answer_lang2 : question.answer_lang1;
     const aliases =

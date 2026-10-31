@@ -37,7 +37,7 @@ import {
 import { getCumulativeScores } from '../lib/scores.js';
 import { isOriginAllowed } from '../lib/allowedOrigins.js';
 
-type SocketIdentity =
+export type SocketIdentity =
   | { kind: 'host'; userId: string; userEmail: string | null }
   | { kind: 'participant'; participantId: string; sessionId: string }
   | { kind: 'spectator'; sessionId: string };
@@ -146,6 +146,19 @@ interface AuthedSocket extends Socket {
   identity?: SocketIdentity;
 }
 
+/**
+ * feat/dessin-a-deviner — GESTIONNAIRES AJOUTÉS PAR LES MODULES DE JEU.
+ * Un module (ex. lib/dessin.ts) déclare ici ses événements client → serveur
+ * sans que ce fichier ait à l'importer : pas de dépendance circulaire.
+ * Chaque gestionnaire est appelé pour chaque nouvelle connexion authentifiée.
+ */
+type GestionnaireSocket = (socket: Socket, identity: SocketIdentity) => void;
+const gestionnairesSocket: GestionnaireSocket[] = [];
+
+export function ajouterGestionnaireSocket(fn: GestionnaireSocket): void {
+  gestionnairesSocket.push(fn);
+}
+
 // refactor/single-cors-list — l'ancienne copie locale de la whitelist CORS
 // (« on duplique pour éviter l'import circulaire ») est remplacée par le
 // module partagé lib/allowedOrigins.ts, qui n'importe rien du backend et ne
@@ -226,6 +239,14 @@ export function initSocketIO(httpServer: HttpServer): SocketIOServer {
     // Spectator : auto-join sa session room dès connexion (read-only).
     if (identity.kind === 'spectator') {
       void socket.join(roomName(identity.sessionId));
+    }
+
+    for (const fn of gestionnairesSocket) {
+      try {
+        fn(socket, identity);
+      } catch (err) {
+        console.error('[socket] gestionnaire de module en échec :', err);
+      }
     }
 
     // ── Join by sessionId (joueur ou host avec ID connu) ─────────────
