@@ -520,8 +520,8 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                             try await self.lancerSurFileVivante(song, catalogId)
                         }
                     } catch {
-                        // On NE relance PAS depuis le catch général : ce chemin-ci
-                        // a un repli qui marche, cf. juste en dessous.
+                        // Refus d'Apple : traité juste en dessous (passage au
+                        // suivant, sans repli — fix/plus-de-repli-qui-gele).
                         refusApple = error
                     }
                     demarre = chemin != nil
@@ -531,69 +531,32 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                         "refus": refusApple?.localizedDescription ?? ""
                     ])
 
-                    // fix/refus-apple-error-1 — QUAND APPLE REFUSE LA FILE,
-                    // ON REMPLACE LA FILE AU LIEU D'ABANDONNER LE MORCEAU.
+                    // fix/plus-de-repli-qui-gele — QUAND APPLE REFUSE UN MORCEAU, ON
+                    // PASSE AU SUIVANT. ON NE REMPLACE PLUS LA FILE.
                     //
-                    // Soirée du 18/09, journal de 23:03:52 à 23:04:26 (build 64) :
-                    //     ▶ play {id:635770202}  Hotel California — trouvé, 391 s
-                    //     ▶ play.lancer
-                    //     ■ play {erreur:"MPMusicPlayerControllerErrorDomain error 1"}
-                    //     ■ play {erreur: error 1}            ← relance, même chemin
-                    //     play REFUSÉ {id:6781027364}          Somebody To Love
-                    //     ■ play {erreur: error 1}
-                    //     … redémarrage de l'app …
-                    //     ▶ play {id:6781027364} → play.queue= → play.player.play()
-                    //     ■ play {ok:true, dureeMs:2003}       ← LE MÊME MORCEAU PASSE
-                    //
-                    // Même iPad, même abonnement, même titre : refusé par
-                    // insert+skip, accepté par queue= + play(). Les trois titres
-                    // sont bien diffusables dans le store FR (vérifié un par un) —
-                    // ce n'est donc ni un droit ni une disponibilité. L'erreur 1
-                    // d'Apple veut dire « descripteur de file non fourni » : la
-                    // file du lecteur est dans un état qu'Apple ne sait plus
-                    // reprendre, et seule une file REMPLACÉE la remet d'aplomb.
-                    //
-                    // Le repli reste borné, et c'est voulu : uniquement sur un
-                    // refus RÉEL d'Apple (jamais sur un délai dépassé, où
-                    // player.play() risquerait le gel de l'iPad décrit plus haut),
-                    // une seule fois, et le gel est de toute façon impossible
-                    // puisque courseAvecDelai tient l'échéance.
-                    if demarre != true, refusApple != nil {
+                    // Soirée du 30/10, journal de l'iPad, 22:50:37 « Cruel Summer » :
+                    //     APPLE REFUSE LA FILE (MPMusicPlayerControllerErrorDomain error 1)
+                    //     ▶ repli : queue= + play()
+                    //     FIL PRINCIPAL BLOQUÉ … 82 s … → iOS ferme l'app (22:52)
+                    // Le repli du 18/09 repassait par `queue= + play()`, c'est-à-dire
+                    // la commande qui fige l'iPad (même blocage qu'au premier
+                    // morceau de 21:41, 3 fois de suite). `courseAvecDelai` ne
+                    // protège pas : le fil principal est tenu par Apple, plus rien
+                    // ne tourne. Perdre un titre vaut mieux que perdre la salle :
+                    // on dit à la console « refusé », elle passe au suivant (et le
+                    // rattrape une fois, cf. HostPage fix/cascade-de-morceaux-sautes).
+                    if demarre != true, let refus = refusApple {
                         TuttiJournal.shared.note(
                             "musickit",
-                            "APPLE REFUSE LA FILE — repli sur file remplacée",
-                            ["id": catalogId, "refus": refusApple?.localizedDescription ?? ""],
+                            "APPLE REFUSE LE MORCEAU — passage au suivant, sans repli",
+                            ["id": catalogId, "refus": refus.localizedDescription],
                             niveau: "warn"
                         )
-                        let j5 = TuttiJournal.shared.debut("musickit", "play.repliFileRemplacee")
-                        var repli: Bool? = nil
-                        do {
-                            repli = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                                try await self.surLePrincipal { self.player.queue = [song] }
-                                try await self.surLePrincipal { try await self.player.play() }
-                                return true
-                            }
-                        } catch {
-                            TuttiJournal.shared.note(
-                                "musickit",
-                                "LE REPLI AUSSI EST REFUSÉ — le morceau est perdu",
-                                ["id": catalogId, "erreur": error.localizedDescription],
-                                niveau: "error"
-                            )
-                        }
-                        demarre = repli == true
-                        TuttiJournal.shared.fin("musickit", j5, ["demarre": demarre == true])
-                        if demarre == true {
-                            // Le refus est réparé : il ne doit pas compter comme
-                            // une panne Apple, sinon la console se met en pause
-                            // pour rien sur le morceau suivant — c'est ce qui a
-                            // coûté Somebody To Love à 23:04:03.
-                            self.oublierPauseApresErreur()
-                        } else {
-                            // Là, c'est une vraie panne : on reprend la pause que
-                            // le catch général posait avant ce repli.
-                            self.noterPauseApresErreur()
-                        }
+                        self.noterEtat(enLecture: false, position: 0, nowPlayingId: "", confirme: true, commande: true)
+                        self.noterPauseApresErreur()
+                        TuttiJournal.shared.fin("musickit", jetonPlay, ["erreur": "refus-apple"])
+                        call.reject("Apple refuse ce morceau : \(refus.localizedDescription)")
+                        return
                     }
                 }
                 guard demarre == true else {
@@ -685,7 +648,10 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 }
                 let j2 = TuttiJournal.shared.debut("musickit", "queueNext.insert")
                 let insere = try await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.surLePrincipal { try await self.player.queue.insert(song, position: .tail) }
+                    // fix/premier-morceau-avant-la-partie — juste APRÈS le morceau en
+                    // cours, plus en fin de file : la file peut désormais contenir
+                    // le silence de préparation ou des restes d'ambiance.
+                    try await self.surLePrincipal { try await self.player.queue.insert(song, position: .afterCurrentEntry) }
                     return true
                 }
                 TuttiJournal.shared.fin("musickit", j2, ["insere": insere == true])
@@ -934,24 +900,119 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         }
     }
 
-    /// Rend le lecteur à la partie : file vidée, aléatoire et boucle annulés.
-    /// Appelé au lancement de la session — après quoi le chemin de jeu retrouve
-    /// une file vide, c'est-à-dire l'état exact qu'il connaît déjà.
+    /// Rend le lecteur à la partie, SANS VIDER LA FILE.
+    ///
+    /// fix/premier-morceau-avant-la-partie — vider la file renvoyait le
+    /// premier morceau de la partie sur `queue= + play()`, la commande qui
+    /// fige l'iPad. On passe plutôt sur le silence de préparation (insertion
+    /// + saut, le chemin qui n'a jamais gelé) et on met en pause : le lecteur
+    /// reste vivant, la partie démarre par le chemin normal. Si ça échoue, on
+    /// retombe sur l'ancien comportement (file vidée).
     @objc func stopAmbiance(_ call: CAPPluginCall) {
         let jeton = TuttiJournal.shared.debut("musickit", "stopAmbiance")
         Task {
-            _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
+            let essai = try? await self.courseAvecDelai(self.delaiCommandeApple) {
                 try await self.surLePrincipal {
-                    self.player.stop()
                     self.player.state.shuffleMode = .off
                     self.player.state.repeatMode = nil
-                    self.player.queue = ApplicationMusicPlayer.Queue()
                 }
+                if try await self.surLePrincipal({ self.player.queue.entries.isEmpty }) { return false }
+                guard let silence = try await self.chercherMorceau(TuttiMusicKitPlugin.idSilence) else { return false }
+                try await self.surLePrincipal { try await self.player.queue.insert(silence, position: .afterCurrentEntry) }
+                try await self.surLePrincipal { try await self.player.skipToNextEntry() }
+                await MainActor.run { self.player.pause() }
                 return true
             }
-            self.noterEtat(enLecture: false, position: 0, confirme: true)
-            TuttiJournal.shared.fin("musickit", jeton)
+            let garde = (essai ?? nil) == true
+            if !garde {
+                _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.surLePrincipal {
+                        self.player.stop()
+                        self.player.queue = ApplicationMusicPlayer.Queue()
+                    }
+                    return true
+                }
+            }
+            self.noterEtat(enLecture: false, position: 0, nowPlayingId: "", confirme: true)
+            TuttiJournal.shared.fin("musickit", jeton, ["lecteurGarde": garde])
             call.resolve()
+        }
+    }
+
+    // MARK: - Préchauffage (fix/premier-morceau-avant-la-partie)
+
+    /// « Silence 10 Minutes » (silence moments), catalogue FR. Extrait Apple
+    /// mesuré le 31/10 : -91 dB en moyenne, c'est-à-dire du silence numérique.
+    static let idSilence = "1335988841"
+
+    /// fix/premier-morceau-avant-la-partie — LA COMMANDE À RISQUE PART À
+    /// L'OUVERTURE DE L'APP, PLUS DEVANT LES JOUEURS.
+    ///
+    /// Soirée du 30/10 : le premier morceau de la partie passe par
+    /// `queue= + play()` (file vide) et Apple ne rend jamais la main — l'iPad
+    /// se fige, 3 fois de suite entre 21:41 et 21:43, deux relances à la main
+    /// et une fermeture par iOS. Les 140 morceaux suivants, joués par
+    /// insertion + saut sur un lecteur vivant, n'ont jamais bloqué.
+    ///
+    /// On fait donc ce premier `play()` dès que la console est prête, sur un
+    /// morceau de silence, puis on met en pause : le lecteur a une file, la
+    /// partie démarre par le chemin normal. Si Apple bloque ici, c'est à
+    /// l'ouverture, avant l'arrivée des joueurs : on relance l'app au calme.
+    /// Sans effet si la file n'est pas vide (lecteur déjà vivant).
+    @objc func prechauffer(_ call: CAPPluginCall) {
+        guard prendreLaMain() else {
+            call.reject("Une lecture est déjà en cours de démarrage")
+            return
+        }
+        let feuVert = peutInterrogerApple()
+        guard feuVert.ok else {
+            rendreLaMain()
+            call.reject("Apple Music n'est pas disponible à l'instant (\(feuVert.raison))")
+            return
+        }
+        let jeton = TuttiJournal.shared.debut("musickit", "prechauffage")
+        Task {
+            defer { self.rendreLaMain() }
+            do {
+                let fileVide = try await self.surLePrincipal { self.player.queue.entries.isEmpty }
+                guard fileVide else {
+                    TuttiJournal.shared.fin("musickit", jeton, ["deja": true])
+                    call.resolve(["pret": true, "deja": true])
+                    return
+                }
+                let trouve = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.chercherMorceau(TuttiMusicKitPlugin.idSilence)
+                }
+                guard let silence = trouve ?? nil else {
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "silence-introuvable"])
+                    call.reject("Morceau de préparation introuvable")
+                    return
+                }
+                TuttiJournal.shared.note(
+                    "musickit",
+                    "préchauffage — premier play() de la session, AVANT la partie",
+                    ["id": TuttiMusicKitPlugin.idSilence],
+                    niveau: "warn"
+                )
+                let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    try await self.surLePrincipal { self.player.queue = [silence] }
+                    try await self.surLePrincipal { try await self.player.play() }
+                    return true
+                }
+                guard demarre == true else {
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "apple-ne-demarre-pas"])
+                    call.reject("Apple Music n'a pas démarré")
+                    return
+                }
+                let verif = await self.attendreEntreeCourante(TuttiMusicKitPlugin.idSilence, delaiSec: 3.0)
+                await MainActor.run { self.player.pause() }
+                self.noterEtat(enLecture: false, position: 0, nowPlayingId: "", confirme: true)
+                TuttiJournal.shared.fin("musickit", jeton, ["pret": true, "verifie": verif.vu])
+                call.resolve(["pret": true, "verifie": verif.vu])
+            } catch {
+                TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
+                call.reject("Préchauffage échoué : \(error.localizedDescription)")
+            }
         }
     }
 

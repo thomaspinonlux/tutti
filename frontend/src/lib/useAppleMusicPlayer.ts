@@ -50,6 +50,12 @@ export interface UseAppleMusicPlayerOptions {
   musicUserToken?: string | null;
 }
 
+export type EtatPrechauffage = 'en-cours' | 'pret' | 'indisponible' | 'echec';
+
+/** Une seule fois par lancement de l'app (le hook peut être remonté). */
+let prechauffageLance = false;
+let dernierPrechauffage: EtatPrechauffage | null = null;
+
 export interface UseAppleMusicPlayerResult {
   status: AppleMusicPlayerStatus;
   error: string | null;
@@ -92,6 +98,11 @@ export interface UseAppleMusicPlayerResult {
    *  peut pas le lire : droits de streaming absents, identifiant mort…).
    *  Ce n'est PAS un blocage d'autoplay : la console passe au suivant. */
   refusNatif: { id: string; message: string } | null;
+  /**
+   * fix/premier-morceau-avant-la-partie — état du préchauffage du lecteur
+   * natif (iPad). null hors iPad natif.
+   */
+  prechauffage: EtatPrechauffage | null;
   /**
    * fix/robust-autoplay-no-refresh (Apple) — relance le dernier morceau
    * demandé depuis un geste user frais (clic sur l'overlay de secours).
@@ -174,6 +185,7 @@ export function useAppleMusicPlayer({
   // secours (identique YouTube/Spotify), jamais d'alert().
   const [audioBlocked, setAudioBlocked] = useState(false);
   const [refusNatif, setRefusNatif] = useState<{ id: string; message: string } | null>(null);
+  const [prechauffage, setPrechauffage] = useState<EtatPrechauffage | null>(() => dernierPrechauffage);
 
   const musicRef = useRef<MusicKitInstance | null>(null);
   // fix/apple-ecouteurs-empiles — retire les écouteurs posés sur l'instance.
@@ -344,6 +356,20 @@ export function useAppleMusicPlayer({
       if (cancelled) return;
       setIsAuthorized(authorized);
       setStatus('ready');
+      // fix/premier-morceau-avant-la-partie — le premier « jouer » d'Apple
+      // (celui qui a figé l'iPad 3 fois le 30/10) part maintenant, avant
+      // l'arrivée des joueurs. Une seule fois par lancement de l'app.
+      if (authorized && !prechauffageLance) {
+        prechauffageLance = true;
+        dernierPrechauffage = 'en-cours';
+        setPrechauffage('en-cours');
+        remoteLog('apple', 'préchauffage du lecteur Apple — début', {}, 'info');
+        void nativeMusicKit.prechauffer().then((r) => {
+          dernierPrechauffage = r;
+          setPrechauffage(r);
+          remoteLog('apple', `préchauffage du lecteur Apple — ${r}`, {}, r === 'echec' ? 'error' : 'info');
+        });
+      }
       poll = window.setInterval(() => {
         void nativeMusicKit.getStatus().then((s) => {
           if (cancelled) return;
@@ -809,6 +835,7 @@ export function useAppleMusicPlayer({
     activate,
     audioBlocked,
     refusNatif,
+    prechauffage,
     unblockAudio,
   };
 }

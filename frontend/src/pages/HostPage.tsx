@@ -131,6 +131,7 @@ import { SeekBar } from '../components/host/SeekBar.js';
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
+import { BadgeAppleMusic } from '../components/host/BadgeAppleMusic.js';
 import { PwaSafetyControls } from '../components/host/PwaSafetyControls.js';
 
 interface Toast {
@@ -2701,6 +2702,7 @@ function HostPageInner(): JSX.Element {
         {/* Badge master + change-master accessible discrètement en haut-droite */}
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <PwaSafetyControls />
+          <BadgeAppleMusic etat={apple.prechauffage} />
           <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
           {/* feat/ecran-joueurs — bouton direct « Écran TV » retiré : tout passe
               par TvCastButton (renommé « Écran Joueurs »), qui propose déjà QR +
@@ -3032,7 +3034,8 @@ function HostPageInner(): JSX.Element {
                 {piloteActif ? '🤖 Pilote auto — ON' : '🤖 Pilote auto'}
               </button>
             )}
-            <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
+            <BadgeAppleMusic etat={apple.prechauffage} />
+          <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
             {/* feat/ecran-joueurs — bouton direct « Écran TV » retiré (voir plus
                 haut) : un seul bouton « Écran Joueurs » via TvCastButton. */}
             {/* feat/audio-auto-routing — capsule son→TV retirée : routing

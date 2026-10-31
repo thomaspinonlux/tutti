@@ -38,6 +38,8 @@ interface NativeMusicKitBridge {
     pistes: number;
   }>;
   stopAmbiance?(): Promise<void>;
+  /** fix/premier-morceau-avant-la-partie — absent des binaires < build 71. */
+  prechauffer?(): Promise<{ pret: boolean; deja?: boolean; verifie?: boolean }>;
 }
 
 function bridge(): NativeMusicKitBridge | null {
@@ -117,7 +119,31 @@ export const nativeMusicKit = {
       return false;
     }
   },
-  /** feat/ambiance-salon — rend le lecteur à la partie (file vidée). */
+  /**
+   * fix/premier-morceau-avant-la-partie — fait le tout premier « jouer »
+   * d'Apple (celui qui peut figer l'iPad) à l'ouverture, sur un silence, au
+   * lieu du premier morceau de la partie.
+   *   'pret'        : lecteur prêt (ou déjà vivant)
+   *   'indisponible': binaire trop ancien (méthode absente)
+   *   'echec'       : Apple a refusé ou n'a pas répondu
+   */
+  async prechauffer(): Promise<'pret' | 'indisponible' | 'echec'> {
+    const b = bridge();
+    if (!b?.prechauffer) return 'indisponible';
+    for (let essai = 0; essai < 4; essai++) {
+      try {
+        const r = await b.prechauffer();
+        return r?.pret ? 'pret' : 'echec';
+      } catch (err: unknown) {
+        // Une autre commande Apple est en vol (ambiance, morceau) : on réessaie.
+        const msg = (err as Error)?.message ?? '';
+        if (!/déjà en cours|pas disponible à l'instant/i.test(msg)) return 'echec';
+        await new Promise((r) => window.setTimeout(r, 3000));
+      }
+    }
+    return 'echec';
+  },
+  /** feat/ambiance-salon — rend le lecteur à la partie (lecteur gardé vivant). */
   async stopAmbiance(): Promise<void> {
     try {
       await bridge()?.stopAmbiance?.();

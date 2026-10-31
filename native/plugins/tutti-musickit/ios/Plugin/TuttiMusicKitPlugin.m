@@ -21,4 +21,7 @@ CAP_PLUGIN(TuttiMusicKitPlugin, "TuttiMusicKit",
     // liste n'est pas enregistrée auprès du bridge Capacitor.
     CAP_PLUGIN_METHOD(playPlaylist, CAPPluginReturnPromise);
     CAP_PLUGIN_METHOD(stopAmbiance, CAPPluginReturnPromise);
+    // fix/premier-morceau-avant-la-partie — même règle : sans cette ligne,
+    // la méthode n'existe pas côté JS.
+    CAP_PLUGIN_METHOD(prechauffer, CAPPluginReturnPromise);
 )
