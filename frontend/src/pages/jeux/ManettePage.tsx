@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import type { Socket } from 'socket.io-client';
 import { connecterJeu } from '../../lib/socket.js';
 import type { EtatManette, JeuManette } from '../../lib/jeux/salonManette.js';
+import { ManetteMoto, ManettePieds, ManetteVolant } from './ManettesCourse.js';
 
 const CLE_PSEUDO = 'tutti.manette.pseudo';
 const NOMS: Record<JeuManette, string> = {
@@ -15,6 +16,11 @@ const NOMS: Record<JeuManette, string> = {
   sumo: '🥋 Sumo',
   reflexe: '⚡ Réflexe',
   pong: '🏓 Pong',
+  kart: '🏎️ Kart à bonus',
+  sprint: '🏃 Sprint 100 m',
+  ski: '⛷️ Slalom',
+  tamponneuses: '💥 Auto-tamponneuses',
+  moto: '🏍️ Moto cross',
 };
 
 const lirePseudo = (): string => {
@@ -166,6 +172,11 @@ export function ManettePage(): JSX.Element {
         {jeu === 'sumo' && <ManetteJoystick emettre={emettre} />}
         {jeu === 'pong' && <ManetteGlissiere emettre={emettre} couleur={moi.couleur} />}
         {jeu === 'reflexe' && <ManetteReflexe emettre={emettre} etat={etat} />}
+        {jeu === 'kart' && <ManetteVolant emettre={emettre} action={{ label: 'BONUS 🎁', type: 'bonus' }} />}
+        {jeu === 'tamponneuses' && <ManetteVolant emettre={emettre} action={{ label: 'TURBO 🔥', type: 'turbo' }} />}
+        {jeu === 'ski' && <ManetteVolant emettre={emettre} frein={false} />}
+        {jeu === 'sprint' && <ManettePieds emettre={emettre} />}
+        {jeu === 'moto' && <ManetteMoto emettre={emettre} />}
       </div>
     </div>
   );

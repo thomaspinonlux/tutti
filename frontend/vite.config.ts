@@ -86,7 +86,7 @@ export default defineConfig({
         // feat/course-test — la course est toujours chargée depuis le réseau :
         // un téléphone qui a gardé une ancienne version de Tutti en mémoire ne
         // connaissait pas /course et renvoyait le joueur sur l'accueil (31/10).
-        navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//, /^\/guide/, /^\/course/, /^\/(serpents|sumo|reflexe|pong|manette)(\/|$)/],
+        navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//, /^\/guide/, /^\/course/, /^\/(serpents|sumo|reflexe|pong|manette|kart|sprint|ski|tamponneuses|moto)(\/|$)/],
         // fix/csp-meta-tag-and-cover-fallback — SW nouvellement installé
         // devient actif immédiatement (skipWaiting) + reprend le contrôle
         // des onglets ouverts (clientsClaim). Combiné : nouveau deploy =

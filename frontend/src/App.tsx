@@ -86,6 +86,12 @@ const ReflexeTvPage = lazy(() =>
 );
 const PongTvPage = lazy(() => import('./pages/jeux/PongTvPage.js').then((m) => ({ default: m.PongTvPage })));
 const ManettePage = lazy(() => import('./pages/jeux/ManettePage.js').then((m) => ({ default: m.ManettePage })));
+// feat/jeux-manette-2 — jeux de course (test, aucun lien public).
+const KartTvPage = lazy(() => import('./pages/jeux/KartTvPage.js').then((m) => ({ default: m.KartTvPage })));
+const SprintTvPage = lazy(() => import('./pages/jeux/SprintTvPage.js').then((m) => ({ default: m.SprintTvPage })));
+const SkiTvPage = lazy(() => import('./pages/jeux/SkiTvPage.js').then((m) => ({ default: m.SkiTvPage })));
+const TamponTvPage = lazy(() => import('./pages/jeux/TamponTvPage.js').then((m) => ({ default: m.TamponTvPage })));
+const MotoTvPage = lazy(() => import('./pages/jeux/MotoTvPage.js').then((m) => ({ default: m.MotoTvPage })));
 const TvJoinPage = lazy(() =>
   import('./pages/TvJoinPage.js').then((m) => ({ default: m.TvJoinPage })),
 );
@@ -115,6 +121,11 @@ function App(): JSX.Element {
         <Route path="/reflexe" element={<ReflexeTvPage />} />
         <Route path="/pong" element={<PongTvPage />} />
         <Route path="/manette/:code" element={<ManettePage />} />
+        <Route path="/kart" element={<KartTvPage />} />
+        <Route path="/sprint" element={<SprintTvPage />} />
+        <Route path="/ski" element={<SkiTvPage />} />
+        <Route path="/tamponneuses" element={<TamponTvPage />} />
+        <Route path="/moto" element={<MotoTvPage />} />
 
         {/* feat/youtube-compliance — pages légales publiques (Privacy/Terms)
             requises par YouTube API Services. Liées depuis footer + signup. */}

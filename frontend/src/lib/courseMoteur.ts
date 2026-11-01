@@ -11,15 +11,15 @@
  */
 export const LARGEUR = 1600;
 export const HAUTEUR = 900;
-const CX = 800;
-const CY = 450;
-const DEMI = 350; // demi-longueur des lignes droites
+export const CX = 800;
+export const CY = 450;
+export const DEMI = 350; // demi-longueur des lignes droites
 export const RAYON_INT = 170;
 export const RAYON_EXT = 330;
-const RAYON_MILIEU = (RAYON_INT + RAYON_EXT) / 2;
+export const RAYON_MILIEU = (RAYON_INT + RAYON_EXT) / 2;
 export const TOURS = 5;
 
-const V_ROUTE = 360;
+export const V_ROUTE = 360;
 const V_HERBE = 150;
 const V_FREIN = 120;
 const ACCEL = 280;

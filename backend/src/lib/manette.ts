@@ -11,11 +11,13 @@
 import type { Socket } from 'socket.io';
 import { ajouterGestionnaireSocket, getIO, type SocketIdentity } from '../socket/index.js';
 
-export const JEUX = ['serpents', 'sumo', 'reflexe', 'pong'] as const;
+export const JEUX = ['serpents', 'sumo', 'reflexe', 'pong', 'kart', 'sprint', 'ski', 'tamponneuses', 'moto'] as const;
 export type JeuManette = (typeof JEUX)[number];
 
 const LETTRES = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-const MAX_JOUEURS: Record<JeuManette, number> = { serpents: 8, sumo: 8, reflexe: 12, pong: 4 };
+const MAX_JOUEURS: Record<JeuManette, number> = {
+  serpents: 8, sumo: 8, reflexe: 12, pong: 4, kart: 8, sprint: 8, ski: 8, tamponneuses: 8, moto: 6,
+};
 const COULEURS = [
   '#FF5C4D', '#2F80ED', '#3FB47A', '#F2C94C', '#9B51E0', '#F2994A',
   '#56CCF2', '#EB5757', '#6FCF97', '#BB6BD9', '#F2F2F2', '#219653',

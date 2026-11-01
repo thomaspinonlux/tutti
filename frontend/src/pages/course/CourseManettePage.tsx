@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import type { Socket } from 'socket.io-client';
 import { connecterJeu } from '../../lib/socket.js';
+import { useInclinaison } from '../../lib/jeux/inclinaison.js';
 
 interface Etat {
   phase: 'attente' | 'compte' | 'course' | 'fini';
@@ -33,6 +34,26 @@ export function CourseManettePage(): JSX.Element {
   const cmd = useRef({ g: false, d: false });
   const pointeurs = useRef(new Map<number, 'g' | 'd'>());
   const [appui, setAppui] = useState({ g: false, d: false });
+  // feat/jeux-manette-2 — volant : téléphone penché au lieu des boutons.
+  const incl = useInclinaison();
+  const [volant, setVolant] = useState(false);
+  const freinVolant = useRef(false);
+  useEffect(() => {
+    if (incl.etat === 'refuse' || incl.etat === 'indisponible') setVolant(false);
+  }, [incl.etat]);
+  useEffect(() => {
+    if (!volant) return;
+    const id = window.setInterval(() => {
+      const x = incl.x.current;
+      const n = freinVolant.current ? { g: true, d: true } : { g: x < -0.25, d: x > 0.25 };
+      if (n.g !== cmd.current.g || n.d !== cmd.current.d) {
+        cmd.current = n;
+        setAppui(n);
+        socketRef.current?.emit('course:cmd', n);
+      }
+    }, 60);
+    return () => window.clearInterval(id);
+  }, [volant, incl.x]);
 
   useEffect(() => {
     const s = connecterJeu();
@@ -165,6 +186,61 @@ export function CourseManettePage(): JSX.Element {
           {etat?.phase === 'fini' ? 'Rejouer ↻' : 'Lancer la course ▶'}
         </button>
       )}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            incl.arreter();
+            setVolant(false);
+          }}
+          className={`flex-1 rounded-xl py-2 text-sm font-semibold ${!volant ? 'bg-white text-black' : 'bg-white/10'}`}
+        >
+          🎮 Boutons
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            void incl.activer();
+            setVolant(true);
+          }}
+          className={`flex-1 rounded-xl py-2 text-sm font-semibold ${volant ? 'bg-white text-black' : 'bg-white/10'}`}
+        >
+          📱 Pencher le téléphone
+        </button>
+      </div>
+      {(incl.etat === 'refuse' || incl.etat === 'indisponible') && (
+        <p className="text-center text-[#FF5C4D] text-sm">
+          {incl.etat === 'refuse' ? 'Capteurs refusés : joue aux boutons.' : 'Pas de capteur de mouvement ici : joue aux boutons.'}
+        </p>
+      )}
+      {volant ? (
+        <div className="flex-1 flex flex-col gap-3">
+          <p className="text-center text-white/60 text-sm">Tiens le téléphone écran vers toi et tourne-le comme un volant.</p>
+          <div className="flex-1 flex items-center justify-center text-8xl">{appui.g && appui.d ? '🛑' : appui.g ? '↰' : appui.d ? '↱' : '⬆️'}</div>
+          <button type="button" onClick={incl.recalibrer} className="text-white/60 text-sm underline">
+            Remettre le volant droit
+          </button>
+          <button
+            type="button"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              freinVolant.current = true;
+            }}
+            onPointerUp={() => {
+              freinVolant.current = false;
+            }}
+            onPointerCancel={() => {
+              freinVolant.current = false;
+            }}
+            onPointerLeave={() => {
+              freinVolant.current = false;
+            }}
+            className="rounded-3xl bg-white/15 py-6 text-2xl font-bold active:bg-white/40"
+          >
+            FREIN
+          </button>
+        </div>
+      ) : (
       <div className="flex-1 flex gap-3">
         <div className={zone(appui.g)} onPointerDown={bas('g')} onPointerUp={haut} onPointerCancel={haut} onPointerLeave={haut}>
           ◀
@@ -173,6 +249,7 @@ export function CourseManettePage(): JSX.Element {
           ▶
         </div>
       </div>
+      )}
       <p className="text-center text-white/50 text-sm">Les deux en même temps = frein. Ça accélère tout seul.</p>
     </div>
   );
