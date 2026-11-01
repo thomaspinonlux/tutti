@@ -68,16 +68,14 @@ export function useInclinaison(): {
       setEtat('indisponible');
       return;
     }
+    // Une réponse « non » n'est pas toujours définitive (certains navigateurs
+    // répondent sans demander) : on écoute quand même 2 s avant de conclure.
+    let refusee = false;
     if (typeof DM.requestPermission === 'function') {
       try {
-        const r = await DM.requestPermission();
-        if (r !== 'granted') {
-          setEtat('refuse');
-          return;
-        }
+        refusee = (await DM.requestPermission()) !== 'granted';
       } catch {
-        setEtat('refuse');
-        return;
+        refusee = true;
       }
     }
     neutre.current = null;
@@ -91,7 +89,7 @@ export function useInclinaison(): {
       if (actif.current && !recu.current) {
         actif.current = false;
         window.removeEventListener('devicemotion', surMouvement);
-        setEtat('indisponible');
+        setEtat(refusee ? 'refuse' : 'indisponible');
       }
     }, 2000);
   }, [surMouvement]);
