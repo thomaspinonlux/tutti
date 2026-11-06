@@ -4154,6 +4154,7 @@ function RoleSelector({
   dark?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
+  const dernierAppuiRef = useRef(0);
   const opts: { value: ParticipantRole; label: string; title: string }[] = [
     { value: 'PLAYER', label: t('host.rolePlayer'), title: t('host.rolePlayerHint') },
     {
@@ -4181,7 +4182,20 @@ function RoleSelector({
             type="button"
             title={o.title}
             aria-pressed={active}
+            // fix/role-en-un-appui (06/11, 2e passe) — le journal serveur ne
+            // montre qu'UNE requête pour deux appuis : sur l'iPad, le 1er appui
+            // ne déclenchait pas le clic (il passait le bouton en « survol »,
+            // gris), seul le 2e partait (vert). On agit dès que le doigt se
+            // lève (un défilement donne pointercancel, pas pointerup : pas de
+            // changement de rôle en faisant défiler la liste) ; le clic reste
+            // pour le clavier, sans doublon.
+            onPointerUp={(e) => {
+              if (e.pointerType === 'mouse' && e.button !== 0) return;
+              dernierAppuiRef.current = Date.now();
+              if (!active) onSetRole(o.value);
+            }}
             onClick={() => {
+              if (Date.now() - dernierAppuiRef.current < 1000) return;
               if (!active) onSetRole(o.value);
             }}
             className={[
@@ -4191,8 +4205,8 @@ function RoleSelector({
               active
                 ? 'bg-basil text-white'
                 : dark
-                  ? 'bg-white/[0.06] text-white/60 hover:bg-white/[0.14]'
-                  : 'bg-cream text-ink-soft hover:bg-cream-2',
+                  ? 'bg-white/[0.06] text-white/60'
+                  : 'bg-cream text-ink-soft',
             ].join(' ')}
           >
             {o.label}
