@@ -100,6 +100,9 @@ import { VinylBuzzer } from '../components/play/VinylBuzzer.js';
 import { ClassementDuTitre } from '../components/game/ClassementDuTitre.js';
 import { remoteLog } from '../lib/remoteLog.js';
 
+const CLE_PSEUDO_BROUILLON = 'tutti:pseudo-brouillon';
+const CLE_DERNIER_PSEUDO = 'tutti:dernier-pseudo';
+
 type Step =
   | 'pseudo'
   | 'team'
@@ -135,7 +138,24 @@ export function PlayPage(): JSX.Element {
   // feat/telephone-au-style-tv — tout l ecran joueur est sombre : accueil,
   // salle d attente, jeu, fin de partie.
   useFondJoueurSombre();
-  const [pseudo, setPseudo] = useState('');
+  // fix/pseudo-a-retaper (06/11) — le nom tapé survit à un rechargement de la
+  // page (brouillon de l'onglet) et revient pré-rempli à la partie suivante.
+  const [pseudo, setPseudoBrut] = useState<string>(() => {
+    try {
+      return sessionStorage.getItem(CLE_PSEUDO_BROUILLON) ?? localStorage.getItem(CLE_DERNIER_PSEUDO) ?? '';
+    } catch {
+      return '';
+    }
+  });
+  const setPseudo = (v: string): void => {
+    setPseudoBrut(v);
+    try {
+      sessionStorage.setItem(CLE_PSEUDO_BROUILLON, v);
+      if (v.trim()) localStorage.setItem(CLE_DERNIER_PSEUDO, v.trim());
+    } catch {
+      /* stockage indisponible : rien de grave */
+    }
+  };
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [identity, setIdentity] = useState<ParticipantContext | null>(null);
@@ -148,7 +168,12 @@ export function PlayPage(): JSX.Element {
   // morceau quand une nouvelle version est en ligne.
   // fix/pas-de-rechargement-pendant-une-partie (06/11) — jamais pendant une
   // partie : seulement avant d'avoir rejoint, ou une fois la partie terminée.
-  useNouvelleVersion((step === 'pseudo' || step === 'ended') && !currentTrack, 'telephone');
+  // fix/pseudo-a-retaper (06/11) — un rechargement pendant la saisie du nom
+  // effaçait le nom (deux fois ce jour-là) : jamais dès qu'un nom est tapé.
+  useNouvelleVersion(
+    ((step === 'pseudo' && !pseudo.trim()) || step === 'ended') && !currentTrack,
+    'telephone',
+  );
   const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
   const [lastReveal, setLastReveal] = useState<{
     artist: string;

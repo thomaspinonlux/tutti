@@ -2491,9 +2491,22 @@ function HostPageInner(): JSX.Element {
   // L'event socket participant:role_changed rafraîchit l'UI.
   const handleSetRole = async (participantId: string, role: ParticipantRole): Promise<void> => {
     if (!session) return;
+    // fix/role-en-un-appui (06/11) — l'écran change TOUT DE SUITE (avant :
+    // il attendait l'événement socket, l'animateur réappuyait croyant que le
+    // premier appui n'avait pas marché). Réponse serveur appliquée ensuite.
+    const appliquer = (p: Pick<Participant, 'id' | 'role' | 'is_master'>): void =>
+      setSession((prev) =>
+        prev
+          ? { ...prev, participants: prev.participants.map((x) => (x.id === p.id ? { ...x, role: p.role, is_master: p.is_master } : x)) }
+          : prev,
+      );
+    const avant = session.participants.find((x) => x.id === participantId);
+    appliquer({ id: participantId, role, is_master: isAnimatorRole(role) });
     try {
-      await setParticipantRole(session.id, participantId, role);
+      const maj = await setParticipantRole(session.id, participantId, role);
+      appliquer(maj);
     } catch (err: unknown) {
+      if (avant) appliquer(avant);
       setError((err as Error).message);
     }
   };
