@@ -293,7 +293,11 @@
     "autoplayRetryButton": "Démarrer la lecture",
     "safariBannerTitle": "Safari détecté.",
     "safariBannerHint": "Pour la meilleure expérience audio des blind tests, autorise les médias dans les Réglages du site (icône AA dans la barre d'adresse → Réglages du site).",
-    "safariBannerDismiss": "Fermer la bannière"
+    "safariBannerDismiss": "Fermer la bannière",
+    "applePreparation": "Apple Music se prépare…",
+    "applePreparationAide": "Le bouton s'active dès qu'Apple Music est prêt (quelques secondes).",
+    "appleBloque": "⚠️ Apple Music ne répond pas. Ferme complètement l'app Tutti et rouvre-la avant de lancer.",
+    "lancerQuandMeme": "Lancer quand même"
   },
   "contentBlocker": {
     "title": "Un bloqueur de contenu empêche YouTube de fonctionner",
@@ -542,7 +546,8 @@
       "title": "Playlists demandées par les joueurs",
       "empty": "Aucune demande pour le moment",
       "votes": "demande(s)"
-    }
+    },
+    "aucuneManche": "Aucune manche"
   },
   "tv": {
     "title": "Rejoindre l'écran TV",

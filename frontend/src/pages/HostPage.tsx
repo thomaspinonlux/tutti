@@ -132,6 +132,7 @@ import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
 import { BadgeAppleMusic } from '../components/host/BadgeAppleMusic.js';
+import { BadgeManches } from '../components/host/BadgeManches.js';
 import { PwaSafetyControls } from '../components/host/PwaSafetyControls.js';
 import { compterManchesCompletes } from '../lib/manches.js';
 
@@ -2712,6 +2713,7 @@ function HostPageInner(): JSX.Element {
         {/* Badge master + change-master accessible discrètement en haut-droite */}
         <div className="fixed top-4 right-4 z-30 flex gap-2 items-center">
           <PwaSafetyControls />
+          <BadgeManches lancees={playingRoundsCount} completes={manchesCompletes} />
           <BadgeAppleMusic etat={apple.prechauffage} />
           <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
           {/* feat/ecran-joueurs — bouton direct « Écran TV » retiré : tout passe
@@ -2822,6 +2824,9 @@ function HostPageInner(): JSX.Element {
           badge={isOfficial ? t('preGame.officialBadge') : null}
           providerLabel={providerLabel}
           busy={busy}
+          // fix/demarrer-apres-apple-pret (06/11) — pas de lancement tant que
+          // l'iPad prépare Apple Music : un gel arrive AVANT, jamais au lancement.
+          attenteApple={apple.prechauffage === 'en-cours' ? 'en-cours' : apple.prechauffage === 'echec' ? 'echec' : null}
           onStart={() => void handleStartFirstPlay()}
           onCancel={handleCancelFirstPlay}
           onYoutubeWarmup={youtube.warmupSync}
@@ -3044,7 +3049,8 @@ function HostPageInner(): JSX.Element {
                 {piloteActif ? '🤖 Pilote auto — ON' : '🤖 Pilote auto'}
               </button>
             )}
-            <BadgeAppleMusic etat={apple.prechauffage} />
+            <BadgeManches lancees={playingRoundsCount} completes={manchesCompletes} />
+          <BadgeAppleMusic etat={apple.prechauffage} />
           <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
             {/* feat/ecran-joueurs — bouton direct « Écran TV » retiré (voir plus
                 haut) : un seul bouton « Écran Joueurs » via TvCastButton. */}

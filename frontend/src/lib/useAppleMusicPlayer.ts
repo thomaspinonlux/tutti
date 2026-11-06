@@ -364,7 +364,14 @@ export function useAppleMusicPlayer({
         dernierPrechauffage = 'en-cours';
         setPrechauffage('en-cours');
         remoteLog('apple', 'préchauffage du lecteur Apple — début', {}, 'info');
+        const delai = window.setTimeout(() => {
+          if (dernierPrechauffage !== 'en-cours') return;
+          dernierPrechauffage = 'echec';
+          setPrechauffage('echec');
+          remoteLog('apple', 'préchauffage du lecteur Apple — pas de réponse en 30 s', {}, 'error');
+        }, 30_000);
         void nativeMusicKit.prechauffer().then((r) => {
+          window.clearTimeout(delai);
           dernierPrechauffage = r;
           setPrechauffage(r);
           remoteLog('apple', `préchauffage du lecteur Apple — ${r}`, {}, r === 'echec' ? 'error' : 'info');

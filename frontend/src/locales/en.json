@@ -293,7 +293,11 @@
     "autoplayRetryButton": "Start playback",
     "safariBannerTitle": "Safari detected.",
     "safariBannerHint": "For the best blind test audio experience, allow media in your site settings (AA icon in the address bar → Website Settings).",
-    "safariBannerDismiss": "Dismiss banner"
+    "safariBannerDismiss": "Dismiss banner",
+    "applePreparation": "Apple Music is getting ready…",
+    "applePreparationAide": "The button unlocks as soon as Apple Music is ready (a few seconds).",
+    "appleBloque": "⚠️ Apple Music is not responding. Fully close the Tutti app and reopen it before starting.",
+    "lancerQuandMeme": "Start anyway"
   },
   "contentBlocker": {
     "title": "A content blocker prevents YouTube from working",
@@ -542,7 +546,8 @@
       "title": "Playlists requested by players",
       "empty": "No requests yet",
       "votes": "request(s)"
-    }
+    },
+    "aucuneManche": "No round yet"
   },
   "tv": {
     "title": "Join the TV screen",

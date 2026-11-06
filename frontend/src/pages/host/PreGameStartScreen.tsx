@@ -56,6 +56,8 @@ interface Props {
   providerLabel?: string | null;
   /** Loading externe : désactive le bouton pendant la chaîne async. */
   busy?: boolean;
+  /** fix/demarrer-apres-apple-pret — 'en-cours' : bouton grisé ; 'echec' : grisé + message, lancement forcé possible. */
+  attenteApple?: 'en-cours' | 'echec' | null;
   onStart: () => void;
   onCancel?: () => void;
   /**
@@ -83,6 +85,7 @@ export function PreGameStartScreen({
   trackCount,
   badge,
   busy = false,
+  attenteApple = null,
   onStart,
   onCancel,
   onYoutubeWarmup,
@@ -210,12 +213,32 @@ export function PreGameStartScreen({
             type="button"
             size="lg"
             variant="primary"
-            disabled={busy}
+            disabled={busy || attenteApple !== null}
             onClick={handleStartClick}
             className="!min-w-[260px] !py-5 !text-2xl !font-bold uppercase tracking-wide"
           >
-            {busy ? '⏳ ' + t('preGame.starting') : '▶ ' + t('preGame.startButton')}
+            {busy
+              ? '⏳ ' + t('preGame.starting')
+              : attenteApple === 'en-cours'
+                ? '⏳ ' + t('preGame.applePreparation')
+                : '▶ ' + t('preGame.startButton')}
           </Button>
+          {attenteApple === 'en-cours' && (
+            <p className="mt-3 font-mono text-sm text-cream/80">{t('preGame.applePreparationAide')}</p>
+          )}
+          {attenteApple === 'echec' && (
+            <div className="mt-3 space-y-2">
+              <p className="font-mono text-sm text-cream">{t('preGame.appleBloque')}</p>
+              <button
+                type="button"
+                onClick={handleStartClick}
+                disabled={busy}
+                className="font-mono text-xs text-cream/60 underline"
+              >
+                {t('preGame.lancerQuandMeme')}
+              </button>
+            </div>
+          )}
 
           {onCancel && (
             <div className="mt-6">
