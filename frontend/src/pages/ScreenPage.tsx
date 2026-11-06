@@ -69,10 +69,9 @@ export function ScreenPage(): JSX.Element {
   const [screenState, setScreenState] = useState<ScreenState | null>(null);
   // fix/app-qui-tourne-avec-un-vieux-code — la TV se recharge seule quand une
   // nouvelle version est en ligne, jamais pendant un morceau ni une pause.
-  useNouvelleVersion(
-    !screenState || (screenState.state !== 'PLAYING' && screenState.state !== 'PAUSED'),
-    'tv',
-  );
+  // fix/pas-de-rechargement-pendant-une-partie (06/11) — la TV ne se recharge
+  // plus que quand aucune partie n'est en cours (écran de repos).
+  useNouvelleVersion(!screenState || screenState.state === 'IDLE', 'tv');
   const [error, setError] = useState<string | null>(null);
   const idleStreakRef = useRef(0);
   // feat/quiz-comme-le-blind-test — le quiz sur la TV, piloté par socket.

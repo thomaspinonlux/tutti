@@ -146,7 +146,9 @@ export function PlayPage(): JSX.Element {
   const [currentTrack, setCurrentTrack] = useState<CurrentTrackState | null>(null);
   // fix/app-qui-tourne-avec-un-vieux-code — le téléphone se recharge seul hors
   // morceau quand une nouvelle version est en ligne.
-  useNouvelleVersion(!currentTrack, 'telephone');
+  // fix/pas-de-rechargement-pendant-une-partie (06/11) — jamais pendant une
+  // partie : seulement avant d'avoir rejoint, ou une fois la partie terminée.
+  useNouvelleVersion((step === 'pseudo' || step === 'ended') && !currentTrack, 'telephone');
   const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
   const [lastReveal, setLastReveal] = useState<{
     artist: string;

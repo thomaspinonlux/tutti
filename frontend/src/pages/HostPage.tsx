@@ -897,7 +897,13 @@ function HostPageInner(): JSX.Element {
   // Un rechargement pile à cet instant rendait une page sans geste
   // utilisateur alors qu'une manche venait de démarrer : le son ne
   // partait pas. `busy` couvre les deux handlers de lancement.
-  useNouvelleVersion(!currentTrack && !busy, 'console');
+  // fix/pas-de-rechargement-pendant-une-partie (06/11) — deux mises en ligne
+  // ont rechargé la console en pleine salle d'attente (17:18 et 17:20) et
+  // coupé la musique d'ambiance. Décision de Thomas : plus AUCUN rechargement
+  // automatique tant qu'une partie existe (attente, manches, entracte). Seulement
+  // hors partie ou une fois la partie terminée.
+  const horsPartie = !session || session.status === 'ENDED';
+  useNouvelleVersion(horsPartie && !currentTrack && !busy, 'console');
   const lastEndedRound = session
     ? [...session.rounds].reverse().find((r) => r.status === 'ENDED')
     : null;
