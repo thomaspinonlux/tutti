@@ -61,9 +61,25 @@ export function ScreenApercuPage(): JSX.Element {
     has_animator: true,
     participants,
     rounds: [
+      // feat/compteur-manches-completes — une manche jouée jusqu'au bout et une
+      // arrêtée au 2e titre : le compteur doit afficher « 1 manche complète ».
+      {
+        id: 'r0',
+        position: 1,
+        status: 'ENDED',
+        current_track_index: 15,
+        playlist: { id: 'pl0', name: 'Années 90', tracks_count: 15 },
+      },
+      {
+        id: 'r0b',
+        position: 2,
+        status: 'ENDED',
+        current_track_index: 2,
+        playlist: { id: 'pl1', name: 'Rap FR', tracks_count: 15 },
+      },
       {
         id: 'r1',
-        position: 1,
+        position: 3,
         status: 'PLAYING',
         current_track_index: 4,
         playlist: { id: 'pl', name: 'Variétés françaises années 80', tracks_count: 25 },
