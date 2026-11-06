@@ -26,6 +26,7 @@ import { useTimeElapsed, useTimeRemaining } from './MainScreenView.js';
 import type { MainScreenViewProps } from './MainScreenView.js';
 import { LyricsOverlay } from '../../components/screen/LyricsOverlay.js';
 import { AutoScrollList } from '../../components/screen/AutoScrollList.js';
+import { compterManchesCompletes } from '../../lib/manches.js';
 
 const CORAL = '#FF5C4D';
 const PANEL =
@@ -81,11 +82,13 @@ function TopRibbon({
   totalTracks,
   trackPosition,
   phaseLabel,
+  manchesCompletes,
 }: {
   round: SessionRoundWithPlaylist | null;
   totalTracks: number;
   trackPosition: number;
   phaseLabel: string;
+  manchesCompletes: number;
 }): JSX.Element {
   const { t } = useTranslation();
   return (
@@ -112,6 +115,9 @@ function TopRibbon({
               <span className="tabular-nums text-white/90">
                 {trackPosition} <span className="text-white/35">/ {totalTracks}</span>
               </span>
+            )}
+            {manchesCompletes > 0 && (
+              <span className="text-white/55">· {t('host.manchesCompletes', { count: manchesCompletes })}</span>
             )}
             <span className="max-w-xs truncate text-white/45">{round.playlist.name}</span>
           </span>
@@ -535,6 +541,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
         totalTracks={totalTracks}
         trackPosition={trackPosition}
         phaseLabel={phaseLabel}
+        manchesCompletes={compterManchesCompletes(session.rounds)}
       />
 
       {isRevealed && currentTrack && lyrics && lyrics.lines.length > 0 ? (

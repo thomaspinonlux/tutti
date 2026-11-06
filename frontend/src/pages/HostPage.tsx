@@ -133,6 +133,7 @@ import { HostQuizzView } from './HostQuizzView.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
 import { BadgeAppleMusic } from '../components/host/BadgeAppleMusic.js';
 import { PwaSafetyControls } from '../components/host/PwaSafetyControls.js';
+import { compterManchesCompletes } from '../lib/manches.js';
 
 interface Toast {
   id: string;
@@ -902,6 +903,9 @@ function HostPageInner(): JSX.Element {
     : null;
   const pendingRound = session?.rounds.find((r) => r.status === 'PENDING') ?? null;
   const playingRoundsCount = session?.rounds.filter((r) => r.status !== 'PENDING').length ?? 0;
+  // feat/compteur-manches-completes — seules les manches jouées jusqu'au bout.
+  const manchesCompletes = compterManchesCompletes(session?.rounds);
+  const libelleManches = `${t('host.eyebrowPlaying', { round: playingRoundsCount })} · ${t('host.manchesCompletes', { count: manchesCompletes })}`;
   const currentMaster = session?.participants.find((p) => p.is_master) ?? null;
 
   // ── Audio playback ─────────────────────────────────────────────────────
@@ -2982,7 +2986,7 @@ function HostPageInner(): JSX.Element {
                 ? t('host.eyebrow')
                 : effectivePhase === 'ended'
                   ? t('host.eyebrowEnded')
-                  : t('host.eyebrowPlaying', { round: playingRoundsCount })}
+                  : libelleManches}
             </p>
             <h1 className="font-display text-4xl leading-tight text-white">
               {session.name
@@ -3168,7 +3172,7 @@ function HostPageInner(): JSX.Element {
             {effectivePhase === 'roundPlaying' && !playingRound && (
               <Card tone="cream" size="lg" className="text-center max-w-2xl mx-auto">
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
-                  {t('host.eyebrowPlaying', { round: playingRoundsCount })}
+                  {libelleManches}
                 </p>
                 <TitleHandwritten as="h2" className="mb-3">
                   <Underline>{t('host.syncing')}</Underline>
@@ -3273,7 +3277,7 @@ function HostPageInner(): JSX.Element {
                 return (
                   <Card tone="cream" size="lg" className="text-center max-w-2xl mx-auto">
                     <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-2">
-                      {t('host.eyebrowPlaying', { round: playingRoundsCount })}
+                      {libelleManches}
                     </p>
                     <TitleHandwritten as="h2" className="mb-4">
                       <Underline>{t('host.titleIntermission')}</Underline>

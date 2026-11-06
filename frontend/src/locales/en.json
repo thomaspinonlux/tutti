@@ -330,6 +330,9 @@
       "connectHint": "To play sound on the TV: open “📺 TV screen”, join it on the TV, then tap “🔊 Enable sound” over there. Until then, sound stays here."
     },
     "eyebrow": "Waiting room",
+    "manchesCompletes_zero": "0 full rounds",
+    "manchesCompletes_one": "{{count}} full round",
+    "manchesCompletes_other": "{{count}} full rounds",
     "eyebrowPlaying": "Round {{round}}",
     "eyebrowEnded": "Game over",
     "title": "Players are joining…",

@@ -41,6 +41,7 @@ import type {
 import { Button, Card } from '../../components/ui/index.js';
 import { QRCode } from '../../components/host/QRCode.js';
 import { ClassementDuTitre } from '../../components/game/ClassementDuTitre.js';
+import { compterManchesCompletes } from '../../lib/manches.js';
 
 // ── Hooks utilitaires ─────────────────────────────────────────────────────
 
@@ -322,6 +323,7 @@ function IPadHeader({
   isPaused,
   positionMs,
   durationMs,
+  manchesCompletes = 0,
 }: {
   round: SessionRoundWithPlaylist | null;
   totalTracks: number;
@@ -331,6 +333,7 @@ function IPadHeader({
   isPaused: boolean;
   positionMs?: number;
   durationMs?: number;
+  manchesCompletes?: number;
 }): JSX.Element {
   const { t } = useTranslation();
   // Source de vérité Spotify si dispo, sinon fallback interpolation
@@ -361,6 +364,9 @@ function IPadHeader({
             </span>
           )}
           {round && <span className="truncate max-w-md">{round.playlist.name}</span>}
+          {manchesCompletes > 0 && (
+            <span className="not-italic font-sans text-sm opacity-75">· {t('host.manchesCompletes', { count: manchesCompletes })}</span>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-6">
@@ -1061,6 +1067,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
         isPaused={session.is_paused}
         positionMs={positionMs}
         durationMs={durationMs}
+        manchesCompletes={compterManchesCompletes(session.rounds)}
       />
 
       {isRevealed && currentTrack && playingRound ? (

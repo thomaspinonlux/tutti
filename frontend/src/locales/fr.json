@@ -330,6 +330,9 @@
       "connectHint": "Pour sortir le son sur la TV : ouvre « 📺 Écran TV », rejoins l'écran sur la TV, puis clique « 🔊 Activer le son » là-bas. Sans ça, le son reste ici."
     },
     "eyebrow": "Salle d'attente",
+    "manchesCompletes_zero": "0 manche complète",
+    "manchesCompletes_one": "{{count}} manche complète",
+    "manchesCompletes_other": "{{count}} manches complètes",
     "eyebrowPlaying": "Manche {{round}}",
     "eyebrowEnded": "Partie terminée",
     "title": "Les joueurs arrivent…",
