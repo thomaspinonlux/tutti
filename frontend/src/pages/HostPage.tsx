@@ -247,6 +247,17 @@ function HostPageInner(): JSX.Element {
   const [cumulative, setCumulative] = useState<CumulativeScore[]>([]);
   const [hostSocket, setHostSocket] = useState<Socket | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * fix/apple-ne-repond-plus — le lecteur Apple de l'iPad refuse TOUT.
+   * Soirée du 06/11, 23:10 → 23:13 : sept morceaux différents refusés en 3 à
+   * 5 ms avec la même erreur (MPMusicPlayerControllerErrorDomain 1), la
+   * console sautant de l'un à l'autre ; relancer l'app a tout réparé (même
+   * morceau joué une minute après). Recharger la console ne suffit pas : le
+   * lecteur Apple vit dans l'app, pas dans la page. Dès que deux morceaux
+   * DIFFÉRENTS sont refusés coup sur coup, on arrête de sauter et on dit le
+   * seul geste qui marche.
+   */
+  const [appleBloque, setAppleBloque] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [busy, setBusy] = useState(false);
   /** feat/pilote-automatique — `busy` lisible depuis un minuteur sans re-rendu. */
@@ -2012,12 +2023,15 @@ function HostPageInner(): JSX.Element {
   // plutôt que de sauter toute la manche en silence.
   const refusConsecutifsRef = useRef(0);
   const dernierRefusIdRef = useRef('');
+  /** fix/apple-ne-repond-plus — refus « vrais » récents (id + instant). */
+  const refusRecentsRef = useRef<{ id: string; t: number }[]>([]);
   /** fix/cascade-de-morceaux-sautes — essais de rattrapage déjà faits, par morceau. */
   const essaisRattrapageRef = useRef<Map<string, number>>(new Map());
   useEffect(() => {
     const refus = apple.refusNatif;
     if (!refus || !session || !playingRound) return;
     if (!currentTrack || currentTrack.provider_track_id !== refus.id) return;
+    if (appleBloque) return; // on attend que l'animateur relance l'app
 
     // fix/cascade-de-morceaux-sautes — UN REFUS N'EST PAS FORCÉMENT LE MORCEAU.
     //
@@ -2065,6 +2079,27 @@ function HostPageInner(): JSX.Element {
 
     if (dernierRefusIdRef.current === refus.id) return; // déjà traité
     dernierRefusIdRef.current = refus.id;
+
+    // fix/apple-ne-repond-plus — deux morceaux DIFFÉRENTS refusés en moins de
+    // 90 s : ce n'est plus le morceau, c'est le lecteur Apple. On n'enchaîne
+    // plus les refus, on demande de relancer l'app.
+    if (/refuse ce morceau/i.test(refus.message)) {
+      const maintenant = Date.now();
+      const recents = refusRecentsRef.current.filter((r) => maintenant - r.t < 90_000);
+      recents.push({ id: refus.id, t: maintenant });
+      refusRecentsRef.current = recents;
+      const differents = new Set(recents.map((r) => r.id)).size;
+      if (differents >= 2) {
+        remoteLog(
+          'lancement',
+          "Apple Music ne répond plus — on arrête de sauter et on demande de relancer l'app",
+          { morceauxRefuses: differents, dernier: refus.id, erreur: refus.message },
+          'error',
+        );
+        setAppleBloque(true);
+        return;
+      }
+    }
     refusConsecutifsRef.current += 1;
     const titre = currentTrack.title || refus.id;
     remoteLog(
@@ -2602,6 +2637,28 @@ function HostPageInner(): JSX.Element {
       `lastEndedRound=${lastEndedRound?.id ?? 'null'} ` +
       `inGameplay=will-compute hasAnimator=${session?.has_animator ?? '?'}`,
   );
+
+  if (appleBloque) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <MultiColorBar height="md" />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="max-w-lg text-center space-y-5">
+            <p className="font-display text-3xl text-raspberry">Apple Music ne répond plus</p>
+            <p className="text-lg">
+              Le lecteur Apple Music de l&apos;iPad refuse tous les morceaux. Ce n&apos;est pas la
+              playlist : il faut relancer l&apos;app.
+            </p>
+            <ol className="text-left text-lg space-y-2 list-decimal list-inside">
+              <li>Balaye l&apos;app Tutti vers le haut pour la fermer complètement.</li>
+              <li>Rouvre Tutti.</li>
+              <li>La partie reprend là où elle en était, les joueurs restent connectés.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     console.info(`[HostPage] About to render <ErrorScreen /> (error="${error}")`);
