@@ -2849,7 +2849,7 @@ function HostPageInner(): JSX.Element {
           {toasts.map((toast) => (
             <div
               key={toast.id}
-              className={`px-4 py-2 border-2 border-ink rounded shadow-pop bg-white animate-pop-in font-medium text-sm ${
+              className={`px-4 py-2 border-2 border-ink rounded shadow-pop bg-white text-ink animate-pop-in font-medium text-sm ${
                 toast.tone === 'spritz'
                   ? 'border-l-8 border-l-spritz'
                   : toast.tone === 'basil'
@@ -3453,7 +3453,7 @@ function HostPageInner(): JSX.Element {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-4 py-2 border-2 border-ink rounded shadow-pop bg-white animate-pop-in font-medium text-sm ${
+            className={`px-4 py-2 border-2 border-ink rounded shadow-pop bg-white text-ink animate-pop-in font-medium text-sm ${
               toast.tone === 'spritz'
                 ? 'border-l-8 border-l-spritz'
                 : toast.tone === 'basil'
