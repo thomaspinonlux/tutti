@@ -549,7 +549,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                         TuttiJournal.shared.note(
                             "musickit",
                             "APPLE REFUSE LE MORCEAU — passage au suivant, sans repli",
-                            ["id": catalogId, "refus": refus.localizedDescription],
+                            ["id": catalogId, "refus": refus.localizedDescription, "detail": TuttiMusicKitPlugin.detailErreur(refus)],
                             niveau: "warn"
                         )
                         self.noterEtat(enLecture: false, position: 0, nowPlayingId: "", confirme: true, commande: true)
@@ -855,6 +855,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.reject("Apple Music n'est pas disponible à l'instant (\(feuVert.raison))")
             return
         }
+        verrouCommande.lock(); ambianceLancee = true; verrouCommande.unlock()
         let jeton = TuttiJournal.shared.debut("musickit", "playPlaylist", ["id": playlistId, "aleatoire": aleatoire])
         Task {
             defer { self.rendreLaMain() }
@@ -909,6 +910,25 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     /// reste vivant, la partie démarre par le chemin normal. Si ça échoue, on
     /// retombe sur l'ancien comportement (file vidée).
     @objc func stopAmbiance(_ call: CAPPluginCall) {
+        // fix/gel-au-demarrage — ON NE TOUCHE PAS UN LECTEUR QUI N'A RIEN JOUÉ.
+        //
+        // Essais de Thomas, 07/11 : 12:02:21, 12:07:44 et 12:11:54, stopAmbiance
+        // arrive sur un lecteur jamais utilisé (l'ambiance était la boucle MP3 de
+        // la console, pas Apple) et fait stop() + file vide ; 5 à 8 s plus tard
+        // le premier play() reste bloqué dans un appel synchrone au service
+        // musique d'iOS (pile MetricKit : MusicKit → MediaPlayer → Foundation →
+        // libxpc) et l'iPad se fige. Sans cet appel (12:03, 12:09) : prêt en
+        // 0,4 et 0,7 s. La console ne l'envoie plus dans ce cas ; le greffon
+        // le refuse aussi, pour qu'aucune version de la console ne le refasse.
+        verrouCommande.lock()
+        let aRendre = ambianceLancee
+        ambianceLancee = false
+        verrouCommande.unlock()
+        guard aRendre else {
+            TuttiJournal.shared.note("musickit", "stopAmbiance ignoré — aucune ambiance Apple lancée, le lecteur n'est pas touché")
+            call.resolve()
+            return
+        }
         let jeton = TuttiJournal.shared.debut("musickit", "stopAmbiance")
         Task {
             let essai = try? await self.courseAvecDelai(self.delaiCommandeApple) {
@@ -937,6 +957,26 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             TuttiJournal.shared.fin("musickit", jeton, ["lecteurGarde": garde])
             call.resolve()
         }
+    }
+
+    /// fix/apple-ne-repond-plus — L'ERREUR COMPLÈTE, PAS SEULEMENT SON TITRE.
+    /// Le 06/11 (23:10 → 23:13), sept refus n'ont laissé que « error 1 » : le
+    /// domaine, le code et surtout l'erreur sous-jacente (connexion au service
+    /// musique, file absente…) disent laquelle des causes Apple est en jeu.
+    static func detailErreur(_ erreur: Error) -> String {
+        var lignes: [String] = []
+        var courante: NSError? = erreur as NSError
+        var profondeur = 0
+        while let e = courante, profondeur < 4 {
+            let infos = e.userInfo
+                .filter { $0.key != NSUnderlyingErrorKey }
+                .map { "\($0.key)=\($0.value)" }
+                .joined(separator: "; ")
+            lignes.append("\(e.domain)#\(e.code) \(infos)")
+            courante = e.userInfo[NSUnderlyingErrorKey] as? NSError
+            profondeur += 1
+        }
+        return String(lignes.joined(separator: " ⟶ ").prefix(1500))
     }
 
     // MARK: - Préchauffage (fix/premier-morceau-avant-la-partie)
@@ -1010,7 +1050,7 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                 TuttiJournal.shared.fin("musickit", jeton, ["pret": true, "verifie": verif.vu])
                 call.resolve(["pret": true, "verifie": verif.vu])
             } catch {
-                TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
+                TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription, "detail": TuttiMusicKitPlugin.detailErreur(error)])
                 call.reject("Préchauffage échoué : \(error.localizedDescription)")
             }
         }
@@ -1147,6 +1187,9 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     // le lancer par-dessus le premier.
     private let verrouCommande = NSLock()
     private var commandeEnCours = false
+    /// fix/gel-au-demarrage — vrai seulement si playPlaylist (ambiance Apple) a
+    /// été lancé dans cette session de l'app. Sinon stopAmbiance ne touche à rien.
+    private var ambianceLancee = false
     /// fix/jamais-de-console-bloquee — instant où la main a été prise.
     private var commandePriseA: Double = 0
     /// Au-delà, la commande en cours est considérée comme perdue.

@@ -129,7 +129,9 @@ router.post('/client-log/natif', (req: Request, res: Response): void => {
     // fil principal) étaient tronqués à 500 caractères : la partie qui dit
     // QUELLE étape d'Apple bloque était perdue. On les écrit en entier, en
     // morceaux numérotés (une ligne de journal reste lisible).
-    if (l.source === 'metrickit' && complet.length > 500) {
+    // Même règle pour le détail complet d'une erreur Apple (champ `detail`).
+    const aGarderEntier = l.source === 'metrickit' || (l.details !== undefined && 'detail' in l.details);
+    if (aGarderEntier && complet.length > 500) {
       const morceaux = Math.ceil(complet.length / 1500);
       for (let i = 0; i < morceaux; i++) {
         ecrire(`${entete} (partie ${i + 1}/${morceaux}) ${complet.slice(i * 1500, (i + 1) * 1500)}`);
