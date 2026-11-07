@@ -22,6 +22,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { remoteLog } from './remoteLog.js';
 
 /**
  * Slot config — URL de l'asset. Défaut = la boucle bundlée dans public/audio/.
@@ -50,6 +51,11 @@ export function useSelectionBackgroundMusic({ enabled }: Options): void {
     audio.volume = DEFAULT_VOLUME;
     audio.preload = 'auto';
     audioRef.current = audio;
+
+    // diag/gel-au-demarrage — on note quand la boucle MP3 prend réellement le
+    // son et quand elle le rend, pour comparer avec le démarrage d'Apple Music.
+    const surLecture = (): void => remoteLog('ambiance', 'boucle MP3 : lecture démarrée');
+    audio.addEventListener('playing', surLecture, { once: true });
 
     const attemptPlay = (): void => {
       if (!audio.paused) return;
@@ -88,7 +94,9 @@ export function useSelectionBackgroundMusic({ enabled }: Options): void {
     return () => {
       window.clearInterval(retryId);
       window.removeEventListener('pointerdown', attemptPlay);
+      audio.removeEventListener('playing', surLecture);
       try {
+        if (!audio.paused) remoteLog('ambiance', 'boucle MP3 : arrêtée');
         audio.pause();
         audio.currentTime = 0;
       } catch {

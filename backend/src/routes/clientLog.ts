@@ -117,11 +117,26 @@ router.post('/client-log/natif', (req: Request, res: Response): void => {
 
   const appareil = `${parsed.data.appareil ?? 'iPad'} iOS ${parsed.data.systeme ?? '?'}`;
   for (const l of parsed.data.lignes) {
-    const details = l.details ? ` ${JSON.stringify(l.details).slice(0, 500)}` : '';
-    const line = `[Natif:${appareil}] t+${l.t}ms [${l.fil}] [${l.source}] ${l.etape}${details}`;
-    if (l.niveau === 'error') console.error(line);
-    else if (l.niveau === 'warn') console.warn(line);
-    else console.info(line);
+    const ecrire = (line: string): void => {
+      if (l.niveau === 'error') console.error(line);
+      else if (l.niveau === 'warn') console.warn(line);
+      else console.info(line);
+    };
+    const entete = `[Natif:${appareil}] t+${l.t}ms [${l.fil}] [${l.source}] ${l.etape}`;
+    const complet = l.details ? JSON.stringify(l.details) : '';
+    // diag/rapport-de-gel-complet — LES RAPPORTS D'iOS NE SONT PLUS COUPÉS.
+    // Le 06/11, les rapports de gel et de fermeture forcée (pile d'appels du
+    // fil principal) étaient tronqués à 500 caractères : la partie qui dit
+    // QUELLE étape d'Apple bloque était perdue. On les écrit en entier, en
+    // morceaux numérotés (une ligne de journal reste lisible).
+    if (l.source === 'metrickit' && complet.length > 500) {
+      const morceaux = Math.ceil(complet.length / 1500);
+      for (let i = 0; i < morceaux; i++) {
+        ecrire(`${entete} (partie ${i + 1}/${morceaux}) ${complet.slice(i * 1500, (i + 1) * 1500)}`);
+      }
+      continue;
+    }
+    ecrire(`${entete}${complet ? ` ${complet.slice(0, 500)}` : ''}`);
   }
   res.json({ ok: true, recues: parsed.data.lignes.length });
 });
