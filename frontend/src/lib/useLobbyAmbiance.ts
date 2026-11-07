@@ -55,6 +55,25 @@ export function useLobbyAmbiance({
   /** Garde-fou : une seule tentative par entrée en phase d'attente. */
   const tenteRef = useRef(false);
   const arreteRef = useRef(false);
+  /**
+   * fix/gel-au-demarrage — true seulement si la playlist Apple d'ambiance a
+   * réellement été lancée sur le lecteur natif.
+   *
+   * Journal de l'iPad du 07/11 (essais de Thomas, 12:02 → 12:12) : à chaque
+   * gel, la console avait appelé `stopAmbiance` quelques secondes avant le
+   * premier morceau Apple, ALORS QU'AUCUNE AMBIANCE APPLE NE JOUAIT (c'est la
+   * boucle MP3 qui joue). Sur un lecteur jamais utilisé, `stopAmbiance` fait
+   * stop() + file vide ; le premier play() qui suit reste bloqué dans un appel
+   * synchrone au service musique d'iOS (pile MetricKit : MusicKit →
+   * MediaPlayer → Foundation → libxpc, attente sans fin) et l'iPad se fige.
+   *   12:02:21 stopAmbiance → 12:02:29 préchauffage → GEL
+   *   12:07:44 stopAmbiance → 12:07:49 préchauffage → GEL
+   *   12:11:54 stopAmbiance → 12:11:59 préchauffage → GEL
+   *   12:03:25 et 12:09:15, sans stopAmbiance avant → prêt en 0,4 et 0,7 s
+   * On ne touche donc plus au lecteur Apple pour « rendre » une ambiance
+   * qu'il n'a jamais jouée.
+   */
+  const ambianceAppleLanceeRef = useRef(false);
 
   const peutApple =
     enabled &&
@@ -67,6 +86,8 @@ export function useLobbyAmbiance({
     if (arreteRef.current) return;
     arreteRef.current = true;
     setSurApple(false);
+    if (!ambianceAppleLanceeRef.current) return;
+    ambianceAppleLanceeRef.current = false;
     await nativeMusicKit.stopAmbiance();
   }, []);
 
@@ -85,13 +106,17 @@ export function useLobbyAmbiance({
       // Un binaire sans la méthode, une playlist introuvable ou un refus
       // d'Apple renvoient false : on laisse alors la boucle MP3 prendre le
       // relais plutôt que de laisser la salle en silence.
+      ambianceAppleLanceeRef.current = true;
       const ok = await nativeMusicKit.playPlaylist(playlistId, aleatoire);
       if (vivant) setSurApple(ok);
     })();
 
     return () => {
       vivant = false;
-      void nativeMusicKit.stopAmbiance();
+      if (ambianceAppleLanceeRef.current) {
+        ambianceAppleLanceeRef.current = false;
+        void nativeMusicKit.stopAmbiance();
+      }
       setSurApple(false);
     };
   }, [peutApple, playlistId, aleatoire]);
