@@ -13,7 +13,8 @@ import { getShareableOrigin } from '../../lib/platform.js';
 import type { Socket } from 'socket.io-client';
 import { SceneDessin } from '../dessin/SceneDessin.js';
 import { SceneBac, SceneEcrireVoter } from '../jeux/SceneJeux.js';
-import type { DetailsBac, DetailsVote } from '@tutti/shared';
+import type { CumulativeScore, DetailsBac, DetailsVote } from '@tutti/shared';
+import { getSessionSnapshot } from '../../lib/sessions.js';
 
 export interface QuizTvReveal {
   reveal: { answer: string };
@@ -60,6 +61,43 @@ export function ScreenQuizView({
     }
     return brut;
   };
+  // fix/quiz-classement-tv — le classement du quiz sur la TV, relu à chaque
+  // révélation et entre deux questions (la TV n'en montrait aucun).
+  const [classement, setClassement] = useState<CumulativeScore[]>([]);
+  const cleClassement = `${question?.question_index ?? 'x'}-${reveal ? 'r' : 'q'}-${finDeManche ? 'f' : ''}`;
+  useEffect(() => {
+    if (question && !reveal && !finDeManche) return;
+    let vivant = true;
+    void getSessionSnapshot(joinCode)
+      .then((r) => {
+        if (vivant) setClassement(r.cumulative.filter((c) => c.total_points > 0).slice(0, 5));
+      })
+      .catch(() => undefined);
+    return () => {
+      vivant = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cleClassement, joinCode]);
+  const blocClassement =
+    classement.length > 0 ? (
+      <div className="mt-8 w-full max-w-xl">
+        <p className="font-mono text-sm uppercase tracking-[0.3em] text-white/50 mb-3 text-center">
+          {t('hostQuizz.leaderboard')}
+        </p>
+        <ol className="space-y-2">
+          {classement.map((c, i) => (
+            <li
+              key={c.id}
+              className="flex items-center gap-4 rounded-xl bg-white/[0.06] border border-white/10 px-5 py-2 text-2xl"
+            >
+              <span className="font-mono w-8 text-white/60">{i + 1}.</span>
+              <span className="flex-1 truncate font-semibold">{c.label}</span>
+              <span className="font-mono font-bold tabular-nums">{c.total_points}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    ) : null;
   const [maintenant, setMaintenant] = useState(Date.now());
   useEffect(() => {
     const id = window.setInterval(() => setMaintenant(Date.now()), 250);
@@ -83,6 +121,7 @@ export function ScreenQuizView({
           <QRCode value={playUrl} size={220} />
         </div>
         <p className="mt-4 font-mono text-3xl font-bold tracking-[0.2em]">{joinCode}</p>
+        {blocClassement}
       </div>
     );
   }
@@ -124,7 +163,10 @@ export function ScreenQuizView({
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white flex flex-col p-8 gap-4">
         <p className="font-mono text-lg uppercase tracking-[0.25em] text-white/60">
-          {question.category ?? t('dessin.titre')} · {t('quizTheme.tvQuestion', { n: question.question_index + 1 })}
+          {question.category ?? t('dessin.titre')} ·{' '}
+          {question.numero_manche && question.total_manche
+            ? t('hostQuizz.questionSur', { n: question.numero_manche, total: question.total_manche })
+            : t('quizTheme.tvQuestion', { n: question.question_index + 1 })}
         </p>
         <div className="flex-1 min-h-0">
           <SceneDessin
@@ -144,7 +186,10 @@ export function ScreenQuizView({
     <div className={fond}>
       <div className="absolute top-6 left-8 right-8 flex items-center justify-between">
         <p className="font-mono text-lg uppercase tracking-[0.25em] text-white/60">
-          {question.category ?? 'Quiz'} · {t('quizTheme.tvQuestion', { n: question.question_index + 1 })}
+          {question.category ?? 'Quiz'} ·{' '}
+          {question.numero_manche && question.total_manche
+            ? t('hostQuizz.questionSur', { n: question.numero_manche, total: question.total_manche })
+            : t('quizTheme.tvQuestion', { n: question.question_index + 1 })}
         </p>
         {!revele && (
           <p className="font-display text-6xl tabular-nums" style={{ color: restant <= 5 ? CORAIL : 'white' }}>
@@ -217,6 +262,7 @@ export function ScreenQuizView({
                 })}
           </p>
           )}
+          <div className="flex justify-center">{blocClassement}</div>
         </div>
       )}
     </div>

@@ -17,7 +17,7 @@
  * thème ou on termine. La partie n'est plus jamais tuée par un choix de thème.
  */
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
 import type {
@@ -33,6 +33,7 @@ import {
   endSession,
   listerThemesQuiz,
   repriseQuizz,
+  getSession,
   nextQuestion,
   playQuestion,
   revealQuestion,
@@ -138,7 +139,21 @@ export function HostQuizzView({
       .catch((err: unknown) => setPackError((err as Error).message));
   }, [setId, versionPack]);
 
+  // fix/quiz-classement-console — le classement de la console ne se mettait
+  // jamais à jour pendant le quiz (« Aucun score pour l'instant » jusqu'à la
+  // fin) : on le relit après chaque révélation.
+  // Le parent passe une nouvelle fonction à chaque rendu : on la garde dans
+  // une référence pour ne pas relancer la lecture en boucle.
+  const majClassementRef = useRef(onCumulativeUpdate);
+  majClassementRef.current = onCumulativeUpdate;
+  const rafraichirClassement = useCallback((): void => {
+    void getSession(session.id)
+      .then((r) => majClassementRef.current(r.cumulative))
+      .catch(() => undefined);
+  }, [session.id]);
+
   const reprendre = useCallback(async (): Promise<void> => {
+    rafraichirClassement();
     try {
       const r = await repriseQuizz(session.id);
       if (!r.state) return;
@@ -147,7 +162,7 @@ export function HostQuizzView({
     } catch {
       /* réseau absent : le socket reprendra */
     }
-  }, [session.id]);
+  }, [session.id, rafraichirClassement]);
 
   // ── Socket listeners ────────────────────────────────────────────────────
   useEffect(() => {
@@ -173,6 +188,7 @@ export function HostQuizzView({
       setSubmittedSet((s) => new Set([...s, msg.participant_id]));
     };
     const onQuestionRevealed = (msg: QuizzReveal): void => {
+      rafraichirClassement();
       setLastReveal(msg);
       setActiveQuestion((q) => (q ? { ...q, phase: 'revealed', reveal: msg.reveal } : q));
     };
@@ -199,7 +215,7 @@ export function HostQuizzView({
       socket.off('quizz:theme_added', onThemeAdded);
       socket.off('quizz:block_ended', onBlockEnded);
     };
-  }, [socket, session, onSessionUpdate, onCumulativeUpdate, reprendre]);
+  }, [socket, session, onSessionUpdate, onCumulativeUpdate, reprendre, rafraichirClassement]);
 
   // fix/quiz-telephone-qui-decroche — la console aussi reprend la question en
   // cours après un rechargement ou une coupure (avant : écran vide jusqu'à la

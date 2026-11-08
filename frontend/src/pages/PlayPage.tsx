@@ -1154,7 +1154,7 @@ export function PlayPage(): JSX.Element {
                 </div>
               )}
               {/* feat/rules — règles concises visibles dans le lobby avant la manche 1 */}
-              <GameRules className="mt-4" sombre quiz={view?.game_type === 'QUIZZ'} />
+              <GameRules className="mt-4" sombre quiz={view?.game_type === 'QUIZZ'} equipes={view?.mode === 'TEAMS'} />
             </>
           )}
 
@@ -1279,7 +1279,9 @@ export function PlayPage(): JSX.Element {
         </div>
       </main>
 
-      {showRules && step === 'playing' && (
+      {/* fix/regles-du-quiz — ces consignes (micro, titre, artiste) sont celles
+          du blind test : pas au quiz. */}
+      {showRules && step === 'playing' && view?.game_type !== 'QUIZZ' && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-5 animate-fade-in backdrop-blur-sm">
           <div className={`${TEL_PANNEAU} w-full max-w-sm p-6`}>
             <p className="mb-4 text-center font-display text-2xl text-white">Comment répondre 🎤</p>

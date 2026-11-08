@@ -41,6 +41,8 @@ export type ScreenState =
       joinCode: string;
       sessionName: string | null;
       players: Array<{ id: string; pseudo: string; team_id: string | null }>;
+      /** fix/tv-quiz — la TV distingue le quiz du blind test dans la salle d'attente. */
+      gameType: 'TRACKS' | 'QUIZZ';
       lastUpdate: string;
     }
   | {
@@ -469,7 +471,8 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
   // Le store in-memory (TTL 30s) est alimenté par POST /screen-state/focused-playlist.
   // On renvoie juste l'id focused + le scroll : la TV fetch la grille catalogue
   // elle-même (/api/library-public/catalog) et mirrore l'écran animateur.
-  const focus = getFocusedSelection(workspaceId);
+  // fix/tv-quiz — pas de grille de playlists pendant un quiz.
+  const focus = session.game_type === 'QUIZZ' ? null : getFocusedSelection(workspaceId);
   if (focus) {
     journaliserSiChange(
       workspaceId,
@@ -528,6 +531,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
     joinCode: session.short_code,
     sessionName: session.name,
     players,
+    gameType: session.game_type === 'QUIZZ' ? 'QUIZZ' : 'TRACKS',
     lastUpdate,
   };
 }

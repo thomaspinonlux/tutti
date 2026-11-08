@@ -232,7 +232,10 @@ router.post(
       // pour lui ; les joueurs qui veulent jouer à plusieurs se groupent
       // autour d'un téléphone. On force donc l'individuel, quoi qu'envoie le
       // client — un vieil onglet ouvert, par exemple.
-      const enEquipes = parsed.data.game_type !== 'QUIZZ' && parsed.data.mode === 'TEAMS';
+      // feat/quiz-en-equipes (08/11) — Thomas veut maintenant les équipes au
+      // quiz, avec la règle du blind test : plusieurs téléphones par équipe,
+      // seul le premier qui répond juste fait marquer l'équipe.
+      const enEquipes = parsed.data.mode === 'TEAMS';
 
       const session = await prisma.session.create({
         data: {
@@ -828,9 +831,8 @@ router.patch(
     try {
       const updateData: Prisma.SessionUpdateInput = {};
       if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-      // Le quiz reste en individuel, même si la partie est modifiée après coup.
       if (parsed.data.mode) {
-        updateData.mode = (own.game_type === 'QUIZZ' ? 'SOLO' : parsed.data.mode) as GameMode;
+        updateData.mode = parsed.data.mode as GameMode;
       }
       if (parsed.data.teams_config !== undefined) {
         updateData.teams_config = parsed.data.teams_config

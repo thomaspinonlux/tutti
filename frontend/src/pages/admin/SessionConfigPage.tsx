@@ -130,8 +130,8 @@ export function SessionConfigPage(): JSX.Element {
       const session = await createSession({
         name: name.trim() || undefined,
         game_type: typeDePartie,
-        mode: typeDePartie === 'QUIZZ' ? 'SOLO' : mode,
-        teams_config: typeDePartie !== 'QUIZZ' && mode === 'TEAMS' ? teams : undefined,
+        mode,
+        teams_config: mode === 'TEAMS' ? teams : undefined,
         language,
         has_animator: hasAnimator,
         voice_enabled: typeDePartie === 'TRACKS' ? vocalActif : undefined,
@@ -283,11 +283,8 @@ export function SessionConfigPage(): JSX.Element {
           <p className="text-xs font-mono uppercase tracking-wider text-ink/70 mb-3">
             {t('sessionConfig.mode')}
           </p>
-          {typeDePartie === 'QUIZZ' ? (
-            <p className="font-editorial italic text-xs text-ink-soft">
-              {t('sessionConfig.modeQuizzHint')}
-            </p>
-          ) : (
+          {/* feat/quiz-en-equipes (08/11) — équipes aussi au quiz. */}
+          {(
             <>
               <div className="flex gap-2">
                 <Pill active={mode === 'SOLO'} onClick={() => setMode('SOLO')}>
@@ -300,13 +297,15 @@ export function SessionConfigPage(): JSX.Element {
               <p className="font-editorial italic text-xs text-ink-soft mt-3">
                 {mode === 'SOLO'
                   ? t('sessionConfig.modeSoloHint')
-                  : t('sessionConfig.modeTeamsHint')}
+                  : typeDePartie === 'QUIZZ'
+                    ? t('sessionConfig.modeTeamsHintQuiz')
+                    : t('sessionConfig.modeTeamsHint')}
               </p>
             </>
           )}
         </Card>
 
-        {typeDePartie !== 'QUIZZ' && mode === 'TEAMS' && (
+        {mode === 'TEAMS' && (
           <Card>
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-mono uppercase tracking-wider text-ink/70">

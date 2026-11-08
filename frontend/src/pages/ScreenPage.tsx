@@ -53,6 +53,7 @@ import { classesNom } from '../components/game/ClassementDuTitre.js';
 import { AutoScrollList } from '../components/screen/AutoScrollList.js';
 import type { CurrentQuestionState } from '@tutti/shared';
 import { ScreenQuizView, type QuizTvReveal } from '../components/screen/ScreenQuizView.js';
+import { repriseQuizz } from '../lib/sessions.js';
 
 // fix/tv-1s-poll — 1 s en partie : l'écran ne peut jamais avoir plus d'une
 // seconde de retard sur le serveur, même si le canal temps réel est mort.
@@ -82,6 +83,7 @@ export function ScreenPage(): JSX.Element {
   } | null>(null);
   // feat/dessin-a-deviner — la scène du dessin lit les traits sur ce socket.
   const [socketTv, setSocketTv] = useState<Socket | null>(null);
+  const [repriseTv, setRepriseTv] = useState(0);
 
   // Auto-detect workspaceId via cookies Supabase si pas en param URL
   // fix/tv-freeze — BATTEMENT DE COEUR pour le chien de garde NATIF.
@@ -427,6 +429,10 @@ export function ScreenPage(): JSX.Element {
     const onQuizFinManche = (): void =>
       setQuizTv({ question: null, reveal: null, finDeManche: true });
     const onFinPartie = (): void => setQuizTv(null);
+    // fix/tv-quiz — TV rallumée ou reconnectée en plein quiz : on redemande la
+    // question en cours au lieu d'attendre la suivante.
+    const onReconnexion = (): void => setRepriseTv((n) => n + 1);
+    socket.on('connect', onReconnexion);
     socket.on('quizz:question_start', onQuizStart);
     socket.on('quizz:question_revealed', onQuizReveal);
     socket.on('quizz:block_ended', onQuizFinManche);
@@ -437,6 +443,7 @@ export function ScreenPage(): JSX.Element {
       socket.off('quizz:question_revealed', onQuizReveal);
       socket.off('quizz:block_ended', onQuizFinManche);
       socket.off('session:ended', onFinPartie);
+      socket.off('connect', onReconnexion);
       setSocketTv(null);
       events.forEach((ev) => socket.off(ev, trigger));
       socket.off('track:start', onTrackStart);
@@ -444,6 +451,34 @@ export function ScreenPage(): JSX.Element {
       socket.disconnect();
     };
   }, [joinCode]);
+
+  // fix/tv-quiz — reprise du quiz en cours (TV rechargée, rallumée ou
+  // reconnectée) : sans elle, la TV restait sur la salle d'attente jusqu'à la
+  // question suivante.
+  const quizSessionId =
+    screenState?.state === 'LOBBY' && screenState.gameType === 'QUIZZ' ? screenState.sessionId : null;
+  useEffect(() => {
+    if (!quizSessionId) return;
+    let vivant = true;
+    void repriseQuizz(quizSessionId)
+      .then((r) => {
+        if (!vivant || !r.state) return;
+        const etat = r.state;
+        setQuizTv((avant) =>
+          avant?.question?.question_index === etat.question_index && avant.reveal
+            ? avant
+            : {
+                question: etat,
+                reveal: (r.revelation as QuizTvReveal | null) ?? null,
+                finDeManche: false,
+              },
+        );
+      })
+      .catch(() => undefined);
+    return () => {
+      vivant = false;
+    };
+  }, [quizSessionId, repriseTv]);
 
   // ── Pas de workspaceId encore : saisie manuelle code ou loading auto ────
   if (!workspaceId) {
@@ -544,6 +579,7 @@ export function ScreenPage(): JSX.Element {
           joinCode={screenState.joinCode}
           sessionName={screenState.sessionName}
           players={screenState.players}
+          quiz={screenState.gameType === 'QUIZZ'}
         />
       );
     case 'PLAYING':
@@ -658,10 +694,13 @@ function ScreenLobbyView({
   joinCode,
   sessionName,
   players,
+  quiz = false,
 }: {
   joinCode: string;
   sessionName: string | null;
   players: Array<{ id: string; pseudo: string; team_id: string | null }>;
+  /** fix/tv-quiz — salle d'attente du quiz : pas de playlists. */
+  quiz?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
   const url = `${getShareableOrigin()}/play?session=${joinCode}`;
@@ -671,7 +710,7 @@ function ScreenLobbyView({
       <main className="flex-1 grid lg:grid-cols-2 gap-10 p-10 items-center max-w-7xl mx-auto w-full">
         <div className="text-center">
           <p className="font-mono text-sm uppercase tracking-[0.3em] mb-3 text-[#FF5C4D]">
-            {t('screen.lobbyEyebrow')}
+            {quiz ? t('screen.lobbyEyebrowQuiz') : t('screen.lobbyEyebrow')}
           </p>
           <h1 className="font-display text-6xl lg:text-7xl leading-none mb-8 text-white">
             {sessionName ?? t('common.brand')}
@@ -694,7 +733,7 @@ function ScreenLobbyView({
           </p>
           {players.length === 0 ? (
             <p className="font-editorial italic text-2xl text-[#B8B8C4]/80">
-              {t('screen.lobbyWaiting')}
+              {quiz ? t('screen.lobbyWaitingQuiz') : t('screen.lobbyWaiting')}
             </p>
           ) : (
             <ul className="grid grid-cols-2 gap-3 max-w-xl mx-auto">
@@ -721,7 +760,7 @@ function ScreenLobbyView({
           en lobby. Auto-rotation 6s, fait découvrir le catalogue aux
           joueurs avant le lancement. Charge via session.short_code (public,
           pas d'auth requise). */}
-      <LobbyPlaylistCarousel shortCode={joinCode} />
+      {!quiz && <LobbyPlaylistCarousel shortCode={joinCode} />}
       <MultiColorBar height="md" />
     </div>
   );

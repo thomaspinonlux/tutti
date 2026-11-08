@@ -268,7 +268,8 @@
     "modeWrittenTitle": "Keyboard only",
     "modeWrittenBody": "No voice buzzer, no microphone prompt: players type their answer. Handy in a noisy room.",
     "titleQuiz": "New quiz",
-    "modeQuizzHint": "In the quiz everyone answers on their own phone and scores for themselves. To play as a group, gather around a single phone."
+    "modeQuizzHint": "In the quiz everyone answers on their own phone and scores for themselves. To play as a group, gather around a single phone.",
+    "modeTeamsHintQuiz": "Everyone answers on their phone; the first team member to answer correctly scores for the team."
   },
   "rules": {
     "title": "How to play",
@@ -678,7 +679,9 @@
     "trackRankingTitle": "Ranking on this track",
     "trackRankingEmpty": "Nobody has found it yet.",
     "trackRankingTotal": "total {{total}}",
-    "btnEndSession": "End game"
+    "btnEndSession": "End game",
+    "lobbyEyebrowQuiz": "Quiz · waiting room",
+    "lobbyWaitingQuiz": "The host starts the quiz when you're ready."
   },
   "play": {
     "pickLevel": "Choose the level",

@@ -23,18 +23,23 @@ export function GameRules({
   className,
   sombre = false,
   quiz = false,
+  equipes = false,
 }: {
   className?: string;
   sombre?: boolean;
   /** fix/regles-du-quiz — au quiz, les règles du quiz (pas celles du blind test). */
   quiz?: boolean;
+  /** Partie en équipes : on rappelle la règle des équipes. */
+  equipes?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
   const items = quiz
     ? [
         { key: 'how', icon: '📱', title: t('rules.quizHowTitle'), body: t('rules.quizHowBody') },
         { key: 'score', icon: '⭐', title: t('rules.scoreTitle'), body: t('rules.quizScoreBody') },
-        { key: 'teams', icon: '👥', title: t('rules.quizTeamsTitle'), body: t('rules.quizTeamsBody') },
+        ...(equipes
+          ? [{ key: 'teams', icon: '👥', title: t('rules.quizTeamsTitle'), body: t('rules.quizTeamsBody') }]
+          : []),
       ]
     : [
     { key: 'how', icon: '🎤', title: t('rules.howTitle'), body: t('rules.howBody') },

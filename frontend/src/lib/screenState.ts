@@ -31,6 +31,8 @@ export type ScreenState =
       joinCode: string;
       sessionName: string | null;
       players: Array<{ id: string; pseudo: string; team_id: string | null }>;
+      /** fix/tv-quiz — absent sur un serveur pas encore à jour : blind test. */
+      gameType?: 'TRACKS' | 'QUIZZ';
       lastUpdate: string;
     }
   | {

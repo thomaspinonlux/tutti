@@ -268,7 +268,8 @@
     "modeWrittenTitle": "Au clavier seulement",
     "modeWrittenBody": "Pas de buzzer vocal, pas de micro demandé : les joueurs tapent leur réponse. Utile en salle bruyante.",
     "titleQuiz": "Nouveau quiz",
-    "modeQuizzHint": "Au quiz, chacun répond sur son téléphone et marque pour lui. Pour jouer à plusieurs, groupez-vous autour d’un seul téléphone."
+    "modeQuizzHint": "Au quiz, chacun répond sur son téléphone et marque pour lui. Pour jouer à plusieurs, groupez-vous autour d’un seul téléphone.",
+    "modeTeamsHintQuiz": "Chaque joueur répond sur son téléphone ; le premier de l'équipe qui répond juste fait marquer l'équipe."
   },
   "rules": {
     "title": "Comment jouer",
@@ -678,7 +679,9 @@
     "trackRankingTitle": "Classement sur ce titre",
     "trackRankingEmpty": "Personne n'a encore trouvé.",
     "trackRankingTotal": "total {{total}}",
-    "btnEndSession": "Terminer la partie"
+    "btnEndSession": "Terminer la partie",
+    "lobbyEyebrowQuiz": "Quiz · salle d'attente",
+    "lobbyWaitingQuiz": "L'animateur lance le quiz quand vous êtes prêts."
   },
   "play": {
     "pickLevel": "Choisis le niveau",

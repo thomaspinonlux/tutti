@@ -70,11 +70,23 @@ async function ensureOwnSet(setId: string, workspaceId: string) {
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   const workspaceId = req.workspaceId!;
   try {
-    const sets = await prisma.questionSet.findMany({
+    const tous = await prisma.questionSet.findMany({
       where: { establishment: { workspace_id: workspaceId } },
       orderBy: { created_at: 'desc' },
       include: { _count: { select: { questions: true } } },
     });
+    // fix/quiz-liste-propre — les questions copiées pour une partie de quiz
+    // (« Quiz — KOMP-XXXX ») ne sont pas des quiz de l'établissement : on ne
+    // les liste pas dans « Mes quiz ».
+    const deParties = new Set(
+      (
+        await prisma.session.findMany({
+          where: { question_set_id: { in: tous.map((x) => x.id) } },
+          select: { question_set_id: true },
+        })
+      ).map((x) => x.question_set_id),
+    );
+    const sets = tous.filter((x) => !deParties.has(x.id));
     res.json({
       sets: sets.map((s) => ({
         id: s.id,
