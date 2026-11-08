@@ -153,7 +153,7 @@ export function ScreenQuizView({
         )}
       </div>
 
-      <h1 className="font-display text-6xl leading-tight text-center max-w-6xl mb-12">{question.text}</h1>
+      <h1 className="font-display text-6xl leading-tight text-center max-w-6xl mb-12 whitespace-pre-line">{question.text}</h1>
 
       {choix.length > 0 ? (
         <ul className="grid grid-cols-2 gap-5 w-full max-w-6xl">

@@ -335,7 +335,7 @@ function QuestionHeader({ question }: { question: CurrentQuestionState }): JSX.E
           style={{ width: `${Math.max(0, 100 - Math.round(ratio * 100))}%` }}
         />
       </div>
-      <p className="font-display text-2xl leading-tight">{question.text}</p>
+      <p className="font-display text-2xl leading-tight whitespace-pre-line">{question.text}</p>
       {question.text_alt && (
         <p className="font-editorial italic text-base text-ink-soft mt-1">{question.text_alt}</p>
       )}
@@ -426,9 +426,9 @@ function McqAnswer({
                 {String.fromCharCode(65 + idx)}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-base truncate">{choice}</p>
+                <p className="text-base break-words">{choice}</p>
                 {choicesAlt && choicesAlt[idx] && (
-                  <p className="font-editorial italic text-sm text-ink-soft truncate">
+                  <p className="font-editorial italic text-sm text-ink-soft break-words">
                     {choicesAlt[idx]}
                   </p>
                 )}

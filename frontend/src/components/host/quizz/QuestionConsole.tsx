@@ -183,7 +183,7 @@ export function QuestionConsole({
       {/* Énoncé */}
       <Card size="lg" tone={isAsking ? 'cream' : 'spritz'} className="mb-4">
         <p
-          className={`font-display leading-tight mb-2 ${
+          className={`font-display leading-tight mb-2 whitespace-pre-line ${
             xl ? 'text-5xl md:text-6xl 2xl:text-7xl' : 'text-3xl md:text-4xl'
           }`}
         >
@@ -336,9 +336,9 @@ function McqChoices({
             >
               <span className="font-display text-2xl">{String.fromCharCode(65 + idx)}</span>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-lg truncate">{choice}</p>
+                <p className="font-medium text-lg break-words">{choice}</p>
                 {choicesAlt && choicesAlt[idx] && (
-                  <p className="font-editorial italic text-sm text-ink-soft truncate">
+                  <p className="font-editorial italic text-sm text-ink-soft break-words">
                     {choicesAlt[idx]}
                   </p>
                 )}
