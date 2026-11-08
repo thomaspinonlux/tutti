@@ -40,8 +40,11 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false }: P
     // `charger` change à chaque rendu du parent : on ne charge qu'une fois.
   }, []);
 
+  // feat/quiz-entreprise — les quiz de l'établissement, à part et en tête :
+  // ils se jouent en entier, sans niveau.
+  const perso = useMemo(() => (themes ?? []).filter((th) => th.perso), [themes]);
   const visibles = useMemo(
-    () => (themes ?? []).filter((th) => (niveau === 'MIX' ? th.total : th.niveaux[niveau]) > 0),
+    () => (themes ?? []).filter((th) => !th.perso && (niveau === 'MIX' ? th.total : th.niveaux[niveau]) > 0),
     [themes, niveau],
   );
 
@@ -68,6 +71,29 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false }: P
 
   return (
     <div className="space-y-3">
+      {perso.length > 0 && (
+        <div className="space-y-2">
+          <p className={`font-mono text-xs uppercase tracking-wider ${doux}`}>{t('quizTheme.vosQuiz')}</p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {perso.map((th) => (
+              <li key={th.id}>
+                <button
+                  type="button"
+                  disabled={!!enCours}
+                  onClick={() => void choisir(th)}
+                  className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition disabled:opacity-50 ${carte}`}
+                >
+                  <span className={`block font-semibold ${texte}`}>{enCours === th.id ? '…' : th.nom_fr}</span>
+                  <span className={`block text-xs font-mono ${doux}`}>
+                    {t('quizTheme.questions', { count: th.total })}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className={`font-mono text-xs uppercase tracking-wider pt-2 ${doux}`}>{t('quizTheme.themesTutti')}</p>
+        </div>
+      )}
       <div className="flex flex-wrap gap-2" role="group" aria-label={t('quizTheme.level')}>
         {NIVEAUX.map((n) => {
           const actif = n === niveau;

@@ -19,7 +19,7 @@ import { ScoreEventType, type Question } from '@prisma/client';
 import type { CurrentQuestionState, QuestionType } from '@tutti/shared';
 import { prisma } from './prisma.js';
 import { broadcastToSession } from '../socket/index.js';
-import { getActiveQuestion, revealAnswers } from './gameStateQuizz.js';
+import { getActiveQuestion, memoriserEtat, memoriserRevelation, revealAnswers } from './gameStateQuizz.js';
 import { computeQuestionScore } from './quizzScoring.js';
 import { matchAnswer } from './quizzMatch.js';
 import { bilanDessin } from './dessin.js';
@@ -62,7 +62,7 @@ export function buildAndBroadcastQuestion(
   question: Question,
   isBilingual: boolean,
   /** feat/dessin-a-deviner — dessinateur et mot masqué d'une question DRAWING. */
-  extra?: Pick<CurrentQuestionState, 'dessinateur' | 'indice' | 'lettre' | 'etape'>,
+  extra?: Pick<CurrentQuestionState, 'dessinateur' | 'indice' | 'lettre' | 'etape' | 'numero_manche' | 'total_manche'>,
 ): CurrentQuestionState {
   const state: CurrentQuestionState = {
     round_id: '', // pas de round V0 pour QUIZZ
@@ -102,6 +102,7 @@ export function buildAndBroadcastQuestion(
     }
   }
 
+  memoriserEtat(sessionId, state);
   broadcastToSession(sessionId, 'quizz:question_start', { state });
   return state;
 }
@@ -211,11 +212,44 @@ async function revelerInterne(
   );
   if (!state) return;
 
-  const participants = await prisma.participant.findMany({
-    where: { session_id: sessionId, is_kicked: false },
-    select: { id: true, pseudo: true, team_id: true },
-  });
+  const [participants, sessionMode] = await Promise.all([
+    prisma.participant.findMany({
+      where: { session_id: sessionId, is_kicked: false },
+      select: { id: true, pseudo: true, team_id: true },
+    }),
+    prisma.session.findUnique({ where: { id: sessionId }, select: { mode: true } }),
+  ]);
   const participantsById = new Map(participants.map((p) => [p.id, p]));
+
+  // fix/quiz-equipes-un-seul-marqueur — EN ÉQUIPES, UNE ÉQUIPE MARQUE UNE FOIS.
+  // Thomas, 08/11 : même règle qu'au blind test, « le 1er téléphone de
+  // l'équipe qui répond juste donne les points à l'équipe ; on ne peut pas
+  // avoir 3 téléphones de la même équipe qui marquent ». Avant, chaque bonne
+  // réponse d'un coéquipier s'ajoutait au total de l'équipe. On garde la
+  // première bonne réponse (au juste prix : la meilleure estimation), les
+  // autres restent « justes » mais à 0 point.
+  const dejaMarqueParEquipe = new Set<string>();
+  if (sessionMode?.mode === 'TEAMS') {
+    const estimation = question.type === 'ESTIMATION';
+    const marquants = [...state.answers.values()]
+      .filter((a) => (a.score ?? 0) > 0)
+      .sort((a, b) =>
+        estimation && (b.score ?? 0) !== (a.score ?? 0)
+          ? (b.score ?? 0) - (a.score ?? 0)
+          : a.submitted_at_ms - b.submitted_at_ms,
+      );
+    const equipesServies = new Set<string>();
+    for (const a of marquants) {
+      const equipe = participantsById.get(a.participant_id)?.team_id;
+      if (!equipe) continue;
+      if (equipesServies.has(equipe)) {
+        a.score = 0;
+        dejaMarqueParEquipe.add(a.participant_id);
+      } else {
+        equipesServies.add(equipe);
+      }
+    }
+  }
 
   const events: Promise<unknown>[] = [];
   for (const ans of state.answers.values()) {
@@ -296,6 +330,7 @@ async function revelerInterne(
       answered_at_ms: ans.submitted_at_ms - state.started_at_ms,
       score: ans.score ?? 0,
       submitted: ans.value,
+      ...(dejaMarqueParEquipe.has(ans.participant_id) ? { equipe_deja_marque: true } : {}),
     };
   });
   if (resultatDessinateur) results.push(resultatDessinateur);
@@ -309,11 +344,9 @@ async function revelerInterne(
     answer_alt: question.answer_lang2 ?? undefined,
   };
 
-  broadcastToSession(sessionId, 'quizz:question_revealed', {
-    question_index: state.question_index,
-    reveal,
-    results,
-  });
+  const revelation = { question_index: state.question_index, reveal, results };
+  memoriserRevelation(sessionId, revelation);
+  broadcastToSession(sessionId, 'quizz:question_revealed', revelation);
 }
 
 /**
@@ -401,10 +434,12 @@ async function revelerJeuDeSalon(
     })
     .sort((a, b) => b.score - a.score);
 
-  broadcastToSession(sessionId, 'quizz:question_revealed', {
+  const revelation = {
     question_index: active.question_index,
     reveal: { answer: question.type === 'BLUFF' ? question.answer_lang1 : '' },
     results,
     details,
-  });
+  };
+  memoriserRevelation(sessionId, revelation);
+  broadcastToSession(sessionId, 'quizz:question_revealed', revelation);
 }

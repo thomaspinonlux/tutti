@@ -983,8 +983,8 @@ function erreurQuizz(res: Response, err: unknown): void {
 
 const tokenSchema = z.object({ token: z.string() });
 
-router.post('/quizz/themes/liste', async (_req: Request<{ id: string }>, res: Response): Promise<void> => {
-  res.json({ themes: await listerThemes() });
+router.post('/quizz/themes/liste', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  res.json({ themes: await listerThemes(req.params.id) });
 });
 
 const themeManetteSchema = z.object({

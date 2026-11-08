@@ -99,7 +99,12 @@ function melanger<T>(t: T[]): T[] {
 async function sessionQuizz(sessionId: string) {
   const session = await prisma.session.findUnique({
     where: { id: sessionId },
-    include: { participants: { where: { is_kicked: false }, select: { id: true } } },
+    // fix/quiz-animateur-seul — l'animateur seul ne joue pas : il ne fait
+    // pas partie des réponses attendues (sinon « tout le monde a répondu »
+    // n'arrive jamais avant la fin du temps).
+    include: {
+      participants: { where: { is_kicked: false, role: { not: 'ANIMATOR_FULL' } }, select: { id: true } },
+    },
   });
   if (!session) throw new QuizzErreur('NOT_FOUND', 'Partie introuvable', 404);
   if (session.game_type !== 'QUIZZ') throw new QuizzErreur('NOT_QUIZZ', "Cette partie n'est pas un quiz");
@@ -126,7 +131,7 @@ export async function ajouterTheme(
     where: { id: packId },
     include: { questions: true },
   });
-  if (!pack) throw new QuizzErreur('NOT_FOUND', 'Thème introuvable', 404);
+  if (!pack) return ajouterQuizPerso(session, packId);
 
   const niveau = options.niveau ?? 'MIX';
   // feat/dessin-a-deviner — une manche de dessin = chacun dessine une fois
@@ -250,6 +255,124 @@ export async function ajouterTheme(
   });
 }
 
+// ── feat/quiz-entreprise — QUIZ PERSONNALISÉS ──────────────────────────────
+//
+// Thomas, 08/11 : « il faut pouvoir créer des quiz spécifiques entreprises
+// avec leurs propres questions, où on peut choisir le temps de réponse pour
+// chaque question ». Les quiz créés dans l'espace Quiz de l'établissement
+// (QuestionSet à lui) se choisissent maintenant comme un thème : TOUTES leurs
+// questions, dans l'ordre, avec le temps et les points réglés pour chacune.
+
+type SessionQuizz = Awaited<ReturnType<typeof sessionQuizz>>;
+
+/** Les quiz de l'établissement jouables comme thème (pas les jeux d'une partie). */
+async function quizPersoDe(establishmentId: string) {
+  const sets = await prisma.questionSet.findMany({
+    where: { establishment_id: establishmentId },
+    orderBy: { name: 'asc' },
+    select: { id: true, name: true, _count: { select: { questions: true } } },
+  });
+  if (sets.length === 0) return [];
+  // Les questions d'une partie de quiz sont rangées dans un QuestionSet créé
+  // pour elle : ce n'est pas un quiz à rejouer.
+  const deParties = new Set(
+    (
+      await prisma.session.findMany({
+        where: { question_set_id: { in: sets.map((x) => x.id) } },
+        select: { question_set_id: true },
+      })
+    ).map((x) => x.question_set_id),
+  );
+  return sets.filter((x) => x._count.questions > 0 && !deParties.has(x.id));
+}
+
+async function ajouterQuizPerso(
+  session: SessionQuizz,
+  setSourceId: string,
+): Promise<{ set_id: string; debut: number; fin: number; nombre: number; theme: string }> {
+  const source = (await quizPersoDe(session.establishment_id)).find((x) => x.id === setSourceId);
+  if (!source) throw new QuizzErreur('NOT_FOUND', 'Thème introuvable', 404);
+  const questions = await prisma.question.findMany({
+    where: { set_id: source.id },
+    orderBy: { position: 'asc' },
+  });
+  const langue = session.language?.startsWith('en') ? 'en' : 'fr';
+
+  return prisma
+    .$transaction(
+      async (tx) => {
+        let setId = session.question_set_id;
+        if (!setId) {
+          const set = await tx.questionSet.create({
+            data: {
+              establishment_id: session.establishment_id,
+              name: `Quiz — ${session.name ?? session.short_code}`,
+              is_bilingual: false,
+              language_1: langue,
+              language_2: langue === 'fr' ? 'en' : 'fr',
+              is_generic: false,
+              is_published: true,
+            },
+          });
+          setId = set.id;
+          await tx.session.update({ where: { id: session.id }, data: { question_set_id: setId } });
+        }
+        const derniere = await tx.question.aggregate({ where: { set_id: setId }, _max: { position: true } });
+        const debut = (derniere._max.position ?? -1) + 1;
+        await tx.question.createMany({
+          data: questions.map((q, i) => ({
+            set_id: setId!,
+            position: debut + i,
+            type: q.type,
+            // Le nom du quiz sert de nom de manche (compteur « 3 / 20 »).
+            category: source.name,
+            text_lang1: q.text_lang1,
+            text_lang2: q.text_lang2,
+            choices_lang1: q.choices_lang1,
+            choices_lang2: q.choices_lang2,
+            answer_lang1: q.answer_lang1,
+            answer_lang2: q.answer_lang2,
+            answer_aliases_lang1: q.answer_aliases_lang1,
+            answer_aliases_lang2: q.answer_aliases_lang2,
+            time_limit_sec: q.time_limit_sec,
+            points: q.points,
+            media_type: q.media_type,
+            media_url: q.media_url,
+            media_youtube_id: q.media_youtube_id,
+            media_start_sec: q.media_start_sec,
+            media_duration_sec: q.media_duration_sec,
+          })),
+        });
+        return { set_id: setId!, debut, fin: debut + questions.length - 1, nombre: questions.length, theme: source.name };
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    )
+    .then((resultat) => {
+      broadcastToSession(session.id, 'quizz:theme_added', resultat);
+      return resultat;
+    });
+}
+
+/**
+ * fix/quiz-nombre-de-questions — « on ne voit pas combien de questions dans
+ * le quiz ». Position de la question dans sa manche (questions contiguës de
+ * même thème) et taille de la manche.
+ */
+async function compteManche(question: Question): Promise<{ numero_manche: number; total_manche: number }> {
+  const toutes = await prisma.question.findMany({
+    where: { set_id: question.set_id },
+    orderBy: { position: 'asc' },
+    select: { position: true, category: true },
+  });
+  const i = toutes.findIndex((q) => q.position === question.position);
+  if (i < 0) return { numero_manche: 1, total_manche: 1 };
+  let debut = i;
+  while (debut > 0 && toutes[debut - 1]!.category === question.category) debut--;
+  let fin = i;
+  while (fin < toutes.length - 1 && toutes[fin + 1]!.category === question.category) fin++;
+  return { numero_manche: i - debut + 1, total_manche: fin - debut + 1 };
+}
+
 /** Lance la question d'index donné (démarre la partie si elle attendait). */
 export async function lancerQuestion(sessionId: string, index: number): Promise<unknown> {
   let session = await sessionQuizz(sessionId);
@@ -294,20 +417,22 @@ async function demarrer(
   const ecrireVoter = question.type === PrismaQuestionType.BLUFF || question.type === PrismaQuestionType.FUNNY;
   const lettre =
     question.type === PrismaQuestionType.PETIT_BAC ? tirerLettre(sessionId, question.position) : undefined;
+  const compte = await compteManche(question);
   const state = buildAndBroadcastQuestion(
     sessionId,
     question,
     bilingue,
     dessinateur
       ? {
+          ...compte,
           dessinateur: { participant_id: dessinateur.id, pseudo: dessinateur.pseudo },
           indice: masquerMot(question.answer_lang1),
         }
       : ecrireVoter
-        ? { etape: 'ecriture' }
+        ? { ...compte, etape: 'ecriture' }
         : lettre
-          ? { lettre }
-          : undefined,
+          ? { ...compte, lettre }
+          : compte,
   );
   setActiveQuestion(sessionId, {
     question_index: question.position,
@@ -376,8 +501,41 @@ export async function revelerQuestion(sessionId: string): Promise<void> {
   await revealCurrentQuestion(sessionId);
 }
 
-/** Thèmes proposés : les packs officiels publics, avec le nombre de questions par niveau. */
-export async function listerThemes(): Promise<
+/**
+ * Thèmes proposés : les packs officiels publics, avec le nombre de questions
+ * par niveau — et, en tête, les quiz de l'établissement (`perso: true`).
+ */
+export async function listerThemes(sessionId?: string): Promise<
+  Array<{
+    id: string;
+    nom_fr: string;
+    nom_en: string;
+    categorie: string | null;
+    niveaux: Record<string, number>;
+    total: number;
+    perso?: boolean;
+  }>
+> {
+  const session = sessionId
+    ? await prisma.session.findUnique({ where: { id: sessionId }, select: { establishment_id: true } })
+    : null;
+  const perso = session ? await quizPersoDe(session.establishment_id) : [];
+  const officiels = await listerPacksOfficiels();
+  return [
+    ...perso.map((x) => ({
+      id: x.id,
+      nom_fr: x.name,
+      nom_en: x.name,
+      categorie: null,
+      niveaux: { EASY: 0, MEDIUM: 0, EXPERT: 0 },
+      total: x._count.questions,
+      perso: true,
+    })),
+    ...officiels,
+  ];
+}
+
+async function listerPacksOfficiels(): Promise<
   Array<{ id: string; nom_fr: string; nom_en: string; categorie: string | null; niveaux: Record<string, number>; total: number }>
 > {
   const packs = await prisma.officialQuizPack.findMany({

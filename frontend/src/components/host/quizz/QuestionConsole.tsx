@@ -86,7 +86,8 @@ export function QuestionConsole({
   const remainingSec = Math.ceil(remainingMs / 1000);
   const ratio = Math.min(1, elapsedMs / (state.time_limit_sec * 1000));
 
-  const expectedCount = participants.filter((p) => !p.is_kicked).length;
+  // L'animateur seul ne répond pas : il ne compte pas dans les réponses attendues.
+  const expectedCount = participants.filter((p) => !p.is_kicked && p.role !== 'ANIMATOR_FULL').length;
   const submittedCount = submittedSet.size;
 
   const isAsking = state.phase === 'asking';
@@ -96,8 +97,11 @@ export function QuestionConsole({
       {/* Header : index + type + category + timer */}
       <header className="flex items-center justify-between mb-3 gap-3">
         <div className="flex items-center gap-2 flex-wrap">
+          {/* fix/quiz-nombre-de-questions — « Question 3 / 15 ». */}
           <Badge tone="ink" tilt={-2}>
-            #{state.question_index + 1}
+            {state.numero_manche && state.total_manche
+              ? t('hostQuizz.questionSur', { n: state.numero_manche, total: state.total_manche })
+              : `#${state.question_index + 1}`}
           </Badge>
           <Badge tone="spritz" tilt={1}>
             {state.type.replace('_', ' ')}
@@ -111,6 +115,29 @@ export function QuestionConsole({
         </div>
         <TimerBar remainingSec={remainingSec} ratio={ratio} isAsking={isAsking} />
       </header>
+
+      {/* fix/quiz-bouton-en-haut — Thomas, 08/11 : « nous devons bouger l'écran
+          pour avoir le bouton question suivante, pourquoi le mettre aussi bas ».
+          Les actions sont maintenant juste sous l'en-tête, toujours visibles. */}
+      <div className="mb-3 flex items-center justify-between gap-3 flex-wrap">
+        <p className="font-mono text-sm text-ink-soft">
+          {isAsking
+            ? t('hostQuizz.submitted', { count: submittedCount, total: expectedCount })
+            : t('hostQuizz.phaseRevealed')}
+        </p>
+        <div className="flex gap-2">
+          {isAsking && onReveal && (
+            <Button onClick={onReveal} disabled={busy} variant="secondary">
+              {state.type === 'BLUFF' || state.type === 'FUNNY' ? t('jeux.etapeSuivante') : t('hostQuizz.revealNow')}
+            </Button>
+          )}
+          {!isAsking && onNext && (
+            <Button onClick={onNext} disabled={busy}>
+              {t('hostQuizz.nextQuestion')}
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* feat/jeux-de-salon — Bluff / Réponse drôle / P'tit Bac. */}
       {(state.type === 'BLUFF' || state.type === 'FUNNY' || state.type === 'PETIT_BAC') && sessionId ? (
@@ -240,26 +267,6 @@ export function QuestionConsole({
       </>
       )}
 
-      {/* Footer actions (cachés en publicView mode B) */}
-      <footer className="mt-4 flex items-center justify-between gap-3">
-        <p className="font-mono text-sm text-ink-soft">
-          {isAsking
-            ? t('hostQuizz.submitted', { count: submittedCount, total: expectedCount })
-            : t('hostQuizz.phaseRevealed')}
-        </p>
-        <div className="flex gap-2">
-          {isAsking && onReveal && (
-            <Button onClick={onReveal} disabled={busy} variant="secondary">
-              {state.type === 'BLUFF' || state.type === 'FUNNY' ? t('jeux.etapeSuivante') : t('hostQuizz.revealNow')}
-            </Button>
-          )}
-          {!isAsking && onNext && (
-            <Button onClick={onNext} disabled={busy}>
-              {t('hostQuizz.nextQuestion')}
-            </Button>
-          )}
-        </div>
-      </footer>
     </div>
   );
 }

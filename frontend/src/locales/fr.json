@@ -942,7 +942,10 @@
     "correctAnswerLabel": "La bonne réponse",
     "yourAnswer": "Ta réponse : {{value}}",
     "freeTextPlaceholder": "Tape ta réponse…",
-    "send": "Envoyer"
+    "send": "Envoyer",
+    "animateurSeul": "Tu animes",
+    "animateurSeulHint": "Animateur seul : tu ne réponds pas aux questions.",
+    "equipeDejaMarque": "Ton équipe avait déjà marqué sur cette question."
   },
   "hostQuizz": {
     "noPackError": "Aucun pack de questions n'est lié à cette session.",
@@ -967,7 +970,8 @@
     "firstQuestion": "Première question",
     "endedTitle": "Session terminée",
     "byTeams": "Par équipes",
-    "solo": "En solo"
+    "solo": "En solo",
+    "questionSur": "Question {{n}} / {{total}}"
   },
   "settings": {
     "title": "Paramètres",
@@ -1115,7 +1119,9 @@
     "launchTracks": "▶ Lancer le blind test",
     "launchQuiz": "▶ Lancer le quiz",
     "otherSettings": "Réglages",
-    "opensAt": "Le bouton « Lancer » apparaît à {{time}}."
+    "opensAt": "Le bouton « Lancer » apparaît à {{time}}.",
+    "vosQuiz": "Vos quiz",
+    "themesTutti": "Thèmes Tutti"
   },
   "dessin": {
     "titre": "Dessin à deviner",

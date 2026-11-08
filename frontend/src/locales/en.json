@@ -942,7 +942,10 @@
     "correctAnswerLabel": "Correct answer",
     "yourAnswer": "Your answer: {{value}}",
     "freeTextPlaceholder": "Type your answer…",
-    "send": "Send"
+    "send": "Send",
+    "animateurSeul": "You're hosting",
+    "animateurSeulHint": "Host only: you don't answer the questions.",
+    "equipeDejaMarque": "Your team had already scored on this question."
   },
   "hostQuizz": {
     "noPackError": "No question pack is linked to this session.",
@@ -967,7 +970,8 @@
     "firstQuestion": "First question",
     "endedTitle": "Session ended",
     "byTeams": "By teams",
-    "solo": "Solo"
+    "solo": "Solo",
+    "questionSur": "Question {{n}} / {{total}}"
   },
   "settings": {
     "title": "Settings",
@@ -1115,7 +1119,9 @@
     "launchTracks": "▶ Start the blind test",
     "launchQuiz": "▶ Start the quiz",
     "otherSettings": "Settings",
-    "opensAt": "The “Start” button appears at {{time}}."
+    "opensAt": "The “Start” button appears at {{time}}.",
+    "vosQuiz": "Your quizzes",
+    "themesTutti": "Tutti themes"
   },
   "dessin": {
     "titre": "Draw & guess",

@@ -974,10 +974,14 @@ function HostPageInner(): JSX.Element {
     void getReglageAmbiance().then(setAmbiance);
   }, []);
   const salon = useLobbyAmbiance({
+    // fix/quiz-sans-musique — Thomas, 08/11 : « il faut enlever la musique
+    // d'accueil pendant le quiz, c'est trop long et répétitif ». Plus de
+    // musique d'attente au quiz.
     enabled:
-      effectivePhase === 'waiting' ||
-      effectivePhase === 'intermission' ||
-      effectivePhase === 'roundSelection',
+      session?.game_type !== 'QUIZZ' &&
+      (effectivePhase === 'waiting' ||
+        effectivePhase === 'intermission' ||
+        effectivePhase === 'roundSelection'),
     playlistId: ambiance.playlistId,
     aleatoire: ambiance.aleatoire,
     appleConnected,
@@ -2718,6 +2722,50 @@ function HostPageInner(): JSX.Element {
             onToggleMaster={handleToggleMaster}
           />
         }
+        // feat/quiz-roles-comme-le-blind-test — Thomas, 08/11 : « on devrait
+        // pouvoir proposer aux personnes d'être joueur / joueur animateur ou
+        // animateur seul, même principe que le blind test ». Même liste que le
+        // lobby du blind test : rôles, équipes, exclusion.
+        listeJoueurs={(() => {
+          const surDeplacer = async (pid: string, tid: string | null): Promise<void> => {
+            try {
+              await moveParticipantTeam(session.id, pid, tid);
+            } catch (err: unknown) {
+              console.error('[Équipe] déplacement en échec :', err);
+              window.alert("Déplacement d'équipe non pris en compte");
+            }
+          };
+          const surExclure = async (pid: string): Promise<void> => {
+            if (!window.confirm(t('host.kickConfirm'))) return;
+            try {
+              await kickParticipant(session.id, pid);
+            } catch (err: unknown) {
+              console.error('[Exclusion] échec :', err);
+              window.alert('Exclusion non prise en compte');
+            }
+          };
+          return session.mode === 'TEAMS' ? (
+            <TeamsView
+              teams={(session.teams_config as Team[] | null) ?? []}
+              participants={session.participants}
+              showMasterToggle={true}
+              onMove={surDeplacer}
+              onKick={surExclure}
+              onToggleMaster={handleToggleMaster}
+              onSetRole={handleSetRole}
+              dark
+            />
+          ) : (
+            <ParticipantsList
+              participants={session.participants}
+              showMasterToggle={true}
+              onKick={surExclure}
+              onToggleMaster={handleToggleMaster}
+              onSetRole={handleSetRole}
+              dark
+            />
+          );
+        })()}
       />
     );
   }

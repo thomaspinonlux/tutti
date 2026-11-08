@@ -10,12 +10,12 @@
  *                           bonne réponse. On reste là jusqu'à la prochaine.
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
 import type { CurrentQuestionState, DetailsBac, DetailsVote, QuestionType } from '@tutti/shared';
 import { Button, Card, Badge } from '../../ui/index.js';
-import { submitQuizzAnswer } from '../../../lib/sessions.js';
+import { repriseQuizz, submitQuizzAnswer } from '../../../lib/sessions.js';
 import { MasterQuizzMenu } from './MasterQuizzMenu.js';
 import { DessinJoueur } from '../../dessin/DessinJoueur.js';
 import { EcrireVoterJoueur } from '../../jeux/EcrireVoterJoueur.js';
@@ -29,6 +29,8 @@ interface RevealResult {
   answered_at_ms: number;
   score: number;
   submitted: string;
+  /** Équipes : un coéquipier avait déjà trouvé, cette bonne réponse ne marque pas. */
+  equipe_deja_marque?: boolean;
 }
 
 interface QuizzReveal {
@@ -49,6 +51,8 @@ interface Props {
   isMaster?: boolean;
   /** Status de la session (WAITING / PLAYING / ENDED). */
   sessionStatus?: 'WAITING' | 'PLAYING' | 'ENDED';
+  /** Animateur seul : il voit la question mais ne répond pas. */
+  animateurSeul?: boolean;
 }
 
 type LocalPhase = 'waitingNextQuestion' | 'asking' | 'submitted' | 'revealed';
@@ -61,6 +65,7 @@ export function PlayQuizzView({
   pseudo: _pseudo,
   isMaster = false,
   sessionStatus = 'PLAYING',
+  animateurSeul = false,
 }: Props): JSX.Element {
   const { t } = useTranslation();
 
@@ -73,6 +78,39 @@ export function PlayQuizzView({
   // feat/quiz-comme-le-blind-test — fin de manche : la manette propose un
   // nouveau thème (gardé ici : le menu est remonté à chaque phase).
   const [finDeManche, setFinDeManche] = useState(false);
+
+  const enCoursRef = useRef(false);
+  const reprendre = useCallback(async (): Promise<void> => {
+    if (enCoursRef.current) return;
+    enCoursRef.current = true;
+    try {
+      const r = await repriseQuizz(sessionId, token);
+      if (!r.state) return;
+      const etat = r.state;
+      setActiveQuestion((avant) => {
+        // Nouvelle question (ou première connaissance) : on repart propre.
+        if (!avant || avant.question_index !== etat.question_index) {
+          setSubmittedValue(r.ma_reponse);
+          setError(null);
+          setFinDeManche(false);
+        } else if (r.ma_reponse !== null) {
+          setSubmittedValue(r.ma_reponse);
+        }
+        return etat;
+      });
+      if (r.revelation) {
+        setReveal(r.revelation as QuizzReveal);
+        setLocalPhase('revealed');
+      } else {
+        setReveal(null);
+        setLocalPhase(r.ma_reponse !== null ? 'submitted' : 'asking');
+      }
+    } catch {
+      /* réseau encore absent : le prochain retour réessaiera */
+    } finally {
+      enCoursRef.current = false;
+    }
+  }, [sessionId, token]);
 
   // ── Sockets ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -95,13 +133,38 @@ export function PlayQuizzView({
     socket.on('quizz:question_start', onStart);
     socket.on('quizz:question_revealed', onRevealed);
     socket.on('quizz:block_ended', onBlockEnded);
+    // Socket reconnecté : on a pu manquer la question ou la réponse.
+    const surConnexion = (): void => void reprendre();
+    socket.on('connect', surConnexion);
 
     return () => {
       socket.off('quizz:question_start', onStart);
       socket.off('quizz:question_revealed', onRevealed);
       socket.off('quizz:block_ended', onBlockEnded);
+      socket.off('connect', surConnexion);
     };
-  }, [socket]);
+  }, [socket, reprendre]);
+
+  // fix/quiz-telephone-qui-decroche — Thomas, 08/11 : « si on sort de la page,
+  // cela met du temps à se reconnecter ou ne voit pas, et on ne peut pas
+  // répondre ». Le téléphone n'apprenait la question que par le socket : un
+  // écran en veille au moment du lancement restait « en attente ». Au
+  // montage, au retour sur la page et à chaque reconnexion, on redemande la
+  // question en cours au serveur.
+  useEffect(() => {
+    void reprendre();
+    const auRetour = (): void => {
+      if (document.visibilityState === 'visible') void reprendre();
+    };
+    document.addEventListener('visibilitychange', auRetour);
+    window.addEventListener('focus', auRetour);
+    window.addEventListener('online', auRetour);
+    return () => {
+      document.removeEventListener('visibilitychange', auRetour);
+      window.removeEventListener('focus', auRetour);
+      window.removeEventListener('online', auRetour);
+    };
+  }, [reprendre]);
 
   // ── Submit ──────────────────────────────────────────────────────────────
   const submit = async (value: string): Promise<void> => {
@@ -196,6 +259,20 @@ export function PlayQuizzView({
     );
   }
 
+  // fix/quiz-animateur-seul — l'animateur seul suit la question sans répondre.
+  if (animateurSeul) {
+    return (
+      <div className="space-y-3">
+        <QuestionHeader question={activeQuestion} />
+        <Card tone="cream" size="sm" className="text-center">
+          <p className="font-display text-xl">🎙️ {t('playQuizz.animateurSeul')}</p>
+          <p className="font-editorial italic text-ink-soft text-sm mt-1">{t('playQuizz.animateurSeulHint')}</p>
+        </Card>
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
+      </div>
+    );
+  }
+
   // Asking ou submitted : on affiche l'UI mais désactivée si déjà répondu.
   return (
     <div className="space-y-3">
@@ -243,7 +320,9 @@ function QuestionHeader({ question }: { question: CurrentQuestionState }): JSX.E
     <Card tone="cream" size="md">
       <div className="flex items-center gap-2 mb-2 flex-wrap">
         <Badge tone="ink" tilt={-2}>
-          #{question.question_index + 1}
+          {question.numero_manche && question.total_manche
+            ? `${question.numero_manche} / ${question.total_manche}`
+            : `#${question.question_index + 1}`}
         </Badge>
         <Badge tone="spritz" tilt={1}>
           {question.type.replace('_', ' ')}
@@ -568,6 +647,9 @@ function RevealedView({
           {isCorrect ? `🎉 ${t('playQuizz.correct')}` : `❌ ${t('playQuizz.wrong')}`}
         </p>
         {isCorrect && score > 0 && <p className="font-display text-3xl">+{score} pts</p>}
+        {isCorrect && myResult?.equipe_deja_marque && (
+          <p className="font-editorial italic mt-1">{t('playQuizz.equipeDejaMarque')}</p>
+        )}
         {!isCorrect && question.type === 'ESTIMATION' && score > 0 && (
           <p className="font-display text-3xl">+{score} pts</p>
         )}

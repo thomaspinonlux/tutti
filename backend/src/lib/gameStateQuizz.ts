@@ -16,7 +16,7 @@
  * V0 : 1 process Railway = OK. Si crash, état perdu (master relance).
  */
 
-import type { QuestionType } from '@tutti/shared';
+import type { CurrentQuestionState, QuestionType } from '@tutti/shared';
 
 export type QuizzPhase = 'asking' | 'revealed';
 
@@ -87,6 +87,60 @@ export function setActiveQuestion(
 
 export function clearActiveQuestion(sessionId: string): void {
   activeQuestions.delete(sessionId);
+  derniersEtats.delete(sessionId);
+  dernieresRevelations.delete(sessionId);
+}
+
+// ── fix/quiz-telephone-qui-decroche — REPRISE APRÈS COUPURE ─────────────────
+//
+// Thomas, 08/11 : « si on sort de la page, cela met du temps à se reconnecter
+// ou ne voit pas, et on ne peut pas répondre à la question ». Le téléphone ne
+// recevait la question QUE par l'événement `quizz:question_start` : un joueur
+// absent à cet instant (écran verrouillé, autre appli, réseau qui décroche)
+// restait sur « en attente » jusqu'à la question suivante. On garde donc le
+// dernier état diffusé et la dernière révélation, pour qu'un écran qui revient
+// les redemande (GET /quizz/etat).
+
+/** Révélation diffusée (`quizz:question_revealed`), telle quelle. */
+export interface RevelationQuizz {
+  question_index: number;
+  reveal: { answer: string; answer_alt?: string };
+  results: unknown[];
+  details?: unknown;
+}
+
+const derniersEtats = new Map<string, CurrentQuestionState>();
+const dernieresRevelations = new Map<string, RevelationQuizz>();
+
+export function memoriserEtat(sessionId: string, state: CurrentQuestionState): void {
+  derniersEtats.set(sessionId, state);
+  dernieresRevelations.delete(sessionId);
+}
+
+export function memoriserRevelation(sessionId: string, revelation: RevelationQuizz): void {
+  dernieresRevelations.set(sessionId, revelation);
+}
+
+/**
+ * Ce qu'un écran qui revient doit afficher : la question en cours (avec sa
+ * phase réelle), la révélation si elle a eu lieu, et — pour un joueur — la
+ * réponse qu'il a déjà envoyée. Rien de secret avant la révélation.
+ */
+export function etatPourReprise(
+  sessionId: string,
+  participantId: string | null,
+): { state: CurrentQuestionState | null; revelation: RevelationQuizz | null; ma_reponse: string | null } {
+  const etat = derniersEtats.get(sessionId) ?? null;
+  const active = activeQuestions.get(sessionId) ?? null;
+  if (!etat || !active || active.question_index !== etat.question_index) {
+    return { state: null, revelation: null, ma_reponse: null };
+  }
+  const revelation = active.phase === 'revealed' ? (dernieresRevelations.get(sessionId) ?? null) : null;
+  return {
+    state: { ...etat, phase: active.phase, ...(revelation ? { reveal: revelation.reveal } : {}) },
+    revelation,
+    ma_reponse: participantId ? (active.answers.get(participantId)?.value ?? null) : null,
+  };
 }
 
 /**

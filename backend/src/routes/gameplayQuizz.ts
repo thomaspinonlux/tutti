@@ -24,7 +24,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { verifyParticipantToken } from '../lib/participantToken.js';
 import { broadcastToSession } from '../socket/index.js';
-import { getActiveQuestion, trySubmitAnswer } from '../lib/gameStateQuizz.js';
+import { etatPourReprise, getActiveQuestion, trySubmitAnswer } from '../lib/gameStateQuizz.js';
 import { etatPublic, motPourDessinateur, proposer } from '../lib/dessin.js';
 import { ecrire, etatPublicEcrireVoter, mesChoix, voter } from '../lib/ecrireVoter.js';
 import { clearAutoReveal, revealCurrentQuestion } from '../lib/gameplayQuizzCore.js';
@@ -63,8 +63,8 @@ function repondreErreur(res: Response, err: unknown): void {
 }
 
 /** Les thèmes proposés, avec le nombre de questions par niveau. */
-router.get('/themes', requireAuth, requireWorkspace, async (_req: Request, res: Response): Promise<void> => {
-  res.json({ themes: await listerThemes() });
+router.get('/themes', requireAuth, requireWorkspace, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  res.json({ themes: await listerThemes(req.params.id) });
 });
 
 const themeSchema = z.object({
@@ -187,12 +187,17 @@ router.post(
     }
     const participant = await prisma.participant.findUnique({
       where: { id: payload.participant_id },
-      select: { id: true, pseudo: true, is_kicked: true, session_id: true },
+      select: { id: true, pseudo: true, is_kicked: true, session_id: true, role: true },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
         .status(403)
         .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+    // fix/quiz-animateur-seul — l'animateur seul anime, il ne joue pas.
+    if (participant.role === 'ANIMATOR_FULL') {
+      res.status(403).json({ error: { code: 'ANIMATEUR_SEUL', message: "Tu es animateur seul : tu ne réponds pas" } });
       return;
     }
 
@@ -328,6 +333,26 @@ router.post('/vote', async (req: Request<{ id: string }>, res: Response): Promis
     await revealCurrentQuestion(req.params.id);
   }
   res.json({ ok: true });
+});
+
+/**
+ * fix/quiz-telephone-qui-decroche — la question en cours, pour un écran qui
+ * revient (page rechargée, téléphone sorti de veille, socket reconnecté).
+ * Avec le jeton d'un joueur : sa réponse déjà envoyée, pour ne pas lui
+ * reproposer la question. Jeton dans le corps, jamais dans l'adresse.
+ */
+router.post('/etat', (req: Request<{ id: string }>, res: Response): void => {
+  const token = typeof req.body?.token === 'string' ? req.body.token : '';
+  let participantId: string | null = null;
+  if (token) {
+    try {
+      const p = verifyParticipantToken(token);
+      if (p.session_id === req.params.id) participantId = p.participant_id;
+    } catch {
+      /* jeton périmé : on renvoie quand même l'état public */
+    }
+  }
+  res.json(etatPourReprise(req.params.id, participantId));
 });
 
 /** Où en est le Bluff / la Réponse drôle (écran rechargé en plein jeu). */

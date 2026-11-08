@@ -454,6 +454,8 @@ export interface ThemeQuiz {
   categorie: string | null;
   niveaux: Record<'EASY' | 'MEDIUM' | 'EXPERT', number>;
   total: number;
+  /** Quiz créé par l'établissement (toutes ses questions, dans l'ordre). */
+  perso?: boolean;
 }
 
 export interface MancheAjoutee {
@@ -534,6 +536,29 @@ export async function submitQuizzAnswer(
     `/api/sessions/${encodeURIComponent(sessionId)}/quizz/submit-answer`,
     { method: 'POST', body: { token, value }, anonymous: true },
   );
+}
+
+/**
+ * fix/quiz-telephone-qui-decroche — la question en cours, pour un écran qui
+ * revient (veille, autre appli, réseau). Jeton dans le corps.
+ */
+export interface RepriseQuizz {
+  state: CurrentQuestionState | null;
+  revelation: {
+    question_index: number;
+    reveal: { answer: string; answer_alt?: string };
+    results: unknown[];
+    details?: unknown;
+  } | null;
+  ma_reponse: string | null;
+}
+
+export async function repriseQuizz(sessionId: string, token?: string): Promise<RepriseQuizz> {
+  return api<RepriseQuizz>(`/api/sessions/${encodeURIComponent(sessionId)}/quizz/etat`, {
+    method: 'POST',
+    body: { token: token ?? '' },
+    anonymous: true,
+  });
 }
 
 // ───── Master actions (mode B — joueur master pilote depuis son tel) ─────

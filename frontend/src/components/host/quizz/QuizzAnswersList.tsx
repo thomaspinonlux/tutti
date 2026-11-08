@@ -14,7 +14,7 @@ interface Props {
 
 export function QuizzAnswersList({ participants, submittedSet }: Props): JSX.Element {
   const { t } = useTranslation();
-  const active = participants.filter((p) => !p.is_kicked);
+  const active = participants.filter((p) => !p.is_kicked && p.role !== 'ANIMATOR_FULL');
 
   return (
     <Card size="sm">

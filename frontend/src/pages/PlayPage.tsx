@@ -194,6 +194,17 @@ export function PlayPage(): JSX.Element {
   // (les deux profils animateur pilotent). role distingue qui VOIT la réponse :
   // ANIMATOR_FULL reçoit track:answer, ANIMATOR_PLAYING non (il joue).
   const [myRole, setMyRole] = useState<ParticipantRole>('PLAYER');
+  // fix/quiz-lisible-au-telephone — Thomas, 08/11 : « le blanc sur beige est
+  // idiot, on ne voit rien ». Le téléphone est sur fond nuit, texte blanc ; les
+  // cartes du quiz, elles, prenaient les jetons du thème clair (crème). Au
+  // quiz, on bascule les jetons en thème nuit, comme la console.
+  const estQuiz = view?.game_type === 'QUIZZ';
+  useEffect(() => {
+    if (!estQuiz) return;
+    const racine = document.documentElement;
+    racine.classList.add('theme-console');
+    return () => racine.classList.remove('theme-console');
+  }, [estQuiz]);
   // feat/manette-console-master — position/durée diffusées par la console
   // (broadcast track:progress) pour la timeline + le scrub de la télécommande.
   const [masterProgress, setMasterProgress] = useState<{
@@ -1153,6 +1164,7 @@ export function PlayPage(): JSX.Element {
               pseudo={identity.pseudo}
               isMaster={isMaster}
               sessionStatus="PLAYING"
+              animateurSeul={myRole === 'ANIMATOR_FULL'}
             />
           )}
 

@@ -476,6 +476,10 @@ export interface CurrentQuestionState {
   lettre?: string;
   /** BLUFF / FUNNY — étape en cours : on écrit, puis on vote. */
   etape?: 'ecriture' | 'vote';
+  /** Numéro de la question dans le thème en cours (1 = première). */
+  numero_manche?: number;
+  /** Nombre de questions du thème en cours. */
+  total_manche?: number;
 }
 
 /** BLUFF / FUNNY — un choix proposé au vote (auteurs cachés jusqu'à la révélation). */

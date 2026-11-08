@@ -17,7 +17,7 @@
  * thème ou on termine. La partie n'est plus jamais tuée par un choix de thème.
  */
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
 import type {
@@ -32,6 +32,7 @@ import {
   ajouterThemeQuiz,
   endSession,
   listerThemesQuiz,
+  repriseQuizz,
   nextQuestion,
   playQuestion,
   revealQuestion,
@@ -75,6 +76,8 @@ interface Props {
   publicView?: boolean;
   /** Badge « qui a la manette » (fourni par HostPage, comme au blind test). */
   enTete?: ReactNode;
+  /** Liste des joueurs du lobby avec rôles et équipes (même que le blind test). */
+  listeJoueurs?: ReactNode;
 }
 
 /**
@@ -99,6 +102,7 @@ export function HostQuizzView({
   onCumulativeUpdate,
   publicView = false,
   enTete,
+  listeJoueurs,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   useFondConsoleSombre();
@@ -130,6 +134,17 @@ export function HostQuizzView({
       })
       .catch((err: unknown) => setPackError((err as Error).message));
   }, [setId, versionPack]);
+
+  const reprendre = useCallback(async (): Promise<void> => {
+    try {
+      const r = await repriseQuizz(session.id);
+      if (!r.state) return;
+      setActiveQuestion(r.state);
+      if (r.revelation) setLastReveal(r.revelation as QuizzReveal);
+    } catch {
+      /* réseau absent : le socket reprendra */
+    }
+  }, [session.id]);
 
   // ── Socket listeners ────────────────────────────────────────────────────
   useEffect(() => {
@@ -170,8 +185,10 @@ export function HostQuizzView({
     socket.on('session:ended', onSessionEnded);
     socket.on('quizz:theme_added', onThemeAdded);
     socket.on('quizz:block_ended', onBlockEnded);
+    socket.on('connect', reprendre);
 
     return () => {
+      socket.off('connect', reprendre);
       socket.off('quizz:question_start', onQuestionStart);
       socket.off('quizz:answer_submitted', onAnswerSubmitted);
       socket.off('quizz:question_revealed', onQuestionRevealed);
@@ -179,7 +196,14 @@ export function HostQuizzView({
       socket.off('quizz:theme_added', onThemeAdded);
       socket.off('quizz:block_ended', onBlockEnded);
     };
-  }, [socket, session, onSessionUpdate, onCumulativeUpdate]);
+  }, [socket, session, onSessionUpdate, onCumulativeUpdate, reprendre]);
+
+  // fix/quiz-telephone-qui-decroche — la console aussi reprend la question en
+  // cours après un rechargement ou une coupure (avant : écran vide jusqu'à la
+  // question suivante).
+  useEffect(() => {
+    void reprendre();
+  }, [reprendre]);
 
   // ── Actions host ────────────────────────────────────────────────────────
 
@@ -260,8 +284,11 @@ export function HostQuizzView({
       }}
     />
   );
+  // fix/quiz-mise-en-page — Thomas, 08/11 : « des éléments se superposent ».
+  // La barre était posée par-dessus la page (fixed) : elle recouvrait le
+  // chrono et les boutons. Elle prend maintenant sa place, en haut.
   const barreHaut = (
-    <div className="fixed top-3 right-3 z-30 flex gap-2 items-center">
+    <div className="flex gap-2 items-center justify-end flex-wrap px-4 pt-3">
       {!publicView && <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />}
       {enTete}
     </div>
@@ -299,6 +326,7 @@ export function HostQuizzView({
           shortCode={session.short_code}
           nombreQuestions={pack?.questions.length ?? 0}
           participants={session.participants}
+          listeJoueurs={listeJoueurs}
           choixTheme={publicView ? null : choixTheme}
           onStart={publicView ? null : () => void handleStartSession()}
           busy={busy}
@@ -323,9 +351,10 @@ export function HostQuizzView({
 
   // Session PLAYING
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4 h-screen relative">
+    <div className="h-[100dvh] flex flex-col">
       {barreHaut}
-      <main className="min-w-0 overflow-hidden">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4 flex-1 min-h-0">
+      <main className="min-w-0 min-h-0 overflow-auto">
         {activeQuestion ? (
           <QuestionConsole
             state={activeQuestion}
@@ -416,6 +445,7 @@ export function HostQuizzView({
         )}
       </aside>
     </div>
+    </div>
   );
 }
 
@@ -425,6 +455,7 @@ function WaitingView({
   shortCode,
   nombreQuestions,
   participants,
+  listeJoueurs,
   choixTheme,
   onStart,
   busy,
@@ -433,6 +464,7 @@ function WaitingView({
   shortCode: string;
   nombreQuestions: number;
   participants: Participant[];
+  listeJoueurs?: ReactNode;
   choixTheme: ReactNode | null;
   onStart: (() => void) | null;
   busy: boolean;
@@ -455,6 +487,10 @@ function WaitingView({
       </Card>
 
       <div className="space-y-4">
+        {/* Rôles et équipes : même liste que le lobby du blind test. */}
+        {listeJoueurs && connected.length > 0 ? (
+          listeJoueurs
+        ) : (
         <Card size="md">
           <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
             {t('hostQuizz.connected', { count: connected.length })}
@@ -475,6 +511,7 @@ function WaitingView({
             </ul>
           )}
         </Card>
+        )}
 
         <Card size="md">
           <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
