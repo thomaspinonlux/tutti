@@ -15,6 +15,7 @@ import { SceneDessin } from '../dessin/SceneDessin.js';
 import { SceneBac, SceneEcrireVoter } from '../jeux/SceneJeux.js';
 import type { CumulativeScore, DetailsBac, DetailsVote } from '@tutti/shared';
 import { getSessionSnapshot } from '../../lib/sessions.js';
+import { JoinQrCorner } from '../host/JoinQrCorner.js';
 
 export interface QuizTvReveal {
   reveal: { answer: string };
@@ -198,6 +199,8 @@ export function ScreenQuizView({
         )}
       </div>
 
+      {/* fix/quiz-qr-en-jeu — on peut rejoindre la partie en cours. */}
+      <JoinQrCorner joinCode={joinCode} size={110} className="absolute bottom-6 right-8" />
       <h1 className="font-display text-6xl leading-tight text-center max-w-6xl mb-12 whitespace-pre-line">{question.text}</h1>
 
       {choix.length > 0 ? (

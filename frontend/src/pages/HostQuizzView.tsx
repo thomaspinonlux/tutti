@@ -417,7 +417,7 @@ export function HostQuizzView({
           />
         ) : (
           <NoActiveQuestion
-            nom={pack.questions[0]?.category ?? pack.name}
+            nom={themeEnAttente?.nom ?? pack.questions[0]?.category ?? pack.name}
             finDeManche={finDeManche}
             publicView={publicView}
             choixTheme={publicView ? null : choixTheme}
@@ -428,7 +428,18 @@ export function HostQuizzView({
         )}
       </main>
 
-      <aside className="space-y-3">
+      <aside className="space-y-3 min-h-0 overflow-auto">
+        {/* fix/quiz-qr-en-jeu — Thomas, 08/11 : « pas de QR code à afficher pour
+            les gens qui veulent rejoindre la partie ». Toujours visible. */}
+        <Card size="sm" className="flex items-center gap-3">
+          <div className="rounded-lg bg-white p-1.5 shrink-0">
+            <QRCode value={`${getShareableOrigin()}/play?session=${session.short_code}`} size={96} />
+          </div>
+          <div className="min-w-0">
+            <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">{t('quizTheme.scanToJoin')}</p>
+            <p className="font-mono text-xl font-bold tracking-[0.15em]">{session.short_code}</p>
+          </div>
+        </Card>
         <Card size="sm">
           <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
             {t('hostQuizz.leaderboard')}
@@ -616,12 +627,21 @@ function NoActiveQuestion({
           {error}
         </p>
       )}
-      {finDeManche && choixTheme && <div className="text-left">{choixTheme}</div>}
+      {/* fix/quiz-revenir-au-choix — Thomas, 08/11 : « on ne peut pas sortir
+          de l'écran et revenir au choix des quiz ». Le choix du thème reste
+          affiché tant qu'aucune question n'est en cours : on peut changer de
+          quiz avant de lancer. */}
       {onNext && (
-        <Button onClick={onNext} disabled={busy} size="lg">
-          {finDeManche ? t('quizTheme.continue') : t('hostQuizz.firstQuestion')}
-        </Button>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={busy}
+          className="rounded-2xl bg-[#FF5C4D] px-8 py-4 font-display text-2xl text-white shadow-[0_10px_30px_rgba(255,92,77,0.35)] transition active:scale-[0.98] disabled:opacity-50"
+        >
+          ▶ {finDeManche ? t('quizTheme.continue') : t('hostQuizz.firstQuestion')}
+        </button>
       )}
+      {choixTheme && <div className="text-left pt-4">{choixTheme}</div>}
     </div>
   );
 }
