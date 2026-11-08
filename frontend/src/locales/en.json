@@ -982,7 +982,11 @@
     "solo": "Solo",
     "questionSur": "Question {{n}} / {{total}}",
     "nouveauQuiz": "New quiz",
-    "fermerClassement": "Close the ranking"
+    "fermerClassement": "Close the ranking",
+    "pause": "⏸ Pause",
+    "reprendre": "▶ Resume",
+    "enPause": "⏸ Game paused",
+    "enPauseHint": "The host paused the game; the timer resumes soon."
   },
   "settings": {
     "title": "Settings",

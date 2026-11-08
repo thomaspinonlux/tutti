@@ -29,7 +29,7 @@ import { Prisma, QuestionType as PrismaQuestionType, MediaType, type Question } 
 import type { QuestionType } from '@tutti/shared';
 import { prisma } from './prisma.js';
 import { broadcastToSession } from '../socket/index.js';
-import { getActiveQuestion, setActiveQuestion } from './gameStateQuizz.js';
+import { getActiveQuestion, pauserQuestion, reprendreQuestion, setActiveQuestion } from './gameStateQuizz.js';
 import {
   buildAndBroadcastQuestion,
   clearAutoReveal,
@@ -529,6 +529,48 @@ export async function questionSuivante(
   return {
     state: await demarrer(sessionId, question, set?.is_bilingual ?? false, session.participants.map((p) => p.id)),
   };
+}
+
+/**
+ * feat/quiz-pause — met en pause ou reprend la question en cours. Le chrono
+ * se fige (le serveur ne révèle plus la réponse à la fin du temps) et les
+ * réponses sont refusées pendant la pause. Pour les questions simples
+ * (choix, vrai/faux, réponse libre, juste prix) ; les jeux (dessin, bluff,
+ * réponse drôle, P'tit Bac) ont leurs propres étapes.
+ */
+export async function basculerPause(
+  sessionId: string,
+  pause: boolean,
+): Promise<{ en_pause: boolean; restant_ms: number; started_at?: string }> {
+  await sessionQuizz(sessionId);
+  const active = getActiveQuestion(sessionId);
+  if (!active || active.phase !== 'asking') {
+    throw new QuizzErreur('PAS_DE_QUESTION', "Aucune question en cours à mettre en pause.");
+  }
+  if (!['MCQ', 'TRUE_FALSE', 'FREE_TEXT', 'ESTIMATION'].includes(active.question_type)) {
+    throw new QuizzErreur('PAUSE_IMPOSSIBLE', 'La pause ne marche pas pendant ce jeu.');
+  }
+  if (pause) {
+    const restant = pauserQuestion(sessionId);
+    if (restant === null) throw new QuizzErreur('DEJA_EN_PAUSE', 'Le jeu est déjà en pause.');
+    clearAutoReveal(sessionId);
+    const msg = { question_index: active.question_index, en_pause: true, restant_ms: restant };
+    broadcastToSession(sessionId, 'quizz:pause', msg);
+    return msg;
+  }
+  const reprise = reprendreQuestion(sessionId);
+  if (!reprise) throw new QuizzErreur('PAS_EN_PAUSE', "Le jeu n'est pas en pause.");
+  scheduleAutoReveal(sessionId, reprise.restant_ms, () => {
+    void revealCurrentQuestion(sessionId);
+  });
+  const msg = {
+    question_index: active.question_index,
+    en_pause: false,
+    restant_ms: reprise.restant_ms,
+    started_at: reprise.started_at,
+  };
+  broadcastToSession(sessionId, 'quizz:pause', msg);
+  return msg;
 }
 
 /** Révéler la réponse maintenant (sans attendre la fin du temps). */

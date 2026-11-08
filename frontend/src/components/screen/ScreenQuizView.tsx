@@ -16,6 +16,7 @@ import { SceneBac, SceneEcrireVoter } from '../jeux/SceneJeux.js';
 import type { CumulativeScore, DetailsBac, DetailsVote } from '@tutti/shared';
 import { getSessionSnapshot } from '../../lib/sessions.js';
 import { JoinQrCorner } from '../host/JoinQrCorner.js';
+import { tempsRestantMs } from '../../lib/quizPause.js';
 
 export interface QuizTvReveal {
   reveal: { answer: string };
@@ -127,8 +128,8 @@ export function ScreenQuizView({
     );
   }
 
-  const fin = new Date(question.started_at).getTime() + question.time_limit_sec * 1000;
-  const restant = Math.max(0, Math.ceil((fin - maintenant) / 1000));
+  // feat/quiz-pause — chrono figé pendant la pause.
+  const restant = Math.ceil(tempsRestantMs(question, maintenant) / 1000);
   const revele = !!reveal;
   const bonne = reveal ? afficherReponse(question, reveal.reveal.answer) : null;
   const choix =
@@ -194,11 +195,16 @@ export function ScreenQuizView({
         </p>
         {!revele && (
           <p className="font-display text-6xl tabular-nums" style={{ color: restant <= 5 ? CORAIL : 'white' }}>
-            {restant}
+            {question.en_pause ? `⏸ ${restant}` : restant}
           </p>
         )}
       </div>
 
+      {question.en_pause && !revele && (
+        <p className="mb-6 rounded-full border-2 border-[#e8c547] px-6 py-2 font-display text-3xl text-[#e8c547]">
+          {t('hostQuizz.enPause')}
+        </p>
+      )}
       {/* fix/quiz-qr-en-jeu — on peut rejoindre la partie en cours. */}
       <JoinQrCorner joinCode={joinCode} size={110} className="absolute bottom-6 right-8" />
       <h1

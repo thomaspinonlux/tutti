@@ -35,6 +35,7 @@ import {
   listerThemesQuiz,
   repriseQuizz,
   getSession,
+  pauseQuiz,
   hidePodium,
   nextQuestion,
   playQuestion,
@@ -49,6 +50,7 @@ import { Button, Card, TitleHandwritten, Underline } from '../components/ui/inde
 import { QuestionConsole } from '../components/host/quizz/QuestionConsole.js';
 import { QuizzAnswersList } from '../components/host/quizz/QuizzAnswersList.js';
 import { PlayersPanel } from '../components/host/PlayersPanel.js';
+import { appliquerPause, type MessagePause } from '../lib/quizPause.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
 
 interface QuizzReveal {
@@ -243,9 +245,12 @@ export function HostQuizzView({
     socket.on('quizz:theme_added', onThemeAdded);
     socket.on('quizz:block_ended', onBlockEnded);
     socket.on('connect', reprendre);
+    const onPause = (m: MessagePause): void => setActiveQuestion((q) => appliquerPause(q, m));
+    socket.on('quizz:pause', onPause);
 
     return () => {
       socket.off('connect', reprendre);
+      socket.off('quizz:pause', onPause);
       socket.off('quizz:question_start', onQuestionStart);
       socket.off('quizz:answer_submitted', onAnswerSubmitted);
       socket.off('quizz:question_revealed', onQuestionRevealed);
@@ -290,6 +295,21 @@ export function HostQuizzView({
         setActiveQuestion(null);
       }
       // Sinon le state arrivera via socket onQuestionStart.
+    } catch (e: unknown) {
+      if (!(await verifierFin())) setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handlePause = async (pause: boolean): Promise<void> => {
+    setBusy(true);
+    setError(null);
+    try {
+      await pauseQuiz(session.id, pause);
+      // L'état arrive aussi par socket ; on l'applique tout de suite ici.
+      setActiveQuestion((q) => (q ? { ...q, en_pause: pause } : q));
+      if (!pause) void reprendre();
     } catch (e: unknown) {
       if (!(await verifierFin())) setError((e as Error).message);
     } finally {
@@ -444,6 +464,7 @@ export function HostQuizzView({
             busy={busy}
             onReveal={publicView ? null : () => void handleReveal()}
             onNext={publicView ? null : () => void handleNext()}
+            onPause={publicView ? null : (p) => void handlePause(p)}
             xl={publicView}
             socket={socket}
             sessionId={session.id}

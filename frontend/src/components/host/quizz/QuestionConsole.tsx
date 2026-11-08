@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { tempsRestantMs } from '../../../lib/quizPause.js';
 import type { CurrentQuestionState, DetailsBac, DetailsVote, Participant } from '@tutti/shared';
 import type { Socket } from 'socket.io-client';
 import { Badge, Button, Card } from '../../ui/index.js';
@@ -41,6 +42,8 @@ interface Props {
   /** null en publicView (mode B iPad) → masque les boutons. */
   onReveal: (() => void) | null;
   onNext: (() => void) | null;
+  /** feat/quiz-pause — met en pause (true) ou reprend (false). */
+  onPause?: ((pause: boolean) => void) | null;
   /** true en publicView : agrandit les polices pour la TV. */
   xl?: boolean;
   /** feat/dessin-a-deviner — socket et partie, pour afficher le dessin. */
@@ -59,6 +62,7 @@ export function QuestionConsole({
   busy,
   onReveal,
   onNext,
+  onPause = null,
   xl = false,
   socket = null,
   sessionId,
@@ -80,11 +84,12 @@ export function QuestionConsole({
     return () => window.clearInterval(id);
   }, [chronoActif]);
 
-  const startedAt = new Date(state.started_at).getTime();
-  const elapsedMs = Math.max(0, now - startedAt);
-  const remainingMs = Math.max(0, state.time_limit_sec * 1000 - elapsedMs);
+  // feat/quiz-pause — chrono figé pendant la pause.
+  const remainingMs = tempsRestantMs(state, now);
+  const elapsedMs = state.time_limit_sec * 1000 - remainingMs;
   const remainingSec = Math.ceil(remainingMs / 1000);
   const ratio = Math.min(1, elapsedMs / (state.time_limit_sec * 1000));
+  const pausable = ['MCQ', 'TRUE_FALSE', 'FREE_TEXT', 'ESTIMATION'].includes(state.type);
 
   // L'animateur seul ne répond pas : il ne compte pas dans les réponses attendues.
   const expectedCount = participants.filter((p) => !p.is_kicked && p.role !== 'ANIMATOR_FULL').length;
@@ -113,7 +118,7 @@ export function QuestionConsole({
           )}
           <span className="font-mono text-[11px] text-ink-soft">{state.points} pts</span>
         </div>
-        <TimerBar remainingSec={remainingSec} ratio={ratio} isAsking={isAsking} />
+        <TimerBar remainingSec={remainingSec} ratio={ratio} isAsking={isAsking} enPause={!!state.en_pause} />
       </header>
 
       {/* fix/quiz-bouton-en-haut — Thomas, 08/11 : « nous devons bouger l'écran
@@ -126,6 +131,11 @@ export function QuestionConsole({
             : t('hostQuizz.phaseRevealed')}
         </p>
         <div className="flex gap-2">
+          {isAsking && onPause && pausable && (
+            <Button onClick={() => onPause(!state.en_pause)} disabled={busy} variant="secondary">
+              {state.en_pause ? t('hostQuizz.reprendre') : t('hostQuizz.pause')}
+            </Button>
+          )}
           {isAsking && onReveal && (
             <Button onClick={onReveal} disabled={busy} variant="secondary">
               {state.type === 'BLUFF' || state.type === 'FUNNY' ? t('jeux.etapeSuivante') : t('hostQuizz.revealNow')}
@@ -286,17 +296,19 @@ function TimerBar({
   remainingSec,
   ratio,
   isAsking,
+  enPause = false,
 }: {
   remainingSec: number;
   ratio: number;
   isAsking: boolean;
+  enPause?: boolean;
 }): JSX.Element {
   const pct = Math.round(ratio * 100);
   const tone = ratio > 0.75 ? 'bg-raspberry' : ratio > 0.5 ? 'bg-lemon' : 'bg-basil';
   return (
     <div className="flex items-center gap-2">
       <span className="font-mono text-2xl font-bold tabular-nums w-12 text-right">
-        {isAsking ? `${remainingSec}s` : '—'}
+        {isAsking ? `${enPause ? '⏸ ' : ''}${remainingSec}s` : '—'}
       </span>
       <div className="w-32 h-3 border-2 border-ink rounded overflow-hidden bg-cream">
         <div

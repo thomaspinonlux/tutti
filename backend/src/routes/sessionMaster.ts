@@ -66,6 +66,7 @@ import {
   listerThemes,
   questionSuivante,
   revelerQuestion,
+  basculerPause,
 } from '../lib/quizzPilotage.js';
 
 const router: Router = Router({ mergeParams: true });
@@ -1045,6 +1046,19 @@ router.post('/quizz/reveal-question', async (req: Request<{ id: string }>, res: 
   try {
     await revelerQuestion(req.params.id);
     res.json({ ok: true });
+  } catch (err: unknown) {
+    erreurQuizz(res, err);
+  }
+});
+
+// feat/quiz-pause — la manette met en pause / reprend la question.
+router.post('/quizz/pause', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  if (!tokenSchema.safeParse(req.body).success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+    return;
+  }
+  try {
+    res.json(await basculerPause(req.params.id, req.body?.pause === true));
   } catch (err: unknown) {
     erreurQuizz(res, err);
   }

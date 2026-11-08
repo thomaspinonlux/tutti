@@ -16,6 +16,7 @@ import type { Socket } from 'socket.io-client';
 import type { CurrentQuestionState, DetailsBac, DetailsVote, QuestionType } from '@tutti/shared';
 import { Button, Card, Badge } from '../../ui/index.js';
 import { repriseQuizz, submitQuizzAnswer } from '../../../lib/sessions.js';
+import { appliquerPause, tempsRestantMs, type MessagePause } from '../../../lib/quizPause.js';
 import { MasterQuizzMenu } from './MasterQuizzMenu.js';
 import { DessinJoueur } from '../../dessin/DessinJoueur.js';
 import { EcrireVoterJoueur } from '../../jeux/EcrireVoterJoueur.js';
@@ -140,6 +141,9 @@ export function PlayQuizzView({
     socket.on('quizz:question_start', onStart);
     socket.on('quizz:question_revealed', onRevealed);
     socket.on('quizz:block_ended', onBlockEnded);
+    // feat/quiz-pause — le chrono se fige / repart.
+    const onPause = (m: MessagePause): void => setActiveQuestion((q) => appliquerPause(q, m));
+    socket.on('quizz:pause', onPause);
     // Socket reconnecté : on a pu manquer la question ou la réponse.
     const surConnexion = (): void => void reprendre();
     socket.on('connect', surConnexion);
@@ -148,6 +152,7 @@ export function PlayQuizzView({
       socket.off('quizz:question_start', onStart);
       socket.off('quizz:question_revealed', onRevealed);
       socket.off('quizz:block_ended', onBlockEnded);
+      socket.off('quizz:pause', onPause);
       socket.off('connect', surConnexion);
     };
   }, [socket, reprendre]);
@@ -275,7 +280,7 @@ export function PlayQuizzView({
           <p className="font-display text-xl">🎙️ {t('playQuizz.animateurSeul')}</p>
           <p className="font-editorial italic text-ink-soft text-sm mt-1">{t('playQuizz.animateurSeulHint')}</p>
         </Card>
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} enPause={!!activeQuestion.en_pause} pausable={estPausable(activeQuestion)} />}
       </div>
     );
   }
@@ -284,9 +289,16 @@ export function PlayQuizzView({
   return (
     <div className="space-y-3">
       <QuestionHeader question={activeQuestion} />
+      {/* feat/quiz-pause — on ne répond pas pendant la pause. */}
+      {activeQuestion.en_pause && (
+        <Card tone="lemon" size="sm" className="text-center">
+          <p className="font-display text-xl">{t('hostQuizz.enPause')}</p>
+          <p className="font-editorial italic text-ink-soft text-sm mt-1">{t('hostQuizz.enPauseHint')}</p>
+        </Card>
+      )}
       <AnswerUI
         question={activeQuestion}
-        disabled={localPhase !== 'asking' || busy}
+        disabled={localPhase !== 'asking' || busy || !!activeQuestion.en_pause}
         submittedValue={submittedValue}
         onSubmit={(v) => void submit(v)}
       />
@@ -303,9 +315,13 @@ export function PlayQuizzView({
           {error}
         </p>
       )}
-      {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
+      {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} enPause={!!activeQuestion.en_pause} pausable={estPausable(activeQuestion)} />}
     </div>
   );
+}
+
+function estPausable(q: CurrentQuestionState): boolean {
+  return ['MCQ', 'TRUE_FALSE', 'FREE_TEXT', 'ESTIMATION'].includes(q.type);
 }
 
 // ── Header ────────────────────────────────────────────────────────────────
@@ -316,9 +332,8 @@ function QuestionHeader({ question }: { question: CurrentQuestionState }): JSX.E
     const id = window.setInterval(() => setNow(Date.now()), 200);
     return () => window.clearInterval(id);
   }, []);
-  const startedAt = new Date(question.started_at).getTime();
-  const elapsedMs = Math.max(0, now - startedAt);
-  const remainingMs = Math.max(0, question.time_limit_sec * 1000 - elapsedMs);
+  const remainingMs = tempsRestantMs(question, now);
+  const elapsedMs = question.time_limit_sec * 1000 - remainingMs;
   const remainingSec = Math.ceil(remainingMs / 1000);
   const ratio = Math.min(1, elapsedMs / (question.time_limit_sec * 1000));
   const tone = ratio > 0.75 ? 'bg-raspberry' : ratio > 0.5 ? 'bg-lemon' : 'bg-basil';
@@ -334,7 +349,10 @@ function QuestionHeader({ question }: { question: CurrentQuestionState }): JSX.E
         <Badge tone="spritz" tilt={1}>
           {question.type.replace('_', ' ')}
         </Badge>
-        <span className="ml-auto font-mono text-2xl font-bold tabular-nums">{remainingSec}s</span>
+        <span className="ml-auto font-mono text-2xl font-bold tabular-nums">
+          {question.en_pause ? '⏸ ' : ''}
+          {remainingSec}s
+        </span>
       </div>
       <div className="w-full h-2 border-2 border-ink rounded overflow-hidden bg-cream-2 mb-3">
         <div

@@ -982,7 +982,11 @@
     "solo": "En solo",
     "questionSur": "Question {{n}} / {{total}}",
     "nouveauQuiz": "Nouveau quiz",
-    "fermerClassement": "Fermer le classement"
+    "fermerClassement": "Fermer le classement",
+    "pause": "⏸ Pause",
+    "reprendre": "▶ Reprendre",
+    "enPause": "⏸ Jeu en pause",
+    "enPauseHint": "L'animateur a mis le jeu en pause, le chrono reprend bientôt."
   },
   "settings": {
     "title": "Paramètres",

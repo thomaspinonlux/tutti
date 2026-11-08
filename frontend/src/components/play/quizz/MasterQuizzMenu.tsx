@@ -17,6 +17,7 @@ import {
   masterNextQuestion,
   masterPlayQuestion,
   masterRevealQuestion,
+  masterPauseQuiz,
 } from '../../../lib/sessions.js';
 import { Button, Card } from '../../ui/index.js';
 import { ChoixThemeQuiz } from '../../quizz/ChoixThemeQuiz.js';
@@ -30,6 +31,9 @@ interface Props {
   finDeManche?: boolean;
   /** feat/quiz-memes-droits — ajuster des points, comme au blind test. */
   onAdjustPoints?: () => void;
+  /** feat/quiz-pause — question en pause, et question qui accepte la pause. */
+  enPause?: boolean;
+  pausable?: boolean;
 }
 
 export function MasterQuizzMenu({
@@ -38,6 +42,8 @@ export function MasterQuizzMenu({
   phase,
   finDeManche = false,
   onAdjustPoints,
+  enPause = false,
+  pausable = false,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
@@ -68,6 +74,7 @@ export function MasterQuizzMenu({
       if (!r.fin_de_manche) setChoixOuvert(false);
     });
   const handleReveal = (): Promise<void> => wrap(() => masterRevealQuestion(sessionId, token));
+  const handlePause = (): Promise<void> => wrap(() => masterPauseQuiz(sessionId, token, !enPause));
   const handleEnd = (): Promise<void> => {
     if (!window.confirm(t('hostQuizz.endConfirm'))) return Promise.resolve();
     return wrap(() => masterEndSession(sessionId, token));
@@ -122,6 +129,12 @@ export function MasterQuizzMenu({
       {phase === 'no-active' && (
         <Button onClick={() => void handleNext()} disabled={busy} size="lg" className="w-full">
           {t('masterQuizz.nextQuestion')}
+        </Button>
+      )}
+
+      {phase === 'asking' && pausable && (
+        <Button onClick={() => void handlePause()} disabled={busy} size="lg" variant="secondary" className="w-full">
+          {enPause ? t('hostQuizz.reprendre') : t('hostQuizz.pause')}
         </Button>
       )}
 

@@ -509,6 +509,22 @@ export async function masterAjouterThemeQuiz(
   return data.manche;
 }
 
+/** feat/quiz-pause — met en pause (true) ou reprend (false) la question. */
+export async function pauseQuiz(sessionId: string, pause: boolean): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/quizz/pause`, {
+    method: 'POST',
+    body: { pause },
+  });
+}
+
+export async function masterPauseQuiz(sessionId: string, token: string, pause: boolean): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/pause`, {
+    method: 'POST',
+    body: { token, pause },
+    anonymous: true,
+  });
+}
+
 export async function revealQuestion(sessionId: string): Promise<void> {
   await api(`/api/sessions/${encodeURIComponent(sessionId)}/quizz/reveal-question`, {
     method: 'POST',

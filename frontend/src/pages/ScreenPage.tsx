@@ -54,6 +54,7 @@ import { AutoScrollList } from '../components/screen/AutoScrollList.js';
 import type { CurrentQuestionState } from '@tutti/shared';
 import { ScreenQuizView, type QuizTvReveal } from '../components/screen/ScreenQuizView.js';
 import { repriseQuizz } from '../lib/sessions.js';
+import { appliquerPause, type MessagePause } from '../lib/quizPause.js';
 
 // fix/tv-1s-poll — 1 s en partie : l'écran ne peut jamais avoir plus d'une
 // seconde de retard sur le serveur, même si le canal temps réel est mort.
@@ -433,6 +434,9 @@ export function ScreenPage(): JSX.Element {
     // question en cours au lieu d'attendre la suivante.
     const onReconnexion = (): void => setRepriseTv((n) => n + 1);
     socket.on('connect', onReconnexion);
+    const onQuizPause = (m: MessagePause): void =>
+      setQuizTv((q) => (q ? { ...q, question: appliquerPause(q.question, m) } : q));
+    socket.on('quizz:pause', onQuizPause);
     socket.on('quizz:question_start', onQuizStart);
     socket.on('quizz:question_revealed', onQuizReveal);
     socket.on('quizz:block_ended', onQuizFinManche);
@@ -444,6 +448,7 @@ export function ScreenPage(): JSX.Element {
       socket.off('quizz:block_ended', onQuizFinManche);
       socket.off('session:ended', onFinPartie);
       socket.off('connect', onReconnexion);
+      socket.off('quizz:pause', onQuizPause);
       setSocketTv(null);
       events.forEach((ev) => socket.off(ev, trigger));
       socket.off('track:start', onTrackStart);

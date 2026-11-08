@@ -31,6 +31,7 @@ import { clearAutoReveal, revealCurrentQuestion } from '../lib/gameplayQuizzCore
 import {
   QuizzErreur,
   ajouterTheme,
+  basculerPause,
   lancerQuestion,
   listerThemes,
   questionSuivante,
@@ -156,6 +157,24 @@ router.post(
   },
 );
 
+// feat/quiz-pause — POST /pause { pause: true | false } (console).
+router.post(
+  '/pause',
+  requireAuth,
+  requireWorkspace,
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    if (!(await ensureOwnSession(req.params.id, req.workspaceId!))) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    try {
+      res.json(await basculerPause(req.params.id, req.body?.pause === true));
+    } catch (err: unknown) {
+      repondreErreur(res, err);
+    }
+  },
+);
+
 // ── POST /submit-answer (joueur) ─────────────────────────────────────────
 
 const submitSchema = z.object({
@@ -265,9 +284,13 @@ router.post(
         PHASE_LOCKED: 409,
         TIME_EXPIRED: 409,
         ALREADY_ANSWERED: 409,
+        PAUSED: 409,
       };
       res.status(codeMap[result.reason]).json({
-        error: { code: result.reason, message: 'Réponse refusée' },
+        error: {
+          code: result.reason,
+          message: result.reason === 'PAUSED' ? 'Le jeu est en pause' : 'Réponse refusée',
+        },
       });
       return;
     }

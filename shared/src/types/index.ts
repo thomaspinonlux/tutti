@@ -480,6 +480,10 @@ export interface CurrentQuestionState {
   numero_manche?: number;
   /** Nombre de questions du thème en cours. */
   total_manche?: number;
+  /** feat/quiz-pause — la question est en pause (chrono figé). */
+  en_pause?: boolean;
+  /** Temps restant figé pendant la pause (ms). */
+  restant_ms?: number;
 }
 
 /** BLUFF / FUNNY — un choix proposé au vote (auteurs cachés jusqu'à la révélation). */

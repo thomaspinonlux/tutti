@@ -50,6 +50,8 @@ export interface ActiveQuestionState {
    * Permet de détecter "tout le monde a répondu" → auto-reveal.
    */
   expected_participants: Set<string>;
+  /** feat/quiz-pause — instant de la mise en pause (null = la question tourne). */
+  paused_at_ms: number | null;
 }
 
 const activeQuestions = new Map<string /* session_id */, ActiveQuestionState>();
@@ -80,6 +82,7 @@ export function setActiveQuestion(
     phase: 'asking',
     answers: new Map(),
     expected_participants: new Set(init.expected_participants),
+    paused_at_ms: null,
   };
   activeQuestions.set(sessionId, state);
   return state;
@@ -111,6 +114,46 @@ export interface RevelationQuizz {
 
 const derniersEtats = new Map<string, CurrentQuestionState>();
 const dernieresRevelations = new Map<string, RevelationQuizz>();
+
+// ── feat/quiz-pause — PAUSE DU CHRONO ───────────────────────────────────────
+//
+// Thomas, 08/11 : « mets la pause, on ne sait jamais ». La pause fige le temps
+// restant ; à la reprise, l'heure de départ est décalée de la durée de la
+// pause : le chrono repart d'où il était et le bonus de rapidité reste juste.
+
+/** Met la question en pause. Rend le temps restant (ms), ou null si impossible. */
+export function pauserQuestion(sessionId: string): number | null {
+  const state = activeQuestions.get(sessionId);
+  if (!state || state.phase !== 'asking' || state.paused_at_ms !== null) return null;
+  const maintenant = Date.now();
+  state.paused_at_ms = maintenant;
+  const restant = Math.max(0, state.started_at_ms + state.time_limit_ms - maintenant);
+  const etat = derniersEtats.get(sessionId);
+  if (etat && etat.question_index === state.question_index) {
+    derniersEtats.set(sessionId, { ...etat, en_pause: true, restant_ms: restant });
+  }
+  return restant;
+}
+
+/** Reprend la question. Rend le nouvel instant de départ et le temps restant. */
+export function reprendreQuestion(
+  sessionId: string,
+): { started_at: string; restant_ms: number } | null {
+  const state = activeQuestions.get(sessionId);
+  if (!state || state.phase !== 'asking' || state.paused_at_ms === null) return null;
+  const maintenant = Date.now();
+  state.started_at_ms += maintenant - state.paused_at_ms;
+  state.paused_at_ms = null;
+  const restant = Math.max(0, state.started_at_ms + state.time_limit_ms - maintenant);
+  // Heure de départ « vue par les écrans » : même décalage, pour que leur
+  // chrono affiche le même temps restant que le serveur.
+  const started_at = new Date(maintenant + restant - state.time_limit_ms).toISOString();
+  const etat = derniersEtats.get(sessionId);
+  if (etat && etat.question_index === state.question_index) {
+    derniersEtats.set(sessionId, { ...etat, started_at, en_pause: false, restant_ms: undefined });
+  }
+  return { started_at, restant_ms: restant };
+}
 
 export function memoriserEtat(sessionId: string, state: CurrentQuestionState): void {
   derniersEtats.set(sessionId, state);
@@ -156,10 +199,11 @@ export function trySubmitAnswer(
   value: string,
 ):
   | { ok: true; allAnswered: boolean }
-  | { ok: false; reason: 'NO_QUESTION' | 'PHASE_LOCKED' | 'TIME_EXPIRED' | 'ALREADY_ANSWERED' } {
+  | { ok: false; reason: 'NO_QUESTION' | 'PHASE_LOCKED' | 'TIME_EXPIRED' | 'ALREADY_ANSWERED' | 'PAUSED' } {
   const state = activeQuestions.get(sessionId);
   if (!state) return { ok: false, reason: 'NO_QUESTION' };
   if (state.phase !== 'asking') return { ok: false, reason: 'PHASE_LOCKED' };
+  if (state.paused_at_ms !== null) return { ok: false, reason: 'PAUSED' };
   const now = Date.now();
   if (now - state.started_at_ms > state.time_limit_ms) {
     return { ok: false, reason: 'TIME_EXPIRED' };
