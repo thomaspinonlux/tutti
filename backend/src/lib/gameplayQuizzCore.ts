@@ -266,6 +266,8 @@ async function revelerInterne(
             type: ScoreEventType.CORRECT_ANSWER,
             points: ans.score,
             answer: ans.value.slice(0, 200),
+            // feat/quiz-departage — temps de réponse, pour départager les ex aequo.
+            buzz_time_ms: Math.max(0, ans.submitted_at_ms - state.started_at_ms),
           },
         }),
       );

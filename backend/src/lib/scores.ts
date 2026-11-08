@@ -34,15 +34,24 @@ interface ComputeArgs {
  *
  * Une 1ʳᵉ place se lit sans ambiguïté dans les points : `pointsForPosition`
  * (gameScoring.ts) ne rend 20 que pour la position 1, et seul le type
- * ARTIST_FOUND porte ces points de position. En mode QUIZZ ces deux critères
- * sont neutres (pas de position, pas de temps de buzz) : le départage tombe
- * alors sur l'ordre alphabétique, ce qui reste stable.
+ * ARTIST_FOUND porte ces points de position. En mode QUIZZ, voir feat/quiz-departage ci-dessous.
  */
+// feat/quiz-departage (08/11) — au QUIZ, à égalité de points : le plus de
+// bonnes réponses passe devant, puis le temps de réponse moyen le plus court
+// (sur les bonnes réponses), puis l'ordre alphabétique. Au blind test, le
+// nombre de bonnes réponses du quiz vaut 0 pour tous : rien ne change.
 interface Departage {
   premieresPlaces: number;
+  bonnesReponses: number;
   buzzMoyenMs: number;
 }
-const DEPARTAGE_NEUTRE: Departage = { premieresPlaces: 0, buzzMoyenMs: Number.POSITIVE_INFINITY };
+const DEPARTAGE_NEUTRE: Departage = {
+  premieresPlaces: 0,
+  bonnesReponses: 0,
+  buzzMoyenMs: Number.POSITIVE_INFINITY,
+};
+/** Événements dont le temps compte pour le départage (blind test, quiz). */
+const TYPES_CHRONO = [ScoreEventType.ARTIST_FOUND, ScoreEventType.CORRECT_ANSWER];
 
 function comparer(
   a: CumulativeScore,
@@ -53,6 +62,7 @@ function comparer(
   const da = dep.get(a.id) ?? DEPARTAGE_NEUTRE;
   const db = dep.get(b.id) ?? DEPARTAGE_NEUTRE;
   if (db.premieresPlaces !== da.premieresPlaces) return db.premieresPlaces - da.premieresPlaces;
+  if (db.bonnesReponses !== da.bonnesReponses) return db.bonnesReponses - da.bonnesReponses;
   if (da.buzzMoyenMs !== db.buzzMoyenMs) return da.buzzMoyenMs - db.buzzMoyenMs;
   return a.label.localeCompare(b.label, 'fr');
 }
@@ -67,7 +77,7 @@ const POINTS_PREMIERE_PLACE = 20;
  * typage et obligerait à forcer la main au compilateur.
  */
 async function chargerDepartageSolo(sessionId: string): Promise<Map<string, Departage>> {
-  const [premieres, buzz] = await Promise.all([
+  const [premieres, buzz, bonnes] = await Promise.all([
     prisma.scoreEvent.groupBy({
       by: ['participant_id'],
       where: {
@@ -81,15 +91,24 @@ async function chargerDepartageSolo(sessionId: string): Promise<Map<string, Depa
       by: ['participant_id'],
       where: {
         session_id: sessionId,
-        type: ScoreEventType.ARTIST_FOUND,
+        type: { in: TYPES_CHRONO },
         buzz_time_ms: { not: null },
       },
       _avg: { buzz_time_ms: true },
+    }),
+    // Bonnes réponses au quiz (hors dessinateur et jeux de salon, qui ont une raison).
+    prisma.scoreEvent.groupBy({
+      by: ['participant_id'],
+      where: { session_id: sessionId, type: ScoreEventType.CORRECT_ANSWER, reason: null },
+      _count: { _all: true },
     }),
   ]);
   const out = new Map<string, Departage>();
   for (const l of premieres) {
     entree(out, l.participant_id).premieresPlaces = l._count._all;
+  }
+  for (const l of bonnes) {
+    entree(out, l.participant_id).bonnesReponses = l._count._all;
   }
   for (const l of buzz) {
     entree(out, l.participant_id).buzzMoyenMs = l._avg.buzz_time_ms ?? Number.POSITIVE_INFINITY;
@@ -98,7 +117,7 @@ async function chargerDepartageSolo(sessionId: string): Promise<Map<string, Depa
 }
 
 async function chargerDepartageEquipes(sessionId: string): Promise<Map<string, Departage>> {
-  const [premieres, buzz] = await Promise.all([
+  const [premieres, buzz, bonnes] = await Promise.all([
     prisma.scoreEvent.groupBy({
       by: ['team_id'],
       where: {
@@ -114,16 +133,30 @@ async function chargerDepartageEquipes(sessionId: string): Promise<Map<string, D
       where: {
         session_id: sessionId,
         team_id: { not: null },
-        type: ScoreEventType.ARTIST_FOUND,
+        type: { in: TYPES_CHRONO },
         buzz_time_ms: { not: null },
       },
       _avg: { buzz_time_ms: true },
+    }),
+    prisma.scoreEvent.groupBy({
+      by: ['team_id'],
+      where: {
+        session_id: sessionId,
+        team_id: { not: null },
+        type: ScoreEventType.CORRECT_ANSWER,
+        reason: null,
+      },
+      _count: { _all: true },
     }),
   ]);
   const out = new Map<string, Departage>();
   for (const l of premieres) {
     if (!l.team_id) continue;
     entree(out, l.team_id).premieresPlaces = l._count._all;
+  }
+  for (const l of bonnes) {
+    if (!l.team_id) continue;
+    entree(out, l.team_id).bonnesReponses = l._count._all;
   }
   for (const l of buzz) {
     if (!l.team_id) continue;
