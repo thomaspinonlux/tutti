@@ -16,11 +16,13 @@ interface Props {
   onAjoute?: (manche: MancheAjoutee) => void;
   /** Fond sombre (console) ou clair (téléphone). */
   sombre?: boolean;
+  /** Thème déjà choisi pour la suite (nom + nombre de questions), s'il y en a un. */
+  choisi?: { nom: string; nombre: number } | null;
 }
 
 const NIVEAUX: NiveauQuiz[] = ['MIX', 'EASY', 'MEDIUM', 'EXPERT'];
 
-export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false }: Props): JSX.Element {
+export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, choisi = null }: Props): JSX.Element {
   const { t, i18n } = useTranslation();
   const [themes, setThemes] = useState<ThemeQuiz[] | null>(null);
   const [niveau, setNiveau] = useState<NiveauQuiz>('MIX');
@@ -63,6 +65,12 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false }: P
     }
   };
 
+  // fix/quiz-un-theme-choisi — un seul thème choisi à la fois, bien visible ;
+  // toucher un autre thème le remplace.
+  const actuel = ajoute ? { nom: ajoute.theme, nombre: ajoute.nombre } : choisi;
+  const estChoisi = (th: ThemeQuiz): boolean =>
+    !!actuel && (th.nom_fr === actuel.nom || th.nom_en === actuel.nom);
+  const choisiCarte = 'border-[#3FB47A] bg-[#3FB47A]/20 ring-2 ring-[#3FB47A]';
   const texte = sombre ? 'text-white' : 'text-ink';
   const doux = sombre ? 'text-white/50' : 'text-ink-soft';
   const carte = sombre
@@ -71,6 +79,14 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false }: P
 
   return (
     <div className="space-y-3">
+      {actuel && (
+        <div role="status" className="rounded-xl border-2 border-[#3FB47A] bg-[#3FB47A]/15 px-4 py-3">
+          <p className={`font-display text-lg ${texte}`}>
+            ✓ {t('quizTheme.choisi', { theme: actuel.nom, count: actuel.nombre })}
+          </p>
+          <p className={`text-xs ${doux}`}>{t('quizTheme.changer')}</p>
+        </div>
+      )}
       {perso.length > 0 && (
         <div className="space-y-2">
           <p className={`font-mono text-xs uppercase tracking-wider ${doux}`}>{t('quizTheme.vosQuiz')}</p>
@@ -81,9 +97,12 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false }: P
                   type="button"
                   disabled={!!enCours}
                   onClick={() => void choisir(th)}
-                  className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition disabled:opacity-50 ${carte}`}
+                  aria-pressed={estChoisi(th)}
+                  className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition disabled:opacity-50 ${estChoisi(th) ? choisiCarte : carte}`}
                 >
-                  <span className={`block font-semibold ${texte}`}>{enCours === th.id ? '…' : th.nom_fr}</span>
+                  <span className={`block font-semibold ${texte}`}>
+                    {enCours === th.id ? '…' : `${estChoisi(th) ? '✓ ' : ''}${th.nom_fr}`}
+                  </span>
                   <span className={`block text-xs font-mono ${doux}`}>
                     {t('quizTheme.questions', { count: th.total })}
                   </span>
@@ -118,11 +137,7 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false }: P
         })}
       </div>
 
-      {ajoute && (
-        <p role="status" className="text-sm font-medium text-[#3FB47A]">
-          ✓ {t('quizTheme.added', { theme: ajoute.theme, count: ajoute.nombre })}
-        </p>
-      )}
+
       {erreur && (
         <p role="alert" className="text-sm text-[#FF5C4D]">
           {erreur}
@@ -140,10 +155,11 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false }: P
                 type="button"
                 disabled={!!enCours}
                 onClick={() => void choisir(th)}
-                className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition disabled:opacity-50 ${carte}`}
+                aria-pressed={estChoisi(th)}
+                className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition disabled:opacity-50 ${estChoisi(th) ? choisiCarte : carte}`}
               >
                 <span className={`block font-semibold ${texte}`}>
-                  {enCours === th.id ? '…' : enAnglais ? th.nom_en : th.nom_fr}
+                  {enCours === th.id ? '…' : `${estChoisi(th) ? '✓ ' : ''}${enAnglais ? th.nom_en : th.nom_fr}`}
                 </span>
                 <span className={`block text-xs font-mono ${doux}`}>
                   {t('quizTheme.questions', { count: nb })}

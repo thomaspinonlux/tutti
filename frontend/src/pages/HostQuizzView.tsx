@@ -78,6 +78,8 @@ interface Props {
   enTete?: ReactNode;
   /** Liste des joueurs du lobby avec rôles et équipes (même que le blind test). */
   listeJoueurs?: ReactNode;
+  /** Bouton couper / remettre la musique d'attente (salle d'attente). */
+  boutonMusique?: ReactNode;
 }
 
 /**
@@ -103,6 +105,7 @@ export function HostQuizzView({
   publicView = false,
   enTete,
   listeJoueurs,
+  boutonMusique,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   useFondConsoleSombre();
@@ -272,8 +275,16 @@ export function HostQuizzView({
 
   // ── Render branches ─────────────────────────────────────────────────────
 
+  // fix/quiz-un-theme-choisi — le thème qui sera joué ensuite : les questions
+  // pas encore posées (toutes, avant le début).
+  const derniereJouee = Math.max(activeQuestion?.question_index ?? -1, lastReveal?.question_index ?? -1);
+  const enAttente = (pack?.questions ?? []).filter((q) => q.position > derniereJouee);
+  const themeEnAttente =
+    enAttente.length > 0 ? { nom: enAttente[0]!.category ?? pack?.name ?? '', nombre: enAttente.length } : null;
+
   const choixTheme = (
     <ChoixThemeQuiz
+      choisi={themeEnAttente}
       charger={() => listerThemesQuiz(session.id)}
       ajouter={(packId, niveau) => ajouterThemeQuiz(session.id, packId, niveau)}
       onAjoute={(m) => {
@@ -289,6 +300,7 @@ export function HostQuizzView({
   // chrono et les boutons. Elle prend maintenant sa place, en haut.
   const barreHaut = (
     <div className="flex gap-2 items-center justify-end flex-wrap px-4 pt-3">
+      {boutonMusique}
       {!publicView && <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />}
       {enTete}
     </div>
@@ -516,7 +528,6 @@ function WaitingView({
         <Card size="md">
           <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
             {t('quizTheme.title')}
-            {nombreQuestions > 0 && ` · ${nombreQuestions} ${t('quizz.questionsCount')}`}
           </p>
           {choixTheme ?? (
             <p className="font-editorial italic text-ink-soft">{t('quizTheme.waitingMaster')}</p>

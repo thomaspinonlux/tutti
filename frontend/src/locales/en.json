@@ -278,7 +278,12 @@
     "whatBody": "The artist's name AND/OR the song title.",
     "scoreTitle": "Scoring",
     "scoreBody": "A correct answer (artist or title) = points. Both = double answer, bonus!",
-    "hostToggle": "Game rules"
+    "hostToggle": "Game rules",
+    "quizHowTitle": "How to answer",
+    "quizHowBody": "The question appears on your phone: tap the right answer before time runs out.",
+    "quizScoreBody": "Right answer = 100 points + up to 50 bonus points if you answer fast. Wrong answer = 0.",
+    "quizTeamsTitle": "In teams",
+    "quizTeamsBody": "The first team member to answer correctly scores for the team."
   },
   "preGame": {
     "readyTitle": "Ready to play?",
@@ -1086,7 +1091,7 @@
     "updateLater": "Later"
   },
   "quizTheme": {
-    "title": "Pick a theme",
+    "title": "Choose the theme",
     "level": "Level",
     "added": "{{theme}} added — {{count}} questions",
     "questions": "{{count}} questions",
@@ -1121,7 +1126,11 @@
     "otherSettings": "Settings",
     "opensAt": "The “Start” button appears at {{time}}.",
     "vosQuiz": "Your quizzes",
-    "themesTutti": "Tutti themes"
+    "themesTutti": "Tutti themes",
+    "choisi": "Chosen theme: {{theme}} · {{count}} questions",
+    "changer": "Tap another theme to change it.",
+    "musiqueCouper": "🔇 Mute music",
+    "musiqueRemettre": "🔊 Music on"
   },
   "dessin": {
     "titre": "Draw & guess",

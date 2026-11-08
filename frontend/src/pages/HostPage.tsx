@@ -973,15 +973,17 @@ function HostPageInner(): JSX.Element {
   useEffect(() => {
     void getReglageAmbiance().then(setAmbiance);
   }, []);
+  // fix/quiz-musique-avec-bouton — Thomas, 08/11 : au quiz, la musique
+  // d'attente joue pendant que les joueurs arrivent, et un bouton bien visible
+  // la coupe (ou la remet). Elle s'arrête quand les questions commencent.
+  const [musiqueQuizCoupee, setMusiqueQuizCoupee] = useState(false);
   const salon = useLobbyAmbiance({
-    // fix/quiz-sans-musique — Thomas, 08/11 : « il faut enlever la musique
-    // d'accueil pendant le quiz, c'est trop long et répétitif ». Plus de
-    // musique d'attente au quiz.
     enabled:
-      session?.game_type !== 'QUIZZ' &&
-      (effectivePhase === 'waiting' ||
-        effectivePhase === 'intermission' ||
-        effectivePhase === 'roundSelection'),
+      session?.game_type === 'QUIZZ'
+        ? session.status === 'WAITING' && !musiqueQuizCoupee
+        : effectivePhase === 'waiting' ||
+          effectivePhase === 'intermission' ||
+          effectivePhase === 'roundSelection',
     playlistId: ambiance.playlistId,
     aleatoire: ambiance.aleatoire,
     appleConnected,
@@ -2715,6 +2717,17 @@ function HostPageInner(): JSX.Element {
         onSessionUpdate={(s) => setSession(s)}
         onCumulativeUpdate={(c) => setCumulative(c)}
         publicView={!session.has_animator}
+        boutonMusique={
+          session.status === 'WAITING' ? (
+            <button
+              type="button"
+              onClick={() => setMusiqueQuizCoupee((c) => !c)}
+              className="rounded-xl border-2 border-white/25 bg-white/[0.08] px-4 py-2 font-display text-base text-white hover:bg-white/[0.15]"
+            >
+              {musiqueQuizCoupee ? t('quizTheme.musiqueRemettre') : t('quizTheme.musiqueCouper')}
+            </button>
+          ) : null
+        }
         enTete={
           <MasterBadge
             master={currentMaster}

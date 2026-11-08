@@ -170,8 +170,11 @@ export function PlayPage(): JSX.Element {
   // partie : seulement avant d'avoir rejoint, ou une fois la partie terminée.
   // fix/pseudo-a-retaper (06/11) — un rechargement pendant la saisie du nom
   // effaçait le nom (deux fois ce jour-là) : jamais dès qu'un nom est tapé.
+  // fix/telephone-sur-une-vieille-version (08/11) — aussi en salle d'attente,
+  // avant le début : le joueur est déjà inscrit (identité gardée), la page
+  // revient directement en attente, sur la nouvelle version.
   useNouvelleVersion(
-    ((step === 'pseudo' && !pseudo.trim()) || step === 'ended') && !currentTrack,
+    ((step === 'pseudo' && !pseudo.trim()) || step === 'waiting' || step === 'ended') && !currentTrack,
     'telephone',
   );
   const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
@@ -1151,7 +1154,7 @@ export function PlayPage(): JSX.Element {
                 </div>
               )}
               {/* feat/rules — règles concises visibles dans le lobby avant la manche 1 */}
-              <GameRules className="mt-4" sombre />
+              <GameRules className="mt-4" sombre quiz={view?.game_type === 'QUIZZ'} />
             </>
           )}
 

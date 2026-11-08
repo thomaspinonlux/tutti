@@ -167,6 +167,7 @@ export async function ajouterTheme(
         await tx.session.update({ where: { id: sessionId }, data: { question_set_id: setId } });
       }
 
+      await retirerQuestionsNonJouees(tx, sessionId, setId);
       const dejaPosees = new Set(
         (await tx.question.findMany({ where: { set_id: setId }, select: { text_lang1: true } })).map(
           (q) => q.text_lang1,
@@ -265,6 +266,30 @@ export async function ajouterTheme(
 
 type SessionQuizz = Awaited<ReturnType<typeof sessionQuizz>>;
 
+/**
+ * fix/quiz-un-theme-choisi — Thomas, 08/11 : « on choisit un thème à chaque
+ * fois, il faut que ce soit clairement indiqué, et qu'on puisse le changer en
+ * cliquant sur un autre thème ». Avant, chaque clic AJOUTAIT des questions
+ * (55 questions après trois essais). Choisir un thème REMPLACE maintenant les
+ * questions pas encore jouées ; celles déjà posées restent (scores intacts).
+ */
+async function retirerQuestionsNonJouees(
+  tx: Prisma.TransactionClient,
+  sessionId: string,
+  setId: string,
+): Promise<void> {
+  const active = getActiveQuestion(sessionId);
+  // Le serveur a pu redémarrer (curseur perdu) : les points déjà marqués
+  // disent aussi jusqu'où la partie est allée.
+  const marques = await tx.scoreEvent.aggregate({ where: { session_id: sessionId }, _max: { round_index: true } });
+  const derniereJouee = Math.max(
+    active?.question_index ?? -1,
+    curseurs.get(sessionId) ?? -1,
+    marques._max.round_index ?? -1,
+  );
+  await tx.question.deleteMany({ where: { set_id: setId, position: { gt: derniereJouee } } });
+}
+
 /** Les quiz de l'établissement jouables comme thème (pas les jeux d'une partie). */
 async function quizPersoDe(establishmentId: string) {
   const sets = await prisma.questionSet.findMany({
@@ -317,6 +342,7 @@ async function ajouterQuizPerso(
           setId = set.id;
           await tx.session.update({ where: { id: session.id }, data: { question_set_id: setId } });
         }
+        await retirerQuestionsNonJouees(tx, session.id, setId);
         const derniere = await tx.question.aggregate({ where: { set_id: setId }, _max: { position: true } });
         const debut = (derniere._max.position ?? -1) + 1;
         await tx.question.createMany({
