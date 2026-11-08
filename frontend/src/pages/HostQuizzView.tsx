@@ -48,6 +48,7 @@ import { getQuestionSet } from '../lib/questionSets.js';
 import { Button, Card, TitleHandwritten, Underline } from '../components/ui/index.js';
 import { QuestionConsole } from '../components/host/quizz/QuestionConsole.js';
 import { QuizzAnswersList } from '../components/host/quizz/QuizzAnswersList.js';
+import { PlayersPanel } from '../components/host/PlayersPanel.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
 
 interface QuizzReveal {
@@ -502,6 +503,19 @@ export function HostQuizzView({
 
         {activeQuestion?.phase === 'asking' && (
           <QuizzAnswersList participants={session.participants} submittedSet={submittedSet} />
+        )}
+
+        {/* feat/quiz-memes-droits — Thomas, 08/11 : « j'ai besoin des mêmes
+            droits et fonctionnalités que pour le blind test ». Même panneau
+            qu'au blind test pendant la partie : donner la manette (🎙️),
+            ajuster les points, retirer un joueur. */}
+        {!publicView && (
+          <PlayersPanel
+            sessionId={session.id}
+            participants={session.participants.filter((p) => !p.is_kicked)}
+            cumulative={cumulative}
+            dark
+          />
         )}
 
         {!publicView && activeQuestion && activeQuestion.phase !== 'asking' && (

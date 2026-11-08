@@ -920,7 +920,8 @@
     "nextQuestion": "Next question",
     "revealNow": "Reveal now",
     "endSession": "End the game",
-    "endedHint": "The game is over."
+    "endedHint": "The game is over.",
+    "ajusterPoints": "± Adjust points"
   },
   "gettingStarted": {
     "title": "Getting started",

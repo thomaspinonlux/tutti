@@ -920,7 +920,8 @@
     "nextQuestion": "Question suivante",
     "revealNow": "Révéler maintenant",
     "endSession": "Terminer la partie",
-    "endedHint": "La partie est terminée."
+    "endedHint": "La partie est terminée.",
+    "ajusterPoints": "± Ajuster des points"
   },
   "gettingStarted": {
     "title": "Premiers pas",

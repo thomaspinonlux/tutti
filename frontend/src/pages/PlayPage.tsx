@@ -1168,6 +1168,7 @@ export function PlayPage(): JSX.Element {
               isMaster={isMaster}
               sessionStatus="PLAYING"
               animateurSeul={myRole === 'ANIMATOR_FULL'}
+              onAdjustPoints={() => setAdjustSheetOpen(true)}
             />
           )}
 

@@ -3617,7 +3617,9 @@ function MasterBadge({
         </span>
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-30 w-64 max-h-72 overflow-auto bg-white border-2 border-ink rounded shadow-pop p-2">
+        // fix/manette-lisible — fond blanc + texte « ink » : illisible sur la
+        // console du quiz (thème nuit, ink = blanc). Jetons de thème.
+        <div className="absolute right-0 top-full mt-2 z-30 w-64 max-h-72 overflow-auto bg-panel text-ink border-2 border-ink rounded shadow-pop p-2">
           <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft px-2 py-1">
             {t('host.masterChange')}
           </p>

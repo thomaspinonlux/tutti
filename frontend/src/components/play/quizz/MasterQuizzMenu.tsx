@@ -28,9 +28,17 @@ interface Props {
   phase: 'waiting' | 'asking' | 'revealed' | 'no-active' | 'ended';
   /** feat/quiz-comme-le-blind-test — la manche est finie : choisir un thème. */
   finDeManche?: boolean;
+  /** feat/quiz-memes-droits — ajuster des points, comme au blind test. */
+  onAdjustPoints?: () => void;
 }
 
-export function MasterQuizzMenu({ sessionId, token, phase, finDeManche = false }: Props): JSX.Element {
+export function MasterQuizzMenu({
+  sessionId,
+  token,
+  phase,
+  finDeManche = false,
+  onAdjustPoints,
+}: Props): JSX.Element {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,6 +140,12 @@ export function MasterQuizzMenu({ sessionId, token, phase, finDeManche = false }
       {phase === 'revealed' && (
         <Button onClick={() => void handleNext()} disabled={busy} size="lg" className="w-full">
           {t('masterQuizz.nextQuestion')}
+        </Button>
+      )}
+
+      {onAdjustPoints && (
+        <Button onClick={onAdjustPoints} disabled={busy} variant="secondary" size="sm" className="w-full">
+          {t('masterQuizz.ajusterPoints')}
         </Button>
       )}
 

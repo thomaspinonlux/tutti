@@ -53,6 +53,8 @@ interface Props {
   sessionStatus?: 'WAITING' | 'PLAYING' | 'ENDED';
   /** Animateur seul : il voit la question mais ne répond pas. */
   animateurSeul?: boolean;
+  /** Manette : ouvrir l'ajustement des points. */
+  onAdjustPoints?: () => void;
 }
 
 type LocalPhase = 'waitingNextQuestion' | 'asking' | 'submitted' | 'revealed';
@@ -66,6 +68,7 @@ export function PlayQuizzView({
   isMaster = false,
   sessionStatus = 'PLAYING',
   animateurSeul = false,
+  onAdjustPoints,
 }: Props): JSX.Element {
   const { t } = useTranslation();
 
@@ -209,7 +212,7 @@ export function PlayQuizzView({
             {t('playQuizz.waitingHint')}
           </p>
         </Card>
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
       </div>
     );
   }
@@ -227,7 +230,7 @@ export function PlayQuizzView({
           myParticipantId={participantId}
           mySubmitted={submittedValue}
         />
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
       </div>
     );
   }
@@ -241,7 +244,7 @@ export function PlayQuizzView({
         ) : (
           <EcrireVoterJoueur socket={socket} sessionId={sessionId} token={token} question={activeQuestion} />
         )}
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
       </div>
     );
   }
@@ -258,7 +261,7 @@ export function PlayQuizzView({
           token={token}
           question={activeQuestion}
         />
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
       </div>
     );
   }
@@ -272,7 +275,7 @@ export function PlayQuizzView({
           <p className="font-display text-xl">🎙️ {t('playQuizz.animateurSeul')}</p>
           <p className="font-editorial italic text-ink-soft text-sm mt-1">{t('playQuizz.animateurSeulHint')}</p>
         </Card>
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
+        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
       </div>
     );
   }
@@ -300,7 +303,7 @@ export function PlayQuizzView({
           {error}
         </p>
       )}
-      {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} />}
+      {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
     </div>
   );
 }
