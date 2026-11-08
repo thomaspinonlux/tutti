@@ -919,7 +919,7 @@
     "startFirst": "Launch first question",
     "nextQuestion": "Next question",
     "revealNow": "Reveal now",
-    "endSession": "End session",
+    "endSession": "End the game",
     "endedHint": "The game is over."
   },
   "gettingStarted": {
@@ -969,8 +969,8 @@
     "correctAnswerLabel": "Correct answer",
     "estimationRange": "Guess between",
     "exactValueLabel": "Exact value",
-    "endSession": "End session",
-    "endConfirm": "End session now?",
+    "endSession": "End the game",
+    "endConfirm": "End the game? The final ranking is shown and the game cannot resume.\n\nTo change quiz without ending, use “Change theme / quiz”.",
     "connected": "{{count}} player(s) connected",
     "waitingForPlayers": "Waiting for players…",
     "startSession": "Start session",
@@ -979,7 +979,9 @@
     "endedTitle": "Session ended",
     "byTeams": "By teams",
     "solo": "Solo",
-    "questionSur": "Question {{n}} / {{total}}"
+    "questionSur": "Question {{n}} / {{total}}",
+    "nouveauQuiz": "New quiz",
+    "fermerClassement": "Close the ranking"
   },
   "settings": {
     "title": "Settings",

@@ -505,7 +505,17 @@ export async function questionSuivante(
   const session = await sessionQuizz(sessionId);
   if (!session.question_set_id) throw new QuizzErreur('AUCUN_THEME', "Choisis d'abord un thème.");
   const active = getActiveQuestion(sessionId);
-  const precedente = active?.question_index ?? curseurs.get(sessionId) ?? -1;
+  // fix/quiz-apres-redemarrage — le curseur vit en mémoire : après un
+  // redémarrage du serveur, « question suivante » repartait de la 1re
+  // question. Les points déjà enregistrés disent jusqu'où on était allé.
+  let precedente = active?.question_index ?? curseurs.get(sessionId);
+  if (precedente === undefined) {
+    const marques = await prisma.scoreEvent.aggregate({
+      where: { session_id: sessionId },
+      _max: { round_index: true },
+    });
+    precedente = marques._max.round_index ?? -1;
+  }
   const question = await findQuestionAtIndex(session.question_set_id, precedente + 1);
   if (!question) {
     clearAutoReveal(sessionId);

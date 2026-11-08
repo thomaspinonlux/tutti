@@ -19,6 +19,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import type { Socket } from 'socket.io-client';
 import type {
   CumulativeScore,
@@ -34,6 +35,7 @@ import {
   listerThemesQuiz,
   repriseQuizz,
   getSession,
+  hidePodium,
   nextQuestion,
   playQuestion,
   revealQuestion,
@@ -155,8 +157,30 @@ export function HostQuizzView({
       .catch(() => undefined);
   }, [session.id]);
 
+  // fix/quiz-console-perdue — une action refusée parce que la partie est
+  // terminée (fin décidée ailleurs : téléphone, autre écran) : on relit la
+  // partie et la console passe au classement final au lieu de rester bloquée.
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+  const majSessionRef = useRef(onSessionUpdate);
+  majSessionRef.current = onSessionUpdate;
+  const verifierFin = useCallback(async (): Promise<boolean> => {
+    try {
+      const r = await getSession(sessionRef.current.id);
+      majClassementRef.current(r.cumulative);
+      if (r.session.status === 'ENDED' && sessionRef.current.status !== 'ENDED') {
+        majSessionRef.current({ ...sessionRef.current, ...r.session, participants: sessionRef.current.participants });
+        return true;
+      }
+    } catch {
+      /* réseau : on garde l'écran */
+    }
+    return false;
+  }, []);
+
   const reprendre = useCallback(async (): Promise<void> => {
     rafraichirClassement();
+    void verifierFin();
     try {
       const r = await repriseQuizz(session.id);
       if (!r.state) return;
@@ -165,7 +189,7 @@ export function HostQuizzView({
     } catch {
       /* réseau absent : le socket reprendra */
     }
-  }, [session.id, rafraichirClassement]);
+  }, [session.id, rafraichirClassement, verifierFin]);
 
   const mediaEnCours =
     !!activeQuestion &&
@@ -248,7 +272,7 @@ export function HostQuizzView({
       // Lance immédiatement la première question.
       await playQuestion(session.id, 0);
     } catch (e: unknown) {
-      setError((e as Error).message);
+      if (!(await verifierFin())) setError((e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -266,7 +290,7 @@ export function HostQuizzView({
       }
       // Sinon le state arrivera via socket onQuestionStart.
     } catch (e: unknown) {
-      setError((e as Error).message);
+      if (!(await verifierFin())) setError((e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -278,7 +302,7 @@ export function HostQuizzView({
     try {
       await revealQuestion(session.id);
     } catch (e: unknown) {
-      setError((e as Error).message);
+      if (!(await verifierFin())) setError((e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -288,8 +312,13 @@ export function HostQuizzView({
     if (!window.confirm(t('hostQuizz.endConfirm'))) return;
     setBusy(true);
     try {
-      const updated = await endSession(session.id);
-      onSessionUpdate({ ...session, ...updated });
+      // fix/quiz-fin-sans-podium — l'API renvoie { session, cumulative } :
+      // on étalait l'objet entier dans la session, le statut restait PLAYING,
+      // la console ne montrait jamais le classement final (Thomas, 08/11 :
+      // quatre appuis sur « Terminer », puis « Cette partie est terminée »).
+      const fin = await endSession(session.id);
+      onSessionUpdate({ ...session, ...fin.session, participants: session.participants });
+      majClassementRef.current(fin.cumulative);
     } catch (err: unknown) {
       // fix/fin-de-quiz-sans-reponse — L'ÉCHEC SE DIT.
       // Sans capture, terminer devant la salle et échouer laissait l'écran
@@ -355,7 +384,15 @@ export function HostQuizzView({
 
   // Session ENDED
   if (session.status === 'ENDED') {
-    return <EndedView nom={pack?.name ?? 'Quiz'} cumulative={cumulative} mode={session.mode} />;
+    return (
+      <EndedView
+        nom={pack?.name ?? 'Quiz'}
+        cumulative={cumulative}
+        mode={session.mode}
+        sessionId={session.id}
+        publicView={publicView}
+      />
+    );
   }
 
   // Session WAITING (pas démarrée) : QR code, joueurs, choix du thème.
@@ -650,12 +687,25 @@ function EndedView({
   nom,
   cumulative,
   mode,
+  sessionId,
+  publicView,
 }: {
   nom: string;
   cumulative: CumulativeScore[];
   mode: string;
+  sessionId: string;
+  publicView: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  // fix/quiz-fin-sans-issue — l'écran de fin n'avait aucun bouton : on restait
+  // bloqué. Comme au blind test : fermer le classement (TV comprise), ou
+  // enchaîner directement sur un nouveau quiz.
+  const quitter = (vers: string): void => {
+    void hidePodium(sessionId)
+      .catch(() => undefined)
+      .finally(() => navigate(vers));
+  };
   const podium = cumulative.slice(0, 3);
   const rest = cumulative.slice(3);
 
@@ -707,6 +757,25 @@ function EndedView({
             ))}
           </ol>
         </Card>
+      )}
+
+      {!publicView && (
+        <div className="flex flex-wrap justify-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => quitter('/admin/sessions/new?type=quizz')}
+            className="rounded-2xl bg-[#FF5C4D] px-6 py-3 font-display text-xl text-white"
+          >
+            ▶ {t('hostQuizz.nouveauQuiz')}
+          </button>
+          <button
+            type="button"
+            onClick={() => quitter('/admin/dashboard?notice=session-ended')}
+            className="rounded-2xl border-2 border-white/30 px-6 py-3 font-display text-xl text-white"
+          >
+            ✕ {t('hostQuizz.fermerClassement')}
+          </button>
+        </div>
       )}
     </div>
   );

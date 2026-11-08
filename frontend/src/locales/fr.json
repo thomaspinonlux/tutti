@@ -919,7 +919,7 @@
     "startFirst": "Lancer la 1ʳᵉ question",
     "nextQuestion": "Question suivante",
     "revealNow": "Révéler maintenant",
-    "endSession": "Terminer la session",
+    "endSession": "Terminer la partie",
     "endedHint": "La partie est terminée."
   },
   "gettingStarted": {
@@ -969,8 +969,8 @@
     "correctAnswerLabel": "Bonne réponse",
     "estimationRange": "Estime entre",
     "exactValueLabel": "Valeur exacte",
-    "endSession": "Terminer la session",
-    "endConfirm": "Terminer la session maintenant ?",
+    "endSession": "Terminer la partie",
+    "endConfirm": "Terminer la partie ? Le classement final s'affiche et la partie ne peut plus reprendre.\n\nPour changer de quiz sans terminer, utilise « Changer de thème / quiz ».",
     "connected": "{{count}} joueur·euse·s connecté·e·s",
     "waitingForPlayers": "En attente des joueurs…",
     "startSession": "Démarrer la session",
@@ -979,7 +979,9 @@
     "endedTitle": "Session terminée",
     "byTeams": "Par équipes",
     "solo": "En solo",
-    "questionSur": "Question {{n}} / {{total}}"
+    "questionSur": "Question {{n}} / {{total}}",
+    "nouveauQuiz": "Nouveau quiz",
+    "fermerClassement": "Fermer le classement"
   },
   "settings": {
     "title": "Paramètres",
