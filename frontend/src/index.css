@@ -144,6 +144,11 @@
   html.theme-console body::after {
     display: none;
   }
+  /* fix/quiz-lisible — le prune des liens (bouton « ghost ») est illisible
+     sur fond nuit : version claire en thème console. */
+  html.theme-console .text-plum {
+    color: #e2b4e2;
+  }
 
   /* Tout contenu doit être au-dessus des textures */
   #root {

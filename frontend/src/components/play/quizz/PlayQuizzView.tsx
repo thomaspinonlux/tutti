@@ -128,6 +128,10 @@ export function PlayQuizzView({
     const onRevealed = (msg: QuizzReveal): void => {
       setReveal(msg);
       setLocalPhase('revealed');
+      // La manette passe à « Question suivante » (elle restait sur « Révéler »).
+      setActiveQuestion((q) =>
+        q && q.question_index === msg.question_index ? { ...q, phase: 'revealed', reveal: msg.reveal } : q,
+      );
     };
 
     socket.on('quizz:question_start', onStart);
