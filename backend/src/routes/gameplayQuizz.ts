@@ -278,11 +278,12 @@ router.post(
       pseudo: participant.pseudo,
     });
 
-    // Si tout le monde a répondu → auto-reveal anticipé.
-    if (result.allAnswered) {
-      clearAutoReveal(req.params.id);
-      await revealCurrentQuestion(req.params.id);
-    }
+    // fix/quiz-chrono-jusquau-bout — Thomas, 08/11 : « tu dois laisser le
+    // compteur aller jusqu'au bout, plusieurs personnes doivent pouvoir
+    // répondre ; sinon quelle logique de mettre plusieurs niveaux de points ».
+    // Plus de révélation anticipée quand tous les attendus ont répondu : un
+    // joueur qui arrive ou revient peut encore répondre, et le bonus de
+    // rapidité garde son sens. L'animateur peut toujours « Révéler maintenant ».
 
     res.json({ ok: true, allAnswered: result.allAnswered });
   },

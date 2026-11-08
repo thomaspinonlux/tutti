@@ -201,17 +201,33 @@ export function ScreenQuizView({
 
       {/* fix/quiz-qr-en-jeu — on peut rejoindre la partie en cours. */}
       <JoinQrCorner joinCode={joinCode} size={110} className="absolute bottom-6 right-8" />
-      <h1 className="font-display text-6xl leading-tight text-center max-w-6xl mb-12 whitespace-pre-line">{question.text}</h1>
+      <h1
+        className={`font-display leading-tight text-center max-w-6xl mb-10 whitespace-pre-line [overflow-wrap:anywhere] ${
+          question.text.length > 110 ? 'text-4xl lg:text-5xl' : 'text-5xl lg:text-6xl'
+        }`}
+      >
+        {question.text}
+      </h1>
 
       {choix.length > 0 ? (
-        <ul className="grid grid-cols-2 gap-5 w-full max-w-6xl">
+        // fix/tv-quiz-mise-en-page — Thomas, 08/11 : écran TV en portrait,
+        // réponses longues (noms de fichiers) qui débordaient les unes sur les
+        // autres. Une colonne en portrait ou si une réponse est longue, et
+        // coupure des mots trop longs à l'intérieur de leur case.
+        <ul
+          className={`grid gap-4 w-full max-w-6xl ${
+            choix.some((c) => c.length > 28) ? 'grid-cols-1' : 'grid-cols-1 landscape:grid-cols-2'
+          }`}
+        >
           {choix.map((c, i) => {
             const estBonne = revele && bonne === c;
             return (
               <li
                 key={i}
                 className={[
-                  'rounded-2xl border-2 px-6 py-5 text-3xl font-semibold flex items-center gap-4 transition',
+                  `rounded-2xl border-2 px-6 py-4 font-semibold flex items-center gap-4 transition min-w-0 ${
+                    choix.some((x) => x.length > 28) ? 'text-2xl' : 'text-3xl'
+                  }`,
                   estBonne
                     ? 'border-[#3FB47A] bg-[#3FB47A]/25'
                     : revele
@@ -224,7 +240,7 @@ export function ScreenQuizView({
                     {LETTRES[i]}
                   </span>
                 )}
-                <span>{c}</span>
+                <span className="min-w-0 [overflow-wrap:anywhere]">{c}</span>
               </li>
             );
           })}
