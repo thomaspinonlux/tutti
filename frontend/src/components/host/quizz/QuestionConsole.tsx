@@ -307,7 +307,7 @@ function TimerBar({
   const tone = ratio > 0.75 ? 'bg-raspberry' : ratio > 0.5 ? 'bg-lemon' : 'bg-basil';
   return (
     <div className="flex items-center gap-2">
-      <span className="font-mono text-2xl font-bold tabular-nums w-12 text-right">
+      <span className="font-mono text-2xl font-bold tabular-nums min-w-12 text-right whitespace-nowrap">
         {isAsking ? `${enPause ? '⏸ ' : ''}${remainingSec}s` : '—'}
       </span>
       <div className="w-32 h-3 border-2 border-ink rounded overflow-hidden bg-cream">
