@@ -79,8 +79,10 @@ interface Props {
   enTete?: ReactNode;
   /** Liste des joueurs du lobby avec rôles et équipes (même que le blind test). */
   listeJoueurs?: ReactNode;
-  /** Bouton couper / remettre la musique d'attente (salle d'attente). */
+  /** Bouton couper / remettre la musique d'attente (tout le quiz). */
   boutonMusique?: ReactNode;
+  /** Une question avec son propre son est à l'écran : la musique se tait. */
+  onMediaEnCours?: (enCours: boolean) => void;
 }
 
 /**
@@ -107,6 +109,7 @@ export function HostQuizzView({
   enTete,
   listeJoueurs,
   boutonMusique,
+  onMediaEnCours,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   useFondConsoleSombre();
@@ -163,6 +166,16 @@ export function HostQuizzView({
       /* réseau absent : le socket reprendra */
     }
   }, [session.id, rafraichirClassement]);
+
+  const mediaEnCours =
+    !!activeQuestion &&
+    activeQuestion.phase === 'asking' &&
+    (activeQuestion.media_type === 'AUDIO' || activeQuestion.media_type === 'VIDEO');
+  const surMediaRef = useRef(onMediaEnCours);
+  surMediaRef.current = onMediaEnCours;
+  useEffect(() => {
+    surMediaRef.current?.(mediaEnCours);
+  }, [mediaEnCours]);
 
   // ── Socket listeners ────────────────────────────────────────────────────
   useEffect(() => {

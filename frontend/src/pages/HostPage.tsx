@@ -974,13 +974,16 @@ function HostPageInner(): JSX.Element {
     void getReglageAmbiance().then(setAmbiance);
   }, []);
   // fix/quiz-musique-avec-bouton — Thomas, 08/11 : au quiz, la musique
-  // d'attente joue pendant que les joueurs arrivent, et un bouton bien visible
-  // la coupe (ou la remet). Elle s'arrête quand les questions commencent.
+  // d'attente joue pendant TOUT le quiz (salle d'attente et questions), avec
+  // un bouton toujours visible en haut de la console pour la couper ou la
+  // remettre. Elle se coupe seule pendant une question qui a son propre son
+  // (extrait audio ou vidéo), puis reprend.
   const [musiqueQuizCoupee, setMusiqueQuizCoupee] = useState(false);
+  const [quizMediaEnCours, setQuizMediaEnCours] = useState(false);
   const salon = useLobbyAmbiance({
     enabled:
       session?.game_type === 'QUIZZ'
-        ? session.status === 'WAITING' && !musiqueQuizCoupee
+        ? session.status !== 'ENDED' && !musiqueQuizCoupee && !quizMediaEnCours
         : effectivePhase === 'waiting' ||
           effectivePhase === 'intermission' ||
           effectivePhase === 'roundSelection',
@@ -2717,12 +2720,15 @@ function HostPageInner(): JSX.Element {
         onSessionUpdate={(s) => setSession(s)}
         onCumulativeUpdate={(c) => setCumulative(c)}
         publicView={!session.has_animator}
+        onMediaEnCours={setQuizMediaEnCours}
         boutonMusique={
-          session.status === 'WAITING' ? (
+          session.status !== 'ENDED' ? (
             <button
               type="button"
               onClick={() => setMusiqueQuizCoupee((c) => !c)}
-              className="rounded-xl border-2 border-white/25 bg-white/[0.08] px-4 py-2 font-display text-base text-white hover:bg-white/[0.15]"
+              className={`rounded-xl border-2 px-5 py-2.5 font-display text-lg text-white ${
+                musiqueQuizCoupee ? 'border-white/40 bg-white/[0.08]' : 'border-[#FF5C4D] bg-[#FF5C4D]'
+              }`}
             >
               {musiqueQuizCoupee ? t('quizTheme.musiqueRemettre') : t('quizTheme.musiqueCouper')}
             </button>
