@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import type { Team } from '@tutti/shared';
 import { getPlaylist } from '../../lib/playlists.js';
 import { createRound, createSession } from '../../lib/sessions.js';
+import { PartieEnCours, confirmerNouvellePartie } from '../../components/admin/PartieEnCours.js';
 import {
   Button,
   Card,
@@ -124,6 +125,7 @@ export function SessionConfigPage(): JSX.Element {
 
   const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
+    if (!(await confirmerNouvellePartie())) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -165,6 +167,8 @@ export function SessionConfigPage(): JSX.Element {
           {t('sessionConfig.firstRoundWith', { name: playlistName })}
         </p>
       )}
+
+      <PartieEnCours className="mb-6" />
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
         {/* ── Mode A vs B ──────────────────────────────────────────── */}

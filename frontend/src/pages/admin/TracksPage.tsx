@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import type { Playlist } from '@tutti/shared';
 import { listPlaylists, createPlaylist, deletePlaylist } from '../../lib/playlists.js';
 import { listLibraryPlaylists, type LibraryPlaylistSummary } from '../../lib/library.js';
+import { confirmerNouvellePartie } from '../../components/admin/PartieEnCours.js';
 import { createSession } from '../../lib/sessions.js';
 
 /** feat/provider-badge — libellé + emoji couleur par source audio. */
@@ -257,6 +258,7 @@ function OfficialPlaylistsTab(): JSX.Element {
   // connecté, sinon youtube) est décidée côté /host.
   const handleLaunchOfficial = async (p: LibraryPlaylistSummary): Promise<void> => {
     if (p.locked) return;
+    if (!(await confirmerNouvellePartie())) return;
     setLaunchingId(p.id);
     setError(null);
     try {

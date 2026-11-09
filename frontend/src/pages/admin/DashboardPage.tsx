@@ -11,6 +11,7 @@
  */
 
 import { ProchainePartie } from '../../components/admin/ProchainePartie.js';
+import { PartieEnCours } from '../../components/admin/PartieEnCours.js';
 import { ContactProCard } from '../../components/admin/ContactProCard.js';
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -201,6 +202,9 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
               on lance depuis les cartes Tutti Blind Test / Tutti Quizz. */}
         </div>
       </header>
+
+      {/* fix/partie-tuee-en-se-connectant — la partie en cours d'abord. */}
+      <PartieEnCours className="mb-6" />
 
       {/* feat/parcours-client-simplifie — le jour J : un clic, la console. */}
       <ProchainePartie />
