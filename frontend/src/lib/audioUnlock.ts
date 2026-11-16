@@ -31,6 +31,9 @@
  *   déjà consommé et l'unlock échouerait silencieusement.
  */
 
+import { estAppleSeul } from './sonNatif.js';
+
+
 // AudioContext singleton — on en crée UN seul par session, sinon Safari
 // suspend l'ancien et créé du jitter.
 let ctxRef: AudioContext | null = null;
@@ -101,6 +104,14 @@ export function unlockAudioSync(source: string): boolean {
   console.info(
     `[Audio] unlockAudio() entry — caller: ${source} | gesturePreserved=${gesturePreserved}`,
   );
+
+  // fix/un-seul-lecteur — iPad natif + Apple : le lecteur natif n'a pas besoin
+  // du déverrouillage du navigateur, et le son muet qu'il joue réclame la
+  // session audio juste avant le morceau Apple (cf. lib/sonNatif.ts).
+  if (estAppleSeul()) {
+    console.info(`[Audio] unlockAudioSync(${source}) — sauté (lecteur Apple natif seul)`);
+    return true;
+  }
 
   const ctx = getAudioContext();
   if (!ctx) {

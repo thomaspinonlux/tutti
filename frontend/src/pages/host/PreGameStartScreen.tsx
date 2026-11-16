@@ -25,6 +25,7 @@
  * lecture" qui fait un autre playVideo() au clic suivant.
  */
 
+import { estAppleSeul } from '../../lib/sonNatif.js';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, MultiColorBar, TitleHandwritten, Underline } from '../../components/ui/index.js';
@@ -119,6 +120,9 @@ export function PreGameStartScreen({
 
     // ── Étape 1 SYNC : silent audio unlock ────────────────────────────
     let audioUnlocked = false;
+    // fix/un-seul-lecteur — iPad natif + Apple : aucun son joué par la page
+    // (cf. lib/sonNatif.ts). Le lecteur natif n'a pas besoin de ce déverrouillage.
+    if (!estAppleSeul()) {
     try {
       if (!silentAudioRef.current) {
         const a = new Audio(SILENT_WAV_DATA_URL);
@@ -140,6 +144,7 @@ export function PreGameStartScreen({
       }
     } catch (err) {
       console.warn('[PreGame] Silent audio unlock threw (non-blocking):', err);
+    }
     }
     console.info(`[PreGame] playVideo() called sync: ${audioUnlocked}`);
 

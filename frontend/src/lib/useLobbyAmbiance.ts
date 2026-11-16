@@ -21,10 +21,18 @@
  * premier morceau retrouve exactement l'état qu'il connaît déjà. D'où
  * `arreter()`, que la console appelle sur le bouton de lancement — sans
  * attendre le démontage du hook, qui arriverait trop tard.
+ *
+ * fix/un-seul-lecteur (16/11) — sur l'iPad natif avec Apple Music, la boucle
+ * MP3 n'est PLUS JAMAIS jouée, même en secours : c'est le passage de relais
+ * entre elle et le lecteur Apple qui coupait la musique (cf. lib/sonNatif.ts).
+ * L'ambiance passe par le lecteur Apple (playlist par défaut : Chill House),
+ * et quand un morceau du jeu prend la suite, le lecteur n'est pas mis en
+ * pause : le morceau remplace l'ambiance par insertion + saut.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { nativeMusicKit } from './nativeMusicKit.js';
+import { remoteLog } from './remoteLog.js';
 import { useSelectionBackgroundMusic } from './useSelectionBackgroundMusic.js';
 
 interface Options {
@@ -34,22 +42,47 @@ interface Options {
   playlistId: string | null;
   /** Lire la playlist en aléatoire. */
   aleatoire: boolean;
-  /** Apple Music est connecté sur cette console. */
-  appleConnected: boolean;
+  /**
+   * fix/un-seul-lecteur — true quand le lecteur Apple natif fait tout le son
+   * de la soirée (iPad natif, blind test, source Apple). Alors : ambiance par
+   * Apple, jamais de boucle MP3.
+   */
+  appleSeul: boolean;
+  /**
+   * fix/un-seul-lecteur — true quand la phase qui suit l'ambiance est un
+   * morceau du jeu joué par Apple : on ne met pas le lecteur en pause, le
+   * morceau remplace l'ambiance.
+   */
+  sortieVersJeu: boolean;
+  /**
+   * fix/un-seul-lecteur — true entre deux manches : le dernier morceau du jeu
+   * n'a pas été mis en pause (l'ambiance devait le remplacer). Si l'ambiance
+   * ne démarre pas, on le met en pause pour ne pas le laisser jouer.
+   */
+  pauseSiEchec: boolean;
 }
 
 interface Resultat {
-  /** Rend le lecteur à la partie. À appeler au lancement, avant le 1er morceau. */
-  arreter: () => Promise<void>;
+  /**
+   * Rend le lecteur à la partie. À appeler au lancement, avant le 1er morceau.
+   * `pause: false` quand le premier morceau est joué par Apple.
+   */
+  arreter: (options?: { pause?: boolean }) => Promise<void>;
   /** true quand c'est la playlist Apple qui joue (et non la boucle MP3). */
   surApple: boolean;
 }
+
+/** Nombre d'essais si le lecteur est occupé (préchauffage en cours…). */
+const ESSAIS_AMBIANCE = 5;
+const ECART_ESSAIS_MS = 3000;
 
 export function useLobbyAmbiance({
   enabled,
   playlistId,
   aleatoire,
-  appleConnected,
+  appleSeul,
+  sortieVersJeu,
+  pauseSiEchec,
 }: Options): Resultat {
   const [surApple, setSurApple] = useState(false);
   /** Garde-fou : une seule tentative par entrée en phase d'attente. */
@@ -57,42 +90,32 @@ export function useLobbyAmbiance({
   const arreteRef = useRef(false);
   /**
    * fix/gel-au-demarrage — true seulement si la playlist Apple d'ambiance a
-   * réellement été lancée sur le lecteur natif.
-   *
-   * Journal de l'iPad du 07/11 (essais de Thomas, 12:02 → 12:12) : à chaque
-   * gel, la console avait appelé `stopAmbiance` quelques secondes avant le
-   * premier morceau Apple, ALORS QU'AUCUNE AMBIANCE APPLE NE JOUAIT (c'est la
-   * boucle MP3 qui joue). Sur un lecteur jamais utilisé, `stopAmbiance` fait
-   * stop() + file vide ; le premier play() qui suit reste bloqué dans un appel
-   * synchrone au service musique d'iOS (pile MetricKit : MusicKit →
-   * MediaPlayer → Foundation → libxpc, attente sans fin) et l'iPad se fige.
-   *   12:02:21 stopAmbiance → 12:02:29 préchauffage → GEL
-   *   12:07:44 stopAmbiance → 12:07:49 préchauffage → GEL
-   *   12:11:54 stopAmbiance → 12:11:59 préchauffage → GEL
-   *   12:03:25 et 12:09:15, sans stopAmbiance avant → prêt en 0,4 et 0,7 s
-   * On ne touche donc plus au lecteur Apple pour « rendre » une ambiance
-   * qu'il n'a jamais jouée.
+   * réellement été demandée au lecteur natif (on ne « rend » jamais un lecteur
+   * qui n'a pas joué d'ambiance : journal du 07/11, stopAmbiance sur un lecteur
+   * jamais utilisé → gel au premier morceau).
    */
   const ambianceAppleLanceeRef = useRef(false);
+  /** Lu au démontage : la phase suivante est-elle un morceau Apple du jeu ? */
+  const sortieVersJeuRef = useRef(sortieVersJeu);
+  sortieVersJeuRef.current = sortieVersJeu;
+  const pauseSiEchecRef = useRef(pauseSiEchec);
+  pauseSiEchecRef.current = pauseSiEchec;
 
-  const peutApple =
-    enabled &&
-    appleConnected &&
-    playlistId !== null &&
-    playlistId !== '' &&
-    nativeMusicKit.isAvailable();
+  const appleNatif =
+    appleSeul && playlistId !== null && playlistId !== '' && nativeMusicKit.isAvailable();
+  const peutApple = enabled && appleNatif;
 
-  const arreter = useCallback(async (): Promise<void> => {
+  const arreter = useCallback(async (options: { pause?: boolean } = {}): Promise<void> => {
     if (arreteRef.current) return;
     arreteRef.current = true;
     setSurApple(false);
     if (!ambianceAppleLanceeRef.current) return;
     ambianceAppleLanceeRef.current = false;
-    await nativeMusicKit.stopAmbiance();
+    await nativeMusicKit.stopAmbiance({ pause: options.pause !== false });
   }, []);
 
   useEffect(() => {
-    if (!peutApple) {
+    if (!peutApple || playlistId === null) {
       tenteRef.current = false;
       setSurApple(false);
       return;
@@ -102,27 +125,48 @@ export function useLobbyAmbiance({
     arreteRef.current = false;
 
     let vivant = true;
-    void (async () => {
-      // Un binaire sans la méthode, une playlist introuvable ou un refus
-      // d'Apple renvoient false : on laisse alors la boucle MP3 prendre le
-      // relais plutôt que de laisser la salle en silence.
+    let minuteur: number | null = null;
+    const essayer = async (essai: number): Promise<void> => {
+      if (!vivant) return;
       ambianceAppleLanceeRef.current = true;
       const ok = await nativeMusicKit.playPlaylist(playlistId, aleatoire);
-      if (vivant) setSurApple(ok);
-    })();
+      if (!vivant) return;
+      if (ok) {
+        setSurApple(true);
+        remoteLog('ambiance', 'musique d attente Apple : lecture demandée', { playlistId, essai });
+        return;
+      }
+      // Lecteur occupé (préchauffage, morceau en cours de démarrage) ou
+      // refus : on réessaie un peu plus tard. Pas de boucle MP3 en secours —
+      // c'est elle qui cassait le premier morceau Apple.
+      if (essai < ESSAIS_AMBIANCE) {
+        minuteur = window.setTimeout(() => void essayer(essai + 1), ECART_ESSAIS_MS);
+      } else {
+        if (pauseSiEchecRef.current) void nativeMusicKit.pause().catch(() => undefined);
+        remoteLog(
+          'ambiance',
+          'musique d attente Apple : pas démarrée après plusieurs essais — salle sans musique d attente',
+          { playlistId },
+          'warn',
+        );
+      }
+    };
+    void essayer(1);
 
     return () => {
       vivant = false;
+      if (minuteur !== null) window.clearTimeout(minuteur);
       if (ambianceAppleLanceeRef.current) {
         ambianceAppleLanceeRef.current = false;
-        void nativeMusicKit.stopAmbiance();
+        void nativeMusicKit.stopAmbiance({ pause: !sortieVersJeuRef.current });
       }
       setSurApple(false);
     };
   }, [peutApple, playlistId, aleatoire]);
 
-  // Repli : la boucle intégrée, sauf si la playlist Apple joue déjà.
-  useSelectionBackgroundMusic({ enabled: enabled && !surApple });
+  // Boucle MP3 intégrée : partout SAUF sur l'iPad natif quand Apple fait tout
+  // le son (fix/un-seul-lecteur — même pas en secours).
+  useSelectionBackgroundMusic({ enabled: enabled && !appleNatif });
 
   return { arreter, surApple };
 }

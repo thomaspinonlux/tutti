@@ -14,7 +14,16 @@ export interface ReglageAmbiance {
   aleatoire: boolean;
 }
 
-const PAR_DEFAUT: ReglageAmbiance = { playlistId: null, aleatoire: true };
+/**
+ * fix/un-seul-lecteur — musique d'attente Apple par défaut (choix de Thomas,
+ * 16/11) : « Chill House », playlist éditoriale Apple Music, catalogue FR,
+ * aucun titre en commun avec le catalogue du blind test (vérifié le 16/11).
+ * Utilisée seulement sur l'iPad natif avec Apple Music ; ailleurs, la boucle
+ * MP3 intégrée reste.
+ */
+export const AMBIANCE_APPLE_PAR_DEFAUT = 'pl.bd55c25265aa4de8b3fc3e0960751846';
+
+const PAR_DEFAUT: ReglageAmbiance = { playlistId: AMBIANCE_APPLE_PAR_DEFAUT, aleatoire: true };
 
 /**
  * Best-effort : un échec (pas d'établissement, réseau) renvoie le réglage par
@@ -27,7 +36,7 @@ export async function getReglageAmbiance(): Promise<ReglageAmbiance> {
       establishment: { ambiance_playlist_id: string | null; ambiance_aleatoire: boolean };
     }>('/api/establishment');
     return {
-      playlistId: data.establishment.ambiance_playlist_id ?? null,
+      playlistId: data.establishment.ambiance_playlist_id || AMBIANCE_APPLE_PAR_DEFAUT,
       aleatoire: data.establishment.ambiance_aleatoire !== false,
     };
   } catch {

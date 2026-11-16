@@ -79,7 +79,9 @@ import { remoteLog, installRemoteErrorCapture } from '../lib/remoteLog.js';
 import { useNouvelleVersion } from '../lib/useNouvelleVersion.js';
 import { useLobbyAmbiance } from '../lib/useLobbyAmbiance.js';
 import { getReglageAmbiance, type ReglageAmbiance } from '../lib/ambiance.js';
-import { isCapacitorNative, getShareableOrigin } from '../lib/platform.js';
+import { isCapacitorNative, getShareableOrigin, supportsNativeAppleMusic } from '../lib/platform.js';
+import { nativeMusicKit } from '../lib/nativeMusicKit.js';
+import { setAppleSeul } from '../lib/sonNatif.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
 import { unlockAudioSync } from '../lib/audioUnlock.js';
 import { usePwa } from '../lib/usePwa.js';
@@ -970,9 +972,31 @@ function HostPageInner(): JSX.Element {
     playlistId: null,
     aleatoire: true,
   });
+  // fix/un-seul-lecteur — l'ambiance attend son réglage ET le statut Apple :
+  // démarrer la boucle MP3 « en attendant » puis basculer sur Apple recréait
+  // exactement le passage de relais qui coupait la musique.
+  const [ambianceChargee, setAmbianceChargee] = useState(false);
   useEffect(() => {
-    void getReglageAmbiance().then(setAmbiance);
+    void getReglageAmbiance().then((r) => {
+      setAmbiance(r);
+      setAmbianceChargee(true);
+    });
   }, []);
+  // (déplacé ici depuis plus bas : lu par le calcul `appleSeul` ci-dessous)
+  const [pendingFirstPlay, setPendingFirstPlay] = useState<PendingFirstPlay | null>(null);
+  // fix/un-seul-lecteur — UN SEUL LECTEUR POUR TOUT LE SON (cf. lib/sonNatif.ts).
+  // iPad natif + compte Apple + blind test + source Apple (ou pas encore
+  // choisie) : la page ne joue plus aucun son, l'ambiance passe par Apple.
+  const sourceDuJeu: string | null =
+    currentTrack?.provider ?? (pendingFirstPlay ? audioProvider : null);
+  const appleSeul =
+    supportsNativeAppleMusic() &&
+    nativeMusicKit.isAvailable() &&
+    nativeMusicKit.gereUnSeulLecteur() &&
+    appleConnected &&
+    session?.game_type !== 'QUIZZ' &&
+    (sourceDuJeu === null || sourceDuJeu === 'apple_music');
+  setAppleSeul(appleSeul);
   // fix/quiz-musique-avec-bouton — Thomas, 08/11 : au quiz, la musique
   // d'attente joue pendant TOUT le quiz (salle d'attente et questions), avec
   // un bouton toujours visible en haut de la console pour la couper ou la
@@ -982,14 +1006,18 @@ function HostPageInner(): JSX.Element {
   const [quizMediaEnCours, setQuizMediaEnCours] = useState(false);
   const salon = useLobbyAmbiance({
     enabled:
-      session?.game_type === 'QUIZZ'
+      ambianceChargee &&
+      appleStatusLoaded &&
+      (session?.game_type === 'QUIZZ'
         ? session.status !== 'ENDED' && !musiqueQuizCoupee && !quizMediaEnCours
         : effectivePhase === 'waiting' ||
           effectivePhase === 'intermission' ||
-          effectivePhase === 'roundSelection',
+          effectivePhase === 'roundSelection'),
     playlistId: ambiance.playlistId,
     aleatoire: ambiance.aleatoire,
-    appleConnected,
+    appleSeul,
+    sortieVersJeu: appleSeul && effectivePhase === 'roundPlaying',
+    pauseSiEchec: appleSeul && effectivePhase !== 'waiting',
   });
   // BONUS — récupère le Music User Token dès qu'Apple est connecté + workspace
   // connu (session active requise côté backend). Best-effort : un échec laisse
@@ -1150,7 +1178,13 @@ function HostPageInner(): JSX.Element {
     if (prevPhaseRef.current === 'roundPlaying' && phase !== 'roundPlaying') {
       youtube.pause();
       void spotify.pause();
-      void apple.pause();
+      // fix/un-seul-lecteur — entre deux manches, la musique d'attente Apple
+      // remplace le morceau par insertion + saut : pas de pause du lecteur
+      // (une pause arrivée après le départ de l'ambiance la couperait). Si
+      // l'ambiance ne démarre pas, useLobbyAmbiance met le lecteur en pause.
+      const ambianceApplePrendLaSuite =
+        appleSeul && (phase === 'intermission' || phase === 'roundSelection');
+      if (!ambianceApplePrendLaSuite) void apple.pause();
     }
     prevPhaseRef.current = phase;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1164,6 +1198,9 @@ function HostPageInner(): JSX.Element {
   const appleGuardTrackRef = useRef<string | null>(null);
   useEffect(() => {
     if (!currentTrack || currentTrack.provider !== 'apple_music') return;
+    // fix/un-seul-lecteur — hors manche, le lecteur joue la musique d'attente :
+    // le garde de fin (fait pour le morceau du jeu) la couperait.
+    if (phase !== 'roundPlaying') return;
     // Changement de morceau : réarme la période de grâce (le lecteur met
     // 1-2 s à refléter le nouveau titre — aucun garde pendant ce temps).
     if (appleGuardTrackRef.current !== currentTrack.track_id) {
@@ -1182,7 +1219,7 @@ function HostPageInner(): JSX.Element {
       void apple.pause();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apple.positionMs, apple.durationMs, currentTrack?.track_id, currentTrack?.provider]);
+  }, [apple.positionMs, apple.durationMs, currentTrack?.track_id, currentTrack?.provider, phase]);
 
   // fix/live-sync-check — CONTRÔLE PERMANENT DE SYNCHRO (toutes les 2 s) :
   // compare l'identité du morceau RÉELLEMENT en lecture (sonde du lecteur)
@@ -1532,7 +1569,9 @@ function HostPageInner(): JSX.Element {
     // La playlist d'ambiance occupe la même file qu'ApplicationMusicPlayer :
     // on la vide ici, pas au démontage du hook, qui arriverait après le
     // premier morceau. Sans playlist d'ambiance, c'est un no-op.
-    void salon.arreter();
+    // fix/un-seul-lecteur — premier morceau joué par Apple : l'ambiance n'est
+    // pas mise en pause, le morceau la remplace (le lecteur ne s'arrête jamais).
+    void salon.arreter({ pause: !(appleSeul && audioProvider === 'apple_music') });
     setBusy(true);
     try {
       // fix/ipad-pwa-audio-persistent-player — n'active le pipeline Spotify
@@ -1621,7 +1660,6 @@ function HostPageInner(): JSX.Element {
         // fix/mix-em-types — inclut 'MIX_EM' (mix Facile/Moyen), cf. LaunchLevel.
         difficulty?: 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX_EM';
       };
-  const [pendingFirstPlay, setPendingFirstPlay] = useState<PendingFirstPlay | null>(null);
   /**
    * feat/vocal-par-manche — mode de réponse CHOISI POUR LA MANCHE À VENIR.
    *

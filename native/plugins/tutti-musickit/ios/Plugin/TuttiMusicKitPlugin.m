@@ -24,4 +24,5 @@ CAP_PLUGIN(TuttiMusicKitPlugin, "TuttiMusicKit",
     // fix/premier-morceau-avant-la-partie — même règle : sans cette ligne,
     // la méthode n'existe pas côté JS.
     CAP_PLUGIN_METHOD(prechauffer, CAPPluginReturnPromise);
+    CAP_PLUGIN_METHOD(capacites, CAPPluginReturnPromise);
 )

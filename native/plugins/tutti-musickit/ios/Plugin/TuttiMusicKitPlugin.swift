@@ -176,10 +176,20 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         let jeton = TuttiJournal.shared.debut("musickit", "sessionAudio.activer")
         DispatchQueue.global(qos: .userInitiated).async {
             do {
+                // fix/un-seul-lecteur — CATÉGORIE MIXABLE, ET ON N'ACTIVE RIEN.
+                //
+                // Toutes les coupures connues (18/09, 02/10, 30/10, 06/11, 13/11)
+                // tombent sur le premier morceau Apple qui suit un son joué par
+                // l'app elle-même (boucle MP3, déverrouillages audio de la page).
+                // Le lecteur Apple ne joue pas dans notre session audio mais dans
+                // le service Musique d'iOS : une session « lecture » NON MIXABLE
+                // active chez nous l'oblige à nous couper à chaque passage de
+                // relais (cf. radar 28431676). On ne réclame donc plus le son :
+                // catégorie lecture + mixable, sans activation. Le service Musique
+                // gère seul la lecture, écran verrouillé compris.
                 let session = AVAudioSession.sharedInstance()
-                try session.setCategory(.playback, mode: .default, options: [])
-                try session.setActive(true, options: [])
-                TuttiJournal.shared.fin("musickit", jeton, ["categorie": "playback", "sortie": session.currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")])
+                try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+                TuttiJournal.shared.fin("musickit", jeton, ["categorie": "playback+mixable", "active": false, "sortie": session.currentRoute.outputs.map { $0.portType.rawValue }.joined(separator: ",")])
             } catch {
                 TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
                 TuttiJournal.shared.note("musickit", "SESSION AUDIO NON ACTIVÉE", ["erreur": error.localizedDescription], niveau: "error")
@@ -869,31 +879,45 @@ public class TuttiMusicKitPlugin: CAPPlugin {
                     call.reject("Playlist d'ambiance introuvable ou vide (\(playlistId))")
                     return
                 }
-                let pret = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                // fix/un-seul-lecteur — L'AMBIANCE PASSE PAR LE MÊME CHEMIN QUE
+                // LES MORCEAUX DU JEU.
+                //
+                // Ni aléatoire ni boucle côté Apple : avec l'aléatoire actif, le
+                // morceau du jeu inséré « après le courant » pourrait ne pas être
+                // le suivant joué. La variété vient d'un tirage fait ici, et on
+                // insère une tranche (40 titres, plus de deux heures).
+                var ordre = Array(pistes)
+                if aleatoire { ordre.shuffle() }
+                let tranche = Array(ordre.prefix(40))
+                let fileVide = try await self.surLePrincipal { self.player.queue.entries.isEmpty }
+                let chemin: String? = try await self.courseAvecDelai(self.delaiCommandeApple) {
                     try await self.surLePrincipal {
-                        self.player.queue = ApplicationMusicPlayer.Queue(for: pistes)
-                        self.player.state.shuffleMode = aleatoire ? .songs : .off
-                        self.player.state.repeatMode = MusicPlayer.RepeatMode.all
+                        self.player.state.shuffleMode = .off
+                        self.player.state.repeatMode = MusicPlayer.RepeatMode.none
                     }
-                    return true
-                }
-                guard pret == true else {
-                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "file-non-remplie"])
-                    call.reject("Apple Music n'a pas accepté la playlist d'ambiance")
-                    return
-                }
-                let demarre = try await self.courseAvecDelai(self.delaiCommandeApple) {
+                    if fileVide {
+                        // Lecteur jamais utilisé depuis l'ouverture de l'app : le
+                        // seul « queue= + play() » de la soirée, à l'accueil, alors
+                        // qu'aucun autre son ne joue dans l'app.
+                        try await self.surLePrincipal { self.player.queue = ApplicationMusicPlayer.Queue(for: tranche) }
+                        try await self.surLePrincipal { try await self.player.play() }
+                        return "file-neuve"
+                    }
+                    // Lecteur vivant (pause entre deux manches) : insertion + saut,
+                    // le chemin des centaines de morceaux qui n'ont jamais gelé.
+                    try await self.surLePrincipal { try await self.player.queue.insert(tranche, position: .afterCurrentEntry) }
+                    try await self.surLePrincipal { try await self.player.skipToNextEntry() }
                     try await self.surLePrincipal { try await self.player.play() }
-                    return true
+                    return "insert-saut"
                 }
-                guard demarre == true else {
-                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "apple-ne-demarre-pas"])
+                guard let cheminPris = chemin else {
+                    TuttiJournal.shared.fin("musickit", jeton, ["erreur": "apple-ne-demarre-pas", "fileVide": fileVide])
                     call.reject("Apple Music n'a pas démarré la playlist d'ambiance")
                     return
                 }
                 self.noterEtat(enLecture: true, position: nil, confirme: true)
-                TuttiJournal.shared.fin("musickit", jeton, ["pistes": pistes.count])
-                call.resolve(["ok": true, "pistes": pistes.count])
+                TuttiJournal.shared.fin("musickit", jeton, ["pistes": tranche.count, "chemin": cheminPris])
+                call.resolve(["ok": true, "pistes": tranche.count])
             } catch {
                 TuttiJournal.shared.fin("musickit", jeton, ["erreur": error.localizedDescription])
                 call.reject("Ambiance échouée : \(error.localizedDescription)")
@@ -909,6 +933,14 @@ public class TuttiMusicKitPlugin: CAPPlugin {
     /// + saut, le chemin qui n'a jamais gelé) et on met en pause : le lecteur
     /// reste vivant, la partie démarre par le chemin normal. Si ça échoue, on
     /// retombe sur l'ancien comportement (file vidée).
+    /// fix/un-seul-lecteur — dit à la console ce que ce binaire sait faire.
+    /// Une console récente sur un binaire ancien (sans cette méthode) garde
+    /// l'ancien fonctionnement : la musique d'attente Apple n'est activée que
+    /// sur un binaire qui l'insère sans remplacer la file.
+    @objc func capacites(_ call: CAPPluginCall) {
+        call.resolve(["unSeulLecteur": true])
+    }
+
     @objc func stopAmbiance(_ call: CAPPluginCall) {
         // fix/gel-au-demarrage — ON NE TOUCHE PAS UN LECTEUR QUI N'A RIEN JOUÉ.
         //
@@ -920,6 +952,11 @@ public class TuttiMusicKitPlugin: CAPPlugin {
         // libxpc) et l'iPad se fige. Sans cet appel (12:03, 12:09) : prêt en
         // 0,4 et 0,7 s. La console ne l'envoie plus dans ce cas ; le greffon
         // le refuse aussi, pour qu'aucune version de la console ne le refasse.
+        // fix/un-seul-lecteur — « pause » = false quand un morceau du jeu
+        // prend la suite : l'ambiance continue jusqu'à ce qu'il la remplace
+        // (insertion + saut), le lecteur ne s'arrête jamais. Sans paramètre
+        // (vieille console) : pause, comme avant.
+        let mettreEnPause = call.getBool("pause") ?? true
         verrouCommande.lock()
         let aRendre = ambianceLancee
         ambianceLancee = false
@@ -929,32 +966,20 @@ public class TuttiMusicKitPlugin: CAPPlugin {
             call.resolve()
             return
         }
-        let jeton = TuttiJournal.shared.debut("musickit", "stopAmbiance")
+        let jeton = TuttiJournal.shared.debut("musickit", "stopAmbiance", ["pause": mettreEnPause])
+        guard mettreEnPause else {
+            // Le jeu prend la suite : on ne touche pas au lecteur.
+            TuttiJournal.shared.fin("musickit", jeton, ["lecteurTouche": false])
+            call.resolve()
+            return
+        }
         Task {
-            let essai = try? await self.courseAvecDelai(self.delaiCommandeApple) {
-                try await self.surLePrincipal {
-                    self.player.state.shuffleMode = .off
-                    self.player.state.repeatMode = nil
-                }
-                if try await self.surLePrincipal({ self.player.queue.entries.isEmpty }) { return false }
-                guard let silence = try await self.chercherMorceau(TuttiMusicKitPlugin.idSilence) else { return false }
-                try await self.surLePrincipal { try await self.player.queue.insert(silence, position: .afterCurrentEntry) }
-                try await self.surLePrincipal { try await self.player.skipToNextEntry() }
-                await MainActor.run { self.player.pause() }
+            let fait = try? await self.courseAvecDelai(self.delaiCommandeApple) {
+                try await self.surLePrincipal { self.player.pause() }
                 return true
             }
-            let garde = (essai ?? nil) == true
-            if !garde {
-                _ = try? await self.courseAvecDelai(self.delaiCommandeApple) {
-                    try await self.surLePrincipal {
-                        self.player.stop()
-                        self.player.queue = ApplicationMusicPlayer.Queue()
-                    }
-                    return true
-                }
-            }
-            self.noterEtat(enLecture: false, position: 0, nowPlayingId: "", confirme: true)
-            TuttiJournal.shared.fin("musickit", jeton, ["lecteurGarde": garde])
+            self.noterEtat(enLecture: false, position: nil, confirme: true)
+            TuttiJournal.shared.fin("musickit", jeton, ["pause": (fait ?? nil) == true])
             call.resolve()
         }
     }

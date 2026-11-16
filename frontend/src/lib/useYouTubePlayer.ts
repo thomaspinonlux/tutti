@@ -14,6 +14,7 @@
  * monter l'iframe.
  */
 
+import { estAppleSeul } from './sonNatif.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const IFRAME_API_URL = 'https://www.youtube.com/iframe_api';
@@ -992,6 +993,9 @@ export function useYouTubePlayer(opts: UseYouTubePlayerOptions): UseYouTubePlaye
    * browser "ok l'user veut de l'audio dans cette page".
    */
   const warmupSync = useCallback((): void => {
+    // fix/un-seul-lecteur — pas de lecture YouTube parasite quand le lecteur
+    // Apple natif fait tout le son (cf. lib/sonNatif.ts).
+    if (estAppleSeul()) return;
     const p = playerRef.current;
     if (!p) {
       console.info('[YouTube] warmupSync : player pas encore instancié, skip');

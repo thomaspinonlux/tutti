@@ -37,9 +37,11 @@ interface NativeMusicKitBridge {
     ok: boolean;
     pistes: number;
   }>;
-  stopAmbiance?(): Promise<void>;
+  stopAmbiance?(options?: { pause?: boolean }): Promise<void>;
   /** fix/premier-morceau-avant-la-partie — absent des binaires < build 71. */
   prechauffer?(): Promise<{ pret: boolean; deja?: boolean; verifie?: boolean }>;
+  /** fix/un-seul-lecteur — absent des binaires <= build 72. */
+  capacites?(): Promise<{ unSeulLecteur?: boolean }>;
 }
 
 function bridge(): NativeMusicKitBridge | null {
@@ -52,6 +54,15 @@ export const nativeMusicKit = {
   /** True si le plugin natif est présent (coque iPad buildée). */
   isAvailable(): boolean {
     return bridge() !== null;
+  },
+  /**
+   * fix/un-seul-lecteur — true si le binaire sait jouer la musique d'attente
+   * par insertion (build > 72). Sur un binaire plus ancien, la console garde
+   * la boucle MP3 : son ancienne playlist d'ambiance remplaçait la file, la
+   * commande qui fige l'iPad.
+   */
+  gereUnSeulLecteur(): boolean {
+    return typeof bridge()?.capacites === 'function';
   },
   authorize(): Promise<{ authorized: boolean; status?: string }> {
     return bridge()?.authorize() ?? Promise.resolve({ authorized: false });
@@ -144,9 +155,14 @@ export const nativeMusicKit = {
     return 'echec';
   },
   /** feat/ambiance-salon — rend le lecteur à la partie (lecteur gardé vivant). */
-  async stopAmbiance(): Promise<void> {
+  /**
+   * fix/un-seul-lecteur — `pause: false` quand un morceau du jeu prend la
+   * suite : l'ambiance joue jusqu'à ce qu'il la remplace, le lecteur Apple ne
+   * s'arrête jamais. Par défaut : pause.
+   */
+  async stopAmbiance(options: { pause?: boolean } = {}): Promise<void> {
     try {
-      await bridge()?.stopAmbiance?.();
+      await bridge()?.stopAmbiance?.({ pause: options.pause !== false });
     } catch {
       // Binaire sans la méthode : rien à rendre, le jeu part sur une file vide.
     }
