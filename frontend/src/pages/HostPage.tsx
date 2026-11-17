@@ -1569,9 +1569,12 @@ function HostPageInner(): JSX.Element {
     // La playlist d'ambiance occupe la même file qu'ApplicationMusicPlayer :
     // on la vide ici, pas au démontage du hook, qui arriverait après le
     // premier morceau. Sans playlist d'ambiance, c'est un no-op.
-    // fix/un-seul-lecteur — premier morceau joué par Apple : l'ambiance n'est
-    // pas mise en pause, le morceau la remplace (le lecteur ne s'arrête jamais).
-    void salon.arreter({ pause: !(appleSeul && audioProvider === 'apple_music') });
+    // fix/un-seul-lecteur — ce bouton fait passer de l'accueil au choix des
+    // playlists, il ne lance aucun morceau. En mode lecteur Apple seul, la
+    // musique d'attente continue donc pendant la présentation des playlists ;
+    // c'est le premier morceau qui la remplacera. Essai du 17/11 : l'arrêter
+    // ici laissait la salle sans musique jusqu'au premier morceau.
+    if (!appleSeul) void salon.arreter();
     setBusy(true);
     try {
       // fix/ipad-pwa-audio-persistent-player — n'active le pipeline Spotify
