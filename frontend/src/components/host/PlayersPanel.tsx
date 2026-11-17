@@ -6,11 +6,12 @@
  * dans la sidebar droite de RoundPlayingScreen.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CumulativeScore, Participant } from '@tutti/shared';
-import { hostAdjustPoints, kickParticipant, toggleParticipantMaster } from '../../lib/sessions.js';
+import type { CumulativeScore, Participant, ParticipantRole } from '@tutti/shared';
+import { hostAdjustPoints, kickParticipant, setParticipantRole } from '../../lib/sessions.js';
 import { Button, Card } from '../ui/index.js';
+import { RoleSelector } from './RoleSelector.js';
 
 const CORAL = '#FF5C4D';
 
@@ -54,16 +55,37 @@ export function PlayersPanel({
     }
   };
 
-  // fix/provider-master-manette (BUG 2) — désigne CE joueur comme animateur
-  // (manette sur son tel). Toggle atomique côté serveur (1 seul master) ; le
-  // broadcast participant:master_changed rafraîchit `participants` → l'état
-  // actif (p.is_master) se met à jour + la manette s'active sur le tel du joueur.
-  const handleToggleMaster = async (pid: string): Promise<void> => {
+  // feat/roles-en-partie — Thomas, 17/11 : pendant la partie, les mêmes trois
+  // rôles qu'à l'accueil (Joueur / Animateur joueur / Animateur seul), au lieu
+  // du seul bouton « animateur » qui ne donnait qu'animateur joueur.
+  // L'écran change tout de suite ; l'événement participant:role_changed
+  // remet ensuite la liste à jour pour tout le monde.
+  const [roleLocal, setRoleLocal] = useState<Record<string, ParticipantRole>>({});
+  // Dès que la liste reçue confirme le rôle, on rend la main à la liste.
+  useEffect(() => {
+    setRoleLocal((m) => {
+      const reste = { ...m };
+      let change = false;
+      for (const p of participants) {
+        if (reste[p.id] !== undefined && reste[p.id] === p.role) {
+          delete reste[p.id];
+          change = true;
+        }
+      }
+      return change ? reste : m;
+    });
+  }, [participants]);
+  const handleSetRole = async (pid: string, role: ParticipantRole): Promise<void> => {
     setBusy(pid);
     setError(null);
+    setRoleLocal((m) => ({ ...m, [pid]: role }));
     try {
-      await toggleParticipantMaster(sessionId, pid);
+      await setParticipantRole(sessionId, pid, role);
     } catch (err) {
+      setRoleLocal((m) => {
+        const { [pid]: _retire, ...reste } = m;
+        return reste;
+      });
       setError((err as Error).message);
     } finally {
       setBusy(null);
@@ -136,23 +158,12 @@ export function PlayersPanel({
                 </p>
               </div>
               <div className="flex gap-1 shrink-0 flex-wrap justify-end">
-                <button
-                  type="button"
-                  onClick={() => void handleToggleMaster(p.id)}
-                  disabled={isBusy}
-                  aria-pressed={p.is_master}
-                  title={p.is_master ? t('host.masterRevoke') : t('host.masterAssign')}
-                  className={[
-                    '!px-2 !py-1 text-xs font-mono rounded-lg border transition-colors',
-                    p.is_master
-                      ? 'border-basil bg-basil/20 text-basil'
-                      : dark
-                        ? 'border-white/15 text-white/60 hover:bg-white/10'
-                        : 'border-ink/25 text-ink-soft hover:bg-cream-2',
-                  ].join(' ')}
-                >
-                  🎙️{p.is_master ? ' ✓' : ''}
-                </button>
+                <RoleSelector
+                  role={roleLocal[p.id] ?? p.role}
+                  onSetRole={(r) => void handleSetRole(p.id, r)}
+                  compact
+                  dark={dark}
+                />
                 {dark ? (
                   <>
                     <button

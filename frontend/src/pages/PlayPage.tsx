@@ -1200,6 +1200,7 @@ export function PlayPage(): JSX.Element {
                 isMaster={isMaster}
                 isPaused={isPaused}
                 vocalActif={vocalActif}
+                animateurSeul={myRole === 'ANIMATOR_FULL'}
               />
 
               {/* feat/manette-console-master — plus de self-claim depuis le tel.
@@ -1501,6 +1502,8 @@ const TEL_PANNEAU =
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
 
 interface PlayingViewExtraProps {
+  /** feat/roles-en-partie — animateur seul : pilote, ne répond pas. */
+  animateurSeul?: boolean;
   /** Couleur de l'équipe du joueur (mode TEAMS). */
   teamColor?: string | null;
   /** Nom de l'équipe du joueur (mode TEAMS). */
@@ -2207,6 +2210,12 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
           onSubmit={() => void finalizeRecording()}
           onCancel={handleCancelRec}
         />
+      ) : props.animateurSeul ? (
+        // feat/roles-en-partie — animateur seul : pas de buzzer ni de saisie.
+        <div className={`${TEL_PANNEAU} p-5 text-center`}>
+          <h2 className="mb-2 font-display text-2xl text-white">{t('playQuizz.animateurSeul')}</h2>
+          <p className="font-editorial italic text-white/60">{t('play.animateurSeulHint')}</p>
+        </div>
       ) : myCorrect ? (
         // J'ai trouvé : ValidatedBanner remplace le buzzer.
         // Confettis seulement en phase 3 (correction spec — pas avant).
