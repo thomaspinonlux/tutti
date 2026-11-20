@@ -362,6 +362,8 @@
     "moveToTeam": "Changer d'équipe",
     "kick": "Exclure",
     "kickConfirm": "Exclure ce joueur de la session ?",
+    "gestionJoueurs": "Gestion des joueurs",
+    "gestionJoueursFermer": "Fermer",
     "kickPlayer": "Retirer ce joueur",
     "kickConfirmPlayer": "Retirer {{pseudo}} de la partie ? Il pourra se reconnecter.",
     "startBlindTest": "Démarrer le blind test",

@@ -362,6 +362,8 @@
     "moveToTeam": "Change team",
     "kick": "Kick",
     "kickConfirm": "Kick this player out of the session?",
+    "gestionJoueurs": "Manage players",
+    "gestionJoueursFermer": "Close",
     "kickPlayer": "Remove this player",
     "kickConfirmPlayer": "Remove {{pseudo}} from the game? They can reconnect.",
     "startWithZeroPlayersConfirm": "No players connected. Start anyway?",

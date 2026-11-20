@@ -91,6 +91,7 @@ import {
   Badge,
   Button,
   Card,
+  Modal,
   MultiColorBar,
   TitleHandwritten,
   Underline,
@@ -836,6 +837,11 @@ function HostPageInner(): JSX.Element {
   // feat/tv-join-qr-codes (D) — toggle overlay QR géant sur la TV pendant la
   // partie. Flag piloté par l'animateur, lu par la TV via screen-state.
   const [qrBig, setQrBig] = useState(false);
+  // feat/gestion-joueurs-en-partie — Thomas, 20/11 : bouton « Gestion des
+  // joueurs » dans l'en-tête de la console, entre Écran Joueurs et Terminer
+  // le blind test, pour changer les rôles (joueur, animateur joueur,
+  // animateur seul) une fois la partie commencée.
+  const [gestionJoueursOuverte, setGestionJoueursOuverte] = useState(false);
   const toggleQrBig = (): void => {
     setQrBig((prev) => {
       const next = !prev;
@@ -3231,6 +3237,67 @@ function HostPageInner(): JSX.Element {
             <BadgeManches lancees={playingRoundsCount} completes={manchesCompletes} />
           <BadgeAppleMusic etat={apple.prechauffage} />
           <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
+            {(effectivePhase === 'roundPlaying' ||
+              effectivePhase === 'intermission' ||
+              effectivePhase === 'roundSelection') && (
+              <Button variant="secondary" size="sm" onClick={() => setGestionJoueursOuverte(true)}>
+                {t('host.gestionJoueurs')}
+              </Button>
+            )}
+            <Modal
+              open={gestionJoueursOuverte}
+              onClose={() => setGestionJoueursOuverte(false)}
+              title={t('host.gestionJoueurs')}
+              size="lg"
+            >
+              <div className="max-h-[65vh] overflow-y-auto">
+                {(() => {
+                  const surDeplacer = async (pid: string, tid: string | null): Promise<void> => {
+                    try {
+                      await moveParticipantTeam(session.id, pid, tid);
+                    } catch (err: unknown) {
+                      console.error('[Équipe] déplacement en échec :', err);
+                      pushToast(setToasts, "Déplacement d'équipe non pris en compte", 'raspberry');
+                    }
+                  };
+                  const surExclure = async (pid: string): Promise<void> => {
+                    if (!window.confirm(t('host.kickConfirm'))) return;
+                    try {
+                      await kickParticipant(session.id, pid);
+                    } catch (err: unknown) {
+                      console.error('[Exclusion] échec :', err);
+                      pushToast(setToasts, 'Exclusion non prise en compte', 'raspberry');
+                    }
+                  };
+                  return session.mode === 'TEAMS' ? (
+                    <TeamsView
+                      teams={(session.teams_config as Team[] | null) ?? []}
+                      participants={session.participants}
+                      showMasterToggle={true}
+                      onMove={surDeplacer}
+                      onKick={surExclure}
+                      onToggleMaster={handleToggleMaster}
+                      onSetRole={handleSetRole}
+                      dark
+                    />
+                  ) : (
+                    <ParticipantsList
+                      participants={session.participants}
+                      showMasterToggle={true}
+                      onKick={surExclure}
+                      onToggleMaster={handleToggleMaster}
+                      onSetRole={handleSetRole}
+                      dark
+                    />
+                  );
+                })()}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button variant="secondary" size="sm" onClick={() => setGestionJoueursOuverte(false)}>
+                  {t('host.gestionJoueursFermer')}
+                </Button>
+              </div>
+            </Modal>
             {/* feat/ecran-joueurs — bouton direct « Écran TV » retiré (voir plus
                 haut) : un seul bouton « Écran Joueurs » via TvCastButton. */}
             {/* feat/audio-auto-routing — capsule son→TV retirée : routing
