@@ -138,107 +138,113 @@ export function PlayersPanel({
           return (
             <li
               key={p.id}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-xl flex-wrap ${dark ? 'border border-white/10 bg-white/[0.05]' : 'border-2 border-ink bg-white'}`}
+              // feat/joueurs-panneau-lisible (20/11) — photo de Thomas : dans la
+              // colonne de droite, le sélecteur de rôle sortait de la carte et
+              // écrasait le nom. Deux lignes : nom + points + retirer, puis les
+              // trois rôles sur toute la largeur.
+              className={`px-2 py-2 rounded-xl space-y-2 ${dark ? 'border border-white/10 bg-white/[0.05]' : 'border-2 border-ink bg-white'}`}
             >
-              <span
-                aria-hidden
-                className={`w-7 h-7 rounded-full flex items-center justify-center font-display text-sm shrink-0 ${dark ? 'text-[#0B0B0F]' : 'border-2 border-ink bg-spritz'}`}
-                style={dark ? { backgroundColor: CORAL } : undefined}
-              >
-                {initial}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className={`font-medium text-sm truncate ${dark ? 'text-white' : ''}`}>
-                  {p.pseudo}
-                </p>
-                <p
-                  className={`font-mono text-[10px] tabular-nums ${dark ? 'text-white/45' : 'text-ink-soft'}`}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  aria-hidden
+                  className={`w-7 h-7 rounded-full flex items-center justify-center font-display text-sm shrink-0 ${dark ? 'text-[#0B0B0F]' : 'border-2 border-ink bg-spritz'}`}
+                  style={dark ? { backgroundColor: CORAL } : undefined}
                 >
-                  {score} {t('host.playersPts')}
-                </p>
+                  {initial}
+                </span>
+                <div className="flex-1 min-w-[7rem]">
+                  <p className={`font-medium text-sm truncate ${dark ? 'text-white' : ''}`}>
+                    {p.pseudo}
+                  </p>
+                  <p
+                    className={`font-mono text-[10px] tabular-nums ${dark ? 'text-white/45' : 'text-ink-soft'}`}
+                  >
+                    {score} {t('host.playersPts')}
+                  </p>
+                </div>
+                <div className="flex gap-1 shrink-0 ml-auto">
+                  {dark ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => void handleAdjust(p.id, -5)}
+                        disabled={isBusy}
+                        className={adjustClass}
+                      >
+                        -5
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleAdjust(p.id, +5)}
+                        disabled={isBusy}
+                        className={adjustClass}
+                      >
+                        +5
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleAdjust(p.id, +10)}
+                        disabled={isBusy}
+                        className={adjustClass}
+                      >
+                        +10
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void handleAdjust(p.id, -5)}
+                        disabled={isBusy}
+                        className={adjustClass}
+                      >
+                        -5
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void handleAdjust(p.id, +5)}
+                        disabled={isBusy}
+                        className={adjustClass}
+                      >
+                        +5
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void handleAdjust(p.id, +10)}
+                        disabled={isBusy}
+                        className={adjustClass}
+                      >
+                        +10
+                      </Button>
+                    </>
+                  )}
+                  {/* feat/kick-in-game — retirer le joueur (mauvaise connexion). */}
+                  <button
+                    type="button"
+                    onClick={() => void handleKick(p.id, p.pseudo)}
+                    disabled={isBusy}
+                    title={t('host.kickPlayer')}
+                    aria-label={t('host.kickPlayer')}
+                    className={[
+                      '!px-2 !py-1 text-xs font-mono rounded-lg border transition-colors',
+                      dark
+                        ? 'border-raspberry/40 text-raspberry hover:bg-raspberry/15'
+                        : 'border-raspberry/40 text-raspberry hover:bg-raspberry/10',
+                    ].join(' ')}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-1 shrink-0 flex-wrap justify-end">
-                <RoleSelector
-                  role={roleLocal[p.id] ?? p.role}
-                  onSetRole={(r) => void handleSetRole(p.id, r)}
-                  compact
-                  dark={dark}
-                />
-                {dark ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => void handleAdjust(p.id, -5)}
-                      disabled={isBusy}
-                      className={adjustClass}
-                    >
-                      -5
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleAdjust(p.id, +5)}
-                      disabled={isBusy}
-                      className={adjustClass}
-                    >
-                      +5
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleAdjust(p.id, +10)}
-                      disabled={isBusy}
-                      className={adjustClass}
-                    >
-                      +10
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => void handleAdjust(p.id, -5)}
-                      disabled={isBusy}
-                      className={adjustClass}
-                    >
-                      -5
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => void handleAdjust(p.id, +5)}
-                      disabled={isBusy}
-                      className={adjustClass}
-                    >
-                      +5
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => void handleAdjust(p.id, +10)}
-                      disabled={isBusy}
-                      className={adjustClass}
-                    >
-                      +10
-                    </Button>
-                  </>
-                )}
-                {/* feat/kick-in-game — retirer le joueur (mauvaise connexion). */}
-                <button
-                  type="button"
-                  onClick={() => void handleKick(p.id, p.pseudo)}
-                  disabled={isBusy}
-                  title={t('host.kickPlayer')}
-                  aria-label={t('host.kickPlayer')}
-                  className={[
-                    '!px-2 !py-1 text-xs font-mono rounded-lg border transition-colors',
-                    dark
-                      ? 'border-raspberry/40 text-raspberry hover:bg-raspberry/15'
-                      : 'border-raspberry/40 text-raspberry hover:bg-raspberry/10',
-                  ].join(' ')}
-                >
-                  ✕
-                </button>
-              </div>
+              <RoleSelector
+                role={roleLocal[p.id] ?? p.role}
+                onSetRole={(r) => void handleSetRole(p.id, r)}
+                dark={dark}
+                pleineLargeur
+              />
             </li>
           );
         })}

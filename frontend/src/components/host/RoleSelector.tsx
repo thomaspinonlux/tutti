@@ -15,11 +15,17 @@ export function RoleSelector({
   onSetRole,
   compact,
   dark = false,
+  pleineLargeur = false,
 }: {
   role: ParticipantRole;
   onSetRole: (role: ParticipantRole) => void;
   compact?: boolean;
   dark?: boolean;
+  /**
+   * feat/joueurs-panneau-lisible (20/11) — occupe toute la largeur, trois
+   * parts égales, libellés qui passent à la ligne au lieu de déborder.
+   */
+  pleineLargeur?: boolean;
 }): JSX.Element {
   const { t } = useTranslation();
   const dernierAppuiRef = useRef(0);
@@ -40,7 +46,7 @@ export function RoleSelector({
     <div
       role="group"
       aria-label={t('host.roleLabel')}
-      className={`inline-flex rounded-lg overflow-hidden shrink-0 border-2 ${dark ? 'border-white/15' : 'border-ink'}`}
+      className={`${pleineLargeur ? 'flex w-full' : 'inline-flex shrink-0'} rounded-lg overflow-hidden border-2 ${dark ? 'border-white/15' : 'border-ink'}`}
     >
       {opts.map((o) => {
         const active = o.value === role;
@@ -67,7 +73,11 @@ export function RoleSelector({
               if (!active) onSetRole(o.value);
             }}
             className={[
-              compact ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-1',
+              pleineLargeur
+                ? 'flex-1 min-w-0 text-[11px] leading-tight px-1 py-1.5 text-center'
+                : compact
+                  ? 'text-[10px] px-1.5 py-0.5'
+                  : 'text-xs px-2 py-1',
               'font-mono transition-colors border-r-2 last:border-r-0',
               dark ? 'border-white/15' : 'border-ink',
               active
