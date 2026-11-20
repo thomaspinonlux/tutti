@@ -24,7 +24,8 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { Prisma, RoundStatus, ScoreEventType } from '@prisma/client';
-import type { GameMode, Team } from '@tutti/shared';
+import type { GameMode, Team, ParticipantRole } from '@tutti/shared';
+import { isAnimatorRole } from '@tutti/shared';
 import { prisma } from '../lib/prisma.js';
 import { clearLyricsOverlay } from '../lib/lyrics/lyricsOverlayStore.js';
 import {
@@ -968,6 +969,87 @@ router.post(
     }
   },
 );
+
+// ═══ Gestion des joueurs depuis la télécommande (feat/joueurs-sur-la-manette) ══
+// Thomas, 20/11 : « avoir la gestion des joueurs sur l'iPhone de contrôle »,
+// comme sur l'iPad : retirer un joueur et changer son rôle. Mêmes effets que
+// les routes console (DELETE /:id/participants/:pid, POST …/role) et mêmes
+// événements diffusés, pour que console, TV et téléphones suivent.
+
+const kickSchema = z.object({
+  token: z.string(),
+  target_participant_id: z.string().uuid(),
+});
+
+router.post('/kick', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const parsed = kickSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+    return;
+  }
+  if (parsed.data.target_participant_id === req.master!.participantId) {
+    res.status(400).json({ error: { code: 'SELF_KICK', message: 'Tu ne peux pas te retirer toi-même' } });
+    return;
+  }
+  const target = await prisma.participant.findUnique({
+    where: { id: parsed.data.target_participant_id },
+    select: { id: true, session_id: true, is_kicked: true },
+  });
+  if (!target || target.is_kicked || target.session_id !== req.params.id) {
+    res.status(404).json({ error: { code: 'TARGET_INVALID', message: 'Participant cible invalide' } });
+    return;
+  }
+  try {
+    const participant = await prisma.participant.update({
+      where: { id: target.id },
+      data: { is_kicked: true },
+    });
+    broadcastToSession(req.params.id, 'participant:kicked', { participant });
+    res.json({ ok: true });
+  } catch (err: unknown) {
+    console.error('[POST master/kick] error:', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur exclusion' } });
+  }
+});
+
+const roleSchema = z.object({
+  token: z.string(),
+  target_participant_id: z.string().uuid(),
+  role: z.enum(['PLAYER', 'ANIMATOR_FULL', 'ANIMATOR_PLAYING']),
+});
+
+router.post('/role', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const parsed = roleSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'role invalide (PLAYER|ANIMATOR_FULL|ANIMATOR_PLAYING)' } });
+    return;
+  }
+  const target = await prisma.participant.findUnique({
+    where: { id: parsed.data.target_participant_id },
+    select: { id: true, session_id: true, is_kicked: true },
+  });
+  if (!target || target.is_kicked || target.session_id !== req.params.id) {
+    res.status(404).json({ error: { code: 'TARGET_INVALID', message: 'Participant cible invalide' } });
+    return;
+  }
+  const role = parsed.data.role as ParticipantRole;
+  try {
+    const participant = await prisma.participant.update({
+      where: { id: target.id },
+      // Invariant : is_master = isAnimatorRole(role) (cf. routes/sessions.ts).
+      data: { role, is_master: isAnimatorRole(role) },
+    });
+    broadcastToSession(req.params.id, 'participant:role_changed', {
+      participant,
+      participant_id: participant.id,
+      role: participant.role,
+    });
+    res.json({ participant });
+  } catch (err: unknown) {
+    console.error('[POST master/role] error:', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur attribution de rôle' } });
+  }
+});
 
 // ═══ Tutti Quizz — routes manette (feat/quiz-comme-le-blind-test) ══════════
 // Mêmes actions que la console, même logique (lib/quizzPilotage) : le

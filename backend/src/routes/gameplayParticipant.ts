@@ -109,12 +109,20 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
         .status(403)
         .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+    // feat/roles-en-partie — l'animateur seul pilote, il ne joue pas (même
+    // règle que le quiz). Thomas, 13/11 et 17/11.
+    if (participant.role === 'ANIMATOR_FULL') {
+      res
+        .status(403)
+        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
       return;
     }
 
@@ -211,12 +219,20 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
         .status(403)
         .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+    // feat/roles-en-partie — l'animateur seul pilote, il ne joue pas (même
+    // règle que le quiz). Thomas, 13/11 et 17/11.
+    if (participant.role === 'ANIMATOR_FULL') {
+      res
+        .status(403)
+        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
       return;
     }
 
@@ -330,12 +346,20 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
         .status(403)
         .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+    // feat/roles-en-partie — l'animateur seul pilote, il ne joue pas (même
+    // règle que le quiz). Thomas, 13/11 et 17/11.
+    if (participant.role === 'ANIMATOR_FULL') {
+      res
+        .status(403)
+        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
       return;
     }
 
@@ -1219,12 +1243,20 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
         .status(403)
         .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+    // feat/roles-en-partie — l'animateur seul pilote, il ne joue pas (même
+    // règle que le quiz). Thomas, 13/11 et 17/11.
+    if (participant.role === 'ANIMATOR_FULL') {
+      res
+        .status(403)
+        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
       return;
     }
 
@@ -1309,12 +1341,20 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
         .status(403)
         .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+    // feat/roles-en-partie — l'animateur seul pilote, il ne joue pas (même
+    // règle que le quiz). Thomas, 13/11 et 17/11.
+    if (participant.role === 'ANIMATOR_FULL') {
+      res
+        .status(403)
+        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
       return;
     }
 
@@ -1549,12 +1589,20 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true },
+      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
         .status(403)
         .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+      return;
+    }
+    // feat/roles-en-partie — l'animateur seul pilote, il ne joue pas (même
+    // règle que le quiz). Thomas, 13/11 et 17/11.
+    if (participant.role === 'ANIMATOR_FULL') {
+      res
+        .status(403)
+        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
       return;
     }
 

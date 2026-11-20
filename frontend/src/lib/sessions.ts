@@ -858,6 +858,29 @@ export async function masterSetScreenFocus(
   });
 }
 
+/** feat/joueurs-sur-la-manette — retirer un joueur depuis la télécommande. */
+export async function masterKick(sessionId: string, token: string, targetId: string): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/kick`, {
+    method: 'POST',
+    body: { token, target_participant_id: targetId },
+    anonymous: true,
+  });
+}
+
+/** feat/joueurs-sur-la-manette — changer le rôle d'un joueur depuis la télécommande. */
+export async function masterSetRole(
+  sessionId: string,
+  token: string,
+  targetId: string,
+  role: ParticipantRole,
+): Promise<void> {
+  await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/role`, {
+    method: 'POST',
+    body: { token, target_participant_id: targetId, role },
+    anonymous: true,
+  });
+}
+
 export async function masterAdjustPoints(
   sessionId: string,
   token: string,

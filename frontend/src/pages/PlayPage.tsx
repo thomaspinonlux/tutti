@@ -31,6 +31,8 @@ import {
   getPublicSession,
   joinSession,
   masterAdjustPoints,
+  masterKick,
+  masterSetRole,
   masterEndRound,
   masterEndSession,
   masterGiveAnswer,
@@ -932,6 +934,34 @@ export function PlayPage(): JSX.Element {
     }
   };
 
+  // feat/joueurs-sur-la-manette (Thomas, 20/11) — gestion des joueurs sur le
+  // téléphone qui a la manette, comme sur l'iPad.
+  const handleMasterKick = async (pid: string, pseudo: string): Promise<void> => {
+    if (!identity || busy) return;
+    if (!window.confirm(t('host.kickConfirmPlayer', { pseudo }))) return;
+    setBusy(true);
+    try {
+      await masterKick(identity.sessionId, identity.token, pid);
+    } catch (err: unknown) {
+      console.error('[Télécommande] exclusion en échec :', err);
+      setError('Joueur non retiré — réessaie');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const handleMasterSetRole = async (pid: string, role: ParticipantRole): Promise<void> => {
+    if (!identity || busy) return;
+    setBusy(true);
+    try {
+      await masterSetRole(identity.sessionId, identity.token, pid, role);
+    } catch (err: unknown) {
+      console.error('[Télécommande] changement de rôle en échec :', err);
+      setError('Rôle non changé — réessaie');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // ── Render ─────────────────────────────────────────────────────────────
   return (
     // feat/telephone-au-style-tv — fond sombre de la TV sur tout le parcours.
@@ -1245,10 +1275,14 @@ export function PlayPage(): JSX.Element {
                         id: p.id,
                         pseudo: p.pseudo,
                         score: cumulative.find((c) => c.id === p.id)?.total_points ?? 0,
+                        role: p.role,
                       }))}
                     onQuickAdjust={(pid, delta) =>
                       void handleMasterAdjust({ target_participant_id: pid, delta })
                     }
+                    moiId={identity.participantId}
+                    onKick={(pid, pseudo) => void handleMasterKick(pid, pseudo)}
+                    onSetRole={(pid, role) => void handleMasterSetRole(pid, role)}
                   />
                 </div>
               )}

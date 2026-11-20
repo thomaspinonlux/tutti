@@ -21,8 +21,9 @@
 
 import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CurrentTrackState } from '@tutti/shared';
+import type { CurrentTrackState, ParticipantRole } from '@tutti/shared';
 import { Button } from '../ui/index.js';
+import { RoleSelector } from '../host/RoleSelector.js';
 
 export interface MasterProgress {
   position_ms: number;
@@ -71,8 +72,16 @@ export interface MasterMenuProps {
   onPickRound: () => void;
   onAdjustPoints: () => void;
   /** feat/animator-full-control — score rapide (−5/+5/+10 par joueur), comme la console. */
-  players?: { id: string; pseudo: string; score: number }[];
+  players?: { id: string; pseudo: string; score: number; role?: ParticipantRole }[];
   onQuickAdjust?: (participantId: string, delta: number) => void;
+  /**
+   * feat/joueurs-sur-la-manette (Thomas, 20/11) — gestion des joueurs comme
+   * sur l'iPad : retirer un joueur, changer son rôle. `moiId` = ce téléphone
+   * (pas de bouton pour se retirer soi-même).
+   */
+  onKick?: (participantId: string, pseudo: string) => void;
+  onSetRole?: (participantId: string, role: ParticipantRole) => void;
+  moiId?: string;
 }
 
 function fmtTime(ms: number): string {
@@ -443,38 +452,68 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           className="col-span-2"
         />
 
-        {/* feat/animator-full-control — score rapide −5/+5/+10 par joueur (console-like). */}
+        {/* feat/joueurs-sur-la-manette (20/11) — « Gestion des joueurs », comme
+            sur l'iPad : points −5/+5/+10, retirer, et les trois rôles. Remplace
+            l'ancien dépliant « Scores » (points seulement, peu visible). */}
         {props.players && props.players.length > 0 && props.onQuickAdjust && (
           <div className="col-span-2">
-            <button
-              type="button"
+            <CtrlButton
+              tone="neutral"
+              row
+              icon="≡"
+              label={t('host.gestionJoueurs')}
               onClick={() => setShowScores((s) => !s)}
-              className="w-full py-1 font-mono text-xs text-white/45 hover:text-white"
-            >
-              🏆 Scores {showScores ? '▲' : '▼'}
-            </button>
+              aria-expanded={showScores}
+              className="w-full"
+            />
             {showScores && (
-              <ul className="space-y-1 mt-1 max-h-52 overflow-y-auto">
+              <ul className="space-y-2 mt-2 max-h-[60vh] overflow-y-auto">
                 {props.players.map((pl) => (
                   <li
                     key={pl.id}
-                    className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.05] px-2 py-1"
+                    className="space-y-2 rounded-xl border border-white/10 bg-white/[0.05] px-2 py-2"
                   >
-                    <span className="min-w-0 flex-1 truncate text-sm text-white">{pl.pseudo}</span>
-                    <span className="w-8 text-right font-mono text-xs tabular-nums text-white/50">
-                      {pl.score}
-                    </span>
-                    {[-5, 5, 10].map((d) => (
-                      <button
-                        key={d}
-                        type="button"
-                        disabled={props.busy}
-                        onClick={() => props.onQuickAdjust!(pl.id, d)}
-                        className="rounded border border-white/15 px-1.5 py-0.5 font-mono text-xs text-white/80 hover:bg-white/10 disabled:opacity-50"
-                      >
-                        {d > 0 ? `+${d}` : d}
-                      </button>
-                    ))}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="min-w-[6rem] flex-1">
+                        <p className="truncate text-sm font-medium text-white">{pl.pseudo}</p>
+                        <p className="font-mono text-[11px] tabular-nums text-white/50">
+                          {pl.score} {t('host.playersPts')}
+                        </p>
+                      </div>
+                      <div className="ml-auto flex shrink-0 gap-1">
+                        {[-5, 5, 10].map((d) => (
+                          <button
+                            key={d}
+                            type="button"
+                            disabled={props.busy}
+                            onClick={() => props.onQuickAdjust!(pl.id, d)}
+                            className="min-w-[2.5rem] rounded-lg border border-white/15 px-2 py-1.5 font-mono text-sm text-white/85 active:bg-white/15 disabled:opacity-50"
+                          >
+                            {d > 0 ? `+${d}` : d}
+                          </button>
+                        ))}
+                        {props.onKick && pl.id !== props.moiId && (
+                          <button
+                            type="button"
+                            disabled={props.busy}
+                            onClick={() => props.onKick!(pl.id, pl.pseudo)}
+                            aria-label={t('host.kickPlayer')}
+                            title={t('host.kickPlayer')}
+                            className="rounded-lg border border-raspberry/40 px-2 py-1.5 font-mono text-sm text-raspberry active:bg-raspberry/15 disabled:opacity-50"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {props.onSetRole && pl.role && (
+                      <RoleSelector
+                        role={pl.role}
+                        onSetRole={(r) => props.onSetRole!(pl.id, r)}
+                        dark
+                        pleineLargeur
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
