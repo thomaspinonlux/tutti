@@ -158,7 +158,9 @@ async function main(): Promise<void> {
     where: {
       ...(MODE_OEUVRE
         ? { playlist: { guess_mode: 'work' } }
-        : { NOT: { playlist: { guess_mode: 'work' } } }),
+        : // guess_mode est NULL sur les playlists classiques : un simple NOT
+          // les excluait toutes (NULL = 'work' vaut NULL en SQL).
+          { playlist: { OR: [{ guess_mode: null }, { guess_mode: { not: 'work' } }] } }),
       OR: [
         {
           is_playable: false,
