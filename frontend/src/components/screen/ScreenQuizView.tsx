@@ -17,9 +17,10 @@ import type { CumulativeScore, DetailsBac, DetailsVote } from '@tutti/shared';
 import { getSessionSnapshot } from '../../lib/sessions.js';
 import { JoinQrCorner } from '../host/JoinQrCorner.js';
 import { tempsRestantMs } from '../../lib/quizPause.js';
+import { aUnExtrait } from '../../lib/useExtraitQuiz.js';
 
 export interface QuizTvReveal {
-  reveal: { answer: string };
+  reveal: { answer: string; answer_alt?: string };
   results: Array<{ participant_id: string; pseudo: string; is_correct: boolean; score?: number; submitted?: string }>;
   /** feat/jeux-de-salon — détail des votes ou des grilles. */
   details?: DetailsVote | DetailsBac | null;
@@ -260,6 +261,12 @@ export function ScreenQuizView({
           {choix.length === 0 && (
             <p className="font-display text-5xl mb-4" style={{ color: '#3FB47A' }}>
               {bonne}
+            </p>
+          )}
+          {/* feat/blind-test-simple — le titre ET l'interprète de l'extrait. */}
+          {aUnExtrait(question) && reveal?.reveal.answer_alt && (
+            <p className="font-display text-5xl mb-4 [overflow-wrap:anywhere]" style={{ color: '#3FB47A' }}>
+              {reveal.reveal.answer_alt}
             </p>
           )}
           {question.type === 'ESTIMATION' && reveal && reveal.results.length > 0 ? (

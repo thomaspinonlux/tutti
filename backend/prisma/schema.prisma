@@ -842,6 +842,10 @@ model Session {
   /// l'allume et l'éteint EN COURS DE PARTIE, contrairement aux autres
   /// interrupteurs de session qui se figent au lancement.
   pilote_auto         Boolean       @default(false)
+  /// feat/back-office-en-familles — la carte du back-office d'où vient la
+  /// partie de quiz : 'quiz', 'jeux' (jeux de salon) ou 'blind_test' (blind
+  /// test simple). Ouvre le bon onglet du choix du thème. NULL = quiz.
+  famille             String?       @db.VarChar(16)
   /// feat/parc-comptes-apple — compte Apple Music RÉSERVÉ à cette session.
   /// Un abonnement ne porte qu'un flux : deux sessions ne peuvent pas partager
   /// le même compte. Libéré à la fin de la partie.

@@ -144,6 +144,9 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
   // les flags de permission ; on appelle getMe direct ici).
   const [canUseTracks, setCanUseTracks] = useState(true);
   const [canUseQuizz, setCanUseQuizz] = useState(true);
+  // feat/back-office-en-familles — l'arcade est en test : seul le
+  // propriétaire du compte voit sa carte (inconnu au départ = cachée).
+  const [estProprietaire, setEstProprietaire] = useState(false);
   useEffect(() => {
     let cancelled = false;
     void import('../../lib/me.js').then(({ getMe }) =>
@@ -152,6 +155,7 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
           if (cancelled) return;
           setCanUseTracks(me.can_use_tracks);
           setCanUseQuizz(me.can_use_quizz);
+          setEstProprietaire(me.role === 'OWNER' || me.isSuperAdmin);
         })
         .catch(() => {
           /* fallback : laisse true (rétro-compat) */
@@ -224,6 +228,10 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
           bouton Lancer nouvelle session ». Les deux cartes mènent au wizard de
           session ; la playlist se choisit ensuite. Visibles par tous, clients
           compris : c'est LEUR point d'entrée. */}
+      {/* feat/back-office-en-familles — Thomas, 22/11 : « le back-office où on
+          a accès aux quiz et autres, il faut remettre ça en propre ». Une carte
+          par famille de jeu : blind test, blind test simple, quiz, jeux de
+          salon, et l'arcade (en test, propriétaire seul). */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <GameCard
           to={canUseTracks ? '/admin/sessions/new' : null}
@@ -237,6 +245,17 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
           disabledTooltip={t('dashboard.accessForbidden')}
         />
         <GameCard
+          to={canUseQuizz ? '/admin/sessions/new?type=quizz&famille=blind_test' : null}
+          tone="lemon"
+          icon={<ExtraitIllustration />}
+          title={t('dashboard.simpleTitle')}
+          tagline={t('dashboard.simpleTagline')}
+          description={t('dashboard.simpleDescription')}
+          cta={t('dashboard.launchNewSession')}
+          disabled={!canUseQuizz}
+          disabledTooltip={t('dashboard.accessForbidden')}
+        />
+        <GameCard
           to={canUseQuizz ? '/admin/sessions/new?type=quizz' : null}
           tone="basil"
           icon={<BulbIllustration />}
@@ -247,6 +266,28 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
           disabled={!canUseQuizz}
           disabledTooltip={t('dashboard.accessForbidden')}
         />
+        <GameCard
+          to={canUseQuizz ? '/admin/sessions/new?type=quizz&famille=jeux' : null}
+          tone="plum"
+          icon={<SalonIllustration />}
+          title={t('dashboard.salonTitle')}
+          tagline={t('dashboard.salonTagline')}
+          description={t('dashboard.salonDescription')}
+          cta={t('dashboard.launchNewSession')}
+          disabled={!canUseQuizz}
+          disabledTooltip={t('dashboard.accessForbidden')}
+        />
+        {estProprietaire && (
+          <GameCard
+            to="/admin/arcade"
+            tone="cream"
+            icon={<ArcadeIllustration />}
+            title={t('dashboard.arcadeTitle')}
+            tagline={t('dashboard.arcadeTagline')}
+            description={t('dashboard.arcadeDescription')}
+            cta={t('dashboard.arcadeCta')}
+          />
+        )}
       </div>
 
       {/* feat/contact-pro — les professionnels peuvent nous écrire. */}
@@ -259,7 +300,7 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
 
 interface GameCardProps {
   to: string | null;
-  tone: 'spritz' | 'basil';
+  tone: 'spritz' | 'basil' | 'lemon' | 'plum' | 'cream';
   icon: JSX.Element;
   title: string;
   tagline: string;
@@ -326,6 +367,48 @@ function VinylIllustration(): JSX.Element {
       <circle cx="32" cy="32" r="18" fill="none" stroke="#3a3a48" strokeWidth="2" />
       <circle cx="32" cy="32" r="9" fill="#FF5C4D" />
       <circle cx="32" cy="32" r="2.5" fill="#0B0B0F" />
+    </svg>
+  );
+}
+
+/** Blind test simple : un disque et l'extrait de 30 secondes. */
+function ExtraitIllustration(): JSX.Element {
+  return (
+    <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
+      <circle cx="32" cy="32" r="28" fill="#0B0B0F" stroke="#e8c547" strokeWidth="3" />
+      <circle cx="32" cy="32" r="18" fill="#e8c547" />
+      <text x="32" y="38" textAnchor="middle" fontSize="16" fontWeight="700" fill="#0B0B0F" fontFamily="monospace">
+        30
+      </text>
+    </svg>
+  );
+}
+
+/** Jeux de salon : un crayon et une bulle. */
+function SalonIllustration(): JSX.Element {
+  return (
+    <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
+      <path
+        d="M10 14h34a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H26l-10 9v-9h-6a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z"
+        fill="#fff"
+        stroke="#1a1410"
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
+      <path d="M40 46l14-14 6 6-14 14-8 2z" fill="#FF5C4D" stroke="#1a1410" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M16 24h20M16 32h12" stroke="#1a1410" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Arcade : une manette. */
+function ArcadeIllustration(): JSX.Element {
+  return (
+    <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
+      <rect x="6" y="20" width="52" height="28" rx="14" fill="#0B0B0F" stroke="#1a1410" strokeWidth="3" />
+      <path d="M18 34h10M23 29v10" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="42" cy="31" r="3.5" fill="#FF5C4D" />
+      <circle cx="49" cy="38" r="3.5" fill="#3FB47A" />
     </svg>
   );
 }

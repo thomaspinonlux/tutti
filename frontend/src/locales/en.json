@@ -180,7 +180,17 @@
     "noAccessTitle": "No access granted",
     "noAccessHint": "No game mode is enabled on your account. Contact support.",
     "accessForbidden": "Access not allowed",
-    "launchNewSession": "Start a new session"
+    "launchNewSession": "Start a new session",
+    "simpleTitle": "Simple blind test",
+    "simpleTagline": "30-second clips, 4 choices",
+    "simpleDescription": "No Apple Music account needed. Players pick the artist or the title on their phone.",
+    "salonTitle": "Party games",
+    "salonTagline": "Draw, bluff and vote",
+    "salonDescription": "Draw & guess, Bluff, Funniest answer, Categories game, Guess the price.",
+    "arcadeTitle": "Arcade",
+    "arcadeTagline": "In testing — only you can see it",
+    "arcadeDescription": "Ten games on the TV, the phone is the controller: kart, sumo, pong, slalom…",
+    "arcadeCta": "Open the arcade"
   },
   "tracks": {
     "title": "Tutti Tracks",
@@ -269,7 +279,9 @@
     "modeWrittenBody": "No voice buzzer, no microphone prompt: players type their answer. Handy in a noisy room.",
     "titleQuiz": "New quiz",
     "modeQuizzHint": "In the quiz everyone answers on their own phone and scores for themselves. To play as a group, gather around a single phone.",
-    "modeTeamsHintQuiz": "Everyone answers on their phone; the first team member to answer correctly scores for the team."
+    "modeTeamsHintQuiz": "Everyone answers on their phone; the first team member to answer correctly scores for the team.",
+    "titleSalon": "New party games session",
+    "titleBlindTestSimple": "New simple blind test"
   },
   "rules": {
     "title": "How to play",
@@ -1143,7 +1155,16 @@
     "choisi": "Chosen theme: {{theme}} · {{count}} questions",
     "changer": "Tap another theme to change it.",
     "musiqueCouper": "🔇 Mute music",
-    "musiqueRemettre": "🔊 Music on"
+    "musiqueRemettre": "🔊 Music on",
+    "famille": {
+      "titre": "Game family",
+      "quiz": "Quiz",
+      "jeux": "Party games",
+      "blind_test": "Simple blind test",
+      "blindTestAide": "Pick a playlist: 15 clips of 30 seconds, 4 choices on the phones. Sound plays from the device where the console is open."
+    },
+    "titres": "{{count}} tracks",
+    "lancerExtrait": "Play the clip"
   },
   "dessin": {
     "titre": "Draw & guess",
@@ -1207,5 +1228,13 @@
     "tvOntEcrit": "{{n}} answer(s) in",
     "tvVotesRecus": "{{n}} vote(s)",
     "votePrefere": "Vote for your favourite answer"
+  },
+  "arcade": {
+    "titre": "Arcade",
+    "enTest": "In testing",
+    "intro": "Each game opens on this screen, to be shown on the TV. Players scan the QR code: their phone becomes the controller.",
+    "visible": "Only your account can see this page.",
+    "ouvrir": "Open the game",
+    "retour": "Back to home"
   }
 }

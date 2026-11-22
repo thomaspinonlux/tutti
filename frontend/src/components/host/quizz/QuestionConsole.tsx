@@ -8,6 +8,7 @@
  *                + bouton "Question suivante"
  */
 
+import { aUnExtrait } from '../../../lib/useExtraitQuiz.js';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { tempsRestantMs } from '../../../lib/quizPause.js';
@@ -225,6 +226,10 @@ export function QuestionConsole({
             choicesAlt={packBilingual ? state.choices_alt : undefined}
             revealAnswer={state.reveal?.answer ?? null}
           />
+        )}
+        {/* feat/blind-test-simple — la réponse révélée donne le titre ET l'interprète. */}
+        {aUnExtrait(state) && state.reveal?.answer_alt && (
+          <p className="mt-4 text-center font-display text-2xl md:text-3xl break-words">{state.reveal.answer_alt}</p>
         )}
         {state.type === 'TRUE_FALSE' && (
           <TrueFalseDisplay revealAnswer={state.reveal?.answer ?? null} />

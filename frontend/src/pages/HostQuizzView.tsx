@@ -45,6 +45,7 @@ import {
 import { getShareableOrigin } from '../lib/platform.js';
 import { QRCode } from '../components/host/QRCode.js';
 import { ChoixThemeQuiz } from '../components/quizz/ChoixThemeQuiz.js';
+import { useExtraitQuiz } from '../lib/useExtraitQuiz.js';
 import { getQuestionSet } from '../lib/questionSets.js';
 import { Button, Card, TitleHandwritten, Underline } from '../components/ui/index.js';
 import { QuestionConsole } from '../components/host/quizz/QuestionConsole.js';
@@ -194,10 +195,14 @@ export function HostQuizzView({
     }
   }, [session.id, rafraichirClassement, verifierFin]);
 
+  // feat/blind-test-simple — l'extrait de 30 s d'une question du blind test
+  // simple sort de la console, comme la musique du blind test.
+  const extrait = useExtraitQuiz(activeQuestion, session.status !== 'ENDED');
   const mediaEnCours =
-    !!activeQuestion &&
-    activeQuestion.phase === 'asking' &&
-    (activeQuestion.media_type === 'AUDIO' || activeQuestion.media_type === 'VIDEO');
+    extrait.enLecture ||
+    (!!activeQuestion &&
+      activeQuestion.phase === 'asking' &&
+      (activeQuestion.media_type === 'AUDIO' || activeQuestion.media_type === 'VIDEO'));
   const surMediaRef = useRef(onMediaEnCours);
   surMediaRef.current = onMediaEnCours;
   useEffect(() => {
@@ -379,6 +384,15 @@ export function HostQuizzView({
   // chrono et les boutons. Elle prend maintenant sa place, en haut.
   const barreHaut = (
     <div className="flex gap-2 items-center justify-end flex-wrap px-4 pt-3">
+      {extrait.bloque && (
+        <button
+          type="button"
+          onClick={extrait.lancer}
+          className="rounded-xl border-2 border-[#FF5C4D] bg-[#FF5C4D] px-5 py-2.5 font-display text-lg text-white"
+        >
+          {t('quizTheme.lancerExtrait')}
+        </button>
+      )}
       {boutonMusique}
       {!publicView && <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />}
       {enTete}

@@ -40,6 +40,8 @@ import {
 import { choisirDessinateur, demarrerDessin, fermerDessin, masquerMot } from './dessin.js';
 import { demarrerEcriture, fermerEcrireVoter } from './ecrireVoter.js';
 import { tirerLettre } from './petitBac.js';
+import { BlindTestSimpleErreur, listerPlaylistsBlindTestSimple, tirerMancheBlindTestSimple } from './blindTestSimple.js';
+import { AppleTokenError } from './appleDeveloperToken.js';
 
 export type NiveauQuiz = 'EASY' | 'MEDIUM' | 'EXPERT' | 'MIX';
 
@@ -131,7 +133,12 @@ export async function ajouterTheme(
     where: { id: packId },
     include: { questions: true },
   });
-  if (!pack) return ajouterQuizPerso(session, packId);
+  if (!pack) {
+    // feat/blind-test-simple — une playlist officielle se choisit comme un
+    // thème : 15 extraits de 30 s, 4 propositions (cf. blindTestSimple.ts).
+    const manche = await ajouterBlindTestSimple(session, packId, options);
+    return manche ?? ajouterQuizPerso(session, packId);
+  }
 
   const niveau = options.niveau ?? 'MIX';
   // feat/dessin-a-deviner — une manche de dessin = chacun dessine une fois
@@ -278,16 +285,104 @@ async function retirerQuestionsNonJouees(
   sessionId: string,
   setId: string,
 ): Promise<void> {
+  const derniereJouee = await derniereQuestionJouee(tx, sessionId);
+  await tx.question.deleteMany({ where: { set_id: setId, position: { gt: derniereJouee } } });
+}
+
+/** Index de la dernière question réellement lancée dans la partie (-1 : aucune). */
+async function derniereQuestionJouee(
+  client: Prisma.TransactionClient | typeof prisma,
+  sessionId: string,
+): Promise<number> {
   const active = getActiveQuestion(sessionId);
   // Le serveur a pu redémarrer (curseur perdu) : les points déjà marqués
   // disent aussi jusqu'où la partie est allée.
-  const marques = await tx.scoreEvent.aggregate({ where: { session_id: sessionId }, _max: { round_index: true } });
-  const derniereJouee = Math.max(
-    active?.question_index ?? -1,
-    curseurs.get(sessionId) ?? -1,
-    marques._max.round_index ?? -1,
-  );
-  await tx.question.deleteMany({ where: { set_id: setId, position: { gt: derniereJouee } } });
+  const marques = await client.scoreEvent.aggregate({ where: { session_id: sessionId }, _max: { round_index: true } });
+  return Math.max(active?.question_index ?? -1, curseurs.get(sessionId) ?? -1, marques._max.round_index ?? -1);
+}
+
+/**
+ * feat/blind-test-simple — ajoute une manche d'extraits tirée d'une playlist
+ * officielle. Rend `null` si l'identifiant n'est pas celui d'une playlist
+ * (c'est alors un quiz de l'établissement).
+ */
+async function ajouterBlindTestSimple(
+  session: SessionQuizz,
+  playlistId: string,
+  options: { niveau?: NiveauQuiz; nombre?: number },
+): Promise<{ set_id: string; debut: number; fin: number; nombre: number; theme: string } | null> {
+  const langue = session.language?.startsWith('en') ? 'en' : 'fr';
+  // Les titres déjà PASSÉS ce soir (pas ceux d'une manche choisie puis
+  // remplacée avant d'être jouée : ils seront retirés ci-dessous).
+  const dejaJoues = new Set<string>();
+  if (session.question_set_id) {
+    const derniereJouee = await derniereQuestionJouee(prisma, session.id);
+    const posees = await prisma.question.findMany({
+      where: {
+        set_id: session.question_set_id,
+        position: { lte: derniereJouee },
+        media_type: MediaType.AUDIO,
+        media_url: { not: null },
+      },
+      select: { answer_lang2: true },
+    });
+    for (const q of posees) if (q.answer_lang2) dejaJoues.add(q.answer_lang2);
+  }
+
+  let manche: Awaited<ReturnType<typeof tirerMancheBlindTestSimple>>;
+  try {
+    manche = await tirerMancheBlindTestSimple(playlistId, {
+      niveau: options.niveau ?? 'MIX',
+      nombre: Math.max(1, Math.min(50, options.nombre ?? QUESTIONS_PAR_MANCHE)),
+      dejaJoues,
+      langue,
+    });
+  } catch (err: unknown) {
+    if (err instanceof BlindTestSimpleErreur) {
+      throw new QuizzErreur(err.code, err.message, err.code === 'NOT_FOUND' ? 404 : err.code === 'APPLE_INDISPONIBLE' ? 502 : 409);
+    }
+    if (err instanceof AppleTokenError || (err as Error)?.name === 'TimeoutError') {
+      console.error('[Quizz] blind test simple — extraits Apple indisponibles :', err);
+      throw new QuizzErreur('APPLE_INDISPONIBLE', 'Apple Music ne répond pas : réessaie dans un instant.', 502);
+    }
+    throw err;
+  }
+  if (!manche) return null;
+  const { theme, questions } = manche;
+
+  return prisma
+    .$transaction(
+      async (tx) => {
+        let setId = session.question_set_id;
+        if (!setId) {
+          const set = await tx.questionSet.create({
+            data: {
+              establishment_id: session.establishment_id,
+              name: `Quiz — ${session.name ?? session.short_code}`,
+              is_bilingual: false,
+              language_1: langue,
+              language_2: langue === 'fr' ? 'en' : 'fr',
+              is_generic: false,
+              is_published: true,
+            },
+          });
+          setId = set.id;
+          await tx.session.update({ where: { id: session.id }, data: { question_set_id: setId } });
+        }
+        await retirerQuestionsNonJouees(tx, session.id, setId);
+        const derniere = await tx.question.aggregate({ where: { set_id: setId }, _max: { position: true } });
+        const debut = (derniere._max.position ?? -1) + 1;
+        await tx.question.createMany({
+          data: questions.map((q, i) => ({ ...q, set_id: setId!, position: debut + i })),
+        });
+        return { set_id: setId!, debut, fin: debut + questions.length - 1, nombre: questions.length, theme };
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    )
+    .then((resultat) => {
+      broadcastToSession(session.id, 'quizz:theme_added', resultat);
+      return resultat;
+    });
 }
 
 /** Les quiz de l'établissement jouables comme thème (pas les jeux d'une partie). */
@@ -583,33 +678,54 @@ export async function revelerQuestion(sessionId: string): Promise<void> {
  * Thèmes proposés : les packs officiels publics, avec le nombre de questions
  * par niveau — et, en tête, les quiz de l'établissement (`perso: true`).
  */
-export async function listerThemes(sessionId?: string): Promise<
-  Array<{
-    id: string;
-    nom_fr: string;
-    nom_en: string;
-    categorie: string | null;
-    niveaux: Record<string, number>;
-    total: number;
-    perso?: boolean;
-  }>
-> {
+export interface ThemePropose {
+  id: string;
+  nom_fr: string;
+  nom_en: string;
+  categorie: string | null;
+  /**
+   * feat/back-office-en-familles — la famille de jeu : le choix du thème les
+   * présente dans trois onglets (Quiz, Jeux de salon, Blind test simple).
+   */
+  famille: 'quiz' | 'jeux' | 'blind_test';
+  /** Blind test simple : la rubrique de la playlist (Époques, Genres…). */
+  groupe_fr?: string;
+  groupe_en?: string;
+  niveaux: Record<string, number>;
+  total: number;
+  perso?: boolean;
+}
+
+export type FamilleDeJeu = ThemePropose['famille'];
+
+/** La famille de jeu d'où vient la partie (carte du back-office) ; quiz par défaut. */
+export async function familleDeLaPartie(sessionId: string): Promise<FamilleDeJeu> {
+  const s = await prisma.session.findUnique({ where: { id: sessionId }, select: { famille: true } });
+  return s?.famille === 'jeux' || s?.famille === 'blind_test' ? s.famille : 'quiz';
+}
+
+export async function listerThemes(sessionId?: string): Promise<ThemePropose[]> {
   const session = sessionId
     ? await prisma.session.findUnique({ where: { id: sessionId }, select: { establishment_id: true } })
     : null;
-  const perso = session ? await quizPersoDe(session.establishment_id) : [];
-  const officiels = await listerPacksOfficiels();
+  const [perso, officiels, playlists] = await Promise.all([
+    session ? quizPersoDe(session.establishment_id) : Promise.resolve([]),
+    listerPacksOfficiels(),
+    listerPlaylistsBlindTestSimple(),
+  ]);
   return [
     ...perso.map((x) => ({
       id: x.id,
       nom_fr: x.name,
       nom_en: x.name,
       categorie: null,
+      famille: 'quiz' as const,
       niveaux: { EASY: 0, MEDIUM: 0, EXPERT: 0 },
       total: x._count.questions,
       perso: true,
     })),
-    ...officiels,
+    ...officiels.map((o) => ({ ...o, famille: o.categorie === 'jeux' ? ('jeux' as const) : ('quiz' as const) })),
+    ...playlists,
   ];
 }
 

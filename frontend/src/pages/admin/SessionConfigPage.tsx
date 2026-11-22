@@ -15,7 +15,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Team } from '@tutti/shared';
 import { getPlaylist } from '../../lib/playlists.js';
-import { createRound, createSession } from '../../lib/sessions.js';
+import { createRound, createSession, type FamilleDeJeu } from '../../lib/sessions.js';
 import { PartieEnCours, confirmerNouvellePartie } from '../../components/admin/PartieEnCours.js';
 import {
   Button,
@@ -83,6 +83,14 @@ export function SessionConfigPage(): JSX.Element {
   // feat/deux-cartes — la carte Tutti Quizz ouvre le même wizard avec
   // ?type=quizz : la partie créée est un Quizz, pas un blind test.
   const typeDePartie: 'TRACKS' | 'QUIZZ' = params.get('type') === 'quizz' ? 'QUIZZ' : 'TRACKS';
+  // feat/back-office-en-familles — la carte d'où l'on vient : jeux de salon
+  // ou blind test simple. La partie reste un quiz ; la famille ouvre le bon
+  // onglet du choix du thème, sur la console comme sur le téléphone.
+  const familleDemandee = params.get('famille');
+  const famille: FamilleDeJeu | undefined =
+    typeDePartie === 'QUIZZ' && (familleDemandee === 'jeux' || familleDemandee === 'blind_test')
+      ? familleDemandee
+      : undefined;
 
   const [name, setName] = useState('');
   const [playlistName, setPlaylistName] = useState<string | null>(null);
@@ -137,6 +145,7 @@ export function SessionConfigPage(): JSX.Element {
         language,
         has_animator: hasAnimator,
         voice_enabled: typeDePartie === 'TRACKS' ? vocalActif : undefined,
+        famille,
       });
       // Si une playlist est passée en paramètre, on pré-crée la 1ʳᵉ manche
       // pour qu'elle soit prête au démarrage. L'host n'aura plus qu'à
@@ -159,7 +168,13 @@ export function SessionConfigPage(): JSX.Element {
     <div className="max-w-3xl mx-auto">
       <TitleHandwritten as="h1" className="mb-3">
         <Underline>
-          {typeDePartie === 'QUIZZ' ? t('sessionConfig.titleQuiz') : t('sessionConfig.title')}
+          {famille === 'jeux'
+            ? t('sessionConfig.titleSalon')
+            : famille === 'blind_test'
+              ? t('sessionConfig.titleBlindTestSimple')
+              : typeDePartie === 'QUIZZ'
+                ? t('sessionConfig.titleQuiz')
+                : t('sessionConfig.title')}
         </Underline>
       </TitleHandwritten>
       {playlistName && (

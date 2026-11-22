@@ -8,10 +8,10 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { MancheAjoutee, NiveauQuiz, ThemeQuiz } from '../../lib/sessions.js';
+import type { FamilleDeJeu, MancheAjoutee, NiveauQuiz, ThemeQuiz, ThemesDeLaPartie } from '../../lib/sessions.js';
 
 interface Props {
-  charger: () => Promise<ThemeQuiz[]>;
+  charger: () => Promise<ThemesDeLaPartie>;
   ajouter: (packId: string, niveau: NiveauQuiz) => Promise<MancheAjoutee>;
   onAjoute?: (manche: MancheAjoutee) => void;
   /** Fond sombre (console) ou clair (téléphone). */
@@ -22,10 +22,19 @@ interface Props {
 
 const NIVEAUX: NiveauQuiz[] = ['MIX', 'EASY', 'MEDIUM', 'EXPERT'];
 
+/**
+ * feat/back-office-en-familles — Thomas, 22/11 : « les jeux de salon sont
+ * rangés dans le quiz, catégorie jeux, et présentés nulle part ». Trois
+ * onglets : chaque famille de jeu a sa liste.
+ */
+const FAMILLES: FamilleDeJeu[] = ['quiz', 'jeux', 'blind_test'];
+const familleDe = (th: ThemeQuiz): FamilleDeJeu => th.famille ?? 'quiz';
+
 export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, choisi = null }: Props): JSX.Element {
   const { t, i18n } = useTranslation();
   const [themes, setThemes] = useState<ThemeQuiz[] | null>(null);
   const [niveau, setNiveau] = useState<NiveauQuiz>('MIX');
+  const [famille, setFamille] = useState<FamilleDeJeu>('quiz');
   const [enCours, setEnCours] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [ajoute, setAjoute] = useState<MancheAjoutee | null>(null);
@@ -34,7 +43,16 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
   useEffect(() => {
     let vivant = true;
     charger()
-      .then((l) => vivant && setThemes(l))
+      .then((l) => {
+        if (!vivant) return;
+        setThemes(l.themes);
+        // L'onglet ouvert d'abord : la famille du thème déjà choisi, sinon
+        // celle de la carte du back-office d'où vient la partie.
+        const dejaChoisi = choisi
+          ? l.themes.find((th) => th.nom_fr === choisi.nom || th.nom_en === choisi.nom)
+          : undefined;
+        setFamille(dejaChoisi ? familleDe(dejaChoisi) : (l.famille ?? 'quiz'));
+      })
       .catch((e: unknown) => vivant && setErreur((e as Error).message));
     return () => {
       vivant = false;
@@ -44,11 +62,32 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
 
   // feat/quiz-entreprise — les quiz de l'établissement, à part et en tête :
   // ils se jouent en entier, sans niveau.
-  const perso = useMemo(() => (themes ?? []).filter((th) => th.perso), [themes]);
-  const visibles = useMemo(
-    () => (themes ?? []).filter((th) => !th.perso && (niveau === 'MIX' ? th.total : th.niveaux[niveau]) > 0),
-    [themes, niveau],
+  const perso = useMemo(
+    () => (famille === 'quiz' ? (themes ?? []).filter((th) => th.perso) : []),
+    [themes, famille],
   );
+  const visibles = useMemo(
+    () =>
+      (themes ?? []).filter(
+        (th) => !th.perso && familleDe(th) === famille && (niveau === 'MIX' ? th.total : th.niveaux[niveau]) > 0,
+      ),
+    [themes, niveau, famille],
+  );
+  const famillesPresentes = useMemo(
+    () => FAMILLES.filter((f) => (themes ?? []).some((th) => familleDe(th) === f)),
+    [themes],
+  );
+  // Blind test simple : les playlists sont rangées par rubrique.
+  const groupes = useMemo(() => {
+    const liste: Array<{ nom: string | null; themes: ThemeQuiz[] }> = [];
+    for (const th of visibles) {
+      const nom = (enAnglais ? th.groupe_en : th.groupe_fr) ?? null;
+      const dernier = liste[liste.length - 1];
+      if (dernier && dernier.nom === nom) dernier.themes.push(th);
+      else liste.push({ nom, themes: [th] });
+    }
+    return liste;
+  }, [visibles, enAnglais]);
 
   const choisir = async (th: ThemeQuiz): Promise<void> => {
     if (enCours) return;
@@ -79,6 +118,35 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
 
   return (
     <div className="space-y-3">
+      {famillesPresentes.length > 1 && (
+        <div className="grid grid-cols-3 gap-2" role="tablist" aria-label={t('quizTheme.famille.titre')}>
+          {famillesPresentes.map((f) => {
+            const actif = f === famille;
+            return (
+              <button
+                key={f}
+                type="button"
+                role="tab"
+                aria-selected={actif}
+                onClick={() => setFamille(f)}
+                className={[
+                  'min-w-0 rounded-xl border-2 px-2 py-2.5 text-sm font-semibold leading-tight text-center transition',
+                  actif
+                    ? 'border-[#FF5C4D] bg-[#FF5C4D] text-white'
+                    : sombre
+                      ? 'border-white/20 text-white/80'
+                      : 'border-ink text-ink',
+                ].join(' ')}
+              >
+                {t(`quizTheme.famille.${f}`)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {famille === 'blind_test' && (
+        <p className={`text-sm ${doux}`}>{t('quizTheme.famille.blindTestAide')}</p>
+      )}
       {actuel && (
         <div role="status" className="rounded-xl border-2 border-[#3FB47A] bg-[#3FB47A]/15 px-4 py-3">
           <p className={`font-display text-lg ${texte}`}>
@@ -137,7 +205,6 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
         })}
       </div>
 
-
       {erreur && (
         <p role="alert" className="text-sm text-[#FF5C4D]">
           {erreur}
@@ -146,29 +213,38 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
 
       {themes === null && !erreur && <p className={`text-sm ${doux}`}>{t('common.loading')}</p>}
 
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[55vh] overflow-auto pr-1">
-        {visibles.map((th) => {
-          const nb = niveau === 'MIX' ? th.total : th.niveaux[niveau];
-          return (
-            <li key={th.id}>
-              <button
-                type="button"
-                disabled={!!enCours}
-                onClick={() => void choisir(th)}
-                aria-pressed={estChoisi(th)}
-                className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition disabled:opacity-50 ${estChoisi(th) ? choisiCarte : carte}`}
-              >
-                <span className={`block font-semibold ${texte}`}>
-                  {enCours === th.id ? '…' : `${estChoisi(th) ? '✓ ' : ''}${enAnglais ? th.nom_en : th.nom_fr}`}
-                </span>
-                <span className={`block text-xs font-mono ${doux}`}>
-                  {t('quizTheme.questions', { count: nb })}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="space-y-3 max-h-[55vh] overflow-auto pr-1">
+        {groupes.map((g) => (
+          <div key={g.nom ?? 'sans-rubrique'} className="space-y-2">
+            {g.nom && <p className={`font-mono text-xs uppercase tracking-wider ${doux}`}>{g.nom}</p>}
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {g.themes.map((th) => {
+                const nb = niveau === 'MIX' ? th.total : th.niveaux[niveau];
+                return (
+                  <li key={th.id}>
+                    <button
+                      type="button"
+                      disabled={!!enCours}
+                      onClick={() => void choisir(th)}
+                      aria-pressed={estChoisi(th)}
+                      className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition disabled:opacity-50 ${estChoisi(th) ? choisiCarte : carte}`}
+                    >
+                      <span className={`block font-semibold break-words ${texte}`}>
+                        {enCours === th.id ? '…' : `${estChoisi(th) ? '✓ ' : ''}${enAnglais ? th.nom_en : th.nom_fr}`}
+                      </span>
+                      <span className={`block text-xs font-mono ${doux}`}>
+                        {famille === 'blind_test'
+                          ? t('quizTheme.titres', { count: nb })
+                          : t('quizTheme.questions', { count: nb })}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@
  *                           bonne réponse. On reste là jusqu'à la prochaine.
  */
 
+import { aUnExtrait } from '../../../lib/useExtraitQuiz.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Socket } from 'socket.io-client';
@@ -618,7 +619,11 @@ function RevealedView({
   const myRank = reveal?.results.findIndex((r) => r.participant_id === myParticipantId) ?? -1;
 
   const tone = isCorrect ? 'basil' : 'raspberry';
-  const correctAnswerDisplay = displayAnswer(reveal?.reveal.answer ?? null, question.type);
+  // feat/blind-test-simple — pour un extrait, la réponse donne le titre ET l'interprète.
+  const correctAnswerDisplay =
+    aUnExtrait(question) && reveal?.reveal.answer_alt
+      ? reveal.reveal.answer_alt
+      : displayAnswer(reveal?.reveal.answer ?? null, question.type);
 
   // feat/jeux-de-salon — ici pas de « bonne / mauvaise réponse » : on dit ce
   // que le joueur marque, et pourquoi.

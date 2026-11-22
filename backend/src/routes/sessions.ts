@@ -121,6 +121,8 @@ const createSchema = z.object({
   // feat/option-vocal — partie 100 % écrite quand false : le téléphone des
   // joueurs n'affiche pas le buzzer vocal, seule la saisie clavier reste.
   voice_enabled: z.boolean().default(true),
+  // feat/back-office-en-familles — la carte d'où vient la partie de quiz.
+  famille: z.enum(['quiz', 'jeux', 'blind_test']).optional(),
 });
 
 router.post(
@@ -248,6 +250,7 @@ router.post(
               ? (parsed.data.teams_config as Prisma.InputJsonValue)
               : Prisma.JsonNull,
           language: parsed.data.language,
+          famille: parsed.data.game_type === 'QUIZZ' ? (parsed.data.famille ?? null) : null,
           question_set_id: parsed.data.question_set_id ?? null,
           has_animator: parsed.data.has_animator,
           voice_enabled: parsed.data.voice_enabled,

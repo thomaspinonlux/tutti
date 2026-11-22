@@ -34,6 +34,7 @@ import {
   basculerPause,
   lancerQuestion,
   listerThemes,
+  familleDeLaPartie,
   questionSuivante,
   revelerQuestion,
 } from '../lib/quizzPilotage.js';
@@ -65,7 +66,8 @@ function repondreErreur(res: Response, err: unknown): void {
 
 /** Les thèmes proposés, avec le nombre de questions par niveau. */
 router.get('/themes', requireAuth, requireWorkspace, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-  res.json({ themes: await listerThemes(req.params.id) });
+  const [themes, famille] = await Promise.all([listerThemes(req.params.id), familleDeLaPartie(req.params.id)]);
+  res.json({ themes, famille });
 });
 
 const themeSchema = z.object({

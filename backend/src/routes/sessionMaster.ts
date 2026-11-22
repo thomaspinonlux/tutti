@@ -65,6 +65,7 @@ import {
   ajouterTheme,
   lancerQuestion,
   listerThemes,
+  familleDeLaPartie,
   questionSuivante,
   revelerQuestion,
   basculerPause,
@@ -1067,7 +1068,8 @@ function erreurQuizz(res: Response, err: unknown): void {
 const tokenSchema = z.object({ token: z.string() });
 
 router.post('/quizz/themes/liste', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-  res.json({ themes: await listerThemes(req.params.id) });
+  const [themes, famille] = await Promise.all([listerThemes(req.params.id), familleDeLaPartie(req.params.id)]);
+  res.json({ themes, famille });
 });
 
 const themeManetteSchema = z.object({

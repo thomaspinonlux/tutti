@@ -180,7 +180,17 @@
     "noAccessTitle": "Aucun accès accordé",
     "noAccessHint": "Aucun mode de jeu n'est activé sur ton compte. Contacte le support.",
     "accessForbidden": "Accès non autorisé",
-    "launchNewSession": "Lancer nouvelle session"
+    "launchNewSession": "Lancer nouvelle session",
+    "simpleTitle": "Blind test simple",
+    "simpleTagline": "Des extraits de 30 secondes, 4 propositions",
+    "simpleDescription": "Sans compte Apple Music. Les joueurs choisissent l'interprète ou le titre sur leur téléphone.",
+    "salonTitle": "Jeux de salon",
+    "salonTagline": "On dessine, on bluffe, on vote",
+    "salonDescription": "Dessin à deviner, Bluff, La réponse la plus drôle, P'tit Bac, Devine le prix.",
+    "arcadeTitle": "Arcade",
+    "arcadeTagline": "En test — visible de vous seul",
+    "arcadeDescription": "Dix jeux sur la TV, le téléphone sert de manette : kart, sumo, pong, slalom…",
+    "arcadeCta": "Ouvrir l'arcade"
   },
   "tracks": {
     "title": "Tutti Tracks",
@@ -269,7 +279,9 @@
     "modeWrittenBody": "Pas de buzzer vocal, pas de micro demandé : les joueurs tapent leur réponse. Utile en salle bruyante.",
     "titleQuiz": "Nouveau quiz",
     "modeQuizzHint": "Au quiz, chacun répond sur son téléphone et marque pour lui. Pour jouer à plusieurs, groupez-vous autour d’un seul téléphone.",
-    "modeTeamsHintQuiz": "Chaque joueur répond sur son téléphone ; le premier de l'équipe qui répond juste fait marquer l'équipe."
+    "modeTeamsHintQuiz": "Chaque joueur répond sur son téléphone ; le premier de l'équipe qui répond juste fait marquer l'équipe.",
+    "titleSalon": "Nouvelle partie de jeux de salon",
+    "titleBlindTestSimple": "Nouveau blind test simple"
   },
   "rules": {
     "title": "Comment jouer",
@@ -1143,7 +1155,16 @@
     "choisi": "Thème choisi : {{theme}} · {{count}} questions",
     "changer": "Touche un autre thème pour le changer.",
     "musiqueCouper": "🔇 Couper la musique",
-    "musiqueRemettre": "🔊 Remettre la musique"
+    "musiqueRemettre": "🔊 Remettre la musique",
+    "famille": {
+      "titre": "Famille de jeu",
+      "quiz": "Quiz",
+      "jeux": "Jeux de salon",
+      "blind_test": "Blind test simple",
+      "blindTestAide": "Choisis une playlist : 15 extraits de 30 secondes, 4 propositions sur les téléphones. Le son sort de l'appareil où la console est ouverte."
+    },
+    "titres": "{{count}} titres",
+    "lancerExtrait": "Lancer l'extrait"
   },
   "dessin": {
     "titre": "Dessin à deviner",
@@ -1207,5 +1228,13 @@
     "tvOntEcrit": "{{n}} réponse(s) reçue(s)",
     "tvVotesRecus": "{{n}} vote(s)",
     "votePrefere": "Vote pour ta réponse préférée"
+  },
+  "arcade": {
+    "titre": "Arcade",
+    "enTest": "En test",
+    "intro": "Chaque jeu s'ouvre sur cet écran, à brancher sur la TV. Les joueurs scannent le QR code affiché : leur téléphone devient la manette.",
+    "visible": "Cette page est visible de votre compte seulement.",
+    "ouvrir": "Ouvrir le jeu",
+    "retour": "Retour à l'accueil"
   }
 }

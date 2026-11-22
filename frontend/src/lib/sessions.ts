@@ -38,7 +38,12 @@ export interface CreateSessionInput {
    * Défaut true.
    */
   voice_enabled?: boolean;
+  /** feat/back-office-en-familles — la carte d'où vient la partie de quiz. */
+  famille?: FamilleDeJeu;
 }
+
+/** Les familles de jeu d'une partie de quiz (onglets du choix du thème). */
+export type FamilleDeJeu = 'quiz' | 'jeux' | 'blind_test';
 
 export async function createSession(input: CreateSessionInput): Promise<Session> {
   const data = await api<{ session: Session }>('/api/sessions', { method: 'POST', body: input });
@@ -452,6 +457,11 @@ export interface ThemeQuiz {
   nom_fr: string;
   nom_en: string;
   categorie: string | null;
+  /** Quiz, jeux de salon ou blind test simple (absent = quiz). */
+  famille?: FamilleDeJeu;
+  /** Blind test simple : la rubrique de la playlist (Époques, Genres…). */
+  groupe_fr?: string;
+  groupe_en?: string;
   niveaux: Record<'EASY' | 'MEDIUM' | 'EXPERT', number>;
   total: number;
   /** Quiz créé par l'établissement (toutes ses questions, dans l'ordre). */
@@ -466,11 +476,14 @@ export interface MancheAjoutee {
   theme: string;
 }
 
-export async function listerThemesQuiz(sessionId: string): Promise<ThemeQuiz[]> {
-  const data = await api<{ themes: ThemeQuiz[] }>(
-    `/api/sessions/${encodeURIComponent(sessionId)}/quizz/themes`,
-  );
-  return data.themes;
+/** Les thèmes proposés et la famille de jeu de la partie (onglet ouvert d'abord). */
+export interface ThemesDeLaPartie {
+  themes: ThemeQuiz[];
+  famille?: FamilleDeJeu;
+}
+
+export async function listerThemesQuiz(sessionId: string): Promise<ThemesDeLaPartie> {
+  return api<ThemesDeLaPartie>(`/api/sessions/${encodeURIComponent(sessionId)}/quizz/themes`);
 }
 
 export async function ajouterThemeQuiz(
@@ -488,12 +501,11 @@ export async function ajouterThemeQuiz(
 export async function masterListerThemesQuiz(
   sessionId: string,
   token: string,
-): Promise<ThemeQuiz[]> {
-  const data = await api<{ themes: ThemeQuiz[] }>(
+): Promise<ThemesDeLaPartie> {
+  return api<ThemesDeLaPartie>(
     `/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/themes/liste`,
     { method: 'POST', body: { token }, anonymous: true },
   );
-  return data.themes;
 }
 
 export async function masterAjouterThemeQuiz(
