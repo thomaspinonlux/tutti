@@ -14,11 +14,12 @@ import { ProchainePartie } from '../../components/admin/ProchainePartie.js';
 import { PartieEnCours } from '../../components/admin/PartieEnCours.js';
 import { ContactProCard } from '../../components/admin/ContactProCard.js';
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEstablishment } from './AdminLayout.js';
 import { Button, Card, TitleHandwritten, Swirl, Underline } from '../../components/ui/index.js';
 import { Icone } from '../../components/ui/Icone.js';
+import { isRealDesktop } from '../../lib/platform.js';
 
 // ───── DEBUG : ErrorBoundary temporaire ──────────────────────────────────
 // À retirer après confirmation du diagnostic.
@@ -140,6 +141,7 @@ interface DashboardContentProps {
 
 function DashboardContent({ establishment }: DashboardContentProps): JSX.Element {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   // feat/granular-tracks-quizz-access — récup flags via getMe au mount
   // (existing useEstablishment context fournit l'establishment mais pas
   // les flags de permission ; on appelle getMe direct ici).
@@ -193,13 +195,15 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
             type="button"
             variant="primary"
             size="lg"
-            onClick={() =>
-              window.open(
-                `/screen?workspace=${encodeURIComponent(establishment.workspace_id)}`,
-                '_blank',
-                'noopener',
-              )
-            }
+            onClick={() => {
+              const url = `/screen?workspace=${encodeURIComponent(establishment.workspace_id)}`;
+              // fix/parcours-sans-impasse — une seconde fenêtre n'existe que
+              // sur un ordinateur. Sur iPad et téléphone la page remplaçait le
+              // back-office sans retour possible : on l'ouvre dans la même vue,
+              // avec un bouton de retour (cf. AvecRetour).
+              if (isRealDesktop()) window.open(url, '_blank', 'noopener');
+              else navigate(url, { state: { retour: '/admin/dashboard' } });
+            }}
           >
             {t('dashboard.openTvScreen')}
           </Button>
@@ -378,7 +382,15 @@ function ExtraitIllustration(): JSX.Element {
     <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
       <circle cx="32" cy="32" r="28" fill="#0E0D17" stroke="#ffe600" strokeWidth="3" />
       <circle cx="32" cy="32" r="18" fill="#ffe600" />
-      <text x="32" y="38" textAnchor="middle" fontSize="16" fontWeight="700" fill="#0E0D17" fontFamily="monospace">
+      <text
+        x="32"
+        y="38"
+        textAnchor="middle"
+        fontSize="16"
+        fontWeight="700"
+        fill="#0E0D17"
+        fontFamily="monospace"
+      >
         30
       </text>
     </svg>
@@ -396,7 +408,13 @@ function SalonIllustration(): JSX.Element {
         strokeWidth="3"
         strokeLinejoin="round"
       />
-      <path d="M40 46l14-14 6 6-14 14-8 2z" fill="#FF3366" stroke="#E5E0EF" strokeWidth="3" strokeLinejoin="round" />
+      <path
+        d="M40 46l14-14 6 6-14 14-8 2z"
+        fill="#FF3366"
+        stroke="#E5E0EF"
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
       <path d="M16 24h20M16 32h12" stroke="#00F0FF" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
@@ -406,7 +424,16 @@ function SalonIllustration(): JSX.Element {
 function ArcadeIllustration(): JSX.Element {
   return (
     <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
-      <rect x="6" y="20" width="52" height="28" rx="14" fill="#221F38" stroke="#00F0FF" strokeWidth="3" />
+      <rect
+        x="6"
+        y="20"
+        width="52"
+        height="28"
+        rx="14"
+        fill="#221F38"
+        stroke="#00F0FF"
+        strokeWidth="3"
+      />
       <path d="M18 34h10M23 29v10" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
       <circle cx="42" cy="31" r="3.5" fill="#FF3366" />
       <circle cx="49" cy="38" r="3.5" fill="#00E5A3" />

@@ -13,7 +13,16 @@ import { ajouterGestionnaireSocket, getIO, type SocketIdentity } from '../socket
 
 const LETTRES = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const MAX_JOUEURS = 8;
-const COULEURS = ['#FF5C4D', '#2F80ED', '#3FB47A', '#F2C94C', '#9B51E0', '#F2994A', '#56CCF2', '#EB5757'];
+const COULEURS = [
+  '#FF5C4D',
+  '#2F80ED',
+  '#3FB47A',
+  '#F2C94C',
+  '#9B51E0',
+  '#F2994A',
+  '#56CCF2',
+  '#EB5757',
+];
 
 interface Joueur {
   id: string; // socket id
@@ -32,7 +41,10 @@ const salle = (code: string): string => `course:${code}`;
 
 function nouveauCode(): string {
   for (let essai = 0; essai < 50; essai++) {
-    const c = Array.from({ length: 4 }, () => LETTRES[Math.floor(Math.random() * LETTRES.length)]).join('');
+    const c = Array.from(
+      { length: 4 },
+      () => LETTRES[Math.floor(Math.random() * LETTRES.length)],
+    ).join('');
     if (!salons.has(c)) return c;
   }
   return String(Date.now()).slice(-4);
@@ -64,23 +76,32 @@ ajouterGestionnaireSocket((socket: Socket, identity: SocketIdentity) => {
   });
 
   // ── Un téléphone rejoint ────────────────────────────────────────────────
-  socket.on('course:rejoindre', (p: { code?: string; pseudo?: string }, ack?: (r: unknown) => void) => {
-    const code = String(p?.code ?? '').toUpperCase().slice(0, 6);
-    const s = salons.get(code);
-    if (!s) return ack?.({ ok: false, erreur: 'Salon introuvable — vérifie le code sur la TV' });
-    if (s.joueurs.size >= MAX_JOUEURS && !s.joueurs.has(socket.id)) {
-      return ack?.({ ok: false, erreur: `Course complète (${MAX_JOUEURS} joueurs)` });
-    }
-    const pris = new Set(listeJoueurs(s).map((j) => j.couleur));
-    const couleur = COULEURS.find((c) => !pris.has(c)) ?? COULEURS[0]!;
-    const pseudo = String(p?.pseudo ?? '').replace(/\s+/g, ' ').trim().slice(0, 16) || 'Pilote';
-    const j: Joueur = { id: socket.id, pseudo, couleur };
-    s.joueurs.set(socket.id, j);
-    monSalon = code;
-    void socket.join(salle(code));
-    getIO().to(s.tv).emit('course:joueur', j);
-    ack?.({ ok: true, joueur: j });
-  });
+  socket.on(
+    'course:rejoindre',
+    (p: { code?: string; pseudo?: string }, ack?: (r: unknown) => void) => {
+      const code = String(p?.code ?? '')
+        .toUpperCase()
+        .slice(0, 6);
+      const s = salons.get(code);
+      if (!s) return ack?.({ ok: false, erreur: 'Salon introuvable — vérifie le code sur la TV' });
+      if (s.joueurs.size >= MAX_JOUEURS && !s.joueurs.has(socket.id)) {
+        return ack?.({ ok: false, erreur: `Course complète (${MAX_JOUEURS} joueurs)` });
+      }
+      const pris = new Set(listeJoueurs(s).map((j) => j.couleur));
+      const couleur = COULEURS.find((c) => !pris.has(c)) ?? COULEURS[0]!;
+      const pseudo =
+        String(p?.pseudo ?? '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 16) || 'Pilote';
+      const j: Joueur = { id: socket.id, pseudo, couleur };
+      s.joueurs.set(socket.id, j);
+      monSalon = code;
+      void socket.join(salle(code));
+      getIO().to(s.tv).emit('course:joueur', j);
+      ack?.({ ok: true, joueur: j });
+    },
+  );
 
   // ── Commandes du téléphone → TV (relais pur, pertes acceptées) ─────────
   socket.on('course:cmd', (c: { g?: unknown; d?: unknown }) => {
@@ -118,6 +139,11 @@ ajouterGestionnaireSocket((socket: Socket, identity: SocketIdentity) => {
     getIO().to(s.tv).emit('course:depart', { id: socket.id });
   });
 });
+
+/** Un salon de course est-il ouvert sous ce code ? (page « taper le code ») */
+export function salonCourseExiste(code: string): boolean {
+  return salons.has(code);
+}
 
 /** Pour les tests : nombre de salons ouverts. */
 export function nombreDeSalons(): number {

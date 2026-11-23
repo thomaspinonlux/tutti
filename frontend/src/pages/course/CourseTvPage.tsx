@@ -10,6 +10,14 @@ import { connecterJeu } from '../../lib/socket.js';
 import { getShareableOrigin } from '../../lib/platform.js';
 import { QRCode } from '../../components/host/QRCode.js';
 import {
+  CADRE_JEU,
+  ChangerDeJeu,
+  EnTeteJeu,
+  SansScanner,
+  SUPERPOSE,
+  styleCadre,
+} from '../jeux/CadreTv.js';
+import {
   HAUTEUR,
   LARGEUR,
   RAYON_EXT,
@@ -25,7 +33,9 @@ type Phase = 'attente' | 'compte' | 'course' | 'fini';
 
 export function CourseTvPage(): JSX.Element {
   const [code, setCode] = useState<string | null>(null);
-  const [joueurs, setJoueurs] = useState<Array<{ id: string; pseudo: string; couleur: string }>>([]);
+  const [joueurs, setJoueurs] = useState<Array<{ id: string; pseudo: string; couleur: string }>>(
+    [],
+  );
   const [phase, setPhase] = useState<Phase>('attente');
   const [podium, setPodium] = useState<Voiture[]>([]);
   const toile = useRef<HTMLCanvasElement>(null);
@@ -45,7 +55,9 @@ export function CourseTvPage(): JSX.Element {
   const lancer = (): void => {
     if (phaseRef.current === 'compte' || phaseRef.current === 'course') return;
     if (joueursRef.current.length === 0) return;
-    voitures.current = joueursRef.current.map((j, i) => nouvelleVoiture(j.id, j.pseudo, j.couleur, i));
+    voitures.current = joueursRef.current.map((j, i) =>
+      nouvelleVoiture(j.id, j.pseudo, j.couleur, i),
+    );
     finA.current = null;
     setPodium([]);
     departA.current = performance.now() + 3000;
@@ -105,13 +117,21 @@ export function CourseTvPage(): JSX.Element {
         const arrivees = avancer(voitures.current, dt, true, tempsMs);
         if (arrivees.length > 0 && finA.current === null) finA.current = t + 15000;
         const tousFinis = voitures.current.every((v) => v.finiA !== null);
-        if ((finA.current !== null && t >= finA.current) || (voitures.current.length > 0 && tousFinis)) {
+        if (
+          (finA.current !== null && t >= finA.current) ||
+          (voitures.current.length > 0 && tousFinis)
+        ) {
           setPodium(classement(voitures.current));
           changerPhase('fini');
         }
       }
       try {
-        dessiner(toile.current, voitures.current, phaseRef.current, Math.ceil((departA.current - t) / 1000));
+        dessiner(
+          toile.current,
+          voitures.current,
+          phaseRef.current,
+          Math.ceil((departA.current - t) / 1000),
+        );
       } catch (err) {
         console.error('[course] dessin en échec :', err);
       }
@@ -121,7 +141,12 @@ export function CourseTvPage(): JSX.Element {
         socketRef.current.emit('course:etat', {
           phase: phaseRef.current,
           tours: TOURS,
-          voitures: cl.map((v, i) => ({ id: v.id, rang: i + 1, tour: Math.min(TOURS, v.tours + 1), fini: v.finiA !== null })),
+          voitures: cl.map((v, i) => ({
+            id: v.id,
+            rang: i + 1,
+            tour: Math.min(TOURS, v.tours + 1),
+            fini: v.finiA !== null,
+          })),
         });
       }
       id = requestAnimationFrame(boucle);
@@ -135,29 +160,33 @@ export function CourseTvPage(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-[#0E0D17] text-white flex flex-col items-center p-4 gap-4">
-      <div className="w-full max-w-[1600px] flex items-center justify-between gap-4">
-        <h1 className="font-display text-4xl">Course <span className="text-white/40 text-xl font-mono">test</span></h1>
-        {code && (
-          <p className="font-mono text-2xl">
-            tuttiparty.app/course · <span className="text-[#FF3366] font-bold tracking-[0.3em]">{code}</span>
-          </p>
-        )}
-      </div>
-      <div className="relative w-full max-w-[1600px]" style={{ aspectRatio: `${LARGEUR} / ${HAUTEUR}` }}>
-        <canvas ref={toile} width={LARGEUR} height={HAUTEUR} className="w-full h-full rounded-2xl" />
+      <EnTeteJeu titre="Course" code={code} />
+      <div className={CADRE_JEU} style={styleCadre(LARGEUR, HAUTEUR)}>
+        <canvas
+          ref={toile}
+          width={LARGEUR}
+          height={HAUTEUR}
+          className="w-full h-full rounded-2xl"
+        />
         {phase === 'attente' && (
-          <div className="absolute inset-0 flex items-center justify-center gap-10 bg-black/60 rounded-2xl">
+          <div
+            className={`${SUPERPOSE} flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10 bg-black/85 lg:bg-black/60 rounded-2xl p-6`}
+          >
             {code && (
               <div className="rounded-2xl bg-white p-4">
                 <QRCode value={url} size={260} />
               </div>
             )}
-            <div className="space-y-3 max-w-md">
+            <div className="space-y-3 max-w-md min-w-0">
               <p className="font-display text-4xl">Scannez pour prendre le volant</p>
               <p className="text-white/70 text-xl">{TOURS} tours · jusqu'à 8 pilotes</p>
               <ul className="flex flex-wrap gap-2">
                 {joueurs.map((j) => (
-                  <li key={j.id} className="rounded-full px-3 py-1 font-semibold text-black" style={{ background: j.couleur }}>
+                  <li
+                    key={j.id}
+                    className="rounded-full px-3 py-1 font-semibold text-black"
+                    style={{ background: j.couleur }}
+                  >
                     {j.pseudo}
                   </li>
                 ))}
@@ -170,28 +199,45 @@ export function CourseTvPage(): JSX.Element {
               >
                 Départ ▶
               </button>
-              <p className="text-white/50 text-sm">Un pilote peut aussi lancer depuis son téléphone.</p>
+              <p className="text-white/50 text-sm">
+                Un pilote peut aussi lancer depuis son téléphone.
+              </p>
+              <SansScanner code={code} />
             </div>
           </div>
         )}
         {phase === 'fini' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/70 rounded-2xl">
-            <p className="font-display text-6xl">Arrivée</p>
-            <ol className="space-y-2 text-3xl">
+          <div
+            className={`${SUPERPOSE} flex flex-col items-center justify-center gap-4 bg-black/85 lg:bg-black/70 rounded-2xl p-6`}
+          >
+            <p className="font-display text-4xl lg:text-6xl">Arrivée</p>
+            <ol className="space-y-2 text-xl lg:text-3xl">
               {podium.map((v, i) => (
                 <li key={v.id} className="flex items-center gap-3">
                   <span className="w-12 text-right">{`${i + 1}.`}</span>
-                  <span className="inline-block h-5 w-5 rounded-full" style={{ background: v.couleur }} />
+                  <span
+                    className="inline-block h-5 w-5 rounded-full"
+                    style={{ background: v.couleur }}
+                  />
                   <span className="font-semibold">{v.pseudo}</span>
                   <span className="text-white/60 font-mono text-xl">
-                    {v.finiA !== null ? `${(v.finiA / 1000).toFixed(1)} s` : `${v.tours}/${TOURS} tours`}
+                    {v.finiA !== null
+                      ? `${(v.finiA / 1000).toFixed(1)} s`
+                      : `${v.tours}/${TOURS} tours`}
                   </span>
                 </li>
               ))}
             </ol>
-            <button type="button" onClick={lancer} className="rounded-xl bg-[#FF3366] px-6 py-3 text-2xl font-bold">
-              Rejouer ↻
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={lancer}
+                className="rounded-xl bg-[#FF3366] px-6 py-3 text-2xl font-bold"
+              >
+                Rejouer ↻
+              </button>
+              <ChangerDeJeu />
+            </div>
           </div>
         )}
       </div>
@@ -200,8 +246,12 @@ export function CourseTvPage(): JSX.Element {
           {cl.map((v, i) => (
             <li key={v.id} className="rounded-full px-3 py-1 bg-white/10">
               <span className="font-mono">{i + 1}.</span>{' '}
-              <span style={{ color: v.couleur }} className="font-semibold">{v.pseudo}</span>{' '}
-              <span className="text-white/60">tour {Math.min(TOURS, v.tours + 1)}/{TOURS}</span>
+              <span style={{ color: v.couleur }} className="font-semibold">
+                {v.pseudo}
+              </span>{' '}
+              <span className="text-white/60">
+                tour {Math.min(TOURS, v.tours + 1)}/{TOURS}
+              </span>
             </li>
           ))}
         </ol>
@@ -212,7 +262,12 @@ export function CourseTvPage(): JSX.Element {
 
 // ── Dessin ────────────────────────────────────────────────────────────────
 
-function dessiner(c: HTMLCanvasElement | null, voitures: Voiture[], phase: Phase, compte: number): void {
+function dessiner(
+  c: HTMLCanvasElement | null,
+  voitures: Voiture[],
+  phase: Phase,
+  compte: number,
+): void {
   const ctx = c?.getContext('2d');
   if (!c || !ctx) return;
   const cx = 800;

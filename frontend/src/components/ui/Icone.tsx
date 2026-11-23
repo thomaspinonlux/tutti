@@ -153,7 +153,9 @@ const TRACES = {
       <path d="M9 11h6M9 15h4" />
     </>
   ),
-  dossier: <path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
+  dossier: (
+    <path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+  ),
   globe: (
     <>
       <circle cx="12" cy="12" r="9" />
@@ -247,6 +249,14 @@ const TRACES = {
     </>
   ),
   crayon: <path d="M4 20l1-4L16 5l3 3L8 19z" />,
+  retour: <path d="M15 5l-7 7 7 7" />,
+  sortie: (
+    <>
+      <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
+      <path d="M10 8l-4 4 4 4" />
+      <path d="M6 12h9" />
+    </>
+  ),
 } satisfies Record<string, ReactNode>;
 
 export type NomIcone = keyof typeof TRACES;

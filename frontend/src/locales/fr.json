@@ -11,7 +11,8 @@
     "delete": "Supprimer",
     "copy": "Copier",
     "copied": "Copié",
-    "close": "Fermer"
+    "close": "Fermer",
+    "retourTableauDeBord": "Tableau de bord"
   },
   "home": {
     "tagline": "Plateforme de jeux interactifs pour bars et particuliers",
@@ -80,7 +81,8 @@
     "newPassword": "Nouveau mot de passe",
     "confirmPassword": "Confirmer",
     "passwordTooShort": "Au moins 8 caractères.",
-    "passwordMismatch": "Les mots de passe ne correspondent pas."
+    "passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "retourSite": "Retour au site"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -92,7 +94,8 @@
     "account": "Compte",
     "comptesApple": "Comptes Apple Music",
     "reservations": "Réservations",
-    "reserver": "Réserver une partie"
+    "reserver": "Réserver une partie",
+    "arcade": "Arcade"
   },
   "library": {
     "eyebrow": "Catalogue Tutti",
@@ -1232,7 +1235,7 @@
   "arcade": {
     "titre": "Arcade",
     "enTest": "En test",
-    "intro": "Chaque jeu s'ouvre sur cet écran, à brancher sur la TV. Les joueurs scannent le QR code affiché : leur téléphone devient la manette.",
+    "intro": "Le jeu s'ouvre sur cet écran : c'est lui qu'on montre sur la TV. Les joueurs scannent le QR code, ou tapent le code sur tuttiparty.app/manette : leur téléphone devient la manette.",
     "visible": "Cette page est visible de votre compte seulement.",
     "ouvrir": "Ouvrir le jeu",
     "retour": "Retour à l'accueil"

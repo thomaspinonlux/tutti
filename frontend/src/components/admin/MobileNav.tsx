@@ -45,13 +45,21 @@ export function MobileNav(): JSX.Element {
       ? [
           { to: '/admin/tracks', label: t('nav.tracks'), icon: <Icone nom="note" /> },
           { to: '/admin/quizz', label: t('nav.quizz'), icon: <Icone nom="ampoule" /> },
+          // fix/parcours-arcade — même entrée que dans la colonne.
+          { to: '/admin/arcade', label: t('nav.arcade'), icon: <Icone nom="manette" /> },
         ]
       : []),
     // feat/reservation-de-creneaux — même entrée, deux destinations.
     ...(estProprietaire === null
       ? []
       : estProprietaire
-        ? [{ to: '/admin/reservations', label: t('nav.reservations'), icon: <Icone nom="calendrier" /> }]
+        ? [
+            {
+              to: '/admin/reservations',
+              label: t('nav.reservations'),
+              icon: <Icone nom="calendrier" />,
+            },
+          ]
         : [{ to: '/admin/reserver', label: t('nav.reserver'), icon: <Icone nom="calendrier" /> }]),
     { to: '/admin/settings', label: t('nav.settings'), icon: <Icone nom="reglages" /> },
     { to: '/admin/account', label: t('nav.account'), icon: <Icone nom="personne" /> },

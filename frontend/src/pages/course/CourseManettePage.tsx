@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import type { Socket } from 'socket.io-client';
 import { connecterJeu } from '../../lib/socket.js';
 import { useInclinaison } from '../../lib/jeux/inclinaison.js';
+import { BoutonQuitter, LienChangerCode, PartieFermee } from '../jeux/SortieManette.js';
 
 interface Etat {
   phase: 'attente' | 'compte' | 'course' | 'fini';
@@ -88,7 +89,11 @@ export function CourseManettePage(): JSX.Element {
     socketRef.current?.emit(
       'course:rejoindre',
       { code, pseudo: p },
-      (r: { ok: boolean; erreur?: string; joueur?: { id: string; couleur: string; pseudo: string } }) => {
+      (r: {
+        ok: boolean;
+        erreur?: string;
+        joueur?: { id: string; couleur: string; pseudo: string };
+      }) => {
         if (r?.ok && r.joueur) {
           setMoi(r.joueur);
           try {
@@ -110,22 +115,20 @@ export function CourseManettePage(): JSX.Element {
       socketRef.current?.emit('course:cmd', n);
     }
   };
-  const bas = (cote: 'g' | 'd') => (e: React.PointerEvent): void => {
-    e.preventDefault();
-    pointeurs.current.set(e.pointerId, cote);
-    majCmd();
-  };
+  const bas =
+    (cote: 'g' | 'd') =>
+    (e: React.PointerEvent): void => {
+      e.preventDefault();
+      pointeurs.current.set(e.pointerId, cote);
+      majCmd();
+    };
   const haut = (e: React.PointerEvent): void => {
     pointeurs.current.delete(e.pointerId);
     majCmd();
   };
 
   if (fermee) {
-    return (
-      <div className="min-h-screen bg-[#0E0D17] text-white flex items-center justify-center p-6 text-center">
-        <p className="text-2xl">La TV a fermé la course. Scanne le nouveau QR code.</p>
-      </div>
-    );
+    return <PartieFermee texte="La TV a fermé la course." />;
   }
 
   if (!moi) {
@@ -148,11 +151,16 @@ export function CourseManettePage(): JSX.Element {
             className="w-full rounded-xl px-4 py-3 text-xl text-black"
             autoFocus
           />
-          <button type="submit" disabled={!pseudo.trim()} className="w-full rounded-xl bg-[#FF3366] py-3 text-xl font-bold disabled:opacity-40">
+          <button
+            type="submit"
+            disabled={!pseudo.trim()}
+            className="w-full rounded-xl bg-[#FF3366] py-3 text-xl font-bold disabled:opacity-40"
+          >
             Prendre le volant
           </button>
         </form>
-        {erreur && <p className="text-[#FF3366]">{erreur}</p>}
+        {erreur && <p className="text-[#FF3366] text-center">{erreur}</p>}
+        <LienChangerCode />
       </div>
     );
   }
@@ -162,12 +170,18 @@ export function CourseManettePage(): JSX.Element {
     `flex-1 flex items-center justify-center text-7xl select-none rounded-3xl transition-colors ${actif ? 'bg-white/30' : 'bg-white/10'}`;
 
   return (
-    <div className="h-[100dvh] bg-[#0E0D17] text-white flex flex-col p-3 gap-3 select-none" style={{ touchAction: 'none' }}>
-      <div className="flex items-center justify-between">
-        <p className="font-semibold text-xl" style={{ color: moi.couleur }}>
+    <div
+      className="h-[100dvh] bg-[#0E0D17] text-white flex flex-col p-3 gap-3 select-none"
+      style={{ touchAction: 'none' }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-semibold text-xl truncate" style={{ color: moi.couleur }}>
           ● {moi.pseudo}
         </p>
-        <p className="font-mono text-lg">
+        <BoutonQuitter enJeu={etat?.phase === 'course' || etat?.phase === 'compte'} />
+      </div>
+      <div>
+        <p className="font-mono text-lg text-center">
           {etat?.phase === 'course' && mien
             ? `${mien.fini ? 'Arrivé' : `Tour ${mien.tour}/${etat.tours}`} · ${mien.rang}${mien.rang === 1 ? 'er' : 'e'}`
             : etat?.phase === 'compte'
@@ -210,14 +224,24 @@ export function CourseManettePage(): JSX.Element {
       </div>
       {(incl.etat === 'refuse' || incl.etat === 'indisponible') && (
         <p className="text-center text-[#FF3366] text-sm">
-          {incl.etat === 'refuse' ? 'Capteurs refusés : joue aux boutons.' : 'Pas de capteur de mouvement ici : joue aux boutons.'}
+          {incl.etat === 'refuse'
+            ? 'Capteurs refusés : joue aux boutons.'
+            : 'Pas de capteur de mouvement ici : joue aux boutons.'}
         </p>
       )}
       {volant ? (
         <div className="flex-1 flex flex-col gap-3">
-          <p className="text-center text-white/60 text-sm">Tiens le téléphone écran vers toi et tourne-le comme un volant.</p>
-          <div className="flex-1 flex items-center justify-center text-8xl">{appui.g && appui.d ? 'STOP' : appui.g ? '↰' : appui.d ? '↱' : '↑'}</div>
-          <button type="button" onClick={incl.recalibrer} className="text-white/60 text-sm underline">
+          <p className="text-center text-white/60 text-sm">
+            Tiens le téléphone écran vers toi et tourne-le comme un volant.
+          </p>
+          <div className="flex-1 flex items-center justify-center text-8xl">
+            {appui.g && appui.d ? 'STOP' : appui.g ? '↰' : appui.d ? '↱' : '↑'}
+          </div>
+          <button
+            type="button"
+            onClick={incl.recalibrer}
+            className="text-white/60 text-sm underline"
+          >
             Remettre le volant droit
           </button>
           <button
@@ -241,16 +265,30 @@ export function CourseManettePage(): JSX.Element {
           </button>
         </div>
       ) : (
-      <div className="flex-1 flex gap-3">
-        <div className={zone(appui.g)} onPointerDown={bas('g')} onPointerUp={haut} onPointerCancel={haut} onPointerLeave={haut}>
-          ◀
+        <div className="flex-1 flex gap-3">
+          <div
+            className={zone(appui.g)}
+            onPointerDown={bas('g')}
+            onPointerUp={haut}
+            onPointerCancel={haut}
+            onPointerLeave={haut}
+          >
+            ◀
+          </div>
+          <div
+            className={zone(appui.d)}
+            onPointerDown={bas('d')}
+            onPointerUp={haut}
+            onPointerCancel={haut}
+            onPointerLeave={haut}
+          >
+            ▶
+          </div>
         </div>
-        <div className={zone(appui.d)} onPointerDown={bas('d')} onPointerUp={haut} onPointerCancel={haut} onPointerLeave={haut}>
-          ▶
-        </div>
-      </div>
       )}
-      <p className="text-center text-white/50 text-sm">Les deux en même temps = frein. Ça accélère tout seul.</p>
+      <p className="text-center text-white/50 text-sm">
+        Les deux en même temps = frein. Ça accélère tout seul.
+      </p>
     </div>
   );
 }

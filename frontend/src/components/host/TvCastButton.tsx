@@ -15,7 +15,7 @@
  */
 
 import { useState } from 'react';
-import { getShareableOrigin } from '../../lib/platform.js';
+import { getShareableOrigin, isRealDesktop } from '../../lib/platform.js';
 import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../ui/index.js';
 import { QRCode } from './QRCode.js';
@@ -25,20 +25,6 @@ interface Props {
   tvCode: string | null | undefined;
   /** Code joueur (short_code) — fallback pour /screen?session= si besoin. */
   shortCode: string;
-}
-
-/**
- * Détection "vrai desktop" (souris + survol) — pas juste "hors PWA". Un iPad
- * ou un téléphone EN NAVIGATEUR (DuckDuckGo, Safari onglet) n'est PAS standalone
- * mais reste tactile → window.open y piège pareil. On exige donc pointer:fine
- * (souris/trackpad) + any-hover (survol possible) + absence de touch primaire.
- */
-function isRealDesktop(): boolean {
-  if (typeof window === 'undefined' || !window.matchMedia) return false;
-  const finePointer = window.matchMedia('(pointer: fine)').matches;
-  const canHover = window.matchMedia('(any-hover: hover)').matches;
-  const coarse = window.matchMedia('(any-pointer: coarse)').matches; // tactile présent
-  return finePointer && canHover && !coarse;
 }
 
 export function TvCastButton({ tvCode, shortCode }: Props): JSX.Element | null {

@@ -9,6 +9,7 @@ import type { Socket } from 'socket.io-client';
 import { connecterJeu } from '../../lib/socket.js';
 import type { EtatManette, JeuManette } from '../../lib/jeux/salonManette.js';
 import { ManetteMoto, ManettePieds, ManetteVolant } from './ManettesCourse.js';
+import { BoutonQuitter, LienChangerCode, PartieFermee } from './SortieManette.js';
 
 const CLE_PSEUDO = 'tutti.manette.pseudo';
 const NOMS: Record<JeuManette, string> = {
@@ -88,7 +89,9 @@ export function ManettePage(): JSX.Element {
   useEffect(() => {
     if (!moi) return;
     let verrou: { release: () => Promise<void> } | null = null;
-    const nav = navigator as unknown as { wakeLock?: { request: (t: 'screen') => Promise<{ release: () => Promise<void> }> } };
+    const nav = navigator as unknown as {
+      wakeLock?: { request: (t: 'screen') => Promise<{ release: () => Promise<void> }> };
+    };
     nav.wakeLock
       ?.request('screen')
       .then((v) => {
@@ -108,11 +111,7 @@ export function ManettePage(): JSX.Element {
   }, []);
 
   if (fermee) {
-    return (
-      <div className="min-h-screen bg-[#0E0D17] text-white flex items-center justify-center p-6 text-center">
-        <p className="text-2xl">La TV a fermé la partie. Scanne le nouveau QR code.</p>
-      </div>
-    );
+    return <PartieFermee texte="La TV a fermé la partie." />;
   }
 
   if (!moi || !jeu) {
@@ -135,35 +134,62 @@ export function ManettePage(): JSX.Element {
             className="w-full rounded-xl px-4 py-3 text-xl text-black"
             autoFocus
           />
-          <button type="submit" disabled={!pseudo.trim()} className="w-full rounded-xl bg-[#FF3366] py-3 text-xl font-bold disabled:opacity-40">
+          <button
+            type="submit"
+            disabled={!pseudo.trim()}
+            className="w-full rounded-xl bg-[#FF3366] py-3 text-xl font-bold disabled:opacity-40"
+          >
             Jouer
           </button>
         </form>
-        {erreur && <p className="text-[#FF3366]">{erreur}</p>}
+        {erreur && <p className="text-[#FF3366] text-center">{erreur}</p>}
+        <LienChangerCode />
       </div>
     );
   }
 
   const enJeu = etat?.phase === 'jeu' || etat?.phase === 'compte';
   const perso = etat?.perso?.[moi.id];
-  const statut = perso ?? (etat?.phase === 'jeu' ? 'Tu joueras à la prochaine partie' : etat?.texte || 'En attente du départ');
+  const statut =
+    perso ??
+    (etat?.phase === 'jeu'
+      ? 'Tu joueras à la prochaine partie'
+      : etat?.texte || 'En attente du départ');
 
   return (
-    <div className="h-[100dvh] bg-[#0E0D17] text-white flex flex-col p-3 gap-3 select-none" style={{ touchAction: 'none' }}>
+    <div
+      className="h-[100dvh] bg-[#0E0D17] text-white flex flex-col p-3 gap-3 select-none"
+      style={{ touchAction: 'none' }}
+    >
       <div className="flex items-center justify-between gap-2">
         <p className="font-semibold text-xl truncate" style={{ color: moi.couleur }}>
           ● {moi.pseudo}
         </p>
-        <p className="text-white/50 text-sm shrink-0">{NOMS[jeu]}</p>
+        <p className="text-white/50 text-sm truncate">{NOMS[jeu]}</p>
+        <BoutonQuitter enJeu={enJeu} />
       </div>
-      <p className="font-mono text-lg text-center min-h-[1.75rem]">{etat?.phase === 'compte' ? 'Prêt…' : statut}</p>
+      <p className="font-mono text-lg text-center min-h-[1.75rem]">
+        {etat?.phase === 'compte' ? 'Prêt…' : statut}
+      </p>
       {!enJeu && jeu !== 'reflexe' && (
-        <button type="button" onClick={() => emettre('manette:lancer')} className="rounded-xl bg-[#FF3366] py-3 text-xl font-bold">
-          {etat?.phase === 'manche' ? 'Manche suivante ▶' : etat?.phase === 'fini' ? 'Rejouer ↻' : 'Lancer la partie ▶'}
+        <button
+          type="button"
+          onClick={() => emettre('manette:lancer')}
+          className="rounded-xl bg-[#FF3366] py-3 text-xl font-bold"
+        >
+          {etat?.phase === 'manche'
+            ? 'Manche suivante ▶'
+            : etat?.phase === 'fini'
+              ? 'Rejouer ↻'
+              : 'Lancer la partie ▶'}
         </button>
       )}
       {jeu === 'reflexe' && etat?.phase !== 'jeu' && (
-        <button type="button" onClick={() => emettre('manette:lancer')} className="rounded-xl bg-[#FF3366] py-3 text-xl font-bold">
+        <button
+          type="button"
+          onClick={() => emettre('manette:lancer')}
+          className="rounded-xl bg-[#FF3366] py-3 text-xl font-bold"
+        >
           {etat?.phase === 'fini' ? 'Rejouer ↻' : 'Lancer la partie ▶'}
         </button>
       )}
@@ -172,8 +198,12 @@ export function ManettePage(): JSX.Element {
         {jeu === 'sumo' && <ManetteJoystick emettre={emettre} />}
         {jeu === 'pong' && <ManetteGlissiere emettre={emettre} couleur={moi.couleur} />}
         {jeu === 'reflexe' && <ManetteReflexe emettre={emettre} etat={etat} />}
-        {jeu === 'kart' && <ManetteVolant emettre={emettre} action={{ label: 'BONUS', type: 'bonus' }} />}
-        {jeu === 'tamponneuses' && <ManetteVolant emettre={emettre} action={{ label: 'TURBO', type: 'turbo' }} />}
+        {jeu === 'kart' && (
+          <ManetteVolant emettre={emettre} action={{ label: 'BONUS', type: 'bonus' }} />
+        )}
+        {jeu === 'tamponneuses' && (
+          <ManetteVolant emettre={emettre} action={{ label: 'TURBO', type: 'turbo' }} />
+        )}
         {jeu === 'ski' && <ManetteVolant emettre={emettre} frein={false} />}
         {jeu === 'sprint' && <ManettePieds emettre={emettre} />}
         {jeu === 'moto' && <ManetteMoto emettre={emettre} />}
@@ -187,18 +217,24 @@ type Emettre = (ev: string, data?: unknown, volatil?: boolean) => void;
 /** Serpents : deux grandes zones, chaque appui = un quart de tour. */
 function ManetteVirages({ emettre }: { emettre: Emettre }): JSX.Element {
   const [flash, setFlash] = useState<'g' | 'd' | null>(null);
-  const appui = (cote: 'g' | 'd') => (e: React.PointerEvent): void => {
-    e.preventDefault();
-    emettre('manette:action', { type: cote });
-    setFlash(cote);
-    window.setTimeout(() => setFlash((f) => (f === cote ? null : f)), 120);
-  };
+  const appui =
+    (cote: 'g' | 'd') =>
+    (e: React.PointerEvent): void => {
+      e.preventDefault();
+      emettre('manette:action', { type: cote });
+      setFlash(cote);
+      window.setTimeout(() => setFlash((f) => (f === cote ? null : f)), 120);
+    };
   const zone = (actif: boolean): string =>
     `flex-1 flex items-center justify-center text-7xl rounded-3xl transition-colors ${actif ? 'bg-white/35' : 'bg-white/10'}`;
   return (
     <div className="flex-1 flex gap-3">
-      <div className={zone(flash === 'g')} onPointerDown={appui('g')}>↰</div>
-      <div className={zone(flash === 'd')} onPointerDown={appui('d')}>↱</div>
+      <div className={zone(flash === 'g')} onPointerDown={appui('g')}>
+        ↰
+      </div>
+      <div className={zone(flash === 'd')} onPointerDown={appui('d')}>
+        ↱
+      </div>
     </div>
   );
 }
@@ -255,7 +291,10 @@ function ManetteJoystick({ emettre }: { emettre: Emettre }): JSX.Element {
         onPointerUp={relache}
         onPointerCancel={relache}
       >
-        <div className="absolute rounded-full border-4 border-white/25" style={{ width: '70%', aspectRatio: '1 / 1', maxHeight: '90%' }} />
+        <div
+          className="absolute rounded-full border-4 border-white/25"
+          style={{ width: '70%', aspectRatio: '1 / 1', maxHeight: '90%' }}
+        />
         <div
           className="absolute rounded-full bg-white/80 h-20 w-20 pointer-events-none"
           style={{ transform: `translate(${pos.x * 35}vmin, ${pos.y * 35}vmin)`, maxWidth: '30%' }}
@@ -278,7 +317,13 @@ function ManetteJoystick({ emettre }: { emettre: Emettre }): JSX.Element {
 }
 
 /** Pong : glissière verticale, la position du doigt = la raquette. */
-function ManetteGlissiere({ emettre, couleur }: { emettre: Emettre; couleur: string }): JSX.Element {
+function ManetteGlissiere({
+  emettre,
+  couleur,
+}: {
+  emettre: Emettre;
+  couleur: string;
+}): JSX.Element {
   const zoneRef = useRef<HTMLDivElement>(null);
   const y = useRef(0);
   const doigt = useRef<number | null>(null);
@@ -321,13 +366,21 @@ function ManetteGlissiere({ emettre, couleur }: { emettre: Emettre; couleur: str
         className="absolute left-1/2 w-1/3 h-[18%] -translate-x-1/2 -translate-y-1/2 rounded-xl pointer-events-none"
         style={{ top: `${((aff + 1) / 2) * 100}%`, background: couleur }}
       />
-      <p className="absolute bottom-3 inset-x-0 text-center text-white/40 text-sm pointer-events-none">Glisse le doigt de haut en bas</p>
+      <p className="absolute bottom-3 inset-x-0 text-center text-white/40 text-sm pointer-events-none">
+        Glisse le doigt de haut en bas
+      </p>
     </div>
   );
 }
 
 /** Réflexe : tout l'écran. Le temps est mesuré ici, du vert au doigt. */
-function ManetteReflexe({ emettre, etat }: { emettre: Emettre; etat: EtatManette | null }): JSX.Element {
+function ManetteReflexe({
+  emettre,
+  etat,
+}: {
+  emettre: Emettre;
+  etat: EtatManette | null;
+}): JSX.Element {
   const r = etat?.phase === 'jeu' ? etat.reflexe : undefined;
   const manche = r?.manche ?? 0;
   const etape = r?.etape ?? '';
@@ -382,7 +435,10 @@ function ManetteReflexe({ emettre, etat }: { emettre: Emettre; etat: EtatManette
             : `Manche ${manche}`;
 
   return (
-    <div className={`flex-1 rounded-3xl flex items-center justify-center text-center p-4 ${fond}`} onPointerDown={tape}>
+    <div
+      className={`flex-1 rounded-3xl flex items-center justify-center text-center p-4 ${fond}`}
+      onPointerDown={tape}
+    >
       <p className="font-display text-5xl">{texte}</p>
     </div>
   );

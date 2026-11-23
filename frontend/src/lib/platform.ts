@@ -106,3 +106,18 @@ export function supportsNativeAppleMusic(): boolean {
 export function supportsExternalPlayerScreen(): boolean {
   return getPlatform() === 'ios';
 }
+
+/**
+ * « Vrai ordinateur » : souris + survol, aucun écran tactile. C'est le seul cas
+ * où `window.open` ouvre réellement une seconde fenêtre. Sur iPad, tablette et
+ * téléphone (application, PWA ou navigateur), la page ouverte REMPLACE la vue
+ * courante : sans bouton de retour, l'utilisateur est enfermé dessus.
+ */
+export function isRealDesktop(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  if (isCapacitorNative()) return false;
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
+  const canHover = window.matchMedia('(any-hover: hover)').matches;
+  const coarse = window.matchMedia('(any-pointer: coarse)').matches; // tactile présent
+  return finePointer && canHover && !coarse;
+}

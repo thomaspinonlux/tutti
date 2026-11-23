@@ -10,17 +10,46 @@
  */
 import type { Socket } from 'socket.io';
 import { ajouterGestionnaireSocket, getIO, type SocketIdentity } from '../socket/index.js';
+import { salonCourseExiste } from './course.js';
 
-export const JEUX = ['serpents', 'sumo', 'reflexe', 'pong', 'kart', 'sprint', 'ski', 'tamponneuses', 'moto'] as const;
+export const JEUX = [
+  'serpents',
+  'sumo',
+  'reflexe',
+  'pong',
+  'kart',
+  'sprint',
+  'ski',
+  'tamponneuses',
+  'moto',
+] as const;
 export type JeuManette = (typeof JEUX)[number];
 
 const LETTRES = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const MAX_JOUEURS: Record<JeuManette, number> = {
-  serpents: 8, sumo: 8, reflexe: 12, pong: 4, kart: 8, sprint: 8, ski: 8, tamponneuses: 8, moto: 6,
+  serpents: 8,
+  sumo: 8,
+  reflexe: 12,
+  pong: 4,
+  kart: 8,
+  sprint: 8,
+  ski: 8,
+  tamponneuses: 8,
+  moto: 6,
 };
 const COULEURS = [
-  '#FF5C4D', '#2F80ED', '#3FB47A', '#F2C94C', '#9B51E0', '#F2994A',
-  '#56CCF2', '#EB5757', '#6FCF97', '#BB6BD9', '#F2F2F2', '#219653',
+  '#FF5C4D',
+  '#2F80ED',
+  '#3FB47A',
+  '#F2C94C',
+  '#9B51E0',
+  '#F2994A',
+  '#56CCF2',
+  '#EB5757',
+  '#6FCF97',
+  '#BB6BD9',
+  '#F2F2F2',
+  '#219653',
 ];
 
 interface Joueur {
@@ -41,7 +70,10 @@ const salle = (code: string): string => `manette:${code}`;
 
 function nouveauCode(): string {
   for (let essai = 0; essai < 50; essai++) {
-    const c = Array.from({ length: 4 }, () => LETTRES[Math.floor(Math.random() * LETTRES.length)]).join('');
+    const c = Array.from(
+      { length: 4 },
+      () => LETTRES[Math.floor(Math.random() * LETTRES.length)],
+    ).join('');
     if (!salons.has(c)) return c;
   }
   return String(Date.now()).slice(-4);
@@ -60,7 +92,10 @@ const borne = (v: unknown, min: number, max: number): number | undefined => {
 /** Ne garde que des champs connus et bornés (un téléphone ne peut rien injecter d'autre). */
 export function nettoyerCmd(c: unknown): { g: boolean; d: boolean; x?: number; y?: number } {
   const o = (c ?? {}) as Record<string, unknown>;
-  const r: { g: boolean; d: boolean; x?: number; y?: number } = { g: o.g === true, d: o.d === true };
+  const r: { g: boolean; d: boolean; x?: number; y?: number } = {
+    g: o.g === true,
+    d: o.d === true,
+  };
   const x = borne(o.x, -1, 1);
   const y = borne(o.y, -1, 1);
   if (x !== undefined) r.x = x;
@@ -100,31 +135,66 @@ ajouterGestionnaireSocket((socket: Socket, identity: SocketIdentity) => {
     ack?.({ ok: true, code });
   });
 
-  socket.on('manette:rejoindre', (p: { code?: string; pseudo?: string }, ack?: (r: unknown) => void) => {
-    const code = String(p?.code ?? '').toUpperCase().slice(0, 6);
-    const s = salons.get(code);
-    if (!s) return ack?.({ ok: false, erreur: 'Salon introuvable — vérifie le code sur la TV' });
-    const max = MAX_JOUEURS[s.jeu];
-    if (s.joueurs.size >= max && !s.joueurs.has(socket.id)) {
-      return ack?.({ ok: false, erreur: `Partie complète (${max} joueurs)` });
+  // fix/parcours-arcade — le joueur TAPE le code affiché sur la TV (page
+  // /manette) au lieu de scanner. Le code ne dit pas de quel jeu il s'agit :
+  // on répond « manette » ou « course » pour l'envoyer sur la bonne manette.
+  // Lecture seule, bridée à 10 essais par seconde.
+  let fenetreRecherche = 0;
+  let essaisRecherche = 0;
+  socket.on('jeu:trouver', (p: { code?: string }, ack?: (r: unknown) => void) => {
+    const t = Date.now();
+    if (t - fenetreRecherche > 1000) {
+      fenetreRecherche = t;
+      essaisRecherche = 0;
     }
-    const pris = new Set([...s.joueurs.values()].map((j) => j.couleur));
-    const couleur = COULEURS.find((c) => !pris.has(c)) ?? COULEURS[0]!;
-    const pseudo = String(p?.pseudo ?? '').replace(/\s+/g, ' ').trim().slice(0, 16) || 'Joueur';
-    const j: Joueur = { id: socket.id, pseudo, couleur };
-    s.joueurs.set(socket.id, j);
-    monSalon = code;
-    void socket.join(salle(code));
-    getIO().to(s.tv).emit('manette:joueur', j);
-    ack?.({ ok: true, joueur: j, jeu: s.jeu });
+    if (++essaisRecherche > 10)
+      return ack?.({ ok: false, erreur: 'Trop d’essais — attends une seconde' });
+    const code = String(p?.code ?? '')
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 6);
+    const s = salons.get(code);
+    if (s) return ack?.({ ok: true, type: 'manette', jeu: s.jeu });
+    if (salonCourseExiste(code)) return ack?.({ ok: true, type: 'course' });
+    ack?.({ ok: false, erreur: 'Code inconnu — vérifie le code affiché sur la TV' });
   });
+
+  socket.on(
+    'manette:rejoindre',
+    (p: { code?: string; pseudo?: string }, ack?: (r: unknown) => void) => {
+      const code = String(p?.code ?? '')
+        .toUpperCase()
+        .slice(0, 6);
+      const s = salons.get(code);
+      if (!s) return ack?.({ ok: false, erreur: 'Salon introuvable — vérifie le code sur la TV' });
+      const max = MAX_JOUEURS[s.jeu];
+      if (s.joueurs.size >= max && !s.joueurs.has(socket.id)) {
+        return ack?.({ ok: false, erreur: `Partie complète (${max} joueurs)` });
+      }
+      const pris = new Set([...s.joueurs.values()].map((j) => j.couleur));
+      const couleur = COULEURS.find((c) => !pris.has(c)) ?? COULEURS[0]!;
+      const pseudo =
+        String(p?.pseudo ?? '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 16) || 'Joueur';
+      const j: Joueur = { id: socket.id, pseudo, couleur };
+      s.joueurs.set(socket.id, j);
+      monSalon = code;
+      void socket.join(salle(code));
+      getIO().to(s.tv).emit('manette:joueur', j);
+      ack?.({ ok: true, joueur: j, jeu: s.jeu });
+    },
+  );
 
   // Commandes continues (joystick, position) : pertes acceptées.
   socket.on('manette:cmd', (c: unknown) => {
     if (!monSalon || jeSuisTv) return;
     const s = salons.get(monSalon);
     if (!s || !s.joueurs.has(socket.id)) return;
-    getIO().to(s.tv).volatile.emit('manette:cmd', { id: socket.id, ...nettoyerCmd(c) });
+    getIO()
+      .to(s.tv)
+      .volatile.emit('manette:cmd', { id: socket.id, ...nettoyerCmd(c) });
   });
 
   // Actions ponctuelles (virage, tape, dash) : livrées à coup sûr.
@@ -139,7 +209,10 @@ ajouterGestionnaireSocket((socket: Socket, identity: SocketIdentity) => {
     }
     if (++compte > 40) return;
     const propre = nettoyerAction(a);
-    if (propre) getIO().to(s.tv).emit('manette:action', { id: socket.id, ...propre });
+    if (propre)
+      getIO()
+        .to(s.tv)
+        .emit('manette:action', { id: socket.id, ...propre });
   });
 
   socket.on('manette:lancer', () => {

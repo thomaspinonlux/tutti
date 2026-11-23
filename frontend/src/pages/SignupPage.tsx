@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Icone } from '../components/ui/Icone.js';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase.js';
 import { api, ApiError } from '../lib/api.js';
@@ -84,6 +85,15 @@ export function SignupPage(): JSX.Element {
       <MultiColorBar height="md" />
 
       <div className="flex-1 flex items-center justify-center p-8 relative">
+        <div className="absolute top-6 left-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink"
+          >
+            <Icone nom="retour" />
+            {t('auth.retourSite')}
+          </Link>
+        </div>
         <div className="absolute top-6 right-6">
           <LanguageSwitch />
         </div>

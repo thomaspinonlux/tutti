@@ -24,6 +24,7 @@ interface NavItem {
     | 'nav.dashboard'
     | 'nav.tracks'
     | 'nav.quizz'
+    | 'nav.arcade'
     | 'nav.library'
     | 'nav.users'
     | 'nav.settings'
@@ -52,7 +53,25 @@ const NAV: NavItem[] = [
   // personnelles, on garde que les playlists officielles ». L'entrée
   // Catalogue (playlists perso) sort du menu ; la route reste pour un retour
   // éventuel, mais plus rien n'y mène.
-  { to: '/admin/quizz', i18nKey: 'nav.quizz', icon: <BulbIcon />, hideForSuperAdmin: true, proprietaireSeul: true },
+  {
+    to: '/admin/quizz',
+    i18nKey: 'nav.quizz',
+    icon: <BulbIcon />,
+    hideForSuperAdmin: true,
+    proprietaireSeul: true,
+  },
+  // fix/parcours-arcade — les jeux d'arcade n'étaient joignables que par la
+  // carte de l'accueil : entrée de menu, propriétaire seul (jeux en test).
+  {
+    to: '/admin/arcade',
+    i18nKey: 'nav.arcade',
+    icon: (
+      <span className="text-xl leading-none">
+        <Icone nom="manette" />
+      </span>
+    ),
+    proprietaireSeul: true,
+  },
   // Bibliothèque officielle Tutti — gérée uniquement par les super admins V1.
   { to: '/admin/library', i18nKey: 'nav.library', icon: <LibraryIcon />, superAdminOnly: true },
   // fix/admin-users-integration — page super-admin gestion utilisateurs.
@@ -69,7 +88,12 @@ const NAV: NavItem[] = [
   },
   // feat/reservation-de-creneaux — le propriétaire traite les demandes, le
   // client réserve. Pas de hideForSuperAdmin : Thomas est l'un et l'autre.
-  { to: '/admin/reservations', i18nKey: 'nav.reservations', icon: <DashIcon />, proprietaireSeul: true },
+  {
+    to: '/admin/reservations',
+    i18nKey: 'nav.reservations',
+    icon: <DashIcon />,
+    proprietaireSeul: true,
+  },
   { to: '/admin/reserver', i18nKey: 'nav.reserver', icon: <DashIcon />, clientSeul: true },
   { to: '/admin/settings', i18nKey: 'nav.settings', icon: <CogIcon /> },
   { to: '/admin/account', i18nKey: 'nav.account', icon: <UserIcon /> },
@@ -180,7 +204,9 @@ export function Sidebar(): JSX.Element {
               }
               title="Cascade voix : distribution L1/L2/L3, latence, coût estimé"
             >
-              <span className="w-5 h-5 shrink-0 flex items-center justify-center"><Icone nom="micro" /></span>
+              <span className="w-5 h-5 shrink-0 flex items-center justify-center">
+                <Icone nom="micro" />
+              </span>
               <span>Voice analytics</span>
             </NavLink>
           </>
@@ -233,7 +259,6 @@ function DashIcon(): JSX.Element {
     </svg>
   );
 }
-
 
 function BulbIcon(): JSX.Element {
   return (

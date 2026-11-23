@@ -9,11 +9,13 @@
  * PROPRIÉTAIRE du compte tant que les jeux sont en test : un client qui
  * taperait l'adresse est renvoyé à l'accueil.
  *
- * Chaque jeu s'ouvre dans un nouvel onglet : c'est l'écran à mettre sur la TV.
- * Il affiche son QR code ; le téléphone des joueurs devient la manette.
+ * fix/parcours-arcade — chaque jeu s'ouvre DANS LA MÊME VUE (un nouvel onglet
+ * n'existe pas sur iPad : la page remplaçait le back-office sans retour). Le
+ * jeu porte un bouton « Tous les jeux » qui ramène ici. Il affiche son QR code
+ * et son code à taper ; le téléphone des joueurs devient la manette.
  */
 import { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getMe } from '../../lib/me.js';
 import { Button, Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
@@ -26,20 +28,54 @@ interface JeuArcade {
 }
 
 const JEUX: JeuArcade[] = [
-  { chemin: '/kart', nom: 'Kart à bonus', resume: "Course jusqu'à 8 pilotes. Volant au pouce ou en penchant le téléphone, bonus à ramasser." },
-  { chemin: '/course', nom: 'Course', resume: "Course jusqu'à 8 pilotes. Le téléphone envoie gauche ou droite." },
-  { chemin: '/moto', nom: 'Moto cross', resume: 'Gaz à maintenir, équilibre à garder en l’air pour retomber à plat.' },
-  { chemin: '/ski', nom: 'Slalom', resume: 'Passer entre les deux drapeaux de chaque porte. Porte ratée : pénalité.' },
-  { chemin: '/sprint', nom: 'Sprint 100 m', resume: 'Taper gauche, droite, gauche, droite le plus vite possible.' },
+  {
+    chemin: '/kart',
+    nom: 'Kart à bonus',
+    resume:
+      "Course jusqu'à 8 pilotes. Volant au pouce ou en penchant le téléphone, bonus à ramasser.",
+  },
+  {
+    chemin: '/course',
+    nom: 'Course',
+    resume: "Course jusqu'à 8 pilotes. Le téléphone envoie gauche ou droite.",
+  },
+  {
+    chemin: '/moto',
+    nom: 'Moto cross',
+    resume: 'Gaz à maintenir, équilibre à garder en l’air pour retomber à plat.',
+  },
+  {
+    chemin: '/ski',
+    nom: 'Slalom',
+    resume: 'Passer entre les deux drapeaux de chaque porte. Porte ratée : pénalité.',
+  },
+  {
+    chemin: '/sprint',
+    nom: 'Sprint 100 m',
+    resume: 'Taper gauche, droite, gauche, droite le plus vite possible.',
+  },
   { chemin: '/sumo', nom: 'Sumo', resume: 'Pousser les autres hors du cercle, qui rétrécit.' },
-  { chemin: '/tamponneuses', nom: 'Auto-tamponneuses', resume: 'Foncer avec l’avant de sa voiture pour faire des dégâts aux autres.' },
-  { chemin: '/serpents', nom: 'Serpents lumineux', resume: 'Le serpent avance seul et laisse un mur. Toucher un mur élimine.' },
+  {
+    chemin: '/tamponneuses',
+    nom: 'Auto-tamponneuses',
+    resume: 'Foncer avec l’avant de sa voiture pour faire des dégâts aux autres.',
+  },
+  {
+    chemin: '/serpents',
+    nom: 'Serpents lumineux',
+    resume: 'Le serpent avance seul et laisse un mur. Toucher un mur élimine.',
+  },
   { chemin: '/pong', nom: 'Pong', resume: '1 contre 1 ou 2 contre 2. Seul : contre l’ordinateur.' },
-  { chemin: '/reflexe', nom: 'Réflexe', resume: 'Vert : taper le plus vite possible. Orange : piège, ne pas taper.' },
+  {
+    chemin: '/reflexe',
+    nom: 'Réflexe',
+    resume: 'Vert : taper le plus vite possible. Orange : piège, ne pas taper.',
+  },
 ];
 
 export function ArcadePage(): JSX.Element {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   // null = rôle pas encore connu : on n'affiche rien, on ne renvoie personne.
   const [autorise, setAutorise] = useState<boolean | null>(null);
 
@@ -63,7 +99,9 @@ export function ArcadePage(): JSX.Element {
       <header className="mb-6">
         <TitleHandwritten as="h1" className="mb-3">
           <Underline>{t('arcade.titre')}</Underline>{' '}
-          <span className="font-mono text-base uppercase tracking-wider text-ink-soft">{t('arcade.enTest')}</span>
+          <span className="font-mono text-base uppercase tracking-wider text-ink-soft">
+            {t('arcade.enTest')}
+          </span>
         </TitleHandwritten>
         <p className="font-editorial italic text-lg text-ink-2">{t('arcade.intro')}</p>
         <p className="text-sm text-ink-soft mt-1">{t('arcade.visible')}</p>
@@ -82,7 +120,7 @@ export function ArcadePage(): JSX.Element {
                   type="button"
                   variant="secondary"
                   size="md"
-                  onClick={() => window.open(jeu.chemin, '_blank', 'noopener')}
+                  onClick={() => navigate(jeu.chemin)}
                 >
                   {t('arcade.ouvrir')}
                 </Button>

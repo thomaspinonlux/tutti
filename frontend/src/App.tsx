@@ -48,6 +48,7 @@ import { SuperAdminRouteGuard } from './components/auth/SuperAdminRouteGuard.js'
 import { PrivacyPage } from './pages/legal/PrivacyPage.js';
 import { TermsPage } from './pages/legal/TermsPage.js';
 import { PwaUpdateBanner } from './components/PwaUpdateBanner.js';
+import { AvecRetour } from './components/RetourFlottant.js';
 import { DebugOverlay } from './components/DebugOverlay.js';
 import { ScreenApercuPage } from './pages/screen/ScreenApercuPage.js';
 import { PlayApercuPage } from './pages/play/PlayApercuPage.js';
@@ -81,18 +82,37 @@ const CourseManettePage = lazy(() =>
 const SerpentsTvPage = lazy(() =>
   import('./pages/jeux/SerpentsTvPage.js').then((m) => ({ default: m.SerpentsTvPage })),
 );
-const SumoTvPage = lazy(() => import('./pages/jeux/SumoTvPage.js').then((m) => ({ default: m.SumoTvPage })));
+const SumoTvPage = lazy(() =>
+  import('./pages/jeux/SumoTvPage.js').then((m) => ({ default: m.SumoTvPage })),
+);
 const ReflexeTvPage = lazy(() =>
   import('./pages/jeux/ReflexeTvPage.js').then((m) => ({ default: m.ReflexeTvPage })),
 );
-const PongTvPage = lazy(() => import('./pages/jeux/PongTvPage.js').then((m) => ({ default: m.PongTvPage })));
-const ManettePage = lazy(() => import('./pages/jeux/ManettePage.js').then((m) => ({ default: m.ManettePage })));
+const PongTvPage = lazy(() =>
+  import('./pages/jeux/PongTvPage.js').then((m) => ({ default: m.PongTvPage })),
+);
+const ManetteEntreePage = lazy(() =>
+  import('./pages/jeux/ManetteEntreePage.js').then((m) => ({ default: m.ManetteEntreePage })),
+);
+const ManettePage = lazy(() =>
+  import('./pages/jeux/ManettePage.js').then((m) => ({ default: m.ManettePage })),
+);
 // feat/jeux-manette-2 — jeux de course (test, aucun lien public).
-const KartTvPage = lazy(() => import('./pages/jeux/KartTvPage.js').then((m) => ({ default: m.KartTvPage })));
-const SprintTvPage = lazy(() => import('./pages/jeux/SprintTvPage.js').then((m) => ({ default: m.SprintTvPage })));
-const SkiTvPage = lazy(() => import('./pages/jeux/SkiTvPage.js').then((m) => ({ default: m.SkiTvPage })));
-const TamponTvPage = lazy(() => import('./pages/jeux/TamponTvPage.js').then((m) => ({ default: m.TamponTvPage })));
-const MotoTvPage = lazy(() => import('./pages/jeux/MotoTvPage.js').then((m) => ({ default: m.MotoTvPage })));
+const KartTvPage = lazy(() =>
+  import('./pages/jeux/KartTvPage.js').then((m) => ({ default: m.KartTvPage })),
+);
+const SprintTvPage = lazy(() =>
+  import('./pages/jeux/SprintTvPage.js').then((m) => ({ default: m.SprintTvPage })),
+);
+const SkiTvPage = lazy(() =>
+  import('./pages/jeux/SkiTvPage.js').then((m) => ({ default: m.SkiTvPage })),
+);
+const TamponTvPage = lazy(() =>
+  import('./pages/jeux/TamponTvPage.js').then((m) => ({ default: m.TamponTvPage })),
+);
+const MotoTvPage = lazy(() =>
+  import('./pages/jeux/MotoTvPage.js').then((m) => ({ default: m.MotoTvPage })),
+);
 const TvJoinPage = lazy(() =>
   import('./pages/TvJoinPage.js').then((m) => ({ default: m.TvJoinPage })),
 );
@@ -121,6 +141,8 @@ function App(): JSX.Element {
         <Route path="/sumo" element={<SumoTvPage />} />
         <Route path="/reflexe" element={<ReflexeTvPage />} />
         <Route path="/pong" element={<PongTvPage />} />
+        {/* fix/parcours-arcade — sans QR code : on tape le code de la TV. */}
+        <Route path="/manette" element={<ManetteEntreePage />} />
         <Route path="/manette/:code" element={<ManettePage />} />
         <Route path="/kart" element={<KartTvPage />} />
         <Route path="/sprint" element={<SprintTvPage />} />
@@ -236,7 +258,9 @@ function App(): JSX.Element {
           path="/screen"
           element={
             <Suspense fallback={null}>
-              <ScreenPage />
+              <AvecRetour>
+                <ScreenPage />
+              </AvecRetour>
             </Suspense>
           }
         />
