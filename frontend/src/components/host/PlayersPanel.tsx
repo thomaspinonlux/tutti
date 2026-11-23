@@ -13,7 +13,7 @@ import { hostAdjustPoints, kickParticipant, setParticipantRole } from '../../lib
 import { Button, Card } from '../ui/index.js';
 import { RoleSelector } from './RoleSelector.js';
 
-const CORAL = '#FF5C4D';
+const CORAL = '#FF3366';
 
 interface Props {
   sessionId: string;
@@ -142,12 +142,12 @@ export function PlayersPanel({
               // colonne de droite, le sélecteur de rôle sortait de la carte et
               // écrasait le nom. Deux lignes : nom + points + retirer, puis les
               // trois rôles sur toute la largeur.
-              className={`px-2 py-2 rounded-xl space-y-2 ${dark ? 'border border-white/10 bg-white/[0.05]' : 'border-2 border-ink bg-white'}`}
+              className={`px-2 py-2 rounded-xl space-y-2 ${dark ? 'border border-white/10 bg-white/[0.05]' : 'border-2 border-hairline bg-white'}`}
             >
               <div className="flex items-center gap-2 flex-wrap">
                 <span
                   aria-hidden
-                  className={`w-7 h-7 rounded-full flex items-center justify-center font-display text-sm shrink-0 ${dark ? 'text-[#0B0B0F]' : 'border-2 border-ink bg-spritz'}`}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center font-display text-sm shrink-0 ${dark ? 'text-[#0E0D17]' : 'border-2 border-hairline bg-spritz'}`}
                   style={dark ? { backgroundColor: CORAL } : undefined}
                 >
                   {initial}
@@ -255,7 +255,7 @@ export function PlayersPanel({
   if (dark) {
     return (
       <div
-        className={`rounded-[20px] border border-white/[0.07] bg-[#15151d]/80 p-4 backdrop-blur-xl ${className ?? ''}`}
+        className={`rounded-[20px] border border-white/[0.07] bg-[#181628]/80 p-4 backdrop-blur-xl ${className ?? ''}`}
       >
         {body}
       </div>

@@ -21,6 +21,7 @@
 
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { Icone } from './ui/Icone.js';
 
 interface Props {
   /** True si la PWA tourne en mode standalone (cf. usePwa.isStandalone). */
@@ -55,11 +56,11 @@ export function ContentBlockerWarning({ isStandalone, onReload }: Props): JSX.El
         initial={{ scale: 0.92, y: 8 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="bg-cream border-2 border-ink rounded-xl shadow-pop-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
+        className="bg-cream border-2 border-hairline rounded-xl shadow-pop-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
       >
         <header className="flex items-start gap-3 mb-4">
           <div className="text-3xl leading-none shrink-0" aria-hidden>
-            ⚠️
+            <Icone nom="alerte" />
           </div>
           <div className="flex-1 min-w-0">
             <h2 id="content-blocker-title" className="font-display text-xl text-ink leading-tight">
@@ -97,7 +98,7 @@ export function ContentBlockerWarning({ isStandalone, onReload }: Props): JSX.El
           <button
             type="button"
             onClick={handleReload}
-            className="px-4 py-2 font-display text-base bg-raspberry text-cream border-2 border-ink rounded-md shadow-pop-sm hover:shadow-pop transition-shadow"
+            className="px-4 py-2 font-display text-base bg-raspberry text-cream border-2 border-hairline rounded-md shadow-pop-sm hover:shadow-pop transition-shadow"
           >
             {t('contentBlocker.reloadButton')}
           </button>
@@ -135,7 +136,7 @@ function PwaInstructions(): JSX.Element {
   return (
     <section className="bg-spritz/10 border-2 border-spritz rounded-lg p-3">
       <p className="font-display text-base mb-2 flex items-center gap-2">
-        <span aria-hidden>📱</span> {t('contentBlocker.pwa.title')}
+        <span aria-hidden><Icone nom="telephone" /></span> {t('contentBlocker.pwa.title')}
       </p>
       <p className="text-xs text-ink-soft mb-2">{t('contentBlocker.pwa.intro')}</p>
       <ol className="list-decimal list-inside space-y-1 text-xs text-ink-soft">

@@ -98,7 +98,7 @@ export function GettingStartedChecklist(): JSX.Element | null {
   return (
     <Card tone="cream" size="lg" className="mb-8">
       <div className="flex items-center justify-between mb-3 gap-3">
-        <h3 className="font-display text-2xl">🎯 {t('gettingStarted.title')}</h3>
+        <h3 className="font-display text-2xl">{t('gettingStarted.title')}</h3>
         <span className="font-mono text-sm text-ink-soft">
           {completed} / {requiredItems.length}
         </span>

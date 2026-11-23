@@ -20,14 +20,14 @@ export function CadreTv(props: {
   bas?: ReactNode;
 }): JSX.Element {
   return (
-    <div className="min-h-screen bg-[#0B0B0F] text-white flex flex-col items-center p-4 gap-4">
+    <div className="min-h-screen bg-[#0E0D17] text-white flex flex-col items-center p-4 gap-4">
       <div className="w-full max-w-[1600px] flex items-center justify-between gap-4">
         <h1 className="font-display text-4xl">
-          {props.emoji} {props.titre} <span className="text-white/40 text-xl font-mono">test</span>
+          {props.titre} <span className="text-white/40 text-xl font-mono">test</span>
         </h1>
         {props.code && (
           <p className="font-mono text-2xl">
-            tuttiparty.app/manette · <span className="text-[#FF5C4D] font-bold tracking-[0.3em]">{props.code}</span>
+            tuttiparty.app/manette · <span className="text-[#FF3366] font-bold tracking-[0.3em]">{props.code}</span>
           </p>
         )}
       </div>
@@ -73,7 +73,7 @@ export function SalleAttente(props: {
           type="button"
           onClick={props.onLancer}
           disabled={props.joueurs.length < min}
-          className="mt-2 rounded-xl bg-[#FF5C4D] px-6 py-3 text-2xl font-bold disabled:opacity-40"
+          className="mt-2 rounded-xl bg-[#FF3366] px-6 py-3 text-2xl font-bold disabled:opacity-40"
         >
           Départ ▶
         </button>
@@ -104,14 +104,14 @@ export function TableauScores(props: {
       <ol className="space-y-2 text-3xl">
         {props.lignes.map((l, i) => (
           <li key={l.id} className="flex items-center gap-3">
-            <span className="w-12 text-right">{['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`}</span>
+            <span className="w-12 text-right">{`${i + 1}.`}</span>
             <span className="inline-block h-5 w-5 rounded-full" style={{ background: l.couleur }} />
             <span className="font-semibold">{l.pseudo}</span>
             <span className="text-white/60 font-mono text-xl">{l.valeur}</span>
           </li>
         ))}
       </ol>
-      <button type="button" onClick={props.onBouton} className="rounded-xl bg-[#FF5C4D] px-6 py-3 text-2xl font-bold">
+      <button type="button" onClick={props.onBouton} className="rounded-xl bg-[#FF3366] px-6 py-3 text-2xl font-bold">
         {props.bouton}
       </button>
     </div>
@@ -123,7 +123,7 @@ export function dessinerCompte(ctx: CanvasRenderingContext2D, l: number, h: numb
   if (n <= 0) return;
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
   ctx.fillRect(0, 0, l, h);
-  ctx.fillStyle = '#FF5C4D';
+  ctx.fillStyle = '#FF3366';
   ctx.font = 'bold 260px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

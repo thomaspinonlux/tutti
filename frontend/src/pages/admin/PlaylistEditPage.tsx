@@ -442,7 +442,7 @@ function PoolSessionSizeField(props: {
   return (
     <div className="mt-4 pt-3 border-t border-ink/15 space-y-2">
       <p className="text-xs font-mono uppercase tracking-wider text-ink-soft">
-        🎲 {t('playlists.poolSessionTitle')}
+        {t('playlists.poolSessionTitle')}
       </p>
       <p className="font-mono text-[11px] text-ink-soft leading-snug">
         {t('playlists.poolSessionHint', { pool: props.poolSize, n: effective })}

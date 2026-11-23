@@ -11,9 +11,9 @@
 
 import { useTranslation } from 'react-i18next';
 // feat/telephone-au-style-tv — l'accueil du joueur prend les codes de la TV.
-const CORAIL = '#FF5C4D';
+const CORAIL = '#FF3366';
 const PANNEAU =
-  'rounded-[20px] bg-[#191922] border border-white/[0.07] shadow-[0_18px_50px_rgba(0,0,0,0.5)]';
+  'rounded-[20px] bg-[#181628] border border-white/[0.07] shadow-[0_18px_50px_rgba(0,0,0,0.5)]';
 
 function BoutonPlein({
   children,
@@ -22,7 +22,7 @@ function BoutonPlein({
   return (
     <button
       {...rest}
-      className="w-full rounded-2xl px-4 py-3 font-bold text-[#0B0B0F] transition-transform active:scale-[0.98] disabled:opacity-40"
+      className="w-full rounded-2xl px-4 py-3 font-bold text-[#0E0D17] transition-transform active:scale-[0.98] disabled:opacity-40"
       style={{ backgroundColor: CORAIL }}
     >
       {children}
@@ -105,7 +105,7 @@ function FullOnboarding({
               {t('onboarding.example1Said')}
             </span>
             <span className="text-white/40">→</span>
-            <span className="rounded-full border border-[#4ade80]/40 bg-[#4ade80]/15 px-2.5 py-0.5 text-sm font-bold text-[#4ade80]">
+            <span className="rounded-full border border-[#00e5a3]/40 bg-[#00e5a3]/15 px-2.5 py-0.5 text-sm font-bold text-[#00e5a3]">
               {t('onboarding.example1Score')}
             </span>
           </li>
@@ -115,7 +115,7 @@ function FullOnboarding({
             </span>
             <span className="text-white/40">→</span>
             <span
-              className="rounded-full px-2.5 py-0.5 text-sm font-bold text-[#0B0B0F]"
+              className="rounded-full px-2.5 py-0.5 text-sm font-bold text-[#0E0D17]"
               style={{ backgroundColor: CORAIL }}
             >
               {t('onboarding.example2Score')}
@@ -207,11 +207,11 @@ function Step({
 function BuzzerIcon(): JSX.Element {
   return (
     <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden>
-      <circle cx="16" cy="18" r="9" fill="#ee6c2a" stroke="#1a1410" strokeWidth="2" />
-      <circle cx="16" cy="18" r="4" fill="#c84e15" stroke="#1a1410" strokeWidth="1.5" />
-      <path d="M9 9 L13 13" stroke="#1a1410" strokeWidth="2" strokeLinecap="round" />
-      <path d="M23 9 L19 13" stroke="#1a1410" strokeWidth="2" strokeLinecap="round" />
-      <path d="M16 5 L16 10" stroke="#1a1410" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="16" cy="18" r="9" fill="#00f0ff" stroke="#E5E0EF" strokeWidth="2" />
+      <circle cx="16" cy="18" r="4" fill="#c84e15" stroke="#E5E0EF" strokeWidth="1.5" />
+      <path d="M9 9 L13 13" stroke="#E5E0EF" strokeWidth="2" strokeLinecap="round" />
+      <path d="M23 9 L19 13" stroke="#E5E0EF" strokeWidth="2" strokeLinecap="round" />
+      <path d="M16 5 L16 10" stroke="#E5E0EF" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -225,14 +225,14 @@ function MicIcon(): JSX.Element {
         width="8"
         height="16"
         rx="4"
-        fill="#4a8b3f"
-        stroke="#1a1410"
+        fill="#00e5a3"
+        stroke="#E5E0EF"
         strokeWidth="2"
       />
       <path
         d="M9 16 a7 7 0 0 0 14 0"
         fill="none"
-        stroke="#1a1410"
+        stroke="#E5E0EF"
         strokeWidth="2"
         strokeLinecap="round"
       />
@@ -241,7 +241,7 @@ function MicIcon(): JSX.Element {
         y1="23"
         x2="16"
         y2="28"
-        stroke="#1a1410"
+        stroke="#E5E0EF"
         strokeWidth="2"
         strokeLinecap="round"
       />
@@ -250,7 +250,7 @@ function MicIcon(): JSX.Element {
         y1="28"
         x2="20"
         y2="28"
-        stroke="#1a1410"
+        stroke="#E5E0EF"
         strokeWidth="2"
         strokeLinecap="round"
       />
@@ -263,8 +263,8 @@ function StarIcon(): JSX.Element {
     <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden>
       <polygon
         points="16,4 19,12 28,12 21,18 23,27 16,22 9,27 11,18 4,12 13,12"
-        fill="#e8c547"
-        stroke="#1a1410"
+        fill="#ffe600"
+        stroke="#E5E0EF"
         strokeWidth="2"
         strokeLinejoin="round"
       />

@@ -67,7 +67,7 @@ export function TvCastButton({ tvCode, shortCode }: Props): JSX.Element | null {
         onClick={() => setOpen(true)}
         title={t('tvCast.openHint')}
       >
-        📺 {t('tvCast.button')}
+        {t('tvCast.button')}
       </Button>
 
       {open && (
@@ -112,7 +112,7 @@ export function TvCastButton({ tvCode, shortCode }: Props): JSX.Element | null {
             <div className="flex flex-col gap-2">
               {canOpenHere && (
                 <Button variant="secondary" size="sm" onClick={openHere}>
-                  🖥️ {t('tvCast.openHereButton')}
+                  {t('tvCast.openHereButton')}
                 </Button>
               )}
               <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>

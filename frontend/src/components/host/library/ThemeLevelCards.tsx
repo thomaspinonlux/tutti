@@ -95,12 +95,12 @@ export function ThemeLevelCards({
                   if (readOnly) return;
                   onPickLevel?.(v.playlist, v.difficulty);
                 }}
-                className={`w-full h-32 rounded-xl border-2 border-ink shadow-pop flex flex-col items-center justify-center gap-1 transition-transform ${
+                className={`w-full h-32 rounded-xl border-2 border-hairline shadow-pop flex flex-col items-center justify-center gap-1 transition-transform ${
                   readOnly ? '' : 'hover:-translate-y-0.5 hover:shadow-pop-lg'
                 } disabled:opacity-100 ${tone} ${
                   highlighted
                     ? `ring-4 ring-raspberry ring-offset-2 scale-[1.03] ${
-                        dark ? 'ring-offset-[#0B0B0F]' : 'ring-offset-cream'
+                        dark ? 'ring-offset-[#0E0D17]' : 'ring-offset-cream'
                       }`
                     : ''
                 }`}

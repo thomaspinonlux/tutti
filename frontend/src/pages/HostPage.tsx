@@ -139,6 +139,7 @@ import { BadgeAppleMusic } from '../components/host/BadgeAppleMusic.js';
 import { BadgeManches } from '../components/host/BadgeManches.js';
 import { PwaSafetyControls } from '../components/host/PwaSafetyControls.js';
 import { compterManchesCompletes } from '../lib/manches.js';
+import { Icone } from '../components/ui/Icone.js';
 
 interface Toast {
   id: string;
@@ -212,9 +213,9 @@ function HostPageTopLevelFallback(): JSX.Element {
   console.error('[HostPageTopLevel] Fallback rendu — crash hors phase (corps HostPage / hook)');
   return (
     <main className="min-h-screen flex items-center justify-center bg-cream p-6">
-      <div className="max-w-lg text-center border-2 border-ink rounded-lg bg-white p-6 shadow-pop">
+      <div className="max-w-lg text-center border-2 border-hairline rounded-2xl bg-panel p-6">
         <p className="text-3xl mb-2" aria-hidden>
-          ⚠️
+          <Icone nom="alerte" />
         </p>
         <h1 className="font-display text-2xl mb-2">Erreur d'affichage</h1>
         <p className="text-sm text-ink-2 mb-4">
@@ -225,13 +226,13 @@ function HostPageTopLevelFallback(): JSX.Element {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-spritz-deep text-cream font-medium rounded border-2 border-ink"
+            className="px-4 py-2 bg-spritz-deep text-cream font-medium rounded border-2 border-hairline"
           >
             Recharger
           </button>
           <a
             href="/admin"
-            className="px-4 py-2 bg-cream-2 text-ink font-medium rounded border-2 border-ink"
+            className="px-4 py-2 bg-cream-2 text-ink font-medium rounded border-2 border-hairline"
           >
             Dashboard
           </a>
@@ -2732,7 +2733,7 @@ function HostPageInner(): JSX.Element {
                 possible, mais en second et clairement nommé. */}
             <div className="flex flex-col gap-2 items-center">
               <Button variant="primary" onClick={() => window.location.reload()}>
-                🔄 Recharger la console
+                Recharger la console
               </Button>
               <Button variant="ghost" size="sm" onClick={() => void handleBackToDashboard()}>
                 {t('host.backDashboard')}
@@ -2775,7 +2776,7 @@ function HostPageInner(): JSX.Element {
               type="button"
               onClick={() => setMusiqueQuizCoupee((c) => !c)}
               className={`rounded-xl border-2 px-5 py-2.5 font-display text-lg text-white ${
-                musiqueQuizCoupee ? 'border-white/40 bg-white/[0.08]' : 'border-[#FF5C4D] bg-[#FF5C4D]'
+                musiqueQuizCoupee ? 'border-white/40 bg-white/[0.08]' : 'border-[#FF3366] bg-[#FF3366]'
               }`}
             >
               {musiqueQuizCoupee ? t('quizTheme.musiqueRemettre') : t('quizTheme.musiqueCouper')}
@@ -2870,10 +2871,10 @@ function HostPageInner(): JSX.Element {
               unlockAudioSync('spotify-audio-blocked-banner-modeB');
               void spotify.unblockAudio();
             }}
-            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-ink flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
+            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-hairline flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
           >
             <span className="text-2xl" aria-hidden>
-              🔊
+              <Icone nom="son" />
             </span>
             <span>{t('host.audioBlockedBanner')}</span>
           </button>
@@ -2887,10 +2888,10 @@ function HostPageInner(): JSX.Element {
               unlockAudioSync('apple-audio-blocked-banner-modeB');
               void apple.unblockAudio();
             }}
-            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-ink flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
+            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-hairline flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
           >
             <span className="text-2xl" aria-hidden>
-              🔊
+              <Icone nom="son" />
             </span>
             <span>{t('host.audioBlockedBanner')}</span>
           </button>
@@ -2964,7 +2965,7 @@ function HostPageInner(): JSX.Element {
           {toasts.map((toast) => (
             <div
               key={toast.id}
-              className={`px-4 py-2 border-2 border-ink rounded shadow-pop bg-white text-ink animate-pop-in font-medium text-sm ${
+              className={`px-4 py-2 border-2 border-hairline rounded-xl bg-cream-3 text-ink animate-pop-in font-medium text-sm ${
                 toast.tone === 'spritz'
                   ? 'border-l-8 border-l-spritz'
                   : toast.tone === 'basil'
@@ -3043,7 +3044,7 @@ function HostPageInner(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white">
       <MultiColorBar height="md" />
 
       {/* fix/restrict-banners-to-host-pages — Safari content-blocker hint.
@@ -3059,9 +3060,9 @@ function HostPageInner(): JSX.Element {
         <div
           role="status"
           aria-live="polite"
-          className="w-full bg-lemon text-ink px-4 py-2 text-sm font-mono text-center border-b-2 border-ink animate-fade-in"
+          className="w-full bg-lemon text-ink px-4 py-2 text-sm font-mono text-center border-b-2 border-hairline animate-fade-in"
         >
-          🔄 {t('host.reconnecting')}
+          {t('host.reconnecting')}
         </div>
       )}
 
@@ -3077,10 +3078,10 @@ function HostPageInner(): JSX.Element {
             unlockAudioSync('spotify-audio-blocked-banner-modeA');
             void spotify.unblockAudio();
           }}
-          className="w-full bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-ink flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
+          className="w-full bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-hairline flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
         >
           <span className="text-2xl" aria-hidden>
-            🔊
+            <Icone nom="son" />
           </span>
           <span>{t('host.audioBlockedBanner')}</span>
         </button>
@@ -3106,7 +3107,7 @@ function HostPageInner(): JSX.Element {
               unlockAudioSync('tap-to-start-overlay');
               youtube.tapToStart();
             }}
-            className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-ink shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
+            className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-hairline shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <span className="text-5xl" aria-hidden>
               ▶
@@ -3140,7 +3141,7 @@ function HostPageInner(): JSX.Element {
               unlockAudioSync('apple-tap-to-start-overlay');
               void apple.unblockAudio();
             }}
-            className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-ink shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
+            className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-hairline shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <span className="text-5xl" aria-hidden>
               ▶
@@ -3176,7 +3177,7 @@ function HostPageInner(): JSX.Element {
           <div>
             <p
               className="font-mono text-xs uppercase tracking-[0.2em] mb-1"
-              style={{ color: '#FF5C4D' }}
+              style={{ color: '#FF3366' }}
             >
               {effectivePhase === 'waiting'
                 ? t('host.eyebrow')
@@ -3231,7 +3232,7 @@ function HostPageInner(): JSX.Element {
                     : 'bg-cream text-ink border-hairline hover:bg-cream-2'
                 } ${piloteBusy ? 'opacity-50' : ''}`}
               >
-                {piloteActif ? '🤖 Pilote auto — ON' : '🤖 Pilote auto'}
+                {piloteActif ? 'Pilote auto — ON' : 'Pilote auto'}
               </button>
             )}
             <BadgeManches lancees={playingRoundsCount} completes={manchesCompletes} />
@@ -3337,7 +3338,7 @@ function HostPageInner(): JSX.Element {
             fallback={
               <Card tone="cream" size="lg" className="text-center max-w-2xl mx-auto">
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-raspberry mb-2">
-                  ⚠️
+                  <Icone nom="alerte" />
                 </p>
                 <TitleHandwritten as="h2" className="mb-3">
                   <Underline>{t('host.contentCrashTitle')}</Underline>
@@ -3437,7 +3438,7 @@ function HostPageInner(): JSX.Element {
                 </TitleHandwritten>
                 <p className="font-editorial italic text-ink-2 mb-4">{t('host.syncingHint')}</p>
                 <Button variant="ghost" size="sm" onClick={() => window.location.reload()}>
-                  🔄 {t('host.contentCrashReload')}
+                  {t('host.contentCrashReload')}
                 </Button>
               </Card>
             )}
@@ -3586,7 +3587,7 @@ function HostPageInner(): JSX.Element {
                   </TitleHandwritten>
                   <p className="font-editorial italic text-ink-2 mb-4">{t('host.syncingHint')}</p>
                   <Button variant="ghost" size="sm" onClick={() => window.location.reload()}>
-                    🔄 {t('host.contentCrashReload')}
+                    {t('host.contentCrashReload')}
                   </Button>
                 </Card>
               )}
@@ -3629,7 +3630,7 @@ function HostPageInner(): JSX.Element {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-4 py-2 border-2 border-ink rounded shadow-pop bg-white text-ink animate-pop-in font-medium text-sm ${
+            className={`px-4 py-2 border-2 border-hairline rounded-xl bg-cream-3 text-ink animate-pop-in font-medium text-sm ${
               toast.tone === 'spritz'
                 ? 'border-l-8 border-l-spritz'
                 : toast.tone === 'basil'
@@ -3656,8 +3657,8 @@ function HostPageInner(): JSX.Element {
       {spotify.status !== 'idle' && audioProvider === 'spotify' && (
         <div className="fixed bottom-2 left-2 z-50 max-w-[280px] px-2 py-1 bg-ink/90 text-cream font-mono text-[10px] rounded border border-cream/30 leading-tight">
           <div>
-            🎵 Spotify: <strong>{spotify.status}</strong>
-            {spotify.isPlaying ? ' ▶' : ' ⏸'}
+            Spotify: <strong>{spotify.status}</strong>
+            {spotify.isPlaying ? ' lecture' : ' pause'}
           </div>
           <div className="opacity-70 truncate">
             device: {spotify.deviceId ? spotify.deviceId.substring(0, 16) + '…' : 'none'}
@@ -3665,7 +3666,7 @@ function HostPageInner(): JSX.Element {
           {spotify.lastEvent && (
             <div className="opacity-70 truncate">last: {spotify.lastEvent}</div>
           )}
-          {spotify.error && <div className="text-raspberry truncate">⚠ {spotify.error}</div>}
+          {spotify.error && <div className="text-raspberry truncate">{spotify.error}</div>}
         </div>
       )}
     </div>
@@ -3708,10 +3709,10 @@ function MasterBadge({
           'flex items-center gap-2 text-xs font-mono px-3 py-1.5 border-2 rounded',
           personneNePilote
             ? 'border-raspberry bg-raspberry/15 text-raspberry font-bold animate-pulse hover:bg-raspberry/25'
-            : 'border-ink bg-cream-2 hover:bg-cream',
+            : 'border-hairline bg-cream-2 hover:bg-cream',
         ].join(' ')}
       >
-        <span aria-hidden>👑</span>
+        <span aria-hidden><Icone nom="couronne" /></span>
         <span>
           {master ? (
             <>
@@ -3728,7 +3729,7 @@ function MasterBadge({
       {open && (
         // fix/manette-lisible — fond blanc + texte « ink » : illisible sur la
         // console du quiz (thème nuit, ink = blanc). Jetons de thème.
-        <div className="absolute right-0 top-full mt-2 z-30 w-64 max-h-72 overflow-auto bg-panel text-ink border-2 border-ink rounded shadow-pop p-2">
+        <div className="absolute right-0 top-full mt-2 z-30 w-64 max-h-72 overflow-auto bg-panel text-ink border-2 border-hairline rounded shadow-pop p-2">
           <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft px-2 py-1">
             {t('host.masterChange')}
           </p>
@@ -3753,7 +3754,7 @@ function MasterBadge({
                       isCurrent ? 'bg-basil/15 text-ink' : 'hover:bg-cream-2',
                     ].join(' ')}
                   >
-                    {isCurrent && <span aria-hidden>👑</span>}
+                    {isCurrent && <span aria-hidden><Icone nom="couronne" /></span>}
                     <span className="truncate flex-1">{p.pseudo}</span>
                     {isCurrent && (
                       <span className="text-[10px] font-mono text-basil-deep">
@@ -3810,12 +3811,12 @@ function WaitingPhase({
   const needsMaster = !hasAnimator && !currentMasterId;
   const noPlayers = participants.length === 0;
   const canStart = !busy && !needsMaster;
-  const CORAL = '#FF5C4D';
+  const CORAL = '#FF3366';
   return (
     // feat/console-dark — stage sombre premium (cohérent écran TV + console jeu).
     <div className="relative">
       <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-[auto_1fr]">
-        <div className="rounded-[24px] border border-white/[0.07] bg-[#15151d]/80 p-8 text-center backdrop-blur-xl">
+        <div className="rounded-[24px] border border-white/[0.07] bg-[#181628]/80 p-8 text-center backdrop-blur-xl">
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.25em] text-white/50">
             {t('host.scanToJoin')}
           </p>
@@ -3831,10 +3832,10 @@ function WaitingPhase({
         <div className="space-y-4">
           <div
             className="rounded-2xl border p-4"
-            style={{ backgroundColor: '#FF5C4D14', borderColor: '#FF5C4D55' }}
+            style={{ backgroundColor: '#FF336614', borderColor: '#FF336655' }}
           >
             <p className="mb-1 font-mono text-xs uppercase tracking-wider" style={{ color: CORAL }}>
-              💡 {t('host.tvHintTitle')}
+              {t('host.tvHintTitle')}
             </p>
             <p className="font-editorial text-sm italic text-white/60">{t('host.tvHintBody')}</p>
           </div>
@@ -4016,19 +4017,19 @@ function RoundPlayingScreen({
     currentTrack?.provider === 'spotify' || (currentTrack === null && spotifyStatus !== 'idle');
   const isDemoProvider = currentTrack?.provider === 'demo';
 
-  const CORAL = '#FF5C4D';
+  const CORAL = '#FF3366';
   const chip = 'rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.2em]';
   const darkPanel =
-    'rounded-[20px] border border-white/[0.07] bg-[#15151d]/80 p-5 backdrop-blur-xl';
+    'rounded-[20px] border border-white/[0.07] bg-[#181628]/80 p-5 backdrop-blur-xl';
   return (
     // feat/console-dark — stage sombre premium (cohérent écran TV). Bleed sur le
     // padding du <main> via marges négatives pour couvrir toute la zone de jeu.
     <div className="relative">
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         {/* ── Colonne gauche : track en cours ──────────────────────────── */}
-        <div className="rounded-[24px] border border-white/[0.07] bg-[#15151d]/80 p-6 text-center backdrop-blur-xl lg:p-8">
+        <div className="rounded-[24px] border border-white/[0.07] bg-[#181628]/80 p-6 text-center backdrop-blur-xl lg:p-8">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <span className={`${chip} text-[#0B0B0F]`} style={{ backgroundColor: CORAL }}>
+            <span className={`${chip} text-[#0E0D17]`} style={{ backgroundColor: CORAL }}>
               {t('host.currentRound', { n: round.position })}
             </span>
             {totalTracks > 0 && (
@@ -4170,7 +4171,7 @@ function RoundPlayingScreen({
                       className="rounded-full px-2 py-0.5 font-mono text-[11px] font-bold"
                       style={{
                         backgroundColor: buzz.total_points > 0 ? '#4ade8033' : '#ffffff12',
-                        color: buzz.total_points > 0 ? '#4ade80' : '#ffffff99',
+                        color: buzz.total_points > 0 ? '#00e5a3' : '#ffffff99',
                       }}
                     >
                       {buzz.total_points > 0 ? `+${buzz.total_points}` : '0'}
@@ -4215,11 +4216,11 @@ function AnimatorTrackInfo({
           <img
             src={track.cover_url}
             alt=""
-            className={`w-24 h-24 rounded object-cover ${dark ? 'ring-1 ring-white/15 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : 'border-2 border-ink shadow-pop-sm'}`}
+            className={`w-24 h-24 rounded object-cover ${dark ? 'ring-1 ring-white/15 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : 'border-2 border-hairline shadow-pop-sm'}`}
           />
         ) : (
           <div
-            className={`w-24 h-24 rounded flex items-center justify-center font-display text-3xl ${dark ? 'bg-white/[0.06] ring-1 ring-white/10 text-white/60' : 'border-2 border-ink bg-cream-2 text-ink-soft'}`}
+            className={`w-24 h-24 rounded flex items-center justify-center font-display text-3xl ${dark ? 'bg-white/[0.06] ring-1 ring-white/10 text-white/60' : 'border-2 border-hairline bg-cream-2 text-ink-soft'}`}
           >
             ♪
           </div>
@@ -4393,7 +4394,7 @@ function ParticipantsList({
   const { t } = useTranslation();
   const wrap = (children: React.ReactNode): JSX.Element =>
     dark ? (
-      <div className="rounded-[20px] border border-white/[0.07] bg-[#15151d]/80 p-4 backdrop-blur-xl">
+      <div className="rounded-[20px] border border-white/[0.07] bg-[#181628]/80 p-4 backdrop-blur-xl">
         {children}
       </div>
     ) : (
@@ -4421,11 +4422,11 @@ function ParticipantsList({
                 ? 'border-basil bg-basil/15'
                 : dark
                   ? 'border-white/10 bg-white/[0.05]'
-                  : 'border-ink bg-cream-2',
+                  : 'border-hairline bg-cream-2',
             ].join(' ')}
           >
             <span className={`font-medium flex items-center gap-2 ${dark ? 'text-white' : ''}`}>
-              {isMaster && <span aria-hidden>👑</span>}
+              {isMaster && <span aria-hidden><Icone nom="couronne" /></span>}
               {p.pseudo}
             </span>
             <div className="flex items-center gap-2 shrink-0">
@@ -4446,11 +4447,11 @@ function ParticipantsList({
                         ? 'border-basil text-basil bg-basil/10 hover:bg-basil/20'
                         : dark
                           ? 'border-white/15 text-white/60 hover:bg-white/10'
-                          : 'border-ink text-ink-soft hover:bg-cream',
+                          : 'border-hairline text-ink-soft hover:bg-cream',
                     ].join(' ')}
                     aria-pressed={isMaster}
                   >
-                    🎙️ {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
+                    {isMaster ? t('host.masterRevoke') : t('host.masterAssign')}
                   </button>
                 )
               )}
@@ -4497,7 +4498,7 @@ function TeamsView({
           <>
             <div className="flex items-center justify-between gap-2 mb-3">
               <span
-                className={`inline-block rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wider ${dark ? 'text-white' : 'bg-ink text-cream'}`}
+                className={`inline-block rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-wider ${dark ? 'text-white' : 'bg-cream-4 text-spritz'}`}
                 style={dark ? { backgroundColor: '#ffffff14' } : undefined}
               >
                 {team.name}
@@ -4522,7 +4523,7 @@ function TeamsView({
                       className={`flex items-center justify-between gap-2 text-sm ${dark ? 'text-white' : ''}`}
                     >
                       <span className="truncate flex items-center gap-1">
-                        {isMaster && <span aria-hidden>👑</span>}
+                        {isMaster && <span aria-hidden><Icone nom="couronne" /></span>}
                         {p.pseudo}
                       </span>
                       <div className="flex items-center gap-1 shrink-0">
@@ -4549,7 +4550,7 @@ function TeamsView({
                                 isMaster ? t('host.masterRevoke') : t('host.masterAssign')
                               }
                             >
-                              👤
+                              <Icone nom="personne" />
                             </button>
                           )
                         )}
@@ -4557,7 +4558,7 @@ function TeamsView({
                           aria-label={t('host.moveToTeam')}
                           value={p.team_id ?? ''}
                           onChange={(e) => void onMove(p.id, e.target.value || null)}
-                          className={`text-xs rounded px-1 py-0.5 border ${dark ? 'border-white/20 bg-white/10 text-white' : 'border-ink bg-cream'}`}
+                          className={`text-xs rounded px-1 py-0.5 border ${dark ? 'border-white/20 bg-white/10 text-white' : 'border-hairline bg-cream'}`}
                         >
                           {teams.map((t2) => (
                             <option
@@ -4587,7 +4588,7 @@ function TeamsView({
         return dark ? (
           <div
             key={team.id}
-            className="rounded-2xl border-[3px] bg-[#15151d]/80 p-4 backdrop-blur-xl"
+            className="rounded-2xl border-[3px] bg-[#181628]/80 p-4 backdrop-blur-xl"
             style={{ borderColor: team.color }}
           >
             {card}
@@ -4662,11 +4663,11 @@ function ProposalsChip({ proposals, onPick }: ProposalsChipProps): JSX.Element |
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center gap-3 px-4 py-3 border-2 border-ink rounded-lg bg-lemon text-ink shadow-pop-sm hover:translate-y-px transition text-left"
+        className="w-full flex items-center gap-3 px-4 py-3 border-2 border-hairline rounded-lg bg-lemon text-ink shadow-pop-sm hover:translate-y-px transition text-left"
         aria-expanded={expanded}
       >
         <span aria-hidden className="text-xl">
-          💡
+          <Icone nom="ampoule" />
         </span>
         <span className="flex-1 min-w-0">
           <p className="font-display text-sm">
@@ -4680,7 +4681,7 @@ function ProposalsChip({ proposals, onPick }: ProposalsChipProps): JSX.Element |
         </span>
       </button>
       {expanded && (
-        <ul className="mt-2 border-2 border-ink rounded-lg bg-cream overflow-hidden divide-y divide-ink/15">
+        <ul className="mt-2 border-2 border-hairline rounded-lg bg-cream overflow-hidden divide-y divide-ink/15">
           {aggregated.map((row) => (
             <li key={row.official_playlist_id}>
               <button
@@ -4691,8 +4692,8 @@ function ProposalsChip({ proposals, onPick }: ProposalsChipProps): JSX.Element |
                 <span className="font-display font-semibold flex-1 truncate">
                   {row.playlist_name}
                 </span>
-                <span className="font-mono text-xs bg-spritz text-ink border border-ink px-2 py-0.5 rounded">
-                  {row.participants.length} 🎯
+                <span className="font-mono text-xs bg-spritz text-ink border border-hairline px-2 py-0.5 rounded">
+                  {row.participants.length} <Icone nom="cible" />
                 </span>
               </button>
               <p className="px-4 pb-2 font-mono text-[10px] text-ink-soft">

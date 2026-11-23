@@ -30,7 +30,7 @@ export function DesignSystemPage(): JSX.Element {
     <main className="min-h-screen pb-16">
       <MultiColorBar height="lg" />
 
-      <header className="max-w-5xl mx-auto px-8 pt-12 pb-8 border-b-2 border-ink relative">
+      <header className="max-w-5xl mx-auto px-8 pt-12 pb-8 border-b-2 border-hairline relative">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-3">
           Tutti · design system · Pop Cocktail
         </p>
@@ -55,7 +55,7 @@ export function DesignSystemPage(): JSX.Element {
               ['plum', 'bg-plum'],
             ].map(([name, cls]) => (
               <div key={name} className="text-center">
-                <div className={`h-20 border-2 border-ink rounded ${cls} shadow-pop`} />
+                <div className={`h-20 border-2 border-hairline rounded ${cls} shadow-pop`} />
                 <p className="mt-2 font-mono text-xs uppercase">{name}</p>
               </div>
             ))}

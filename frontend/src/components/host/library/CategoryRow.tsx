@@ -119,7 +119,7 @@ export function CategoryRow({
                 onClick={() => scrollBy(-1)}
                 disabled={!canLeft}
                 aria-label={t('host.session.scrollLeft')}
-                className={`hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-cream border-2 border-ink shadow-pop transition-opacity ${
+                className={`hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-cream border-2 border-hairline shadow-pop transition-opacity ${
                   canLeft ? 'opacity-100 hover:bg-cream-2' : 'opacity-0 pointer-events-none'
                 }`}
               >
@@ -133,7 +133,7 @@ export function CategoryRow({
                 onClick={() => scrollBy(1)}
                 disabled={!canRight}
                 aria-label={t('host.session.scrollRight')}
-                className={`hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-cream border-2 border-ink shadow-pop transition-opacity ${
+                className={`hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 items-center justify-center rounded-full bg-cream border-2 border-hairline shadow-pop transition-opacity ${
                   canRight ? 'opacity-100 hover:bg-cream-2' : 'opacity-0 pointer-events-none'
                 }`}
               >

@@ -25,6 +25,7 @@ import { importTracks, searchTracks as searchSpotify } from '../../../../lib/spo
 import { getAppleMusicStatus } from '../../../../lib/appleMusic.js';
 import { parseTrackListFile } from '../../../../lib/trackListFile.js';
 import { useEstablishment } from '../../../../pages/admin/AdminLayout.js';
+import { Icone } from '../../../ui/Icone.js';
 
 interface Props {
   playlistId: string;
@@ -34,7 +35,7 @@ interface Props {
 const PROVIDER_LABELS: Record<string, string> = {
   spotify: 'Spotify',
   youtube: 'YouTube',
-  apple_music: '🍎 Apple Music',
+  apple_music: 'Apple Music',
 };
 const MAX_LINES = 300;
 const CONCURRENCY = 2; // doux pour ne pas déclencher les rate limits
@@ -332,7 +333,7 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
           onClick={() => fileInputRef.current?.click()}
           disabled={fileLoading || matching || importing}
         >
-          {fileLoading ? '⏳ Lecture…' : '📎 Importer un fichier (Excel · CSV · PDF)'}
+          {fileLoading ? 'Lecture…' : 'Importer un fichier (Excel · CSV · PDF)'}
         </Button>
         <span className="font-mono text-[11px] text-ink-faded">
           ou colle directement ci-dessous
@@ -367,10 +368,10 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
           disabled={matching || importing || pending.length === 0}
         >
           {matching && progress
-            ? `⏳ Recherche… ${progress.done}/${progress.total}`
+            ? `Recherche… ${progress.done}/${progress.total}`
             : pending.length > 0
-              ? `🔎 Chercher les correspondances (${pending.length})`
-              : '🔎 Tout est cherché'}
+              ? `Chercher les correspondances (${pending.length})`
+              : 'Tout est cherché'}
         </Button>
         {Object.keys(resultMap).length > 0 && !matching && (
           <Button variant="ghost" size="sm" onClick={resetSearch}>
@@ -381,7 +382,7 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
 
       {limitHit && (
         <div className="p-2.5 border-2 border-raspberry rounded bg-raspberry/10">
-          <p className="text-sm font-medium text-raspberry-deep">⛔ {limitHit}</p>
+          <p className="text-sm font-medium text-raspberry-deep"><Icone nom="interdit" /> {limitHit}</p>
         </div>
       )}
 
@@ -413,8 +414,8 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
               disabled={importing || selectedCount === 0}
             >
               {importing
-                ? '⏳ Import…'
-                : `➕ Importer ${selectedCount} morceau${selectedCount > 1 ? 'x' : ''}`}
+                ? 'Import…'
+                : `Importer ${selectedCount} morceau${selectedCount > 1 ? 'x' : ''}`}
             </Button>
           </div>
 
@@ -464,7 +465,7 @@ export function BulkPasteImport({ playlistId, onImported }: Props): JSX.Element 
           {notFoundLines.length > 0 && (
             <details className="text-sm">
               <summary className="cursor-pointer font-mono text-xs text-raspberry-deep">
-                ⚠ {notFoundLines.length} titre{notFoundLines.length > 1 ? 's' : ''} non trouvé
+                {notFoundLines.length} titre{notFoundLines.length > 1 ? 's' : ''} non trouvé
                 {notFoundLines.length > 1 ? 's' : ''} (clique pour voir)
               </summary>
               <ul className="mt-2 space-y-0.5 font-mono text-[11px] text-ink-soft">

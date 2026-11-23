@@ -10,7 +10,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
   hint?: ReactNode;
   error?: ReactNode;
   /**
-   * Variante sombre (console iPad / TV) : verre #15151d, bordure white/10,
+   * Variante sombre (console iPad / TV) : verre #181628, bordure white/10,
    * texte blanc, focus ring coral. Défaut = thème clair Pop Cocktail.
    */
   dark?: boolean;
@@ -21,11 +21,11 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
   ref,
 ) {
   const inputId = id ?? rest.name;
-  const base = 'w-full px-3 py-2 border-2 rounded focus:outline-none focus:ring-2';
+  const base = 'w-full px-3 py-2.5 border rounded-xl focus:outline-none focus:ring-2';
   const theme = dark
-    ? 'bg-white/[0.06] border-white/10 text-white placeholder:text-white/30 focus:bg-white/[0.09] focus:ring-[#FF5C4D]'
-    : 'bg-cream/30 border-ink focus:bg-white focus:ring-spritz placeholder:text-ink-faded';
-  const errorBorder = error ? (dark ? 'border-[#FF5C4D]' : 'border-raspberry') : '';
+    ? 'bg-white/[0.06] border-white/10 text-white placeholder:text-white/30 focus:bg-cream-3/[0.09] focus:ring-[#00F0FF]'
+    : 'bg-cream-2 border-hairline text-ink focus:bg-cream-3 focus:border-spritz focus:ring-spritz/40 placeholder:text-ink-faded';
+  const errorBorder = error ? (dark ? 'border-[#FF3366]' : 'border-raspberry') : '';
   return (
     <label className="block">
       {label && (
@@ -52,7 +52,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
       {error && (
         <span
           role="alert"
-          className={`block text-xs mt-1 font-medium ${dark ? 'text-[#FF5C4D]' : 'text-raspberry'}`}
+          className={`block text-xs mt-1 font-medium ${dark ? 'text-[#FF3366]' : 'text-raspberry'}`}
         >
           {error}
         </span>

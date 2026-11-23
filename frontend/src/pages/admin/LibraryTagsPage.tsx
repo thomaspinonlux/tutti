@@ -586,8 +586,8 @@ export function LibraryTagsPage(): JSX.Element {
             title="Génère (ou étend) les alias de prononciation via l'IA pour les morceaux filtrés"
           >
             {genRunning && genProgress
-              ? `✨ Alias… ${genProgress.done}/${genProgress.total}`
-              : `✨ Générer les alias (${total})`}
+              ? `Alias… ${genProgress.done}/${genProgress.total}`
+              : `Générer les alias (${total})`}
           </Button>
         </div>
 
@@ -651,7 +651,7 @@ export function LibraryTagsPage(): JSX.Element {
                 key={s.key}
                 type="button"
                 onClick={() => toggleSort(s.key)}
-                className="inline-flex items-center gap-1 text-[11px] font-medium px-2 h-6 rounded-full bg-ink text-cream border-2 border-hairline"
+                className="inline-flex items-center gap-1 text-[11px] font-medium px-2 h-6 rounded-full bg-cream-4 text-spritz border-2 border-hairline"
                 title="Cliquer pour inverser / retirer"
               >
                 <span className="opacity-70">{i + 1}.</span>
@@ -737,7 +737,7 @@ export function LibraryTagsPage(): JSX.Element {
       {/* Barre « Tout enregistrer » sticky — visible dès qu'il y a des brouillons. */}
       {dirtyCount > 0 && (
         <div className="sticky bottom-3 z-20 flex justify-center pointer-events-none">
-          <div className="pointer-events-auto flex items-center gap-3 bg-ink text-cream rounded-full pl-4 pr-2 py-2 shadow-lg border-2 border-hairline">
+          <div className="pointer-events-auto flex items-center gap-3 bg-cream-4 text-spritz rounded-full pl-4 pr-2 py-2 shadow-lg border-2 border-hairline">
             <span className="font-mono text-xs">
               {dirtyCount} modification{dirtyCount > 1 ? 's' : ''} non enregistrée
               {dirtyCount > 1 ? 's' : ''}
@@ -748,7 +748,7 @@ export function LibraryTagsPage(): JSX.Element {
               onClick={() => void saveAll()}
               disabled={bulkSaving}
             >
-              {bulkSaving ? '… enregistrement' : `💾 Tout enregistrer (${dirtyCount})`}
+              {bulkSaving ? '… enregistrement' : `Tout enregistrer (${dirtyCount})`}
             </Button>
           </div>
         </div>
@@ -806,7 +806,7 @@ function Facet<T extends string>({
               aria-pressed={on}
               className={`px-2 h-6 rounded-full text-[11px] font-medium border-2 whitespace-nowrap transition-colors ${
                 on
-                  ? 'bg-ink text-cream border-hairline'
+                  ? 'bg-cream-4 text-spritz border-hairline'
                   : 'bg-panel text-ink-soft border-ink/25 hover:border-ink/50'
               }`}
             >
@@ -942,7 +942,7 @@ function SongRowView({
             onClick={() => set((d) => ({ ...d, level: d.level === n ? null : n }))}
             className={`w-9 h-7 text-xs font-medium ${n > 1 ? 'border-l-2 border-ink/20' : ''} ${
               draft.level === n
-                ? 'bg-ink text-cream'
+                ? 'bg-cream-4 text-spritz'
                 : 'bg-transparent text-ink-soft hover:bg-ink/5'
             }`}
             aria-pressed={draft.level === n}
@@ -1030,7 +1030,7 @@ function SongRowView({
                 title={`Artiste : ${(row.artist_aliases ?? []).join(', ')}`}
                 className="inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200"
               >
-                🎤 {row.artist_aliases?.length}
+                {row.artist_aliases?.length}
               </span>
             )}
             {(row.title_aliases?.length ?? 0) > 0 && (
@@ -1038,7 +1038,7 @@ function SongRowView({
                 title={`Titre : ${(row.title_aliases ?? []).join(', ')}`}
                 className="inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200"
               >
-                🎵 {row.title_aliases?.length}
+                {row.title_aliases?.length}
               </span>
             )}
           </>

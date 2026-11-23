@@ -27,6 +27,7 @@ import {
   type QuizQuestionMediaType,
   type Visibility,
 } from '../../lib/adminLibrary.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 // feat/quiz-question-media — parse "https://youtu.be/XXX", "https://youtube.com/
 // watch?v=XXX", "https://youtube.com/shorts/XXX", ou ID brut 11 chars.
@@ -254,7 +255,7 @@ export function LibraryQuizPackDetailPage(): JSX.Element {
                       className="text-xs font-mono px-2 py-0.5 border border-spritz rounded bg-spritz/10 text-spritz-deep"
                       title={`${q.media_type} · ${q.media_youtube_id} · ${q.media_start_sec ?? 0}s+${q.media_duration_sec ?? 0}s`}
                     >
-                      {q.media_type === 'AUDIO' ? '🎵 audio' : '🎬 video'}
+                      {q.media_type === 'AUDIO' ? 'audio' : 'video'}
                     </span>
                   )}
                   <div className="flex-1 min-w-0">
@@ -268,7 +269,7 @@ export function LibraryQuizPackDetailPage(): JSX.Element {
                     onClick={() => setExpandedQuestionId(isExpanded ? null : q.id)}
                     className="font-mono text-xs text-spritz-deep hover:underline shrink-0"
                   >
-                    {isExpanded ? '✕ fermer' : hasMedia ? '✏︎ média' : '+ média'}
+                    {isExpanded ? '✕ fermer' : hasMedia ? 'média' : '+ média'}
                   </button>
                 </div>
                 {isExpanded && (
@@ -338,7 +339,7 @@ function EditableField({
           disabled={saving}
         />
       )}
-      {saving && <p className="font-mono text-[10px] text-ink-soft mt-1">⏳</p>}
+      {saving && <p className="font-mono text-[10px] text-ink-soft mt-1"><Icone nom="horloge" /></p>}
     </div>
   );
 }
@@ -427,8 +428,8 @@ function QuestionMediaEditor({ question, onSave }: QuestionMediaEditorProps): JS
               {opt === 'NONE'
                 ? 'Aucun'
                 : opt === 'AUDIO'
-                  ? '🎵 Audio (YouTube)'
-                  : '🎬 Video (YouTube)'}
+                  ? 'Audio (YouTube)'
+                  : 'Video (YouTube)'}
             </span>
           </label>
         ))}
@@ -482,7 +483,7 @@ function QuestionMediaEditor({ question, onSave }: QuestionMediaEditorProps): JS
       )}
       <div className="flex justify-end">
         <Button type="button" size="sm" onClick={() => void handleSubmit()} disabled={saving}>
-          {saving ? '⏳ Enregistrement…' : '✓ Enregistrer le média'}
+          {saving ? 'Enregistrement…' : '✓ Enregistrer le média'}
         </Button>
       </div>
     </div>

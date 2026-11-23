@@ -152,13 +152,13 @@ export function ReflexeTvPage(): JSX.Element {
 
   const fond =
     phase !== 'jeu'
-      ? '#14141c'
+      ? '#181628'
       : etape === 'go'
-        ? '#1fae5b'
+        ? '#00e5a3'
         : etape === 'piege'
           ? '#f2994a'
           : etape === 'resultat'
-            ? '#14141c'
+            ? '#181628'
             : '#b3261e';
 
   return (
@@ -176,7 +176,7 @@ export function ReflexeTvPage(): JSX.Element {
           <ol className="space-y-2 text-3xl">
             {lignes.map((l, i) => (
               <li key={l.id} className="flex items-center gap-3">
-                <span className="w-12 text-right">{l.ms !== null ? (['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`) : '·'}</span>
+                <span className="w-12 text-right">{l.ms !== null ? `${i + 1}.` : '·'}</span>
                 <span className="inline-block h-5 w-5 rounded-full" style={{ background: nom(l.id).couleur }} />
                 <span className="font-semibold">{nom(l.id).pseudo}</span>
                 <span className="font-mono text-2xl text-white/70">
@@ -203,7 +203,7 @@ export function ReflexeTvPage(): JSX.Element {
         />
       )}
       {phase === 'fini' && (
-        <TableauScores titre={`🏆 ${classement[0]?.pseudo ?? ''} gagne !`} lignes={classement} bouton="Rejouer ↻" onBouton={lancer} />
+        <TableauScores titre={`${classement[0]?.pseudo ?? ''} gagne !`} lignes={classement} bouton="Rejouer ↻" onBouton={lancer} />
       )}
     </CadreTv>
   );

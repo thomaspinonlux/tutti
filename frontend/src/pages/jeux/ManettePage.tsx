@@ -12,15 +12,15 @@ import { ManetteMoto, ManettePieds, ManetteVolant } from './ManettesCourse.js';
 
 const CLE_PSEUDO = 'tutti.manette.pseudo';
 const NOMS: Record<JeuManette, string> = {
-  serpents: '🐍 Serpents lumineux',
-  sumo: '🥋 Sumo',
-  reflexe: '⚡ Réflexe',
-  pong: '🏓 Pong',
-  kart: '🏎️ Kart à bonus',
-  sprint: '🏃 Sprint 100 m',
-  ski: '⛷️ Slalom',
-  tamponneuses: '💥 Auto-tamponneuses',
-  moto: '🏍️ Moto cross',
+  serpents: 'Serpents lumineux',
+  sumo: 'Sumo',
+  reflexe: 'Réflexe',
+  pong: 'Pong',
+  kart: 'Kart à bonus',
+  sprint: 'Sprint 100 m',
+  ski: 'Slalom',
+  tamponneuses: 'Auto-tamponneuses',
+  moto: 'Moto cross',
 };
 
 const lirePseudo = (): string => {
@@ -109,7 +109,7 @@ export function ManettePage(): JSX.Element {
 
   if (fermee) {
     return (
-      <div className="min-h-screen bg-[#0B0B0F] text-white flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-[#0E0D17] text-white flex items-center justify-center p-6 text-center">
         <p className="text-2xl">La TV a fermé la partie. Scanne le nouveau QR code.</p>
       </div>
     );
@@ -117,8 +117,8 @@ export function ManettePage(): JSX.Element {
 
   if (!moi || !jeu) {
     return (
-      <div className="min-h-screen bg-[#0B0B0F] text-white flex flex-col items-center justify-center p-6 gap-4">
-        <p className="font-display text-4xl">🎮 Manette</p>
+      <div className="min-h-screen bg-[#0E0D17] text-white flex flex-col items-center justify-center p-6 gap-4">
+        <p className="font-display text-4xl">Manette</p>
         <p className="text-white/60">Salon {code.toUpperCase()}</p>
         <form
           className="w-full max-w-sm space-y-3"
@@ -135,11 +135,11 @@ export function ManettePage(): JSX.Element {
             className="w-full rounded-xl px-4 py-3 text-xl text-black"
             autoFocus
           />
-          <button type="submit" disabled={!pseudo.trim()} className="w-full rounded-xl bg-[#FF5C4D] py-3 text-xl font-bold disabled:opacity-40">
+          <button type="submit" disabled={!pseudo.trim()} className="w-full rounded-xl bg-[#FF3366] py-3 text-xl font-bold disabled:opacity-40">
             Jouer
           </button>
         </form>
-        {erreur && <p className="text-[#FF5C4D]">{erreur}</p>}
+        {erreur && <p className="text-[#FF3366]">{erreur}</p>}
       </div>
     );
   }
@@ -149,7 +149,7 @@ export function ManettePage(): JSX.Element {
   const statut = perso ?? (etat?.phase === 'jeu' ? 'Tu joueras à la prochaine partie' : etat?.texte || 'En attente du départ');
 
   return (
-    <div className="h-[100dvh] bg-[#0B0B0F] text-white flex flex-col p-3 gap-3 select-none" style={{ touchAction: 'none' }}>
+    <div className="h-[100dvh] bg-[#0E0D17] text-white flex flex-col p-3 gap-3 select-none" style={{ touchAction: 'none' }}>
       <div className="flex items-center justify-between gap-2">
         <p className="font-semibold text-xl truncate" style={{ color: moi.couleur }}>
           ● {moi.pseudo}
@@ -158,12 +158,12 @@ export function ManettePage(): JSX.Element {
       </div>
       <p className="font-mono text-lg text-center min-h-[1.75rem]">{etat?.phase === 'compte' ? 'Prêt…' : statut}</p>
       {!enJeu && jeu !== 'reflexe' && (
-        <button type="button" onClick={() => emettre('manette:lancer')} className="rounded-xl bg-[#FF5C4D] py-3 text-xl font-bold">
+        <button type="button" onClick={() => emettre('manette:lancer')} className="rounded-xl bg-[#FF3366] py-3 text-xl font-bold">
           {etat?.phase === 'manche' ? 'Manche suivante ▶' : etat?.phase === 'fini' ? 'Rejouer ↻' : 'Lancer la partie ▶'}
         </button>
       )}
       {jeu === 'reflexe' && etat?.phase !== 'jeu' && (
-        <button type="button" onClick={() => emettre('manette:lancer')} className="rounded-xl bg-[#FF5C4D] py-3 text-xl font-bold">
+        <button type="button" onClick={() => emettre('manette:lancer')} className="rounded-xl bg-[#FF3366] py-3 text-xl font-bold">
           {etat?.phase === 'fini' ? 'Rejouer ↻' : 'Lancer la partie ▶'}
         </button>
       )}
@@ -172,8 +172,8 @@ export function ManettePage(): JSX.Element {
         {jeu === 'sumo' && <ManetteJoystick emettre={emettre} />}
         {jeu === 'pong' && <ManetteGlissiere emettre={emettre} couleur={moi.couleur} />}
         {jeu === 'reflexe' && <ManetteReflexe emettre={emettre} etat={etat} />}
-        {jeu === 'kart' && <ManetteVolant emettre={emettre} action={{ label: 'BONUS 🎁', type: 'bonus' }} />}
-        {jeu === 'tamponneuses' && <ManetteVolant emettre={emettre} action={{ label: 'TURBO 🔥', type: 'turbo' }} />}
+        {jeu === 'kart' && <ManetteVolant emettre={emettre} action={{ label: 'BONUS', type: 'bonus' }} />}
+        {jeu === 'tamponneuses' && <ManetteVolant emettre={emettre} action={{ label: 'TURBO', type: 'turbo' }} />}
         {jeu === 'ski' && <ManetteVolant emettre={emettre} frein={false} />}
         {jeu === 'sprint' && <ManettePieds emettre={emettre} />}
         {jeu === 'moto' && <ManetteMoto emettre={emettre} />}
@@ -269,9 +269,9 @@ function ManetteJoystick({ emettre }: { emettre: Emettre }): JSX.Element {
           setRecharge(true);
           window.setTimeout(() => setRecharge(false), 2500);
         }}
-        className={`rounded-3xl py-8 text-4xl font-black ${recharge ? 'bg-white/10 text-white/40' : 'bg-[#FF5C4D]'}`}
+        className={`rounded-3xl py-8 text-4xl font-black ${recharge ? 'bg-white/10 text-white/40' : 'bg-[#FF3366]'}`}
       >
-        DASH 💨
+        DASH
       </button>
     </div>
   );
@@ -363,7 +363,7 @@ function ManetteReflexe({ emettre, etat }: { emettre: Emettre; etat: EtatManette
   const fond = !r
     ? 'bg-white/10'
     : etape === 'go'
-      ? 'bg-[#1fae5b]'
+      ? 'bg-[#00e5a3]'
       : etape === 'piege'
         ? 'bg-[#f2994a]'
         : etape === 'pret'

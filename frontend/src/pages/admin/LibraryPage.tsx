@@ -33,15 +33,16 @@ import {
 } from '../../lib/adminLibrary.js';
 import { listPlaylists, createPlaylist, deletePlaylist } from '../../lib/playlists.js';
 import { listQuestionSets, createQuestionSet } from '../../lib/questionSets.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 // 4 onglets : Playlists officielles / personnelles, Quizzes officielles / personnels.
 type Tab = 'playlists' | 'my-playlists' | 'quizzes' | 'my-quizzes';
 
 const TABS = [
-  { key: 'playlists', icon: '🎵', labelKey: 'library.tabPlaylists' },
-  { key: 'my-playlists', icon: '🎧', labelKey: 'library.tabMyPlaylists' },
-  { key: 'quizzes', icon: '❓', labelKey: 'library.tabQuizzes' },
-  { key: 'my-quizzes', icon: '📝', labelKey: 'library.tabMyQuizzes' },
+  { key: 'playlists', icon: <Icone nom="note" />, labelKey: 'library.tabPlaylists' },
+  { key: 'my-playlists', icon: <Icone nom="casque" />, labelKey: 'library.tabMyPlaylists' },
+  { key: 'quizzes', icon: <Icone nom="ampoule" />, labelKey: 'library.tabQuizzes' },
+  { key: 'my-quizzes', icon: <Icone nom="crayon" />, labelKey: 'library.tabMyQuizzes' },
 ] as const satisfies { key: Tab; icon: string; labelKey: string }[];
 
 export function LibraryPage(): JSX.Element {
@@ -161,7 +162,7 @@ function MyPlaylistsTab(): JSX.Element {
                 title="Supprimer la playlist"
                 className="absolute bottom-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-panel border-2 border-hairline text-raspberry hover:bg-raspberry hover:text-white shadow-pop transition-colors disabled:opacity-50"
               >
-                {deletingId === p.id ? '…' : '🗑'}
+                {deletingId === p.id ? '…' : <Icone nom="corbeille" />}
               </button>
               <Link to={`/admin/tracks/${p.id}`} className="block group">
                 <Card
@@ -259,7 +260,7 @@ function NewPlaylistModal({
                 onClick={() => setLanguage(lng)}
                 aria-pressed={language === lng}
                 className={`flex-1 px-3 py-1.5 border-2 border-hairline rounded font-medium transition-colors ${
-                  language === lng ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
+                  language === lng ? 'bg-cream-4 text-spritz' : 'bg-cream text-ink hover:bg-cream-2'
                 }`}
               >
                 {lng.toUpperCase()}
@@ -430,7 +431,7 @@ function NewPackModal({
                 onClick={() => setLanguage1(lng)}
                 aria-pressed={language1 === lng}
                 className={`flex-1 px-3 py-1.5 border-2 border-hairline rounded font-medium transition-colors ${
-                  language1 === lng ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
+                  language1 === lng ? 'bg-cream-4 text-spritz' : 'bg-cream text-ink hover:bg-cream-2'
                 }`}
               >
                 {lng.toUpperCase()}
@@ -610,7 +611,7 @@ function PlaylistsTab(): JSX.Element {
             className="w-64"
           />
           <Button type="submit" variant="secondary" size="md" disabled={recherche}>
-            {recherche ? '⏳ …' : `🔍 ${t('library.searchSubmit')}`}
+            {recherche ? '…' : t('library.searchSubmit')}
           </Button>
         </form>
         <div>
@@ -633,13 +634,13 @@ function PlaylistsTab(): JSX.Element {
             to="/admin/library/audit"
             className="font-mono text-sm px-3 py-2 border-2 border-hairline rounded hover:bg-cream transition-colors"
           >
-            🔍 Audit tracks non jouables
+            Audit tracks non jouables
           </Link>
           <Link
             to="/admin/library/tags"
             className="font-mono text-sm px-3 py-2 border-2 border-hairline rounded hover:bg-cream transition-colors"
           >
-            🎼 Chansons &amp; paramètres
+            Chansons &amp; paramètres
           </Link>
           <Button
             type="button"
@@ -648,7 +649,7 @@ function PlaylistsTab(): JSX.Element {
             disabled={reimporting}
             onClick={() => void handleReimport()}
           >
-            {reimporting ? '⏳ ' + t('library.reimporting') : '🔄 ' + t('library.reimportAll')}
+            {reimporting ? '' + t('library.reimporting') : '' + t('library.reimportAll')}
           </Button>
         </div>
       </div>
@@ -672,7 +673,7 @@ function PlaylistsTab(): JSX.Element {
       ) : (
         <div className="border-2 border-hairline rounded-lg overflow-x-auto bg-cream">
           <table className="w-full text-sm">
-            <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
+            <thead className="bg-cream-3 text-ink-soft font-mono text-xs uppercase tracking-wider">
               <tr>
                 <SortableHeader
                   sortKey="name"
@@ -882,7 +883,7 @@ function QuizzesTab(): JSX.Element {
             className="w-64"
           />
           <Button type="submit" variant="secondary" size="md">
-            🔍 {t('library.searchSubmit')}
+            {t('library.searchSubmit')}
           </Button>
         </form>
         <div>
@@ -919,7 +920,7 @@ function QuizzesTab(): JSX.Element {
       ) : (
         <div className="border-2 border-hairline rounded-lg overflow-x-auto bg-cream">
           <table className="w-full text-sm">
-            <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
+            <thead className="bg-cream-3 text-ink-soft font-mono text-xs uppercase tracking-wider">
               <tr>
                 <QuizSortableHeader
                   sortKey="name_fr"
@@ -1161,7 +1162,7 @@ function ImportSummary({ result }: { result: ImportResult }): JSX.Element {
   );
   return (
     <Card tone="basil" size="md" className="mb-4">
-      <p className="font-display text-lg mb-1">✅ {t('library.importDone')}</p>
+      <p className="font-display text-lg mb-1">{t('library.importDone')}</p>
       <p className="text-sm text-ink-soft">
         {result.files.length} {t('library.playlistsCount')} · {totals.tracks}{' '}
         {t('library.tracksCount')} · {(result.durationMs / 1000).toFixed(1)}s

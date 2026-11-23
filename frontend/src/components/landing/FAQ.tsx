@@ -30,7 +30,7 @@ export function FAQ(): JSX.Element {
             <div
               key={`${idx}-${item.q}`}
               style={{
-                borderTop: idx === 0 ? '1px solid rgba(26, 24, 20, 0.15)' : 'none',
+                borderTop: idx === 0 ? '1px solid rgba(255, 255, 255, 0.15)' : 'none',
               }}
             >
               <FAQItem question={item.q} answerHtml={item.a} />

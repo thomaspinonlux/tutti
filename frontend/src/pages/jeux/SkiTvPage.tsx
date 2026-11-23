@@ -86,7 +86,7 @@ export function SkiTvPage(): JSX.Element {
             return [
               s.id,
               tf !== null
-                ? `🏁 ${rangTexte(i + 1)} · ${tf.toFixed(1)} s${s.ratees.length ? ` (+${s.ratees.length * PENALITE_PORTE} s)` : ''}`
+                ? `${rangTexte(i + 1)} · ${tf.toFixed(1)} s${s.ratees.length ? ` (+${s.ratees.length * PENALITE_PORTE} s)` : ''}`
                 : `Porte ${Math.min(nb, s.porte + 1)}/${nb} · ${s.ratees.length} ratée${s.ratees.length > 1 ? 's' : ''}`,
             ];
           }),
@@ -115,7 +115,7 @@ export function SkiTvPage(): JSX.Element {
       )}
       {phase === 'fini' && (
         <TableauScores
-          titre="🏁 Arrivée"
+          titre="Arrivée"
           lignes={cl.map((s) => {
             const tf = tempsFinal(s);
             return {
@@ -181,7 +181,7 @@ function dessiner(cv: HTMLCanvasElement | null, ss: Skieur[], p: Parcours | null
         if (!vu(g.y)) return;
         const passee = k < s.porte;
         const ratee = s.ratees.includes(k);
-        const coul = ratee ? '#999' : k % 2 === 0 ? '#d63a2f' : '#2f6fd6';
+        const coul = ratee ? '#999' : k % 2 === 0 ? '#e11d48' : '#2f6fd6';
         for (const cote of [-1, 1]) {
           const [x, y] = versEcran(g.x + (cote * LARGEUR_PORTE) / 2, g.y);
           ctx.strokeStyle = '#333';
@@ -197,7 +197,7 @@ function dessiner(cv: HTMLCanvasElement | null, ss: Skieur[], p: Parcours | null
         }
         if (ratee) {
           const [x, y] = versEcran(g.x, g.y);
-          ctx.fillStyle = '#d63a2f';
+          ctx.fillStyle = '#e11d48';
           ctx.font = `bold ${22 * echelle}px system-ui, sans-serif`;
           ctx.textAlign = 'center';
           ctx.fillText('✗', x, y);

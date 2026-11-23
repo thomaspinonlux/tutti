@@ -55,6 +55,7 @@ import type { CurrentQuestionState } from '@tutti/shared';
 import { ScreenQuizView, type QuizTvReveal } from '../components/screen/ScreenQuizView.js';
 import { repriseQuizz } from '../lib/sessions.js';
 import { appliquerPause, type MessagePause } from '../lib/quizPause.js';
+import { Rang } from '../components/ui/Icone.js';
 
 // fix/tv-1s-poll — 1 s en partie : l'écran ne peut jamais avoir plus d'une
 // seconde de retard sur le serveur, même si le canal temps réel est mort.
@@ -496,17 +497,17 @@ export function ScreenPage(): JSX.Element {
       setParams({ session: v.toUpperCase() });
     };
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white relative overflow-hidden">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white relative overflow-hidden">
         <MultiColorBar height="md" />
         <main className="flex-1 flex items-center justify-center p-8 relative z-10">
           <div className="max-w-2xl w-full text-center">
-            <p className="font-mono text-sm uppercase tracking-[0.3em] mb-4 text-[#FF5C4D]">
+            <p className="font-mono text-sm uppercase tracking-[0.3em] mb-4 text-[#FF3366]">
               {t('common.brand')}
             </p>
             <h1 className="font-display text-7xl lg:text-8xl leading-none mb-4 text-white">
               {t('screen.castTitle')}
             </h1>
-            <p className="font-editorial italic text-2xl text-[#B8B8C4] mb-12">
+            <p className="font-editorial italic text-2xl text-[#A5A1B8] mb-12">
               {t('screen.taglineWaiting')}
             </p>
             <Card size="md" tone="cream" className="max-w-md mx-auto">
@@ -660,7 +661,7 @@ export function ScreenPage(): JSX.Element {
 function ScreenIdleView(): JSX.Element {
   const { t } = useTranslation();
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white relative overflow-hidden">
       <MultiColorBar height="md" />
       <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden opacity-70">
         <FloatingVinyl size={140} top="12%" left="8%" delay="0s" />
@@ -679,13 +680,13 @@ function ScreenIdleView(): JSX.Element {
       </div>
       <main className="flex-1 flex items-center justify-center p-8 relative z-10">
         <div className="max-w-2xl w-full text-center">
-          <p className="font-mono text-sm uppercase tracking-[0.3em] mb-4 text-[#FF5C4D]">
+          <p className="font-mono text-sm uppercase tracking-[0.3em] mb-4 text-[#FF3366]">
             {t('common.brand')}
           </p>
           <h1 className="font-display text-7xl lg:text-8xl leading-none mb-5 text-white">
             {t('screen.castTitle')}
           </h1>
-          <p className="font-editorial italic text-2xl text-[#B8B8C4]">
+          <p className="font-editorial italic text-2xl text-[#A5A1B8]">
             {t('screen.taglineWaiting')}
           </p>
         </div>
@@ -710,18 +711,18 @@ function ScreenLobbyView({
   const { t } = useTranslation();
   const url = `${getShareableOrigin()}/play?session=${joinCode}`;
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white">
       <MultiColorBar height="md" />
       <main className="flex-1 grid lg:grid-cols-2 gap-10 p-10 items-center max-w-7xl mx-auto w-full">
         <div className="text-center">
-          <p className="font-mono text-sm uppercase tracking-[0.3em] mb-3 text-[#FF5C4D]">
+          <p className="font-mono text-sm uppercase tracking-[0.3em] mb-3 text-[#FF3366]">
             {quiz ? t('screen.lobbyEyebrowQuiz') : t('screen.lobbyEyebrow')}
           </p>
           <h1 className="font-display text-6xl lg:text-7xl leading-none mb-8 text-white">
             {sessionName ?? t('common.brand')}
           </h1>
           <div className="inline-block rounded-3xl bg-[#1C1C26] border border-white/10 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
-            <p className="font-mono text-xs uppercase tracking-[0.25em] text-[#B8B8C4] mb-3">
+            <p className="font-mono text-xs uppercase tracking-[0.25em] text-[#A5A1B8] mb-3">
               {t('screen.scanToJoin')}
             </p>
             <div className="rounded-2xl bg-white p-3 inline-block">
@@ -733,11 +734,11 @@ function ScreenLobbyView({
           </div>
         </div>
         <div className="text-center">
-          <p className="font-mono text-sm uppercase tracking-[0.25em] text-[#B8B8C4] mb-4">
+          <p className="font-mono text-sm uppercase tracking-[0.25em] text-[#A5A1B8] mb-4">
             {t('screen.playersConnected', { count: players.length })}
           </p>
           {players.length === 0 ? (
-            <p className="font-editorial italic text-2xl text-[#B8B8C4]/80">
+            <p className="font-editorial italic text-2xl text-[#A5A1B8]/80">
               {quiz ? t('screen.lobbyWaitingQuiz') : t('screen.lobbyWaiting')}
             </p>
           ) : (
@@ -749,8 +750,8 @@ function ScreenLobbyView({
                 >
                   <span
                     aria-hidden
-                    className="w-9 h-9 rounded-full flex items-center justify-center font-display text-base shrink-0 text-[#0B0B0F]"
-                    style={{ backgroundColor: '#FF5C4D' }}
+                    className="w-9 h-9 rounded-full flex items-center justify-center font-display text-base shrink-0 text-[#0E0D17]"
+                    style={{ backgroundColor: '#FF3366' }}
                   >
                     {p.pseudo.charAt(0).toUpperCase()}
                   </span>
@@ -794,7 +795,7 @@ function coverUrlFor(p: LibraryPlaylistSummary): string | null {
 /** Espace entre deux cartes du bandeau TV (px). */
 const RAIL_GAP = 26;
 /** Corail de l'identité écran (identique à TvScreenView). */
-const TV_CORAL = '#FF5C4D';
+const TV_CORAL = '#FF3366';
 /** Libellés des cinq niveaux, tels qu'affichés côté animateur. */
 const LEVEL_LABELS: Record<string, string> = {
   easy: 'Facile',
@@ -965,7 +966,7 @@ function ScreenPlaylistGridView({
   const current = items[focusIndex] ?? null;
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-[#0B0B0F] text-white">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-[#0E0D17] text-white">
       <MultiColorBar height="md" />
       {/* fix/affichage-trop-bas — L ENTETE MANGEAIT LE HAUT DE L ECRAN.
           La grille est centree dans la zone RESTANTE : plus l entete est
@@ -1020,14 +1021,14 @@ function ScreenPlaylistGridView({
                   style={{
                     opacity: on ? 1 : 0.38,
                     transform: on ? 'scale(1.06)' : 'scale(0.92)',
-                    backgroundColor: on ? 'rgba(255,92,77,0.13)' : 'rgba(245,239,224,0.05)',
-                    borderColor: on ? 'rgba(255,92,77,0.52)' : 'rgba(245,239,224,0.10)',
+                    backgroundColor: on ? 'rgba(255,51,102,0.13)' : 'rgba(245,239,224,0.05)',
+                    borderColor: on ? 'rgba(255,51,102,0.52)' : 'rgba(245,239,224,0.10)',
                   }}
                 >
                   <div
                     className="aspect-square w-full overflow-hidden rounded-[14px] ring-1 ring-white/10"
                     style={{
-                      backgroundColor: '#15151D',
+                      backgroundColor: '#181628',
                       backgroundImage: it.cover ? `url(${it.cover})` : undefined,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
@@ -1127,10 +1128,10 @@ function ScreenRoundPodiumView({
       ? (fastest.avg_buzz_ms / 1000).toFixed(2)
       : '—';
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white">
       <MultiColorBar height="md" />
       <main className="flex-1 flex flex-col items-center px-8 py-6 overflow-hidden">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] mb-1 text-[#FF5C4D]">
+        <p className="font-mono text-xs uppercase tracking-[0.3em] mb-1 text-[#FF3366]">
           {t('screen.roundPodiumEyebrow', { n: roundPosition })}
         </p>
         <h1 className="font-display text-5xl lg:text-6xl mb-5 text-white">
@@ -1140,11 +1141,11 @@ function ScreenRoundPodiumView({
         <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 w-full max-w-6xl flex-1 min-h-0">
           {/* Classement COMPLET de la manche — auto-scroll si débordement */}
           <section className="flex flex-col min-h-0">
-            <p className="font-mono text-xs uppercase tracking-[0.25em] mb-3 text-[#FF5C4D]">
-              🏆 {t('screen.roundRankingTitle')}
+            <p className="font-mono text-xs uppercase tracking-[0.25em] mb-3 text-[#FF3366]">
+              {t('screen.roundRankingTitle')}
             </p>
             {roundRanking.length === 0 ? (
-              <p className="font-editorial italic text-[#B8B8C4]/70">
+              <p className="font-editorial italic text-[#A5A1B8]/70">
                 {t('host.intermission.noPoints')}
               </p>
             ) : (
@@ -1155,13 +1156,15 @@ function ScreenRoundPodiumView({
                       key={e.participant_id}
                       className="flex items-center gap-5 px-6 py-4 rounded-2xl"
                       style={{
-                        backgroundColor: idx === 0 ? '#FF5C4D1f' : '#ffffff08',
-                        border: `1px solid ${idx === 0 ? '#FF5C4D66' : '#ffffff12'}`,
+                        backgroundColor: idx === 0 ? '#FF33661f' : '#ffffff08',
+                        border: `1px solid ${idx === 0 ? '#FF336666' : '#ffffff12'}`,
                       }}
                     >
                       <span aria-hidden className="text-4xl w-14 text-center">
-                        {['🥇', '🥈', '🥉'][idx] ?? (
-                          <span className="font-mono text-2xl text-[#B8B8C4]">{idx + 1}</span>
+                        {idx < 3 ? (
+                          <Rang rang={idx + 1} />
+                        ) : (
+                          <span className="font-mono text-2xl text-[#A5A1B8]">{idx + 1}</span>
                         )}
                       </span>
                       <span className={`font-display flex-1 text-white ${classesNom(e.pseudo, 'podium')}`}>
@@ -1181,30 +1184,30 @@ function ScreenRoundPodiumView({
           <section className="flex flex-col min-h-0 gap-4">
             <div
               className="rounded-2xl px-4 py-4 text-center shrink-0"
-              style={{ backgroundColor: '#FF5C4D14', border: '1px solid #FF5C4D55' }}
+              style={{ backgroundColor: '#FF336614', border: '1px solid #FF336655' }}
             >
               <p
                 className="font-mono text-xs uppercase tracking-[0.2em] mb-2"
-                style={{ color: '#FF5C4D' }}
+                style={{ color: '#FF3366' }}
               >
-                ⚡ {t('host.intermission.fastest')}
+                {t('host.intermission.fastest')}
               </p>
               {fastest ? (
                 <>
                   <p className="font-display text-3xl mb-1 text-white">{fastest.pseudo}</p>
-                  <p className="font-mono text-sm text-[#B8B8C4]">
+                  <p className="font-mono text-sm text-[#A5A1B8]">
                     {t('host.intermission.avgBuzz', { ms: fastestAvgSec })}
                   </p>
                 </>
               ) : (
-                <p className="font-editorial italic text-[#B8B8C4]/70">
+                <p className="font-editorial italic text-[#A5A1B8]/70">
                   {t('host.intermission.noBuzz')}
                 </p>
               )}
             </div>
             <div className="flex flex-col min-h-0">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B8B8C4] mb-3">
-                📊 {t('screen.generalRankingTitle')}
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#A5A1B8] mb-3">
+                {t('screen.generalRankingTitle')}
               </p>
               <AutoScrollList className="flex-1 min-h-0">
                 <ol className="space-y-1.5 pr-1">
@@ -1213,11 +1216,11 @@ function ScreenRoundPodiumView({
                       key={e.id}
                       className="flex items-center gap-4 px-5 py-3 rounded-xl"
                       style={{
-                        backgroundColor: idx === 0 ? '#FF5C4D1a' : '#ffffff08',
-                        border: `1px solid ${idx === 0 ? '#FF5C4D55' : '#ffffff10'}`,
+                        backgroundColor: idx === 0 ? '#FF33661a' : '#ffffff08',
+                        border: `1px solid ${idx === 0 ? '#FF336655' : '#ffffff10'}`,
                       }}
                     >
-                      <span className="font-mono text-xl w-10 text-[#B8B8C4]">{idx + 1}.</span>
+                      <span className="font-mono text-xl w-10 text-[#A5A1B8]">{idx + 1}.</span>
                       <span className={`font-display flex-1 text-white ${classesNom(e.label, 'podium')}`}>
                         {e.label}
                       </span>
@@ -1232,7 +1235,7 @@ function ScreenRoundPodiumView({
           </section>
         </div>
 
-        <p className="font-mono text-sm tracking-[0.3em] text-[#B8B8C4] mt-4 shrink-0">
+        <p className="font-mono text-sm tracking-[0.3em] text-[#A5A1B8] mt-4 shrink-0">
           {joinCode}
         </p>
       </main>
@@ -1253,17 +1256,17 @@ function ScreenFinalPodiumView({
   const winnerName = first?.label ?? '';
   const url = `${getShareableOrigin()}/play?session=${joinCode}`;
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white">
       <MultiColorBar height="md" />
       <main className="flex-1 flex flex-col items-center justify-center p-8">
-        <p className="font-mono text-sm uppercase tracking-[0.3em] mb-3 text-[#FF5C4D]">
+        <p className="font-mono text-sm uppercase tracking-[0.3em] mb-3 text-[#FF3366]">
           {t('screen.endedEyebrow')}
         </p>
         <h1 className="font-display text-7xl lg:text-8xl mb-2 text-center text-white">
           {t('screen.endedTitle')}
         </h1>
         {winnerName && (
-          <p className="font-editorial italic text-3xl mb-8" style={{ color: '#FF5C4D' }}>
+          <p className="font-editorial italic text-3xl mb-8" style={{ color: '#FF3366' }}>
             {t('screen.endedWinner', { name: winnerName })}
           </p>
         )}
@@ -1274,12 +1277,12 @@ function ScreenFinalPodiumView({
                 key={entry!.id}
                 className="flex items-center gap-4 px-5 py-4 rounded-2xl"
                 style={{
-                  backgroundColor: idx === 0 ? '#FF5C4D1f' : '#ffffff08',
-                  border: `1px solid ${idx === 0 ? '#FF5C4D66' : '#ffffff12'}`,
+                  backgroundColor: idx === 0 ? '#FF33661f' : '#ffffff08',
+                  border: `1px solid ${idx === 0 ? '#FF336666' : '#ffffff12'}`,
                 }}
               >
                 <span aria-hidden className="text-4xl">
-                  {['🥇', '🥈', '🥉'][idx]}
+                  <Rang rang={idx + 1} />
                 </span>
                 <span className={`font-display flex-1 text-white ${classesNom(entry!.label, 'podium')}`}>
                   {entry!.label}
@@ -1295,7 +1298,7 @@ function ScreenFinalPodiumView({
                   {rest.map((entry, idx) => (
                     <li
                       key={entry.id}
-                      className="flex items-center gap-3 font-mono text-sm text-[#B8B8C4]"
+                      className="flex items-center gap-3 font-mono text-sm text-[#A5A1B8]"
                     >
                       <span className="w-6 text-right">{idx + 4}.</span>
                       <span className="flex-1 break-words line-clamp-2">{entry.label}</span>
@@ -1308,7 +1311,7 @@ function ScreenFinalPodiumView({
           </ol>
         )}
         <div className="text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#B8B8C4] mb-2">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#A5A1B8] mb-2">
             {t('screen.endedRematch')}
           </p>
           <div className="inline-block rounded-2xl bg-white p-2.5">
@@ -1359,7 +1362,7 @@ function FloatingVinyl({
         <circle cx="60" cy="60" r="42" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
         <circle cx="60" cy="60" r="34" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
         <circle cx="60" cy="60" r="26" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
-        <circle cx="60" cy="60" r="18" fill="#ee6c2a" stroke="#1a1410" strokeWidth="2" />
+        <circle cx="60" cy="60" r="18" fill="#00f0ff" stroke="#1a1410" strokeWidth="2" />
         <circle cx="60" cy="60" r="3" fill="#1a1410" />
       </svg>
     </div>
@@ -1465,12 +1468,12 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
   const current = playlists[idx]!;
 
   return (
-    <section className="border-t border-white/10 bg-[#101018] py-6 px-8">
+    <section className="border-t border-white/10 bg-[#12111d] py-6 px-8">
       <p
         className="font-mono text-xs uppercase tracking-[0.3em] text-center mb-4"
-        style={{ color: '#FF5C4D' }}
+        style={{ color: '#FF3366' }}
       >
-        🎶 Playlists disponibles
+        Playlists disponibles
       </p>
       <div className="max-w-4xl mx-auto flex items-center gap-6 animate-fade-in" key={current.id}>
         {/* feat/tv-carousel-polish — cover mosaïque 2×2 si dispo, sinon
@@ -1493,11 +1496,11 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
         <div className="flex-1 min-w-0">
           <p className="font-display text-3xl mb-2 text-white">{current.name}</p>
           {current.description && (
-            <p className="font-editorial italic text-[#B8B8C4] text-base line-clamp-2">
+            <p className="font-editorial italic text-[#A5A1B8] text-base line-clamp-2">
               {current.description}
             </p>
           )}
-          <p className="font-mono text-xs text-[#B8B8C4]/70 mt-2">
+          <p className="font-mono text-xs text-[#A5A1B8]/70 mt-2">
             {current.theme && <span>{current.theme} · </span>}
             {current.track_count} morceaux
           </p>
@@ -1511,7 +1514,7 @@ function LobbyPlaylistCarousel(props: { shortCode: string }): JSX.Element | null
             className="h-1.5 rounded transition-all"
             style={{
               width: i === idx ? '1.5rem' : '0.375rem',
-              backgroundColor: i === idx ? '#FF5C4D' : '#ffffff30',
+              backgroundColor: i === idx ? '#FF3366' : '#ffffff30',
             }}
           />
         ))}

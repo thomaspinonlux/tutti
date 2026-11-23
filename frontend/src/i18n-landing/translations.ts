@@ -1,3 +1,4 @@
+import type { NomIcone } from '../components/ui/Icone.js';
 /**
  * Tutti — Landing v2 traductions
  *
@@ -63,7 +64,7 @@ export interface LandingTranslations {
     titleEm: string;
     titleEnd: string;
     intro: string;
-    steps: Array<{ num: string; icon: string; title: string; desc: string }>;
+    steps: Array<{ num: string; icon: NomIcone; title: string; desc: string }>;
   };
   features: {
     eyebrow: string;
@@ -196,19 +197,19 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       steps: [
         {
           num: '01',
-          icon: '🎧',
+          icon: 'casque',
           title: 'Choisis ta partie',
           desc: 'Réserve ton créneau, puis choisis un blind test ou un quiz dans la bibliothèque officielle Tutti : 119 playlists et 27 thèmes de quiz.',
         },
         {
           num: '02',
-          icon: '📱',
+          icon: 'telephone',
           title: 'Tes amis scannent',
           desc: "Affiche le QR code à l'écran TV. Les joueurs scannent avec leur téléphone — pas d'app à installer, pas de compte à créer. Ils choisissent un pseudo, et c'est parti.",
         },
         {
           num: '03',
-          icon: '🎤',
+          icon: 'micro',
           title: 'Vous jouez',
           desc: 'Première note, premier buzz. Réponse à la voix ou par texte. Score en temps réel, podium animé, soirée mémorable.',
         },
@@ -295,16 +296,16 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       intro:
         "Quelques cas d'usage qu'on voit régulièrement. La liste n'est pas fermée — Tutti s'adapte à tous les formats de soirée privée.",
       tags: [
-        '🎂 Anniversaires',
-        '💍 EVJF / EVG',
-        '🎉 Soirées entre amis',
-        '🏡 Pendaison de crémaillère',
-        '👰 Mariages',
-        '🎄 Fêtes de fin d’année',
-        '🏖️ Vacances entre potes',
-        "🏢 Événements d'entreprise",
-        '🍷 Apéro dînatoire',
-        '🎓 Soirées étudiantes',
+        'Anniversaires',
+        'EVJF / EVG',
+        'Soirées entre amis',
+        'Pendaison de crémaillère',
+        'Mariages',
+        'Fêtes de fin d’année',
+        'Vacances entre potes',
+        "Événements d'entreprise",
+        'Apéro dînatoire',
+        'Soirées étudiantes',
       ],
     },
     faq: {
@@ -466,19 +467,19 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       steps: [
         {
           num: '01',
-          icon: '🎧',
+          icon: 'casque',
           title: 'Pick your game',
           desc: 'Book your slot, then pick a blind test or a quiz from the official Tutti library: 119 playlists and 27 quiz themes.',
         },
         {
           num: '02',
-          icon: '📱',
+          icon: 'telephone',
           title: 'Friends scan in',
           desc: "Show the QR code on the TV. Players scan with their phone — no app to install, no account to create. They pick a nickname and they're in.",
         },
         {
           num: '03',
-          icon: '🎤',
+          icon: 'micro',
           title: 'You play',
           desc: 'First note, first buzz. Answer by voice or by typing. Real-time scoring, animated podium, unforgettable night.',
         },
@@ -565,16 +566,16 @@ export const translations: Record<LandingLang, LandingTranslations> = {
       intro:
         "A few patterns we see regularly. The list isn't fixed — Tutti adapts to every kind of private gathering.",
       tags: [
-        '🎂 Birthdays',
-        '💍 Bachelor & bachelorette parties',
-        '🎉 Friend gatherings',
-        '🏡 Housewarmings',
-        '👰 Weddings',
-        '🎄 Year-end parties',
-        '🏖️ Group vacations',
-        '🏢 Company events',
-        '🍷 Dinner parties',
-        '🎓 Student parties',
+        'Birthdays',
+        'Bachelor & bachelorette parties',
+        'Friend gatherings',
+        'Housewarmings',
+        'Weddings',
+        'Year-end parties',
+        'Group vacations',
+        'Company events',
+        'Dinner parties',
+        'Student parties',
       ],
     },
     faq: {

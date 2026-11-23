@@ -314,7 +314,7 @@
     "safariBannerDismiss": "Dismiss banner",
     "applePreparation": "Apple Music is getting ready…",
     "applePreparationAide": "The button unlocks as soon as Apple Music is ready (a few seconds).",
-    "appleBloque": "⚠️ Apple Music is not responding. Fully close the Tutti app and reopen it before starting.",
+    "appleBloque": "Apple Music is not responding. Fully close the Tutti app and reopen it before starting.",
     "lancerQuandMeme": "Start anyway"
   },
   "contentBlocker": {
@@ -349,7 +349,7 @@
     "audioTarget": {
       "onHost": "Sound here",
       "onTv": "Sound on TV",
-      "connectHint": "To play sound on the TV: open “📺 TV screen”, join it on the TV, then tap “🔊 Enable sound” over there. Until then, sound stays here."
+      "connectHint": "To play sound on the TV: open “TV screen”, join it on the TV, then tap “Enable sound” over there. Until then, sound stays here."
     },
     "eyebrow": "Waiting room",
     "manchesCompletes_zero": "0 full rounds",
@@ -442,8 +442,8 @@
         "trackUnavailable": "Track unavailable with your connected accounts"
       },
       "empty": {
-        "officialLibrary": "The Tutti official library is coming soon 🎵",
-        "officialQuizLibrary": "The Tutti Quizz library is coming soon 🎯"
+        "officialLibrary": "The Tutti official library is coming soon",
+        "officialQuizLibrary": "The Tutti Quizz library is coming soon"
       },
       "lvl_mix_em": "Easy/Medium mix",
       "lyricsShow": "Lyrics",
@@ -523,7 +523,7 @@
     "youtubeBlockedTitle": "Tap to start the music",
     "youtubeBlockedCta": "Your browser blocked autoplay",
     "tvHintTitle": "TV screen tip",
-    "tvHintBody": "Open the TV screen to show the QR code in large to players (📺 button top right).",
+    "tvHintBody": "Open the TV screen to show the QR code in large to players (button top right).",
     "externalScreen": {
       "openButton": "TV screen",
       "openHint": "Open the public view on external screen or new tab",
@@ -553,7 +553,7 @@
     "masterAssign": "Make animator",
     "masterRevoke": "Remove animator",
     "masterIs": "Animator:",
-    "masterNone": "⚠ Nobody holds the remote",
+    "masterNone": "Nobody holds the remote",
     "masterChange": "Change animator",
     "roleLabel": "Role",
     "rolePlayer": "Player",
@@ -780,15 +780,15 @@
     "buzzerHintPhase3": "Round done — congrats to finders!",
     "buzzerHintSkipped": "Track skipped.",
     "buzzerHintAnalyzing": "Analyzing…",
-    "joinMidGame": "🎵 You're joining mid-game — buzz on the current track!",
+    "joinMidGame": "You're joining mid-game — buzz on the current track!",
     "phoneFooter_one": "of {{count}} player",
     "phoneFooter_other": "of {{count}} players",
     "recording": "Your turn!",
     "recordingHint": "Say the artist (and title for bonus) clearly.",
     "recordingSubmit": "Send now",
     "notMatched": "Not recognized, try again!",
-    "notMatchedShort": "❌ Not recognized, try again!",
-    "textAnswerPlaceholder": "📝 Type your answer…",
+    "notMatchedShort": "Not recognized, try again!",
+    "textAnswerPlaceholder": "Type your answer…",
     "textOnlyHint": "Type the title, the artist — or both",
     "textAnswerSubmit": "Send",
     "scoreArtist": "pts (place #{{n}})",
@@ -809,7 +809,7 @@
     "masterNext": "Next",
     "masterPause": "Pause",
     "masterResume": "Resume",
-    "masterRestart": "🔄 Restart",
+    "masterRestart": "Restart",
     "masterPickRound": "Next round",
     "masterPickRoundTitle": "Pick the next playlist",
     "masterAdjust": "Adjust points",
@@ -998,9 +998,9 @@
     "questionSur": "Question {{n}} / {{total}}",
     "nouveauQuiz": "New quiz",
     "fermerClassement": "Close the ranking",
-    "pause": "⏸ Pause",
+    "pause": "Pause",
     "reprendre": "▶ Resume",
-    "enPause": "⏸ Game paused",
+    "enPause": "Game paused",
     "enPauseHint": "The host paused the game; the timer resumes soon."
   },
   "settings": {
@@ -1154,8 +1154,8 @@
     "themesTutti": "Tutti themes",
     "choisi": "Chosen theme: {{theme}} · {{count}} questions",
     "changer": "Tap another theme to change it.",
-    "musiqueCouper": "🔇 Mute music",
-    "musiqueRemettre": "🔊 Music on",
+    "musiqueCouper": "Mute music",
+    "musiqueRemettre": "Music on",
     "famille": {
       "titre": "Game family",
       "quiz": "Quiz",
@@ -1212,7 +1212,7 @@
     "ecritPar": "Written by {{noms}}",
     "envoye": "Sent: “{{texte}}”",
     "envoyer": "Send",
-    "etapeSuivante": "Next step ⏭",
+    "etapeSuivante": "Next step",
     "joueur": "Player",
     "laVerite": "The real answer",
     "placeholderBluff": "Make up a believable fake answer…",

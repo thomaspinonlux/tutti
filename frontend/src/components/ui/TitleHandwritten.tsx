@@ -15,16 +15,18 @@ interface Props {
 }
 
 const AS_STYLES = {
-  h1: 'text-5xl md:text-6xl',
-  h2: 'text-3xl md:text-4xl',
-  h3: 'text-2xl md:text-3xl',
+  // Syne est plus large que l'ancienne police de titre : un cran plus petit
+  // pour que les titres tiennent sur un téléphone.
+  h1: 'text-4xl md:text-5xl',
+  h2: 'text-2xl md:text-3xl',
+  h3: 'text-xl md:text-2xl',
 } as const;
 
 export function TitleHandwritten({ children, as = 'h1', className }: Props): JSX.Element {
   const Tag = as;
   return (
     <Tag
-      className={`font-display leading-[0.95] tracking-tight text-ink ${AS_STYLES[as]} ${className ?? ''}`}
+      className={`font-display font-extrabold leading-[1.05] tracking-tight text-ink [overflow-wrap:anywhere] ${AS_STYLES[as]} ${className ?? ''}`}
     >
       {children}
     </Tag>
@@ -37,13 +39,13 @@ export function TitleHandwritten({ children, as = 'h1', className }: Props): JSX
  */
 export function Underline({ children }: { children: ReactNode }): JSX.Element {
   return (
-    <span className="relative inline-block">
+    <span className="relative inline-block pb-2">
+      <span className="relative">{children}</span>
+      {/* Le trait de marqueur jaune devient un filet néon sous le titre. */}
       <span
         aria-hidden
-        className="absolute bottom-1 left-0 w-full h-3 bg-lemon -z-10"
-        style={{ transform: 'skew(-8deg)' }}
+        className="absolute bottom-0 left-0 h-1 w-full rounded-full bg-gradient-to-r from-rose via-lemon to-spritz"
       />
-      <span className="relative">{children}</span>
     </span>
   );
 }
@@ -53,7 +55,7 @@ export function Underline({ children }: { children: ReactNode }): JSX.Element {
  */
 export function Swirl({ children }: { children: ReactNode }): JSX.Element {
   return (
-    <span className="inline-block text-raspberry" style={{ transform: 'rotate(-3deg)' }}>
+    <span className="inline-block bg-gradient-to-r from-rose via-lemon to-spritz bg-clip-text text-transparent">
       {children}
     </span>
   );

@@ -16,12 +16,13 @@
 import { useEffect, useState } from 'react';
 import { Card, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { generateAliasesBatch, getVoiceAnalytics, type VoiceAnalytics } from '../../lib/admin.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 const LEVEL_LABELS: Record<string, string> = {
-  'web-speech': '🌐 L1 — Web Speech',
-  deepgram: '⚡ L2 — Deepgram Nova-3',
-  'whisper-fallback': '🛟 L2-fallback — Whisper',
-  assemblyai: '🎯 L3 — AssemblyAI Universal-2',
+  'web-speech': 'L1 — Web Speech',
+  deepgram: 'L2 — Deepgram Nova-3',
+  'whisper-fallback': 'L2-fallback — Whisper',
+  assemblyai: 'L3 — AssemblyAI Universal-2',
   'manual-text': '⌨️  Saisie texte',
   unknown: '— inconnu (pré-cascade)',
 };
@@ -94,7 +95,7 @@ export function VoiceAnalyticsPage(): JSX.Element {
             type="button"
             onClick={() => setDays(d)}
             className={`px-3 py-1.5 border-2 border-hairline rounded ${
-              days === d ? 'bg-ink text-white' : 'bg-cream hover:bg-spritz/30'
+              days === d ? 'bg-cream-4 text-spritz' : 'bg-cream hover:bg-spritz/30'
             }`}
           >
             {d}j
@@ -110,7 +111,7 @@ export function VoiceAnalyticsPage(): JSX.Element {
         </Card>
       )}
 
-      {loading && <p className="font-mono text-sm text-ink-soft animate-pulse">⏳ Chargement…</p>}
+      {loading && <p className="font-mono text-sm text-ink-soft animate-pulse">Chargement…</p>}
 
       {data && !loading && (
         <>
@@ -206,15 +207,15 @@ export function VoiceAnalyticsPage(): JSX.Element {
             </p>
             <ul className="space-y-1.5 font-mono text-sm">
               <li className="flex justify-between">
-                <span className="text-ink-soft">⚡ Deepgram</span>
+                <span className="text-ink-soft">Deepgram</span>
                 <span>{fmtEur(data.cost_estimate_eur.deepgram)}</span>
               </li>
               <li className="flex justify-between">
-                <span className="text-ink-soft">🛟 Whisper fallback</span>
+                <span className="text-ink-soft">Whisper fallback</span>
                 <span>{fmtEur(data.cost_estimate_eur.whisper_fallback)}</span>
               </li>
               <li className="flex justify-between">
-                <span className="text-ink-soft">🎯 AssemblyAI</span>
+                <span className="text-ink-soft">AssemblyAI</span>
                 <span>{fmtEur(data.cost_estimate_eur.assemblyai)}</span>
               </li>
               <li className="flex justify-between border-t-2 border-hairline pt-2 font-semibold">
@@ -231,7 +232,7 @@ export function VoiceAnalyticsPage(): JSX.Element {
           {/* fix/ios-voice-cascade-mic-and-buzz-refused — Top 10 morceaux
               qui ratent le plus le match. Cible à enrichir en aliases. */}
           <Card size="md">
-            <h2 className="font-display text-lg mb-3">🎯 Top 10 morceaux à problèmes</h2>
+            <h2 className="font-display text-lg mb-3">Top 10 morceaux à problèmes</h2>
             {data.top_failed_tracks.length === 0 ? (
               <p className="font-editorial italic text-ink-soft">
                 Pas assez de tentatives sur la fenêtre pour identifier des morceaux problématiques
@@ -251,7 +252,7 @@ export function VoiceAnalyticsPage(): JSX.Element {
                       Match
                     </th>
                     <th className="font-mono text-[10px] uppercase tracking-wider py-2 text-right">
-                      🤖
+                      <Icone nom="automate" />
                     </th>
                   </tr>
                 </thead>
@@ -356,7 +357,7 @@ function FailedTrackRow({
           } disabled:opacity-50`}
           title={errMsg ?? 'Générer aliases via IA'}
         >
-          {state === 'busy' ? '⏳' : state === 'done' ? '✓' : state === 'error' ? '✕' : '🤖'}
+          {state === 'busy' ? '…' : state === 'done' ? '✓' : state === 'error' ? '✕' : <Icone nom="automate" />}
         </button>
       </td>
     </tr>

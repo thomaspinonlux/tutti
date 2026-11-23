@@ -12,6 +12,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getMe } from '../../lib/me.js';
+import { Icone } from '../ui/Icone.js';
 
 interface NavEntry {
   to: string;
@@ -38,22 +39,22 @@ export function MobileNav(): JSX.Element {
   }, []);
 
   const entries: NavEntry[] = [
-    { to: '/admin/dashboard', label: t('nav.dashboard'), icon: '🏠' },
+    { to: '/admin/dashboard', label: t('nav.dashboard'), icon: <Icone nom="maison" /> },
     // Mes playlists et Quizz : propriétaire uniquement, comme dans la colonne.
     ...(estProprietaire === true
       ? [
-          { to: '/admin/tracks', label: t('nav.tracks'), icon: '🎵' },
-          { to: '/admin/quizz', label: t('nav.quizz'), icon: '💡' },
+          { to: '/admin/tracks', label: t('nav.tracks'), icon: <Icone nom="note" /> },
+          { to: '/admin/quizz', label: t('nav.quizz'), icon: <Icone nom="ampoule" /> },
         ]
       : []),
     // feat/reservation-de-creneaux — même entrée, deux destinations.
     ...(estProprietaire === null
       ? []
       : estProprietaire
-        ? [{ to: '/admin/reservations', label: t('nav.reservations'), icon: '📅' }]
-        : [{ to: '/admin/reserver', label: t('nav.reserver'), icon: '📅' }]),
-    { to: '/admin/settings', label: t('nav.settings'), icon: '⚙️' },
-    { to: '/admin/account', label: t('nav.account'), icon: '👤' },
+        ? [{ to: '/admin/reservations', label: t('nav.reservations'), icon: <Icone nom="calendrier" /> }]
+        : [{ to: '/admin/reserver', label: t('nav.reserver'), icon: <Icone nom="calendrier" /> }]),
+    { to: '/admin/settings', label: t('nav.settings'), icon: <Icone nom="reglages" /> },
+    { to: '/admin/account', label: t('nav.account'), icon: <Icone nom="personne" /> },
   ];
   // fix/menu-comptes-apple — le parc Apple Music, accessible aussi sur
   // tablette / téléphone (propriétaire uniquement, comme dans la colonne).
@@ -61,12 +62,12 @@ export function MobileNav(): JSX.Element {
     entries.splice(
       entries.findIndex((e) => e.to === '/admin/settings'),
       0,
-      { to: '/admin/comptes-apple', label: t('nav.comptesApple'), icon: '🍎' },
+      { to: '/admin/comptes-apple', label: t('nav.comptesApple'), icon: <Icone nom="casque" /> },
     );
   }
   if (isSuperAdmin) {
     // fix/admin-users-integration — Users + Modération exposés en mobile aussi.
-    entries.push({ to: '/admin/users', label: t('nav.users'), icon: '👥' });
+    entries.push({ to: '/admin/users', label: t('nav.users'), icon: <Icone nom="personnes" /> });
     entries.push({ to: '/admin/super-admin', label: t('admin.moderationNav'), icon: '★' });
   }
 
@@ -82,7 +83,7 @@ export function MobileNav(): JSX.Element {
               to={e.to}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center gap-0.5 px-2 py-2 text-[10px] font-mono uppercase tracking-wider transition-colors ${
-                  isActive ? 'bg-ink text-cream' : 'text-ink hover:bg-cream-3'
+                  isActive ? 'bg-cream-4 text-spritz' : 'text-ink hover:bg-cream-3'
                 }`
               }
             >

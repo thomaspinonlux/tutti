@@ -111,7 +111,7 @@ export function PongTvPage(): JSX.Element {
       )}
       {phase === 'fini' && m && (
         <TableauScores
-          titre={`🏆 ${lignes.map((l) => l.pseudo).join(' & ')} gagne${lignes.length > 1 ? 'nt' : ''} !`}
+          titre={`${lignes.map((l) => l.pseudo).join(' & ')} gagne${lignes.length > 1 ? 'nt' : ''} !`}
           sousTitre={`${m.score.g} – ${m.score.d}`}
           lignes={lignes}
           bouton="Rejouer ↻"

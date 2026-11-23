@@ -199,7 +199,7 @@ export function SettingsPage(): JSX.Element {
           onClick={() => window.location.reload()}
           className="rounded-full border border-hairline px-4 py-2 text-sm"
         >
-          🔄 Réessayer
+          Réessayer
         </button>
       </div>
     );
@@ -509,7 +509,7 @@ export function SettingsPage(): JSX.Element {
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                value={brandingColor || '#ee6c2a'}
+                value={brandingColor || '#00f0ff'}
                 onChange={(e) => setBrandingColor(e.target.value)}
                 className="w-12 h-12 border-2 border-hairline rounded cursor-pointer"
               />
@@ -517,7 +517,7 @@ export function SettingsPage(): JSX.Element {
                 type="text"
                 value={brandingColor}
                 onChange={(e) => setBrandingColor(e.target.value)}
-                placeholder="#ee6c2a"
+                placeholder="#00f0ff"
                 pattern="^#[0-9a-fA-F]{6}$"
                 className="flex-1 px-3 py-2 border-2 border-hairline rounded bg-cream/30 font-mono text-sm focus:bg-panel focus:outline-none focus:ring-2 focus:ring-spritz"
               />
@@ -542,7 +542,7 @@ export function SettingsPage(): JSX.Element {
                   aria-pressed={defaultLanguage === lng}
                   className={`flex-1 px-3 py-2 border-2 border-hairline rounded font-medium transition-colors ${
                     defaultLanguage === lng
-                      ? 'bg-ink text-cream shadow-pop-sm'
+                      ? 'bg-cream-4 text-spritz shadow-pop-sm'
                       : 'bg-cream text-ink hover:bg-cream-2'
                   }`}
                 >
@@ -615,7 +615,7 @@ export function SettingsPage(): JSX.Element {
                     onClick={() => void handleSpotifyConnect()}
                     title="Relance l'autorisation Spotify pour mettre à jour les permissions (lecture des playlists, etc.)"
                   >
-                    {spotifyBusy ? t('common.loading') : '🔄 Mettre à jour les autorisations'}
+                    {spotifyBusy ? t('common.loading') : 'Mettre à jour les autorisations'}
                   </Button>
                   <Button
                     type="button"
@@ -700,7 +700,7 @@ export function SettingsPage(): JSX.Element {
             </div>
             {apple !== null && !apple.configured && (
               <p className="font-mono text-xs text-ink-soft">
-                ⚠️ Apple Music n'est pas encore configuré côté serveur (clé MusicKit / env APPLE_*).
+                Apple Music n'est pas encore configuré côté serveur (clé MusicKit / env APPLE_*).
                 La connexion sera possible une fois le backend déployé.
               </p>
             )}

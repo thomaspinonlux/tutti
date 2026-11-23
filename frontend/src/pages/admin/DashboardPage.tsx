@@ -18,6 +18,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEstablishment } from './AdminLayout.js';
 import { Button, Card, TitleHandwritten, Swirl, Underline } from '../../components/ui/index.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 // ───── DEBUG : ErrorBoundary temporaire ──────────────────────────────────
 // À retirer après confirmation du diagnostic.
@@ -97,7 +98,7 @@ export function DashboardPage(): JSX.Element {
             className="mb-6 px-4 py-3 border-2 border-basil bg-basil/10 text-basil-deep rounded-lg flex items-center gap-3 animate-fade-in"
           >
             <span className="text-2xl" aria-hidden>
-              ✅
+              <Icone nom="check" />
             </span>
             <span className="font-medium">{t('dashboard.noticeSessionEnded')}</span>
           </div>
@@ -200,7 +201,7 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
               )
             }
           >
-            📺 {t('dashboard.openTvScreen')}
+            {t('dashboard.openTvScreen')}
           </Button>
           {/* feat/deux-cartes — le bouton « Nouvelle session » quitte l'en-tête :
               on lance depuis les cartes Tutti Blind Test / Tutti Quizz. */}
@@ -216,7 +217,7 @@ function DashboardContent({ establishment }: DashboardContentProps): JSX.Element
       {noAccess && (
         <Card tone="cream" size="lg" className="text-center mb-6 border-raspberry">
           <p className="text-3xl mb-2" aria-hidden>
-            🚫
+            <Icone nom="interdit" />
           </p>
           <p className="font-display text-xl mb-2">{t('dashboard.noAccessTitle')}</p>
           <p className="font-editorial italic text-ink-2">{t('dashboard.noAccessHint')}</p>
@@ -339,7 +340,7 @@ function GameCard({
       <p className="text-sm text-ink-soft text-center mb-5">{description}</p>
       <div className="flex justify-center">
         <Button variant={tone === 'spritz' ? 'primary' : 'secondary'} size="md" disabled={disabled}>
-          {disabled ? `🚫 ${cta}` : `${cta} →`}
+          {disabled ? `${cta}` : `${cta} →`}
         </Button>
       </div>
     </Card>
@@ -363,10 +364,10 @@ function GameCard({
 function VinylIllustration(): JSX.Element {
   return (
     <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
-      <circle cx="32" cy="32" r="28" fill="#0B0B0F" stroke="#FF5C4D" strokeWidth="3" />
+      <circle cx="32" cy="32" r="28" fill="#0E0D17" stroke="#FF3366" strokeWidth="3" />
       <circle cx="32" cy="32" r="18" fill="none" stroke="#3a3a48" strokeWidth="2" />
-      <circle cx="32" cy="32" r="9" fill="#FF5C4D" />
-      <circle cx="32" cy="32" r="2.5" fill="#0B0B0F" />
+      <circle cx="32" cy="32" r="9" fill="#FF3366" />
+      <circle cx="32" cy="32" r="2.5" fill="#0E0D17" />
     </svg>
   );
 }
@@ -375,9 +376,9 @@ function VinylIllustration(): JSX.Element {
 function ExtraitIllustration(): JSX.Element {
   return (
     <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
-      <circle cx="32" cy="32" r="28" fill="#0B0B0F" stroke="#e8c547" strokeWidth="3" />
-      <circle cx="32" cy="32" r="18" fill="#e8c547" />
-      <text x="32" y="38" textAnchor="middle" fontSize="16" fontWeight="700" fill="#0B0B0F" fontFamily="monospace">
+      <circle cx="32" cy="32" r="28" fill="#0E0D17" stroke="#ffe600" strokeWidth="3" />
+      <circle cx="32" cy="32" r="18" fill="#ffe600" />
+      <text x="32" y="38" textAnchor="middle" fontSize="16" fontWeight="700" fill="#0E0D17" fontFamily="monospace">
         30
       </text>
     </svg>
@@ -390,13 +391,13 @@ function SalonIllustration(): JSX.Element {
     <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
       <path
         d="M10 14h34a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H26l-10 9v-9h-6a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z"
-        fill="#fff"
-        stroke="#1a1410"
+        fill="#221F38"
+        stroke="#E5E0EF"
         strokeWidth="3"
         strokeLinejoin="round"
       />
-      <path d="M40 46l14-14 6 6-14 14-8 2z" fill="#FF5C4D" stroke="#1a1410" strokeWidth="3" strokeLinejoin="round" />
-      <path d="M16 24h20M16 32h12" stroke="#1a1410" strokeWidth="3" strokeLinecap="round" />
+      <path d="M40 46l14-14 6 6-14 14-8 2z" fill="#FF3366" stroke="#E5E0EF" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M16 24h20M16 32h12" stroke="#00F0FF" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 }
@@ -405,10 +406,10 @@ function SalonIllustration(): JSX.Element {
 function ArcadeIllustration(): JSX.Element {
   return (
     <svg viewBox="0 0 64 64" className="w-16 h-16" aria-hidden>
-      <rect x="6" y="20" width="52" height="28" rx="14" fill="#0B0B0F" stroke="#1a1410" strokeWidth="3" />
+      <rect x="6" y="20" width="52" height="28" rx="14" fill="#221F38" stroke="#00F0FF" strokeWidth="3" />
       <path d="M18 34h10M23 29v10" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="42" cy="31" r="3.5" fill="#FF5C4D" />
-      <circle cx="49" cy="38" r="3.5" fill="#3FB47A" />
+      <circle cx="42" cy="31" r="3.5" fill="#FF3366" />
+      <circle cx="49" cy="38" r="3.5" fill="#00E5A3" />
     </svg>
   );
 }
@@ -418,33 +419,33 @@ function BulbIllustration(): JSX.Element {
     <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden>
       <path
         d="M60 18c-15 0-26 11-26 26 0 10 5 18 13 23v8c0 2 2 4 4 4h18c2 0 4-2 4-4v-8c8-5 13-13 13-23 0-15-11-26-26-26z"
-        fill="#e8c547"
-        stroke="#1a1410"
+        fill="#ffe600"
+        stroke="#E5E0EF"
         strokeWidth="3"
       />
-      <rect x="50" y="86" width="20" height="6" fill="#6b5443" stroke="#1a1410" strokeWidth="2" />
-      <rect x="52" y="94" width="16" height="6" fill="#6b5443" stroke="#1a1410" strokeWidth="2" />
+      <rect x="50" y="86" width="20" height="6" fill="#6b5443" stroke="#E5E0EF" strokeWidth="2" />
+      <rect x="52" y="94" width="16" height="6" fill="#6b5443" stroke="#E5E0EF" strokeWidth="2" />
       <line
         x1="56"
         y1="100"
         x2="64"
         y2="106"
-        stroke="#1a1410"
+        stroke="#E5E0EF"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
         d="M60 30 L60 50 M52 50 L60 60 L68 50"
-        stroke="#1a1410"
+        stroke="#E5E0EF"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
       />
-      <path d="M30 22 l6 6" stroke="#ee6c2a" strokeWidth="2" strokeLinecap="round" />
-      <path d="M90 22 l-6 6" stroke="#ee6c2a" strokeWidth="2" strokeLinecap="round" />
-      <path d="M22 50 h6" stroke="#ee6c2a" strokeWidth="2" strokeLinecap="round" />
-      <path d="M92 50 h6" stroke="#ee6c2a" strokeWidth="2" strokeLinecap="round" />
+      <path d="M30 22 l6 6" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" />
+      <path d="M90 22 l-6 6" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" />
+      <path d="M22 50 h6" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" />
+      <path d="M92 50 h6" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }

@@ -150,7 +150,7 @@ export function SerpentsTvPage(): JSX.Element {
         />
       )}
       {phase === 'manche' && <TableauScores titre={resultat} lignes={lignes} bouton="Manche suivante ▶" onBouton={lancer} />}
-      {phase === 'fini' && <TableauScores titre={`🏆 ${classes[0]?.pseudo ?? ''} gagne !`} lignes={lignes} bouton="Rejouer ↻" onBouton={lancer} />}
+      {phase === 'fini' && <TableauScores titre={`${classes[0]?.pseudo ?? ''} gagne !`} lignes={lignes} bouton="Rejouer ↻" onBouton={lancer} />}
     </CadreTv>
   );
 }

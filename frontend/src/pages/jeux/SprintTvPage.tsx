@@ -84,7 +84,7 @@ export function SprintTvPage(): JSX.Element {
         perso: Object.fromEntries(
           cl.map((c, i) => [
             c.id,
-            c.finiA !== null ? `🏁 ${rangTexte(i + 1)} · ${(c.finiA / 1000).toFixed(2)} s` : `${c.m} m · ${rangTexte(i + 1)}`,
+            c.finiA !== null ? `${rangTexte(i + 1)} · ${(c.finiA / 1000).toFixed(2)} s` : `${c.m} m · ${rangTexte(i + 1)}`,
           ]),
         ),
       });
@@ -111,7 +111,7 @@ export function SprintTvPage(): JSX.Element {
       )}
       {phase === 'fini' && (
         <TableauScores
-          titre="🏁 Arrivée"
+          titre="Arrivée"
           sousTitre={record ? `Record du salon : ${record.pseudo} en ${record.s.toFixed(2)} s` : undefined}
           lignes={cl.map((c) => ({
             id: c.id,

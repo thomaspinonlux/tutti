@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { useExternalScreen } from '../../lib/useExternalScreen.js';
 import { usePwa } from '../../lib/usePwa.js';
 import { Button, Card } from '../ui/index.js';
+import { Icone } from '../ui/Icone.js';
 
 interface Props {
   shortCode: string;
@@ -97,7 +98,7 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
         disabled={ouvertureEnCours}
         title={t('host.externalScreen.openHint')}
       >
-        📺 {t('host.externalScreen.openButton')}
+        {t('host.externalScreen.openButton')}
       </Button>
 
       {showPrompt && (
@@ -111,7 +112,7 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
             className="max-w-md text-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="font-display text-3xl mb-2">📺</p>
+            <p className="font-display text-3xl mb-2"><Icone nom="ecran" /></p>
             <h3 className="font-display text-2xl mb-2">{t('host.externalScreen.detected')}</h3>
             <p className="font-editorial italic text-ink-soft mb-4">
               {t('host.externalScreen.detectedHint')}
@@ -153,7 +154,7 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
             onClick={(e) => e.stopPropagation()}
           >
             <p className="font-display text-3xl mb-2" aria-hidden>
-              📺
+              <Icone nom="ecran" />
             </p>
             <h3 id="no-screen-title" className="font-display text-2xl mb-2">
               {t('host.externalScreen.noScreenStandaloneTitle')}

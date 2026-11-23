@@ -170,7 +170,7 @@ export function PlancheDessinateur({ socket, sessionId, questionIndex, mot, rest
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border-2 border-ink bg-lemon px-4 py-3 text-center">
+      <div className="rounded-2xl border-2 border-hairline bg-lemon px-4 py-3 text-center">
         <p className="font-mono text-xs uppercase tracking-wider">{t('dessin.aToiDeDessiner')}</p>
         <p className="font-display text-4xl leading-tight break-words">{mot ?? '…'}</p>
         {restant !== null && (
@@ -186,7 +186,7 @@ export function PlancheDessinateur({ socket, sessionId, questionIndex, mot, rest
           onPointerUp={fin}
           onPointerCancel={fin}
           onPointerLeave={fin}
-          className={`block rounded-xl border-2 border-ink bg-white ${actif ? '' : 'opacity-60'}`}
+          className={`block rounded-xl border-2 border-hairline bg-white ${actif ? '' : 'opacity-60'}`}
           style={{ touchAction: 'none' }}
           aria-label={t('dessin.toile')}
         />
@@ -200,7 +200,7 @@ export function PlancheDessinateur({ socket, sessionId, questionIndex, mot, rest
             onClick={() => setCouleur(c)}
             aria-pressed={c === couleur}
             aria-label={c === '#FFFFFF' ? t('dessin.gomme') : c}
-            className={`h-9 w-9 rounded-full border-2 ${c === couleur ? 'border-ink ring-2 ring-offset-2 ring-ink' : 'border-ink/40'}`}
+            className={`h-9 w-9 rounded-full border-2 ${c === couleur ? 'border-hairline ring-2 ring-offset-2 ring-ink' : 'border-ink/40'}`}
             style={{ background: c }}
           >
             {c === '#FFFFFF' ? '⌫' : ''}
@@ -216,7 +216,7 @@ export function PlancheDessinateur({ socket, sessionId, questionIndex, mot, rest
             onClick={() => setEpaisseur(w)}
             aria-pressed={w === epaisseur}
             aria-label={t('dessin.epaisseur', { n: w })}
-            className={`h-10 w-12 rounded-lg border-2 flex items-center justify-center ${w === epaisseur ? 'border-ink bg-cream-2' : 'border-ink/30'}`}
+            className={`h-10 w-12 rounded-lg border-2 flex items-center justify-center ${w === epaisseur ? 'border-hairline bg-cream-2' : 'border-ink/30'}`}
           >
             <span className="rounded-full bg-ink" style={{ width: Math.max(4, w / 1.4), height: Math.max(4, w / 1.4) }} />
           </button>
@@ -225,7 +225,7 @@ export function PlancheDessinateur({ socket, sessionId, questionIndex, mot, rest
           type="button"
           onClick={annuler}
           disabled={!actif || nbTraits === 0}
-          className="h-10 px-3 rounded-lg border-2 border-ink font-medium disabled:opacity-40"
+          className="h-10 px-3 rounded-lg border-2 border-hairline font-medium disabled:opacity-40"
         >
           ↶ {t('dessin.annuler')}
         </button>
@@ -233,7 +233,7 @@ export function PlancheDessinateur({ socket, sessionId, questionIndex, mot, rest
           type="button"
           onClick={toutEffacer}
           disabled={!actif || nbTraits === 0}
-          className="h-10 px-3 rounded-lg border-2 border-ink font-medium disabled:opacity-40"
+          className="h-10 px-3 rounded-lg border-2 border-hairline font-medium disabled:opacity-40"
         >
           {t('dessin.effacer')}
         </button>

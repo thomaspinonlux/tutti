@@ -29,10 +29,10 @@ export function UseCasesSection(): JSX.Element {
               transition={{ duration: 0.3, delay: idx * 0.04, ease: 'easeOut' }}
               className="landing-use-tag rounded-full px-5 py-[10px]"
               style={{
-                border: '1.5px solid var(--landing-ink)',
+                border: '1px solid var(--landing-line)',
                 fontSize: '15px',
                 fontWeight: 500,
-                background: 'var(--landing-cream)',
+                background: 'var(--landing-cream-deep)',
                 color: 'var(--landing-ink)',
                 cursor: 'default',
               }}

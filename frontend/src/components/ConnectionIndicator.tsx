@@ -70,7 +70,7 @@ export function ConnectionIndicator({ socket, className }: Props): JSX.Element {
       title={label}
       className={`inline-flex items-center gap-1.5 ${className ?? ''}`}
     >
-      <span className={`w-2.5 h-2.5 rounded-full border border-ink ${tone}`} aria-hidden />
+      <span className={`w-2.5 h-2.5 rounded-full border border-hairline ${tone}`} aria-hidden />
     </div>
   );
 }

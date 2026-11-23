@@ -18,8 +18,10 @@ export function Pill({ active = false, onClick, children, className }: Props): J
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`px-3 py-1 text-sm border-2 border-hairline rounded-full transition-colors ${
-        active ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
+      className={`px-3 py-1 text-sm border rounded-full transition-colors ${
+        active
+          ? 'border-spritz bg-spritz/15 text-spritz'
+          : 'border-hairline bg-cream-2 text-ink hover:bg-cream-3'
       } ${className ?? ''}`}
     >
       {children}

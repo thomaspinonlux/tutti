@@ -19,6 +19,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePwa } from '../../lib/usePwa.js';
+import { Icone } from '../ui/Icone.js';
 
 export function PwaSafetyControls(): JSX.Element | null {
   const { isStandalone } = usePwa();
@@ -84,26 +85,26 @@ export function PwaSafetyControls(): JSX.Element | null {
       <button
         type="button"
         onClick={handleReload}
-        className={`px-2 py-1 text-xs font-mono rounded border-2 border-ink ${
+        className={`px-2 py-1 text-xs font-mono rounded border-2 border-hairline ${
           confirmReload ? 'bg-raspberry text-cream' : 'bg-cream text-ink'
         }`}
         title={confirmReload ? t('host.pwaSafety.reloadConfirm') : t('host.pwaSafety.reloadHint')}
         aria-label={t('host.pwaSafety.reloadHint')}
       >
-        {confirmReload ? '⚠️ ' : '🔄 '}
+        <Icone nom={confirmReload ? 'alerte' : 'recharger'} />{' '}
         {confirmReload ? t('host.pwaSafety.reloadConfirmShort') : t('host.pwaSafety.reloadShort')}
       </button>
       {voitDebug && (
       <button
         type="button"
         onClick={handleToggleDebug}
-        className={`px-2 py-1 text-xs font-mono rounded border-2 border-ink ${
+        className={`px-2 py-1 text-xs font-mono rounded border-2 border-hairline ${
           debugActive ? 'bg-basil text-cream' : 'bg-cream text-ink'
         }`}
         title={debugActive ? t('host.pwaSafety.debugOnHint') : t('host.pwaSafety.debugOffHint')}
         aria-pressed={debugActive}
       >
-        🐛 {debugActive ? t('host.pwaSafety.debugOn') : t('host.pwaSafety.debugOff')}
+        {debugActive ? t('host.pwaSafety.debugOn') : t('host.pwaSafety.debugOff')}
       </button>
       )}
     </div>

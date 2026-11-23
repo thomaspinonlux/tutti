@@ -81,7 +81,7 @@ export function PlayApercuPage(): JSX.Element {
   ];
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-[500px] bg-[#0B0B0F] px-4 py-3 text-white">
+    <div className="mx-auto min-h-screen w-full max-w-[500px] bg-[#0E0D17] px-4 py-3 text-white">
       <PlayingView
         currentTrack={currentTrack}
         identity={moi}
@@ -101,7 +101,7 @@ export function PlayApercuPage(): JSX.Element {
         busy={false}
         setBusy={() => undefined}
         teamName={long ? 'Les Inséparables du Komptoir' : null}
-        teamColor="#FF5C4D"
+        teamColor="#FF3366"
         myRank={1}
         totalParticipants={14}
         roundPosition={2}

@@ -46,7 +46,7 @@ export function RoleSelector({
     <div
       role="group"
       aria-label={t('host.roleLabel')}
-      className={`${pleineLargeur ? 'flex w-full' : 'inline-flex shrink-0'} rounded-lg overflow-hidden border-2 ${dark ? 'border-white/15' : 'border-ink'}`}
+      className={`${pleineLargeur ? 'flex w-full' : 'inline-flex shrink-0'} rounded-lg overflow-hidden border-2 ${dark ? 'border-white/15' : 'border-hairline'}`}
     >
       {opts.map((o) => {
         const active = o.value === role;
@@ -79,7 +79,7 @@ export function RoleSelector({
                   ? 'text-[10px] px-1.5 py-0.5'
                   : 'text-xs px-2 py-1',
               'font-mono transition-colors border-r-2 last:border-r-0',
-              dark ? 'border-white/15' : 'border-ink',
+              dark ? 'border-white/15' : 'border-hairline',
               active
                 ? 'bg-basil text-white'
                 : dark

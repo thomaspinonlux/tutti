@@ -114,7 +114,7 @@ export function ProchainePartie(): JSX.Element | null {
             </Button>
             <Link to="/admin/sessions/new">
               <Button size="lg" variant="ghost">
-                ⚙️ {t('quizTheme.otherSettings')}
+                {t('quizTheme.otherSettings')}
               </Button>
             </Link>
           </div>

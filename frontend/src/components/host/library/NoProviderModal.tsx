@@ -6,6 +6,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../../ui/index.js';
+import { Icone } from '../../ui/Icone.js';
 
 interface Props {
   open: boolean;
@@ -33,7 +34,7 @@ export function NoProviderModal({
       <div onClick={(e) => e.stopPropagation()} className="max-w-md w-full">
         <Card size="md" tone="cream">
           <p className="text-3xl mb-2 text-center" aria-hidden>
-            🔌
+            <Icone nom="prise" />
           </p>
           <h2 id="no-provider-title" className="font-display text-2xl text-center mb-2">
             {t('host.session.modal.noProvider.title')}

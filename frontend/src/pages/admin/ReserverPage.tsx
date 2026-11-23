@@ -31,6 +31,7 @@ import {
   type ReglagesPublics,
   type Reservation,
 } from '../../lib/reservations.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 /** « 12,00 € ». */
 function euros(cents: number): string {
@@ -282,7 +283,7 @@ export function ReserverPage(): JSX.Element {
       </TitleHandwritten>
       {reserve ? (
         <Card size="lg" className="mb-6 border-basil">
-          <p className="font-display text-2xl mb-2">C’est réservé 🎉</p>
+          <p className="font-display text-2xl mb-2">C’est réservé <Icone nom="etoile" /></p>
           <ol className="list-decimal pl-5 space-y-2 text-base mb-5">
             <li>Tu reçois un e-mail de confirmation avec le mode d’emploi en PDF.</li>
             <li>
@@ -304,7 +305,7 @@ export function ReserverPage(): JSX.Element {
         <>
           {(params.get('bienvenue') === '1' || (liste !== null && liste.length === 0)) && (
             <Card size="lg" className="mb-6">
-              <p className="font-display text-xl mb-2">Bienvenue sur Tutti 👋</p>
+              <p className="font-display text-xl mb-2">Bienvenue sur Tutti</p>
               <ol className="list-decimal pl-5 space-y-2 text-base">
                 <li>Choisis ta soirée ci-dessous : le prix s’affiche tout de suite.</li>
                 <li>Paie par carte : c’est réservé, sans attente.</li>
@@ -503,7 +504,7 @@ export function ReserverPage(): JSX.Element {
             onClick={() => setCodeOuvert(true)}
             className="mb-4"
           >
-            🎁 J’ai un code partie offerte
+            J’ai un code partie offerte
           </Button>
         )}
         {codeOuvert && (

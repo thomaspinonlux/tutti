@@ -117,7 +117,7 @@ export function ExpressPlaylistModal({
               {picked.map((track) => (
                 <li
                   key={track.provider_track_id}
-                  className="flex items-center justify-between gap-2 px-3 py-2 border-2 border-ink rounded bg-white"
+                  className="flex items-center justify-between gap-2 px-3 py-2 border-2 border-hairline rounded-xl bg-cream-3"
                 >
                   <span className="min-w-0 flex-1 truncate">
                     <span className="font-medium">{track.title}</span>
@@ -152,7 +152,7 @@ export function ExpressPlaylistModal({
           </p>
         )}
 
-        <div className="flex items-center justify-between gap-2 pt-2 border-t-2 border-ink">
+        <div className="flex items-center justify-between gap-2 pt-2 border-t-2 border-hairline">
           <p className="font-mono text-xs text-ink-soft">
             {picked.length < MIN_TRACKS
               ? t('host.expressMinTracks', { min: MIN_TRACKS, current: picked.length })

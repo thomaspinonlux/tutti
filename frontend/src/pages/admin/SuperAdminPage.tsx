@@ -175,7 +175,7 @@ function MembersTab(): JSX.Element {
               type="button"
               onClick={() => setFilter(f)}
               className={`px-2 py-1 font-mono text-[10px] uppercase tracking-wider border-2 border-hairline rounded ${
-                filter === f ? 'bg-ink text-cream' : 'bg-cream-2 text-ink'
+                filter === f ? 'bg-cream-4 text-spritz' : 'bg-cream-2 text-ink'
               }`}
             >
               {f}

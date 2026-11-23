@@ -7,9 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { detectPlatform, type Platform } from '../../lib/onboarding.js';
 
 // feat/telephone-au-style-tv — l'écran joueur a pris les codes de la TV.
-const CORAIL = '#FF5C4D';
+const CORAIL = '#FF3366';
 const PANNEAU =
-  'rounded-[20px] bg-[#191922] border border-white/[0.07] shadow-[0_18px_50px_rgba(0,0,0,0.5)]';
+  'rounded-[20px] bg-[#181628] border border-white/[0.07] shadow-[0_18px_50px_rgba(0,0,0,0.5)]';
 
 interface Props {
   onRetry: () => void | Promise<void>;
@@ -54,7 +54,7 @@ export function MicPermissionErrorScreen({ onRetry, busy }: Props): JSX.Element 
 
       <button
         type="button"
-        className="w-full rounded-2xl px-4 py-3 font-bold text-[#0B0B0F] transition-transform active:scale-[0.98] disabled:opacity-40"
+        className="w-full rounded-2xl px-4 py-3 font-bold text-[#0E0D17] transition-transform active:scale-[0.98] disabled:opacity-40"
         style={{ backgroundColor: CORAIL }}
         onClick={() => void onRetry()}
         disabled={busy}

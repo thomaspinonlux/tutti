@@ -12,8 +12,8 @@ import type { CurrentQuestionState } from '@tutti/shared';
 import { useDessin } from '../../lib/dessin.js';
 import { ToileDessin } from './ToileDessin.js';
 
-const CORAIL = '#FF5C4D';
-const VERT = '#3FB47A';
+const CORAIL = '#FF3366';
+const VERT = '#00E5A3';
 
 interface Props {
   socket: Socket | null;
@@ -72,7 +72,7 @@ export function SceneDessin({
         <div className="rounded-2xl bg-white/[0.06] border border-white/10 p-4">
           <p className="font-mono text-xs uppercase tracking-[0.25em] text-white/50">{t('dessin.dessinateur')}</p>
           <p className={`font-display ${xl ? 'text-4xl' : 'text-2xl'} truncate`}>
-            ✏️ {question.dessinateur?.pseudo ?? '—'}
+            {question.dessinateur?.pseudo ?? '—'}
           </p>
           {restant !== null && !revele && (
             <p

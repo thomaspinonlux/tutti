@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MultiColorBar, TitleHandwritten, Underline } from '../ui/index.js';
+import { Icone } from '../ui/Icone.js';
 
 interface Props {
   /** Titre affiché en H1 (déjà localisé). */
@@ -35,7 +36,7 @@ export function LegalLayout({ title, subtitle, lastUpdated, children }: Props): 
       <header className="border-b-2 border-ink/15 bg-cream-2/40">
         <div className="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
           <Link to="/" className="flex items-center gap-2 font-display text-2xl hover:opacity-80">
-            <span>🎵</span>
+            <span><Icone nom="note" /></span>
             <span>Tutti</span>
           </Link>
           <div className="flex items-center gap-4 text-xs font-mono text-ink-soft">

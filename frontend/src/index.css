@@ -1,9 +1,18 @@
 /*
- * Tutti — Direction Pop Cocktail (étape 5)
- * Référence : design-references/05-direction-artistique-popcocktail.html
+ * Tutti — direction « Électro-Pop Clubbing » (22/11/2026)
+ *
+ * Thomas : « applique le design proprement avec nos fonctionnalités […] sur le
+ * back-office, le front-office, les joueurs, les écrans, les téléphones ».
+ * Référence : la proposition Google Stitch du 11/11 (fiche DESIGN.md) — fond
+ * nuit #0E0D17, surfaces #181628 / #221F38, corail néon #FF3366, cyan #00F0FF,
+ * jaune #FFE600, menthe #00E5A3, violet #7928CA ; titres en Syne, textes en
+ * Plus Jakarta Sans ; pas d'ombre dure, des contours fins et des lueurs.
+ *
+ * On reprend le STYLE, pas le contenu des maquettes : chaque écran garde ses
+ * vraies fonctions et ses vrais textes.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Caprasimo&family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Outfit:wght@300..700&family=JetBrains+Mono:wght@300..600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500..800&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400..700&family=JetBrains+Mono:wght@300..600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -12,25 +21,27 @@
 @layer base {
   :root {
     /*
-     * feat/back-office-au-style-tv — LA PALETTE CLAIRE, VALEUR PAR DEFAUT.
+     * LA PALETTE NUIT EST LA VALEUR PAR DEFAUT, PARTOUT.
+     * Avant le 22/11 la palette claire (crème) était le défaut et seuls
+     * l'administration, la console et le téléphone passaient au sombre par une
+     * classe. Tout le produit partage maintenant la même palette : site,
+     * connexion, pages légales compris.
      * Ecrite en canaux RVB (cf. tailwind.config.js) pour que les opacites
      * Tailwind continuent de marcher : bg-ink/15, border-ink/10…
      */
-    --c-cream: 245 236 217;
-    --c-cream-2: 239 228 204;
-    --c-cream-3: 230 216 184;
-    --c-cream-4: 212 195 158;
-    --c-kraft: 194 170 120;
-    --c-ink: 26 20 16;
-    --c-ink-2: 61 47 36;
-    --c-ink-soft: 107 84 67;
-    --c-ink-faded: 154 132 112;
-    --c-panel: 255 255 255;
-    --c-hairline: 26 20 16;
-    /* Ombre dure decalee — la signature risographe du theme clair. */
-    --c-ombre: #1a1410;
-
-    --paper: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.5'/%3E%3C/svg%3E");
+    --c-cream: 14 13 23; /* #0E0D17 fond */
+    --c-cream-2: 24 22 40; /* #181628 surface */
+    --c-cream-3: 34 31 56; /* #221F38 carte active */
+    --c-cream-4: 52 47 82; /* #342F52 */
+    --c-kraft: 74 68 110;
+    --c-ink: 255 255 255;
+    --c-ink-2: 229 224 239; /* #E5E0EF */
+    --c-ink-soft: 165 161 184; /* #A5A1B8 gris lavande */
+    --c-ink-faded: 120 116 142;
+    --c-panel: 24 22 40;
+    --c-hairline: 52 47 82; /* filet discret */
+    /* Plus d'ombre dure : sur fond nuit elle salit au lieu de detacher. */
+    --c-ombre: transparent;
   }
 
   /* Bug 5 (récurrent — fix définitif) — iOS Safari zoom auto sur tout
@@ -60,27 +71,14 @@
     overflow-x: hidden;
   }
 
-  /* Texture grain papier (signature Pop Cocktail) */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: var(--paper);
-    background-size: 300px 300px;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-    mix-blend-mode: multiply;
-  }
-
-  /* Wash chaud subtil (orange en haut-gauche, vert en bas-droite) */
+  /* Halos néon très discrets (corail en haut à gauche, cyan en bas à droite). */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse at 10% 0%, rgba(238, 108, 42, 0.07), transparent 50%),
-      radial-gradient(ellipse at 100% 100%, rgba(74, 139, 63, 0.06), transparent 50%);
+      radial-gradient(ellipse at 8% 0%, rgba(255, 51, 102, 0.07), transparent 45%),
+      radial-gradient(ellipse at 100% 100%, rgba(0, 240, 255, 0.05), transparent 45%);
     pointer-events: none;
     z-index: 0;
   }
@@ -93,7 +91,7 @@
      retiree quand on le quitte. */
   html.theme-joueur,
   html.theme-joueur body {
-    background: #0b0b0f;
+    background: #0e0d17;
     color: #ffffff;
   }
   html.theme-joueur body::before,
@@ -119,24 +117,13 @@
    * les deux themes.
    */
   html.theme-console {
-    --c-cream: 11 11 15;
-    --c-cream-2: 21 21 29;
-    --c-cream-3: 30 30 40;
-    --c-cream-4: 39 39 51;
-    --c-kraft: 58 58 70;
-    --c-ink: 255 255 255;
-    --c-ink-2: 230 230 238;
-    --c-ink-soft: 160 160 176;
-    --c-ink-faded: 110 110 126;
-    --c-panel: 25 25 34;
-    --c-hairline: 58 58 72;
-    /* Plus d ombre dure : sur fond nuit elle salit au lieu de detacher. Le
-       contour discret suffit, comme sur la TV. */
+    /* Depuis le 22/11 la palette nuit est le defaut (:root) : la classe ne
+       change plus les jetons, elle garde seulement le fond uni ci-dessous. */
     --c-ombre: transparent;
   }
   html.theme-console,
   html.theme-console body {
-    background: #0b0b0f;
+    background: #0e0d17;
     color: #ffffff;
   }
   /* Le grain papier et les halos oranges sont la signature du theme clair. */
@@ -146,8 +133,66 @@
   }
   /* fix/quiz-lisible — le prune des liens (bouton « ghost ») est illisible
      sur fond nuit : version claire en thème console. */
-  html.theme-console .text-plum {
-    color: #e2b4e2;
+  .text-plum {
+    color: #c4a1ff;
+  }
+  /* Le rouge d'alerte en TEXTE doit rester lisible sur fond nuit. */
+  .text-raspberry,
+  .text-raspberry-deep {
+    color: #ff8fa3;
+  }
+  .text-basil-deep {
+    color: #00e5a3;
+  }
+  .text-spritz-deep {
+    color: #00f0ff;
+  }
+
+  /*
+   * TEXTE SOMBRE SUR LES APLATS NÉON.
+   * Le cyan, la menthe et le jaune sont lumineux : un texte blanc dessus est
+   * illisible. Les écrans posaient `text-ink` ou `text-white` sur ces fonds
+   * (pensés pour l'ancienne palette, plus sombre) : on force l'encre nuit,
+   * sans retoucher chaque écran. Deux classes : la règle l'emporte sur
+   * l'utilitaire Tailwind seul.
+   */
+  .bg-lemon,
+  .bg-spritz,
+  .bg-spritz-deep,
+  .bg-basil,
+  .bg-basil-deep,
+  .bg-grapefruit,
+  .bg-lemon.text-ink,
+  .bg-lemon.text-white,
+  .bg-spritz.text-ink,
+  .bg-spritz.text-white,
+  .bg-spritz-deep.text-ink,
+  .bg-spritz-deep.text-white,
+  .bg-basil.text-ink,
+  .bg-basil.text-white,
+  .bg-basil-deep.text-ink,
+  .bg-basil-deep.text-white,
+  .bg-grapefruit.text-ink,
+  .bg-grapefruit.text-white,
+  .bg-lemon .text-ink,
+  .bg-spritz .text-ink,
+  .bg-basil .text-ink {
+    color: #0e0d17;
+  }
+
+  /* Les accroches étaient en Fraunces italique : droites désormais. */
+  .font-editorial.italic {
+    font-style: normal;
+  }
+
+  /* Chiffres qui ne dansent pas (scores, chronos). Syne est une police
+     large : un léger resserrement garde les titres dans leur colonne. */
+  .font-display {
+    letter-spacing: -0.02em;
+  }
+  .font-display,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 
   /* Tout contenu doit être au-dessus des textures */

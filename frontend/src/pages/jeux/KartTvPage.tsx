@@ -85,7 +85,7 @@ export function KartTvPage(): JSX.Element {
           cl.map((k, i) => [
             k.id,
             k.finiA !== null
-              ? `🏁 ${rangTexte(i + 1)} · ${(k.finiA / 1000).toFixed(1)} s`
+              ? `${rangTexte(i + 1)} · ${(k.finiA / 1000).toFixed(1)} s`
               : `Tour ${Math.min(TOURS_KART, k.tours + 1)}/${TOURS_KART} · ${rangTexte(i + 1)} · ${k.bonus ? NOM_BONUS[k.bonus] : 'pas de bonus'}`,
           ]),
         ),
@@ -125,14 +125,14 @@ export function KartTvPage(): JSX.Element {
             `${TOURS_KART} tours · jusqu'à 8 pilotes`,
             'Volant : boutons ◀ ▶ ou téléphone penché',
             'Passe sur les boîtes ? pour un bonus, puis BONUS',
-            '🚀 turbo · 🛢️ huile derrière toi · 🛡️ bouclier',
+            'turbo · huile derrière toi · bouclier',
           ]}
           onLancer={lancer}
         />
       )}
       {phase === 'fini' && (
         <TableauScores
-          titre="🏁 Arrivée"
+          titre="Arrivée"
           lignes={cl.map((k) => ({
             id: k.id,
             pseudo: k.pseudo,
@@ -170,7 +170,7 @@ function dessiner(cv: HTMLCanvasElement | null, c: CourseKart | null, sec: numbe
   // Bordures rouges et blanches
   ctx.lineWidth = 8;
   ctx.setLineDash([22, 22]);
-  for (const coul of ['#e8e8e8', '#d63a2f']) {
+  for (const coul of ['#e8e8e8', '#e11d48']) {
     ctx.strokeStyle = coul;
     stade(RAYON_EXT);
     ctx.stroke();
@@ -196,7 +196,7 @@ function dessiner(cv: HTMLCanvasElement | null, c: CourseKart | null, sec: numbe
       ctx.save();
       ctx.translate(b.x, b.y);
       ctx.rotate(sec * 1.5);
-      ctx.fillStyle = '#f2c94c';
+      ctx.fillStyle = '#ffe600';
       ctx.fillRect(-14, -14, 28, 28);
       ctx.restore();
       ctx.fillStyle = '#111';

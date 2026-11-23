@@ -25,6 +25,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isStandalone } from '../../lib/audioUnlock.js';
+import { Icone } from '../ui/Icone.js';
 
 const DISMISS_KEY = 'tutti.safari_banner_dismissed';
 
@@ -75,7 +76,7 @@ export function SafariMediaBanner(): JSX.Element | null {
     <div className="bg-spritz/30 border-b-2 border-spritz-deep">
       <div className="max-w-6xl mx-auto px-4 py-2 flex items-start gap-3">
         <span className="text-xl shrink-0" aria-hidden>
-          📱
+          <Icone nom="telephone" />
         </span>
         <p className="flex-1 text-sm text-ink leading-snug">
           <span className="font-display mr-1">{t('preGame.safariBannerTitle')}</span>

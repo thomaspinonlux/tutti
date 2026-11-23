@@ -12,7 +12,7 @@ export function PricingSection(): JSX.Element {
     <section
       id="pricing"
       className="py-[70px] sm:py-[100px]"
-      style={{ background: 'var(--landing-ink)', color: 'var(--landing-cream)' }}
+      style={{ background: 'var(--landing-inverse)', color: 'var(--landing-ink)' }}
       aria-labelledby="pricing-title"
     >
       <div className="landing-container">
@@ -22,13 +22,13 @@ export function PricingSection(): JSX.Element {
         <h2
           id="pricing-title"
           className="landing-section-title"
-          style={{ color: 'var(--landing-cream)' }}
+          style={{ color: 'var(--landing-ink)' }}
         >
           {t.pricing.titleStart}
           <HighlightYellow>{t.pricing.titleEm}</HighlightYellow>
           {t.pricing.titleEnd}
         </h2>
-        <p className="landing-section-intro" style={{ color: 'rgba(245, 239, 224, 0.7)' }}>
+        <p className="landing-section-intro" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
           {t.pricing.intro}
         </p>
 
@@ -39,7 +39,7 @@ export function PricingSection(): JSX.Element {
               className="inline-block rounded-full px-4 py-1"
               style={{
                 background: 'var(--landing-yellow)',
-                color: 'var(--landing-ink)',
+                color: '#0E0D17',
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: '12px',
                 fontWeight: 700,

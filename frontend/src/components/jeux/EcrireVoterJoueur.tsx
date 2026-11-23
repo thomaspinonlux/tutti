@@ -116,7 +116,7 @@ export function EcrireVoterJoueur({ socket, sessionId, token, question }: Props)
                   type="button"
                   disabled={mien || !!vote || occupe || restantVote === 0}
                   onClick={() => void choisir(c.id)}
-                  className={`w-full text-left p-4 border-2 border-ink rounded font-medium transition-colors ${
+                  className={`w-full text-left p-4 border-2 border-hairline rounded font-medium transition-colors ${
                     choisi ? 'bg-basil shadow-pop-sm' : mien ? 'bg-cream-2 opacity-50' : 'bg-cream hover:bg-cream-2'
                   }`}
                 >
@@ -152,7 +152,7 @@ export function EcrireVoterJoueur({ socket, sessionId, token, question }: Props)
           autoComplete="off"
           maxLength={80}
           placeholder={bluff ? t('jeux.placeholderBluff') : t('jeux.placeholderDrole')}
-          className="w-full px-4 py-3 border-2 border-ink rounded text-lg font-medium bg-cream focus:bg-white"
+          className="w-full px-4 py-3 border-2 border-hairline rounded text-lg font-medium bg-cream focus:bg-cream-3"
         />
         <Button type="submit" size="lg" className="w-full" disabled={!texte.trim() || occupe || restantEcriture === 0}>
           {envoye ? t('jeux.corriger') : t('jeux.envoyer')}

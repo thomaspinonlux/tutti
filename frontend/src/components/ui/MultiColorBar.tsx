@@ -13,12 +13,9 @@ const HEIGHTS = { sm: 'h-1', md: 'h-1.5', lg: 'h-2' } as const;
 
 export function MultiColorBar({ className, height = 'md' }: Props): JSX.Element {
   return (
-    <div aria-hidden className={`flex w-full ${HEIGHTS[height]} ${className ?? ''}`}>
-      <div className="flex-1 bg-spritz" />
-      <div className="flex-1 bg-basil" />
-      <div className="flex-1 bg-raspberry" />
-      <div className="flex-1 bg-lemon" />
-      <div className="flex-1 bg-plum" />
-    </div>
+    <div
+      aria-hidden
+      className={`w-full bg-gradient-to-r from-rose via-lemon to-spritz ${HEIGHTS[height]} ${className ?? ''}`}
+    />
   );
 }

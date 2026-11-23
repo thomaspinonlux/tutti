@@ -109,12 +109,12 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
   const actuel = ajoute ? { nom: ajoute.theme, nombre: ajoute.nombre } : choisi;
   const estChoisi = (th: ThemeQuiz): boolean =>
     !!actuel && (th.nom_fr === actuel.nom || th.nom_en === actuel.nom);
-  const choisiCarte = 'border-[#3FB47A] bg-[#3FB47A]/20 ring-2 ring-[#3FB47A]';
+  const choisiCarte = 'border-[#00E5A3] bg-[#00E5A3]/20 ring-2 ring-[#00E5A3]';
   const texte = sombre ? 'text-white' : 'text-ink';
   const doux = sombre ? 'text-white/50' : 'text-ink-soft';
   const carte = sombre
     ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.09]'
-    : 'border-ink bg-cream hover:bg-cream-2';
+    : 'border-hairline bg-cream hover:bg-cream-2';
 
   return (
     <div className="space-y-3">
@@ -132,10 +132,10 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
                 className={[
                   'min-w-0 rounded-xl border-2 px-2 py-2.5 text-sm font-semibold leading-tight text-center transition',
                   actif
-                    ? 'border-[#FF5C4D] bg-[#FF5C4D] text-white'
+                    ? 'border-[#FF3366] bg-[#FF3366] text-white'
                     : sombre
                       ? 'border-white/20 text-white/80'
-                      : 'border-ink text-ink',
+                      : 'border-hairline text-ink',
                 ].join(' ')}
               >
                 {t(`quizTheme.famille.${f}`)}
@@ -148,7 +148,7 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
         <p className={`text-sm ${doux}`}>{t('quizTheme.famille.blindTestAide')}</p>
       )}
       {actuel && (
-        <div role="status" className="rounded-xl border-2 border-[#3FB47A] bg-[#3FB47A]/15 px-4 py-3">
+        <div role="status" className="rounded-xl border-2 border-[#00E5A3] bg-[#00E5A3]/15 px-4 py-3">
           <p className={`font-display text-lg ${texte}`}>
             ✓ {t('quizTheme.choisi', { theme: actuel.nom, count: actuel.nombre })}
           </p>
@@ -193,10 +193,10 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
               className={[
                 'px-3 py-1.5 rounded-full text-sm font-medium border-2 transition',
                 actif
-                  ? 'border-[#FF5C4D] bg-[#FF5C4D] text-white'
+                  ? 'border-[#FF3366] bg-[#FF3366] text-white'
                   : sombre
                     ? 'border-white/20 text-white/80'
-                    : 'border-ink text-ink',
+                    : 'border-hairline text-ink',
               ].join(' ')}
             >
               {t(`quizTheme.niveau.${n}`)}
@@ -206,7 +206,7 @@ export function ChoixThemeQuiz({ charger, ajouter, onAjoute, sombre = false, cho
       </div>
 
       {erreur && (
-        <p role="alert" className="text-sm text-[#FF5C4D]">
+        <p role="alert" className="text-sm text-[#FF3366]">
           {erreur}
         </p>
       )}

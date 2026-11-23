@@ -42,6 +42,7 @@ import { Button, Card } from '../../components/ui/index.js';
 import { QRCode } from '../../components/host/QRCode.js';
 import { ClassementDuTitre } from '../../components/game/ClassementDuTitre.js';
 import { compterManchesCompletes } from '../../lib/manches.js';
+import { Icone, Rang } from '../../components/ui/Icone.js';
 
 // ── Hooks utilitaires ─────────────────────────────────────────────────────
 
@@ -151,10 +152,10 @@ function FestiveBackground({ confettiActive }: { confettiActive: boolean }): JSX
   return (
     <div aria-hidden className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
       {/* feat/console-dark — fond sombre premium (cohérent TV + console mode A). */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0F] to-[#14141C]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0E0D17] to-[#181628]" />
       <div
         className="absolute left-1/2 top-[-10%] h-[55vh] w-[55vh] -translate-x-1/2 rounded-full blur-[130px] opacity-15"
-        style={{ backgroundColor: '#FF5C4D' }}
+        style={{ backgroundColor: '#FF3366' }}
       />
     </div>
   );
@@ -217,7 +218,7 @@ function MysteryCover({
 function Phase1BuzzCounter({ count }: { count: number }): JSX.Element {
   const { t } = useTranslation();
   return (
-    <div className="absolute top-6 left-6 bg-ink text-cream px-4 py-3 rounded-xl flex items-center gap-2 font-bold text-sm tracking-wide shadow-pop">
+    <div className="absolute top-6 left-6 bg-cream-2 text-ink px-4 py-3 rounded-xl flex items-center gap-2 font-bold text-sm tracking-wide shadow-pop">
       <span className="w-3 h-3 rounded-full bg-spritz animate-pulse-buzz" aria-hidden />
       <span>{t('screen.buzzCounter', { count })}</span>
     </div>
@@ -230,13 +231,13 @@ function FoundToast({ pseudo, index }: { pseudo: string; index: number }): JSX.E
   const { t } = useTranslation();
   // Couleurs Pop Cocktail tournantes pour la shadow décalée — cohérent
   // avec la maquette qui alterne spritz / basil / raspberry.
-  const shadowColors = ['#ee6c2a', '#4a8b3f', '#c8336e'];
+  const shadowColors = ['#00f0ff', '#00e5a3', '#e11d48'];
   const shadowColor = shadowColors[index % shadowColors.length];
   return (
     <div
       role="status"
       aria-live="polite"
-      className="bg-ink text-cream px-6 py-3 rounded-full flex items-center gap-2.5 font-bold text-lg animate-toast-slide"
+      className="bg-cream-2 text-ink px-6 py-3 rounded-full flex items-center gap-2.5 font-bold text-lg animate-toast-slide"
       style={{
         boxShadow: `4px 4px 0 ${shadowColor}`,
         animationDelay: `${index * 100}ms`,
@@ -278,7 +279,7 @@ function Phase2YellowTimer({
   const seconds = Math.max(0, Math.ceil(remaining / 1000));
   return (
     <div
-      className="absolute top-1/2 right-6 -translate-y-1/2 bg-[#FF5C4D] border-4 border-[#0B0B0F] text-[#0B0B0F] rounded-2xl px-7 py-5 shadow-pop-lg text-center animate-timer-enter"
+      className="absolute top-1/2 right-6 -translate-y-1/2 bg-[#FF3366] border-4 border-[#0E0D17] text-[#0E0D17] rounded-2xl px-7 py-5 shadow-pop-lg text-center animate-timer-enter"
       style={{ transform: 'translateY(-50%) rotate(-3deg)' }}
     >
       <div className="font-bold text-[11px] uppercase tracking-widest mb-1">
@@ -298,15 +299,15 @@ function Phase3DanceCall(): JSX.Element {
   const { t } = useTranslation();
   return (
     <div
-      className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-ink text-cream px-9 py-4 rounded-full font-display text-2xl flex items-center gap-3 animate-dance-pulse"
-      style={{ boxShadow: '6px 6px 0 #e8c547' }}
+      className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-cream-2 text-ink px-9 py-4 rounded-full font-display text-2xl flex items-center gap-3 animate-dance-pulse"
+      style={{ boxShadow: '6px 6px 0 #ffe600' }}
     >
       <span aria-hidden className="text-3xl inline-block animate-emoji-wave">
-        🕺
+        <Icone nom="note" />
       </span>
       <span>{t('screen.danceMessage')}</span>
       <span aria-hidden className="text-3xl inline-block animate-emoji-wave">
-        💃
+        <Icone nom="note" />
       </span>
     </div>
   );
@@ -343,7 +344,7 @@ function IPadHeader({
   const remaining = totalMs ? Math.max(0, totalMs - elapsed) : null;
   return (
     <header
-      className="relative bg-ink text-cream px-8 flex items-center justify-between"
+      className="relative bg-cream-2 text-ink px-8 flex items-center justify-between"
       style={{ height: 80 }}
     >
       <div className="flex items-center gap-5">
@@ -456,7 +457,7 @@ function IPadFooter({
 
   return (
     <footer
-      className="relative bg-ink text-cream px-8 py-3 flex items-center gap-6"
+      className="relative bg-cream-2 text-ink px-8 py-3 flex items-center gap-6"
       style={{ minHeight: 100 }}
     >
       <div className="flex items-center gap-2 font-bold text-sm">
@@ -497,7 +498,7 @@ function IPadFooter({
           </Button>
         ) : (
           <Button variant="secondary" size="sm" onClick={onPause} disabled={busy || !onPause}>
-            ⏸ {t('screen.btnPause')}
+            {t('screen.btnPause')}
           </Button>
         )}
         <Button
@@ -530,7 +531,7 @@ function IPadFooter({
           onClick={onSkipTrack}
           disabled={busy || !canSkip || !currentTrack || !onSkipTrack}
         >
-          ⏭ {t('screen.btnSkip')}
+          {t('screen.btnSkip')}
         </Button>
         <Button
           variant="secondary"
@@ -538,11 +539,11 @@ function IPadFooter({
           onClick={onGiveAnswer}
           disabled={busy || !canGiveAnswer || !currentTrack || !onGiveAnswer}
         >
-          💡 {t('screen.btnGiveAnswer')}
+          {t('screen.btnGiveAnswer')}
         </Button>
         {lyricsAvailable && onToggleLyrics && (
           <Button variant="secondary" size="sm" onClick={onToggleLyrics} disabled={busy}>
-            🎤 {lyricsOn ? t('screen.btnLyricsHide') : t('screen.btnLyricsShow')}
+            {lyricsOn ? t('screen.btnLyricsHide') : t('screen.btnLyricsShow')}
           </Button>
         )}
         {onAudioKick && (
@@ -552,17 +553,17 @@ function IPadFooter({
             onClick={onAudioKick}
             disabled={busy || !currentTrack}
           >
-            🔊 {t('screen.btnAudioKick')}
+            {t('screen.btnAudioKick')}
           </Button>
         )}
         {onEndRound && (
           <Button variant="secondary" size="sm" onClick={onEndRound} disabled={busy}>
-            ⏹ {t('screen.btnEndRound')}
+            {t('screen.btnEndRound')}
           </Button>
         )}
         {onEndSession && (
           <Button variant="danger" size="sm" onClick={onEndSession} disabled={busy}>
-            🛑 {t('screen.btnEndSession')}
+            {t('screen.btnEndSession')}
           </Button>
         )}
         <Button
@@ -594,13 +595,13 @@ function LiveLeaderboard({ cumulative }: { cumulative: CumulativeScore[] }): JSX
   const { t } = useTranslation();
   const top = cumulative.slice(0, 5);
   return (
-    <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 rounded-[20px]">
+    <Card size="md" className="!bg-[#181628]/80 !border !border-white/10 rounded-[20px]">
       <div className="flex items-center gap-2 mb-3">
         <span
           aria-hidden
-          className="w-7 h-7 rounded-full bg-lemon border-2 border-ink flex items-center justify-center text-base"
+          className="w-7 h-7 rounded-full bg-lemon border-2 border-hairline flex items-center justify-center text-base"
         >
-          🏆
+          <Icone nom="trophee" />
         </span>
         <p className="font-display text-2xl text-white">{t('screen.leaderboardLabel')}</p>
       </div>
@@ -617,13 +618,13 @@ function LiveLeaderboard({ cumulative }: { cumulative: CumulativeScore[] }): JSX
                 key={entry.id}
                 className="grid grid-cols-[32px_1fr_auto] gap-3 items-center px-3 py-2.5 rounded-xl font-bold text-white"
                 style={{
-                  backgroundColor: isLeader ? '#FF5C4D22' : '#ffffff08',
-                  border: `1px solid ${isLeader ? '#FF5C4D66' : '#ffffff12'}`,
+                  backgroundColor: isLeader ? '#FF336622' : '#ffffff08',
+                  border: `1px solid ${isLeader ? '#FF336666' : '#ffffff12'}`,
                 }}
               >
                 <span
                   className="font-display text-2xl text-center"
-                  style={{ color: isLeader ? '#FF5C4D' : '#fff' }}
+                  style={{ color: isLeader ? '#FF3366' : '#fff' }}
                 >
                   {idx + 1}
                 </span>
@@ -659,7 +660,7 @@ function JoinQrPanel({ shortCode }: { shortCode: string }): JSX.Element {
   return (
     <Card
       size="sm"
-      className="!bg-[#15151d]/80 !border !border-white/10 rounded-[20px] text-center"
+      className="!bg-[#181628]/80 !border !border-white/10 rounded-[20px] text-center"
     >
       <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-spritz-deep mb-2">
         {t('screen.joinTitle')}
@@ -676,18 +677,17 @@ function JoinQrPanel({ shortCode }: { shortCode: string }): JSX.Element {
 function FindersRecap({ correctAnswers }: { correctAnswers: CorrectAnswerEntry[] }): JSX.Element {
   const { t } = useTranslation();
   if (correctAnswers.length === 0) return <></>;
-  const medals = ['🥇', '🥈', '🥉'];
   return (
     <Card
       size="md"
-      className="!bg-[#15151d]/80 !border !border-white/10 rounded-[20px] animate-slide-up"
+      className="!bg-[#181628]/80 !border !border-white/10 rounded-[20px] animate-slide-up"
     >
       <div className="flex items-center gap-2 mb-3">
         <span
           aria-hidden
-          className="w-7 h-7 rounded-full bg-spritz border-2 border-ink flex items-center justify-center text-base"
+          className="w-7 h-7 rounded-full bg-spritz border-2 border-hairline flex items-center justify-center text-base"
         >
-          🎯
+          <Icone nom="cible" />
         </span>
         <p className="font-display text-2xl text-white">{t('screen.thisTrack')}</p>
       </div>
@@ -698,7 +698,7 @@ function FindersRecap({ correctAnswers }: { correctAnswers: CorrectAnswerEntry[]
             className="grid grid-cols-[auto_1fr_auto] gap-3 items-center px-3 py-2.5 rounded-xl border border-white/10 bg-white/[0.05]"
           >
             <span aria-hidden className="text-2xl">
-              {medals[idx] ?? '🎯'}
+              {idx < 3 ? <Rang rang={idx + 1} /> : <Icone nom="cible" />}
             </span>
             <div className="font-bold text-white">
               {entry.pseudo}
@@ -787,18 +787,17 @@ function RevealLeaderboard({
   }, [correctAnswers]);
 
   const rows = cumulative.slice(0, 8);
-  const medals = ['🥇', '🥈', '🥉'];
   return (
     <Card
       size="md"
-      className="!bg-[#15151d]/80 !border !border-white/10 rounded-[20px] flex-1 flex flex-col min-h-0"
+      className="!bg-[#181628]/80 !border !border-white/10 rounded-[20px] flex-1 flex flex-col min-h-0"
     >
       <div className="flex items-center gap-2 mb-4 shrink-0">
         <span
           aria-hidden
-          className="w-9 h-9 rounded-full bg-lemon border-2 border-ink flex items-center justify-center text-lg"
+          className="w-9 h-9 rounded-full bg-lemon border-2 border-hairline flex items-center justify-center text-lg"
         >
-          🏆
+          <Icone nom="trophee" />
         </span>
         <p className="font-display text-2xl lg:text-3xl text-white">
           {t('screen.leaderboardLabel')}
@@ -818,15 +817,15 @@ function RevealLeaderboard({
                 key={entry.id}
                 className="grid grid-cols-[auto_1fr_auto] gap-3 items-center px-4 py-3 rounded-xl text-white"
                 style={{
-                  backgroundColor: isLeader ? '#FF5C4D22' : '#ffffff08',
-                  border: `1px solid ${isLeader ? '#FF5C4D66' : '#ffffff12'}`,
+                  backgroundColor: isLeader ? '#FF336622' : '#ffffff08',
+                  border: `1px solid ${isLeader ? '#FF336666' : '#ffffff12'}`,
                 }}
               >
                 <span
                   className="font-display text-2xl lg:text-3xl w-10 text-center"
-                  style={{ color: isLeader ? '#FF5C4D' : '#fff' }}
+                  style={{ color: isLeader ? '#FF3366' : '#fff' }}
                 >
-                  {medals[idx] ?? idx + 1}
+                  {idx < 3 ? <Rang rang={idx + 1} /> : idx + 1}
                 </span>
                 <div className="min-w-0 flex items-center gap-2">
                   {entry.color && (
@@ -895,10 +894,10 @@ function RevealResultMain({
   return (
     <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-6 p-6 relative z-10">
       {/* Gauche — pochette dominante + infos */}
-      <section className="relative bg-[#191922] border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] flex flex-col p-6 lg:p-8 overflow-hidden min-h-[500px]">
+      <section className="relative bg-[#181628] border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] flex flex-col p-6 lg:p-8 overflow-hidden min-h-[500px]">
         {/* Haut : chip playlist (gauche) + MINI QR rejoindre en coin (droite) */}
         <div className="shrink-0 flex items-start justify-between gap-3">
-          <span className="inline-flex items-center gap-2 font-mono text-xs sm:text-sm uppercase tracking-[0.2em] text-[#FF5C4D] bg-white/[0.06] border border-white/15 rounded-full px-4 py-1.5">
+          <span className="inline-flex items-center gap-2 font-mono text-xs sm:text-sm uppercase tracking-[0.2em] text-[#FF3366] bg-white/[0.06] border border-white/15 rounded-full px-4 py-1.5">
             <span aria-hidden>♪</span>
             <span className="truncate max-w-[50vw] lg:max-w-sm">{playlistName}</span>
           </span>
@@ -1084,7 +1083,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
       ) : (
         <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 p-6 relative z-10">
           {/* Center stage */}
-          <section className="relative bg-[#191922] border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] flex flex-col items-center justify-center p-8 overflow-hidden min-h-[500px]">
+          <section className="relative bg-[#181628] border border-white/10 rounded-3xl shadow-[0_24px_70px_rgba(0,0,0,0.55)] flex flex-col items-center justify-center p-8 overflow-hidden min-h-[500px]">
             {!playingRound ? (
               <BetweenRoundsContent lastEnded={lastEnded} master={master} />
             ) : !currentTrack ? (
@@ -1139,7 +1138,7 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
                 {/* Phase 3-skipped : message neutre, pas de reveal */}
                 {phase === 'phase3-skipped' && (
                   <div className="text-center mt-6">
-                    <p className="font-display text-3xl text-white/50 mb-1">⏭</p>
+                    <p className="font-display text-3xl text-white/50 mb-1"><Icone nom="suivant" /></p>
                     <p className="font-editorial italic text-white/60 text-lg">
                       {t('screen.trackSkipped')}
                     </p>
@@ -1228,8 +1227,8 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
       {/* Overlay PAUSE master */}
       {session.is_paused && (
         <div className="fixed inset-0 z-30 bg-black/85 flex items-center justify-center animate-fade-in">
-          <div className="rounded-[24px] border border-white/10 bg-[#15151d]/90 shadow-[0_24px_70px_rgba(0,0,0,0.6)] px-16 py-12 text-center">
-            <p className="text-7xl mb-2">⏸</p>
+          <div className="rounded-[24px] border border-white/10 bg-[#181628]/90 shadow-[0_24px_70px_rgba(0,0,0,0.6)] px-16 py-12 text-center">
+            <p className="text-7xl mb-2"><Icone nom="pause" /></p>
             <h2 className="font-display text-4xl text-white">{t('screen.pauseTitle')}</h2>
             <p className="font-editorial italic text-white/60 mt-2 text-lg">
               {t('screen.pauseHint')}

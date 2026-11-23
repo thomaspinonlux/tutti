@@ -30,7 +30,7 @@ export function ProductCard({
   delay = 0,
 }: ProductCardProps): JSX.Element {
   const accent = variant === 'tracks' ? 'var(--landing-rose)' : 'var(--landing-orange)';
-  const tagBg = variant === 'tracks' ? 'rgba(201, 59, 107, 0.1)' : 'rgba(238, 108, 42, 0.12)';
+  const tagBg = variant === 'tracks' ? 'rgba(255, 51, 102, 0.1)' : 'rgba(0, 240, 255, 0.12)';
 
   return (
     <motion.article
@@ -40,9 +40,9 @@ export function ProductCard({
       transition={{ duration: 0.55, delay, ease: 'easeOut' }}
       className="flex flex-col rounded-[18px] border-[1.5px] p-9 sm:p-10 transition-transform hover:-translate-y-[3px]"
       style={{
-        background: 'var(--landing-cream)',
-        borderColor: 'var(--landing-ink)',
-        boxShadow: '0 4px 0 var(--landing-ink)',
+        background: 'var(--landing-cream-deep)',
+        borderColor: 'var(--landing-line)',
+        boxShadow: 'none',
       }}
     >
       <span
@@ -63,7 +63,7 @@ export function ProductCard({
       <h3
         className="mb-4"
         style={{
-          fontFamily: "'Fraunces', serif",
+          fontFamily: 'var(--landing-font-serif)',
           fontSize: 'clamp(28px, 3.5vw, 38px)',
           fontWeight: 700,
           letterSpacing: '-0.02em',
@@ -73,10 +73,10 @@ export function ProductCard({
         {nameStart}
         <em
           style={{
-            fontStyle: 'italic',
+            fontStyle: 'normal',
             color: accent,
             fontWeight: 900,
-            fontFamily: "'Fraunces', serif",
+            fontFamily: 'var(--landing-font-serif)',
           }}
         >
           {nameEm}
@@ -104,7 +104,7 @@ export function ProductCard({
               fontSize: '15px',
               color: 'var(--landing-ink-soft)',
               borderBottom:
-                idx === features.length - 1 ? 'none' : '1px dashed rgba(26, 24, 20, 0.1)',
+                idx === features.length - 1 ? 'none' : '1px dashed rgba(255, 255, 255, 0.1)',
             }}
           >
             <span
@@ -123,16 +123,16 @@ export function ProductCard({
         to={ctaHref}
         className="self-start inline-flex items-center gap-2 rounded-full px-[22px] py-3 transition-colors"
         style={{
-          background: 'var(--landing-ink)',
-          color: 'var(--landing-cream)',
+          background: 'var(--landing-inverse)',
+          color: 'var(--landing-ink)',
           fontWeight: 600,
           fontSize: '14px',
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLAnchorElement).style.background = accent;
+          (e.currentTarget as HTMLAnchorElement).style.background = 'var(--landing-rose)';
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLAnchorElement).style.background = 'var(--landing-ink)';
+          (e.currentTarget as HTMLAnchorElement).style.background = 'var(--landing-inverse)';
         }}
       >
         {cta}

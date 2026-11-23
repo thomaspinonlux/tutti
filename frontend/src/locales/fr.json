@@ -314,7 +314,7 @@
     "safariBannerDismiss": "Fermer la bannière",
     "applePreparation": "Apple Music se prépare…",
     "applePreparationAide": "Le bouton s'active dès qu'Apple Music est prêt (quelques secondes).",
-    "appleBloque": "⚠️ Apple Music ne répond pas. Ferme complètement l'app Tutti et rouvre-la avant de lancer.",
+    "appleBloque": "Apple Music ne répond pas. Ferme complètement l'app Tutti et rouvre-la avant de lancer.",
     "lancerQuandMeme": "Lancer quand même"
   },
   "contentBlocker": {
@@ -349,7 +349,7 @@
     "audioTarget": {
       "onHost": "Son ici",
       "onTv": "Son sur la TV",
-      "connectHint": "Pour sortir le son sur la TV : ouvre « 📺 Écran TV », rejoins l'écran sur la TV, puis clique « 🔊 Activer le son » là-bas. Sans ça, le son reste ici."
+      "connectHint": "Pour sortir le son sur la TV : ouvre « Écran TV », rejoins l'écran sur la TV, puis clique « Activer le son » là-bas. Sans ça, le son reste ici."
     },
     "eyebrow": "Salle d'attente",
     "manchesCompletes_zero": "0 manche complète",
@@ -442,8 +442,8 @@
         "trackUnavailable": "Morceau indisponible avec tes comptes connectés"
       },
       "empty": {
-        "officialLibrary": "La bibliothèque officielle Tutti arrive bientôt 🎵",
-        "officialQuizLibrary": "La bibliothèque Quizz officielle Tutti arrive bientôt 🎯"
+        "officialLibrary": "La bibliothèque officielle Tutti arrive bientôt",
+        "officialQuizLibrary": "La bibliothèque Quizz officielle Tutti arrive bientôt"
       },
       "lvl_mix_em": "Mix Facile/Moyen",
       "lyricsShow": "Paroles",
@@ -523,7 +523,7 @@
     "youtubeBlockedTitle": "Clique pour démarrer la musique",
     "youtubeBlockedCta": "Le navigateur bloque l'autoplay",
     "tvHintTitle": "Astuce écran TV",
-    "tvHintBody": "Ouvre l'écran TV pour afficher le QR code en grand aux joueurs (bouton 📺 en haut à droite).",
+    "tvHintBody": "Ouvre l'écran TV pour afficher le QR code en grand aux joueurs (bouton en haut à droite).",
     "externalScreen": {
       "openButton": "Écran TV",
       "openHint": "Ouvre la vue grand public sur l'écran externe ou nouvel onglet",
@@ -553,7 +553,7 @@
     "masterAssign": "Désigner animateur",
     "masterRevoke": "Retirer animateur",
     "masterIs": "Animateur :",
-    "masterNone": "⚠ Personne n'a la manette",
+    "masterNone": "Personne n'a la manette",
     "masterChange": "Changer d'animateur",
     "roleLabel": "Rôle",
     "rolePlayer": "Joueur",
@@ -780,15 +780,15 @@
     "buzzerHintPhase3": "Manche terminée — bravo aux trouveurs !",
     "buzzerHintSkipped": "Morceau passé.",
     "buzzerHintAnalyzing": "Analyse en cours…",
-    "joinMidGame": "🎵 Tu rejoins en cours de partie — buzze sur le morceau actuel !",
+    "joinMidGame": "Tu rejoins en cours de partie — buzze sur le morceau actuel !",
     "phoneFooter_one": "sur {{count}} joueur",
     "phoneFooter_other": "sur {{count}} joueurs",
     "recording": "À toi !",
     "recordingHint": "Dis l'artiste (et le titre pour bonus) bien fort.",
     "recordingSubmit": "Envoyer maintenant",
     "notMatched": "Pas reconnu, retente !",
-    "notMatchedShort": "❌ Pas reconnu, retente !",
-    "textAnswerPlaceholder": "📝 Écris ta réponse…",
+    "notMatchedShort": "Pas reconnu, retente !",
+    "textAnswerPlaceholder": "Écris ta réponse…",
     "textOnlyHint": "Écris le titre, l'artiste — ou les deux",
     "textAnswerSubmit": "Envoyer",
     "scoreArtist": "pts ({{n}}ᵉ place)",
@@ -809,7 +809,7 @@
     "masterNext": "Suivant",
     "masterPause": "Pause",
     "masterResume": "Reprendre",
-    "masterRestart": "🔄 Recommencer",
+    "masterRestart": "Recommencer",
     "masterPickRound": "Manche suivante",
     "masterPickRoundTitle": "Choisis la prochaine playlist",
     "masterAdjust": "Ajuster les points",
@@ -998,9 +998,9 @@
     "questionSur": "Question {{n}} / {{total}}",
     "nouveauQuiz": "Nouveau quiz",
     "fermerClassement": "Fermer le classement",
-    "pause": "⏸ Pause",
+    "pause": "Pause",
     "reprendre": "▶ Reprendre",
-    "enPause": "⏸ Jeu en pause",
+    "enPause": "Jeu en pause",
     "enPauseHint": "L'animateur a mis le jeu en pause, le chrono reprend bientôt."
   },
   "settings": {
@@ -1154,8 +1154,8 @@
     "themesTutti": "Thèmes Tutti",
     "choisi": "Thème choisi : {{theme}} · {{count}} questions",
     "changer": "Touche un autre thème pour le changer.",
-    "musiqueCouper": "🔇 Couper la musique",
-    "musiqueRemettre": "🔊 Remettre la musique",
+    "musiqueCouper": "Couper la musique",
+    "musiqueRemettre": "Remettre la musique",
     "famille": {
       "titre": "Famille de jeu",
       "quiz": "Quiz",
@@ -1212,7 +1212,7 @@
     "ecritPar": "Écrit par {{noms}}",
     "envoye": "Envoyé : « {{texte}} »",
     "envoyer": "Envoyer",
-    "etapeSuivante": "Étape suivante ⏭",
+    "etapeSuivante": "Étape suivante",
     "joueur": "Joueur",
     "laVerite": "La vraie réponse",
     "placeholderBluff": "Invente une fausse réponse crédible…",

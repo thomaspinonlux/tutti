@@ -20,15 +20,15 @@ export function Nav(): JSX.Element {
       className="sticky z-50 border-b backdrop-blur"
       style={{
         top: '6px',
-        backgroundColor: 'rgba(245, 239, 224, 0.92)',
-        borderColor: 'rgba(26, 24, 20, 0.08)',
+        backgroundColor: 'rgba(14, 13, 23, 0.85)',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
       }}
     >
       <div className="landing-container flex items-center justify-between py-[14px]">
         <a href="#" className="flex items-center h-11" aria-label={t.nav.home}>
-          <img src="/logo-wordmark-dark.svg" alt="Tutti" className="h-full w-auto" />
+          <img src="/logo-wordmark-light.svg" alt="Tutti" className="h-full w-auto" />
         </a>
         <div className="flex items-center gap-3 sm:gap-4 md:gap-8">
           <a

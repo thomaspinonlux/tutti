@@ -82,8 +82,8 @@ export function MotoTvPage(): JSX.Element {
           cl.map((p, i) => [
             p.id,
             p.finiA !== null
-              ? `🏁 ${rangTexte(i + 1)} · ${(p.finiA / 1000).toFixed(1)} s`
-              : `${ms / 1000 < p.chuteJusqua ? '💥 Chute ! · ' : p.air ? '✈️ En l’air · ' : ''}${Math.round((p.x / LONGUEUR) * 100)} % · ${rangTexte(i + 1)}`,
+              ? `${rangTexte(i + 1)} · ${(p.finiA / 1000).toFixed(1)} s`
+              : `${ms / 1000 < p.chuteJusqua ? 'Chute ! · ' : p.air ? 'En l’air · ' : ''}${Math.round((p.x / LONGUEUR) * 100)} % · ${rangTexte(i + 1)}`,
           ]),
         ),
       });
@@ -110,7 +110,7 @@ export function MotoTvPage(): JSX.Element {
       )}
       {phase === 'fini' && (
         <TableauScores
-          titre="🏁 Arrivée"
+          titre="Arrivée"
           lignes={cl.map((p) => ({
             id: p.id,
             pseudo: p.pseudo,

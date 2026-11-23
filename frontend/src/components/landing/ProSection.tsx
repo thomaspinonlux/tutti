@@ -64,8 +64,8 @@ export function ProSection(): JSX.Element {
         <div
           className="rounded-2xl p-6 sm:p-8"
           style={{
-            border: '2px solid var(--landing-ink)',
-            background: 'var(--landing-cream-deep, #fff)',
+            border: '1px solid var(--landing-line)',
+            background: 'var(--landing-cream-deep)',
           }}
         >
           <ContactProForm variant="landing" source="site" langue={lang} />

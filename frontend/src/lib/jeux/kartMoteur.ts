@@ -23,7 +23,7 @@ import {
 export const TOURS_KART = 3;
 export type Bonus = 'turbo' | 'huile' | 'bouclier';
 export const BONUS: Bonus[] = ['turbo', 'huile', 'bouclier'];
-export const NOM_BONUS: Record<Bonus, string> = { turbo: '🚀 Turbo', huile: '🛢️ Huile', bouclier: '🛡️ Bouclier' };
+export const NOM_BONUS: Record<Bonus, string> = { turbo: 'Turbo', huile: 'Huile', bouclier: 'Bouclier' };
 
 const V_ROUTE = 360;
 const V_HERBE = 150;

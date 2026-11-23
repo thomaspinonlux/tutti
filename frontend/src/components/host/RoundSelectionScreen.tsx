@@ -119,7 +119,7 @@ function PlayerProposalsPanel({ sessionId }: { sessionId: string }): JSX.Element
   return (
     <div className="mb-4 rounded-2xl border border-white/15 bg-white/[0.04] p-4">
       <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-white/50 mb-2">
-        💡 {t('host.proposals.title')}
+        {t('host.proposals.title')}
       </p>
       <div className="flex flex-wrap gap-2">
         {rows.slice(0, 10).map((r) => (
@@ -327,7 +327,7 @@ export function RoundSelectionScreen({
           role="status"
           className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/[0.08] px-4 py-3 text-white"
         >
-          <span className="text-sm">🔒 {messagePremium}</span>
+          <span className="text-sm">{messagePremium}</span>
           <button
             type="button"
             onClick={() => setMessagePremium(null)}
@@ -343,7 +343,7 @@ export function RoundSelectionScreen({
         </h2>
         {/* feat/boutons-propres — un vrai bouton, pas une pastille grise. */}
         <Button variant="danger" size="md" onClick={() => void onEndSession()} disabled={loading}>
-          🛑 {t('host.endBlindTest')}
+          {t('host.endBlindTest')}
         </Button>
       </header>
 
@@ -373,22 +373,22 @@ export function RoundSelectionScreen({
           onClick={() => setTab('mine')}
           className={`px-4 py-2 font-display text-base rounded-t-lg transition-colors ${
             tab === 'mine'
-              ? 'bg-[#FF5C4D] text-[#0B0B0F]'
+              ? 'bg-[#FF3366] text-[#0E0D17]'
               : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
           }`}
         >
-          📁 {t('host.session.tabs.myPlaylists')}
+          {t('host.session.tabs.myPlaylists')}
         </button>
         <button
           type="button"
           onClick={() => setTab('library')}
           className={`px-4 py-2 font-display text-base rounded-t-lg transition-colors ${
             tab === 'library'
-              ? 'bg-[#FF5C4D] text-[#0B0B0F]'
+              ? 'bg-[#FF3366] text-[#0E0D17]'
               : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
           }`}
         >
-          ⭐ {t('host.session.tabs.officialLibrary')}
+          {t('host.session.tabs.officialLibrary')}
         </button>
       </div>
 
@@ -404,8 +404,8 @@ export function RoundSelectionScreen({
           >
             <div className="h-full rounded-2xl border border-dashed border-white/20 bg-white/[0.05] p-4 transition-transform group-hover:-translate-y-0.5">
               <span
-                className="inline-block rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#0B0B0F]"
-                style={{ backgroundColor: '#FF5C4D' }}
+                className="inline-block rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#0E0D17]"
+                style={{ backgroundColor: '#FF3366' }}
               >
                 {t('host.expressBadge')}
               </span>
@@ -466,7 +466,7 @@ export function RoundSelectionScreen({
                     : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
                 }`}
               >
-                🎵 {t('host.session.subTabTracks')}
+                {t('host.session.subTabTracks')}
               </button>
               <button
                 type="button"
@@ -479,7 +479,7 @@ export function RoundSelectionScreen({
                     : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
                 }`}
               >
-                🎯 {t('host.session.subTabQuizz')}
+                {t('host.session.subTabQuizz')}
               </button>
             </div>
           )}
@@ -495,13 +495,13 @@ export function RoundSelectionScreen({
             categorized === null ? (
               <p className="font-mono text-white/50 animate-fade-in">{t('common.loading')}</p>
             ) : totalOfficialCount === 0 ? (
-              <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+              <Card size="md" className="!bg-[#181628]/80 !border !border-white/10 text-center">
                 <p className="font-editorial italic text-white/50">
                   {t('host.session.empty.officialLibrary')}
                 </p>
               </Card>
             ) : filteredCategorized.length === 0 ? (
-              <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+              <Card size="md" className="!bg-[#181628]/80 !border !border-white/10 text-center">
                 <p className="font-editorial italic text-white/50">
                   {t('host.session.searchNoResults', { query: searchQuery })}
                 </p>
@@ -536,13 +536,13 @@ export function RoundSelectionScreen({
           ) : quizPacks === null ? (
             <p className="font-mono text-white/50 animate-fade-in">{t('common.loading')}</p>
           ) : quizPacks.length === 0 ? (
-            <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+            <Card size="md" className="!bg-[#181628]/80 !border !border-white/10 text-center">
               <p className="font-editorial italic text-white/50">
                 {t('host.session.empty.officialQuizLibrary')}
               </p>
             </Card>
           ) : filteredQuizPacks.length === 0 ? (
-            <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+            <Card size="md" className="!bg-[#181628]/80 !border !border-white/10 text-center">
               <p className="font-editorial italic text-white/50">
                 {t('host.session.searchNoResults', { query: searchQuery })}
               </p>
@@ -578,7 +578,7 @@ export function RoundSelectionScreen({
         usable.length > 0 &&
         filteredUsable.length === 0 &&
         searchQuery.trim() !== '' && (
-          <Card size="md" className="!bg-[#15151d]/80 !border !border-white/10 text-center">
+          <Card size="md" className="!bg-[#181628]/80 !border !border-white/10 text-center">
             <p className="font-editorial italic text-white/50">
               {t('host.session.searchNoResults', { query: searchQuery })}
             </p>

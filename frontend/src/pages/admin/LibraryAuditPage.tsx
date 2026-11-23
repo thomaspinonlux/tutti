@@ -18,6 +18,7 @@ import {
   patchOfficialTrack,
   type UnplayableTrack,
 } from '../../lib/adminLibrary.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 const YT_ID_RE = /^[A-Za-z0-9_-]{11}$/;
 
@@ -167,7 +168,7 @@ export function LibraryAuditPage(): JSX.Element {
       ) : visibleTracks && visibleTracks.length === 0 ? (
         <Card tone="cream" size="lg" className="text-center">
           <p className="text-3xl mb-2" aria-hidden>
-            🎉
+            <Icone nom="etoile" />
           </p>
           <p className="font-editorial italic text-ink-soft">
             Aucun track à corriger. Tous les tracks officiels ont un youtube_id valide.
@@ -215,7 +216,7 @@ export function LibraryAuditPage(): JSX.Element {
                     size="sm"
                     onClick={() => handleSearchYouTube(track)}
                   >
-                    🔍 Chercher sur YouTube
+                    Chercher sur YouTube
                   </Button>
                 </div>
 

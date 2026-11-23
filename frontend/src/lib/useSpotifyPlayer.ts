@@ -428,7 +428,7 @@ export function useSpotifyPlayer({
         // débloquer la pipeline (Chrome/Safari autoplay policy).
         player.addListener('autoplay_failed', () => {
           console.error(
-            '[Spotify SDK] ❌ AUTOPLAY FAILED — Chrome/Safari ont bloqué la lecture. ' +
+            '[Spotify SDK] AUTOPLAY FAILED — Chrome/Safari ont bloqué la lecture. ' +
               "L'utilisateur doit cliquer un bouton DIRECT (pas via timer/socket).",
           );
           setErrorCode('AUTOPLAY_BLOCKED');
@@ -699,7 +699,7 @@ export function useSpotifyPlayer({
             );
             if (delayMs === 3000 && state.paused && matches) {
               console.error(
-                '[Spotify Verify] ❌ Toujours paused 3s après play() — autoplay bloqué OU device inactif',
+                '[Spotify Verify] Toujours paused 3s après play() — autoplay bloqué OU device inactif',
               );
               setLastEvent('verify:still_paused_3s');
               // Bug 2 — déclenche affichage du fallback UI (autoplay bloqué silencieusement)

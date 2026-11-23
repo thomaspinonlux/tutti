@@ -12,7 +12,7 @@
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 
-const POP_COLORS = ['#ee6c2a', '#4a8b3f', '#c8336e', '#e8c547', '#6e3a6e'];
+const POP_COLORS = ['#00f0ff', '#00e5a3', '#e11d48', '#ffe600', '#7928ca'];
 
 /**
  * Tire une salve de confettis depuis un point cible.

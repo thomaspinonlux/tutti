@@ -33,7 +33,7 @@ export function Hero(): JSX.Element {
             className="inline-flex items-center gap-2 mb-7 rounded-full border px-[14px] py-[6px]"
             style={{
               backgroundColor: 'var(--landing-cream-deep)',
-              borderColor: 'var(--landing-ink)',
+              borderColor: 'var(--landing-line)',
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: '11px',
               fontWeight: 500,
@@ -54,7 +54,7 @@ export function Hero(): JSX.Element {
             transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
             className="mb-6"
             style={{
-              fontFamily: "'Fraunces', serif",
+              fontFamily: 'var(--landing-font-serif)',
               fontWeight: 900,
               fontSize: 'clamp(44px, 6.5vw, 84px)',
               lineHeight: 0.98,

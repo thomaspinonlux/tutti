@@ -80,10 +80,10 @@ export function AvailabilityCheckPanel({ playlistId, mode, onCheck }: Props): JS
           onClick={() => void handleClick()}
         >
           {loading
-            ? '⏳ Vérification…'
+            ? 'Vérification…'
             : result
-              ? '🔄 Re-vérifier'
-              : '🔍 Vérifier la disponibilité des morceaux'}
+              ? 'Re-vérifier'
+              : 'Vérifier la disponibilité des morceaux'}
         </Button>
         {result && (
           <span className="font-mono text-xs text-ink-soft">
@@ -108,7 +108,7 @@ export function AvailabilityCheckPanel({ playlistId, mode, onCheck }: Props): JS
           aria-live="polite"
         >
           <p className="text-basil-deep font-medium text-sm">
-            ✅ Tous les {result.total} morceaux sont disponibles
+            Tous les {result.total} morceaux sont disponibles
           </p>
         </Card>
       )}
@@ -121,7 +121,7 @@ export function AvailabilityCheckPanel({ playlistId, mode, onCheck }: Props): JS
           aria-live="polite"
         >
           <p className="text-raspberry-deep font-medium text-sm mb-2">
-            ⚠️ {result.playable}/{result.total} morceaux disponibles. {result.unavailable.length}{' '}
+            {result.playable}/{result.total} morceaux disponibles. {result.unavailable.length}{' '}
             indisponible{result.unavailable.length > 1 ? 's' : ''} :
           </p>
           <ul className="space-y-1.5">

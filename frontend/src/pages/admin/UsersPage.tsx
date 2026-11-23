@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Input, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { listAdminUsers, type AdminUserSummary } from '../../lib/adminUsers.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 type SortKey =
   | 'email'
@@ -151,7 +152,7 @@ export function UsersPage(): JSX.Element {
       ) : (
         <div className="border-2 border-hairline rounded-lg overflow-x-auto bg-cream">
           <table className="w-full text-sm">
-            <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
+            <thead className="bg-cream-3 text-ink-soft font-mono text-xs uppercase tracking-wider">
               <tr>
                 <Th k="email" sk={sortKey} so={sortOrder} on={handleSort} align="left">
                   Email
@@ -226,22 +227,22 @@ export function UsersPage(): JSX.Element {
                   <td className="px-3 py-2 text-center">
                     {u.can_use_tracks ? (
                       <span className="text-basil-deep" title="Accès Tracks autorisé">
-                        ✅
+                        <Icone nom="check" />
                       </span>
                     ) : (
                       <span className="text-raspberry" title="Accès Tracks bloqué">
-                        ❌
+                        <Icone nom="croix" />
                       </span>
                     )}
                   </td>
                   <td className="px-3 py-2 text-center">
                     {u.can_use_quizz ? (
                       <span className="text-basil-deep" title="Accès Quizz autorisé">
-                        ✅
+                        <Icone nom="check" />
                       </span>
                     ) : (
                       <span className="text-raspberry" title="Accès Quizz bloqué">
-                        ❌
+                        <Icone nom="croix" />
                       </span>
                     )}
                   </td>

@@ -16,6 +16,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Icone } from './ui/Icone.js';
 
 const STORAGE_KEY = 'tutti.contentBlockerHintDismissed';
 
@@ -55,11 +56,11 @@ export function ContentBlockerHintBanner(): JSX.Element | null {
     <div
       role="region"
       aria-label={t('onboarding.contentBlocker.title')}
-      className="mb-6 border-2 border-ink rounded-lg bg-lemon/30 p-4 shadow-pop-sm"
+      className="mb-6 border-2 border-hairline rounded-lg bg-lemon/30 p-4 shadow-pop-sm"
     >
       <div className="flex items-start gap-3">
         <div className="text-2xl leading-none shrink-0" aria-hidden>
-          💡
+          <Icone nom="ampoule" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-display text-base text-ink mb-1">
@@ -74,7 +75,7 @@ export function ContentBlockerHintBanner(): JSX.Element | null {
         <button
           type="button"
           onClick={handleDismiss}
-          className="px-3 py-1.5 font-mono text-xs uppercase tracking-wider border-2 border-ink rounded bg-cream hover:bg-cream-2 transition-colors"
+          className="px-3 py-1.5 font-mono text-xs uppercase tracking-wider border-2 border-hairline rounded bg-cream hover:bg-cream-2 transition-colors"
         >
           {t('onboarding.contentBlocker.checked')}
         </button>

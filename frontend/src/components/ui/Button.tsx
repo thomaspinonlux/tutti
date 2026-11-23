@@ -32,12 +32,16 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-rose text-ink border-hairline hover:bg-rose-deep hover:text-white',
-  secondary: 'bg-cream text-ink border-hairline hover:bg-cream-2',
-  danger: 'bg-raspberry text-white border-hairline hover:bg-raspberry-deep',
-  success: 'bg-basil text-white border-hairline hover:bg-basil-deep',
-  ghost: 'bg-transparent text-plum border-transparent underline underline-offset-4 hover:text-ink',
-  icon: 'bg-cream text-ink border-hairline hover:bg-cream-2',
+  // Direction « Électro-Pop Clubbing » (22/11) : plus d'ombre dure décalée.
+  // Le bouton principal est corail avec une lueur, les autres sont des
+  // surfaces nuit au contour fin ; l'appui enfonce le bouton de 2 px.
+  primary:
+    'bg-rose text-white border-transparent hover:bg-rose-deep shadow-[0_0_24px_rgba(255,51,102,0.35)] disabled:shadow-none',
+  secondary: 'bg-cream-3 text-ink border-hairline hover:bg-cream-4',
+  danger: 'bg-raspberry text-white border-transparent hover:bg-raspberry-deep',
+  success: 'bg-basil text-[#0E0D17] border-transparent hover:bg-basil-deep',
+  ghost: 'bg-transparent text-spritz border-transparent underline underline-offset-4 hover:text-ink',
+  icon: 'bg-cream-3 text-ink border-hairline hover:bg-cream-4',
 };
 
 // Press arcade : shadow-arcade-* au repos → translate + shadow-arcade-flat
@@ -45,22 +49,22 @@ const VARIANTS: Record<Variant, string> = {
 // (= sensation immédiate du clic, pas de "molasse").
 const PRESS = [
   'transition-all duration-[80ms] ease-out',
-  'active:translate-x-1 active:translate-y-1 active:shadow-arcade-flat',
+  'active:translate-y-[2px]',
 ].join(' ');
 
 const SIZES: Record<Size, string> = {
-  sm: 'h-9 px-3 text-sm rounded-[11px] shadow-arcade-sm active:translate-x-[2px] active:translate-y-[2px]',
-  md: 'h-12 px-5 text-base rounded-[14px] shadow-arcade',
-  lg: 'h-14 px-7 text-lg rounded-2xl shadow-arcade font-editorial italic font-black',
+  sm: 'min-h-9 px-3 py-1 text-sm rounded-lg',
+  md: 'min-h-12 px-5 py-2 text-base rounded-xl',
+  lg: 'min-h-14 px-7 py-2 text-lg rounded-xl font-display font-bold uppercase tracking-wide',
 };
 
 // icon : carré fixe (forcé à 48×48 quel que soit `size`).
-const ICON_OVERRIDE = 'h-12 w-12 p-0 rounded-[14px] shadow-arcade';
+const ICON_OVERRIDE = 'h-12 w-12 p-0 rounded-xl';
 
 // ghost : pas de bordure ni d'ombre (look "lien"), donc on neutralise les
 // classes de press qui n'ont pas de sens visuel ici.
 const GHOST_OVERRIDE =
-  'shadow-none border-0 rounded-md hover:bg-transparent active:translate-x-0 active:translate-y-0';
+  'shadow-none border-0 rounded-md hover:bg-transparent active:translate-y-0';
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
   { variant = 'primary', size = 'md', className, children, ...rest },
@@ -74,13 +78,13 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
     <button
       ref={ref}
       className={[
-        'inline-flex items-center justify-center font-bold border-2 select-none',
+        'inline-flex items-center justify-center text-center font-bold border select-none',
         PRESS,
         VARIANTS[variant],
         sizeClass,
         overrideClass,
         'disabled:opacity-[0.38] disabled:cursor-not-allowed',
-        'disabled:active:translate-x-0 disabled:active:translate-y-0',
+        'disabled:active:translate-y-0',
         className ?? '',
       ].join(' ')}
       {...rest}

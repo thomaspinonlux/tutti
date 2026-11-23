@@ -37,7 +37,7 @@ const PAGE_SIZE = 10;
 const PROVIDER_LABELS: Record<string, string> = {
   spotify: 'Spotify',
   youtube: 'YouTube',
-  apple_music: '🍎 Apple Music',
+  apple_music: 'Apple Music',
   demo: 'Démo',
 };
 
@@ -288,7 +288,7 @@ export function AdvancedTrackSearch({ playlistId, onImported }: Props): JSX.Elem
                     onClick={() => pickDecade(d.min, d.max)}
                     aria-pressed={active}
                     className={`px-3 py-1 border-2 border-hairline rounded text-xs font-mono uppercase transition-colors ${
-                      active ? 'bg-ink text-cream' : 'bg-cream hover:bg-cream-2'
+                      active ? 'bg-cream-4 text-spritz' : 'bg-cream hover:bg-cream-2'
                     }`}
                   >
                     {d.label}

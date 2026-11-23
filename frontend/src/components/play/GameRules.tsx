@@ -16,8 +16,9 @@
 
 import { useTranslation } from 'react-i18next';
 import { Card } from '../ui/index.js';
+import { Icone } from '../ui/Icone.js';
 
-const TEL_CORAIL = '#FF5C4D';
+const TEL_CORAIL = '#FF3366';
 
 export function GameRules({
   className,
@@ -35,16 +36,16 @@ export function GameRules({
   const { t } = useTranslation();
   const items = quiz
     ? [
-        { key: 'how', icon: '📱', title: t('rules.quizHowTitle'), body: t('rules.quizHowBody') },
-        { key: 'score', icon: '⭐', title: t('rules.scoreTitle'), body: t('rules.quizScoreBody') },
+        { key: 'how', icon: <Icone nom="telephone" />, title: t('rules.quizHowTitle'), body: t('rules.quizHowBody') },
+        { key: 'score', icon: <Icone nom="etoile" />, title: t('rules.scoreTitle'), body: t('rules.quizScoreBody') },
         ...(equipes
-          ? [{ key: 'teams', icon: '👥', title: t('rules.quizTeamsTitle'), body: t('rules.quizTeamsBody') }]
+          ? [{ key: 'teams', icon: <Icone nom="personnes" />, title: t('rules.quizTeamsTitle'), body: t('rules.quizTeamsBody') }]
           : []),
       ]
     : [
-    { key: 'how', icon: '🎤', title: t('rules.howTitle'), body: t('rules.howBody') },
-    { key: 'what', icon: '🎵', title: t('rules.whatTitle'), body: t('rules.whatBody') },
-    { key: 'score', icon: '⭐', title: t('rules.scoreTitle'), body: t('rules.scoreBody') },
+    { key: 'how', icon: <Icone nom="micro" />, title: t('rules.howTitle'), body: t('rules.howBody') },
+    { key: 'what', icon: <Icone nom="note" />, title: t('rules.whatTitle'), body: t('rules.whatBody') },
+    { key: 'score', icon: <Icone nom="etoile" />, title: t('rules.scoreTitle'), body: t('rules.scoreBody') },
   ];
   const contenu = (
     <>
@@ -77,14 +78,14 @@ export function GameRules({
   if (sombre) {
     return (
       <div
-        className={`rounded-[20px] border border-white/[0.07] bg-[#191922] p-5 text-left shadow-[0_18px_50px_rgba(0,0,0,0.5)] ${className ?? ''}`}
+        className={`rounded-[20px] border border-white/[0.07] bg-[#181628] p-5 text-left shadow-[0_18px_50px_rgba(0,0,0,0.5)] ${className ?? ''}`}
       >
         {contenu}
       </div>
     );
   }
   return (
-    <Card size="md" className={`bg-white text-left ${className ?? ''}`}>
+    <Card size="md" className={`text-left ${className ?? ''}`}>
       {contenu}
     </Card>
   );

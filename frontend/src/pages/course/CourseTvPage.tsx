@@ -134,12 +134,12 @@ export function CourseTvPage(): JSX.Element {
   const cl = classement(voitures.current);
 
   return (
-    <div className="min-h-screen bg-[#0B0B0F] text-white flex flex-col items-center p-4 gap-4">
+    <div className="min-h-screen bg-[#0E0D17] text-white flex flex-col items-center p-4 gap-4">
       <div className="w-full max-w-[1600px] flex items-center justify-between gap-4">
-        <h1 className="font-display text-4xl">🏎️ Course <span className="text-white/40 text-xl font-mono">test</span></h1>
+        <h1 className="font-display text-4xl">Course <span className="text-white/40 text-xl font-mono">test</span></h1>
         {code && (
           <p className="font-mono text-2xl">
-            tuttiparty.app/course · <span className="text-[#FF5C4D] font-bold tracking-[0.3em]">{code}</span>
+            tuttiparty.app/course · <span className="text-[#FF3366] font-bold tracking-[0.3em]">{code}</span>
           </p>
         )}
       </div>
@@ -166,7 +166,7 @@ export function CourseTvPage(): JSX.Element {
                 type="button"
                 onClick={lancer}
                 disabled={joueurs.length === 0}
-                className="mt-2 rounded-xl bg-[#FF5C4D] px-6 py-3 text-2xl font-bold disabled:opacity-40"
+                className="mt-2 rounded-xl bg-[#FF3366] px-6 py-3 text-2xl font-bold disabled:opacity-40"
               >
                 Départ ▶
               </button>
@@ -176,11 +176,11 @@ export function CourseTvPage(): JSX.Element {
         )}
         {phase === 'fini' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/70 rounded-2xl">
-            <p className="font-display text-6xl">🏁 Arrivée</p>
+            <p className="font-display text-6xl">Arrivée</p>
             <ol className="space-y-2 text-3xl">
               {podium.map((v, i) => (
                 <li key={v.id} className="flex items-center gap-3">
-                  <span className="w-12 text-right">{['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`}</span>
+                  <span className="w-12 text-right">{`${i + 1}.`}</span>
                   <span className="inline-block h-5 w-5 rounded-full" style={{ background: v.couleur }} />
                   <span className="font-semibold">{v.pseudo}</span>
                   <span className="text-white/60 font-mono text-xl">
@@ -189,7 +189,7 @@ export function CourseTvPage(): JSX.Element {
                 </li>
               ))}
             </ol>
-            <button type="button" onClick={lancer} className="rounded-xl bg-[#FF5C4D] px-6 py-3 text-2xl font-bold">
+            <button type="button" onClick={lancer} className="rounded-xl bg-[#FF3366] px-6 py-3 text-2xl font-bold">
               Rejouer ↻
             </button>
           </div>
@@ -287,7 +287,7 @@ function dessiner(c: HTMLCanvasElement | null, voitures: Voiture[], phase: Phase
   if (phase === 'compte' && compte > 0) {
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fillRect(0, 0, LARGEUR, HAUTEUR);
-    ctx.fillStyle = '#FF5C4D';
+    ctx.fillStyle = '#FF3366';
     ctx.font = 'bold 260px system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';

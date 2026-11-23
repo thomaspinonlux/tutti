@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase.js';
 import { LanguageSwitch } from '../components/LanguageSwitch.js';
 import { Button, Card, Input, MultiColorBar, TitleHandwritten } from '../components/ui/index.js';
+import { Icone } from '../components/ui/Icone.js';
 
 export function ForgotPasswordPage(): JSX.Element {
   const { t } = useTranslation();
@@ -58,7 +59,7 @@ export function ForgotPasswordPage(): JSX.Element {
 
           {sent ? (
             <Card tone="basil" size="md" className="text-center">
-              <p className="font-display text-2xl mb-2">📬</p>
+              <p className="font-display text-2xl mb-2"><Icone nom="courrier" /></p>
               <p className="font-medium">{t('auth.forgotPasswordSent')}</p>
               <p className="font-editorial italic text-sm text-ink-soft mt-2">
                 {t('auth.forgotPasswordSentHint')}

@@ -14,11 +14,11 @@ import { createSession } from '../../lib/sessions.js';
 
 /** feat/provider-badge — libellé + emoji couleur par source audio. */
 const PROVIDER_META: Record<string, { emoji: string; label: string }> = {
-  spotify: { emoji: '🟢', label: 'Spotify' },
-  youtube: { emoji: '🔴', label: 'YouTube' },
-  apple_music: { emoji: '🍎', label: 'Apple Music' },
-  deezer: { emoji: '🎧', label: 'Deezer' },
-  demo: { emoji: '🎵', label: 'Démo' },
+  spotify: { emoji: <Icone nom="note" />, label: 'Spotify' },
+  youtube: { emoji: <Icone nom="ecran" />, label: 'YouTube' },
+  apple_music: { emoji: <Icone nom="casque" />, label: 'Apple Music' },
+  deezer: { emoji: <Icone nom="casque" />, label: 'Deezer' },
+  demo: { emoji: <Icone nom="note" />, label: 'Démo' },
 };
 
 /**
@@ -35,7 +35,7 @@ function deriveSource(
   if (entries.length === 0) return null;
   entries.sort((a, b) => b[1] - a[1]);
   const [topProvider] = entries[0]!;
-  const meta = PROVIDER_META[topProvider] ?? { emoji: '🎵', label: topProvider };
+  const meta = PROVIDER_META[topProvider] ?? { emoji: <Icone nom="note" />, label: topProvider };
   return { emoji: meta.emoji, label: meta.label, mixed: entries.length > 1 };
 }
 
@@ -60,6 +60,7 @@ import {
   TitleHandwritten,
   Underline,
 } from '../../components/ui/index.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 export function TracksPage(): JSX.Element {
   const { t } = useTranslation();
@@ -118,8 +119,8 @@ export function TracksPage(): JSX.Element {
       <div className="flex gap-2 border-b-2 border-hairline mb-6 flex-wrap">
         {(
           [
-            { key: 'mine', icon: '🎧', label: t('library.tabMyPlaylists') },
-            { key: 'official', icon: '🎵', label: t('library.title') },
+            { key: 'mine', icon: <Icone nom="casque" />, label: t('library.tabMyPlaylists') },
+            { key: 'official', icon: <Icone nom="note" />, label: t('library.title') },
           ] as const
         ).map(({ key, icon, label }) => (
           <button
@@ -169,7 +170,7 @@ export function TracksPage(): JSX.Element {
                 title="Supprimer la playlist"
                 className="absolute bottom-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-panel border-2 border-hairline text-raspberry hover:bg-raspberry hover:text-white shadow-pop transition-colors disabled:opacity-50"
               >
-                {deletingId === p.id ? '…' : '🗑'}
+                {deletingId === p.id ? '…' : <Icone nom="corbeille" />}
               </button>
               <Link to={`/admin/tracks/${p.id}`} className="block group">
                 <Card
@@ -310,7 +311,7 @@ function OfficialPlaylistsTab(): JSX.Element {
                 </Badge>
                 {p.locked && (
                   <Badge tone="ink" tilt={-2}>
-                    🔒 Premium
+                    Premium
                   </Badge>
                 )}
               </div>
@@ -337,7 +338,7 @@ function OfficialPlaylistsTab(): JSX.Element {
                 disabled={p.locked || launchingId !== null}
                 onClick={() => void handleLaunchOfficial(p)}
               >
-                {launchingId === p.id ? '⏳ …' : `▶ ${t('dashboard.newSession')}`}
+                {launchingId === p.id ? '…' : `▶ ${t('dashboard.newSession')}`}
               </Button>
             </Card>
           </li>
@@ -404,7 +405,7 @@ function NewPlaylistModal({
                 onClick={() => setLanguage(lng)}
                 aria-pressed={language === lng}
                 className={`flex-1 px-3 py-1.5 border-2 border-hairline rounded font-medium transition-colors ${
-                  language === lng ? 'bg-ink text-cream' : 'bg-cream text-ink hover:bg-cream-2'
+                  language === lng ? 'bg-cream-4 text-spritz' : 'bg-cream text-ink hover:bg-cream-2'
                 }`}
               >
                 {lng.toUpperCase()}

@@ -79,7 +79,7 @@ export function PendingApprovalScreen({ status, email, onApproved }: Props): JSX
             <div className="mt-6">
               <a
                 href="/admin/reserver"
-                className="inline-block w-full font-display italic font-black text-lg px-5 py-3 border-2 border-ink rounded bg-spritz text-white"
+                className="inline-block w-full font-display italic font-black text-lg px-5 py-3 border-2 border-hairline rounded bg-spritz text-white"
               >
                 Réserver une partie
               </a>

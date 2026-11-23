@@ -18,7 +18,7 @@ export interface SeekBarProps {
   dark?: boolean;
 }
 
-const CORAL = '#FF5C4D';
+const CORAL = '#FF3366';
 
 function fmt(ms: number): string {
   const m = Math.floor(ms / 60_000);
@@ -96,7 +96,7 @@ export function SeekBar({
         {/* Rail */}
         <div
           className={`relative h-2.5 w-full overflow-visible rounded-full ${
-            dark ? 'bg-white/15' : 'border-2 border-ink bg-cream-2'
+            dark ? 'bg-white/15' : 'border-2 border-hairline bg-cream-2'
           }`}
         >
           {/* Remplissage */}
@@ -115,7 +115,7 @@ export function SeekBar({
               className={`absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full transition-transform ${
                 dark
                   ? 'bg-white shadow-[0_2px_10px_rgba(0,0,0,0.5)]'
-                  : 'border-2 border-ink bg-cream shadow-pop-sm'
+                  : 'border-2 border-hairline bg-cream shadow-pop-sm'
               } ${dragging ? 'scale-110' : 'group-hover:scale-110'}`}
               style={{
                 left: `${Math.round(progress * 100)}%`,

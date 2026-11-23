@@ -8,3 +8,4 @@ export { MultiColorBar } from './MultiColorBar.js';
 export { Pill } from './Pill.js';
 export { TitleHandwritten, Underline, Swirl } from './TitleHandwritten.js';
 export { Confetti, fireConfetti } from './Confetti.js';
+export { Icone, Rang, type NomIcone } from './Icone.js';

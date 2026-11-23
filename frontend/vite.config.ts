@@ -44,8 +44,8 @@ export default defineConfig({
         start_url: '/',
         display: 'standalone',
         orientation: 'any',
-        background_color: '#fefae0',
-        theme_color: '#e76f51',
+        background_color: '#0e0d17',
+        theme_color: '#0e0d17',
         lang: 'fr',
         categories: ['games', 'entertainment', 'music'],
         icons: [

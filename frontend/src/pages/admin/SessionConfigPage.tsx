@@ -30,11 +30,11 @@ import {
 // distinctes pour que chaque pastille soit reconnaissable sur la TV.
 const MAX_EQUIPES = 15;
 const TEAM_COLORS = [
-  '#ee6c2a', // orange
-  '#4a8b3f', // vert
-  '#c8336e', // framboise
-  '#e8c547', // citron
-  '#6e3a6e', // prune
+  '#00f0ff', // orange
+  '#00e5a3', // vert
+  '#e11d48', // framboise
+  '#ffe600', // citron
+  '#7928ca', // prune
   '#e89a64', // pamplemousse
   '#2f7fc1', // bleu
   '#1fb5a3', // turquoise
@@ -68,7 +68,7 @@ function newTeam(idx: number): Team {
   return {
     id: crypto.randomUUID(),
     name: DEFAULT_TEAM_NAMES[idx] ?? `Équipe ${idx + 1}`,
-    color: TEAM_COLORS[idx % TEAM_COLORS.length] ?? '#ee6c2a',
+    color: TEAM_COLORS[idx % TEAM_COLORS.length] ?? '#00f0ff',
   };
 }
 

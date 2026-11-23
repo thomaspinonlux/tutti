@@ -30,6 +30,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, MultiColorBar, TitleHandwritten, Underline } from '../../components/ui/index.js';
 import { GameRules } from '../../components/play/GameRules.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 // 0.1s de silence WAV encodé en base64 — 44 bytes inline. Le contenu
 // importe peu, c'est l'appel synchrone à .play() qui débloque le contexte
@@ -195,7 +196,7 @@ export function PreGameStartScreen({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white relative">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white relative">
       <MultiColorBar height="md" />
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="text-center max-w-2xl">
@@ -223,9 +224,9 @@ export function PreGameStartScreen({
             className="!min-w-[260px] !py-5 !text-2xl !font-bold uppercase tracking-wide"
           >
             {busy
-              ? '⏳ ' + t('preGame.starting')
+              ? '' + t('preGame.starting')
               : attenteApple === 'en-cours'
-                ? '⏳ ' + t('preGame.applePreparation')
+                ? '' + t('preGame.applePreparation')
                 : '▶ ' + t('preGame.startButton')}
           </Button>
           {attenteApple === 'en-cours' && (
@@ -270,17 +271,17 @@ export function PreGameStartScreen({
                   onClick={() => onToggleVocal(true)}
                   aria-pressed={vocalActif}
                   className={`px-4 py-2 text-sm font-bold transition-colors ${
-                    vocalActif ? 'bg-[#FF5C4D] text-[#0B0B0F]' : 'bg-transparent text-cream/70'
+                    vocalActif ? 'bg-[#FF3366] text-[#0E0D17]' : 'bg-transparent text-cream/70'
                   }`}
                 >
-                  🎤 {t('sessionConfig.modeVoiceTitle')}
+                  {t('sessionConfig.modeVoiceTitle')}
                 </button>
                 <button
                   type="button"
                   onClick={() => onToggleVocal(false)}
                   aria-pressed={!vocalActif}
                   className={`px-4 py-2 text-sm font-bold transition-colors ${
-                    !vocalActif ? 'bg-[#FF5C4D] text-[#0B0B0F]' : 'bg-transparent text-cream/70'
+                    !vocalActif ? 'bg-[#FF3366] text-[#0E0D17]' : 'bg-transparent text-cream/70'
                   }`}
                 >
                   ⌨ {t('sessionConfig.modeWrittenTitle')}
@@ -310,9 +311,9 @@ export function PreGameStartScreen({
       {/* Fallback overlay si autoplay bloqué par browser/content blocker. */}
       {unlockFailed && (
         <div className="fixed inset-0 z-50 bg-ink/80 flex items-center justify-center px-6">
-          <div className="max-w-md text-center rounded-3xl border border-white/10 bg-[#15151d]/90 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.6)]">
+          <div className="max-w-md text-center rounded-3xl border border-white/10 bg-[#181628]/90 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.6)]">
             <p className="text-4xl mb-3" aria-hidden>
-              ⚠️
+              <Icone nom="alerte" />
             </p>
             <p className="font-display text-xl mb-2 text-white">
               {t('preGame.autoplayBlockedTitle')}

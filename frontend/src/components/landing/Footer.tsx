@@ -9,8 +9,8 @@ export function Footer(): JSX.Element {
   return (
     <footer
       style={{
-        background: 'var(--landing-ink)',
-        color: 'rgba(245, 239, 224, 0.85)',
+        background: 'var(--landing-inverse)',
+        color: 'rgba(255, 255, 255, 0.85)',
         padding: '64px 0 32px',
         fontSize: '14px',
       }}
@@ -62,7 +62,7 @@ export function Footer(): JSX.Element {
         <div
           className="flex flex-wrap items-center justify-between gap-3"
           style={{
-            borderTop: '1px solid rgba(245, 239, 224, 0.1)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             paddingTop: '24px',
             fontSize: '13px',
             opacity: 0.6,
@@ -97,16 +97,16 @@ const footerColTitleStyle = {
 const footerLinkStyle = {
   display: 'block',
   padding: '6px 0',
-  color: 'rgba(245, 239, 224, 0.7)',
+  color: 'rgba(255, 255, 255, 0.7)',
   textDecoration: 'none',
   transition: 'color 0.2s',
 };
 
 function hover(e: React.MouseEvent<HTMLAnchorElement>): void {
-  (e.currentTarget as HTMLAnchorElement).style.color = 'var(--landing-cream)';
+  (e.currentTarget as HTMLAnchorElement).style.color = 'var(--landing-ink)';
 }
 function unhover(e: React.MouseEvent<HTMLAnchorElement>): void {
-  (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(245, 239, 224, 0.7)';
+  (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255, 255, 255, 0.7)';
 }
 
 interface FooterColProps {

@@ -30,7 +30,7 @@ export function FAQItem({ question, answerHtml }: FAQItemProps): JSX.Element {
     <div
       className="py-6"
       style={{
-        borderBottom: '1px solid rgba(26, 24, 20, 0.15)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
         borderTop: 'var(--first-border, none)',
       }}
     >

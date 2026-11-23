@@ -27,10 +27,11 @@ import type { MainScreenViewProps } from './MainScreenView.js';
 import { LyricsOverlay } from '../../components/screen/LyricsOverlay.js';
 import { AutoScrollList } from '../../components/screen/AutoScrollList.js';
 import { compterManchesCompletes } from '../../lib/manches.js';
+import { Icone, Rang } from '../../components/ui/Icone.js';
 
-const CORAL = '#FF5C4D';
+const CORAL = '#FF3366';
 const PANEL =
-  'rounded-[20px] bg-[#191922] border border-white/[0.07] shadow-[0_24px_70px_rgba(0,0,0,0.55)]';
+  'rounded-[20px] bg-[#181628] border border-white/[0.07] shadow-[0_24px_70px_rgba(0,0,0,0.55)]';
 
 // Keyframes locaux à la TV (préfixe tv-) — n'affectent pas la console.
 const TV_STYLE = `
@@ -50,7 +51,7 @@ const TV_STYLE = `
 // ── Fond = pochette floutée plein cadre (la lumière vient du contenu) ───────
 function AmbientBackdrop({ cover }: { cover: string | null }): JSX.Element {
   return (
-    <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden bg-[#0B0B0F]">
+    <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden bg-[#0E0D17]">
       {cover && (
         <div
           key={cover}
@@ -124,7 +125,7 @@ function TopRibbon({
         )}
       </div>
       <span
-        className="rounded-full px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.28em] text-[#0B0B0F]"
+        className="rounded-full px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.28em] text-[#0E0D17]"
         style={{ backgroundColor: CORAL, boxShadow: `0 8px 30px ${CORAL}55` }}
       >
         {phaseLabel}
@@ -171,7 +172,7 @@ function MysteryCoverDark({
           backgroundImage: cover ? `url(${cover})` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundColor: '#101018',
+          backgroundColor: '#12111d',
           filter: 'blur(30px) saturate(0.5) brightness(0.55)',
         }}
       />
@@ -344,7 +345,7 @@ function DarkLeaderboard({
     <div className={`${PANEL} flex min-h-0 flex-1 flex-col p-5`}>
       <div className="mb-3 flex shrink-0 items-center gap-2.5">
         <span aria-hidden className="text-lg">
-          🏆
+          <Icone nom="trophee" />
         </span>
         <p className="font-mono text-xs font-bold uppercase tracking-[0.3em] text-white/55">
           {t('screen.leaderboardLabel')}
@@ -374,7 +375,7 @@ function DarkLeaderboard({
                   className="w-9 text-center font-display text-2xl"
                   style={{ color: isLeader ? CORAL : '#ffffff' }}
                 >
-                  {['🥇', '🥈', '🥉'][idx] ?? idx + 1}
+                  {idx < 3 ? <Rang rang={idx + 1} /> : idx + 1}
                 </span>
                 <div className="flex min-w-0 items-center gap-2">
                   {entry.color && (
@@ -459,13 +460,13 @@ function ReadyStage({
           <circle cx="60" cy="60" r="34" fill="none" stroke="#ffffff10" strokeWidth="0.6" />
           <circle cx="60" cy="60" r="24" fill="none" stroke="#ffffff10" strokeWidth="0.6" />
           <circle cx="60" cy="60" r="16" fill={CORAL} />
-          <circle cx="60" cy="60" r="3" fill="#0B0B0F" />
+          <circle cx="60" cy="60" r="3" fill="#0E0D17" />
         </svg>
       </div>
       {round && (
         <div className="mb-5 flex items-center gap-3 font-mono text-sm uppercase tracking-[0.3em] text-white/60">
           <span
-            className="rounded-full px-4 py-1.5 text-[#0B0B0F]"
+            className="rounded-full px-4 py-1.5 text-[#0E0D17]"
             style={{ backgroundColor: CORAL }}
           >
             {t('host.eyebrowPlaying', { round: round.position })}
@@ -592,7 +593,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
             </div>
             <div className="min-w-0 text-center lg:text-left">
               <span
-                className="inline-block rounded-full px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.32em] text-[#0B0B0F]"
+                className="inline-block rounded-full px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.32em] text-[#0E0D17]"
                 style={{ backgroundColor: CORAL, boxShadow: `0 8px 30px ${CORAL}55` }}
               >
                 {t('screen.phaseLabel3')}
@@ -602,11 +603,13 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
                   se faire découper en colonne étroite derrière le classement. */}
               <h1
                 className={`tv-rise mt-6 break-words font-display font-bold leading-[0.95] text-white ${
+                  // Syne est plus large que l'ancienne police de titre : un
+                  // cran de moins à chaque palier pour garder la même emprise.
                   title.length <= 14
-                    ? 'text-6xl lg:text-7xl xl:text-8xl'
+                    ? 'text-6xl lg:text-7xl'
                     : title.length <= 26
-                      ? 'text-5xl lg:text-6xl xl:text-7xl'
-                      : 'text-4xl lg:text-5xl xl:text-6xl'
+                      ? 'text-5xl lg:text-6xl'
+                      : 'text-4xl lg:text-5xl'
                 }`}
                 style={{ textShadow: '0 12px 60px rgba(0,0,0,0.6)', textWrap: 'balance' }}
                 title={title}
@@ -683,7 +686,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
               <ReadyStage round={playingRound} lastEnded={lastEnded} master={master} />
             ) : phase === 'phase3-skipped' ? (
               <div className="text-center tv-rise">
-                <p className="text-7xl">⏭</p>
+                <p className="text-7xl"><Icone nom="suivant" /></p>
                 <p className="mt-4 font-editorial text-2xl italic text-white/60">
                   {t('screen.trackSkipped')}
                 </p>
@@ -757,7 +760,7 @@ export function TvScreenView(props: MainScreenViewProps): JSX.Element {
       {session.is_paused && (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/85 animate-fade-in">
           <div className={`${PANEL} px-16 py-12 text-center`}>
-            <p className="text-7xl">⏸</p>
+            <p className="text-7xl"><Icone nom="pause" /></p>
             <h2 className="mt-3 font-display text-5xl text-white">{t('screen.pauseTitle')}</h2>
             <p className="mt-2 font-editorial text-xl italic text-white/55">
               {t('screen.pauseHint')}

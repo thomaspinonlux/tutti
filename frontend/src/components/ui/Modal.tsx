@@ -34,7 +34,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: Props): J
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
       role="presentation"
     >
@@ -42,7 +42,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: Props): J
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
-        className={`w-full ${SIZES[size]} bg-panel border-2 border-hairline rounded-lg shadow-pop-xl animate-pop-in p-6`}
+        className={`w-full ${SIZES[size]} bg-panel border border-hairline rounded-2xl animate-pop-in p-6`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (

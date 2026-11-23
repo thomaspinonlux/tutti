@@ -21,11 +21,12 @@ import {
   clearDebugLogs,
   type DebugLogEntry,
 } from '../lib/debugLogs.js';
+import { Icone } from './ui/Icone.js';
 
 const LEVEL_COLOR: Record<DebugLogEntry['level'], string> = {
-  log: '#9be39b', // pale green
+  log: '#7df4c9', // pale green
   info: '#7be37b', // green
-  warn: '#ffd166', // amber
+  warn: '#ffe600', // amber
   error: '#ff6b6b', // red
 };
 
@@ -82,7 +83,7 @@ export function DebugOverlay(): JSX.Element | null {
         display: 'flex',
         flexDirection: 'column',
         background: 'rgba(0,0,0,0.85)',
-        color: '#9be39b',
+        color: '#7df4c9',
         fontFamily: 'JetBrains Mono, ui-monospace, monospace',
         fontSize: 11,
         lineHeight: 1.35,
@@ -102,7 +103,7 @@ export function DebugOverlay(): JSX.Element | null {
         }}
       >
         <span style={{ flex: 1, fontWeight: 700 }}>
-          🔍 DEBUG [{logs.length}/{100}]
+          DEBUG [{logs.length}/{100}]
         </span>
         <button
           type="button"
@@ -111,7 +112,7 @@ export function DebugOverlay(): JSX.Element | null {
           aria-label="Copier les logs"
           title="Copier"
         >
-          {copied ? '✓' : '📋'}
+          {copied ? '✓' : <Icone nom="liste" />}
         </button>
         <button
           type="button"
@@ -120,7 +121,7 @@ export function DebugOverlay(): JSX.Element | null {
           aria-label="Vider les logs"
           title="Clear"
         >
-          🗑️
+          <Icone nom="corbeille" />
         </button>
         <button
           type="button"
@@ -163,7 +164,7 @@ export function DebugOverlay(): JSX.Element | null {
 const btnStyle: React.CSSProperties = {
   background: 'transparent',
   border: 'none',
-  color: '#9be39b',
+  color: '#7df4c9',
   cursor: 'pointer',
   fontSize: 13,
   padding: '2px 4px',

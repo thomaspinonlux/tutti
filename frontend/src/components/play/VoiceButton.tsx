@@ -169,7 +169,7 @@ export function VoiceButton({
           className={[
             'relative w-24 h-24 md:w-32 md:h-32 rounded-full',
             'flex items-center justify-center',
-            'text-white shadow-pop-lg border-[6px] border-ink',
+            'text-white shadow-pop-lg border-[6px] border-hairline',
             'transition-colors',
             'focus:outline-none focus-visible:ring-4 focus-visible:ring-spritz focus-visible:ring-offset-2',
             disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:translate-y-0.5',

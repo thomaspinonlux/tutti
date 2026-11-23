@@ -16,6 +16,7 @@ import { LanguageSwitch } from '../LanguageSwitch.js';
 import { PwaInstallButton } from '../PwaInstallButton.js';
 import { Button, MultiColorBar, TitleHandwritten } from '../ui/index.js';
 import { getMe } from '../../lib/me.js';
+import { Icone } from '../ui/Icone.js';
 
 interface NavItem {
   to: string;
@@ -142,7 +143,7 @@ export function Sidebar(): JSX.Element {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-ink text-cream border-hairline shadow-pop-sm'
+                  ? 'bg-cream-4 text-spritz border-spritz/40'
                   : 'border-transparent text-ink hover:bg-cream hover:border-hairline'
               }`
             }
@@ -158,7 +159,7 @@ export function Sidebar(): JSX.Element {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-ink text-cream border-hairline shadow-pop-sm'
+                    ? 'bg-cream-4 text-spritz border-spritz/40'
                     : 'border-transparent text-raspberry hover:bg-cream hover:border-hairline'
                 }`
               }
@@ -173,13 +174,13 @@ export function Sidebar(): JSX.Element {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded border-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-ink text-cream border-hairline shadow-pop-sm'
+                    ? 'bg-cream-4 text-spritz border-spritz/40'
                     : 'border-transparent text-raspberry hover:bg-cream hover:border-hairline'
                 }`
               }
               title="Cascade voix : distribution L1/L2/L3, latence, coût estimé"
             >
-              <span className="w-5 h-5 shrink-0 flex items-center justify-center">🎙️</span>
+              <span className="w-5 h-5 shrink-0 flex items-center justify-center"><Icone nom="micro" /></span>
               <span>Voice analytics</span>
             </NavLink>
           </>

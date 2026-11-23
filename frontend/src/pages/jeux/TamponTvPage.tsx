@@ -102,7 +102,7 @@ export function TamponTvPage(): JSX.Element {
         perso: Object.fromEntries(
           autos.current.map((a) => [
             a.id,
-            `${ph === 'jeu' ? (a.vivant ? `❤️ ${Math.ceil(a.vie)} · ${secRef.current >= a.turboPretA ? 'turbo prêt' : 'turbo en recharge'} · ` : 'Éliminé · ') : ''}${a.score} pt${a.score > 1 ? 's' : ''} / ${POINTS_VICTOIRE}`,
+            `${ph === 'jeu' ? (a.vivant ? `Vie ${Math.ceil(a.vie)} · ${secRef.current >= a.turboPretA ? 'turbo prêt' : 'turbo en recharge'} · ` : 'Éliminé · ') : ''}${a.score} pt${a.score > 1 ? 's' : ''} / ${POINTS_VICTOIRE}`,
           ]),
         ),
       });
@@ -146,7 +146,7 @@ export function TamponTvPage(): JSX.Element {
         />
       )}
       {phase === 'manche' && <TableauScores titre={resultat} lignes={lignes} bouton="Manche suivante ▶" onBouton={lancer} />}
-      {phase === 'fini' && <TableauScores titre={`🏆 ${classes[0]?.pseudo ?? ''} gagne !`} lignes={lignes} bouton="Rejouer ↻" onBouton={lancer} />}
+      {phase === 'fini' && <TableauScores titre={`${classes[0]?.pseudo ?? ''} gagne !`} lignes={lignes} bouton="Rejouer ↻" onBouton={lancer} />}
     </CadreTv>
   );
 }
@@ -172,7 +172,7 @@ function dessiner(cv: HTMLCanvasElement | null, autos: Auto[], sec: number, phas
   }
   ctx.stroke();
   const subite = phase === 'jeu' && sec > MORT_SUBITE;
-  ctx.strokeStyle = subite ? (Math.floor(sec * 4) % 2 ? '#ff3b30' : '#ffcc00') : '#f2c94c';
+  ctx.strokeStyle = subite ? (Math.floor(sec * 4) % 2 ? '#ff3b30' : '#ffcc00') : '#ffe600';
   ctx.lineWidth = 10;
   ctx.strokeRect(MARGE, MARGE, LARGEUR - 2 * MARGE, HAUTEUR - 2 * MARGE);
   if (subite) {
@@ -221,7 +221,7 @@ function dessiner(cv: HTMLCanvasElement | null, autos: Auto[], sec: number, phas
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(a.x - l / 2, a.y - RAYON_AUTO - 18, l, 8);
     const f = Math.max(0, a.vie / VIE);
-    ctx.fillStyle = f > 0.5 ? '#3fb47a' : f > 0.25 ? '#f2c94c' : '#eb5757';
+    ctx.fillStyle = f > 0.5 ? '#00e5a3' : f > 0.25 ? '#ffe600' : '#eb5757';
     ctx.fillRect(a.x - l / 2, a.y - RAYON_AUTO - 18, l * f, 8);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 16px system-ui, sans-serif';

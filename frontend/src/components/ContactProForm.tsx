@@ -102,7 +102,7 @@ export function ContactProForm({
 
   if (etat === 'ok') {
     return (
-      <p className={sombre ? 'text-base text-basil' : 'text-lg font-semibold'}>✅ {tx.merci}</p>
+      <p className={sombre ? 'text-base text-basil' : 'text-lg font-semibold'}>{tx.merci}</p>
     );
   }
 

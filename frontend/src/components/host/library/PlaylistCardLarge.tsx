@@ -20,6 +20,7 @@ import { libraryCoverUrl } from '../../../lib/library.js';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LibraryPlaylistSummary } from '../../../lib/library.js';
+import { Icone } from '../../ui/Icone.js';
 
 interface Props {
   playlist: LibraryPlaylistSummary;
@@ -47,7 +48,7 @@ function difficultyTone(d: LibraryPlaylistSummary['difficulty']): {
     case 'EASY':
       return { bg: '#A8D8A8', fg: '#0F1722', label: 'EASY' };
     case 'MEDIUM':
-      return { bg: '#FFD166', fg: '#0F1722', label: 'MEDIUM' };
+      return { bg: '#FFE600', fg: '#0F1722', label: 'MEDIUM' };
     case 'EXPERT':
       return { bg: '#D6336C', fg: '#FAF7F2', label: 'EXPERT' };
     default:
@@ -110,7 +111,7 @@ export function PlaylistCardLarge({
       transition={{ duration: 0.25, ease: 'easeOut' }}
       whileHover={disabled || playlist.locked ? undefined : { scale: 1.05 }}
       whileTap={disabled || playlist.locked ? undefined : { scale: 0.98 }}
-      className={`group relative shrink-0 snap-start text-left rounded-lg overflow-hidden border-2 border-ink shadow-pop disabled:opacity-50 ${
+      className={`group relative shrink-0 snap-start text-left rounded-lg overflow-hidden border-2 border-hairline shadow-pop disabled:opacity-50 ${
         playlist.locked ? 'opacity-60' : ''
       }`}
       style={{
@@ -154,7 +155,7 @@ export function PlaylistCardLarge({
         className="absolute top-2 left-2 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider bg-black/40 text-cream rounded-full backdrop-blur-sm"
         aria-hidden
       >
-        ⭐ {t('host.session.officialBadge')}
+        {t('host.session.officialBadge')}
       </span>
 
       {/* Titre + subtitle bas */}
@@ -184,9 +185,9 @@ export function PlaylistCardLarge({
       {/* Cadenas overlay si locked */}
       {playlist.locked && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="bg-cream/90 border-2 border-ink rounded-lg px-3 py-2 text-center shadow-pop">
+          <div className="bg-cream/90 border-2 border-hairline rounded-lg px-3 py-2 text-center shadow-pop">
             <span className="text-3xl block mb-1" aria-hidden>
-              🔒
+              <Icone nom="cadenas" />
             </span>
             <p className="font-mono text-[10px] uppercase tracking-wider">
               {t('host.session.premiumRequired')}

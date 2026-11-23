@@ -37,11 +37,10 @@ export function PricingColumn({
       transition={{ duration: 0.5, delay, ease: 'easeOut' }}
       className="relative rounded-[18px] transition-all p-7 sm:p-[26px]"
       style={{
-        background: highlighted ? 'var(--landing-cream)' : 'rgba(245, 239, 224, 0.04)',
-        border: highlighted
-          ? '1px solid var(--landing-cream)'
-          : '1px solid rgba(245, 239, 224, 0.15)',
-        color: highlighted ? 'var(--landing-ink)' : 'var(--landing-cream)',
+        background: highlighted ? 'var(--landing-cream-darker)' : 'rgba(255, 255, 255, 0.04)',
+        border: highlighted ? '1px solid var(--landing-rose)' : '1px solid rgba(255, 255, 255, 0.12)',
+        boxShadow: highlighted ? '0 0 32px rgba(255, 51, 102, 0.25)' : 'none',
+        color: 'var(--landing-ink)',
       }}
     >
       {highlighted && (
@@ -49,7 +48,7 @@ export function PricingColumn({
           className="absolute left-1/2 top-[-12px] -translate-x-1/2 whitespace-nowrap rounded-full px-[14px] py-1"
           style={{
             background: 'var(--landing-rose)',
-            color: 'var(--landing-cream)',
+            color: '#fff',
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: '10px',
             fontWeight: 600,
@@ -65,14 +64,14 @@ export function PricingColumn({
         className="pb-5 mb-5"
         style={{
           borderBottom: highlighted
-            ? '1px dashed rgba(26, 24, 20, 0.15)'
-            : '1px dashed rgba(245, 239, 224, 0.2)',
+            ? '1px dashed rgba(255, 255, 255, 0.15)'
+            : '1px dashed rgba(255, 255, 255, 0.2)',
         }}
       >
         <div
           className="mb-1"
           style={{
-            fontFamily: "'Fraunces', serif",
+            fontFamily: 'var(--landing-font-serif)',
             fontSize: '28px',
             fontWeight: 700,
             letterSpacing: '-0.01em',
@@ -104,7 +103,7 @@ export function PricingColumn({
             <span style={{ fontSize: '14px', opacity: 0.85 }}>{row.label}</span>
             <span
               style={{
-                fontFamily: "'Fraunces', serif",
+                fontFamily: 'var(--landing-font-serif)',
                 fontWeight: 700,
                 fontSize: '22px',
                 letterSpacing: '-0.01em',

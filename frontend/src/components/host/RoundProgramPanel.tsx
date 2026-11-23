@@ -14,7 +14,7 @@ import type { RoundProgramItem, RoundProgramResponse } from '@tutti/shared';
 import { getRoundProgram } from '../../lib/sessions.js';
 import { Card } from '../ui/index.js';
 
-const CORAL = '#FF5C4D';
+const CORAL = '#FF3366';
 
 interface Props {
   sessionId: string;
@@ -99,7 +99,7 @@ export function RoundProgramPanel({
   if (dark) {
     return (
       <div
-        className={`rounded-[20px] border border-white/[0.07] bg-[#15151d]/80 p-5 backdrop-blur-xl ${className ?? ''}`}
+        className={`rounded-[20px] border border-white/[0.07] bg-[#181628]/80 p-5 backdrop-blur-xl ${className ?? ''}`}
       >
         {header}
       </div>
@@ -120,7 +120,7 @@ function ProgramRow({ track, dark }: { track: RoundProgramItem; dark: boolean })
     'flex items-center gap-3 rounded-xl px-2 py-1.5 transition-colors border',
     isCurrent
       ? dark
-        ? 'border-[#FF5C4D66] bg-[#FF5C4D1f]'
+        ? 'border-[#FF336666] bg-[#FF33661f]'
         : 'bg-spritz/20 border-spritz-deep'
       : 'border-transparent',
     isPlayed ? 'opacity-50' : '',
@@ -177,7 +177,7 @@ function StatusBadge({
   if (status === 'CURRENT') {
     return (
       <span
-        className={`font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${dark ? 'text-[#0B0B0F]' : 'bg-spritz-deep text-cream'}`}
+        className={`font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${dark ? 'text-[#0E0D17]' : 'bg-spritz-deep text-cream'}`}
         style={dark ? { backgroundColor: CORAL } : undefined}
       >
         {t('host.programStatusCurrent')}

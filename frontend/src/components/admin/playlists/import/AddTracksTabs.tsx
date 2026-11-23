@@ -9,6 +9,7 @@ import { Card } from '../../../ui/index.js';
 import { AdvancedTrackSearch } from './AdvancedTrackSearch.js';
 import { SpotifyPlaylistsBrowser } from './SpotifyPlaylistsBrowser.js';
 import { BulkPasteImport } from './BulkPasteImport.js';
+import { Icone } from '../../../ui/Icone.js';
 
 interface Props {
   playlistId: string;
@@ -18,10 +19,10 @@ interface Props {
 type TabId = 'search' | 'paste' | 'my' | 'public';
 
 const TABS: Array<{ id: TabId; label: string; icon: string }> = [
-  { id: 'search', label: 'Recherche', icon: '🔍' },
-  { id: 'paste', label: 'Coller une liste', icon: '📋' },
-  { id: 'my', label: 'Mes playlists', icon: '📁' },
-  { id: 'public', label: 'Publiques', icon: '🌐' },
+  { id: 'search', label: 'Recherche', icon: <Icone nom="recherche" /> },
+  { id: 'paste', label: 'Coller une liste', icon: <Icone nom="liste" /> },
+  { id: 'my', label: 'Mes playlists', icon: <Icone nom="dossier" /> },
+  { id: 'public', label: 'Publiques', icon: <Icone nom="globe" /> },
 ];
 
 export function AddTracksTabs({ playlistId, onImported }: Props): JSX.Element {

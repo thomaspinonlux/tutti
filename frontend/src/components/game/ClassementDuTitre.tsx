@@ -15,6 +15,7 @@ import type { CorrectAnswerEntry, CumulativeScore } from '@tutti/shared';
 import { useMemo, type ReactNode } from 'react';
 import { AutoScrollList } from '../screen/AutoScrollList.js';
 import { useTranslation } from 'react-i18next';
+import { Icone } from '../ui/Icone.js';
 
 export type VarianteClassement = 'sombre' | 'clair' | 'compact';
 
@@ -50,7 +51,7 @@ export function classesNom(
   return `${tailles} break-words ${grand === 'colonne' ? 'line-clamp-3' : 'line-clamp-2'} leading-tight`;
 }
 
-const CORAL = '#FF5C4D';
+const CORAL = '#FF3366';
 
 /** 1 → « 1ᵉʳ », 2 → « 2ᵉ »… (ordinal court, lisible de loin). */
 export function ordinal(n: number, langue: string): string {
@@ -141,10 +142,10 @@ export function ClassementDuTitre({
   const compact = variante === 'compact';
 
   const cadre = sombre
-    ? 'rounded-[20px] border border-white/10 bg-[#15151d]/85 backdrop-blur'
+    ? 'rounded-[20px] border border-white/10 bg-[#181628]/85 backdrop-blur'
     : compact
-      ? 'rounded-2xl border-2 border-ink bg-cream shadow-pop'
-      : 'rounded-[20px] border border-ink/15 bg-white shadow-pop';
+      ? 'rounded-2xl border-2 border-hairline bg-cream shadow-pop'
+      : 'rounded-[20px] border border-hairline bg-panel';
 
   const couleurTexte = sombre ? 'text-white' : 'text-ink';
   const couleurSecondaire = sombre ? 'text-white/55' : 'text-ink-2';
@@ -159,7 +160,7 @@ export function ClassementDuTitre({
     >
       <div className={`mb-3 flex shrink-0 items-center gap-2.5 ${compact ? 'mb-2' : ''}`}>
         <span aria-hidden className={compact ? 'text-base' : 'text-xl'}>
-          🎯
+          <Icone nom="cible" />
         </span>
         <p
           className={`font-mono font-bold uppercase tracking-[0.25em] ${couleurSecondaire} ${

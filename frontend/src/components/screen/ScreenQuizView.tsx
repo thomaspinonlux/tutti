@@ -18,6 +18,7 @@ import { getSessionSnapshot } from '../../lib/sessions.js';
 import { JoinQrCorner } from '../host/JoinQrCorner.js';
 import { tempsRestantMs } from '../../lib/quizPause.js';
 import { aUnExtrait } from '../../lib/useExtraitQuiz.js';
+import { Rang, Icone } from '../ui/Icone.js';
 
 export interface QuizTvReveal {
   reveal: { answer: string; answer_alt?: string };
@@ -37,7 +38,7 @@ interface Props {
 }
 
 const LETTRES = ['A', 'B', 'C', 'D', 'E', 'F'];
-const CORAIL = '#FF5C4D';
+const CORAIL = '#FF3366';
 
 
 export function ScreenQuizView({
@@ -109,7 +110,7 @@ export function ScreenQuizView({
 
   const playUrl = `${getShareableOrigin()}/play?session=${joinCode}`;
   const fond =
-    'min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white flex flex-col items-center justify-center p-10 relative';
+    'min-h-screen bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white flex flex-col items-center justify-center p-10 relative';
 
   if (finDeManche || !question) {
     return (
@@ -141,7 +142,7 @@ export function ScreenQuizView({
   if ((question.type === 'BLUFF' || question.type === 'FUNNY') && sessionId) {
     const d = reveal?.details;
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white flex flex-col p-10">
+      <div className="min-h-screen bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white flex flex-col p-10">
         <SceneEcrireVoter
           socket={socket}
           sessionId={sessionId}
@@ -155,7 +156,7 @@ export function ScreenQuizView({
   if (question.type === 'PETIT_BAC') {
     const d = reveal?.details;
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white flex flex-col p-10">
+      <div className="min-h-screen bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white flex flex-col p-10">
         <SceneBac question={question} details={d && d.kind === 'bac' ? d : null} xl />
       </div>
     );
@@ -164,7 +165,7 @@ export function ScreenQuizView({
   // feat/dessin-a-deviner — la TV montre le dessin en direct.
   if (question.type === 'DRAWING' && sessionId) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#0B0B0F] to-[#14141C] text-white flex flex-col p-8 gap-4">
+      <div className="min-h-screen bg-gradient-to-b from-[#0E0D17] to-[#181628] text-white flex flex-col p-8 gap-4">
         <p className="font-mono text-lg uppercase tracking-[0.25em] text-white/60">
           {question.category ?? t('dessin.titre')} ·{' '}
           {question.numero_manche && question.total_manche
@@ -196,13 +197,13 @@ export function ScreenQuizView({
         </p>
         {!revele && (
           <p className="font-display text-6xl tabular-nums" style={{ color: restant <= 5 ? CORAIL : 'white' }}>
-            {question.en_pause ? `⏸ ${restant}` : restant}
+            {question.en_pause && <Icone nom="pause" />} {restant}
           </p>
         )}
       </div>
 
       {question.en_pause && !revele && (
-        <p className="mb-6 rounded-full border-2 border-[#e8c547] px-6 py-2 font-display text-3xl text-[#e8c547]">
+        <p className="mb-6 rounded-full border-2 border-[#ffe600] px-6 py-2 font-display text-3xl text-[#ffe600]">
           {t('hostQuizz.enPause')}
         </p>
       )}
@@ -236,7 +237,7 @@ export function ScreenQuizView({
                     choix.some((x) => x.length > 28) ? 'text-2xl' : 'text-3xl'
                   }`,
                   estBonne
-                    ? 'border-[#3FB47A] bg-[#3FB47A]/25'
+                    ? 'border-[#00E5A3] bg-[#00E5A3]/25'
                     : revele
                       ? 'border-white/10 bg-white/[0.03] text-white/40'
                       : 'border-white/15 bg-white/[0.06]',
@@ -259,13 +260,13 @@ export function ScreenQuizView({
       {revele && (
         <div className="mt-10 text-center">
           {choix.length === 0 && (
-            <p className="font-display text-5xl mb-4" style={{ color: '#3FB47A' }}>
+            <p className="font-display text-5xl mb-4" style={{ color: '#00E5A3' }}>
               {bonne}
             </p>
           )}
           {/* feat/blind-test-simple — le titre ET l'interprète de l'extrait. */}
           {aUnExtrait(question) && reveal?.reveal.answer_alt && (
-            <p className="font-display text-5xl mb-4 [overflow-wrap:anywhere]" style={{ color: '#3FB47A' }}>
+            <p className="font-display text-5xl mb-4 [overflow-wrap:anywhere]" style={{ color: '#00E5A3' }}>
               {reveal.reveal.answer_alt}
             </p>
           )}
@@ -277,7 +278,7 @@ export function ScreenQuizView({
                 .slice(0, 3)
                 .map((r, i) => (
                   <li key={r.participant_id}>
-                    {['🥇', '🥈', '🥉'][i]} {r.pseudo} : {r.submitted ?? '—'}
+                    <Rang rang={i + 1} /> {r.pseudo} : {r.submitted ?? '—'}
                     {question.estimation_unit ? ` ${question.estimation_unit}` : ''}
                   </li>
                 ))}

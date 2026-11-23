@@ -8,8 +8,8 @@ import type { Socket } from 'socket.io-client';
 import type { CurrentQuestionState, DetailsBac, DetailsVote } from '@tutti/shared';
 import { useEcrireVoter, useSecondesRestantes } from '../../lib/jeuxDeSalon.js';
 
-const CORAIL = '#FF5C4D';
-const VERT = '#3FB47A';
+const CORAIL = '#FF3366';
+const VERT = '#00E5A3';
 
 export function SceneEcrireVoter({
   socket,
@@ -74,7 +74,7 @@ export function SceneEcrireVoter({
           {details.choix.map((c) => (
             <li
               key={c.id}
-              className={`rounded-2xl border-2 px-6 py-4 ${c.verite ? 'border-[#3FB47A] bg-[#3FB47A]/20' : 'border-white/15 bg-white/[0.05]'}`}
+              className={`rounded-2xl border-2 px-6 py-4 ${c.verite ? 'border-[#00E5A3] bg-[#00E5A3]/20' : 'border-white/15 bg-white/[0.05]'}`}
             >
               <p className={`font-semibold ${xl ? 'text-3xl' : 'text-xl'}`} style={c.verite ? { color: VERT } : undefined}>
                 {c.verite ? '✓ ' : ''}
@@ -84,7 +84,7 @@ export function SceneEcrireVoter({
                 {c.verite ? t('jeux.laVerite') : t('jeux.ecritPar', { noms: c.auteurs.join(', ') })}
               </p>
               <p className="text-white/80 mt-1">
-                {c.votants.length === 0 ? t('jeux.aucunVote') : `🗳️ ${c.votants.join(', ')}`}
+                {c.votants.length === 0 ? t('jeux.aucunVote') : `${c.votants.join(', ')}`}
               </p>
             </li>
           ))}
@@ -153,7 +153,7 @@ export function SceneBac({
               <tr key={l.participant_id} className="border-t border-white/10">
                 <td className="p-2 font-semibold whitespace-nowrap">{l.pseudo}</td>
                 {l.reponses.map((r, i) => (
-                  <td key={i} className="p-2" style={{ color: r.points === 20 ? VERT : r.points === 10 ? '#F2C94C' : 'rgba(255,255,255,0.35)' }}>
+                  <td key={i} className="p-2" style={{ color: r.points === 20 ? VERT : r.points === 10 ? '#FFE600' : 'rgba(255,255,255,0.35)' }}>
                     {r.texte || '—'}
                   </td>
                 ))}

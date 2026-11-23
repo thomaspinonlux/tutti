@@ -16,19 +16,19 @@ interface Props {
 }
 
 const TONES: Record<Tone, string> = {
-  spritz: 'bg-spritz text-white',
-  basil: 'bg-basil text-white',
-  raspberry: 'bg-raspberry text-white',
-  lemon: 'bg-lemon text-ink',
-  plum: 'bg-plum text-white',
-  ink: 'bg-ink text-cream',
-  cream: 'bg-cream-2 text-ink',
+  spritz: 'bg-spritz/15 text-spritz border-spritz/40',
+  basil: 'bg-basil/15 text-basil border-basil/40',
+  raspberry: 'bg-raspberry/20 text-[#ff8fa3] border-raspberry/50',
+  lemon: 'bg-lemon/15 text-lemon border-lemon/40',
+  plum: 'bg-plum/25 text-[#c4a1ff] border-plum/60',
+  ink: 'bg-cream-4 text-ink border-hairline',
+  cream: 'bg-cream-3 text-ink border-hairline',
 };
 
 export function Badge({ tone = 'spritz', children, className, tilt = 0 }: Props): JSX.Element {
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 text-xs font-mono uppercase tracking-wider font-bold border-2 border-hairline rounded ${TONES[tone]} ${className ?? ''}`}
+      className={`inline-flex items-center px-2.5 py-0.5 text-xs font-mono uppercase tracking-wider font-bold border rounded-full ${TONES[tone]} ${className ?? ''}`}
       style={tilt !== 0 ? { transform: `rotate(${tilt}deg)` } : undefined}
     >
       {children}

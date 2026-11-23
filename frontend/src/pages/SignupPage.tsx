@@ -98,7 +98,7 @@ export function SignupPage(): JSX.Element {
 
           {referrerCode && (
             <div className="mb-4 p-3 border-2 border-basil rounded bg-basil/10 text-sm">
-              <p className="font-display text-lg">🎉 {t('auth.invitedTitle')}</p>
+              <p className="font-display text-lg">{t('auth.invitedTitle')}</p>
               <p className="font-mono text-xs text-ink-soft mt-1">
                 {t('auth.invitedHint', { code: referrerCode })}
               </p>

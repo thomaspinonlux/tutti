@@ -185,7 +185,7 @@ function Devineur({
       <Card tone="cream" size="sm">
         <div className="flex items-center justify-between gap-2 mb-2">
           <p className="font-medium truncate">
-            ✏️ {t('dessin.dessinePar', { pseudo: question.dessinateur?.pseudo ?? '—' })}
+            {t('dessin.dessinePar', { pseudo: question.dessinateur?.pseudo ?? '—' })}
           </p>
           {restant !== null && (
             <span className="font-mono text-2xl font-bold tabular-nums">{restant}s</span>
@@ -199,7 +199,7 @@ function Devineur({
 
       {rang !== null ? (
         <Card tone="basil" size="md" className="text-center">
-          <p className="font-display text-3xl">🎉 {t('dessin.trouve')}</p>
+          <p className="font-display text-3xl">{t('dessin.trouve')}</p>
           <p className="font-mono text-xs uppercase tracking-wider mt-1">{t('dessin.rang', { n: rang })}</p>
         </Card>
       ) : (
@@ -221,7 +221,7 @@ function Devineur({
             spellCheck={false}
             placeholder={t('dessin.placeholder')}
             maxLength={60}
-            className="w-full px-4 py-3 border-2 border-ink rounded text-lg font-medium bg-cream focus:bg-white"
+            className="w-full px-4 py-3 border-2 border-hairline rounded text-lg font-medium bg-cream focus:bg-cream-3"
           />
           <Button type="submit" disabled={!ouvert || occupe || !texte.trim()} size="lg" className="w-full">
             {t('dessin.proposer')}

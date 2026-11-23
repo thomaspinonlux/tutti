@@ -53,6 +53,7 @@ import { QuizzAnswersList } from '../components/host/quizz/QuizzAnswersList.js';
 import { PlayersPanel } from '../components/host/PlayersPanel.js';
 import { appliquerPause, type MessagePause } from '../lib/quizPause.js';
 import { TvCastButton } from '../components/host/TvCastButton.js';
+import { Icone, Rang } from '../components/ui/Icone.js';
 
 interface QuizzReveal {
   question_index: number;
@@ -388,7 +389,7 @@ export function HostQuizzView({
         <button
           type="button"
           onClick={extrait.lancer}
-          className="rounded-xl border-2 border-[#FF5C4D] bg-[#FF5C4D] px-5 py-2.5 font-display text-lg text-white"
+          className="rounded-xl border-2 border-[#FF3366] bg-[#FF3366] px-5 py-2.5 font-display text-lg text-white"
         >
           {t('quizTheme.lancerExtrait')}
         </button>
@@ -542,7 +543,7 @@ export function HostQuizzView({
 
         {/* feat/quiz-memes-droits — Thomas, 08/11 : « j'ai besoin des mêmes
             droits et fonctionnalités que pour le blind test ». Même panneau
-            qu'au blind test pendant la partie : donner la manette (🎙️),
+            qu'au blind test pendant la partie : donner la manette,
             ajuster les points, retirer un joueur. */}
         {!publicView && (
           <PlayersPanel
@@ -640,9 +641,9 @@ function WaitingView({
               {connected.map((p) => (
                 <li
                   key={p.id}
-                  className="px-3 py-1.5 border-2 border-ink rounded font-medium text-sm bg-cream truncate"
+                  className="px-3 py-1.5 border-2 border-hairline rounded font-medium text-sm bg-cream truncate"
                 >
-                  {p.is_master ? '👑 ' : ''}
+                  {p.is_master && <Icone nom="couronne" />}{p.is_master ? ' ' : ''}
                   {p.pseudo}
                 </li>
               ))}
@@ -722,7 +723,7 @@ function NoActiveQuestion({
           type="button"
           onClick={onNext}
           disabled={busy}
-          className="rounded-2xl bg-[#FF5C4D] px-8 py-4 font-display text-2xl text-white shadow-[0_10px_30px_rgba(255,92,77,0.35)] transition active:scale-[0.98] disabled:opacity-50"
+          className="rounded-2xl bg-[#FF3366] px-8 py-4 font-display text-2xl text-white shadow-[0_10px_30px_rgba(255,51,102,0.35)] transition active:scale-[0.98] disabled:opacity-50"
         >
           ▶ {finDeManche ? t('quizTheme.continue') : t('hostQuizz.firstQuestion')}
         </button>
@@ -760,9 +761,9 @@ function EndedView({
 
   const positions = useMemo(
     () => [
-      { rank: 1, tone: 'lemon', medal: '🥇' },
-      { rank: 2, tone: 'spritz', medal: '🥈' },
-      { rank: 3, tone: 'plum', medal: '🥉' },
+      { rank: 1, tone: 'lemon' },
+      { rank: 2, tone: 'spritz' },
+      { rank: 3, tone: 'plum' },
     ],
     [],
   );
@@ -785,7 +786,9 @@ function EndedView({
           return (
             <li key={c.id}>
               <Card tone={meta.tone as 'lemon' | 'spritz' | 'plum'} size="lg">
-                <p className="text-4xl mb-2">{meta.medal}</p>
+                <p className="text-4xl mb-2">
+                  <Rang rang={meta.rank} />
+                </p>
                 <p className="font-display text-2xl mb-1 truncate">{c.label}</p>
                 <p className="font-mono text-sm">{c.total_points} pts</p>
               </Card>
@@ -813,7 +816,7 @@ function EndedView({
           <button
             type="button"
             onClick={() => quitter('/admin/sessions/new?type=quizz')}
-            className="rounded-2xl bg-[#FF5C4D] px-6 py-3 font-display text-xl text-white"
+            className="rounded-2xl bg-[#FF3366] px-6 py-3 font-display text-xl text-white"
           >
             ▶ {t('hostQuizz.nouveauQuiz')}
           </button>

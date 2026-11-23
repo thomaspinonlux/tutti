@@ -22,6 +22,7 @@ import { MasterQuizzMenu } from './MasterQuizzMenu.js';
 import { DessinJoueur } from '../../dessin/DessinJoueur.js';
 import { EcrireVoterJoueur } from '../../jeux/EcrireVoterJoueur.js';
 import { BacJoueur } from '../../jeux/BacJoueur.js';
+import { Icone } from '../../ui/Icone.js';
 
 interface RevealResult {
   participant_id: string;
@@ -278,7 +279,7 @@ export function PlayQuizzView({
       <div className="space-y-3">
         <QuestionHeader question={activeQuestion} />
         <Card tone="cream" size="sm" className="text-center">
-          <p className="font-display text-xl">🎙️ {t('playQuizz.animateurSeul')}</p>
+          <p className="font-display text-xl">{t('playQuizz.animateurSeul')}</p>
           <p className="font-editorial italic text-ink-soft text-sm mt-1">{t('playQuizz.animateurSeulHint')}</p>
         </Card>
         {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} enPause={!!activeQuestion.en_pause} pausable={estPausable(activeQuestion)} />}
@@ -351,11 +352,11 @@ function QuestionHeader({ question }: { question: CurrentQuestionState }): JSX.E
           {question.type.replace('_', ' ')}
         </Badge>
         <span className="ml-auto font-mono text-2xl font-bold tabular-nums">
-          {question.en_pause ? '⏸ ' : ''}
+          {question.en_pause && <Icone nom="pause" />}{' '}
           {remainingSec}s
         </span>
       </div>
-      <div className="w-full h-2 border-2 border-ink rounded overflow-hidden bg-cream-2 mb-3">
+      <div className="w-full h-2 border-2 border-hairline rounded overflow-hidden bg-cream-2 mb-3">
         <div
           className={`h-full transition-[width] ${tone}`}
           style={{ width: `${Math.max(0, 100 - Math.round(ratio * 100))}%` }}
@@ -440,7 +441,7 @@ function McqAnswer({
               onClick={() => onSubmit(String(idx))}
               disabled={disabled}
               aria-pressed={isSelected}
-              className={`w-full flex items-center gap-3 p-4 border-2 border-ink rounded text-left font-medium transition-colors ${
+              className={`w-full flex items-center gap-3 p-4 border-2 border-hairline rounded text-left font-medium transition-colors ${
                 isSelected
                   ? 'bg-basil text-ink shadow-pop-sm'
                   : disabled
@@ -489,7 +490,7 @@ function TrueFalseAnswer({
             onClick={() => onSubmit(opt)}
             disabled={disabled}
             aria-pressed={isSelected}
-            className={`p-6 border-2 border-ink rounded font-display text-3xl transition-colors ${
+            className={`p-6 border-2 border-hairline rounded font-display text-3xl transition-colors ${
               isSelected
                 ? opt === 'true'
                   ? 'bg-basil text-ink shadow-pop-sm'
@@ -535,7 +536,7 @@ function FreeTextAnswer({
         autoFocus
         placeholder={t('playQuizz.freeTextPlaceholder')}
         maxLength={120}
-        className="w-full px-4 py-3 border-2 border-ink rounded text-lg font-medium bg-cream focus:bg-white"
+        className="w-full px-4 py-3 border-2 border-hairline rounded text-lg font-medium bg-cream focus:bg-cream-3"
       />
       <Button type="submit" disabled={disabled || !text.trim()} size="lg" className="w-full">
         {t('playQuizz.send')}
@@ -674,7 +675,7 @@ function RevealedView({
     <div className="space-y-3">
       <Card tone={tone as 'basil' | 'raspberry'} size="md" className="text-center">
         <p className="font-display text-4xl mb-1">
-          {isCorrect ? `🎉 ${t('playQuizz.correct')}` : `❌ ${t('playQuizz.wrong')}`}
+          {isCorrect ? `${t('playQuizz.correct')}` : `${t('playQuizz.wrong')}`}
         </p>
         {isCorrect && score > 0 && <p className="font-display text-3xl">+{score} pts</p>}
         {isCorrect && myResult?.equipe_deja_marque && (

@@ -11,6 +11,7 @@
 import { useTranslation } from 'react-i18next';
 import type { LibraryQuizPackSummary } from '../../../lib/library.js';
 import { Badge, Card } from '../../ui/index.js';
+import { Icone } from '../../ui/Icone.js';
 
 interface Props {
   pack: LibraryQuizPackSummary;
@@ -51,7 +52,7 @@ export function OfficialQuizPackCard({
         size="sm"
         className={`h-full transition-transform group-hover:-translate-y-0.5 group-hover:shadow-pop-lg relative ${
           pack.locked ? 'opacity-60' : ''
-        } ${dark ? '!bg-[#15151d]/80 !border !border-white/10' : ''}`}
+        } ${dark ? '!bg-[#181628]/80 !border !border-white/10' : ''}`}
       >
         {/* Badge "Officiel Tutti" en haut-droite */}
         <span
@@ -62,7 +63,7 @@ export function OfficialQuizPackCard({
           }`}
           aria-label={t('host.session.officialBadge')}
         >
-          ⭐ {t('host.session.officialBadge')}
+          {t('host.session.officialBadge')}
         </span>
 
         <div className="flex items-start gap-2 mb-2 pr-20">
@@ -89,12 +90,12 @@ export function OfficialQuizPackCard({
             <div
               className={`rounded-lg px-3 py-2 text-center shadow-pop ${
                 dark
-                  ? 'bg-[#0B0B0F]/85 border border-white/15 text-white'
-                  : 'bg-cream/90 border-2 border-ink'
+                  ? 'bg-[#0E0D17]/85 border border-white/15 text-white'
+                  : 'bg-cream/90 border-2 border-hairline'
               }`}
             >
               <span className="text-3xl block mb-1" aria-hidden>
-                🔒
+                <Icone nom="cadenas" />
               </span>
               <p className="font-mono text-[10px] uppercase tracking-wider">
                 {t('host.session.premiumRequired')}

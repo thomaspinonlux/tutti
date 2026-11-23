@@ -19,7 +19,7 @@ export function CtaSection(): JSX.Element {
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className="mx-auto mb-6 max-w-[720px]"
           style={{
-            fontFamily: "'Fraunces', serif",
+            fontFamily: 'var(--landing-font-serif)',
             fontSize: 'clamp(36px, 5vw, 60px)',
             fontWeight: 700,
             lineHeight: 1.1,

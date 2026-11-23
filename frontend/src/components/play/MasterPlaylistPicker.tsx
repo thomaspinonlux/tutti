@@ -20,10 +20,11 @@ import {
 } from '../../lib/sessions.js';
 import type { LibraryPlaylistSummary } from '../../lib/library.js';
 import { playlistMatchesSource } from '../../lib/providerSelection.js';
+import { Icone } from '../ui/Icone.js';
 // feat/telephone-au-style-tv — le selecteur de playlist de l animateur
 // reprend les codes de la TV, comme le reste du telephone. Les composants
 // generiques Card / Badge / Button restent intacts pour le back-office.
-const CORAIL = '#FF5C4D';
+const CORAIL = '#FF3366';
 
 function Carte({
   children,
@@ -271,7 +272,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
       ref={conteneurRef}
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 overflow-y-auto bg-[#0B0B0F] text-white"
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#0E0D17] text-white"
     >
       <div className="max-w-[500px] mx-auto p-4">
         <div className="flex items-center justify-between mb-3">
@@ -341,7 +342,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
           </p>
         )}
         {error && (
-          <p role="alert" className="text-sm text-[#FF5C4D] mb-4">
+          <p role="alert" className="text-sm text-[#FF3366] mb-4">
             {error}
           </p>
         )}
@@ -352,7 +353,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
             <button
               type="button"
               onClick={() => setSelected(null)}
-              className="text-sm text-[#FF5C4D] hover:underline"
+              className="text-sm text-[#FF3366] hover:underline"
             >
               ← Retour
             </button>
@@ -380,7 +381,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                     onClick={() => launchOfficial(lvl.difficulty)}
                     className={`rounded-2xl px-4 py-3 text-sm font-bold transition-transform active:scale-[0.98] disabled:opacity-35 ${
                       lvl.difficulty === undefined
-                        ? 'text-[#0B0B0F]'
+                        ? 'text-[#0E0D17]'
                         : 'border border-white/15 bg-white/[0.07] text-white'
                     }`}
                     style={lvl.difficulty === undefined ? { backgroundColor: CORAIL } : undefined}
@@ -422,7 +423,7 @@ export function MasterPlaylistPicker(props: Props): JSX.Element | null {
                           <Puce>
                             {p.apple_music_count ?? 0} {t('playlists.tracksCount')}
                           </Puce>
-                          {p.locked && <Puce>🔒</Puce>}
+                          {p.locked && <Puce><Icone nom="cadenas" /></Puce>}
                         </div>
                       </div>
                       <span aria-hidden className="text-white/50">

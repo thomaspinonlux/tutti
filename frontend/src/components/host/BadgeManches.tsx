@@ -10,7 +10,7 @@ export function BadgeManches({ lancees, completes }: { lancees: number; complete
   return (
     <span
       role="status"
-      className="px-3 py-1.5 rounded-full border-2 border-hairline bg-ink text-cream text-sm font-semibold whitespace-nowrap tabular-nums"
+      className="px-3 py-1.5 rounded-full border-2 border-hairline bg-cream-4 text-spritz text-sm font-semibold whitespace-nowrap tabular-nums"
     >
       {lancees > 0 ? t('host.eyebrowPlaying', { round: lancees }) : t('host.aucuneManche')} ·{' '}
       {t('host.manchesCompletes', { count: completes })}

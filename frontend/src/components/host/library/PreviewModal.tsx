@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../../ui/index.js';
 import type { LibraryPlaylistDetail } from '../../../lib/library.js';
 import type { PlayabilityReport } from '../../../lib/providerSelection.js';
+import { Icone } from '../../ui/Icone.js';
 
 interface Props {
   open: boolean;
@@ -71,7 +72,7 @@ export function PreviewModal({
             {t('host.session.modal.preview.title')}
           </h2>
           <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-1">
-            ⭐ {t('host.session.officialBadge')}
+            {t('host.session.officialBadge')}
           </p>
           <p className="font-medium mb-1">{name}</p>
           <p className="font-mono text-xs text-ink-soft mb-3">
@@ -87,7 +88,7 @@ export function PreviewModal({
             <p className="text-sm">{t('host.session.modal.preview.tracksAvailable')}</p>
             {ratio < 0.5 && !appleLowCoverage && (
               <p className="text-xs font-bold mt-2">
-                ⚠️ {t('host.session.modal.preview.warningLow')}
+                {t('host.session.modal.preview.warningLow')}
               </p>
             )}
           </div>
@@ -97,7 +98,7 @@ export function PreviewModal({
           {appleLowCoverage && (
             <div className="px-3 py-3 border-2 rounded-lg mb-3 border-spritz text-spritz-deep bg-spritz/10">
               <p className="text-sm font-bold">
-                ⚠️{' '}
+                <Icone nom="alerte" />{' '}
                 {t('host.session.modal.preview.lowCoverageTitle', {
                   playable: report.playable,
                   total: report.total,

@@ -18,6 +18,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getCurrentSession, type CurrentActiveSession } from '../../lib/sessions.js';
 import { Button } from '../ui/index.js';
+import { Icone } from '../ui/Icone.js';
 
 // Issue 2 fix : dismiss PAR session (clé inclut session.id) au lieu d'un flag
 // global qui cachait la bannière de TOUTES les sessions futures jusqu'à
@@ -76,14 +77,14 @@ export function ResumeSessionBanner(): JSX.Element | null {
   return (
     <div className="sticky top-0 z-40 bg-spritz border-b-2 border-hairline shadow-pop-sm">
       <div className="max-w-6xl mx-auto px-4 py-2 flex items-center gap-3 flex-wrap">
-        <span className="text-xl">🎵</span>
+        <span className="text-xl"><Icone nom="note" /></span>
         <div className="flex-1 min-w-0">
           <p className="font-display text-base">
             {t('resumeBanner.title')}
             {session.name && <span className="font-editorial italic"> — {session.name}</span>}
           </p>
           <p className="font-mono text-[11px] text-ink-soft truncate">
-            {session.short_code} · {session.game_type === 'TRACKS' ? '🎵 Tracks' : '❓ Quizz'} ·{' '}
+            {session.short_code} · {session.game_type === 'TRACKS' ? 'Tracks' : 'Quizz'} ·{' '}
             {session.status === 'WAITING' ? t('resumeBanner.waiting') : t('resumeBanner.playing')}
             {isOld && ' · ' + t('resumeBanner.old')}
           </p>

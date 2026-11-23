@@ -16,19 +16,21 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 }
 
 const TONES: Record<Tone, string> = {
-  default: 'bg-panel',
-  spritz: 'bg-spritz/10',
-  basil: 'bg-basil/10',
-  raspberry: 'bg-raspberry/10',
-  lemon: 'bg-lemon/15',
-  plum: 'bg-plum/10',
-  cream: 'bg-cream-2',
+  // Direction « Électro-Pop Clubbing » (22/11) : une surface nuit, un filet
+  // fin ; le ton colore le contour et teinte légèrement le fond.
+  default: 'bg-panel border-hairline',
+  spritz: 'bg-spritz/[0.07] border-spritz/40',
+  basil: 'bg-basil/[0.08] border-basil/40',
+  raspberry: 'bg-raspberry/[0.12] border-raspberry/50',
+  lemon: 'bg-lemon/[0.07] border-lemon/40',
+  plum: 'bg-plum/[0.14] border-plum/60',
+  cream: 'bg-cream-2 border-hairline',
 };
 
 const SIZES: Record<Size, string> = {
-  sm: 'p-4 shadow-pop',
-  md: 'p-6 shadow-pop-lg',
-  lg: 'p-8 shadow-pop-xl',
+  sm: 'p-4',
+  md: 'p-6',
+  lg: 'p-8',
 };
 
 export const Card = forwardRef<HTMLDivElement, Props>(function Card(
@@ -38,7 +40,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(function Card(
   return (
     <div
       ref={ref}
-      className={`border-2 border-hairline rounded-lg ${TONES[tone]} ${SIZES[size]} ${className ?? ''}`}
+      className={`border rounded-2xl ${TONES[tone]} ${SIZES[size]} ${className ?? ''}`}
       {...rest}
     >
       {children}

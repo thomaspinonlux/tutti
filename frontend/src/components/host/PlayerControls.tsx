@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import type { CurrentTrackState } from '@tutti/shared';
 import { Button } from '../ui/index.js';
 
-const CORAL = '#FF5C4D';
+const CORAL = '#FF3366';
 
 export interface PlayerControlsProps {
   currentTrack: CurrentTrackState | null;
@@ -93,25 +93,25 @@ export function PlayerControls({
           <div className="flex flex-wrap items-center justify-center gap-2.5">
             {!isPaused ? (
               <GlassButton onClick={onPauseAudio} disabled={busy}>
-                ⏸ {t('host.pauseAudio')}
+                {t('host.pauseAudio')}
               </GlassButton>
             ) : (
               <button
                 type="button"
                 onClick={onResumeAudio}
                 disabled={busy}
-                className="inline-flex h-11 items-center gap-2 rounded-2xl px-5 text-sm font-bold text-[#0B0B0F] transition-transform active:scale-[0.97] disabled:opacity-40"
-                style={{ backgroundColor: '#4ade80' }}
+                className="inline-flex h-11 items-center gap-2 rounded-2xl px-5 text-sm font-bold text-[#0E0D17] transition-transform active:scale-[0.97] disabled:opacity-40"
+                style={{ backgroundColor: '#00e5a3' }}
               >
                 ▶ {t('host.resumeAudio')}
               </button>
             )}
             <GlassButton onClick={onRestartTrack} disabled={busy}>
-              🔄 {t('host.restartTrack')}
+              {t('host.restartTrack')}
             </GlassButton>
             {canReveal && (
               <GlassButton onClick={onRevealAnswer} disabled={busy}>
-                💡 {t('host.revealAnswer')}
+                {t('host.revealAnswer')}
               </GlassButton>
             )}
             {/* fix/bouton-relancer-le-son-console — DANS LA BARRE DE COMMANDES,
@@ -120,7 +120,7 @@ export function PlayerControls({
                 soit la source audio. */}
             {onAudioKick && (
               <GlassButton onClick={onAudioKick} disabled={busy}>
-                🔊 RELANCER LE SON
+                RELANCER LE SON
               </GlassButton>
             )}
             {/* fix/boutons-paroles-comme-les-autres — Paroles et Paroles fausses
@@ -128,12 +128,12 @@ export function PlayerControls({
                 en bas de la page, en petit texte souligné. */}
             {lyricsAvailable && onToggleLyrics && (
               <GlassButton onClick={onToggleLyrics} disabled={busy}>
-                🎤 {lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
+                {lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
               </GlassButton>
             )}
             {lyricsAvailable && onRejectLyrics && (
               <GlassButton onClick={onRejectLyrics} disabled={busy}>
-                🚫 {t('host.session.lyricsWrong')}
+                {t('host.session.lyricsWrong')}
               </GlassButton>
             )}
           </div>
@@ -144,7 +144,7 @@ export function PlayerControls({
           type="button"
           onClick={onNextTrack}
           disabled={busy || !currentTrack}
-          className="h-14 w-full max-w-md rounded-2xl text-lg font-black text-[#0B0B0F] transition-transform active:scale-[0.98] disabled:opacity-40"
+          className="h-14 w-full max-w-md rounded-2xl text-lg font-black text-[#0E0D17] transition-transform active:scale-[0.98] disabled:opacity-40"
           style={{ backgroundColor: CORAL, boxShadow: `0 10px 34px ${CORAL}55` }}
         >
           {nextLabel}
@@ -169,7 +169,7 @@ export function PlayerControls({
         <div className="flex flex-wrap items-center justify-center gap-2.5">
           {!isPaused ? (
             <Button variant="secondary" size="sm" onClick={onPauseAudio} disabled={busy}>
-              ⏸ {t('host.pauseAudio')}
+              {t('host.pauseAudio')}
             </Button>
           ) : (
             <Button variant="success" size="sm" onClick={onResumeAudio} disabled={busy}>
@@ -177,26 +177,26 @@ export function PlayerControls({
             </Button>
           )}
           <Button variant="secondary" size="sm" onClick={onRestartTrack} disabled={busy}>
-            🔄 {t('host.restartTrack')}
+            {t('host.restartTrack')}
           </Button>
           {canReveal && (
             <Button variant="secondary" size="sm" onClick={onRevealAnswer} disabled={busy}>
-              💡 {t('host.revealAnswer')}
+              {t('host.revealAnswer')}
             </Button>
           )}
           {onAudioKick && (
             <Button variant="secondary" size="sm" onClick={onAudioKick} disabled={busy}>
-              🔊 RELANCER LE SON
+              RELANCER LE SON
             </Button>
           )}
           {lyricsAvailable && onToggleLyrics && (
             <Button variant="secondary" size="sm" onClick={onToggleLyrics} disabled={busy}>
-              🎤 {lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
+              {lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
             </Button>
           )}
           {lyricsAvailable && onRejectLyrics && (
             <Button variant="secondary" size="sm" onClick={onRejectLyrics} disabled={busy}>
-              🚫 {t('host.session.lyricsWrong')}
+              {t('host.session.lyricsWrong')}
             </Button>
           )}
         </div>

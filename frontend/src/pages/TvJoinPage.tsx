@@ -137,13 +137,13 @@ export function TvJoinPage(): JSX.Element {
               </p>
               <div className="space-y-3">
                 <Button variant="primary" size="lg" className="w-full" onClick={chooseScreen}>
-                  📺 {t('tv.roleScreen')}
+                  {t('tv.roleScreen')}
                 </Button>
                 <p className="font-mono text-[11px] text-ink-soft -mt-1">
                   {t('tv.roleScreenHint')}
                 </p>
                 <Button variant="secondary" size="lg" className="w-full" onClick={chooseController}>
-                  🎮 {t('tv.roleController')}
+                  {t('tv.roleController')}
                 </Button>
                 <p className="font-mono text-[11px] text-ink-soft -mt-1">
                   {t('tv.roleControllerHint')}

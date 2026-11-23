@@ -17,6 +17,7 @@ import type { Socket } from 'socket.io-client';
 import { Badge, Button, Card } from '../../ui/index.js';
 import { SceneDessin } from '../../dessin/SceneDessin.js';
 import { SceneBac, SceneEcrireVoter } from '../../jeux/SceneJeux.js';
+import { Icone } from '../../ui/Icone.js';
 
 interface RevealResult {
   participant_id: string;
@@ -259,7 +260,7 @@ export function QuestionConsole({
               {lastReveal.results.slice(0, 10).map((r, idx) => (
                 <li
                   key={r.participant_id}
-                  className={`flex items-center gap-2 px-3 py-1.5 border-2 border-ink rounded text-sm ${
+                  className={`flex items-center gap-2 px-3 py-1.5 border-2 border-hairline rounded text-sm ${
                     r.is_correct ? 'bg-basil/20' : 'bg-cream'
                   }`}
                 >
@@ -313,9 +314,10 @@ function TimerBar({
   return (
     <div className="flex items-center gap-2">
       <span className="font-mono text-2xl font-bold tabular-nums min-w-12 text-right whitespace-nowrap">
-        {isAsking ? `${enPause ? '⏸ ' : ''}${remainingSec}s` : '—'}
+        {isAsking && enPause && <Icone nom="pause" />}
+        {isAsking ? ` ${remainingSec}s` : '—'}
       </span>
-      <div className="w-32 h-3 border-2 border-ink rounded overflow-hidden bg-cream">
+      <div className="w-32 h-3 border-2 border-hairline rounded overflow-hidden bg-cream">
         <div
           className={`h-full transition-[width] ${tone}`}
           style={{ width: isAsking ? `${100 - pct}%` : '0%' }}
@@ -343,7 +345,7 @@ function McqChoices({
         return (
           <li key={idx}>
             <div
-              className={`flex items-center gap-3 p-4 border-2 border-ink rounded transition-colors ${
+              className={`flex items-center gap-3 p-4 border-2 border-hairline rounded transition-colors ${
                 revealAnswer === null
                   ? 'bg-cream'
                   : isCorrect
@@ -378,7 +380,7 @@ function TrueFalseDisplay({ revealAnswer }: { revealAnswer: string | null }): JS
         return (
           <div
             key={opt}
-            className={`p-6 border-2 border-ink rounded text-center transition-colors ${
+            className={`p-6 border-2 border-hairline rounded text-center transition-colors ${
               revealAnswer === null
                 ? 'bg-cream'
                 : isCorrect
@@ -512,7 +514,7 @@ function QuizMediaEmbed({
   }
   return (
     <div className={`mb-4 ${xl ? 'max-w-3xl mx-auto' : ''}`}>
-      <div className="relative w-full overflow-hidden rounded-lg border-2 border-ink shadow-pop bg-black aspect-video">
+      <div className="relative w-full overflow-hidden rounded-lg border-2 border-hairline shadow-pop bg-black aspect-video">
         <iframe
           src={src}
           allow="autoplay; encrypted-media"

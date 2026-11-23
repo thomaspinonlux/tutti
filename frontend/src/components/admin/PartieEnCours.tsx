@@ -39,8 +39,8 @@ export function PartieEnCours({ className = '' }: { className?: string }): JSX.E
   const type = partie.game_type === 'QUIZZ' ? 'Quiz' : 'Blind test';
   const etat = partie.status === 'WAITING' ? 'en salle d’attente' : 'en cours';
   return (
-    <div className={`rounded-2xl border-2 border-[#FF5C4D] bg-[#FF5C4D]/15 p-5 ${className}`}>
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#FF5C4D] mb-1">Partie en cours</p>
+    <div className={`rounded-2xl border-2 border-[#FF3366] bg-[#FF3366]/15 p-5 ${className}`}>
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#FF3366] mb-1">Partie en cours</p>
       <p className="font-display text-2xl mb-1">
         {type} {partie.short_code} — {etat}
       </p>
@@ -51,7 +51,7 @@ export function PartieEnCours({ className = '' }: { className?: string }): JSX.E
       <button
         type="button"
         onClick={() => navigate(`/host?session=${encodeURIComponent(partie.short_code)}`)}
-        className="rounded-xl bg-[#FF5C4D] px-6 py-3 font-display text-lg text-white"
+        className="rounded-xl bg-[#FF3366] px-6 py-3 font-display text-lg text-white"
       >
         Ouvrir la console de cette partie
       </button>

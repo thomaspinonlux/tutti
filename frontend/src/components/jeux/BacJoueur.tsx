@@ -93,8 +93,8 @@ export function BacJoueur({ sessionId, token, question }: Props): JSX.Element {
               autoComplete="off"
               maxLength={40}
               placeholder={`${lettre}…`}
-              className={`w-full px-3 py-2 border-2 rounded text-lg bg-cream focus:bg-white ${
-                bonneLettre(cases[i] ?? '') ? 'border-ink' : 'border-raspberry'
+              className={`w-full px-3 py-2 border-2 rounded text-lg bg-cream focus:bg-cream-3 ${
+                bonneLettre(cases[i] ?? '') ? 'border-hairline' : 'border-raspberry'
               }`}
             />
           </label>

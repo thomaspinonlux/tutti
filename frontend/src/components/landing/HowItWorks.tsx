@@ -7,11 +7,12 @@
 import { motion } from 'framer-motion';
 import { useLandingI18n } from '../../i18n-landing/LandingI18nContext.js';
 import { HighlightYellow } from './HighlightYellow.js';
+import { Icone } from '../ui/Icone.js';
 
 const STEP_ICON_BG = [
-  'rgba(238, 108, 42, 0.15)', // orange
-  'rgba(201, 59, 107, 0.15)', // rose
-  'rgba(59, 107, 201, 0.15)', // blue
+  'rgba(0, 240, 255, 0.15)', // orange
+  'rgba(255, 51, 102, 0.15)', // rose
+  'rgba(0, 240, 255, 0.15)', // blue
 ];
 
 export function HowItWorks(): JSX.Element {
@@ -38,15 +39,15 @@ export function HowItWorks(): JSX.Element {
               className="relative rounded-2xl border-[1.5px] p-7 sm:p-8 transition-transform hover:-translate-y-[2px]"
               style={{
                 background: 'var(--landing-cream-deep)',
-                borderColor: 'var(--landing-ink)',
-                boxShadow: '0 4px 0 var(--landing-ink)',
+                borderColor: 'var(--landing-line)',
+                boxShadow: 'none',
               }}
             >
               <span
                 aria-hidden="true"
                 className="absolute right-[22px] top-[18px]"
                 style={{
-                  fontFamily: "'Fraunces', serif",
+                  fontFamily: 'var(--landing-font-serif)',
                   fontWeight: 900,
                   fontSize: '88px',
                   lineHeight: 1,
@@ -66,12 +67,12 @@ export function HowItWorks(): JSX.Element {
                   fontSize: '28px',
                 }}
               >
-                {step.icon}
+                <Icone nom={step.icon} />
               </div>
               <h3
                 className="mb-3"
                 style={{
-                  fontFamily: "'Fraunces', serif",
+                  fontFamily: 'var(--landing-font-serif)',
                   fontSize: '22px',
                   fontWeight: 700,
                   letterSpacing: '-0.01em',

@@ -101,6 +101,7 @@ import { MasterQuizzMenu } from '../components/play/quizz/MasterQuizzMenu.js';
 import { VinylBuzzer } from '../components/play/VinylBuzzer.js';
 import { ClassementDuTitre } from '../components/game/ClassementDuTitre.js';
 import { remoteLog } from '../lib/remoteLog.js';
+import { Icone } from '../components/ui/Icone.js';
 
 const CLE_PSEUDO_BROUILLON = 'tutti:pseudo-brouillon';
 const CLE_DERNIER_PSEUDO = 'tutti:dernier-pseudo';
@@ -965,7 +966,7 @@ export function PlayPage(): JSX.Element {
   // ── Render ─────────────────────────────────────────────────────────────
   return (
     // feat/telephone-au-style-tv — fond sombre de la TV sur tout le parcours.
-    <div className="min-h-screen flex flex-col bg-[#0B0B0F] text-white">
+    <div className="min-h-screen flex flex-col bg-[#0E0D17] text-white">
       {/* feat/telephone-au-style-tv — la barre cinq couleurs etait le dernier
           reste de la charte claire sur l ecran joueur. La TV n en a pas : un
           lisere corail suffit a signer l ecran. */}
@@ -1037,7 +1038,7 @@ export function PlayPage(): JSX.Element {
                     minLength={1}
                     maxLength={40}
                     autoFocus
-                    className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50"
+                    className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF3366]/50"
                   />
                 </label>
                 <BoutonJoueur type="submit" disabled={submitting || !pseudo.trim()}>
@@ -1164,7 +1165,7 @@ export function PlayPage(): JSX.Element {
                 >
                   <div className="mb-2 flex items-center justify-center gap-2">
                     <span aria-hidden className="text-lg">
-                      👑
+                      <Icone nom="couronne" />
                     </span>
                     <p className="font-display text-base text-white">{t('play.masterMenuTitle')}</p>
                   </div>
@@ -1179,7 +1180,7 @@ export function PlayPage(): JSX.Element {
                     Tu pilotes la partie — choisis une playlist et lance le blind test.
                   </p>
                   <BoutonJoueur type="button" onClick={() => setMasterPickerOpen(true)}>
-                    🎬 Choisir une playlist &amp; démarrer
+                    Choisir une playlist &amp; démarrer
                   </BoutonJoueur>
                 </div>
               )}
@@ -1206,7 +1207,7 @@ export function PlayPage(): JSX.Element {
             <>
               {isPaused && (
                 <PanneauJoueur className="mb-3 text-center">
-                  <p className="font-display text-2xl text-white">⏸ {t('play.pausedTitle')}</p>
+                  <p className="font-display text-2xl text-white">{t('play.pausedTitle')}</p>
                   <p className="mt-1 font-editorial text-sm italic text-white/60">
                     {t('play.pausedHint')}
                   </p>
@@ -1320,27 +1321,27 @@ export function PlayPage(): JSX.Element {
       {showRules && step === 'playing' && view?.game_type !== 'QUIZZ' && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-5 animate-fade-in backdrop-blur-sm">
           <div className={`${TEL_PANNEAU} w-full max-w-sm p-6`}>
-            <p className="mb-4 text-center font-display text-2xl text-white">Comment répondre 🎤</p>
+            <p className="mb-4 text-center font-display text-2xl text-white">Comment répondre <Icone nom="micro" /></p>
             <ul className="space-y-3 font-editorial text-base leading-snug text-white/80">
               <li>
-                🎵 Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux
+                Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux
                 = plus de points).
               </li>
               <li>
-                📱 Parle <strong>près du micro</strong> de ton téléphone, bien fort.
+                Parle <strong>près du micro</strong> de ton téléphone, bien fort.
               </li>
               <li>
-                🤫 Arrête de parler quand tu as fini : l'envoi part <strong>tout seul</strong>. Tu
+                Arrête de parler quand tu as fini : l'envoi part <strong>tout seul</strong>. Tu
                 peux aussi appuyer sur <strong>ENVOYER</strong>.
               </li>
               <li>
-                ⚡ Raté ? Tu peux <strong>re-buzzer aussitôt</strong>.
+                Raté ? Tu peux <strong>re-buzzer aussitôt</strong>.
               </li>
             </ul>
             <button
               type="button"
               onClick={() => setShowRules(false)}
-              className="mt-5 w-full rounded-2xl py-3 font-display text-xl text-[#0B0B0F] transition-transform active:scale-[0.98]"
+              className="mt-5 w-full rounded-2xl py-3 font-display text-xl text-[#0E0D17] transition-transform active:scale-[0.98]"
               style={{ backgroundColor: TEL_CORAIL }}
             >
               C'EST PARTI !
@@ -1391,14 +1392,14 @@ export function PlayPage(): JSX.Element {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`rounded-2xl border border-white/12 bg-[#191922]/95 px-3 py-2 text-sm font-medium text-white shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur ${
+            className={`rounded-2xl border border-white/12 bg-[#181628]/95 px-3 py-2 text-sm font-medium text-white shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur ${
               toast.fading ? 'animate-fade-out' : 'animate-pop-in'
             } ${
               toast.tone === 'basil'
-                ? 'border-l-4 border-l-[#4ade80]'
+                ? 'border-l-4 border-l-[#00e5a3]'
                 : toast.tone === 'spritz'
-                  ? 'border-l-4 border-l-[#FF5C4D]'
-                  : 'border-l-4 border-l-[#FF5C4D]'
+                  ? 'border-l-4 border-l-[#FF3366]'
+                  : 'border-l-4 border-l-[#FF3366]'
             }`}
           >
             {toast.text}
@@ -1503,7 +1504,7 @@ function BoutonJoueur({
     );
   }
   return (
-    <button {...rest} className={`${base} text-[#0B0B0F]`} style={{ backgroundColor: TEL_CORAIL }}>
+    <button {...rest} className={`${base} text-[#0E0D17]`} style={{ backgroundColor: TEL_CORAIL }}>
       {children}
     </button>
   );
@@ -1529,9 +1530,9 @@ export function useFondJoueurSombre(actif = true): void {
 // TvScreenView plutot que la charte claire « Pop Cocktail » : fond tres
 // sombre, panneaux gris-bleu a filet blanc, corail pour l accent, et le
 // meme trio de polices (display / editorial / mono).
-const TEL_CORAIL = '#FF5C4D';
+const TEL_CORAIL = '#FF3366';
 const TEL_PANNEAU =
-  'rounded-[20px] bg-[#191922] border border-white/[0.07] shadow-[0_18px_50px_rgba(0,0,0,0.5)]';
+  'rounded-[20px] bg-[#181628] border border-white/[0.07] shadow-[0_18px_50px_rgba(0,0,0,0.5)]';
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
 
@@ -2173,7 +2174,7 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
     <div className="flex flex-col gap-2 overflow-x-hidden">
       {/* Refonte #2 — toast top "Pas reconnu" 1.5s, retour buzzer immédiat. */}
       {failToast && (
-        <div className="fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-2xl border border-white/15 bg-[#191922]/95 px-4 py-2 text-sm font-medium text-white shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur animate-pop-in">
+        <div className="fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-2xl border border-white/15 bg-[#181628]/95 px-4 py-2 text-sm font-medium text-white shadow-[0_18px_50px_rgba(0,0,0,0.6)] backdrop-blur animate-pop-in">
           {failToast}
         </div>
       )}
@@ -2338,7 +2339,7 @@ function PhoneHeader({ roundPosition }: { roundPosition: number | null }): JSX.E
       <div className="flex items-center gap-2">
         <span
           aria-hidden
-          className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse-buzz"
+          className="w-2 h-2 rounded-full bg-[#00e5a3] animate-pulse-buzz"
           title="Connecté"
         />
         {/* feat/console-simple — ⚙ et ⏸ RETIRÉS de l'en-tête. Thomas :
@@ -2472,21 +2473,21 @@ function DanceMessage({ isFinder, score }: { isFinder: boolean; score: number })
       {isFinder ? (
         <>
           <span aria-hidden className="inline-block animate-emoji-wave mr-2">
-            🎉
+            <Icone nom="etoile" />
           </span>
           {t('play.danceFinder', { points: score })}
           <span aria-hidden className="inline-block animate-emoji-wave ml-2">
-            🎉
+            <Icone nom="etoile" />
           </span>
         </>
       ) : (
         <>
           <span aria-hidden className="inline-block animate-emoji-wave mr-2">
-            🕺
+            <Icone nom="note" />
           </span>
           {t('play.danceNonFinder')}
           <span aria-hidden className="inline-block animate-emoji-wave ml-2">
-            💃
+            <Icone nom="note" />
           </span>
         </>
       )}
@@ -2556,7 +2557,7 @@ function ValidatedBanner({
           </ul>
         )}
         <p
-          className="inline-block rounded-2xl px-4 py-1 font-mono text-3xl font-bold tabular-nums text-[#0B0B0F]"
+          className="inline-block rounded-2xl px-4 py-1 font-mono text-3xl font-bold tabular-nums text-[#0E0D17]"
           style={{ backgroundColor: TEL_CORAIL }}
         >
           {t('play.scoreTotal')} : +{score} pts
@@ -2582,7 +2583,7 @@ function PhoneConfettiBurst(): JSX.Element {
       delay: `${Math.round(Math.random() * 1500)}ms`,
       duration: `${3 + Math.round(Math.random() * 2)}s`,
       // feat/telephone-au-style-tv — palette resserree autour du corail.
-      color: ['#FF5C4D', '#FFFFFF', '#FF8A7A', '#FFD166', '#FF5C4D', '#FFFFFF'][i % 6],
+      color: ['#FF3366', '#FFFFFF', '#FF8A7A', '#FFE600', '#FF3366', '#FFFFFF'][i % 6],
       isCircle: i % 3 === 0,
     })),
   );
@@ -2707,7 +2708,7 @@ function TextAnswerInput({
         // Bug 5 — PAS de text-sm/text-xs sur les inputs : iOS Safari zoom auto
         // sur tout input < 16px. La règle globale index.css force 16px sur
         // input/textarea/select.
-        className="flex-1 rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/40 backdrop-blur focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50 disabled:bg-white/[0.03] disabled:text-white/30"
+        className="flex-1 rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/40 backdrop-blur focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF3366]/50 disabled:bg-white/[0.03] disabled:text-white/30"
       />
       <button
         type="submit"
@@ -2720,7 +2721,7 @@ function TextAnswerInput({
           e.preventDefault();
           submit(e);
         }}
-        className="rounded-2xl px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.18em] text-[#0B0B0F] transition-transform active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-white/[0.08] disabled:text-white/30"
+        className="rounded-2xl px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.18em] text-[#0E0D17] transition-transform active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-white/[0.08] disabled:text-white/30"
         style={{ backgroundColor: busy || disabled || !text.trim() ? undefined : TEL_CORAIL }}
       >
         {busy ? '…' : t('play.textAnswerSubmit')}
@@ -2788,7 +2789,7 @@ function RecordingView({
   return (
     /* feat/telephone-au-style-tv — l ecoute prend elle aussi le panneau sombre. */
     <div className={`${TEL_PANNEAU} p-5 text-center`}>
-      <p className="mb-2 animate-pulse text-5xl">🎤</p>
+      <p className="mb-2 animate-pulse text-5xl"><Icone nom="micro" /></p>
       <p className="mb-2 font-display text-2xl text-white">{t('play.recording')}</p>
       <p className="mb-4 font-editorial text-sm italic text-white/55">{t('play.recordingHint')}</p>
 
@@ -2806,7 +2807,7 @@ function RecordingView({
       <button
         type="button"
         onClick={onSubmit}
-        className="mb-2 w-full rounded-2xl px-4 py-3 font-bold text-[#0B0B0F] transition-transform active:scale-[0.98]"
+        className="mb-2 w-full rounded-2xl px-4 py-3 font-bold text-[#0E0D17] transition-transform active:scale-[0.98]"
         style={{ backgroundColor: TEL_CORAIL }}
       >
         ✓ {t('play.recordingSubmit')}
@@ -2919,7 +2920,7 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
         onClick={() => setOpen(true)}
         className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs text-white/80 transition-colors hover:bg-white/[0.12]"
       >
-        <span aria-hidden>💡</span>
+        <span aria-hidden><Icone nom="ampoule" /></span>
         <span>{t('play.proposePlaylistCta')}</span>
       </button>
       {open && (
@@ -2934,7 +2935,7 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2 border-b border-white/10 p-4">
-              <p className="font-display text-lg text-white">💡 {t('play.proposePlaylistTitle')}</p>
+              <p className="font-display text-lg text-white">{t('play.proposePlaylistTitle')}</p>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -2950,12 +2951,12 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder={t('play.proposePlaylistSearch')}
-                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3 py-2 font-mono text-sm text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50"
+                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3 py-2 font-mono text-sm text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF3366]/50"
               />
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {loading && (
-                <p className="font-mono text-sm text-white/50">⏳ {t('common.loading')}</p>
+                <p className="font-mono text-sm text-white/50">{t('common.loading')}</p>
               )}
               {error && (
                 <p role="alert" className="font-mono text-sm" style={{ color: TEL_CORAIL }}>
@@ -2978,13 +2979,13 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
                     disabled={isProposed || isBusy}
                     className={`w-full rounded-2xl border p-3 text-left transition ${
                       isProposed
-                        ? 'cursor-default border-[#4ade80]/50 bg-[#4ade80]/10'
+                        ? 'cursor-default border-[#00e5a3]/50 bg-[#00e5a3]/10'
                         : 'border-white/12 bg-white/[0.04] hover:bg-white/[0.09] active:translate-y-px'
                     } ${isBusy ? 'opacity-60' : ''}`}
                   >
                     <p className="flex items-center gap-2 font-display text-sm font-semibold text-white">
                       {p.name}
-                      {isProposed && <span className="text-xs text-[#4ade80]">✓ proposée</span>}
+                      {isProposed && <span className="text-xs text-[#00e5a3]">✓ proposée</span>}
                     </p>
                     {p.description && (
                       <p className="mt-1 line-clamp-2 font-mono text-[11px] text-white/50">

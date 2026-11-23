@@ -35,13 +35,13 @@ export function FeaturesGrid(): JSX.Element {
               className="rounded-[14px] p-7 sm:p-[26px] transition-all hover:-translate-y-[2px]"
               style={{
                 background: 'var(--landing-cream-deep)',
-                border: '1px solid rgba(26, 24, 20, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--landing-ink)';
+                (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--landing-orange)';
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(26, 24, 20, 0.1)';
+                (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255, 255, 255, 0.1)';
               }}
             >
               <span
@@ -60,7 +60,7 @@ export function FeaturesGrid(): JSX.Element {
               <h4
                 className="mb-3"
                 style={{
-                  fontFamily: "'Fraunces', serif",
+                  fontFamily: 'var(--landing-font-serif)',
                   fontSize: '21px',
                   fontWeight: 700,
                   letterSpacing: '-0.01em',

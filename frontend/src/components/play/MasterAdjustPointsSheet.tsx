@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 // feat/telephone-au-style-tv — le panneau de l'animateur reprend les codes
 // de la TV, comme le reste du téléphone.
-const CORAIL = '#FF5C4D';
+const CORAIL = '#FF3366';
 
 
 export interface ParticipantOption {
@@ -76,10 +76,10 @@ export function MasterAdjustPointsSheet(props: Props): JSX.Element | null {
         if (e.target === e.currentTarget) props.onClose();
       }}
     >
-      <div className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-t-[24px] border-t border-white/10 bg-[#191922] text-white shadow-[0_-24px_70px_rgba(0,0,0,0.6)]">
+      <div className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-t-[24px] border-t border-white/10 bg-[#181628] text-white shadow-[0_-24px_70px_rgba(0,0,0,0.6)]">
         <div className="p-4">
           <div className="mb-4 flex items-center justify-between">
-            <p className="font-display text-xl text-white">⚖ {t('play.masterAdjustTitle')}</p>
+            <p className="font-display text-xl text-white">{t('play.masterAdjustTitle')}</p>
             <button
               type="button"
               onClick={props.onClose}
@@ -112,7 +112,7 @@ export function MasterAdjustPointsSheet(props: Props): JSX.Element | null {
                       className={[
                         'flex w-full items-center justify-between gap-2 rounded-2xl border px-3 py-2 text-left text-sm',
                         targetId === p.id
-                          ? 'border-[#FF5C4D]/60 bg-[#FF5C4D]/15 text-white'
+                          ? 'border-[#FF3366]/60 bg-[#FF3366]/15 text-white'
                           : 'border-white/12 bg-white/[0.05] text-white/80 hover:bg-white/[0.1]',
                       ].join(' ')}
                     >
@@ -137,7 +137,7 @@ export function MasterAdjustPointsSheet(props: Props): JSX.Element | null {
                 onChange={(e) => setDelta(e.target.value)}
                 placeholder="±50"
                 required
-                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50"
+                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF3366]/50"
               />
               <span className="mt-1 block font-mono text-[11px] text-white/45">
                 {t('play.masterAdjustDeltaHint')}
@@ -156,7 +156,7 @@ export function MasterAdjustPointsSheet(props: Props): JSX.Element | null {
                 onChange={(e) => setReason(e.target.value)}
                 placeholder={t('play.masterAdjustReasonPlaceholder')}
                 maxLength={200}
-                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF5C4D]/50"
+                className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF3366]/50"
               />
             </label>
           </div>
@@ -167,7 +167,7 @@ export function MasterAdjustPointsSheet(props: Props): JSX.Element | null {
             </p>
           )}
 
-          <div className="sticky bottom-0 -mx-4 mb-4 flex gap-2 bg-[#191922] px-4 pt-3">
+          <div className="sticky bottom-0 -mx-4 mb-4 flex gap-2 bg-[#181628] px-4 pt-3">
             <button
               type="button"
               onClick={props.onClose}
@@ -180,7 +180,7 @@ export function MasterAdjustPointsSheet(props: Props): JSX.Element | null {
               type="button"
               onClick={() => void handleConfirm()}
               disabled={!canConfirm}
-              className="flex-1 rounded-2xl px-4 py-2.5 font-bold text-[#0B0B0F] transition-transform active:scale-[0.98] disabled:opacity-40"
+              className="flex-1 rounded-2xl px-4 py-2.5 font-bold text-[#0E0D17] transition-transform active:scale-[0.98] disabled:opacity-40"
               style={{ backgroundColor: CORAIL }}
             >
               {submitting ? t('common.saving') : t('play.masterAdjustConfirm')}

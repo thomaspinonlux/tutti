@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import type { CurrentTrackState, ParticipantRole } from '@tutti/shared';
 import { Button } from '../ui/index.js';
 import { RoleSelector } from '../host/RoleSelector.js';
+import { Icone } from '../ui/Icone.js';
 
 export interface MasterProgress {
   position_ms: number;
@@ -103,13 +104,13 @@ function fmtTime(ms: number): string {
 type CtrlTone = 'coral' | 'go' | 'key' | 'neutral' | 'endRound' | 'danger';
 
 // feat/telecommande-look-console — MÊME HABILLAGE QUE LA CONSOLE iPad.
-// Fond sombre #191922, filets blancs à 10 %, accent corail #FF5C4D : les
+// Fond sombre #181628, filets blancs à 10 %, accent corail #FF3366 : les
 // valeurs sont copiées de MainScreenView/TvScreenView pour que l'animateur
 // retrouve exactement la même lecture visuelle sur son téléphone et sur l'iPad.
 const CTRL_TONES: Record<CtrlTone, string> = {
-  coral: 'bg-[#FF5C4D] text-[#0B0B0F] border-transparent',
+  coral: 'bg-[#FF3366] text-[#0E0D17] border-transparent',
   go: 'bg-basil text-white border-transparent',
-  key: 'bg-[#FF5C4D] text-[#0B0B0F] border-transparent',
+  key: 'bg-[#FF3366] text-[#0E0D17] border-transparent',
   neutral: 'bg-white/[0.07] text-white border-white/15',
   endRound: 'bg-white/[0.07] text-[#9FC6DA] border-[#9FC6DA]/35',
   danger: 'bg-raspberry text-white border-transparent',
@@ -195,13 +196,13 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
   const hasMeta = !!track && (!!track.title || !!track.artist);
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#191922] p-4 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+    <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#181628] p-4 text-white shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
       <div className="mb-3">
         <p
           className="font-mono text-[11px] uppercase tracking-[0.3em]"
-          style={{ color: '#FF5C4D' }}
+          style={{ color: '#FF3366' }}
         >
-          👑 {t('play.masterMenuTitle')}
+          {t('play.masterMenuTitle')}
         </p>
       </div>
 
@@ -258,7 +259,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
                 style={{
                   width: `${Math.round(displayFrac * 100)}%`,
                   // Corail de la console iPad.
-                  backgroundColor: '#FF5C4D',
+                  backgroundColor: '#FF3366',
                 }}
               />
             </div>
@@ -274,14 +275,14 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           disabled={props.busy}
           className="mb-3 w-full rounded-2xl border border-white/15 bg-white/[0.07] py-3 text-sm font-bold text-white active:translate-y-[2px] disabled:opacity-40"
         >
-          🔊 RELANCER LE SON
+          RELANCER LE SON
         </button>
       )}
 
       {props.hasActiveRound && track && props.onSetVolume && (
         <div className="mb-3 flex items-center gap-2">
           <span aria-hidden className="text-base">
-            🔊
+            <Icone nom="son" />
           </span>
           <input
             type="range"
@@ -295,7 +296,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               props.onSetVolume!(v);
             }}
             aria-label={t('play.masterVolume')}
-            className="flex-1 touch-none accent-[#FF5C4D]"
+            className="flex-1 touch-none accent-[#FF3366]"
           />
           <span className="w-9 text-right font-mono text-xs tabular-nums text-white/45">
             {Math.round(volume * 100)}%
@@ -315,7 +316,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           <CtrlButton
             tone={props.lyricsOn ? 'go' : 'neutral'}
             row
-            icon="🎤"
+            icon={<Icone nom="micro" />}
             label={props.lyricsOn ? t('host.session.lyricsHide') : t('host.session.lyricsShow')}
             onClick={() => props.onToggleLyrics!(!props.lyricsOn)}
             disabled={props.busy}
@@ -325,7 +326,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
           <CtrlButton
             tone="neutral"
             row
-            icon="🚫"
+            icon={<Icone nom="interdit" />}
             label={t('host.session.lyricsWrong')}
             onClick={() => props.onRejectLyrics!()}
             disabled={props.busy}
@@ -335,7 +336,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         {props.hasActiveRound && !props.isPaused && (
           <CtrlButton
             tone="coral"
-            icon="⏸"
+            icon={<Icone nom="pause" />}
             label={t('play.masterPause')}
             onClick={() => void props.onPause()}
             disabled={props.busy}
@@ -354,7 +355,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         {props.hasActiveRound && track && props.onRestartTrack && (
           <CtrlButton
             tone="neutral"
-            icon="🔄"
+            icon={<Icone nom="recharger" />}
             label={t('play.masterRestart')}
             onClick={() => void props.onRestartTrack!()}
             disabled={props.busy}
@@ -370,7 +371,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               <CtrlButton
                 tone="neutral"
                 row
-                icon="⏪"
+                icon={<Icone nom="reculer" />}
                 label="−10s"
                 onClick={props.onSeekBack}
                 disabled={props.busy}
@@ -378,7 +379,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               <CtrlButton
                 tone="neutral"
                 row
-                icon="⏩"
+                icon={<Icone nom="avancer" />}
                 label="+10s"
                 onClick={props.onSeekForward}
                 disabled={props.busy}
@@ -397,7 +398,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
             <CtrlButton
               tone="key"
               row
-              icon="👁"
+              icon={<Icone nom="oeil" />}
               label={t('play.masterReveal')}
               onClick={() => void props.onReveal()}
               disabled={props.busy}
@@ -405,7 +406,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
             <CtrlButton
               tone="neutral"
               row
-              icon="⏭"
+              icon={<Icone nom="suivant" />}
               label={t('play.masterSkip')}
               onClick={() => void props.onSkipTrack()}
               disabled={props.busy}
@@ -445,7 +446,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
         <CtrlButton
           tone="neutral"
           row
-          icon="⚖"
+          icon={<Icone nom="points" />}
           label={t('play.masterAdjust')}
           onClick={props.onAdjustPoints}
           disabled={props.busy}
@@ -579,7 +580,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
               <CtrlButton
                 tone="endRound"
                 row
-                icon="⏹"
+                icon={<Icone nom="stop" />}
                 label={t('play.masterEndRound')}
                 onClick={() => setConfirmEndRound(true)}
                 disabled={props.busy}
@@ -588,7 +589,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
             <CtrlButton
               tone="danger"
               row
-              icon="🛑"
+              icon={<Icone nom="stop" />}
               label={t('play.masterEndSession')}
               onClick={() => setConfirmEnd(true)}
               disabled={props.busy}
@@ -599,7 +600,7 @@ export function MasterMenu(props: MasterMenuProps): JSX.Element {
 
       {props.isPaused && (
         <p className="mt-3 rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2 text-center font-mono text-xs uppercase tracking-[0.25em] text-white/70">
-          ⏸ {t('play.masterPausedBadge')}
+          {t('play.masterPausedBadge')}
         </p>
       )}
 

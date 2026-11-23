@@ -63,10 +63,10 @@ export function ThemeCard({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative shrink-0 text-left rounded-lg overflow-hidden border-2 border-ink shadow-pop disabled:opacity-50 w-full transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98] ${
+      className={`group relative shrink-0 text-left rounded-lg overflow-hidden border-2 border-hairline shadow-pop disabled:opacity-50 w-full transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98] ${
         highlighted
           ? `ring-4 ring-raspberry ring-offset-2 z-10 scale-[1.04] ${
-              dark ? 'ring-offset-[#0B0B0F]' : 'ring-offset-cream'
+              dark ? 'ring-offset-[#0E0D17]' : 'ring-offset-cream'
             }`
           : ''
       }`}

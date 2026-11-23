@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Button, Card } from '../ui/index.js';
 import { ContactProForm } from '../ContactProForm.js';
 import { useEstablishment } from '../../pages/admin/AdminLayout.js';
+import { Icone } from '../ui/Icone.js';
 
 export function ContactProCard(): JSX.Element | null {
   const { me } = useEstablishment();
@@ -26,7 +27,7 @@ export function ContactProCard(): JSX.Element | null {
         <ContactProForm variant="app" source="compte" emailParDefaut={me?.user.email ?? ''} />
       ) : (
         <Button size="lg" onClick={() => setOuvert(true)}>
-          ✉️ Nous écrire
+          <Icone nom="courrier" /> Nous écrire
         </Button>
       )}
     </Card>

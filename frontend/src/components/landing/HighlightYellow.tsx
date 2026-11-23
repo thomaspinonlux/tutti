@@ -18,7 +18,7 @@ export function HighlightYellow({ children, variant = 'rose' }: HighlightYellowP
   return (
     <em
       className={`highlight-yellow${variant === 'orange' ? ' highlight-orange' : ''}`}
-      style={{ fontFamily: "'Fraunces', serif", fontStyle: 'italic', fontWeight: 900 }}
+      style={{ fontFamily: 'var(--landing-font-serif)', fontStyle: 'normal', fontWeight: 900 }}
     >
       {children}
     </em>

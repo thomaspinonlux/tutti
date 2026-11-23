@@ -139,10 +139,10 @@ export function useDessin(
 /** Palette du dessinateur : lisible sur fond blanc, sur TV comme sur téléphone. */
 export const COULEURS_DESSIN = [
   '#1D1813',
-  '#FF5C4D',
+  '#FF3366',
   '#F2A20C',
   '#F7D046',
-  '#3FB47A',
+  '#00E5A3',
   '#2F80ED',
   '#8E44AD',
   '#8B5A2B',

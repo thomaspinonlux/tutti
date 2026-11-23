@@ -36,33 +36,40 @@ export default {
         panel: 'rgb(var(--c-panel) / <alpha-value>)',
         /** Trait de contour : l encre en clair, un gris discret en sombre. */
         hairline: 'rgb(var(--c-hairline) / <alpha-value>)',
+        // Direction « Électro-Pop Clubbing » (22/11) — les noms de jetons
+        // restent ceux d'origine (des centaines d'usages), leurs valeurs
+        // passent à la palette néon : spritz = cyan (sélections, liens,
+        // statuts), basil = menthe (réussite), raspberry = rouge (danger),
+        // lemon = jaune électrique (scores), plum = violet (ambiance).
         spritz: {
-          DEFAULT: '#ee6c2a',
-          deep: '#c84e15',
+          DEFAULT: '#00f0ff',
+          deep: '#00b8c4',
         },
         basil: {
-          DEFAULT: '#4a8b3f',
-          deep: '#356a2c',
+          DEFAULT: '#00e5a3',
+          deep: '#00b37f',
         },
         raspberry: {
-          DEFAULT: '#c8336e',
-          deep: '#9c1f53',
+          DEFAULT: '#e11d48',
+          deep: '#be123c',
         },
-        grapefruit: '#e89a64',
-        lemon: '#e8c547',
-        plum: '#6e3a6e',
+        grapefruit: '#ffb2ba',
+        lemon: '#ffe600',
+        plum: '#7928ca',
         // feat/arcade-buttons-vinyl-buzzer — rose = action principale
         // (CTA, boutons primary). Pince entre raspberry (destructif, plus
         // saturé/rouge) et le rose tendre, garde la chaleur Pop Cocktail.
         rose: {
-          DEFAULT: '#e85c8a',
-          deep: '#c43b6e',
+          DEFAULT: '#ff3366',
+          deep: '#e0245a',
         },
       },
       fontFamily: {
-        display: ['Caprasimo', 'serif'],
-        editorial: ['Fraunces', 'serif'],
-        sans: ['Outfit', 'system-ui', 'sans-serif'],
+        display: ['Syne', 'system-ui', 'sans-serif'],
+        // « editorial » servait aux accroches en Fraunces italique : même
+        // police que le texte désormais (l'italique reste posé par la classe).
+        editorial: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       boxShadow: {
@@ -79,8 +86,15 @@ export default {
         'arcade-sm': '2px 2px 0 0 var(--c-ombre)',
         'arcade-flat': '0 0 0 0 var(--c-ombre)',
       },
+      // Direction « Électro-Pop Clubbing » (22/11) : des filets fins. Les
+      // 236 `border-2` de l'ancien style (contour épais à l'encre) deviennent
+      // 1,5 px sans retoucher chaque écran ; l'angle par défaut passe à 8 px.
       borderWidth: {
-        3: '3px',
+        2: '1.5px',
+        3: '2px',
+      },
+      borderRadius: {
+        DEFAULT: '0.5rem',
       },
       keyframes: {
         'fade-in': {
@@ -103,10 +117,10 @@ export default {
           '100%': { transform: 'translateY(110vh) rotate(720deg)', opacity: '0' },
         },
         'color-pulse': {
-          '0%, 100%': { backgroundColor: 'rgba(238, 108, 42, 0.08)' }, // spritz
-          '25%': { backgroundColor: 'rgba(74, 139, 63, 0.08)' }, // basil
-          '50%': { backgroundColor: 'rgba(232, 197, 71, 0.08)' }, // lemon
-          '75%': { backgroundColor: 'rgba(110, 58, 110, 0.08)' }, // plum
+          '0%, 100%': { backgroundColor: 'rgba(0, 240, 255, 0.08)' }, // cyan
+          '25%': { backgroundColor: 'rgba(0, 229, 163, 0.08)' }, // menthe
+          '50%': { backgroundColor: 'rgba(255, 230, 0, 0.08)' }, // jaune
+          '75%': { backgroundColor: 'rgba(121, 40, 202, 0.08)' }, // violet
         },
         'reveal-pop': {
           '0%': { transform: 'scale(0.5) rotate(-3deg)', opacity: '0' },

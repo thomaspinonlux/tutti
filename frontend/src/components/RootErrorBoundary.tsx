@@ -14,6 +14,7 @@
  *   transitoire) ; "Recharger" relance la page complète.
  */
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Icone } from './ui/Icone.js';
 
 interface Props {
   children: ReactNode;
@@ -59,14 +60,14 @@ export class RootErrorBoundary extends Component<Props, State> {
           justifyContent: 'center',
           gap: 16,
           padding: 24,
-          background: '#fefae0',
-          color: '#211d1a',
+          background: '#0e0d17',
+          color: '#ffffff',
           fontFamily: 'system-ui, -apple-system, sans-serif',
           textAlign: 'center',
         }}
       >
         <div style={{ fontSize: 48, lineHeight: 1 }} aria-hidden>
-          🎛️
+          <Icone nom="reglages" />
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Oups — une erreur est survenue</h1>
         <p style={{ fontSize: 15, maxWidth: 460, margin: 0, opacity: 0.8 }}>
@@ -77,15 +78,15 @@ export class RootErrorBoundary extends Component<Props, State> {
             type="button"
             onClick={this.handleReload}
             style={{
-              background: '#e8723f',
-              color: '#fefae0',
-              border: '2px solid #211d1a',
+              background: '#ff3366',
+              color: '#ffffff',
+              border: '1px solid transparent',
               borderRadius: 10,
               padding: '10px 20px',
               fontSize: 16,
               fontWeight: 600,
               cursor: 'pointer',
-              boxShadow: '3px 3px 0 #211d1a',
+              boxShadow: '0 0 24px rgba(255, 51, 102, 0.35)',
             }}
           >
             Recharger
@@ -95,8 +96,8 @@ export class RootErrorBoundary extends Component<Props, State> {
             onClick={this.handleRetry}
             style={{
               background: 'transparent',
-              color: '#211d1a',
-              border: '2px solid #211d1a',
+              color: '#ffffff',
+              border: '1px solid #342f52',
               borderRadius: 10,
               padding: '10px 20px',
               fontSize: 16,
@@ -124,8 +125,8 @@ export class RootErrorBoundary extends Component<Props, State> {
             style={{
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
-              background: '#211d1a',
-              color: '#fefae0',
+              background: '#181628',
+              color: '#e5e0ef',
               padding: 12,
               borderRadius: 8,
               maxHeight: 240,

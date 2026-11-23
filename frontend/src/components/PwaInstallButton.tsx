@@ -15,6 +15,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePwa } from '../lib/usePwa.js';
+import { Icone } from './ui/Icone.js';
 
 interface Props {
   /** Classe additionnelle pour le bouton (ex: 'w-full' dans une liste menu). */
@@ -51,9 +52,9 @@ export function PwaInstallButton({ className }: Props): JSX.Element | null {
       <button
         type="button"
         onClick={() => void handleClick()}
-        className="w-full flex items-center gap-2 px-3 py-2 rounded border-2 border-ink bg-cream text-ink font-mono text-xs hover:bg-spritz/30 transition"
+        className="w-full flex items-center gap-2 px-3 py-2 rounded border-2 border-hairline bg-cream text-ink font-mono text-xs hover:bg-spritz/30 transition"
       >
-        <span aria-hidden>📲</span>
+        <span aria-hidden><Icone nom="installer" /></span>
         <span className="flex-1 text-left">{t('pwa.installCta')}</span>
       </button>
       {iosHint && (

@@ -38,9 +38,9 @@ export function SuperAdminRouteGuard(): JSX.Element {
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="rounded-full border border-ink px-4 py-2 text-sm"
+          className="rounded-full border border-hairline px-4 py-2 text-sm"
         >
-          🔄 Réessayer
+          Réessayer
         </button>
       </div>
     );

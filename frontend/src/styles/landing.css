@@ -11,25 +11,33 @@
  */
 
 [data-scope='landing'] {
-  /* Brand v2 palette */
-  --landing-cream: #f5efe0;
-  --landing-cream-deep: #ede3ce;
-  --landing-cream-darker: #e2d5b8;
-  --landing-ink: #1a1814;
-  --landing-ink-soft: #3f3a30;
-  --landing-ink-faded: #6b6457;
-  --landing-rose: #c93b6b;
-  --landing-rose-deep: #a82856;
-  --landing-orange: #ee6c2a;
-  --landing-orange-deep: #d85510;
-  --landing-yellow: #f2c94c;
-  --landing-green: #2f8f4d;
-  --landing-blue: #3b6bc9;
-  --landing-plum: #5b2a6b;
+  /*
+   * Direction « Électro-Pop Clubbing » (22/11/2026) — même palette que
+   * l'application. Les NOMS de variables restent ceux d'origine (cream = fond,
+   * ink = texte, orange = second accent) ; seules les valeurs changent :
+   * fond nuit, texte blanc, corail, cyan, jaune, menthe, violet.
+   */
+  --landing-cream: #0e0d17;
+  --landing-cream-deep: #181628;
+  --landing-cream-darker: #221f38;
+  --landing-ink: #ffffff;
+  --landing-ink-soft: #a5a1b8;
+  --landing-ink-faded: #78748e;
+  --landing-rose: #ff3366;
+  --landing-rose-deep: #e0245a;
+  --landing-orange: #00f0ff;
+  --landing-orange-deep: #00b8c4;
+  --landing-yellow: #ffe600;
+  --landing-green: #00e5a3;
+  --landing-blue: #00f0ff;
+  --landing-plum: #7928ca;
+  /* Filet de contour et fond des blocs mis en avant (pied de page, tarifs). */
+  --landing-line: #342f52;
+  --landing-inverse: #181628;
 
-  /* Typography landing (Fraunces serif + Inter sans) */
-  --landing-font-serif: 'Fraunces', Georgia, serif;
-  --landing-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Titres en Syne, texte en Plus Jakarta Sans. */
+  --landing-font-serif: 'Syne', system-ui, sans-serif;
+  --landing-font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --landing-font-mono: 'JetBrains Mono', monospace;
 
   background: var(--landing-cream);
@@ -47,8 +55,11 @@
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0 0.07 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.5;
+  /* Halos néon discrets à la place du grain papier. */
+  background:
+    radial-gradient(ellipse at 10% 0%, rgba(255, 51, 102, 0.1), transparent 45%),
+    radial-gradient(ellipse at 100% 30%, rgba(0, 240, 255, 0.07), transparent 45%);
+  opacity: 1;
 }
 
 /* ============ Utilitaires ============ */
@@ -75,43 +86,24 @@
   right: 0;
   height: 6px;
   z-index: 100;
-  background: linear-gradient(
-    90deg,
-    #ee6c2a 0%,
-    #ee6c2a 18%,
-    #2f8f4d 18%,
-    #2f8f4d 36%,
-    #c93b6b 36%,
-    #c93b6b 54%,
-    #f2c94c 54%,
-    #f2c94c 72%,
-    #5b2a6b 72%,
-    #5b2a6b 100%
-  );
+  background: linear-gradient(90deg, #ff3366 0%, #ffe600 50%, #00f0ff 100%);
   pointer-events: none;
 }
 
 /* Soulignement jaune incliné scopé via classe (pas de sélecteur tag global) */
+/* Le mot mis en avant : dégradé corail → jaune (plus de trait de marqueur). */
 .highlight-yellow {
-  font-style: italic;
-  color: var(--landing-rose);
-  font-weight: 400;
+  font-style: normal;
+  background: linear-gradient(90deg, var(--landing-rose), var(--landing-yellow));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   position: relative;
-  white-space: nowrap;
-}
-.highlight-yellow::after {
-  content: '';
-  position: absolute;
-  bottom: 0.05em;
-  left: -3%;
-  right: -3%;
-  height: 0.28em;
-  background: var(--landing-yellow);
-  z-index: -1;
-  transform: skewX(-8deg);
 }
 .highlight-yellow.highlight-orange {
-  color: var(--landing-orange);
+  background: linear-gradient(90deg, var(--landing-orange), var(--landing-green));
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 /* Beta badge pulse */
@@ -120,17 +112,17 @@
   height: 6px;
   border-radius: 50%;
   background: var(--landing-green);
-  box-shadow: 0 0 0 3px rgba(47, 143, 77, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 229, 163, 0.2);
   animation: landing-pulse 2.5s ease-in-out infinite;
   flex-shrink: 0;
 }
 @keyframes landing-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 3px rgba(47, 143, 77, 0.15);
+    box-shadow: 0 0 0 3px rgba(0, 229, 163, 0.2);
   }
   50% {
-    box-shadow: 0 0 0 5px rgba(47, 143, 77, 0);
+    box-shadow: 0 0 0 5px rgba(0, 229, 163, 0);
   }
 }
 
@@ -140,16 +132,13 @@
   top: -22px;
   right: -22px;
   background: var(--landing-yellow);
-  color: var(--landing-ink);
-  padding: 14px 18px;
-  border-radius: 12px;
+  color: #0e0d17;
+  padding: 12px 16px;
+  border-radius: 999px;
   font-family: var(--landing-font-serif);
-  font-style: italic;
-  font-weight: 600;
-  font-size: 16px;
-  transform: rotate(8deg);
-  border: 1.5px solid var(--landing-ink);
-  box-shadow: 0 3px 0 var(--landing-ink);
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 0 24px rgba(255, 230, 0, 0.35);
   z-index: 3;
 }
 
@@ -158,10 +147,8 @@
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow:
-    0 20px 60px -10px rgba(26, 24, 20, 0.18),
-    0 4px 0 var(--landing-ink);
-  transform: rotate(0.6deg);
+  border: 1px solid var(--landing-line);
+  box-shadow: 0 0 60px rgba(0, 240, 255, 0.12);
   aspect-ratio: 16 / 9;
   background: var(--landing-cream-deep);
 }
@@ -172,8 +159,7 @@
   max-width: 340px;
   margin: 0 auto;
   border-radius: 28px;
-  background: #0b0b0f;
-  transform: rotate(-1deg);
+  background: #0e0d17;
 }
 .landing-hero-video video,
 .landing-hero-video img.landing-poster {
@@ -195,11 +181,11 @@
   display: inline-block;
 }
 
-/* Titres section (Fraunces 700) */
+/* Titres de section (Syne 800) */
 .landing-section-title {
   font-family: var(--landing-font-serif);
-  font-weight: 700;
-  font-size: clamp(34px, 4.5vw, 56px);
+  font-weight: 800;
+  font-size: clamp(30px, 4vw, 48px);
   line-height: 1.05;
   letter-spacing: -0.02em;
   margin-bottom: 24px;
@@ -220,12 +206,12 @@
   align-items: center;
   gap: 10px;
   background: var(--landing-rose);
-  color: var(--landing-cream);
+  color: #fff;
   padding: 16px 32px;
   border-radius: 999px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
-  box-shadow: 0 3px 0 var(--landing-ink);
+  box-shadow: 0 0 24px rgba(255, 51, 102, 0.35);
   transition:
     background 0.2s,
     transform 0.2s,
@@ -234,8 +220,7 @@
 }
 .landing-btn-primary:hover {
   background: var(--landing-rose-deep);
-  transform: translate(-1px, -1px);
-  box-shadow: 0 4px 0 var(--landing-ink);
+  box-shadow: 0 0 32px rgba(255, 51, 102, 0.5);
 }
 .landing-btn-primary::after {
   content: '→';
@@ -251,11 +236,11 @@
   align-items: center;
   gap: 8px;
   padding: 16px 28px;
-  border: 1.5px solid var(--landing-ink);
+  border: 1px solid var(--landing-line);
   border-radius: 999px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 16px;
-  background: transparent;
+  background: var(--landing-cream-deep);
   color: var(--landing-ink);
   transition:
     background 0.2s,
@@ -263,8 +248,8 @@
   text-decoration: none;
 }
 .landing-btn-secondary:hover {
-  background: var(--landing-ink);
-  color: var(--landing-cream);
+  border-color: var(--landing-orange);
+  color: var(--landing-orange);
 }
 
 .landing-cta-mini {
@@ -277,21 +262,20 @@
   transition:
     transform 0.2s,
     box-shadow 0.2s;
-  box-shadow: 0 2px 0 var(--landing-ink);
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.3);
   display: inline-flex;
   align-items: center;
   gap: 8px;
   text-decoration: none;
 }
 .landing-cta-mini:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 0 3px 0 var(--landing-ink);
+  box-shadow: 0 0 26px rgba(0, 240, 255, 0.45);
 }
 
 /* Lang switch pill */
 .landing-lang-switch {
   display: inline-flex;
-  border: 1.5px solid var(--landing-ink);
+  border: 1px solid var(--landing-line);
   border-radius: 999px;
   overflow: hidden;
   font-family: var(--landing-font-mono);
@@ -359,12 +343,7 @@
 }
 
 /* Use cases tags rotation alternée */
-[data-scope='landing'] .landing-use-tag:nth-child(odd) {
-  transform: rotate(-1deg);
-}
-[data-scope='landing'] .landing-use-tag:nth-child(even) {
-  transform: rotate(1deg);
-}
+
 [data-scope='landing'] .landing-use-tag {
   transition:
     background 0.2s,
@@ -372,9 +351,8 @@
     transform 0.2s;
 }
 [data-scope='landing'] .landing-use-tag:hover {
-  background: var(--landing-ink);
-  color: var(--landing-cream);
-  transform: rotate(0) scale(1.05);
+  border-color: var(--landing-orange) !important;
+  color: var(--landing-orange) !important;
 }
 
 /* CTA section décorations ♪ et ? en arrière-plan */

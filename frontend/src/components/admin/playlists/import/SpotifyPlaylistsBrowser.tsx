@@ -224,7 +224,7 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
         {isForbidden &&
           (selectedPlaylist.is_spotify_owned ? (
             <div className="p-3 border-2 border-raspberry rounded bg-raspberry/10">
-              <p className="font-display text-base mb-1">🔒 Playlist éditoriale Spotify</p>
+              <p className="font-display text-base mb-1">Playlist éditoriale Spotify</p>
               <p className="text-sm text-ink-soft">
                 Cette playlist a été créée par Spotify. Depuis novembre 2024, l'API Spotify ne
                 permet plus l'accès à ces playlists pour les apps en Development Mode. Choisis une
@@ -233,7 +233,7 @@ export function SpotifyPlaylistsBrowser({ mode, playlistId, onImported }: Props)
             </div>
           ) : (
             <div className="p-3 border-2 border-raspberry rounded bg-raspberry/10">
-              <p className="font-display text-base mb-1">🔒 Playlist inaccessible</p>
+              <p className="font-display text-base mb-1">Playlist inaccessible</p>
               <p className="text-sm text-ink-soft">
                 Spotify refuse l'accès aux morceaux de cette playlist (créée par{' '}
                 {selectedPlaylist.owner_name}). Causes possibles : playlist privée, restriction

@@ -25,7 +25,7 @@ export function LanguageSwitch({ className }: Props): JSX.Element {
 
   return (
     <div
-      className={`inline-flex items-center gap-1 border-2 border-ink rounded bg-white p-0.5 ${className ?? ''}`}
+      className={`inline-flex items-center gap-1 border-2 border-hairline rounded-lg bg-cream-2 p-0.5 ${className ?? ''}`}
       role="group"
       aria-label={t('language.switchLabel')}
     >
@@ -38,7 +38,7 @@ export function LanguageSwitch({ className }: Props): JSX.Element {
             onClick={() => handleChange(locale)}
             aria-pressed={isActive}
             className={`px-2 py-1 text-xs font-mono uppercase rounded transition-colors ${
-              isActive ? 'bg-ink text-cream' : 'text-ink hover:bg-cream'
+              isActive ? 'bg-cream-4 text-spritz' : 'text-ink hover:bg-cream'
             }`}
           >
             {locale}

@@ -54,12 +54,12 @@ export function TrackRowWithCheckbox({ track, flags, selected, onToggle }: Props
           <div className="flex flex-wrap gap-1 mt-1">
             {flags.isRemix && (
               <span className="text-[10px] font-mono px-1.5 py-0.5 border border-lemon-deep bg-lemon/40 rounded">
-                ⚠️ Version non standard
+                Version non standard
               </span>
             )}
             {flags.outsideDurationRange && (
               <span className="text-[10px] font-mono px-1.5 py-0.5 border border-plum bg-plum/20 rounded">
-                ⏱ Hors range durée
+                Hors range durée
               </span>
             )}
             {flags.isDuplicate && (

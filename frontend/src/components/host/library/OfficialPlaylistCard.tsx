@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import type { LibraryPlaylistSummary } from '../../../lib/library.js';
 import { Badge, Card } from '../../ui/index.js';
 import { SourceBadge } from './SourceBadge.js';
+import { Icone } from '../../ui/Icone.js';
 
 interface Props {
   playlist: LibraryPlaylistSummary;
@@ -57,7 +58,7 @@ export function OfficialPlaylistCard({
           className="absolute top-2 right-2 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider bg-spritz/20 border border-spritz text-spritz-deep rounded-full"
           aria-label={t('host.session.officialBadge')}
         >
-          ⭐ {t('host.session.officialBadge')}
+          {t('host.session.officialBadge')}
         </span>
 
         <div className="flex items-start gap-2 mb-2 pr-20">
@@ -91,9 +92,9 @@ export function OfficialPlaylistCard({
         {/* Cadenas overlay si locked */}
         {playlist.locked && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="bg-cream/90 border-2 border-ink rounded-lg px-3 py-2 text-center shadow-pop">
+            <div className="bg-cream/90 border-2 border-hairline rounded-lg px-3 py-2 text-center shadow-pop">
               <span className="text-3xl block mb-1" aria-hidden>
-                🔒
+                <Icone nom="cadenas" />
               </span>
               <p className="font-mono text-[10px] uppercase tracking-wider">
                 {t('host.session.premiumRequired')}

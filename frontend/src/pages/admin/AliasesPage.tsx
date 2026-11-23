@@ -20,6 +20,7 @@ import {
   regenerateTrackAliases,
   type AliasTrackRow,
 } from '../../lib/admin.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 export function AliasesPage(): JSX.Element {
   const [filter, setFilter] = useState<'all' | 'missing' | 'present'>('missing');
@@ -148,7 +149,7 @@ export function AliasesPage(): JSX.Element {
             Aliases artistes →
           </Link>
           <Link to="/admin/library/tags" className="underline">
-            🎼 Chansons &amp; paramètres →
+            Chansons &amp; paramètres →
           </Link>
         </p>
       </header>
@@ -157,7 +158,7 @@ export function AliasesPage(): JSX.Element {
       <Card tone="cream" size="md">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <p className="font-display text-base">🤖 Générer aliases manquants</p>
+            <p className="font-display text-base">Générer aliases manquants</p>
             <p className="font-mono text-xs text-ink-soft">
               Lance la génération IA pour les {pageSize} prochaines tracks sans aliases.
             </p>
@@ -168,7 +169,7 @@ export function AliasesPage(): JSX.Element {
             disabled={batchRunning}
             className="px-4 py-2 bg-spritz text-ink border-2 border-hairline rounded-md shadow-pop-sm font-display disabled:opacity-50"
           >
-            {batchRunning ? '⏳ En cours…' : '▶ Lancer'}
+            {batchRunning ? 'En cours…' : '▶ Lancer'}
           </button>
         </div>
         {lastBatchResult && (
@@ -191,7 +192,7 @@ export function AliasesPage(): JSX.Element {
               setPage(1);
             }}
             className={`px-3 py-1.5 border-2 border-hairline rounded ${
-              filter === f ? 'bg-ink text-white' : 'bg-cream hover:bg-spritz/30'
+              filter === f ? 'bg-cream-4 text-spritz' : 'bg-cream hover:bg-spritz/30'
             }`}
           >
             {f === 'missing' ? 'Sans aliases' : f === 'present' ? 'Avec aliases' : 'Tous'}
@@ -211,7 +212,7 @@ export function AliasesPage(): JSX.Element {
       )}
 
       {loading ? (
-        <p className="font-mono text-sm text-ink-soft animate-pulse">⏳ Chargement…</p>
+        <p className="font-mono text-sm text-ink-soft animate-pulse">Chargement…</p>
       ) : rows.length === 0 ? (
         <Card tone="cream" size="md" className="text-center">
           <p className="font-editorial italic text-ink-soft">Aucune track ne match ce filtre.</p>
@@ -306,7 +307,7 @@ export function AliasesPage(): JSX.Element {
                             className="px-2 py-1 font-mono text-[10px] uppercase bg-spritz/30 border border-hairline rounded hover:bg-spritz/50 disabled:opacity-50"
                             title="Régénérer via IA"
                           >
-                            {isBusy ? '⏳' : '🤖'}
+                            <Icone nom={isBusy ? 'horloge' : 'automate'} />
                           </button>
                         </div>
                       )}

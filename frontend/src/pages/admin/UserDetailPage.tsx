@@ -246,7 +246,7 @@ export function UserDetailPage(): JSX.Element {
             disabled={busy}
             onClick={() => void handleToggleBlock()}
           >
-            {user.is_blocked ? '✓ Débloquer' : '🛑 Bloquer'}
+            {user.is_blocked ? '✓ Débloquer' : 'Bloquer'}
           </Button>
           <Button
             type="button"
@@ -254,7 +254,7 @@ export function UserDetailPage(): JSX.Element {
             disabled={busy}
             onClick={() => void handleResetFreemium()}
           >
-            🔄 Reset freemium
+            Reset freemium
           </Button>
         </div>
       </header>
@@ -274,7 +274,7 @@ export function UserDetailPage(): JSX.Element {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="flex items-center justify-between p-3 border-2 border-hairline rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
             <div>
-              <p className="font-display text-base">🎵 Accès Blind Test (Tracks)</p>
+              <p className="font-display text-base">Accès Blind Test (Tracks)</p>
               <p className="font-editorial italic text-xs text-ink-soft">
                 Le user peut créer des sessions Tracks
               </p>
@@ -289,7 +289,7 @@ export function UserDetailPage(): JSX.Element {
           </label>
           <label className="flex items-center justify-between p-3 border-2 border-hairline rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
             <div>
-              <p className="font-display text-base">❓ Accès Quizz</p>
+              <p className="font-display text-base">Accès Quizz</p>
               <p className="font-editorial italic text-xs text-ink-soft">
                 Le user peut créer des sessions Quizz
               </p>
@@ -304,7 +304,7 @@ export function UserDetailPage(): JSX.Element {
           </label>
           <label className="flex items-center justify-between p-3 border-2 border-hairline rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
             <div>
-              <p className="font-display text-base">🍎 Compte Apple Music du client</p>
+              <p className="font-display text-base">Compte Apple Music du client</p>
               <p className="font-editorial italic text-xs text-ink-soft">
                 Il joue avec son propre abonnement : aucun compte du parc mobilisé, tarif réduit.
               </p>
@@ -319,7 +319,7 @@ export function UserDetailPage(): JSX.Element {
           </label>
           <label className="flex items-center justify-between p-3 border-2 border-hairline rounded-lg cursor-pointer hover:bg-cream-2 transition-colors">
             <div>
-              <p className="font-display text-base">🎟️ Parties gratuites</p>
+              <p className="font-display text-base">Parties gratuites</p>
               <p className="font-editorial italic text-xs text-ink-soft">
                 Il ouvre ses parties sans réserver ni payer de créneau. Sinon, le créneau payé est
                 obligatoire.
@@ -449,7 +449,7 @@ export function UserDetailPage(): JSX.Element {
                       })}
                     </td>
                     <td className="py-1.5">
-                      {s.game_type === 'TRACKS' ? '🎵' : '❓'} {s.game_type}
+                      {s.game_type}
                     </td>
                     <td className="py-1.5 font-mono text-[10px]">{s.short_code}</td>
                     <td className="py-1.5 truncate max-w-[200px]">

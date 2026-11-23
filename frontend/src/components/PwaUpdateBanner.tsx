@@ -15,6 +15,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { usePwa } from '../lib/usePwa.js';
+import { Icone } from './ui/Icone.js';
 
 export function PwaUpdateBanner(): JSX.Element | null {
   const { t } = useTranslation();
@@ -26,11 +27,11 @@ export function PwaUpdateBanner(): JSX.Element | null {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-4 right-4 left-4 sm:left-auto z-50 max-w-sm border-2 border-ink rounded-lg bg-cream shadow-pop-lg p-4 animate-pop-in"
+      className="fixed bottom-4 right-4 left-4 sm:left-auto z-50 max-w-sm border-2 border-hairline rounded-lg bg-cream shadow-pop-lg p-4 animate-pop-in"
     >
       <div className="flex items-start gap-3">
         <div className="text-2xl leading-none" aria-hidden>
-          ✨
+          <Icone nom="etoile" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-display font-semibold text-ink text-sm">{t('pwa.updateAvailable')}</p>
@@ -48,7 +49,7 @@ export function PwaUpdateBanner(): JSX.Element | null {
         <button
           type="button"
           onClick={applyUpdate}
-          className="px-3 py-1.5 text-xs font-mono font-semibold border-2 border-ink bg-raspberry text-cream rounded shadow-pop hover:translate-y-px transition"
+          className="px-3 py-1.5 text-xs font-mono font-semibold border-2 border-hairline bg-raspberry text-cream rounded shadow-pop hover:translate-y-px transition"
         >
           {t('pwa.updateNow')}
         </button>

@@ -26,6 +26,7 @@ import {
   type OfficialTrack,
   type Visibility,
 } from '../../lib/adminLibrary.js';
+import { Icone } from '../../components/ui/Icone.js';
 
 export function LibraryPlaylistDetailPage(): JSX.Element {
   const { t } = useTranslation();
@@ -226,7 +227,7 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
               onClick={() => void handleVisibilityChange(v)}
               className={`px-4 py-2 rounded-full border-2 font-medium text-sm transition-colors ${
                 playlist.visibility === v
-                  ? 'bg-ink text-cream border-hairline'
+                  ? 'bg-cream-4 text-spritz border-hairline'
                   : 'bg-cream text-ink border-hairline hover:bg-cream-2'
               }`}
             >
@@ -258,13 +259,13 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
             disabled={resyncing}
             onClick={() => void handleResync()}
           >
-            {resyncing ? '⏳ ' + t('library.resyncing') : '🔄 ' + t('library.resyncButton')}
+            {resyncing ? '' + t('library.resyncing') : '' + t('library.resyncButton')}
           </Button>
         </div>
         {resyncReport && (
           <div className="mt-3 pt-3 border-t border-ink/15 text-xs font-mono">
             <p>
-              ✅ Resync done · Spotify : {resyncReport.spotifyMatched} matched,{' '}
+              Resync done · Spotify : {resyncReport.spotifyMatched} matched,{' '}
               {resyncReport.spotifyAlreadyCached} cached, {resyncReport.spotifyMissed} missed.
             </p>
             <p>
@@ -282,7 +283,7 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
         </p>
         <div className="border-2 border-hairline rounded overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-ink text-cream font-mono text-xs uppercase tracking-wider">
+            <thead className="bg-cream-3 text-ink-soft font-mono text-xs uppercase tracking-wider">
               <tr>
                 <th className="px-2 py-1.5 text-right">#</th>
                 <th className="px-2 py-1.5 text-left">{t('library.tracksTitleCol')}</th>
@@ -427,7 +428,7 @@ function InlineField({ label, value, saving, onSave, multiline }: InlineFieldPro
         />
       )}
       <p className="text-[10px] font-mono text-ink-soft mt-1 h-3">
-        {saving ? '⏳ Saving…' : dirty ? '✏️ Modifié' : ''}
+        {saving ? 'Saving…' : dirty ? 'Modifié' : ''}
       </p>
     </div>
   );
@@ -545,7 +546,7 @@ function AliasListEditor({
       <label className="block">
         <span className="block text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
           {label}
-          {saving && <span className="ml-2 text-ink-soft">⏳</span>}
+          {saving && <span className="ml-2 text-ink-soft"><Icone nom="horloge" /></span>}
         </span>
         <div className="flex gap-2">
           <input

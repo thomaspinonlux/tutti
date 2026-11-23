@@ -122,7 +122,7 @@ export function CourseManettePage(): JSX.Element {
 
   if (fermee) {
     return (
-      <div className="min-h-screen bg-[#0B0B0F] text-white flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-[#0E0D17] text-white flex items-center justify-center p-6 text-center">
         <p className="text-2xl">La TV a fermé la course. Scanne le nouveau QR code.</p>
       </div>
     );
@@ -130,8 +130,8 @@ export function CourseManettePage(): JSX.Element {
 
   if (!moi) {
     return (
-      <div className="min-h-screen bg-[#0B0B0F] text-white flex flex-col items-center justify-center p-6 gap-4">
-        <p className="font-display text-4xl">🏎️ Course</p>
+      <div className="min-h-screen bg-[#0E0D17] text-white flex flex-col items-center justify-center p-6 gap-4">
+        <p className="font-display text-4xl">Course</p>
         <p className="text-white/60">Salon {code.toUpperCase()}</p>
         <form
           className="w-full max-w-sm space-y-3"
@@ -148,11 +148,11 @@ export function CourseManettePage(): JSX.Element {
             className="w-full rounded-xl px-4 py-3 text-xl text-black"
             autoFocus
           />
-          <button type="submit" disabled={!pseudo.trim()} className="w-full rounded-xl bg-[#FF5C4D] py-3 text-xl font-bold disabled:opacity-40">
+          <button type="submit" disabled={!pseudo.trim()} className="w-full rounded-xl bg-[#FF3366] py-3 text-xl font-bold disabled:opacity-40">
             Prendre le volant
           </button>
         </form>
-        {erreur && <p className="text-[#FF5C4D]">{erreur}</p>}
+        {erreur && <p className="text-[#FF3366]">{erreur}</p>}
       </div>
     );
   }
@@ -162,14 +162,14 @@ export function CourseManettePage(): JSX.Element {
     `flex-1 flex items-center justify-center text-7xl select-none rounded-3xl transition-colors ${actif ? 'bg-white/30' : 'bg-white/10'}`;
 
   return (
-    <div className="h-[100dvh] bg-[#0B0B0F] text-white flex flex-col p-3 gap-3 select-none" style={{ touchAction: 'none' }}>
+    <div className="h-[100dvh] bg-[#0E0D17] text-white flex flex-col p-3 gap-3 select-none" style={{ touchAction: 'none' }}>
       <div className="flex items-center justify-between">
         <p className="font-semibold text-xl" style={{ color: moi.couleur }}>
           ● {moi.pseudo}
         </p>
         <p className="font-mono text-lg">
           {etat?.phase === 'course' && mien
-            ? `${mien.fini ? '🏁' : `Tour ${mien.tour}/${etat.tours}`} · ${mien.rang}${mien.rang === 1 ? 'er' : 'e'}`
+            ? `${mien.fini ? 'Arrivé' : `Tour ${mien.tour}/${etat.tours}`} · ${mien.rang}${mien.rang === 1 ? 'er' : 'e'}`
             : etat?.phase === 'compte'
               ? 'Prêt…'
               : etat?.phase === 'fini' && mien
@@ -181,7 +181,7 @@ export function CourseManettePage(): JSX.Element {
         <button
           type="button"
           onClick={() => socketRef.current?.emit('course:lancer')}
-          className="rounded-xl bg-[#FF5C4D] py-3 text-xl font-bold"
+          className="rounded-xl bg-[#FF3366] py-3 text-xl font-bold"
         >
           {etat?.phase === 'fini' ? 'Rejouer ↻' : 'Lancer la course ▶'}
         </button>
@@ -195,7 +195,7 @@ export function CourseManettePage(): JSX.Element {
           }}
           className={`flex-1 rounded-xl py-2 text-sm font-semibold ${!volant ? 'bg-white text-black' : 'bg-white/10'}`}
         >
-          🎮 Boutons
+          Boutons
         </button>
         <button
           type="button"
@@ -205,18 +205,18 @@ export function CourseManettePage(): JSX.Element {
           }}
           className={`flex-1 rounded-xl py-2 text-sm font-semibold ${volant ? 'bg-white text-black' : 'bg-white/10'}`}
         >
-          📱 Pencher le téléphone
+          Pencher le téléphone
         </button>
       </div>
       {(incl.etat === 'refuse' || incl.etat === 'indisponible') && (
-        <p className="text-center text-[#FF5C4D] text-sm">
+        <p className="text-center text-[#FF3366] text-sm">
           {incl.etat === 'refuse' ? 'Capteurs refusés : joue aux boutons.' : 'Pas de capteur de mouvement ici : joue aux boutons.'}
         </p>
       )}
       {volant ? (
         <div className="flex-1 flex flex-col gap-3">
           <p className="text-center text-white/60 text-sm">Tiens le téléphone écran vers toi et tourne-le comme un volant.</p>
-          <div className="flex-1 flex items-center justify-center text-8xl">{appui.g && appui.d ? '🛑' : appui.g ? '↰' : appui.d ? '↱' : '⬆️'}</div>
+          <div className="flex-1 flex items-center justify-center text-8xl">{appui.g && appui.d ? 'STOP' : appui.g ? '↰' : appui.d ? '↱' : '↑'}</div>
           <button type="button" onClick={incl.recalibrer} className="text-white/60 text-sm underline">
             Remettre le volant droit
           </button>

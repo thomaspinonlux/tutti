@@ -64,10 +64,10 @@ function ChoixMode(props: { mode: Mode; changer: (m: Mode) => void; message?: st
   return (
     <div className="space-y-1">
       <div className="flex gap-2">
-        {bouton('boutons', '🎮 Boutons')}
-        {bouton('pencher', '📱 Pencher le téléphone')}
+        {bouton('boutons', 'Boutons')}
+        {bouton('pencher', 'Pencher le téléphone')}
       </div>
-      {props.message && <p className="text-center text-[#FF5C4D] text-sm">{props.message}</p>}
+      {props.message && <p className="text-center text-[#FF3366] text-sm">{props.message}</p>}
     </div>
   );
 }
@@ -166,7 +166,7 @@ export function ManetteVolant(props: {
         e.preventDefault();
         emettre('manette:action', { type: props.action!.type });
       }}
-      className="rounded-3xl bg-[#FF5C4D] py-6 text-3xl font-black active:scale-95"
+      className="rounded-3xl bg-[#FF3366] py-6 text-3xl font-black active:scale-95"
     >
       {props.action.label}
     </button>
@@ -305,7 +305,7 @@ export function ManetteMoto({ emettre }: { emettre: Emettre }): JSX.Element {
           </div>
         )}
         <div
-          className={`flex-1 flex items-center justify-center rounded-3xl text-4xl font-black ${gazAff ? 'bg-[#ff8a7d]' : 'bg-[#FF5C4D]'}`}
+          className={`flex-1 flex items-center justify-center rounded-3xl text-4xl font-black ${gazAff ? 'bg-[#ff8a7d]' : 'bg-[#FF3366]'}`}
           onPointerDown={tenirGaz(true)}
           onPointerUp={tenirGaz(false)}
           onPointerCancel={tenirGaz(false)}

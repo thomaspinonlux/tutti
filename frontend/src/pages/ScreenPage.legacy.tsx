@@ -39,6 +39,7 @@ import {
 import { MainScreenView } from './screen/MainScreenView.js';
 import { HostQuizzView } from './HostQuizzView.js';
 import { QRCode } from '../components/host/QRCode.js';
+import { Rang } from '../components/ui/Icone.js';
 
 export function ScreenPage(): JSX.Element {
   const { t } = useTranslation();
@@ -404,15 +405,15 @@ function ScreenEndedView({
           {[first, second, third].filter(Boolean).map((entry, idx) => (
             <li
               key={entry!.id}
-              className="flex items-center gap-4 px-5 py-4 border-4 border-ink rounded-xl bg-white shadow-pop-lg"
+              className="flex items-center gap-4 px-5 py-4 border-4 border-hairline rounded-xl bg-white shadow-pop-lg"
             >
               <span aria-hidden className="text-4xl">
-                {['🥇', '🥈', '🥉'][idx]}
+                <Rang rang={idx + 1} />
               </span>
               {entry!.color && (
                 <span
                   aria-hidden
-                  className="w-5 h-5 rounded-full border-2 border-ink shrink-0"
+                  className="w-5 h-5 rounded-full border-2 border-hairline shrink-0"
                   style={{ backgroundColor: entry!.color }}
                 />
               )}
@@ -493,16 +494,16 @@ function FullscreenWrapper({ children }: { children: React.ReactNode }): JSX.Ele
             type="button"
             onClick={() => void enterFullscreen()}
             aria-label="Plein écran"
-            className="px-2 py-1 text-xs font-mono bg-cream/80 border-2 border-ink rounded hover:bg-cream"
+            className="px-2 py-1 text-xs font-mono bg-cream/80 border-2 border-hairline rounded hover:bg-cream"
           >
-            ⛶ Plein écran
+            Plein écran
           </button>
         ) : (
           <button
             type="button"
             onClick={() => void exitFullscreen()}
             aria-label="Quitter plein écran"
-            className="px-2 py-1 text-xs font-mono bg-cream/80 border-2 border-ink rounded hover:bg-cream"
+            className="px-2 py-1 text-xs font-mono bg-cream/80 border-2 border-hairline rounded hover:bg-cream"
           >
             ✕
           </button>
@@ -548,7 +549,7 @@ function FloatingVinyl({
         <circle cx="60" cy="60" r="42" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
         <circle cx="60" cy="60" r="34" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
         <circle cx="60" cy="60" r="26" fill="none" stroke="#3d2f24" strokeWidth="0.5" />
-        <circle cx="60" cy="60" r="18" fill="#ee6c2a" stroke="#1a1410" strokeWidth="2" />
+        <circle cx="60" cy="60" r="18" fill="#00f0ff" stroke="#1a1410" strokeWidth="2" />
         <circle cx="60" cy="60" r="3" fill="#1a1410" />
       </svg>
     </div>
