@@ -124,28 +124,28 @@ export function PreGameStartScreen({
     // fix/un-seul-lecteur — iPad natif + Apple : aucun son joué par la page
     // (cf. lib/sonNatif.ts). Le lecteur natif n'a pas besoin de ce déverrouillage.
     if (!estAppleSeul()) {
-    try {
-      if (!silentAudioRef.current) {
-        const a = new Audio(SILENT_WAV_DATA_URL);
-        a.preload = 'auto';
-        silentAudioRef.current = a;
+      try {
+        if (!silentAudioRef.current) {
+          const a = new Audio(SILENT_WAV_DATA_URL);
+          a.preload = 'auto';
+          silentAudioRef.current = a;
+        }
+        const audio = silentAudioRef.current;
+        audio.volume = 0;
+        // play() retourne Promise mais l'effet est SYNC côté browser pour
+        // claim le user gesture du contexte audio.
+        const playPromise = audio.play();
+        audioUnlocked = true;
+        if (playPromise && typeof playPromise.then === 'function') {
+          playPromise
+            .then(() => console.info('[PreGame] Silent audio unlock OK'))
+            .catch((err) =>
+              console.warn('[PreGame] Silent audio unlock rejected (non-blocking):', err),
+            );
+        }
+      } catch (err) {
+        console.warn('[PreGame] Silent audio unlock threw (non-blocking):', err);
       }
-      const audio = silentAudioRef.current;
-      audio.volume = 0;
-      // play() retourne Promise mais l'effet est SYNC côté browser pour
-      // claim le user gesture du contexte audio.
-      const playPromise = audio.play();
-      audioUnlocked = true;
-      if (playPromise && typeof playPromise.then === 'function') {
-        playPromise
-          .then(() => console.info('[PreGame] Silent audio unlock OK'))
-          .catch((err) =>
-            console.warn('[PreGame] Silent audio unlock rejected (non-blocking):', err),
-          );
-      }
-    } catch (err) {
-      console.warn('[PreGame] Silent audio unlock threw (non-blocking):', err);
-    }
     }
     console.info(`[PreGame] playVideo() called sync: ${audioUnlocked}`);
 
@@ -230,7 +230,9 @@ export function PreGameStartScreen({
                 : '▶ ' + t('preGame.startButton')}
           </Button>
           {attenteApple === 'en-cours' && (
-            <p className="mt-3 font-mono text-sm text-cream/80">{t('preGame.applePreparationAide')}</p>
+            <p className="mt-3 font-mono text-sm text-cream/80">
+              {t('preGame.applePreparationAide')}
+            </p>
           )}
           {attenteApple === 'echec' && (
             <div className="mt-3 space-y-2">
@@ -311,7 +313,7 @@ export function PreGameStartScreen({
       {/* Fallback overlay si autoplay bloqué par browser/content blocker. */}
       {unlockFailed && (
         <div className="fixed inset-0 z-50 bg-ink/80 flex items-center justify-center px-6">
-          <div className="max-w-md text-center rounded-3xl border border-white/10 bg-[#181628]/90 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.6)]">
+          <div className="max-w-md text-center rounded-3xl border border-white/10 bg-[#181628]/90 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.6)] max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <p className="text-4xl mb-3" aria-hidden>
               <Icone nom="alerte" />
             </p>

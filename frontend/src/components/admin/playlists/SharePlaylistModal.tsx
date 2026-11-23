@@ -68,7 +68,11 @@ export function SharePlaylistModal({
 
   return (
     <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-4">
-      <Card size="md" className="max-w-md w-full" tone="cream">
+      <Card
+        size="md"
+        className="max-w-md w-full max-h-[calc(100dvh-2rem)] overflow-y-auto"
+        tone="cream"
+      >
         <header className="mb-3">
           <p className="font-mono text-xs uppercase tracking-wider text-spritz-deep">
             {t('playlists.shareEyebrow')}

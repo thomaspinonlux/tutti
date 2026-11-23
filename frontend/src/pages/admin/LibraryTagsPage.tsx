@@ -539,9 +539,21 @@ export function LibraryTagsPage(): JSX.Element {
             · tags, langue, niveau, thèmes, œuvre &amp; alias — filtre, trie, édite
           </p>
         </div>
-        <Link to="/admin/library" className="font-mono text-xs text-spritz-deep hover:underline">
-          ← Bibliothèque
-        </Link>
+        <div className="flex shrink-0 flex-wrap items-center gap-x-4">
+          <Link
+            to="/admin/library"
+            className="font-mono text-xs text-spritz-deep hover:underline inline-flex min-h-[44px] items-center"
+          >
+            ← Bibliothèque
+          </Link>
+          {/* Les alias n'avaient aucun lien entrant : on n'y arrivait qu'en tapant l'adresse. */}
+          <Link
+            to="/admin/aliases"
+            className="font-mono text-xs text-spritz-deep hover:underline inline-flex min-h-[44px] items-center"
+          >
+            Aliases IA →
+          </Link>
+        </div>
       </header>
 
       {/* Barre de filtres façon tableur */}

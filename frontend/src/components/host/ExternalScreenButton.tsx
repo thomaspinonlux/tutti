@@ -109,10 +109,12 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
           <Card
             tone="cream"
             size="lg"
-            className="max-w-md text-center"
+            className="max-w-md text-center max-h-[calc(100dvh-2rem)] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="font-display text-3xl mb-2"><Icone nom="ecran" /></p>
+            <p className="font-display text-3xl mb-2">
+              <Icone nom="ecran" />
+            </p>
             <h3 className="font-display text-2xl mb-2">{t('host.externalScreen.detected')}</h3>
             <p className="font-editorial italic text-ink-soft mb-4">
               {t('host.externalScreen.detectedHint')}
@@ -150,7 +152,7 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
           <Card
             tone="cream"
             size="lg"
-            className="max-w-md text-center"
+            className="max-w-md text-center max-h-[calc(100dvh-2rem)] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="font-display text-3xl mb-2" aria-hidden>

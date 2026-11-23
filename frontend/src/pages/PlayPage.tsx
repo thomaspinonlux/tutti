@@ -145,7 +145,11 @@ export function PlayPage(): JSX.Element {
   // page (brouillon de l'onglet) et revient pré-rempli à la partie suivante.
   const [pseudo, setPseudoBrut] = useState<string>(() => {
     try {
-      return sessionStorage.getItem(CLE_PSEUDO_BROUILLON) ?? localStorage.getItem(CLE_DERNIER_PSEUDO) ?? '';
+      return (
+        sessionStorage.getItem(CLE_PSEUDO_BROUILLON) ??
+        localStorage.getItem(CLE_DERNIER_PSEUDO) ??
+        ''
+      );
     } catch {
       return '';
     }
@@ -177,7 +181,8 @@ export function PlayPage(): JSX.Element {
   // avant le début : le joueur est déjà inscrit (identité gardée), la page
   // revient directement en attente, sur la nouvelle version.
   useNouvelleVersion(
-    ((step === 'pseudo' && !pseudo.trim()) || step === 'waiting' || step === 'ended') && !currentTrack,
+    ((step === 'pseudo' && !pseudo.trim()) || step === 'waiting' || step === 'ended') &&
+      !currentTrack,
     'telephone',
   );
   const [correctAnswers, setCorrectAnswers] = useState<CorrectAnswerEntry[]>([]);
@@ -714,9 +719,7 @@ export function PlayPage(): JSX.Element {
       if (resp.reprise) pushToast(setToasts, t('play.repriseDePlace'), 'basil');
     } catch (err: unknown) {
       const e = err as { code?: string; message?: string };
-      setError(
-        e.code === 'PSEUDO_DEJA_EN_LIGNE' ? t('play.pseudoDejaEnLigne') : (e.message ?? ''),
-      );
+      setError(e.code === 'PSEUDO_DEJA_EN_LIGNE' ? t('play.pseudoDejaEnLigne') : (e.message ?? ''));
     } finally {
       setSubmitting(false);
     }
@@ -1019,7 +1022,10 @@ export function PlayPage(): JSX.Element {
             </div>
           )}
 
-          {step === 'pseudo' && view?.status !== 'ENDED' && (
+          {/* fix/parcours-sans-impasse — sans partie trouvée (lien incomplet, code
+              faux) le formulaire du pseudo s'affichait quand même et ne menait
+              nulle part : seul le message reste. */}
+          {step === 'pseudo' && view && view.status !== 'ENDED' && (
             <PanneauJoueur>
               <form onSubmit={handlePseudoSubmit} className="space-y-4">
                 <p className="mb-2 text-center font-editorial italic text-white/60">
@@ -1135,7 +1141,10 @@ export function PlayPage(): JSX.Element {
                 <p className="mt-3 font-mono text-xs text-white/45">
                   {participantsCount} {t('play.participantsConnected')}
                 </p>
-                <div className="relative mt-6 h-1 overflow-hidden rounded-full bg-white/[0.08]" aria-hidden>
+                <div
+                  className="relative mt-6 h-1 overflow-hidden rounded-full bg-white/[0.08]"
+                  aria-hidden
+                >
                   <div
                     className="absolute inset-y-0 w-1/3 animate-pulse"
                     style={{ backgroundColor: TEL_CORAIL }}
@@ -1152,7 +1161,11 @@ export function PlayPage(): JSX.Element {
                   choisit les thèmes et lance les questions depuis le lobby. */}
               {isMaster && view?.game_type === 'QUIZZ' && (
                 <div className="mt-4">
-                  <MasterQuizzMenu sessionId={identity.sessionId} token={identity.token} phase="waiting" />
+                  <MasterQuizzMenu
+                    sessionId={identity.sessionId}
+                    token={identity.token}
+                    phase="waiting"
+                  />
                 </div>
               )}
               {/* feat/animator-full-control — l'animateur désigné lance la 1ʳᵉ manche
@@ -1185,7 +1198,12 @@ export function PlayPage(): JSX.Element {
                 </div>
               )}
               {/* feat/rules — règles concises visibles dans le lobby avant la manche 1 */}
-              <GameRules className="mt-4" sombre quiz={view?.game_type === 'QUIZZ'} equipes={view?.mode === 'TEAMS'} />
+              <GameRules
+                className="mt-4"
+                sombre
+                quiz={view?.game_type === 'QUIZZ'}
+                equipes={view?.mode === 'TEAMS'}
+              />
             </>
           )}
 
@@ -1321,18 +1339,20 @@ export function PlayPage(): JSX.Element {
       {showRules && step === 'playing' && view?.game_type !== 'QUIZZ' && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-5 animate-fade-in backdrop-blur-sm">
           <div className={`${TEL_PANNEAU} w-full max-w-sm p-6`}>
-            <p className="mb-4 text-center font-display text-2xl text-white">Comment répondre <Icone nom="micro" /></p>
+            <p className="mb-4 text-center font-display text-2xl text-white">
+              Comment répondre <Icone nom="micro" />
+            </p>
             <ul className="space-y-3 font-editorial text-base leading-snug text-white/80">
               <li>
-                Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux
-                = plus de points).
+                Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux =
+                plus de points).
               </li>
               <li>
                 Parle <strong>près du micro</strong> de ton téléphone, bien fort.
               </li>
               <li>
-                Arrête de parler quand tu as fini : l'envoi part <strong>tout seul</strong>. Tu
-                peux aussi appuyer sur <strong>ENVOYER</strong>.
+                Arrête de parler quand tu as fini : l'envoi part <strong>tout seul</strong>. Tu peux
+                aussi appuyer sur <strong>ENVOYER</strong>.
               </li>
               <li>
                 Raté ? Tu peux <strong>re-buzzer aussitôt</strong>.
@@ -1498,7 +1518,10 @@ function BoutonJoueur({
     'w-full rounded-2xl px-4 py-3 font-bold transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40';
   if (variante === 'fantome') {
     return (
-      <button {...rest} className={`${base} border border-white/15 text-white/75 hover:bg-white/[0.06]`}>
+      <button
+        {...rest}
+        className={`${base} border border-white/15 text-white/75 hover:bg-white/[0.06]`}
+      >
         {children}
       </button>
     );
@@ -1713,7 +1736,12 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
         // quittaient jamais le telephone : le soir du 10/09, impossible de
         // dire pourquoi certains appareils « n arrivaient pas a buzzer ».
         // Chaque reprise du micro part au journal serveur, avec l appareil.
-        remoteLog('micro', 'micro inutilisable avant le buzz — reprise', { pseudo: identity.pseudo }, 'warn');
+        remoteLog(
+          'micro',
+          'micro inutilisable avant le buzz — reprise',
+          { pseudo: identity.pseudo },
+          'warn',
+        );
         await mic.reinit();
       }
       const persistentStream = mic.getStream();
@@ -1762,7 +1790,16 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
       console.warn(
         `[Voice] Buzz refused | code=${code} | message=${err instanceof Error ? err.message : String(err)}`,
       );
-      remoteLog('buzz', 'buzz refuse', { pseudo: identity?.pseudo, code, message: err instanceof Error ? err.message : String(err) }, 'warn');
+      remoteLog(
+        'buzz',
+        'buzz refuse',
+        {
+          pseudo: identity?.pseudo,
+          code,
+          message: err instanceof Error ? err.message : String(err),
+        },
+        'warn',
+      );
       setError(translateBuzzRefusalReason(code, t));
       // fix/deuxieme-appui-qui-casse-le-premier — ON N'ÉCRASE QUE SON PROPRE
       // ÉTAT. Ce retour à l'état de repos était inconditionnel : quand le
@@ -1880,7 +1917,12 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
       );
     } catch (err: unknown) {
       console.error('[Voice] Capture stop failed:', err);
-      remoteLog('micro', 'capture echouee', { pseudo: identity.pseudo, erreur: err instanceof Error ? err.message : String(err) }, 'error');
+      remoteLog(
+        'micro',
+        'capture echouee',
+        { pseudo: identity.pseudo, erreur: err instanceof Error ? err.message : String(err) },
+        'error',
+      );
       setError(err instanceof Error ? err.message : 'Capture échouée');
       setRecState({ kind: 'idle' });
       webSpeech.cancel();
@@ -1898,7 +1940,12 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
     // pour les clients qui n auraient pas cette version.
     if (blob.size < 1024) {
       console.warn(`[Voice] enregistrement vide (${blob.size} o) — rien envoye`);
-      remoteLog('micro', 'enregistrement vide', { pseudo: identity.pseudo, octets: blob.size, mime: capture.mimeType }, 'warn');
+      remoteLog(
+        'micro',
+        'enregistrement vide',
+        { pseudo: identity.pseudo, octets: blob.size, mime: capture.mimeType },
+        'warn',
+      );
       setRecState({ kind: 'idle' });
       setFailToast(t('play.nothingHeard'));
       webSpeech.cancel();
@@ -2380,7 +2427,11 @@ function PlayerInfoBar({
       )}
       <span
         className="mt-1.5 inline-block rounded-full px-3 py-0.5 font-mono text-sm font-bold tabular-nums"
-        style={{ backgroundColor: `${TEL_CORAIL}22`, border: `1px solid ${TEL_CORAIL}66`, color: TEL_CORAIL }}
+        style={{
+          backgroundColor: `${TEL_CORAIL}22`,
+          border: `1px solid ${TEL_CORAIL}66`,
+          color: TEL_CORAIL,
+        }}
       >
         {score} pts
       </span>
@@ -2469,7 +2520,9 @@ function ResultPanel({
 function DanceMessage({ isFinder, score }: { isFinder: boolean; score: number }): JSX.Element {
   const { t } = useTranslation();
   return (
-    <div className={`${TEL_PANNEAU} py-3.5 text-center font-display text-lg text-white animate-dance-pulse`}>
+    <div
+      className={`${TEL_PANNEAU} py-3.5 text-center font-display text-lg text-white animate-dance-pulse`}
+    >
       {isFinder ? (
         <>
           <span aria-hidden className="inline-block animate-emoji-wave mr-2">
@@ -2789,7 +2842,9 @@ function RecordingView({
   return (
     /* feat/telephone-au-style-tv — l ecoute prend elle aussi le panneau sombre. */
     <div className={`${TEL_PANNEAU} p-5 text-center`}>
-      <p className="mb-2 animate-pulse text-5xl"><Icone nom="micro" /></p>
+      <p className="mb-2 animate-pulse text-5xl">
+        <Icone nom="micro" />
+      </p>
       <p className="mb-2 font-display text-2xl text-white">{t('play.recording')}</p>
       <p className="mb-4 font-editorial text-sm italic text-white/55">{t('play.recordingHint')}</p>
 
@@ -2920,7 +2975,9 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
         onClick={() => setOpen(true)}
         className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-2 font-mono text-xs text-white/80 transition-colors hover:bg-white/[0.12]"
       >
-        <span aria-hidden><Icone nom="ampoule" /></span>
+        <span aria-hidden>
+          <Icone nom="ampoule" />
+        </span>
         <span>{t('play.proposePlaylistCta')}</span>
       </button>
       {open && (
@@ -2955,9 +3012,7 @@ function ProposePlaylistButton(props: { shortCode: string; token: string }): JSX
               />
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {loading && (
-                <p className="font-mono text-sm text-white/50">{t('common.loading')}</p>
-              )}
+              {loading && <p className="font-mono text-sm text-white/50">{t('common.loading')}</p>}
               {error && (
                 <p role="alert" className="font-mono text-sm" style={{ color: TEL_CORAIL }}>
                   {error}

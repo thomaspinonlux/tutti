@@ -145,10 +145,16 @@ export function AliasesPage(): JSX.Element {
           titres mal transcrits (accents, phonétique FR→EN, etc.).
         </p>
         <p className="font-mono text-xs flex gap-4">
-          <Link to="/admin/aliases-artists" className="underline">
+          <Link
+            to="/admin/aliases-artists"
+            className="underline inline-flex min-h-[44px] items-center"
+          >
             Aliases artistes →
           </Link>
-          <Link to="/admin/library/tags" className="underline">
+          <Link
+            to="/admin/library/tags"
+            className="underline inline-flex min-h-[44px] items-center"
+          >
             Chansons &amp; paramètres →
           </Link>
         </p>

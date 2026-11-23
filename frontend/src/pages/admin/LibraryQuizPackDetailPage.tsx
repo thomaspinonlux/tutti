@@ -137,7 +137,7 @@ export function LibraryQuizPackDetailPage(): JSX.Element {
           </p>
           <Link
             to="/admin/library"
-            className="mt-3 inline-block font-mono text-sm text-ink-soft hover:underline"
+            className="mt-3 inline-block font-mono text-sm text-ink-soft hover:underline inline-flex min-h-[44px] items-center"
           >
             ← {t('library.backToList')}
           </Link>
@@ -154,7 +154,7 @@ export function LibraryQuizPackDetailPage(): JSX.Element {
       <header className="mb-6">
         <Link
           to="/admin/library"
-          className="font-mono text-sm text-ink-soft hover:underline mb-2 inline-block"
+          className="font-mono text-sm text-ink-soft hover:underline mb-2 inline-block inline-flex min-h-[44px] items-center"
         >
           ← {t('library.backToList')}
         </Link>
@@ -339,7 +339,11 @@ function EditableField({
           disabled={saving}
         />
       )}
-      {saving && <p className="font-mono text-[10px] text-ink-soft mt-1"><Icone nom="horloge" /></p>}
+      {saving && (
+        <p className="font-mono text-[10px] text-ink-soft mt-1">
+          <Icone nom="horloge" />
+        </p>
+      )}
     </div>
   );
 }
@@ -425,11 +429,7 @@ function QuestionMediaEditor({ question, onSave }: QuestionMediaEditorProps): JS
               onChange={() => setMediaType(opt)}
             />
             <span className="font-mono text-xs">
-              {opt === 'NONE'
-                ? 'Aucun'
-                : opt === 'AUDIO'
-                  ? 'Audio (YouTube)'
-                  : 'Video (YouTube)'}
+              {opt === 'NONE' ? 'Aucun' : opt === 'AUDIO' ? 'Audio (YouTube)' : 'Video (YouTube)'}
             </span>
           </label>
         ))}

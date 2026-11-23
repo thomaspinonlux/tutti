@@ -107,6 +107,24 @@ export class RootErrorBoundary extends Component<Props, State> {
           >
             Réessayer
           </button>
+          {/* fix/parcours-sans-impasse — si la page plante à chaque fois,
+              recharger ne sert à rien : il faut pouvoir en sortir. L'accueil
+              renvoie au tableau de bord quand on est connecté. */}
+          <a
+            href="/"
+            style={{
+              background: 'transparent',
+              color: '#ffffff',
+              border: '1px solid #342f52',
+              borderRadius: 10,
+              padding: '10px 20px',
+              fontSize: 16,
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            Retour à l'accueil
+          </a>
         </div>
         {/* Erreur VISIBLE à l'écran (lisible sur iPad sans devtools). */}
         <details

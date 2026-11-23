@@ -140,7 +140,7 @@ export function LibraryPlaylistDetailPage(): JSX.Element {
     <div className="max-w-4xl mx-auto">
       <Link
         to="/admin/library"
-        className="font-mono text-xs uppercase tracking-wider text-ink-soft hover:text-ink"
+        className="font-mono text-xs uppercase tracking-wider text-ink-soft hover:text-ink inline-flex min-h-[44px] items-center"
       >
         ← {t('library.backToList')}
       </Link>
@@ -546,7 +546,11 @@ function AliasListEditor({
       <label className="block">
         <span className="block text-xs font-mono uppercase tracking-wider text-ink/70 mb-1">
           {label}
-          {saving && <span className="ml-2 text-ink-soft"><Icone nom="horloge" /></span>}
+          {saving && (
+            <span className="ml-2 text-ink-soft">
+              <Icone nom="horloge" />
+            </span>
+          )}
         </span>
         <div className="flex gap-2">
           <input

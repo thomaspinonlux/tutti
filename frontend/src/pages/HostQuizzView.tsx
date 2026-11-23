@@ -90,6 +90,12 @@ interface Props {
   boutonMusique?: ReactNode;
   /** Une question avec son propre son est à l'écran : la musique se tait. */
   onMediaEnCours?: (enCours: boolean) => void;
+  /**
+   * fix/parcours-sans-impasse — annule la partie et revient au tableau de
+   * bord (demande confirmation si des joueurs sont déjà là). La salle
+   * d'attente du quiz n'avait aucune sortie, contrairement au blind test.
+   */
+  onRetourTableauDeBord?: () => void;
 }
 
 /**
@@ -117,6 +123,7 @@ export function HostQuizzView({
   listeJoueurs,
   boutonMusique,
   onMediaEnCours,
+  onRetourTableauDeBord,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   useFondConsoleSombre();
@@ -174,7 +181,11 @@ export function HostQuizzView({
       const r = await getSession(sessionRef.current.id);
       majClassementRef.current(r.cumulative);
       if (r.session.status === 'ENDED' && sessionRef.current.status !== 'ENDED') {
-        majSessionRef.current({ ...sessionRef.current, ...r.session, participants: sessionRef.current.participants });
+        majSessionRef.current({
+          ...sessionRef.current,
+          ...r.session,
+          participants: sessionRef.current.participants,
+        });
         return true;
       }
     } catch {
@@ -362,10 +373,15 @@ export function HostQuizzView({
 
   // fix/quiz-un-theme-choisi — le thème qui sera joué ensuite : les questions
   // pas encore posées (toutes, avant le début).
-  const derniereJouee = Math.max(activeQuestion?.question_index ?? -1, lastReveal?.question_index ?? -1);
+  const derniereJouee = Math.max(
+    activeQuestion?.question_index ?? -1,
+    lastReveal?.question_index ?? -1,
+  );
   const enAttente = (pack?.questions ?? []).filter((q) => q.position > derniereJouee);
   const themeEnAttente =
-    enAttente.length > 0 ? { nom: enAttente[0]!.category ?? pack?.name ?? '', nombre: enAttente.length } : null;
+    enAttente.length > 0
+      ? { nom: enAttente[0]!.category ?? pack?.name ?? '', nombre: enAttente.length }
+      : null;
 
   const choixTheme = (
     <ChoixThemeQuiz
@@ -383,8 +399,23 @@ export function HostQuizzView({
   // fix/quiz-mise-en-page — Thomas, 08/11 : « des éléments se superposent ».
   // La barre était posée par-dessus la page (fixed) : elle recouvrait le
   // chrono et les boutons. Elle prend maintenant sa place, en haut.
+  // La sortie de la salle d'attente (et des écrans d'erreur) : même bouton,
+  // même place et même libellé qu'au blind test.
+  const boutonRetour = onRetourTableauDeBord && (
+    <Button
+      variant="secondary"
+      size="sm"
+      onClick={onRetourTableauDeBord}
+      disabled={busy}
+      className="mr-auto"
+    >
+      ← {t('host.backDashboard')}
+    </Button>
+  );
+
   const barreHaut = (
     <div className="flex gap-2 items-center justify-end flex-wrap px-4 pt-3">
+      {session.status === 'WAITING' && boutonRetour}
       {extrait.bloque && (
         <button
           type="button"
@@ -402,10 +433,11 @@ export function HostQuizzView({
 
   if (packError) {
     return (
-      <div className="max-w-md mx-auto p-6">
+      <div className="max-w-md mx-auto p-6 space-y-4">
         <p role="alert" className="text-raspberry">
           {packError}
         </p>
+        {boutonRetour}
       </div>
     );
   }
@@ -427,6 +459,7 @@ export function HostQuizzView({
         mode={session.mode}
         sessionId={session.id}
         publicView={publicView}
+        famille={(session as { famille?: string | null }).famille ?? null}
       />
     );
   }
@@ -459,118 +492,8 @@ export function HostQuizzView({
           {publicView ? t('quizTheme.waitingMaster') : t('quizTheme.noThemeYet')}
         </p>
         {!publicView && choixTheme}
-      </div>
-    );
-  }
-
-  // Session PLAYING
-  return (
-    <div className="h-[100dvh] flex flex-col">
-      {barreHaut}
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4 flex-1 min-h-0">
-      <main className="min-w-0 min-h-0 overflow-auto">
-        {activeQuestion ? (
-          <QuestionConsole
-            state={activeQuestion}
-            packBilingual={pack.is_bilingual}
-            participants={session.participants}
-            submittedSet={submittedSet}
-            lastReveal={lastReveal}
-            busy={busy}
-            onReveal={publicView ? null : () => void handleReveal()}
-            onNext={publicView ? null : () => void handleNext()}
-            onPause={publicView ? null : (p) => void handlePause(p)}
-            xl={publicView}
-            socket={socket}
-            sessionId={session.id}
-            motAnimateur={
-              publicView || activeQuestion.type !== 'DRAWING'
-                ? null
-                : (pack.questions.find((q) => q.position === activeQuestion.question_index)?.answer_lang1 ?? null)
-            }
-          />
-        ) : (
-          <NoActiveQuestion
-            nom={themeEnAttente?.nom ?? pack.questions[0]?.category ?? pack.name}
-            finDeManche={finDeManche}
-            publicView={publicView}
-            choixTheme={publicView ? null : choixTheme}
-            onNext={publicView ? null : () => void handleNext()}
-            busy={busy}
-            error={error}
-          />
-        )}
-      </main>
-
-      <aside className="space-y-3 min-h-0 overflow-auto">
-        {/* fix/quiz-qr-en-jeu — Thomas, 08/11 : « pas de QR code à afficher pour
-            les gens qui veulent rejoindre la partie ». Toujours visible. */}
-        <Card size="sm" className="flex items-center gap-3">
-          <div className="rounded-lg bg-white p-1.5 shrink-0">
-            <QRCode value={`${getShareableOrigin()}/play?session=${session.short_code}`} size={96} />
-          </div>
-          <div className="min-w-0">
-            <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">{t('quizTheme.scanToJoin')}</p>
-            <p className="font-mono text-xl font-bold tracking-[0.15em]">{session.short_code}</p>
-          </div>
-        </Card>
-        <Card size="sm">
-          <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
-            {t('hostQuizz.leaderboard')}
-          </p>
-          <ol className="space-y-1">
-            {cumulative.slice(0, 8).map((c, idx) => (
-              <li
-                key={c.id}
-                className="flex items-center justify-between text-sm border-b border-ink/10 pb-1 last:border-b-0"
-              >
-                <span className="font-mono text-xs text-ink-soft w-5">{idx + 1}.</span>
-                <span className="flex-1 truncate">{c.label}</span>
-                <span className="font-mono font-bold">{c.total_points}</span>
-              </li>
-            ))}
-            {cumulative.length === 0 && (
-              <li className="font-editorial italic text-xs text-ink-soft">
-                {t('hostQuizz.noScoresYet')}
-              </li>
-            )}
-          </ol>
-        </Card>
-
-        {activeQuestion?.phase === 'asking' && (
-          <QuizzAnswersList participants={session.participants} submittedSet={submittedSet} />
-        )}
-
-        {/* feat/quiz-memes-droits — Thomas, 08/11 : « j'ai besoin des mêmes
-            droits et fonctionnalités que pour le blind test ». Même panneau
-            qu'au blind test pendant la partie : donner la manette,
-            ajuster les points, retirer un joueur. */}
-        {!publicView && (
-          <PlayersPanel
-            sessionId={session.id}
-            participants={session.participants.filter((p) => !p.is_kicked)}
-            cumulative={cumulative}
-            dark
-          />
-        )}
-
-        {!publicView && activeQuestion && activeQuestion.phase !== 'asking' && (
-          <Card size="sm">
-            {choixOuvert ? (
-              <>
-                {choixTheme}
-                <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => setChoixOuvert(false)}>
-                  {t('quizTheme.hide')}
-                </Button>
-              </>
-            ) : (
-              <Button variant="secondary" size="sm" className="w-full" onClick={() => setChoixOuvert(true)}>
-                {t('quizTheme.addTheme')}
-              </Button>
-            )}
-          </Card>
-        )}
-
+        {/* Sans thème il n'y avait ni console ni bouton de fin : on pouvait
+            rester bloqué ici. */}
         {!publicView && (
           <Button
             variant="ghost"
@@ -582,8 +505,147 @@ export function HostQuizzView({
             {t('hostQuizz.endSession')}
           </Button>
         )}
-      </aside>
-    </div>
+      </div>
+    );
+  }
+
+  // Session PLAYING
+  return (
+    <div className="h-[100dvh] flex flex-col">
+      {barreHaut}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4 flex-1 min-h-0">
+        <main className="min-w-0 min-h-0 overflow-auto">
+          {activeQuestion ? (
+            <QuestionConsole
+              state={activeQuestion}
+              packBilingual={pack.is_bilingual}
+              participants={session.participants}
+              submittedSet={submittedSet}
+              lastReveal={lastReveal}
+              busy={busy}
+              onReveal={publicView ? null : () => void handleReveal()}
+              onNext={publicView ? null : () => void handleNext()}
+              onPause={publicView ? null : (p) => void handlePause(p)}
+              xl={publicView}
+              socket={socket}
+              sessionId={session.id}
+              motAnimateur={
+                publicView || activeQuestion.type !== 'DRAWING'
+                  ? null
+                  : (pack.questions.find((q) => q.position === activeQuestion.question_index)
+                      ?.answer_lang1 ?? null)
+              }
+            />
+          ) : (
+            <NoActiveQuestion
+              nom={themeEnAttente?.nom ?? pack.questions[0]?.category ?? pack.name}
+              finDeManche={finDeManche}
+              publicView={publicView}
+              choixTheme={publicView ? null : choixTheme}
+              onNext={publicView ? null : () => void handleNext()}
+              busy={busy}
+              error={error}
+            />
+          )}
+        </main>
+
+        <aside className="space-y-3 min-h-0 overflow-auto">
+          {/* fix/quiz-qr-en-jeu — Thomas, 08/11 : « pas de QR code à afficher pour
+            les gens qui veulent rejoindre la partie ». Toujours visible. */}
+          <Card size="sm" className="flex items-center gap-3">
+            <div className="rounded-lg bg-white p-1.5 shrink-0">
+              <QRCode
+                value={`${getShareableOrigin()}/play?session=${session.short_code}`}
+                size={96}
+              />
+            </div>
+            <div className="min-w-0">
+              <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">
+                {t('quizTheme.scanToJoin')}
+              </p>
+              <p className="font-mono text-xl font-bold tracking-[0.15em]">{session.short_code}</p>
+            </div>
+          </Card>
+          <Card size="sm">
+            <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
+              {t('hostQuizz.leaderboard')}
+            </p>
+            <ol className="space-y-1">
+              {cumulative.slice(0, 8).map((c, idx) => (
+                <li
+                  key={c.id}
+                  className="flex items-center justify-between text-sm border-b border-ink/10 pb-1 last:border-b-0"
+                >
+                  <span className="font-mono text-xs text-ink-soft w-5">{idx + 1}.</span>
+                  <span className="flex-1 truncate">{c.label}</span>
+                  <span className="font-mono font-bold">{c.total_points}</span>
+                </li>
+              ))}
+              {cumulative.length === 0 && (
+                <li className="font-editorial italic text-xs text-ink-soft">
+                  {t('hostQuizz.noScoresYet')}
+                </li>
+              )}
+            </ol>
+          </Card>
+
+          {activeQuestion?.phase === 'asking' && (
+            <QuizzAnswersList participants={session.participants} submittedSet={submittedSet} />
+          )}
+
+          {/* feat/quiz-memes-droits — Thomas, 08/11 : « j'ai besoin des mêmes
+            droits et fonctionnalités que pour le blind test ». Même panneau
+            qu'au blind test pendant la partie : donner la manette,
+            ajuster les points, retirer un joueur. */}
+          {!publicView && (
+            <PlayersPanel
+              sessionId={session.id}
+              participants={session.participants.filter((p) => !p.is_kicked)}
+              cumulative={cumulative}
+              dark
+            />
+          )}
+
+          {!publicView && activeQuestion && activeQuestion.phase !== 'asking' && (
+            <Card size="sm">
+              {choixOuvert ? (
+                <>
+                  {choixTheme}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={() => setChoixOuvert(false)}
+                  >
+                    {t('quizTheme.hide')}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setChoixOuvert(true)}
+                >
+                  {t('quizTheme.addTheme')}
+                </Button>
+              )}
+            </Card>
+          )}
+
+          {!publicView && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void handleEndSession()}
+              disabled={busy}
+              className="w-full"
+            >
+              {t('hostQuizz.endSession')}
+            </Button>
+          )}
+        </aside>
+      </div>
     </div>
   );
 }
@@ -630,26 +692,29 @@ function WaitingView({
         {listeJoueurs && connected.length > 0 ? (
           listeJoueurs
         ) : (
-        <Card size="md">
-          <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
-            {t('hostQuizz.connected', { count: connected.length })}
-          </p>
-          {connected.length === 0 ? (
-            <p className="font-editorial italic text-ink-soft">{t('hostQuizz.waitingForPlayers')}</p>
-          ) : (
-            <ul className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {connected.map((p) => (
-                <li
-                  key={p.id}
-                  className="px-3 py-1.5 border-2 border-hairline rounded font-medium text-sm bg-cream truncate"
-                >
-                  {p.is_master && <Icone nom="couronne" />}{p.is_master ? ' ' : ''}
-                  {p.pseudo}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
+          <Card size="md">
+            <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
+              {t('hostQuizz.connected', { count: connected.length })}
+            </p>
+            {connected.length === 0 ? (
+              <p className="font-editorial italic text-ink-soft">
+                {t('hostQuizz.waitingForPlayers')}
+              </p>
+            ) : (
+              <ul className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {connected.map((p) => (
+                  <li
+                    key={p.id}
+                    className="px-3 py-1.5 border-2 border-hairline rounded font-medium text-sm bg-cream truncate"
+                  >
+                    {p.is_master && <Icone nom="couronne" />}
+                    {p.is_master ? ' ' : ''}
+                    {p.pseudo}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
         )}
 
         <Card size="md">
@@ -739,12 +804,15 @@ function EndedView({
   mode,
   sessionId,
   publicView,
+  famille,
 }: {
   nom: string;
   cumulative: CumulativeScore[];
   mode: string;
   sessionId: string;
   publicView: boolean;
+  /** La carte du tableau de bord d'où vient la partie (jeux de salon, blind test simple). */
+  famille: string | null;
 }): JSX.Element {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -756,6 +824,7 @@ function EndedView({
       .catch(() => undefined)
       .finally(() => navigate(vers));
   };
+  const memeFamille = famille === 'jeux' || famille === 'blind_test' ? famille : null;
   const podium = cumulative.slice(0, 3);
   const rest = cumulative.slice(3);
 
@@ -815,10 +884,18 @@ function EndedView({
         <div className="flex flex-wrap justify-center gap-3 pt-2">
           <button
             type="button"
-            onClick={() => quitter('/admin/sessions/new?type=quizz')}
+            onClick={() =>
+              // fix/parcours-sans-impasse — rejouer dans la MÊME famille : après des
+              // jeux de salon ou un blind test simple, ce bouton ouvrait un quiz.
+              quitter(
+                memeFamille
+                  ? `/admin/sessions/new?type=quizz&famille=${memeFamille}`
+                  : '/admin/sessions/new?type=quizz',
+              )
+            }
             className="rounded-2xl bg-[#FF3366] px-6 py-3 font-display text-xl text-white"
           >
-            ▶ {t('hostQuizz.nouveauQuiz')}
+            ▶ {memeFamille ? t('hostQuizz.nouvellePartie') : t('hostQuizz.nouveauQuiz')}
           </button>
           <button
             type="button"

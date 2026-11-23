@@ -4,6 +4,7 @@
  */
 
 import { useEffect, type ReactNode } from 'react';
+import { Icone } from './Icone.js';
 
 interface Props {
   open: boolean;
@@ -42,11 +43,23 @@ export function Modal({ open, onClose, title, children, size = 'md' }: Props): J
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
-        className={`w-full ${SIZES[size]} bg-panel border border-hairline rounded-2xl animate-pop-in p-6`}
+        className={`relative w-full ${SIZES[size]} bg-panel border border-hairline rounded-2xl animate-pop-in p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* fix/parcours-sans-impasse — une croix, toujours : sur téléphone la
+            fenêtre couvre l'écran et il ne reste presque rien à toucher autour
+            pour la fermer. Et une hauteur bornée : un contenu plus haut que
+            l'écran était coupé, ses boutons du bas hors d'atteinte. */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fermer"
+          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-lg text-xl text-ink-soft hover:bg-cream-3 hover:text-ink"
+        >
+          <Icone nom="croix" />
+        </button>
         {title && (
-          <h2 id="modal-title" className="font-display text-2xl mb-4 text-ink">
+          <h2 id="modal-title" className="font-display text-2xl mb-4 pr-12 text-ink">
             {title}
           </h2>
         )}

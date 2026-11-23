@@ -74,7 +74,11 @@ export function TvJoinPage(): JSX.Element {
 
   const chooseScreen = (): void => {
     if (!resolved) return;
-    navigate(`/screen?workspace=${encodeURIComponent(resolved.workspace_id)}`);
+    // L'écran TV n'a aucun bouton : choisi par erreur sur un téléphone, on y
+    // restait enfermé. On garde de quoi revenir ici (cf. AvecRetour).
+    navigate(`/screen?workspace=${encodeURIComponent(resolved.workspace_id)}`, {
+      state: { retour: '/tv' },
+    });
   };
   const chooseController = (): void => {
     if (!resolved) return;
@@ -148,6 +152,20 @@ export function TvJoinPage(): JSX.Element {
                 <p className="font-mono text-[11px] text-ink-soft -mt-1">
                   {t('tv.roleControllerHint')}
                 </p>
+                {/* Mauvais code tapé : on pouvait seulement quitter la page. */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    setResolved(null);
+                    setCodeInput('');
+                    setPhase('input');
+                    if (codeParam) navigate('/tv', { replace: true });
+                  }}
+                >
+                  {t('tv.changerCode')}
+                </Button>
               </div>
             </Card>
           )}
@@ -156,7 +174,7 @@ export function TvJoinPage(): JSX.Element {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="mt-6 font-mono text-xs text-ink-soft underline"
+            className="mt-4 inline-flex min-h-[44px] items-center px-3 font-mono text-sm text-ink-soft underline"
           >
             ← {t('tv.exit')}
           </button>

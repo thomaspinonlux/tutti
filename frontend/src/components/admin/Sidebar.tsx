@@ -18,7 +18,7 @@ import { Button, MultiColorBar, TitleHandwritten } from '../ui/index.js';
 import { getMe } from '../../lib/me.js';
 import { Icone } from '../ui/Icone.js';
 
-interface NavItem {
+export interface NavItem {
   to: string;
   i18nKey:
     | 'nav.dashboard'
@@ -47,7 +47,7 @@ interface NavItem {
   hideForSuperAdmin?: boolean;
 }
 
-const NAV: NavItem[] = [
+export const NAV: NavItem[] = [
   { to: '/admin/dashboard', i18nKey: 'nav.dashboard', icon: <DashIcon /> },
   // feat/officielles-seulement — Thomas : « on enlève les playlists
   // personnelles, on garde que les playlists officielles ». L'entrée
@@ -99,10 +99,23 @@ const NAV: NavItem[] = [
   { to: '/admin/account', i18nKey: 'nav.account', icon: <UserIcon /> },
 ];
 
-export function Sidebar(): JSX.Element {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { user, signOut } = useAuthStore();
+/**
+ * Les entrées du menu pour un compte donné — la colonne (ordinateur, iPad) et
+ * le menu du téléphone lisent la même liste : plus d'entrée présente d'un côté
+ * et absente de l'autre.
+ */
+export function entreesDuMenu(isSuperAdmin: boolean, estProprietaire: boolean | null): NavItem[] {
+  return NAV.filter(
+    (item) =>
+      (!item.superAdminOnly || isSuperAdmin) &&
+      !(item.hideForSuperAdmin && isSuperAdmin) &&
+      (!item.proprietaireSeul || estProprietaire === true) &&
+      (!item.clientSeul || estProprietaire === false),
+  );
+}
+
+/** Rôle du compte pour le menu. `estProprietaire` vaut null tant qu'on ne sait pas. */
+export function useRoleDuMenu(): { isSuperAdmin: boolean; estProprietaire: boolean | null } {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   // fix/menu-qui-clignote — RÔLE INCONNU AU DÉPART.
   // On partait du principe « propriétaire » : pendant la seconde d'attente de
@@ -110,8 +123,6 @@ export function Sidebar(): JSX.Element {
   // « Réservations », puis elles disparaissaient. Les entrées qui dépendent du
   // rôle n'apparaissent plus qu'une fois le rôle connu.
   const [estProprietaire, setEstProprietaire] = useState<boolean | null>(null);
-
-  // Phase 4 — détecte le rôle super admin pour afficher l'entrée de nav.
   useEffect(() => {
     void getMe()
       .then((me) => {
@@ -122,13 +133,23 @@ export function Sidebar(): JSX.Element {
         /* ignore — pas grave si on ne sait pas, on cache l'entrée */
       });
   }, []);
+  return { isSuperAdmin, estProprietaire };
+}
 
-  // fix/deconnexion-sans-retour — GARDE ET MESSAGE.
-  // Aucun retour visuel pendant l'appel : on recliquait, deux déconnexions
-  // partaient, et en cas d'échec aucune erreur, aucune redirection — on se
-  // croyait déconnecté en étant toujours dans l'administration.
+/**
+ * Déconnexion — fix/deconnexion-sans-retour : GARDE ET MESSAGE.
+ * Aucun retour visuel pendant l'appel : on recliquait, deux déconnexions
+ * partaient, et en cas d'échec aucune erreur, aucune redirection — on se
+ * croyait déconnecté en étant toujours dans l'administration.
+ */
+export function useDeconnexion(): {
+  deconnexionEnCours: boolean;
+  seDeconnecter: () => Promise<void>;
+} {
+  const navigate = useNavigate();
+  const { signOut } = useAuthStore();
   const [deconnexionEnCours, setDeconnexionEnCours] = useState(false);
-  const handleSignOut = async (): Promise<void> => {
+  const seDeconnecter = async (): Promise<void> => {
     if (deconnexionEnCours) return;
     setDeconnexionEnCours(true);
     try {
@@ -141,9 +162,17 @@ export function Sidebar(): JSX.Element {
       setDeconnexionEnCours(false);
     }
   };
+  return { deconnexionEnCours, seDeconnecter };
+}
+
+export function Sidebar(): JSX.Element {
+  const { t } = useTranslation();
+  const { user } = useAuthStore();
+  const { isSuperAdmin, estProprietaire } = useRoleDuMenu();
+  const { deconnexionEnCours, seDeconnecter: handleSignOut } = useDeconnexion();
 
   return (
-    <aside className="hidden md:flex flex-col w-60 shrink-0 bg-cream-2 border-r-2 border-hairline min-h-screen sticky top-0">
+    <aside className="hidden md:flex flex-col w-60 shrink-0 bg-cream-2 border-r-2 border-hairline h-screen overflow-y-auto sticky top-0">
       <div className="px-5 pt-6 pb-4 border-b-2 border-hairline relative">
         <div className="absolute -bottom-0.5 left-5 w-12 h-1.5 bg-spritz" />
         <TitleHandwritten as="h3" className="text-2xl">
@@ -154,13 +183,7 @@ export function Sidebar(): JSX.Element {
       <nav className="flex-1 px-3 py-5 space-y-1">
         {/* feat/deux-cartes — « Nouvelle session » retiré de la colonne : on
             lance depuis les cartes de l'accueil. */}
-        {NAV.filter(
-          (item) =>
-            (!item.superAdminOnly || isSuperAdmin) &&
-            !(item.hideForSuperAdmin && isSuperAdmin) &&
-            (!item.proprietaireSeul || estProprietaire === true) &&
-            (!item.clientSeul || estProprietaire === false),
-        ).map((item) => (
+        {entreesDuMenu(isSuperAdmin, estProprietaire).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

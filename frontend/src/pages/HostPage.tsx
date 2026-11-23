@@ -79,7 +79,11 @@ import { remoteLog, installRemoteErrorCapture } from '../lib/remoteLog.js';
 import { useNouvelleVersion } from '../lib/useNouvelleVersion.js';
 import { useLobbyAmbiance } from '../lib/useLobbyAmbiance.js';
 import { getReglageAmbiance, type ReglageAmbiance } from '../lib/ambiance.js';
-import { isCapacitorNative, getShareableOrigin, supportsNativeAppleMusic } from '../lib/platform.js';
+import {
+  isCapacitorNative,
+  getShareableOrigin,
+  supportsNativeAppleMusic,
+} from '../lib/platform.js';
 import { nativeMusicKit } from '../lib/nativeMusicKit.js';
 import { setAppleSeul } from '../lib/sonNatif.js';
 import { getAppleMusicStatus, getApplePublicTokens } from '../lib/appleMusic.js';
@@ -2590,7 +2594,12 @@ function HostPageInner(): JSX.Element {
     const appliquer = (p: Pick<Participant, 'id' | 'role' | 'is_master'>): void =>
       setSession((prev) =>
         prev
-          ? { ...prev, participants: prev.participants.map((x) => (x.id === p.id ? { ...x, role: p.role, is_master: p.is_master } : x)) }
+          ? {
+              ...prev,
+              participants: prev.participants.map((x) =>
+                x.id === p.id ? { ...x, role: p.role, is_master: p.is_master } : x,
+              ),
+            }
           : prev,
       );
     const avant = session.participants.find((x) => x.id === participantId);
@@ -2766,6 +2775,7 @@ function HostPageInner(): JSX.Element {
         session={session}
         cumulative={cumulative}
         socket={hostSocket}
+        onRetourTableauDeBord={() => void handleCancelWaiting()}
         onSessionUpdate={(s) => setSession(s)}
         onCumulativeUpdate={(c) => setCumulative(c)}
         publicView={!session.has_animator}
@@ -2776,7 +2786,9 @@ function HostPageInner(): JSX.Element {
               type="button"
               onClick={() => setMusiqueQuizCoupee((c) => !c)}
               className={`rounded-xl border-2 px-5 py-2.5 font-display text-lg text-white ${
-                musiqueQuizCoupee ? 'border-white/40 bg-white/[0.08]' : 'border-[#FF3366] bg-[#FF3366]'
+                musiqueQuizCoupee
+                  ? 'border-white/40 bg-white/[0.08]'
+                  : 'border-[#FF3366] bg-[#FF3366]'
               }`}
             >
               {musiqueQuizCoupee ? t('quizTheme.musiqueRemettre') : t('quizTheme.musiqueCouper')}
@@ -3012,7 +3024,13 @@ function HostPageInner(): JSX.Element {
           busy={busy}
           // fix/demarrer-apres-apple-pret (06/11) — pas de lancement tant que
           // l'iPad prépare Apple Music : un gel arrive AVANT, jamais au lancement.
-          attenteApple={apple.prechauffage === 'en-cours' ? 'en-cours' : apple.prechauffage === 'echec' ? 'echec' : null}
+          attenteApple={
+            apple.prechauffage === 'en-cours'
+              ? 'en-cours'
+              : apple.prechauffage === 'echec'
+                ? 'echec'
+                : null
+          }
           onStart={() => void handleStartFirstPlay()}
           onCancel={handleCancelFirstPlay}
           onYoutubeWarmup={youtube.warmupSync}
@@ -3236,8 +3254,8 @@ function HostPageInner(): JSX.Element {
               </button>
             )}
             <BadgeManches lancees={playingRoundsCount} completes={manchesCompletes} />
-          <BadgeAppleMusic etat={apple.prechauffage} />
-          <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
+            <BadgeAppleMusic etat={apple.prechauffage} />
+            <TvCastButton tvCode={session.tv_code} shortCode={session.short_code} />
             {(effectivePhase === 'roundPlaying' ||
               effectivePhase === 'intermission' ||
               effectivePhase === 'roundSelection') && (
@@ -3294,7 +3312,11 @@ function HostPageInner(): JSX.Element {
                 })()}
               </div>
               <div className="mt-4 flex justify-end">
-                <Button variant="secondary" size="sm" onClick={() => setGestionJoueursOuverte(false)}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setGestionJoueursOuverte(false)}
+                >
                   {t('host.gestionJoueursFermer')}
                 </Button>
               </div>
@@ -3712,7 +3734,9 @@ function MasterBadge({
             : 'border-hairline bg-cream-2 hover:bg-cream',
         ].join(' ')}
       >
-        <span aria-hidden><Icone nom="couronne" /></span>
+        <span aria-hidden>
+          <Icone nom="couronne" />
+        </span>
         <span>
           {master ? (
             <>
@@ -3754,7 +3778,11 @@ function MasterBadge({
                       isCurrent ? 'bg-basil/15 text-ink' : 'hover:bg-cream-2',
                     ].join(' ')}
                   >
-                    {isCurrent && <span aria-hidden><Icone nom="couronne" /></span>}
+                    {isCurrent && (
+                      <span aria-hidden>
+                        <Icone nom="couronne" />
+                      </span>
+                    )}
                     <span className="truncate flex-1">{p.pseudo}</span>
                     {isCurrent && (
                       <span className="text-[10px] font-mono text-basil-deep">
@@ -4426,7 +4454,11 @@ function ParticipantsList({
             ].join(' ')}
           >
             <span className={`font-medium flex items-center gap-2 ${dark ? 'text-white' : ''}`}>
-              {isMaster && <span aria-hidden><Icone nom="couronne" /></span>}
+              {isMaster && (
+                <span aria-hidden>
+                  <Icone nom="couronne" />
+                </span>
+              )}
               {p.pseudo}
             </span>
             <div className="flex items-center gap-2 shrink-0">
@@ -4523,7 +4555,11 @@ function TeamsView({
                       className={`flex items-center justify-between gap-2 text-sm ${dark ? 'text-white' : ''}`}
                     >
                       <span className="truncate flex items-center gap-1">
-                        {isMaster && <span aria-hidden><Icone nom="couronne" /></span>}
+                        {isMaster && (
+                          <span aria-hidden>
+                            <Icone nom="couronne" />
+                          </span>
+                        )}
                         {p.pseudo}
                       </span>
                       <div className="flex items-center gap-1 shrink-0">

@@ -12,7 +12,8 @@
     "copy": "Copier",
     "copied": "Copié",
     "close": "Fermer",
-    "retourTableauDeBord": "Tableau de bord"
+    "retourTableauDeBord": "Tableau de bord",
+    "retour": "Retour"
   },
   "home": {
     "tagline": "Plateforme de jeux interactifs pour bars et particuliers",
@@ -96,6 +97,12 @@
     "reservations": "Réservations",
     "reserver": "Réserver une partie",
     "arcade": "Arcade"
+  },
+  "navCourt": {
+    "accueil": "Accueil",
+    "quiz": "Quiz",
+    "reserver": "Réserver",
+    "menu": "Menu"
   },
   "library": {
     "eyebrow": "Catalogue Tutti",
@@ -585,7 +592,8 @@
     "roleScreenHint": "Affichage pour la salle (QR, scores, morceau). Lecture seule.",
     "roleController": "Manette / Animateur",
     "roleControllerHint": "Pour jouer ou piloter la partie depuis cet appareil.",
-    "exit": "Retour à l'accueil"
+    "exit": "Retour à l'accueil",
+    "changerCode": "Changer de code"
   },
   "tvCast": {
     "button": "Écran Joueurs",
@@ -1004,7 +1012,8 @@
     "pause": "Pause",
     "reprendre": "▶ Reprendre",
     "enPause": "Jeu en pause",
-    "enPauseHint": "L'animateur a mis le jeu en pause, le chrono reprend bientôt."
+    "enPauseHint": "L'animateur a mis le jeu en pause, le chrono reprend bientôt.",
+    "nouvellePartie": "Nouvelle partie"
   },
   "settings": {
     "title": "Paramètres",

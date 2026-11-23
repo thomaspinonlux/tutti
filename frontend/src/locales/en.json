@@ -12,7 +12,8 @@
     "copy": "Copy",
     "copied": "Copied",
     "close": "Close",
-    "retourTableauDeBord": "Dashboard"
+    "retourTableauDeBord": "Dashboard",
+    "retour": "Back"
   },
   "home": {
     "tagline": "Interactive games platform for bars and home parties",
@@ -96,6 +97,12 @@
     "reservations": "Bookings",
     "reserver": "Book a game",
     "arcade": "Arcade"
+  },
+  "navCourt": {
+    "accueil": "Home",
+    "quiz": "Quiz",
+    "reserver": "Book",
+    "menu": "Menu"
   },
   "library": {
     "eyebrow": "Tutti catalogue",
@@ -585,7 +592,8 @@
     "roleScreenHint": "Display for the room (QR, scores, track). Read-only.",
     "roleController": "Controller / Host",
     "roleControllerHint": "To play or run the game from this device.",
-    "exit": "Back to home"
+    "exit": "Back to home",
+    "changerCode": "Change code"
   },
   "tvCast": {
     "button": "Players Screen",
@@ -1004,7 +1012,8 @@
     "pause": "Pause",
     "reprendre": "▶ Resume",
     "enPause": "Game paused",
-    "enPauseHint": "The host paused the game; the timer resumes soon."
+    "enPauseHint": "The host paused the game; the timer resumes soon.",
+    "nouvellePartie": "New game"
   },
   "settings": {
     "title": "Settings",

@@ -136,7 +136,7 @@ export function ArtistAliasesPage(): JSX.Element {
           aliases lui permettent de matcher tous les morceaux Green Day.
         </p>
         <p className="font-mono text-xs">
-          <Link to="/admin/aliases" className="underline">
+          <Link to="/admin/aliases" className="underline inline-flex min-h-[44px] items-center">
             ← Aliases tracks
           </Link>
         </p>

@@ -123,7 +123,7 @@ export function LibraryAuditPage(): JSX.Element {
       <header className="mb-6">
         <Link
           to="/admin/library"
-          className="font-mono text-sm text-ink-soft hover:underline mb-2 inline-block"
+          className="font-mono text-sm text-ink-soft hover:underline mb-2 inline-block inline-flex min-h-[44px] items-center"
         >
           ← Retour à la bibliothèque
         </Link>

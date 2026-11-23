@@ -131,7 +131,10 @@ export function ArcadePage(): JSX.Element {
       </ul>
 
       <p className="mt-6">
-        <Link to="/admin/dashboard" className="underline text-ink-2">
+        <Link
+          to="/admin/dashboard"
+          className="inline-flex min-h-[44px] items-center underline text-ink-2"
+        >
           {t('arcade.retour')}
         </Link>
       </p>

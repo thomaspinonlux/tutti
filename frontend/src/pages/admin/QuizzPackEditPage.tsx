@@ -224,7 +224,10 @@ export function QuizzPackEditPage(): JSX.Element {
     <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 max-w-[1200px] mx-auto">
       {/* ─── Colonne gauche : meta + sidebar packs ──────────────────────── */}
       <aside className="space-y-4">
-        <Link to="/admin/quizz" className="font-mono text-xs text-ink-soft hover:text-ink">
+        <Link
+          to="/admin/quizz"
+          className="font-mono text-xs text-ink-soft hover:text-ink inline-flex min-h-[44px] items-center"
+        >
           ← {t('quizz.backToList')}
         </Link>
 

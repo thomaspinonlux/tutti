@@ -250,6 +250,7 @@ const TRACES = {
   ),
   crayon: <path d="M4 20l1-4L16 5l3 3L8 19z" />,
   retour: <path d="M15 5l-7 7 7 7" />,
+  menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   sortie: (
     <>
       <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />

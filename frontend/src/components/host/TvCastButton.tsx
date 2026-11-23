@@ -67,7 +67,7 @@ export function TvCastButton({ tvCode, shortCode }: Props): JSX.Element | null {
           <Card
             tone="cream"
             size="lg"
-            className="max-w-md w-full text-center"
+            className="max-w-md w-full text-center max-h-[calc(100dvh-2rem)] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 id="tvcast-title" className="font-display text-2xl mb-1">

@@ -58,7 +58,7 @@ export function UserDetailPage(): JSX.Element {
         <Breadcrumb />
         <Link
           to="/admin/users"
-          className="font-mono text-sm text-ink-soft hover:underline mb-3 inline-block"
+          className="font-mono text-sm text-ink-soft hover:underline mb-3 inline-block inline-flex min-h-[44px] items-center"
         >
           ← Retour à la liste
         </Link>
@@ -76,7 +76,7 @@ export function UserDetailPage(): JSX.Element {
         <Breadcrumb />
         <Link
           to="/admin/users"
-          className="font-mono text-sm text-ink-soft hover:underline mb-3 inline-block"
+          className="font-mono text-sm text-ink-soft hover:underline mb-3 inline-block inline-flex min-h-[44px] items-center"
         >
           ← Retour à la liste
         </Link>
@@ -211,7 +211,7 @@ export function UserDetailPage(): JSX.Element {
         <div>
           <Link
             to="/admin/users"
-            className="font-mono text-sm text-ink-soft hover:underline mb-2 inline-block"
+            className="font-mono text-sm text-ink-soft hover:underline mb-2 inline-block inline-flex min-h-[44px] items-center"
           >
             ← Tous les utilisateurs
           </Link>
@@ -448,9 +448,7 @@ export function UserDetailPage(): JSX.Element {
                         year: '2-digit',
                       })}
                     </td>
-                    <td className="py-1.5">
-                      {s.game_type}
-                    </td>
+                    <td className="py-1.5">{s.game_type}</td>
                     <td className="py-1.5 font-mono text-[10px]">{s.short_code}</td>
                     <td className="py-1.5 truncate max-w-[200px]">
                       {s.playlists.join(', ') || '—'}

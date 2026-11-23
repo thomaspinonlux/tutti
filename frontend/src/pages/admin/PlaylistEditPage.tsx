@@ -217,7 +217,10 @@ export function PlaylistEditPage(): JSX.Element {
     <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_320px] gap-6 max-w-[1400px] mx-auto">
       {/* ─── Colonne gauche : meta + sidebar playlists ───────────────────── */}
       <aside className="space-y-4">
-        <Link to="/admin/tracks" className="font-mono text-xs text-ink-soft hover:text-ink">
+        <Link
+          to="/admin/tracks"
+          className="font-mono text-xs text-ink-soft hover:text-ink inline-flex min-h-[44px] items-center"
+        >
           ← {t('playlists.backToList')}
         </Link>
 

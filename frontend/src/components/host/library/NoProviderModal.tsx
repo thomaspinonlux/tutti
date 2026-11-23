@@ -31,7 +31,10 @@ export function NoProviderModal({
       className="fixed inset-0 z-50 bg-ink/60 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div onClick={(e) => e.stopPropagation()} className="max-w-md w-full">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="max-w-md w-full max-h-[calc(100dvh-2rem)] overflow-y-auto"
+      >
         <Card size="md" tone="cream">
           <p className="text-3xl mb-2 text-center" aria-hidden>
             <Icone nom="prise" />

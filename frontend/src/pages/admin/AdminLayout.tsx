@@ -167,7 +167,7 @@ export function AdminLayout(): JSX.Element {
   return (
     <div className="min-h-screen flex bg-cream">
       <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0 pb-[60px] md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-[calc(64px+env(safe-area-inset-bottom,0px))] md:pb-0">
         <MultiColorBar height="sm" />
         <ResumeSessionBanner />
         <main className="flex-1 px-4 sm:px-6 md:px-10 py-4 sm:py-8">

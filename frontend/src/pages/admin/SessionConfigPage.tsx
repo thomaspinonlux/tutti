@@ -303,7 +303,7 @@ export function SessionConfigPage(): JSX.Element {
             {t('sessionConfig.mode')}
           </p>
           {/* feat/quiz-en-equipes (08/11) — équipes aussi au quiz. */}
-          {(
+          {
             <>
               <div className="flex gap-2">
                 <Pill active={mode === 'SOLO'} onClick={() => setMode('SOLO')}>
@@ -321,7 +321,7 @@ export function SessionConfigPage(): JSX.Element {
                     : t('sessionConfig.modeTeamsHint')}
               </p>
             </>
-          )}
+          }
         </Card>
 
         {mode === 'TEAMS' && (
@@ -397,7 +397,18 @@ export function SessionConfigPage(): JSX.Element {
         )}
 
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={() => navigate(-1)} disabled={submitting}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              // Page ouverte directement (rechargement, application) : pas de
+              // page précédente, « Annuler » ne faisait rien.
+              const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+              if (idx > 0) navigate(-1);
+              else navigate('/admin/dashboard');
+            }}
+            disabled={submitting}
+          >
             {t('common.cancel')}
           </Button>
           <Button type="submit" disabled={submitting}>
