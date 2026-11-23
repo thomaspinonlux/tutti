@@ -232,6 +232,19 @@ export async function joinSession(
   });
 }
 
+/**
+ * feat/joueur-peut-quitter — le joueur se retire de la SALLE D'ATTENTE.
+ * Refusé par le serveur une fois la partie lancée (la place et le score sont
+ * alors gardés) et pour un animateur.
+ */
+export async function quitterSalleAttente(shortCode: string, token: string): Promise<void> {
+  await api(`/api/sessions/by-code/${encodeURIComponent(shortCode)}/quitter`, {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}
+
 export async function moveParticipantTeam(
   sessionId: string,
   participantId: string,
@@ -529,7 +542,11 @@ export async function pauseQuiz(sessionId: string, pause: boolean): Promise<void
   });
 }
 
-export async function masterPauseQuiz(sessionId: string, token: string, pause: boolean): Promise<void> {
+export async function masterPauseQuiz(
+  sessionId: string,
+  token: string,
+  pause: boolean,
+): Promise<void> {
   await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/quizz/pause`, {
     method: 'POST',
     body: { token, pause },
@@ -560,10 +577,11 @@ export async function submitQuizzAnswer(
   token: string,
   value: string,
 ): Promise<ReponseQuizz> {
-  return api<ReponseQuizz>(
-    `/api/sessions/${encodeURIComponent(sessionId)}/quizz/submit-answer`,
-    { method: 'POST', body: { token, value }, anonymous: true },
-  );
+  return api<ReponseQuizz>(`/api/sessions/${encodeURIComponent(sessionId)}/quizz/submit-answer`, {
+    method: 'POST',
+    body: { token, value },
+    anonymous: true,
+  });
 }
 
 /**
@@ -871,7 +889,11 @@ export async function masterSetScreenFocus(
 }
 
 /** feat/joueurs-sur-la-manette — retirer un joueur depuis la télécommande. */
-export async function masterKick(sessionId: string, token: string, targetId: string): Promise<void> {
+export async function masterKick(
+  sessionId: string,
+  token: string,
+  targetId: string,
+): Promise<void> {
   await api(`/api/sessions/${encodeURIComponent(sessionId)}/master/kick`, {
     method: 'POST',
     body: { token, target_participant_id: targetId },

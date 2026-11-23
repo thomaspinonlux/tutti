@@ -30,6 +30,7 @@ import type {
 import {
   getPublicSession,
   joinSession,
+  quitterSalleAttente,
   masterAdjustPoints,
   masterKick,
   masterSetRole,
@@ -114,7 +115,9 @@ type Step =
   | 'micError'
   | 'waiting'
   | 'playing'
-  | 'ended';
+  | 'ended'
+  // feat/joueur-peut-quitter — le joueur a appuyé sur « Quitter ».
+  | 'quitte';
 
 interface Toast {
   id: string;
@@ -201,6 +204,11 @@ export function PlayPage(): JSX.Element {
   const [busy, setBusy] = useState(false);
   // Master mode (mode B uniquement) : flag is_master + état de pause
   const [isMaster, setIsMaster] = useState(false);
+  // feat/joueur-peut-quitter — « Quitter » armé (second appui = confirmer),
+  // et de quel moment on est parti (le message de retour n'est pas le même).
+  const [quitterArme, setQuitterArme] = useState(false);
+  const [quitteEnPartie, setQuitteEnPartie] = useState(false);
+  const quitteRef = useRef(false);
   // feat/multi-animator-roles — rôle du participant. is_master = isAnimatorRole(role)
   // (les deux profils animateur pilotent). role distingue qui VOIT la réponse :
   // ANIMATOR_FULL reçoit track:answer, ANIMATOR_PLAYING non (il joue).
@@ -426,6 +434,8 @@ export function PlayPage(): JSX.Element {
     });
     sock.on('participant:kicked', ({ participant }: { participant: Participant }) => {
       if (participant.id === identity.participantId) {
+        // C'est notre propre départ (bouton Quitter) : pas un message d'exclusion.
+        if (quitteRef.current) return;
         clearParticipantContext(shortCode);
         setError(t('play.kicked'));
         setIdentity(null);
@@ -697,9 +707,61 @@ export function PlayPage(): JSX.Element {
     }
   };
 
+  /**
+   * feat/joueur-peut-quitter — Thomas, 23/11 : « le téléphone d'un joueur doit
+   * avoir un bouton quitter ».
+   *
+   * - Pas encore entré dans la partie (équipe, consignes, micro refusé) : on
+   *   sort tout de suite.
+   * - Entré : le premier appui demande « Quitter ? », le second confirme, pour
+   *   ne pas sortir un joueur par un appui malheureux.
+   * - Dans la salle d'attente, le serveur retire le joueur de la liste (son nom
+   *   ne reste pas sur la TV). Partie lancée, ou animateur : on se déconnecte
+   *   seulement — la place et le score restent, et le même pseudo les retrouve.
+   */
+  const handleQuitter = async (): Promise<void> => {
+    if (identity && !quitterArme) {
+      setQuitterArme(true);
+      return;
+    }
+    setQuitterArme(false);
+    const ident = identity;
+    const enSalleAttente = step === 'waiting';
+    quitteRef.current = true;
+    // Retiré de la liste par le serveur ? Sinon la place (et le score) restent.
+    let retire = false;
+    if (ident && enSalleAttente && !isMaster) {
+      // Un refus (partie lancée entre-temps) ou une panne de réseau
+      // n'empêchent pas de partir.
+      retire = await quitterSalleAttente(shortCode, ident.token)
+        .then(() => true)
+        .catch(() => false);
+    }
+    clearParticipantContext(shortCode);
+    setQuitteEnPartie(!!ident && !retire);
+    setIdentity(null);
+    setError(null);
+    setStep('quitte');
+  };
+  /** « Revenir dans la partie » : on relit l'état de la partie, elle a pu finir. */
+  const handleRevenir = (): void => {
+    void getPublicSession(shortCode)
+      .then((v) => {
+        setView(v);
+        setStep(v.status === 'ENDED' ? 'ended' : 'pseudo');
+      })
+      .catch(() => setStep('pseudo'));
+  };
+  useEffect(() => {
+    if (!quitterArme) return;
+    const id = window.setTimeout(() => setQuitterArme(false), 3000);
+    return () => window.clearTimeout(id);
+  }, [quitterArme]);
+
   const doJoin = async (teamId: string | null): Promise<void> => {
     setSubmitting(true);
     setError(null);
+    quitteRef.current = false;
     try {
       const resp: JoinResponse = await joinSession(shortCode, {
         pseudo: pseudo.trim(),
@@ -987,7 +1049,27 @@ export function PlayPage(): JSX.Element {
             <div className="absolute top-0 right-0">
               {identity && <ConnectionIndicator socket={socket} />}
             </div>
-            <div className="text-center">
+            {/* feat/joueur-peut-quitter — toujours au même endroit, en haut à
+                gauche, dès que le joueur a dépassé l'écran du pseudo. */}
+            {step !== 'pseudo' && step !== 'ended' && step !== 'quitte' && (
+              <button
+                type="button"
+                onClick={() => void handleQuitter()}
+                className={`absolute left-0 top-0 z-10 inline-flex min-h-[40px] items-center rounded-xl border px-3 text-sm font-semibold transition-colors ${
+                  quitterArme ? 'text-white' : 'border-white/20 text-white/70'
+                }`}
+                style={
+                  quitterArme ? { backgroundColor: TEL_CORAIL, borderColor: TEL_CORAIL } : undefined
+                }
+              >
+                {quitterArme ? t('play.quitterConfirmer') : t('play.quitter')}
+              </button>
+            )}
+            {/* Le nom de la soirée laisse la place du bouton Quitter (à gauche)
+                et du témoin de connexion (à droite) : un nom long passait dessous. */}
+            <div
+              className={`text-center ${step !== 'pseudo' && step !== 'ended' && step !== 'quitte' ? 'px-[84px]' : ''}`}
+            >
               <p
                 className="mb-1 font-mono text-xs uppercase tracking-[0.28em]"
                 style={{ color: TEL_CORAIL }}
@@ -1306,6 +1388,22 @@ export function PlayPage(): JSX.Element {
                 </div>
               )}
             </>
+          )}
+
+          {step === 'quitte' && (
+            <PanneauJoueur className="text-center">
+              <h2 className="mb-2 font-display text-2xl text-white">{t('play.quitteTitre')}</h2>
+              <p className="font-editorial italic text-white/60">
+                {quitteEnPartie ? t('play.quitteAideScore') : t('play.quitteAide')}
+              </p>
+              {view && view.status !== 'ENDED' && (
+                <div className="mt-5">
+                  <BoutonJoueur type="button" onClick={handleRevenir}>
+                    {t('play.quitteRevenir')}
+                  </BoutonJoueur>
+                </div>
+              )}
+            </PanneauJoueur>
           )}
 
           {step === 'ended' && (

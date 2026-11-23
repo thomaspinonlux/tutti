@@ -841,7 +841,13 @@
     "masterPausedBadge": "Game paused",
     "nothingHeard": "Nothing heard — buzz again",
     "repriseDePlace": "You’re back in your seat — your score is safe",
-    "pseudoDejaEnLigne": "That nickname is already in use on a connected phone. Pick another one."
+    "pseudoDejaEnLigne": "That nickname is already in use on a connected phone. Pick another one.",
+    "quitter": "Leave",
+    "quitterConfirmer": "Leave?",
+    "quitteTitre": "You left the game",
+    "quitteAide": "You can come back whenever you like.",
+    "quitteAideScore": "With the same nickname, you get your place and your score back.",
+    "quitteRevenir": "Back to the game"
   },
   "onboarding": {
     "contentBlocker": {
@@ -875,9 +881,9 @@
     "micErrorTitle": "No mic, no blind test",
     "micErrorBody": "Tutti uses your mic to recognize your voice. Without access, you can't validate your answers.",
     "micErrorOtherLabel": "On your device",
-    "micErrorIos": "Settings > Safari > Camera & Mic > tutti.app > Allow. Come back here and tap 'Retry'.",
+    "micErrorIos": "Settings > Safari > Camera & Mic > tuttiparty.app > Allow. Come back here and tap 'Retry'.",
     "micErrorAndroid": "Tap the lock icon in the address bar > Permissions > Mic > Allow. Reload if needed.",
-    "micErrorOther": "Look for the mic permissions for tutti.app in your browser's settings, then enable access.",
+    "micErrorOther": "Look for the mic permissions for tuttiparty.app in your browser's settings, then enable access.",
     "micErrorRetry": "Retry"
   },
   "connection": {

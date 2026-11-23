@@ -841,7 +841,13 @@
     "masterPausedBadge": "Jeu en pause",
     "nothingHeard": "Rien entendu — rebuzze",
     "repriseDePlace": "Tu reprends ta place — ton score est conservé",
-    "pseudoDejaEnLigne": "Ce pseudo est déjà utilisé par un téléphone connecté. Choisis-en un autre."
+    "pseudoDejaEnLigne": "Ce pseudo est déjà utilisé par un téléphone connecté. Choisis-en un autre.",
+    "quitter": "Quitter",
+    "quitterConfirmer": "Quitter ?",
+    "quitteTitre": "Tu as quitté la partie",
+    "quitteAide": "Tu peux revenir quand tu veux.",
+    "quitteAideScore": "Avec le même pseudo, tu retrouves ta place et ton score.",
+    "quitteRevenir": "Revenir dans la partie"
   },
   "onboarding": {
     "contentBlocker": {
@@ -875,9 +881,9 @@
     "micErrorTitle": "Sans micro, pas de blind test",
     "micErrorBody": "Tutti utilise le micro pour reconnaître ta voix. Sans accès, tu ne peux pas valider tes réponses.",
     "micErrorOtherLabel": "Sur ton appareil",
-    "micErrorIos": "Réglages > Safari > Caméra & Micro > tutti.app > Autoriser. Reviens ici puis tape « Réessayer ».",
+    "micErrorIos": "Réglages > Safari > Caméra & Micro > tuttiparty.app > Autoriser. Reviens ici puis tape « Réessayer ».",
     "micErrorAndroid": "Tape l'icône cadenas dans la barre d'adresse > Autorisations > Micro > Autoriser. Recharge la page si besoin.",
-    "micErrorOther": "Cherche dans les réglages de ton navigateur la section permissions micro pour tutti.app, puis active l'accès.",
+    "micErrorOther": "Cherche dans les réglages de ton navigateur la section permissions micro pour tuttiparty.app, puis active l'accès.",
     "micErrorRetry": "Réessayer"
   },
   "connection": {

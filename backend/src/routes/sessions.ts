@@ -649,6 +649,81 @@ router.get(
   },
 );
 
+// ── POST /by-code/:short_code/quitter (participant) ──────────────────────
+// feat/joueur-peut-quitter — Thomas, 23/11 : « le téléphone d'un joueur doit
+// avoir un bouton quitter ».
+//
+// Ce point d'entrée ne sert que DANS LA SALLE D'ATTENTE : le joueur qui part
+// avant le départ est retiré de la liste (sinon son nom restait sur la TV et
+// on l'attendait). Une fois la partie lancée, le téléphone se contente de se
+// déconnecter : la place et le score restent, et le même pseudo les retrouve
+// (cf. « reprendre ma place » dans /join).
+// Un animateur n'est jamais retiré ainsi : la partie perdrait sa télécommande.
+const quitterSchema = z.object({ token: z.string().min(1) });
+
+router.post(
+  '/by-code/:short_code/quitter',
+  async (req: Request<{ short_code: string }>, res: Response): Promise<void> => {
+    const parsed = quitterSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'token requis' } });
+      return;
+    }
+    const { verifyParticipantToken } = await import('../lib/participantToken.js');
+    let payload: { participant_id: string; session_id: string };
+    try {
+      payload = verifyParticipantToken(parsed.data.token);
+    } catch {
+      res.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Token invalide' } });
+      return;
+    }
+    try {
+      const session = await prisma.session.findUnique({
+        where: { short_code: req.params.short_code.toUpperCase() },
+        select: { id: true, status: true },
+      });
+      if (!session || session.id !== payload.session_id) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+        return;
+      }
+      if (session.status !== 'WAITING') {
+        res.status(409).json({
+          error: { code: 'NOT_IN_LOBBY', message: 'Retrait possible uniquement avant le départ' },
+        });
+        return;
+      }
+      const cible = await prisma.participant.findUnique({
+        where: { id: payload.participant_id },
+        select: { id: true, is_kicked: true, is_master: true, session_id: true },
+      });
+      if (!cible || cible.is_kicked || cible.session_id !== session.id) {
+        res
+          .status(403)
+          .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+        return;
+      }
+      if (cible.is_master) {
+        res.status(409).json({
+          error: { code: 'ANIMATEUR', message: 'Un animateur ne se retire pas de la partie' },
+        });
+        return;
+      }
+      const participant = await prisma.participant.update({
+        where: { id: cible.id },
+        data: { is_kicked: true },
+      });
+      console.info(`[quitter] ${participant.pseudo} (${participant.id}) quitte la salle d'attente`);
+      // Même événement que l'exclusion : console, TV et autres téléphones
+      // savent déjà retirer le joueur de leurs listes.
+      broadcastToSession(session.id, 'participant:kicked', { participant });
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      console.error('[POST by-code/quitter] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur au retrait' } });
+    }
+  },
+);
+
 // ── POST /by-code/:short_code/proposals (participant) ────────────────────
 const proposeSchema = z.object({
   token: z.string().min(1),
