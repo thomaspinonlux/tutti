@@ -13,10 +13,16 @@ const PANNEAU =
 
 interface Props {
   onRetry: () => void | Promise<void>;
+  /**
+   * feat/jouer-sans-micro — entrer dans la partie sans micro : le joueur
+   * répondra au clavier (la saisie existe déjà sous le buzzer). Avant, cet
+   * écran ne proposait que « Réessayer » : micro refusé = joueur bloqué.
+   */
+  onSansMicro: () => void | Promise<void>;
   busy?: boolean;
 }
 
-export function MicPermissionErrorScreen({ onRetry, busy }: Props): JSX.Element {
+export function MicPermissionErrorScreen({ onRetry, onSansMicro, busy }: Props): JSX.Element {
   const { t } = useTranslation();
   const platform: Platform = detectPlatform();
   const instructions =
@@ -60,6 +66,14 @@ export function MicPermissionErrorScreen({ onRetry, busy }: Props): JSX.Element 
         disabled={busy}
       >
         {busy ? t('onboarding.requesting') : t('onboarding.micErrorRetry')}
+      </button>
+      <button
+        type="button"
+        className="mt-3 w-full rounded-2xl border border-white/25 px-4 py-3 font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-40"
+        onClick={() => void onSansMicro()}
+        disabled={busy}
+      >
+        {t('onboarding.micErrorSansMicro')}
       </button>
     </div>
   );

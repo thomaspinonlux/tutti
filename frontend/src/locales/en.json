@@ -878,13 +878,14 @@
     "skipCta": "Let's go, joining now",
     "reviewTutorial": "Review full tutorial",
     "micErrorEyebrow": "Mic not allowed",
-    "micErrorTitle": "No mic, no blind test",
-    "micErrorBody": "Tutti uses your mic to recognize your voice. Without access, you can't validate your answers.",
+    "micErrorTitle": "You can play without a mic",
+    "micErrorBody": "With the mic, you answer by voice. Without it, you type your answer.",
     "micErrorOtherLabel": "On your device",
     "micErrorIos": "Settings > Safari > Camera & Mic > tuttiparty.app > Allow. Come back here and tap 'Retry'.",
     "micErrorAndroid": "Tap the lock icon in the address bar > Permissions > Mic > Allow. Reload if needed.",
     "micErrorOther": "Look for the mic permissions for tuttiparty.app in your browser's settings, then enable access.",
-    "micErrorRetry": "Retry"
+    "micErrorRetry": "Retry",
+    "micErrorSansMicro": "Play without a mic"
   },
   "connection": {
     "connected": "Connected",

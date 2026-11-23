@@ -139,6 +139,29 @@ export function PlayPage(): JSX.Element {
    * champ : on considere alors le vocal actif, comme avant.
    */
   const vocalActif = view?.voice_enabled !== false;
+  /**
+   * feat/jouer-sans-micro — CE téléphone joue sans micro (refusé, ou absent).
+   * Son écran de jeu est alors celui d'une partie écrite : pas de buzzer
+   * vocal qui ne marcherait pas, la réponse se tape. Gardé pour la soirée :
+   * un rechargement ne doit pas faire réapparaître le buzzer.
+   */
+  const cleSansMicro = `tutti.sansMicro.${shortCode}`;
+  const [sansMicro, setSansMicro] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(`tutti.sansMicro.${shortCode}`) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const noterSansMicro = (valeur: boolean): void => {
+    setSansMicro(valeur);
+    try {
+      if (valeur) localStorage.setItem(cleSansMicro, '1');
+      else localStorage.removeItem(cleSansMicro);
+    } catch {
+      /* stockage indisponible : le choix vaut jusqu'au rechargement */
+    }
+  };
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('pseudo');
   // feat/telephone-au-style-tv — tout l ecran joueur est sombre : accueil,
@@ -696,15 +719,27 @@ export function PlayPage(): JSX.Element {
     const res = await requestMicPermission();
     setMicRequesting(false);
     if (res.kind === 'granted') {
+      noterSansMicro(false);
       markOnboardingDone();
       await doJoin(selectedTeam);
     } else if (res.kind === 'unsupported') {
       // Pas de micro disponible : on permet de jouer quand même (V1 bienveillant)
+      noterSansMicro(true);
       markOnboardingDone();
       await doJoin(selectedTeam);
     } else {
       setStep('micError');
     }
+  };
+
+  /**
+   * feat/jouer-sans-micro — Thomas, 23/11 : micro refusé, le joueur entre
+   * quand même et répond au clavier.
+   */
+  const handleSansMicro = async (): Promise<void> => {
+    noterSansMicro(true);
+    markOnboardingDone();
+    await doJoin(selectedTeam);
   };
 
   /**
@@ -1196,6 +1231,7 @@ export function PlayPage(): JSX.Element {
           {step === 'micError' && (
             <MicPermissionErrorScreen
               onRetry={handleOnboardingContinue}
+              onSansMicro={handleSansMicro}
               busy={micRequesting || submitting}
             />
           )}
@@ -1330,7 +1366,7 @@ export function PlayPage(): JSX.Element {
                 roundPosition={currentRound?.position ?? null}
                 isMaster={isMaster}
                 isPaused={isPaused}
-                vocalActif={vocalActif}
+                vocalActif={vocalActif && !sansMicro}
                 animateurSeul={myRole === 'ANIMATOR_FULL'}
               />
 

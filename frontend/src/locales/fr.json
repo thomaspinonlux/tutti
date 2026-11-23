@@ -878,13 +878,14 @@
     "skipCta": "C'est parti, je rejoins",
     "reviewTutorial": "Revoir le tutoriel complet",
     "micErrorEyebrow": "Micro non autorisé",
-    "micErrorTitle": "Sans micro, pas de blind test",
-    "micErrorBody": "Tutti utilise le micro pour reconnaître ta voix. Sans accès, tu ne peux pas valider tes réponses.",
+    "micErrorTitle": "Tu peux jouer sans micro",
+    "micErrorBody": "Avec le micro, tu réponds à la voix. Sans micro, tu écris ta réponse au clavier.",
     "micErrorOtherLabel": "Sur ton appareil",
     "micErrorIos": "Réglages > Safari > Caméra & Micro > tuttiparty.app > Autoriser. Reviens ici puis tape « Réessayer ».",
     "micErrorAndroid": "Tape l'icône cadenas dans la barre d'adresse > Autorisations > Micro > Autoriser. Recharge la page si besoin.",
     "micErrorOther": "Cherche dans les réglages de ton navigateur la section permissions micro pour tuttiparty.app, puis active l'accès.",
-    "micErrorRetry": "Réessayer"
+    "micErrorRetry": "Réessayer",
+    "micErrorSansMicro": "Jouer sans micro"
   },
   "connection": {
     "connected": "Connecté",
