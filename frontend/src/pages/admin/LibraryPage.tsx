@@ -43,7 +43,7 @@ const TABS = [
   { key: 'my-playlists', icon: <Icone nom="casque" />, labelKey: 'library.tabMyPlaylists' },
   { key: 'quizzes', icon: <Icone nom="ampoule" />, labelKey: 'library.tabQuizzes' },
   { key: 'my-quizzes', icon: <Icone nom="crayon" />, labelKey: 'library.tabMyQuizzes' },
-] as const satisfies { key: Tab; icon: string; labelKey: string }[];
+] as const satisfies { key: Tab; icon: JSX.Element; labelKey: string }[];
 
 export function LibraryPage(): JSX.Element {
   const { t } = useTranslation();

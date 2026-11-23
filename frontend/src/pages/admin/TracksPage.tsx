@@ -13,7 +13,7 @@ import { confirmerNouvellePartie } from '../../components/admin/PartieEnCours.js
 import { createSession } from '../../lib/sessions.js';
 
 /** feat/provider-badge — libellé + emoji couleur par source audio. */
-const PROVIDER_META: Record<string, { emoji: string; label: string }> = {
+const PROVIDER_META: Record<string, { emoji: JSX.Element; label: string }> = {
   spotify: { emoji: <Icone nom="note" />, label: 'Spotify' },
   youtube: { emoji: <Icone nom="ecran" />, label: 'YouTube' },
   apple_music: { emoji: <Icone nom="casque" />, label: 'Apple Music' },
@@ -28,7 +28,7 @@ const PROVIDER_META: Record<string, { emoji: string; label: string }> = {
  */
 function deriveSource(
   counts: Partial<Record<string, number>> | undefined,
-): { emoji: string; label: string; mixed: boolean } | null {
+): { emoji: JSX.Element; label: string; mixed: boolean } | null {
   const entries = Object.entries(counts ?? {}).filter(([, n]) => (n ?? 0) > 0) as Array<
     [string, number]
   >;
@@ -44,8 +44,8 @@ function deriveSource(
  * (mono-provider), les officielles sont multi-sources : on liste tous les
  * providers ayant au moins un track (badge par source jouable).
  */
-function officialSources(p: LibraryPlaylistSummary): Array<{ emoji: string; label: string }> {
-  const out: Array<{ emoji: string; label: string }> = [];
+function officialSources(p: LibraryPlaylistSummary): Array<{ emoji: JSX.Element; label: string }> {
+  const out: Array<{ emoji: JSX.Element; label: string }> = [];
   if (p.spotify_count > 0) out.push(PROVIDER_META.spotify!);
   if (p.youtube_count > 0) out.push(PROVIDER_META.youtube!);
   if ((p.apple_music_count ?? 0) > 0) out.push(PROVIDER_META.apple_music!);

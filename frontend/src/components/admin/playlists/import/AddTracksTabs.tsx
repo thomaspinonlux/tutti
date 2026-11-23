@@ -18,7 +18,7 @@ interface Props {
 
 type TabId = 'search' | 'paste' | 'my' | 'public';
 
-const TABS: Array<{ id: TabId; label: string; icon: string }> = [
+const TABS: Array<{ id: TabId; label: string; icon: JSX.Element }> = [
   { id: 'search', label: 'Recherche', icon: <Icone nom="recherche" /> },
   { id: 'paste', label: 'Coller une liste', icon: <Icone nom="liste" /> },
   { id: 'my', label: 'Mes playlists', icon: <Icone nom="dossier" /> },
