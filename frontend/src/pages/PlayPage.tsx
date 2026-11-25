@@ -634,8 +634,14 @@ export function PlayPage(): JSX.Element {
         if (payload.phase === 'phase2' && payload.phase2_started_at) {
           setPhase2StartedAt(payload.phase2_started_at);
         }
-        if (payload.phase === 'phase3-revealed' && payload.artist && payload.title) {
-          // Master a déclenché "Donner la réponse" sans qu'aucun buzz n'ait abouti
+        if (
+          (payload.phase === 'phase3-revealed' || payload.phase === 'phase3') &&
+          payload.artist &&
+          payload.title
+        ) {
+          // « Donner la réponse » de l'animateur (phase3-revealed), ou fin
+          // normale du morceau après une bonne réponse (phase3) : dans les
+          // deux cas la réponse est publique et s'affiche sur le téléphone.
           setLastReveal({
             artist: payload.artist,
             title: payload.title,
@@ -2498,8 +2504,8 @@ export function PlayingView(props: PlayingViewProps & PlayingViewExtraProps): JS
       {/* Phase 3 — result panel : reveal partagé avec tous */}
       {isPhase3Reveal && (
         <ResultPanel
-          artist={lastReveal?.artist ?? currentTrack?.artist ?? '???'}
-          title={lastReveal?.title ?? currentTrack?.title ?? '???'}
+          artist={lastReveal?.artist || currentTrack?.artist || ''}
+          title={lastReveal?.title || currentTrack?.title || '…'}
           songTitle={lastReveal?.song_title ?? currentTrack?.song_title ?? null}
           coverUrl={lastReveal?.cover_url ?? currentTrack?.cover_url ?? null}
         />

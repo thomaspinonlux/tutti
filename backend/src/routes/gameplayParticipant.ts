@@ -109,7 +109,14 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
+      select: {
+        id: true,
+        pseudo: true,
+        team_id: true,
+        is_kicked: true,
+        session_id: true,
+        role: true,
+      },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
@@ -122,7 +129,9 @@ router.post(
     if (participant.role === 'ANIMATOR_FULL') {
       res
         .status(403)
-        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
+        .json({
+          error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' },
+        });
       return;
     }
 
@@ -219,7 +228,14 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
+      select: {
+        id: true,
+        pseudo: true,
+        team_id: true,
+        is_kicked: true,
+        session_id: true,
+        role: true,
+      },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
@@ -232,7 +248,9 @@ router.post(
     if (participant.role === 'ANIMATOR_FULL') {
       res
         .status(403)
-        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
+        .json({
+          error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' },
+        });
       return;
     }
 
@@ -346,7 +364,14 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
+      select: {
+        id: true,
+        pseudo: true,
+        team_id: true,
+        is_kicked: true,
+        session_id: true,
+        role: true,
+      },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
@@ -359,7 +384,9 @@ router.post(
     if (participant.role === 'ANIMATOR_FULL') {
       res
         .status(403)
-        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
+        .json({
+          error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' },
+        });
       return;
     }
 
@@ -533,6 +560,42 @@ function schedulePhase3Transition(sessionId: string, roundId: string): void {
       track_index: indexCible,
       phase: 'phase3',
     });
+    // fix/reponse-sur-les-telephones — Thomas, 25/11 : « ce serait bien d'avoir
+    // la réponse sur les téléphones des joueurs ». En phase 3 la réponse est
+    // publique (la TV l'affiche), mais ce passage automatique ne l'envoyait
+    // pas : le panneau « C'était » des téléphones restait VIDE, sauf quand
+    // l'animateur appuyait sur « Donner la réponse ». On l'envoie à la suite,
+    // dans un second message, pour ne pas retarder le changement de phase si la
+    // base met du temps à répondre.
+    void prisma.track
+      .findUnique({
+        where: { id: active.track_id },
+        select: {
+          canonical_title: true,
+          cover_url: true,
+          work_title: true,
+          song_title: true,
+          artist: { select: { canonical_name: true } },
+        },
+      })
+      .then((track) => {
+        if (!track) return;
+        const encore = getActiveTrack(roundId);
+        if (!encore || encore.track_index !== indexCible || encore.phase !== 'phase3') return;
+        broadcastToSession(sessionId, 'track:phase_changed', {
+          round_id: roundId,
+          track_index: indexCible,
+          phase: 'phase3',
+          artist: track.artist.canonical_name,
+          title: track.canonical_title,
+          cover_url: track.cover_url,
+          work_title: track.work_title ?? null,
+          song_title: track.song_title ?? null,
+        });
+      })
+      .catch((err: unknown) => {
+        console.error('[phase3] réponse non envoyée aux téléphones :', err);
+      });
   }, PHASE_2_DURATION_MS);
   phase2Timers.set(roundId, timer);
 }
@@ -1243,7 +1306,14 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
+      select: {
+        id: true,
+        pseudo: true,
+        team_id: true,
+        is_kicked: true,
+        session_id: true,
+        role: true,
+      },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
@@ -1256,7 +1326,9 @@ router.post(
     if (participant.role === 'ANIMATOR_FULL') {
       res
         .status(403)
-        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
+        .json({
+          error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' },
+        });
       return;
     }
 
@@ -1341,7 +1413,14 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
+      select: {
+        id: true,
+        pseudo: true,
+        team_id: true,
+        is_kicked: true,
+        session_id: true,
+        role: true,
+      },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
@@ -1354,7 +1433,9 @@ router.post(
     if (participant.role === 'ANIMATOR_FULL') {
       res
         .status(403)
-        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
+        .json({
+          error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' },
+        });
       return;
     }
 
@@ -1589,7 +1670,14 @@ router.post(
 
     const participant = await prisma.participant.findUnique({
       where: { id: auth.participantId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true, session_id: true, role: true },
+      select: {
+        id: true,
+        pseudo: true,
+        team_id: true,
+        is_kicked: true,
+        session_id: true,
+        role: true,
+      },
     });
     if (!participant || participant.is_kicked || participant.session_id !== req.params.id) {
       res
@@ -1602,7 +1690,9 @@ router.post(
     if (participant.role === 'ANIMATOR_FULL') {
       res
         .status(403)
-        .json({ error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' } });
+        .json({
+          error: { code: 'ANIMATEUR_SEUL', message: 'Tu es animateur seul : tu ne réponds pas' },
+        });
       return;
     }
 
