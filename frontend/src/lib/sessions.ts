@@ -245,6 +245,30 @@ export async function quitterSalleAttente(shortCode: string, token: string): Pro
   });
 }
 
+/** feat/classement-sur-le-telephone — les classements vus par un joueur. */
+export interface ClassementJoueur {
+  mode: 'SOLO' | 'TEAMS';
+  moi: { participant_id: string; team_id: string | null };
+  /** Classement général : par joueur, ou par équipe en mode équipes. */
+  general: Array<{ id: string; label: string; color: string | null; total_points: number }>;
+  /** Manche en cours, sinon dernière manche terminée ; null sans manches (quiz). */
+  manche: {
+    position: number;
+    en_cours: boolean;
+    classement: Array<{ id: string; label: string; points: number }>;
+  } | null;
+}
+
+export async function getClassementJoueur(
+  shortCode: string,
+  token: string,
+): Promise<ClassementJoueur> {
+  return api<ClassementJoueur>(
+    `/api/sessions/by-code/${encodeURIComponent(shortCode)}/classement`,
+    { method: 'POST', body: { token }, anonymous: true },
+  );
+}
+
 export async function moveParticipantTeam(
   sessionId: string,
   participantId: string,

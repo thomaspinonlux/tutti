@@ -89,6 +89,7 @@ import { useWakeLock } from '../lib/useWakeLock.js';
 import { ConnectionIndicator } from '../components/ConnectionIndicator.js';
 import { OnboardingScreen } from '../components/play/OnboardingScreen.js';
 import { GameRules } from '../components/play/GameRules.js';
+import { ClassementJoueur } from '../components/play/ClassementJoueur.js';
 import { EcranJoueursMaitre } from '../components/play/EcranJoueursMaitre.js';
 import { MicPermissionErrorScreen } from '../components/play/MicPermissionErrorScreen.js';
 import { MasterMenu } from '../components/play/MasterMenu.js';
@@ -130,7 +131,7 @@ interface Toast {
 
 export function PlayPage(): JSX.Element {
   const { t } = useTranslation();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const shortCode = (params.get('session') ?? '').toUpperCase();
 
   const [view, setView] = useState<PublicSessionView | null>(null);
@@ -230,6 +231,8 @@ export function PlayPage(): JSX.Element {
   const [isMaster, setIsMaster] = useState(false);
   // feat/joueur-peut-quitter — « Quitter » armé (second appui = confirmer),
   // et de quel moment on est parti (le message de retour n'est pas le même).
+  // feat/code-a-taper — le code de la partie tapé à la main sur /play.
+  const [codeTape, setCodeTape] = useState('');
   const [quitterArme, setQuitterArme] = useState(false);
   const [quitteEnPartie, setQuitteEnPartie] = useState(false);
   const quitteRef = useRef(false);
@@ -311,9 +314,12 @@ export function PlayPage(): JSX.Element {
   // ── Bootstrap : récupère la session publique + auto-resume éventuel ──
   useEffect(() => {
     if (!shortCode) {
-      setError(t('play.missingCode'));
+      // Pas de code dans l'adresse : ce n'est pas une erreur, on le demande.
+      setError(null);
       return;
     }
+    // Un nouveau code vient d'être tapé : on repart sans l'ancien message.
+    setError(null);
     void getPublicSession(shortCode)
       .then((v) => {
         setView(v);
@@ -1130,9 +1136,18 @@ export function PlayPage(): JSX.Element {
             {/* feat/ecran-joueurs-telecommande — l'animateur garde sous la main,
                 de la salle d'attente à la fin, le QR code qui branche un écran
                 joueurs de plus. */}
-            {isMaster && identity && (step === 'waiting' || step === 'playing') && (
-              <div className="mt-3 text-center">
-                <EcranJoueursMaitre sessionId={identity.sessionId} token={identity.token} />
+            {/* feat/classement-sur-le-telephone — tous les joueurs : classement de
+                la manche et classement général, partie lancée ou terminée. */}
+            {identity && (step === 'waiting' || step === 'playing' || step === 'ended') && (
+              <div className="mt-3 flex flex-wrap items-start justify-center gap-2">
+                {(step === 'playing' || step === 'ended') && (
+                  <ClassementJoueur shortCode={shortCode} token={identity.token} />
+                )}
+                {isMaster && step !== 'ended' && (
+                  <div className="text-center">
+                    <EcranJoueursMaitre sessionId={identity.sessionId} token={identity.token} />
+                  </div>
+                )}
               </div>
             )}
           </header>
@@ -1146,6 +1161,59 @@ export function PlayPage(): JSX.Element {
                 {error}
               </p>
             </div>
+          )}
+
+          {/* feat/code-a-taper — la TV dit « Scanne ou tape le code sur
+              tuttiparty.app/play », mais cette page n'avait aucune case pour le
+              taper : sans QR code (terrasse, écran trop loin) on ne pouvait pas
+              entrer. Sans partie trouvée, on propose de taper le code. */}
+          {!view && step === 'pseudo' && (!shortCode || !!error) && (
+            <PanneauJoueur>
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // Les codes sont de la forme KOMP-3M8A : on remet le tiret
+                  // pour celui qui tape les huit caractères d'une traite.
+                  const brut = codeTape.trim().toUpperCase();
+                  const colle = brut.replace(/-/g, '');
+                  const code = colle.length === 8 ? `${colle.slice(0, 4)}-${colle.slice(4)}` : brut;
+                  if (code) setParams({ session: code });
+                }}
+              >
+                {!shortCode && (
+                  <p className="text-center font-editorial italic text-white/60">
+                    {t('play.missingCode')}
+                  </p>
+                )}
+                <label className="block">
+                  <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.22em] text-white/55">
+                    {t('play.codeLabel')}
+                  </span>
+                  <input
+                    type="text"
+                    value={codeTape}
+                    onChange={(e) =>
+                      setCodeTape(
+                        e.target.value
+                          .toUpperCase()
+                          .replace(/[^A-Z0-9-]/g, '')
+                          .slice(0, 16),
+                      )
+                    }
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    autoComplete="off"
+                    spellCheck={false}
+                    autoFocus
+                    className="w-full rounded-2xl border border-white/15 bg-white/[0.07] px-3.5 py-2.5 text-center font-mono text-xl tracking-[0.2em] text-white placeholder:text-white/35 focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-[#FF3366]/50"
+                  />
+                </label>
+                <BoutonJoueur type="submit" disabled={!codeTape.trim()}>
+                  {t('play.codeValider')}
+                </BoutonJoueur>
+              </form>
+            </PanneauJoueur>
           )}
 
           {/* fix/parcours-sans-impasse — sans partie trouvée (lien incomplet, code
@@ -1482,25 +1550,45 @@ export function PlayPage(): JSX.Element {
       {showRules && step === 'playing' && view?.game_type !== 'QUIZZ' && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-5 animate-fade-in backdrop-blur-sm">
           <div className={`${TEL_PANNEAU} w-full max-w-sm p-6`}>
-            <p className="mb-4 text-center font-display text-2xl text-white">
-              Comment répondre <Icone nom="micro" />
-            </p>
-            <ul className="space-y-3 font-editorial text-base leading-snug text-white/80">
-              <li>
-                Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les deux =
-                plus de points).
-              </li>
-              <li>
-                Parle <strong>près du micro</strong> de ton téléphone, bien fort.
-              </li>
-              <li>
-                Arrête de parler quand tu as fini : l'envoi part <strong>tout seul</strong>. Tu peux
-                aussi appuyer sur <strong>ENVOYER</strong>.
-              </li>
-              <li>
-                Raté ? Tu peux <strong>re-buzzer aussitôt</strong>.
-              </li>
-            </ul>
+            {vocalActif && !sansMicro ? (
+              <>
+                <p className="mb-4 text-center font-display text-2xl text-white">
+                  Comment répondre <Icone nom="micro" />
+                </p>
+                <ul className="space-y-3 font-editorial text-base leading-snug text-white/80">
+                  <li>
+                    Dis le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux (les
+                    deux = plus de points).
+                  </li>
+                  <li>
+                    Parle <strong>près du micro</strong> de ton téléphone, bien fort.
+                  </li>
+                  <li>
+                    Arrête de parler quand tu as fini : l'envoi part <strong>tout seul</strong>. Tu
+                    peux aussi appuyer sur <strong>ENVOYER</strong>.
+                  </li>
+                  <li>
+                    Raté ? Tu peux <strong>re-buzzer aussitôt</strong>.
+                  </li>
+                </ul>
+              </>
+            ) : (
+              <>
+                {/* Partie écrite, ou joueur sans micro : ces consignes parlaient
+                    quand même de micro et de buzzer, qu'il n'a pas à l'écran. */}
+                <p className="mb-4 text-center font-display text-2xl text-white">
+                  Comment répondre
+                </p>
+                <ul className="space-y-3 font-editorial text-base leading-snug text-white/80">
+                  <li>
+                    Écris le <strong>TITRE</strong>, l'<strong>ARTISTE</strong> — ou les deux.
+                  </li>
+                  <li>
+                    Raté ? Tu peux <strong>réessayer aussitôt</strong>.
+                  </li>
+                </ul>
+              </>
+            )}
             <button
               type="button"
               onClick={() => setShowRules(false)}

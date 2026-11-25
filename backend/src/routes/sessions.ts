@@ -724,6 +724,114 @@ router.post(
   },
 );
 
+// ── POST /by-code/:short_code/classement (participant) ───────────────────
+// feat/classement-sur-le-telephone — Thomas, 25/11 : les joueurs doivent
+// pouvoir voir sur leur téléphone le classement de la manche et le classement
+// général (ceux de la terrasse ne voient pas la TV).
+//
+// - `general` : le même calcul que la TV et la console (par équipe en mode
+//   équipes, avec le même départage).
+// - `manche`  : les points marqués dans la manche en cours, sinon dans la
+//   dernière manche terminée ; null quand la partie n'a pas de manches (quiz,
+//   jeux de salon) ou qu'aucune n'a commencé.
+const classementSchema = z.object({ token: z.string().min(1) });
+
+router.post(
+  '/by-code/:short_code/classement',
+  async (req: Request<{ short_code: string }>, res: Response): Promise<void> => {
+    const parsed = classementSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'token requis' } });
+      return;
+    }
+    const { verifyParticipantToken } = await import('../lib/participantToken.js');
+    let payload: { participant_id: string; session_id: string };
+    try {
+      payload = verifyParticipantToken(parsed.data.token);
+    } catch {
+      res.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Token invalide' } });
+      return;
+    }
+    try {
+      const session = await prisma.session.findUnique({
+        where: { short_code: req.params.short_code.toUpperCase() },
+        select: {
+          id: true,
+          mode: true,
+          game_type: true,
+          teams_config: true,
+          participants: {
+            where: { is_kicked: false },
+            select: { id: true, pseudo: true, team_id: true },
+          },
+          rounds: {
+            where: { status: { in: ['PLAYING', 'ENDED'] } },
+            orderBy: { position: 'desc' },
+            select: { id: true, position: true, status: true },
+          },
+        },
+      });
+      if (!session || session.id !== payload.session_id) {
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+        return;
+      }
+      const moi = session.participants.find((p) => p.id === payload.participant_id);
+      if (!moi) {
+        res
+          .status(403)
+          .json({ error: { code: 'PARTICIPANT_INVALID', message: 'Participant invalide' } });
+        return;
+      }
+
+      const general = await getCumulativeScores({
+        sessionId: session.id,
+        mode: session.mode as GameMode,
+        teams: (session.teams_config as Team[] | null) ?? null,
+        participants: session.participants,
+      });
+
+      // La manche affichée : celle qui se joue, sinon la dernière terminée.
+      // Le quiz et les jeux de salon n'ont pas de manches à points.
+      const mancheVisee =
+        session.game_type === 'QUIZZ'
+          ? null
+          : (session.rounds.find((r) => r.status === 'PLAYING') ?? session.rounds[0] ?? null);
+      let manche: {
+        position: number;
+        en_cours: boolean;
+        classement: Array<{ id: string; label: string; points: number }>;
+      } | null = null;
+      if (mancheVisee) {
+        const parJoueur = await prisma.scoreEvent.groupBy({
+          by: ['participant_id'],
+          where: { session_id: session.id, session_round_id: mancheVisee.id },
+          _sum: { points: true },
+        });
+        const points = new Map(parJoueur.map((l) => [l.participant_id, l._sum.points ?? 0]));
+        manche = {
+          position: mancheVisee.position,
+          en_cours: mancheVisee.status === 'PLAYING',
+          // Tous les joueurs présents, même à zéro : chacun doit se retrouver.
+          classement: session.participants
+            .map((p) => ({ id: p.id, label: p.pseudo, points: points.get(p.id) ?? 0 }))
+            .sort((a, b) => b.points - a.points || a.label.localeCompare(b.label)),
+        };
+      }
+
+      res.setHeader('Cache-Control', 'no-store, max-age=0');
+      res.json({
+        mode: session.mode,
+        moi: { participant_id: moi.id, team_id: moi.team_id },
+        general,
+        manche,
+      });
+    } catch (err: unknown) {
+      console.error('[POST by-code/classement] error:', err);
+      res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur classement' } });
+    }
+  },
+);
+
 // ── POST /by-code/:short_code/proposals (participant) ────────────────────
 const proposeSchema = z.object({
   token: z.string().min(1),

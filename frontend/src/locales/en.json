@@ -711,7 +711,7 @@
   },
   "play": {
     "pickLevel": "Choose the level",
-    "missingCode": "Invalid link. Ask the host to scan the QR code.",
+    "missingCode": "Type the game code shown on the screen, or scan the QR code.",
     "notFound": "Session not found. Check the code.",
     "alreadyStarted": "This game is already running or finished.",
     "kicked": "You have been kicked from the game.",
@@ -848,7 +848,17 @@
     "quitteTitre": "You left the game",
     "quitteAide": "You can come back whenever you like.",
     "quitteAideScore": "With the same nickname, you get your place and your score back.",
-    "quitteRevenir": "Back to the game"
+    "quitteRevenir": "Back to the game",
+    "classement": "Ranking",
+    "classementManche": "Round {{n}}",
+    "classementGeneral": "Overall",
+    "classementVide": "No points yet.",
+    "classementErreur": "Ranking unavailable right now.",
+    "classementReessayer": "Retry",
+    "classementMoi": "you",
+    "classementMonEquipe": "your team",
+    "codeLabel": "Game code",
+    "codeValider": "Join"
   },
   "onboarding": {
     "contentBlocker": {
