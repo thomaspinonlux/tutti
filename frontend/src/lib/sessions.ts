@@ -632,6 +632,18 @@ export async function masterListScores(
   return data.cumulative;
 }
 
+/**
+ * feat/ecran-joueurs-telecommande — le code qui branche un écran joueurs de
+ * plus (page /tv). Réservé aux animateurs ; null si la partie n'en a pas.
+ */
+export async function masterCodeEcran(sessionId: string, token: string): Promise<string | null> {
+  const data = await api<{ tv_code: string | null }>(
+    `/api/sessions/${encodeURIComponent(sessionId)}/master/ecran`,
+    { method: 'POST', body: { token }, anonymous: true },
+  );
+  return data.tv_code ?? null;
+}
+
 export async function masterListPlaylists(
   sessionId: string,
   token: string,

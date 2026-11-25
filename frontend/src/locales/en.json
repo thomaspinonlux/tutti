@@ -604,7 +604,8 @@
     "codeAria": "Code {{code}}",
     "urlHint": "On {{origin}}/tv",
     "qrHint": "Scan to open directly in TV Screen mode.",
-    "openHereButton": "Open here (new window)"
+    "openHereButton": "Open here (new window)",
+    "indisponible": "Screen code unavailable for this game. Use the “Players screen” button on the console."
   },
   "screen": {
     "tvAudio": {

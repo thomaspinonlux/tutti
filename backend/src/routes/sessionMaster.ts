@@ -140,6 +140,28 @@ router.post('/scores', async (req: Request<{ id: string }>, res: Response): Prom
   res.json({ cumulative });
 });
 
+// ── POST /ecran ────────────────────────────────────────────────────────────
+// feat/ecran-joueurs-telecommande — Thomas, 25/11 : pouvoir afficher à tout
+// moment, depuis le téléphone de l'animateur, le QR code qui branche un
+// écran joueurs de plus (un iPad sur la terrasse, par exemple). Le code TV
+// n'était connu que de la console ; on le donne aux animateurs, et à eux seuls.
+router.post('/ecran', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  try {
+    const session = await prisma.session.findUnique({
+      where: { id: req.params.id },
+      select: { tv_code: true },
+    });
+    if (!session) {
+      res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Session introuvable' } });
+      return;
+    }
+    res.json({ tv_code: session.tv_code });
+  } catch (err: unknown) {
+    console.error('[POST master/ecran] error:', err);
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur code écran' } });
+  }
+});
+
 // ── POST /playlists ───────────────────────────────────────────────────────
 // Renvoie la liste des playlists publiables disponibles pour l'établissement
 // de la session (pour que le master puisse choisir la manche suivante depuis
@@ -989,7 +1011,9 @@ router.post('/kick', async (req: Request<{ id: string }>, res: Response): Promis
     return;
   }
   if (parsed.data.target_participant_id === req.master!.participantId) {
-    res.status(400).json({ error: { code: 'SELF_KICK', message: 'Tu ne peux pas te retirer toi-même' } });
+    res
+      .status(400)
+      .json({ error: { code: 'SELF_KICK', message: 'Tu ne peux pas te retirer toi-même' } });
     return;
   }
   const target = await prisma.participant.findUnique({
@@ -997,7 +1021,9 @@ router.post('/kick', async (req: Request<{ id: string }>, res: Response): Promis
     select: { id: true, session_id: true, is_kicked: true },
   });
   if (!target || target.is_kicked || target.session_id !== req.params.id) {
-    res.status(404).json({ error: { code: 'TARGET_INVALID', message: 'Participant cible invalide' } });
+    res
+      .status(404)
+      .json({ error: { code: 'TARGET_INVALID', message: 'Participant cible invalide' } });
     return;
   }
   try {
@@ -1022,7 +1048,14 @@ const roleSchema = z.object({
 router.post('/role', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   const parsed = roleSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'role invalide (PLAYER|ANIMATOR_FULL|ANIMATOR_PLAYING)' } });
+    res
+      .status(400)
+      .json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'role invalide (PLAYER|ANIMATOR_FULL|ANIMATOR_PLAYING)',
+        },
+      });
     return;
   }
   const target = await prisma.participant.findUnique({
@@ -1030,7 +1063,9 @@ router.post('/role', async (req: Request<{ id: string }>, res: Response): Promis
     select: { id: true, session_id: true, is_kicked: true },
   });
   if (!target || target.is_kicked || target.session_id !== req.params.id) {
-    res.status(404).json({ error: { code: 'TARGET_INVALID', message: 'Participant cible invalide' } });
+    res
+      .status(404)
+      .json({ error: { code: 'TARGET_INVALID', message: 'Participant cible invalide' } });
     return;
   }
   const role = parsed.data.role as ParticipantRole;
@@ -1048,7 +1083,9 @@ router.post('/role', async (req: Request<{ id: string }>, res: Response): Promis
     res.json({ participant });
   } catch (err: unknown) {
     console.error('[POST master/role] error:', err);
-    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur attribution de rôle' } });
+    res
+      .status(500)
+      .json({ error: { code: 'INTERNAL_ERROR', message: 'Erreur attribution de rôle' } });
   }
 });
 
@@ -1067,10 +1104,16 @@ function erreurQuizz(res: Response, err: unknown): void {
 
 const tokenSchema = z.object({ token: z.string() });
 
-router.post('/quizz/themes/liste', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-  const [themes, famille] = await Promise.all([listerThemes(req.params.id), familleDeLaPartie(req.params.id)]);
-  res.json({ themes, famille });
-});
+router.post(
+  '/quizz/themes/liste',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const [themes, famille] = await Promise.all([
+      listerThemes(req.params.id),
+      familleDeLaPartie(req.params.id),
+    ]);
+    res.json({ themes, famille });
+  },
+);
 
 const themeManetteSchema = z.object({
   token: z.string(),
@@ -1097,43 +1140,52 @@ const playQuestionMasterSchema = z.object({
   question_index: z.number().int().min(0).optional(),
 });
 
-router.post('/quizz/play-question', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-  const parsed = playQuestionMasterSchema.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
-    return;
-  }
-  try {
-    res.json({ state: await lancerQuestion(req.params.id, parsed.data.question_index ?? 0) });
-  } catch (err: unknown) {
-    erreurQuizz(res, err);
-  }
-});
+router.post(
+  '/quizz/play-question',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    const parsed = playQuestionMasterSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    try {
+      res.json({ state: await lancerQuestion(req.params.id, parsed.data.question_index ?? 0) });
+    } catch (err: unknown) {
+      erreurQuizz(res, err);
+    }
+  },
+);
 
-router.post('/quizz/next-question', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-  if (!tokenSchema.safeParse(req.body).success) {
-    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
-    return;
-  }
-  try {
-    res.json(await questionSuivante(req.params.id));
-  } catch (err: unknown) {
-    erreurQuizz(res, err);
-  }
-});
+router.post(
+  '/quizz/next-question',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    if (!tokenSchema.safeParse(req.body).success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    try {
+      res.json(await questionSuivante(req.params.id));
+    } catch (err: unknown) {
+      erreurQuizz(res, err);
+    }
+  },
+);
 
-router.post('/quizz/reveal-question', async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-  if (!tokenSchema.safeParse(req.body).success) {
-    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
-    return;
-  }
-  try {
-    await revelerQuestion(req.params.id);
-    res.json({ ok: true });
-  } catch (err: unknown) {
-    erreurQuizz(res, err);
-  }
-});
+router.post(
+  '/quizz/reveal-question',
+  async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+    if (!tokenSchema.safeParse(req.body).success) {
+      res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Body invalide' } });
+      return;
+    }
+    try {
+      await revelerQuestion(req.params.id);
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      erreurQuizz(res, err);
+    }
+  },
+);
 
 // feat/quiz-pause — la manette met en pause / reprend la question.
 router.post('/quizz/pause', async (req: Request<{ id: string }>, res: Response): Promise<void> => {

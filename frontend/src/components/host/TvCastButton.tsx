@@ -33,7 +33,6 @@ export function TvCastButton({ tvCode, shortCode }: Props): JSX.Element | null {
 
   if (!tvCode) return null;
 
-  const joinUrl = `${getShareableOrigin()}/tv/${tvCode}`;
   // Plein écran "même appareil" : UNIQUEMENT sur un vrai desktop multi-fenêtres.
   // Jamais sur iPad/tablette/téléphone (même en navigateur, pas seulement PWA)
   // — window.open y redirige sur l'onglet courant = piège. Sur ces appareils :
@@ -57,57 +56,83 @@ export function TvCastButton({ tvCode, shortCode }: Props): JSX.Element | null {
       </Button>
 
       {open && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="tvcast-title"
-          className="fixed inset-0 bg-ink/60 z-50 flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setOpen(false)}
-        >
-          <Card
-            tone="cream"
-            size="lg"
-            className="max-w-md w-full text-center max-h-[calc(100dvh-2rem)] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 id="tvcast-title" className="font-display text-2xl mb-1">
-              {t('tvCast.title')}
-            </h3>
-            <p className="font-editorial italic text-ink-soft text-sm mb-4">{t('tvCast.intro')}</p>
-
-            {/* Code court gros */}
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-1">
-              {t('tvCast.codeLabel')}
-            </p>
-            <p
-              className="font-display text-5xl tracking-[0.3em] mb-1 select-all"
-              aria-label={t('tvCast.codeAria', { code: tvCode.split('').join(' ') })}
-            >
-              {tvCode}
-            </p>
-            <p className="font-mono text-[11px] text-ink-soft mb-4">
-              {t('tvCast.urlHint', { origin: window.location.host })}
-            </p>
-
-            {/* QR */}
-            <div className="flex justify-center mb-4">
-              <QRCode value={joinUrl} size={200} />
-            </div>
-            <p className="font-mono text-[11px] text-ink-soft mb-4">{t('tvCast.qrHint')}</p>
-
-            <div className="flex flex-col gap-2">
-              {canOpenHere && (
-                <Button variant="secondary" size="sm" onClick={openHere}>
-                  {t('tvCast.openHereButton')}
-                </Button>
-              )}
-              <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
-                {t('common.close')}
-              </Button>
-            </div>
-          </Card>
-        </div>
+        <TvCastFenetre
+          tvCode={tvCode}
+          onClose={() => setOpen(false)}
+          onOuvrirIci={canOpenHere ? openHere : undefined}
+        />
       )}
     </>
+  );
+}
+
+/**
+ * La fenêtre « Brancher l'écran joueurs » : code à taper sur /tv + QR code.
+ * Partagée par la console (bouton ci-dessus) et par le téléphone de
+ * l'animateur (feat/ecran-joueurs-telecommande) : même fenêtre des deux côtés.
+ */
+export function TvCastFenetre({
+  tvCode,
+  onClose,
+  onOuvrirIci,
+}: {
+  tvCode: string;
+  onClose: () => void;
+  /** Ordinateur seulement : ouvrir l'écran dans une autre fenêtre. */
+  onOuvrirIci?: () => void;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const joinUrl = `${getShareableOrigin()}/tv/${tvCode}`;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tvcast-title"
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 animate-fade-in"
+      onClick={onClose}
+    >
+      <Card
+        tone="cream"
+        size="lg"
+        className="max-w-md w-full text-center max-h-[calc(100dvh-2rem)] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 id="tvcast-title" className="font-display text-2xl mb-1">
+          {t('tvCast.title')}
+        </h3>
+        <p className="font-editorial italic text-ink-soft text-sm mb-4">{t('tvCast.intro')}</p>
+
+        {/* Code court gros */}
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-spritz-deep mb-1">
+          {t('tvCast.codeLabel')}
+        </p>
+        <p
+          className="font-display text-5xl tracking-[0.3em] mb-1 select-all"
+          aria-label={t('tvCast.codeAria', { code: tvCode.split('').join(' ') })}
+        >
+          {tvCode}
+        </p>
+        <p className="font-mono text-[11px] text-ink-soft mb-4">
+          {t('tvCast.urlHint', { origin: new URL(getShareableOrigin()).host })}
+        </p>
+
+        {/* QR */}
+        <div className="flex justify-center mb-4">
+          <QRCode value={joinUrl} size={200} />
+        </div>
+        <p className="font-mono text-[11px] text-ink-soft mb-4">{t('tvCast.qrHint')}</p>
+
+        <div className="flex flex-col gap-2">
+          {onOuvrirIci && (
+            <Button variant="secondary" size="sm" onClick={onOuvrirIci}>
+              {t('tvCast.openHereButton')}
+            </Button>
+          )}
+          <Button variant="secondary" size="md" onClick={onClose}>
+            {t('common.close')}
+          </Button>
+        </div>
+      </Card>
+    </div>
   );
 }

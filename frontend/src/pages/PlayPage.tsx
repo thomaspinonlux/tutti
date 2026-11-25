@@ -89,6 +89,7 @@ import { useWakeLock } from '../lib/useWakeLock.js';
 import { ConnectionIndicator } from '../components/ConnectionIndicator.js';
 import { OnboardingScreen } from '../components/play/OnboardingScreen.js';
 import { GameRules } from '../components/play/GameRules.js';
+import { EcranJoueursMaitre } from '../components/play/EcranJoueursMaitre.js';
 import { MicPermissionErrorScreen } from '../components/play/MicPermissionErrorScreen.js';
 import { MasterMenu } from '../components/play/MasterMenu.js';
 import { MasterPlaylistPicker } from '../components/play/MasterPlaylistPicker.js';
@@ -1126,6 +1127,14 @@ export function PlayPage(): JSX.Element {
                 </span>
               )}
             </div>
+            {/* feat/ecran-joueurs-telecommande — l'animateur garde sous la main,
+                de la salle d'attente à la fin, le QR code qui branche un écran
+                joueurs de plus. */}
+            {isMaster && identity && (step === 'waiting' || step === 'playing') && (
+              <div className="mt-3 text-center">
+                <EcranJoueursMaitre sessionId={identity.sessionId} token={identity.token} />
+              </div>
+            )}
           </header>
 
           {error && (
