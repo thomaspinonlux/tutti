@@ -43,7 +43,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: Props): J
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
-        className={`relative w-full ${SIZES[size]} bg-panel border border-hairline rounded-2xl animate-pop-in p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto`}
+        className={`relative w-full ${SIZES[size]} bg-panel border border-hairline rounded-2xl animate-pop-in p-4 sm:p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* fix/parcours-sans-impasse — une croix, toujours : sur téléphone la

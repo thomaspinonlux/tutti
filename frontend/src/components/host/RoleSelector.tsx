@@ -24,6 +24,9 @@ export function RoleSelector({
   /**
    * feat/joueurs-panneau-lisible (20/11) — occupe toute la largeur, trois
    * parts égales, libellés qui passent à la ligne au lieu de déborder.
+   * 26/11 : 40 px de haut au moins, pour le doigt sur iPad et téléphone ;
+   * une part ne descend jamais sous son mot le plus long (« Animateur »), pour
+   * qu'aucun libellé ne soit coupé sur un petit téléphone.
    */
   pleineLargeur?: boolean;
 }): JSX.Element {
@@ -74,7 +77,7 @@ export function RoleSelector({
             }}
             className={[
               pleineLargeur
-                ? 'flex-1 min-w-0 text-[11px] leading-tight px-1 py-1.5 text-center'
+                ? 'flex-1 min-h-[40px] text-[11px] leading-tight px-1 py-1.5 text-center'
                 : compact
                   ? 'text-[10px] px-1.5 py-0.5'
                   : 'text-xs px-2 py-1',
@@ -94,4 +97,3 @@ export function RoleSelector({
     </div>
   );
 }
-
