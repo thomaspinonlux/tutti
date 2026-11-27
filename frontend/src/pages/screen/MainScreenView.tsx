@@ -188,7 +188,7 @@ function MysteryCover({
         <div className="absolute inset-0 flex items-center justify-center">
           <span
             aria-hidden
-            className="font-display text-[200px] text-cream animate-float-question"
+            className="font-display text-[200px] text-white animate-float-question"
             style={{ textShadow: '6px 6px 0 #1a1410' }}
           >
             ?
@@ -366,7 +366,9 @@ function IPadHeader({
           )}
           {round && <span className="truncate max-w-md">{round.playlist.name}</span>}
           {manchesCompletes > 0 && (
-            <span className="not-italic font-sans text-sm opacity-75">· {t('host.manchesCompletes', { count: manchesCompletes })}</span>
+            <span className="not-italic font-sans text-sm opacity-75">
+              · {t('host.manchesCompletes', { count: manchesCompletes })}
+            </span>
           )}
         </div>
       </div>
@@ -745,7 +747,7 @@ function RevealCover({ track, title }: { track: CurrentTrackState; title: string
       >
         {!cover && (
           <span
-            className="font-display text-cream text-center px-6 text-4xl lg:text-5xl leading-tight"
+            className="font-display text-white text-center px-6 text-4xl lg:text-5xl leading-tight"
             style={{ textShadow: '4px 4px 0 #1a1410' }}
           >
             {title}
@@ -1138,7 +1140,9 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
                 {/* Phase 3-skipped : message neutre, pas de reveal */}
                 {phase === 'phase3-skipped' && (
                   <div className="text-center mt-6">
-                    <p className="font-display text-3xl text-white/50 mb-1"><Icone nom="suivant" /></p>
+                    <p className="font-display text-3xl text-white/50 mb-1">
+                      <Icone nom="suivant" />
+                    </p>
                     <p className="font-editorial italic text-white/60 text-lg">
                       {t('screen.trackSkipped')}
                     </p>
@@ -1228,7 +1232,9 @@ export function MainScreenView(props: MainScreenViewProps): JSX.Element {
       {session.is_paused && (
         <div className="fixed inset-0 z-30 bg-black/85 flex items-center justify-center animate-fade-in">
           <div className="rounded-[24px] border border-white/10 bg-[#181628]/90 shadow-[0_24px_70px_rgba(0,0,0,0.6)] px-16 py-12 text-center">
-            <p className="text-7xl mb-2"><Icone nom="pause" /></p>
+            <p className="text-7xl mb-2">
+              <Icone nom="pause" />
+            </p>
             <h2 className="font-display text-4xl text-white">{t('screen.pauseTitle')}</h2>
             <p className="font-editorial italic text-white/60 mt-2 text-lg">
               {t('screen.pauseHint')}

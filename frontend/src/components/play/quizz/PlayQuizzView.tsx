@@ -136,7 +136,9 @@ export function PlayQuizzView({
       setLocalPhase('revealed');
       // La manette passe à « Question suivante » (elle restait sur « Révéler »).
       setActiveQuestion((q) =>
-        q && q.question_index === msg.question_index ? { ...q, phase: 'revealed', reveal: msg.reveal } : q,
+        q && q.question_index === msg.question_index
+          ? { ...q, phase: 'revealed', reveal: msg.reveal }
+          : q,
       );
     };
 
@@ -219,7 +221,15 @@ export function PlayQuizzView({
             {t('playQuizz.waitingHint')}
           </p>
         </Card>
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
+        {isMaster && (
+          <MasterQuizzMenu
+            sessionId={sessionId}
+            token={token}
+            phase={masterPhase}
+            finDeManche={finDeManche}
+            onAdjustPoints={onAdjustPoints}
+          />
+        )}
       </div>
     );
   }
@@ -237,21 +247,46 @@ export function PlayQuizzView({
           myParticipantId={participantId}
           mySubmitted={submittedValue}
         />
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
+        {isMaster && (
+          <MasterQuizzMenu
+            sessionId={sessionId}
+            token={token}
+            phase={masterPhase}
+            finDeManche={finDeManche}
+            onAdjustPoints={onAdjustPoints}
+          />
+        )}
       </div>
     );
   }
 
   // feat/jeux-de-salon — Bluff / Réponse drôle / P'tit Bac ont leur vue.
-  if (activeQuestion.type === 'BLUFF' || activeQuestion.type === 'FUNNY' || activeQuestion.type === 'PETIT_BAC') {
+  if (
+    activeQuestion.type === 'BLUFF' ||
+    activeQuestion.type === 'FUNNY' ||
+    activeQuestion.type === 'PETIT_BAC'
+  ) {
     return (
       <div className="space-y-3">
         {activeQuestion.type === 'PETIT_BAC' ? (
           <BacJoueur sessionId={sessionId} token={token} question={activeQuestion} />
         ) : (
-          <EcrireVoterJoueur socket={socket} sessionId={sessionId} token={token} question={activeQuestion} />
+          <EcrireVoterJoueur
+            socket={socket}
+            sessionId={sessionId}
+            token={token}
+            question={activeQuestion}
+          />
         )}
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
+        {isMaster && (
+          <MasterQuizzMenu
+            sessionId={sessionId}
+            token={token}
+            phase={masterPhase}
+            finDeManche={finDeManche}
+            onAdjustPoints={onAdjustPoints}
+          />
+        )}
       </div>
     );
   }
@@ -268,7 +303,15 @@ export function PlayQuizzView({
           token={token}
           question={activeQuestion}
         />
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} />}
+        {isMaster && (
+          <MasterQuizzMenu
+            sessionId={sessionId}
+            token={token}
+            phase={masterPhase}
+            finDeManche={finDeManche}
+            onAdjustPoints={onAdjustPoints}
+          />
+        )}
       </div>
     );
   }
@@ -280,9 +323,21 @@ export function PlayQuizzView({
         <QuestionHeader question={activeQuestion} />
         <Card tone="cream" size="sm" className="text-center">
           <p className="font-display text-xl">{t('playQuizz.animateurSeul')}</p>
-          <p className="font-editorial italic text-ink-soft text-sm mt-1">{t('playQuizz.animateurSeulHint')}</p>
+          <p className="font-editorial italic text-ink-soft text-sm mt-1">
+            {t('playQuizz.animateurSeulHint')}
+          </p>
         </Card>
-        {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} enPause={!!activeQuestion.en_pause} pausable={estPausable(activeQuestion)} />}
+        {isMaster && (
+          <MasterQuizzMenu
+            sessionId={sessionId}
+            token={token}
+            phase={masterPhase}
+            finDeManche={finDeManche}
+            onAdjustPoints={onAdjustPoints}
+            enPause={!!activeQuestion.en_pause}
+            pausable={estPausable(activeQuestion)}
+          />
+        )}
       </div>
     );
   }
@@ -295,7 +350,9 @@ export function PlayQuizzView({
       {activeQuestion.en_pause && (
         <Card tone="lemon" size="sm" className="text-center">
           <p className="font-display text-xl">{t('hostQuizz.enPause')}</p>
-          <p className="font-editorial italic text-ink-soft text-sm mt-1">{t('hostQuizz.enPauseHint')}</p>
+          <p className="font-editorial italic text-ink-soft text-sm mt-1">
+            {t('hostQuizz.enPauseHint')}
+          </p>
         </Card>
       )}
       <AnswerUI
@@ -317,7 +374,17 @@ export function PlayQuizzView({
           {error}
         </p>
       )}
-      {isMaster && <MasterQuizzMenu sessionId={sessionId} token={token} phase={masterPhase} finDeManche={finDeManche} onAdjustPoints={onAdjustPoints} enPause={!!activeQuestion.en_pause} pausable={estPausable(activeQuestion)} />}
+      {isMaster && (
+        <MasterQuizzMenu
+          sessionId={sessionId}
+          token={token}
+          phase={masterPhase}
+          finDeManche={finDeManche}
+          onAdjustPoints={onAdjustPoints}
+          enPause={!!activeQuestion.en_pause}
+          pausable={estPausable(activeQuestion)}
+        />
+      )}
     </div>
   );
 }
@@ -352,8 +419,7 @@ function QuestionHeader({ question }: { question: CurrentQuestionState }): JSX.E
           {question.type.replace('_', ' ')}
         </Badge>
         <span className="ml-auto font-mono text-2xl font-bold tabular-nums">
-          {question.en_pause && <Icone nom="pause" />}{' '}
-          {remainingSec}s
+          {question.en_pause && <Icone nom="pause" />} {remainingSec}s
         </span>
       </div>
       <div className="w-full h-2 border-2 border-hairline rounded overflow-hidden bg-cream-2 mb-3">
@@ -494,7 +560,7 @@ function TrueFalseAnswer({
               isSelected
                 ? opt === 'true'
                   ? 'bg-basil text-ink shadow-pop-sm'
-                  : 'bg-raspberry text-cream shadow-pop-sm'
+                  : 'bg-raspberry text-white shadow-pop-sm'
                 : disabled
                   ? 'bg-cream-2 opacity-60 cursor-not-allowed'
                   : 'bg-cream active:translate-y-0.5 hover:bg-cream-2'
@@ -636,7 +702,10 @@ function RevealedView({
       const mien = details.choix.find((c) => !!moi && c.auteurs.includes(moi));
       ligne =
         question.type === 'BLUFF'
-          ? t('jeux.revealBluff', { verite: reveal?.reveal.answer ?? '—', n: mien?.votants.length ?? 0 })
+          ? t('jeux.revealBluff', {
+              verite: reveal?.reveal.answer ?? '—',
+              n: mien?.votants.length ?? 0,
+            })
           : t('jeux.revealDrole', { n: mien?.votants.length ?? 0 });
     } else if (details?.kind === 'bac') {
       const l = details.lignes.find((x) => x.participant_id === myParticipantId);

@@ -57,6 +57,7 @@ import {
 } from '../lib/gameplayCore.js';
 import { signParticipantToken } from '../lib/participantToken.js';
 import { getCumulativeScores } from '../lib/scores.js';
+import { classementMancheParEquipe, classementMancheParJoueur } from '../lib/roundResults.js';
 
 const router: Router = Router();
 
@@ -800,8 +801,34 @@ router.post(
         position: number;
         en_cours: boolean;
         classement: Array<{ id: string; label: string; points: number }>;
+        /** Mode équipes : les joueurs, sous le classement des équipes. */
+        joueurs?: Array<{ id: string; label: string; points: number; equipe: string | null }>;
       } | null = null;
-      if (mancheVisee) {
+      const equipes =
+        session.mode === 'TEAMS' ? ((session.teams_config as Team[] | null) ?? []) : [];
+      if (mancheVisee && equipes.length > 0) {
+        // fix/podium-par-equipe — en équipes, la manche se lit par équipe,
+        // comme le général : une ligne par équipe, toutes présentes.
+        const [lignes, joueurs] = await Promise.all([
+          classementMancheParEquipe(session.id, mancheVisee.id, equipes),
+          classementMancheParJoueur(session.id, mancheVisee.id, session.participants, equipes),
+        ]);
+        manche = {
+          position: mancheVisee.position,
+          en_cours: mancheVisee.status === 'PLAYING',
+          classement: lignes.map((l) => ({
+            id: l.participant_id,
+            label: l.pseudo,
+            points: l.points,
+          })),
+          joueurs: joueurs.map((l) => ({
+            id: l.participant_id,
+            label: l.pseudo,
+            points: l.points,
+            equipe: l.equipe,
+          })),
+        };
+      } else if (mancheVisee) {
         const parJoueur = await prisma.scoreEvent.groupBy({
           by: ['participant_id'],
           where: { session_id: session.id, session_round_id: mancheVisee.id },

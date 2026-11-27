@@ -49,7 +49,7 @@ export function PwaUpdateBanner(): JSX.Element | null {
         <button
           type="button"
           onClick={applyUpdate}
-          className="px-3 py-1.5 text-xs font-mono font-semibold border-2 border-hairline bg-raspberry text-cream rounded shadow-pop hover:translate-y-px transition"
+          className="px-3 py-1.5 text-xs font-mono font-semibold border-2 border-hairline bg-raspberry text-white rounded shadow-pop hover:translate-y-px transition"
         >
           {t('pwa.updateNow')}
         </button>

@@ -28,7 +28,7 @@ export function NoProviderModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="no-provider-title"
-      className="fixed inset-0 z-50 bg-ink/60 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div

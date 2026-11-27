@@ -91,7 +91,7 @@ export function CategoryRow({
             id={`cat-${category.slug}-label`}
             className="text-ink leading-tight"
             style={{
-              fontFamily: 'Fraunces, serif',
+              fontFamily: 'Syne, system-ui, sans-serif',
               fontWeight: 900,
               fontSize: 22,
               letterSpacing: '0.01em',
@@ -102,7 +102,7 @@ export function CategoryRow({
           {description && (
             <p
               className="mt-1 text-ink-soft"
-              style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13 }}
+              style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', fontSize: 13 }}
             >
               {description}
             </p>

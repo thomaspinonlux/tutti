@@ -50,7 +50,7 @@ export function ContentBlockerWarning({ isStandalone, onReload }: Props): JSX.El
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 z-[9998] flex items-center justify-center bg-ink/70 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
     >
       <motion.div
         initial={{ scale: 0.92, y: 8 }}
@@ -98,7 +98,7 @@ export function ContentBlockerWarning({ isStandalone, onReload }: Props): JSX.El
           <button
             type="button"
             onClick={handleReload}
-            className="px-4 py-2 font-display text-base bg-raspberry text-cream border-2 border-hairline rounded-md shadow-pop-sm hover:shadow-pop transition-shadow"
+            className="px-4 py-2 font-display text-base bg-raspberry text-white border-2 border-hairline rounded-md shadow-pop-sm hover:shadow-pop transition-shadow"
           >
             {t('contentBlocker.reloadButton')}
           </button>
@@ -136,7 +136,10 @@ function PwaInstructions(): JSX.Element {
   return (
     <section className="bg-spritz/10 border-2 border-spritz rounded-lg p-3">
       <p className="font-display text-base mb-2 flex items-center gap-2">
-        <span aria-hidden><Icone nom="telephone" /></span> {t('contentBlocker.pwa.title')}
+        <span aria-hidden>
+          <Icone nom="telephone" />
+        </span>{' '}
+        {t('contentBlocker.pwa.title')}
       </p>
       <p className="text-xs text-ink-soft mb-2">{t('contentBlocker.pwa.intro')}</p>
       <ol className="list-decimal list-inside space-y-1 text-xs text-ink-soft">

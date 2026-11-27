@@ -82,6 +82,8 @@ export function RoundIntermissionScreen({
 
   // Section 1 : podium de la manche (top 3 du round_ranking)
   const roundPodium = (results?.round_ranking ?? []).slice(0, 3);
+  // Mode équipes : les joueurs, affichés sous le podium des équipes.
+  const joueursManche = results?.round_ranking_joueurs ?? [];
 
   // Section 2 : cumul (prend de l'API si dispo, sinon fallback prop)
   const cumulList =
@@ -198,6 +200,38 @@ export function RoundIntermissionScreen({
           </ol>
         )}
       </Card>
+
+      {/* fix/podium-par-equipe — en équipes, le podium ci-dessus est celui des
+          équipes ; les joueurs viennent ensuite. */}
+      {joueursManche.length > 0 && (
+        <Card size="md" className="!bg-[#181628]/80 !border !border-white/10 mb-6">
+          <p className="text-xs font-mono uppercase tracking-wider text-white/50 mb-3">
+            {t('host.intermission.parJoueur')}
+          </p>
+          <ol className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-[40vh] overflow-y-auto pr-1">
+            {joueursManche.map((j) => (
+              <li
+                key={j.participant_id}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm"
+                style={{ backgroundColor: '#ffffff08', border: '1px solid #ffffff12' }}
+              >
+                <span className="font-mono text-xs w-6 shrink-0 text-white/50">{j.rank}.</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block break-words font-medium text-white">{j.pseudo}</span>
+                  {j.equipe && (
+                    <span className="block font-mono text-[11px] uppercase tracking-wider text-white/50">
+                      {j.equipe}
+                    </span>
+                  )}
+                </span>
+                <span className="shrink-0 font-mono text-sm font-bold tabular-nums text-white">
+                  +{j.points}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* ─── Section 2 — Classement général cumulé ─────────────────── */}

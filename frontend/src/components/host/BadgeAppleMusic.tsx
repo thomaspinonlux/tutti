@@ -10,11 +10,17 @@ import type { EtatPrechauffage } from '../../lib/useAppleMusicPlayer.js';
 
 export function BadgeAppleMusic({ etat }: { etat: EtatPrechauffage | null }): JSX.Element | null {
   if (etat === null || etat === 'indisponible') return null;
-  const styles: Record<Exclude<EtatPrechauffage, 'indisponible'>, { classe: string; texte: string }> = {
-    'en-cours': { classe: 'bg-cream text-ink border-hairline', texte: 'Apple Music : préparation…' },
+  const styles: Record<
+    Exclude<EtatPrechauffage, 'indisponible'>,
+    { classe: string; texte: string }
+  > = {
+    'en-cours': {
+      classe: 'bg-cream text-ink border-hairline',
+      texte: 'Apple Music : préparation…',
+    },
     pret: { classe: 'bg-basil text-cream border-basil', texte: 'Apple Music prêt ✓' },
     echec: {
-      classe: 'bg-raspberry text-cream border-raspberry',
+      classe: 'bg-raspberry text-white border-raspberry',
       texte: 'Apple Music ne répond pas — ferme et relance l’app avant la partie',
     },
   };

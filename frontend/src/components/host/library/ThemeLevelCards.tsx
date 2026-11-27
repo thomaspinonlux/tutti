@@ -78,7 +78,7 @@ export function ThemeLevelCards({
               : v.level === 'medium'
                 ? 'bg-lemon text-ink'
                 : v.level === 'hard'
-                  ? 'bg-raspberry text-cream'
+                  ? 'bg-raspberry text-white'
                   : v.level === 'mix_em'
                     ? 'bg-gradient-to-br from-basil to-lemon text-ink'
                     : 'bg-spritz text-cream';
@@ -107,7 +107,7 @@ export function ThemeLevelCards({
               >
                 <span
                   className="font-display font-bold uppercase text-center px-2 leading-tight"
-                  style={{ fontFamily: 'Fraunces, serif', fontSize: 22 }}
+                  style={{ fontFamily: 'Syne, system-ui, sans-serif', fontSize: 22 }}
                 >
                   {v.level ? t(`host.session.lvl_${v.level}`) : theme.name}
                 </span>

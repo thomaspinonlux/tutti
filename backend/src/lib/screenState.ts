@@ -25,7 +25,12 @@ import type {
   SessionWithParticipants,
 } from '@tutti/shared';
 import { prisma } from './prisma.js';
-import { computeRoundResults, type RoundRankingEntry, type FastestPlayer } from './roundResults.js';
+import {
+  computeRoundResults,
+  type RoundRankingEntry,
+  type RoundPlayerEntry,
+  type FastestPlayer,
+} from './roundResults.js';
 import { getCumulativeScores } from './scores.js';
 import { buildCurrentTrackStateSnapshot, getEffectiveRoundTrackCount } from './gameplayCore.js';
 import { getFocusedSelection } from './playlistSelectionStore.js';
@@ -96,6 +101,8 @@ export type ScreenState =
       cumulative: CumulativeScore[];
       /** feat/tv-round-results — classement de la manche + plus rapide (mirror TV). */
       roundRanking: RoundRankingEntry[];
+      /** Mode équipes : classement par joueur, montré sous celui des équipes. */
+      roundRankingJoueurs: RoundPlayerEntry[] | null;
       fastestPlayer: FastestPlayer | null;
       lastEndedRoundPosition: number;
       lastUpdate: string;
@@ -501,7 +508,10 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
         teams: (session.teams_config as Team[] | null) ?? null,
         participants: players,
       }),
-      computeRoundResults(session.id, lastEndedRound.id),
+      computeRoundResults(session.id, lastEndedRound.id, {
+        mode: session.mode as GameMode,
+        teams: (session.teams_config as Team[] | null) ?? null,
+      }),
     ]);
     journaliserSiChange(
       workspaceId,
@@ -514,6 +524,7 @@ export async function computeScreenState(workspaceId: string): Promise<ScreenSta
       sessionName: session.name,
       cumulative,
       roundRanking: roundResults.round_ranking,
+      roundRankingJoueurs: roundResults.round_ranking_joueurs,
       fastestPlayer: roundResults.fastest_player,
       lastEndedRoundPosition: lastEndedRound.position,
       lastUpdate,

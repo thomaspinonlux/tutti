@@ -431,7 +431,9 @@ function NewPackModal({
                 onClick={() => setLanguage1(lng)}
                 aria-pressed={language1 === lng}
                 className={`flex-1 px-3 py-1.5 border-2 border-hairline rounded font-medium transition-colors ${
-                  language1 === lng ? 'bg-cream-4 text-spritz' : 'bg-cream text-ink hover:bg-cream-2'
+                  language1 === lng
+                    ? 'bg-cream-4 text-spritz'
+                    : 'bg-cream text-ink hover:bg-cream-2'
                 }`}
               >
                 {lng.toUpperCase()}
@@ -1050,7 +1052,7 @@ function QuizSortableHeader({
   const isActive = active === sortKey && order !== null;
   const arrow = isActive ? (order === 'asc' ? ' ↑' : ' ↓') : '';
   const alignClass = align === 'right' ? 'text-right' : 'text-left';
-  const activeClass = isActive ? 'bg-spritz/30 text-white' : 'hover:bg-ink/80';
+  const activeClass = isActive ? 'bg-spritz/30 text-white' : 'hover:bg-cream-4';
   return (
     <th
       scope="col"
@@ -1091,7 +1093,7 @@ function SortableHeader({
   const isActive = active === sortKey && order !== null;
   const arrow = isActive ? (order === 'asc' ? ' ↑' : ' ↓') : '';
   const alignClass = align === 'right' ? 'text-right' : 'text-left';
-  const activeClass = isActive ? 'bg-spritz/30 text-white' : 'hover:bg-ink/80';
+  const activeClass = isActive ? 'bg-spritz/30 text-white' : 'hover:bg-cream-4';
   return (
     <th
       scope="col"

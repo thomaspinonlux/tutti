@@ -69,7 +69,9 @@ export function ClassementJoueur({
           id: l.id,
           label: l.label,
           points: l.points,
-          couleur: null,
+          // En équipes, la manche se lit par équipe (26/11) : même pastille de
+          // couleur que dans le général.
+          couleur: donnees.general.find((g) => g.id === l.id)?.color ?? null,
         }))
       : donnees.general.map((l) => ({
           id: l.id,
@@ -77,10 +79,11 @@ export function ClassementJoueur({
           points: l.total_points,
           couleur: l.color,
         }));
+  const joueursManche = actif === 'manche' ? (donnees?.manche?.joueurs ?? []) : [];
+  const estMonEquipe = (id: string): boolean =>
+    !!donnees && donnees.mode === 'TEAMS' && id === donnees.moi.team_id;
   const estMoi = (id: string): boolean =>
-    !!donnees &&
-    (id === donnees.moi.participant_id ||
-      (actif === 'general' && donnees.mode === 'TEAMS' && id === donnees.moi.team_id));
+    !!donnees && (id === donnees.moi.participant_id || estMonEquipe(id));
 
   // À l'ouverture et au changement d'onglet, on amène la ligne du joueur à
   // l'écran (30 joueurs : elle peut être loin). Pas à chaque rafraîchissement,
@@ -216,7 +219,7 @@ export function ClassementJoueur({
                             className="ml-2 font-mono text-[11px] uppercase tracking-wider"
                             style={{ color: CORAIL }}
                           >
-                            {donnees.mode === 'TEAMS' && actif === 'general'
+                            {estMonEquipe(l.id)
                               ? t('play.classementMonEquipe')
                               : t('play.classementMoi')}
                           </span>
@@ -228,6 +231,53 @@ export function ClassementJoueur({
                     </li>
                   ))}
                 </ol>
+              )}
+              {/* En équipes : les joueurs de la manche, sous les équipes. */}
+              {donnees && joueursManche.length > 0 && (
+                <>
+                  <p className="mb-2 mt-5 font-mono text-[11px] uppercase tracking-[0.22em] text-white/55">
+                    {t('host.intermission.parJoueur')}
+                  </p>
+                  <ol className="space-y-1.5">
+                    {joueursManche.map((j, i) => {
+                      const moi = j.id === donnees.moi.participant_id;
+                      return (
+                        <li
+                          key={j.id}
+                          className={`flex items-center gap-3 rounded-xl border px-3 py-2 ${
+                            moi ? 'bg-white/[0.08]' : 'border-white/[0.07]'
+                          }`}
+                          style={moi ? { borderColor: CORAIL } : undefined}
+                        >
+                          <span className="w-7 shrink-0 text-center font-mono text-sm text-white/55">
+                            {i + 1}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate font-semibold">
+                              {j.label}
+                              {moi && (
+                                <span
+                                  className="ml-2 font-mono text-[11px] uppercase tracking-wider"
+                                  style={{ color: CORAIL }}
+                                >
+                                  {t('play.classementMoi')}
+                                </span>
+                              )}
+                            </span>
+                            {j.equipe && (
+                              <span className="block truncate font-mono text-[11px] uppercase tracking-wider text-white/50">
+                                {j.equipe}
+                              </span>
+                            )}
+                          </span>
+                          <span className="shrink-0 font-mono text-base font-bold tabular-nums">
+                            {j.points}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </>
               )}
             </div>
           </div>

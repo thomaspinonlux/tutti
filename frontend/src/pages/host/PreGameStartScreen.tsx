@@ -201,17 +201,17 @@ export function PreGameStartScreen({
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="text-center max-w-2xl">
           {badge && (
-            <p className="font-mono text-xs uppercase tracking-[0.3em] text-cream/80 mb-3">
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-white/80 mb-3">
               {badge}
             </p>
           )}
-          <TitleHandwritten as="h1" className="text-cream text-5xl md:text-7xl mb-4">
+          <TitleHandwritten as="h1" className="text-white text-5xl md:text-7xl mb-4">
             <Underline>{t('preGame.readyTitle')}</Underline>
           </TitleHandwritten>
-          <p className="font-editorial italic text-cream text-2xl md:text-3xl mb-2">
+          <p className="font-editorial italic text-white text-2xl md:text-3xl mb-2">
             {playlistName}
           </p>
-          <p className="font-mono text-cream/80 text-base md:text-lg mb-12">
+          <p className="font-mono text-white/80 text-base md:text-lg mb-12">
             {t('preGame.trackCount', { count: trackCount })}
           </p>
 
@@ -230,18 +230,18 @@ export function PreGameStartScreen({
                 : '▶ ' + t('preGame.startButton')}
           </Button>
           {attenteApple === 'en-cours' && (
-            <p className="mt-3 font-mono text-sm text-cream/80">
+            <p className="mt-3 font-mono text-sm text-white/80">
               {t('preGame.applePreparationAide')}
             </p>
           )}
           {attenteApple === 'echec' && (
             <div className="mt-3 space-y-2">
-              <p className="font-mono text-sm text-cream">{t('preGame.appleBloque')}</p>
+              <p className="font-mono text-sm text-white">{t('preGame.appleBloque')}</p>
               <button
                 type="button"
                 onClick={handleStartClick}
                 disabled={busy}
-                className="font-mono text-xs text-cream/60 underline"
+                className="font-mono text-xs text-white/60 underline"
               >
                 {t('preGame.lancerQuandMeme')}
               </button>
@@ -254,7 +254,7 @@ export function PreGameStartScreen({
                 type="button"
                 onClick={onCancel}
                 disabled={busy}
-                className="font-mono text-sm text-cream/70 hover:text-cream underline disabled:opacity-50"
+                className="font-mono text-sm text-white/70 hover:text-white underline disabled:opacity-50"
               >
                 {t('preGame.cancel')}
               </button>
@@ -264,7 +264,7 @@ export function PreGameStartScreen({
           {/* feat/option-vocal — dernier reglage avant de lancer. */}
           {typeof vocalActif === 'boolean' && onToggleVocal && (
             <div className="mt-8 flex items-center justify-center gap-3">
-              <span className="font-mono text-sm uppercase tracking-[0.18em] text-cream/60">
+              <span className="font-mono text-sm uppercase tracking-[0.18em] text-white/60">
                 {t('sessionConfig.answerModeChoice')}
               </span>
               <div className="inline-flex overflow-hidden rounded-2xl border border-white/15">
@@ -273,7 +273,7 @@ export function PreGameStartScreen({
                   onClick={() => onToggleVocal(true)}
                   aria-pressed={vocalActif}
                   className={`px-4 py-2 text-sm font-bold transition-colors ${
-                    vocalActif ? 'bg-[#FF3366] text-[#0E0D17]' : 'bg-transparent text-cream/70'
+                    vocalActif ? 'bg-[#FF3366] text-[#0E0D17]' : 'bg-transparent text-white/70'
                   }`}
                 >
                   {t('sessionConfig.modeVoiceTitle')}
@@ -283,7 +283,7 @@ export function PreGameStartScreen({
                   onClick={() => onToggleVocal(false)}
                   aria-pressed={!vocalActif}
                   className={`px-4 py-2 text-sm font-bold transition-colors ${
-                    !vocalActif ? 'bg-[#FF3366] text-[#0E0D17]' : 'bg-transparent text-cream/70'
+                    !vocalActif ? 'bg-[#FF3366] text-[#0E0D17]' : 'bg-transparent text-white/70'
                   }`}
                 >
                   ⌨ {t('sessionConfig.modeWrittenTitle')}
@@ -297,7 +297,7 @@ export function PreGameStartScreen({
             <button
               type="button"
               onClick={() => setShowRules((s) => !s)}
-              className="font-mono text-sm text-cream/80 hover:text-cream underline"
+              className="font-mono text-sm text-white/80 hover:text-white underline"
             >
               {(showRules ? '▾ ' : '▸ ') + t('rules.hostToggle')}
             </button>
@@ -312,7 +312,7 @@ export function PreGameStartScreen({
 
       {/* Fallback overlay si autoplay bloqué par browser/content blocker. */}
       {unlockFailed && (
-        <div className="fixed inset-0 z-50 bg-ink/80 flex items-center justify-center px-6">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center px-6">
           <div className="max-w-md text-center rounded-3xl border border-white/10 bg-[#181628]/90 p-8 shadow-[0_24px_70px_rgba(0,0,0,0.6)] max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <p className="text-4xl mb-3" aria-hidden>
               <Icone nom="alerte" />

@@ -14,11 +14,18 @@
  */
 
 import { Router, type Request, type Response } from 'express';
-import type { RoundProgramItem, RoundProgramResponse, RoundStatus } from '@tutti/shared';
+import type {
+  GameMode,
+  RoundProgramItem,
+  RoundProgramResponse,
+  RoundStatus,
+  Team,
+} from '@tutti/shared';
 import { requireAuth } from '../middleware/auth.js';
 import { requireWorkspace } from '../middleware/tenant.js';
 import { broadcastToSession } from '../socket/index.js';
 import { prisma } from '../lib/prisma.js';
+import { computeRoundResults } from '../lib/roundResults.js';
 import { restartActiveTrack } from '../lib/gameState.js';
 import { cancelPhase2Timer } from './gameplayParticipant.js';
 import {
@@ -284,8 +291,8 @@ router.post(
 //
 // feat/round-end-rankings — résultats de fin de manche pour
 // RoundIntermissionScreen. Retourne 3 classements basés sur ScoreEvent :
-//   - round_ranking      : points cumulés PAR PARTICIPANT pour ce round
-//                          uniquement (filter session_round_id = roundId)
+//   - round_ranking      : points de ce round uniquement, PAR ÉQUIPE en mode
+//                          équipes, par participant sinon
 //   - cumulative_ranking : points cumulés depuis le début de la session
 //                          (toutes manches confondues)
 //   - fastest_player     : participant avec la meilleure moyenne de
@@ -308,104 +315,27 @@ router.get(
       res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Round introuvable' } });
       return;
     }
-    // Participants de la session (pour pseudo / team / color).
-    const participants = await prisma.participant.findMany({
-      where: { session_id: sessionId },
-      select: { id: true, pseudo: true, team_id: true, is_kicked: true },
+    // fix/podium-par-equipe — le calcul vit à UN seul endroit
+    // (lib/roundResults.ts), le même pour la console et pour la TV. Il était
+    // recopié ici, et les deux copies classaient par joueur même en équipes.
+    const partie = await prisma.session.findUnique({
+      where: { id: sessionId },
+      select: { mode: true, teams_config: true },
     });
-    const pseudoById = new Map(participants.map((p) => [p.id, p.pseudo]));
-
-    // 1. Round ranking : SUM(points) GROUP BY participant_id WHERE session_round_id = X
-    const roundAggregate = await prisma.scoreEvent.groupBy({
-      by: ['participant_id'],
-      where: { session_round_id: roundId, session_id: sessionId },
-      _sum: { points: true },
-    });
-    const round_ranking = roundAggregate
-      .map((r) => ({
-        participant_id: r.participant_id,
-        pseudo: pseudoById.get(r.participant_id) ?? '?',
-        points: r._sum.points ?? 0,
-      }))
-      .sort((a, b) => b.points - a.points)
-      .map((r, idx) => ({ ...r, rank: idx + 1 }));
-
-    // 2. Cumulative ranking : SUM(points) GROUP BY participant_id WHERE session_id = X
-    const cumulAggregate = await prisma.scoreEvent.groupBy({
-      by: ['participant_id'],
-      where: { session_id: sessionId },
-      _sum: { points: true },
-    });
-    const cumulative_ranking = cumulAggregate
-      .map((r) => ({
-        participant_id: r.participant_id,
-        pseudo: pseudoById.get(r.participant_id) ?? '?',
-        total_points: r._sum.points ?? 0,
-      }))
-      .sort((a, b) => b.total_points - a.total_points)
-      .map((r, idx) => ({ ...r, rank: idx + 1 }));
-
-    // 3. Fastest player du round : avg buzz_time_ms le plus bas + count
-    //    des "premiers buzz" (positions = 1). Doit avoir au moins 1 buzz.
-    const buzzEvents = await prisma.scoreEvent.findMany({
-      where: {
-        session_round_id: roundId,
-        session_id: sessionId,
-        buzz_time_ms: { not: null },
-      },
-      select: {
-        participant_id: true,
-        buzz_time_ms: true,
-        round_index: true,
-      },
-    });
-    // Group by participant : avg buzz_time + count first buzzes (track-level).
-    type FastStat = {
-      participant_id: string;
-      total_ms: number;
-      count: number;
-      first_buzz_count: number;
-    };
-    const fastByPid = new Map<string, FastStat>();
-    // first_buzz_count = nb de track_index où le participant a le buzz_time min
-    const minBuzzByTrack = new Map<number, number>();
-    for (const ev of buzzEvents) {
-      if (ev.buzz_time_ms == null) continue;
-      const cur = minBuzzByTrack.get(ev.round_index);
-      if (cur === undefined || ev.buzz_time_ms < cur) {
-        minBuzzByTrack.set(ev.round_index, ev.buzz_time_ms);
-      }
-    }
-    for (const ev of buzzEvents) {
-      if (ev.buzz_time_ms == null) continue;
-      const cur = fastByPid.get(ev.participant_id) ?? {
-        participant_id: ev.participant_id,
-        total_ms: 0,
-        count: 0,
-        first_buzz_count: 0,
-      };
-      cur.total_ms += ev.buzz_time_ms;
-      cur.count += 1;
-      if (minBuzzByTrack.get(ev.round_index) === ev.buzz_time_ms) {
-        cur.first_buzz_count += 1;
-      }
-      fastByPid.set(ev.participant_id, cur);
-    }
-    const fastestList = Array.from(fastByPid.values())
-      .map((s) => ({
-        participant_id: s.participant_id,
-        pseudo: pseudoById.get(s.participant_id) ?? '?',
-        avg_buzz_ms: Math.round(s.total_ms / s.count),
-        first_buzz_count: s.first_buzz_count,
-        buzz_count: s.count,
-      }))
-      .sort((a, b) => b.first_buzz_count - a.first_buzz_count || a.avg_buzz_ms - b.avg_buzz_ms);
-    const fastest_player = fastestList.length > 0 ? fastestList[0] : null;
+    const { round_ranking, round_ranking_joueurs, cumulative_ranking, fastest_player } =
+      await computeRoundResults(
+        sessionId,
+        roundId,
+        partie
+          ? { mode: partie.mode as GameMode, teams: (partie.teams_config as Team[] | null) ?? null }
+          : undefined,
+      );
 
     res.json({
       round_id: roundId,
       round_position: round.position,
       round_ranking,
+      round_ranking_joueurs,
       cumulative_ranking,
       fastest_player,
     });

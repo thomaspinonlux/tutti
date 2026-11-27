@@ -93,14 +93,18 @@ export function ThemeCard({
       />
       <div className="absolute bottom-0 left-0 right-0 p-3">
         <p
-          className="font-display font-bold uppercase leading-tight text-cream line-clamp-2"
-          style={{ fontFamily: 'Fraunces, serif', fontSize: 18, letterSpacing: '0.01em' }}
+          className="font-display font-bold uppercase leading-tight text-white line-clamp-2"
+          style={{
+            fontFamily: 'Syne, system-ui, sans-serif',
+            fontSize: 18,
+            letterSpacing: '0.01em',
+          }}
         >
           {title}
         </p>
         <p
-          className="mt-1 line-clamp-1 text-cream/85"
-          style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12 }}
+          className="mt-1 line-clamp-1 text-white/85"
+          style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', fontSize: 12 }}
         >
           {subtitle}
         </p>

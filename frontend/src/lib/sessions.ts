@@ -256,6 +256,8 @@ export interface ClassementJoueur {
     position: number;
     en_cours: boolean;
     classement: Array<{ id: string; label: string; points: number }>;
+    /** Mode équipes : les joueurs, affichés sous les équipes. */
+    joueurs?: Array<{ id: string; label: string; points: number; equipe: string | null }>;
   } | null;
 }
 
@@ -392,10 +394,20 @@ export interface FastestPlayer {
   first_buzz_count: number;
   buzz_count: number;
 }
+/** Mode équipes : une ligne du classement par joueur, sous celui des équipes. */
+export interface RoundPlayerEntry {
+  participant_id: string;
+  pseudo: string;
+  points: number;
+  rank: number;
+  equipe: string | null;
+}
 export interface RoundResults {
   round_id: string;
   round_position: number;
   round_ranking: RoundRankingEntry[];
+  /** Absent en solo (round_ranking est déjà par joueur) ou sur un vieux serveur. */
+  round_ranking_joueurs?: RoundPlayerEntry[] | null;
   cumulative_ranking: CumulativeRankingEntry[];
   fastest_player: FastestPlayer | null;
 }

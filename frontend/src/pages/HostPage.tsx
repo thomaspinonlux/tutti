@@ -2883,7 +2883,7 @@ function HostPageInner(): JSX.Element {
               unlockAudioSync('spotify-audio-blocked-banner-modeB');
               void spotify.unblockAudio();
             }}
-            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-hairline flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
+            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-white px-4 py-3 font-bold border-b-4 border-hairline flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
           >
             <span className="text-2xl" aria-hidden>
               <Icone nom="son" />
@@ -2900,7 +2900,7 @@ function HostPageInner(): JSX.Element {
               unlockAudioSync('apple-audio-blocked-banner-modeB');
               void apple.unblockAudio();
             }}
-            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-hairline flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
+            className="fixed top-0 left-0 right-0 z-50 bg-raspberry text-white px-4 py-3 font-bold border-b-4 border-hairline flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
           >
             <span className="text-2xl" aria-hidden>
               <Icone nom="son" />
@@ -3096,7 +3096,7 @@ function HostPageInner(): JSX.Element {
             unlockAudioSync('spotify-audio-blocked-banner-modeA');
             void spotify.unblockAudio();
           }}
-          className="w-full bg-raspberry text-cream px-4 py-3 font-bold border-b-4 border-hairline flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
+          className="w-full bg-raspberry text-white px-4 py-3 font-bold border-b-4 border-hairline flex items-center justify-center gap-3 hover:bg-raspberry-deep transition-colors animate-pop-in"
         >
           <span className="text-2xl" aria-hidden>
             <Icone nom="son" />
@@ -3115,7 +3115,7 @@ function HostPageInner(): JSX.Element {
           role="dialog"
           aria-modal="true"
           aria-label={t('host.youtubeBlockedTitle')}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 backdrop-blur-sm animate-fade-in p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in p-6"
         >
           <button
             type="button"
@@ -3125,7 +3125,7 @@ function HostPageInner(): JSX.Element {
               unlockAudioSync('tap-to-start-overlay');
               youtube.tapToStart();
             }}
-            className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-hairline shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
+            className="bg-raspberry text-white max-w-md w-full px-6 py-8 rounded-lg border-4 border-hairline shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <span className="text-5xl" aria-hidden>
               ▶
@@ -3150,7 +3150,7 @@ function HostPageInner(): JSX.Element {
           role="dialog"
           aria-modal="true"
           aria-label={t('host.youtubeBlockedTitle')}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 backdrop-blur-sm animate-fade-in p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in p-6"
         >
           <button
             type="button"
@@ -3159,7 +3159,7 @@ function HostPageInner(): JSX.Element {
               unlockAudioSync('apple-tap-to-start-overlay');
               void apple.unblockAudio();
             }}
-            className="bg-raspberry text-cream max-w-md w-full px-6 py-8 rounded-lg border-4 border-hairline shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
+            className="bg-raspberry text-white max-w-md w-full px-6 py-8 rounded-lg border-4 border-hairline shadow-pop-lg flex flex-col items-center gap-4 hover:bg-raspberry-deep transition-transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <span className="text-5xl" aria-hidden>
               ▶
@@ -3677,7 +3677,7 @@ function HostPageInner(): JSX.Element {
 
       {/* Debug Spotify (visible uniquement en mode Spotify + SDK actif) */}
       {spotify.status !== 'idle' && audioProvider === 'spotify' && (
-        <div className="fixed bottom-2 left-2 z-50 max-w-[280px] px-2 py-1 bg-ink/90 text-cream font-mono text-[10px] rounded border border-cream/30 leading-tight">
+        <div className="fixed bottom-2 left-2 z-50 max-w-[280px] px-2 py-1 bg-black/90 text-white font-mono text-[10px] rounded border border-white/30 leading-tight">
           <div>
             Spotify: <strong>{spotify.status}</strong>
             {spotify.isPlaying ? ' lecture' : ' pause'}

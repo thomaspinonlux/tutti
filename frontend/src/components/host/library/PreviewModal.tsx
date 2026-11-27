@@ -59,7 +59,7 @@ export function PreviewModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="preview-title"
-      className="fixed inset-0 z-50 bg-ink/60 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
       onClick={onCancel}
     >
       <div
@@ -87,9 +87,7 @@ export function PreviewModal({
             </p>
             <p className="text-sm">{t('host.session.modal.preview.tracksAvailable')}</p>
             {ratio < 0.5 && !appleLowCoverage && (
-              <p className="text-xs font-bold mt-2">
-                {t('host.session.modal.preview.warningLow')}
-              </p>
+              <p className="text-xs font-bold mt-2">{t('host.session.modal.preview.warningLow')}</p>
             )}
           </div>
 

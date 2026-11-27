@@ -288,7 +288,7 @@ function Th({ k, sk, so, on, align, children }: ThProps): JSX.Element {
   const arrow = active ? (so === 'asc' ? ' ↑' : ' ↓') : '';
   const alignClass =
     align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
-  const activeClass = active ? 'bg-spritz/30 text-white' : 'hover:bg-ink/80';
+  const activeClass = active ? 'bg-spritz/30 text-white' : 'hover:bg-cream-4';
   return (
     <th
       scope="col"

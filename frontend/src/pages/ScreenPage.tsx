@@ -34,7 +34,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Card, Input, MultiColorBar } from '../components/ui/index.js';
 import { QRCode } from '../components/host/QRCode.js';
 import { getScreenState, type ScreenState } from '../lib/screenState.js';
-import type { RoundRankingEntry, FastestPlayer } from '../lib/sessions.js';
+import type { RoundRankingEntry, RoundPlayerEntry, FastestPlayer } from '../lib/sessions.js';
 import { getMe } from '../lib/me.js';
 import { connectAsSpectator } from '../lib/socket.js';
 import type { Socket } from 'socket.io-client';
@@ -426,8 +426,7 @@ export function ScreenPage(): JSX.Element {
     // feat/quiz-comme-le-blind-test — le quiz s'affiche sur la TV.
     const onQuizStart = (m: { state: CurrentQuestionState }): void =>
       setQuizTv({ question: m.state, reveal: null, finDeManche: false });
-    const onQuizReveal = (m: QuizTvReveal): void =>
-      setQuizTv((q) => (q ? { ...q, reveal: m } : q));
+    const onQuizReveal = (m: QuizTvReveal): void => setQuizTv((q) => (q ? { ...q, reveal: m } : q));
     const onQuizFinManche = (): void =>
       setQuizTv({ question: null, reveal: null, finDeManche: true });
     const onFinPartie = (): void => setQuizTv(null);
@@ -462,7 +461,9 @@ export function ScreenPage(): JSX.Element {
   // reconnectée) : sans elle, la TV restait sur la salle d'attente jusqu'à la
   // question suivante.
   const quizSessionId =
-    screenState?.state === 'LOBBY' && screenState.gameType === 'QUIZZ' ? screenState.sessionId : null;
+    screenState?.state === 'LOBBY' && screenState.gameType === 'QUIZZ'
+      ? screenState.sessionId
+      : null;
   useEffect(() => {
     if (!quizSessionId) return;
     let vivant = true;
@@ -632,6 +633,7 @@ export function ScreenPage(): JSX.Element {
           joinCode={screenState.joinCode}
           cumulative={screenState.cumulative}
           roundRanking={screenState.roundRanking}
+          joueurs={screenState.roundRankingJoueurs ?? null}
           fastest={screenState.fastestPlayer}
           roundPosition={screenState.lastEndedRoundPosition}
         />
@@ -1091,13 +1093,13 @@ function ScreenWithQrOverlay({
     <div className="relative">
       {children}
       {show && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-ink/85 backdrop-blur-sm animate-fade-in">
-          <p className="font-mono text-base uppercase tracking-[0.3em] text-cream">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-black/85 backdrop-blur-sm animate-fade-in">
+          <p className="font-mono text-base uppercase tracking-[0.3em] text-white">
             {t('screen.joinTitle')}
           </p>
           <QRCode value={url} size={440} />
-          <p className="font-mono text-5xl font-bold tracking-[0.3em] text-cream">{joinCode}</p>
-          <p className="font-editorial italic text-2xl text-cream/80">{t('screen.joinHint')}</p>
+          <p className="font-mono text-5xl font-bold tracking-[0.3em] text-white">{joinCode}</p>
+          <p className="font-editorial italic text-2xl text-white/80">{t('screen.joinHint')}</p>
         </div>
       )}
     </div>
@@ -1110,12 +1112,15 @@ function ScreenRoundPodiumView({
   joinCode,
   cumulative,
   roundRanking,
+  joueurs,
   fastest,
   roundPosition,
 }: {
   joinCode: string;
   cumulative: import('@tutti/shared').CumulativeScore[];
   roundRanking: RoundRankingEntry[];
+  /** Mode équipes : les joueurs, sous les équipes. */
+  joueurs: RoundPlayerEntry[] | null;
   fastest: FastestPlayer | null;
   roundPosition: number;
 }): JSX.Element {
@@ -1167,7 +1172,9 @@ function ScreenRoundPodiumView({
                           <span className="font-mono text-2xl text-[#A5A1B8]">{idx + 1}</span>
                         )}
                       </span>
-                      <span className={`font-display flex-1 text-white ${classesNom(e.pseudo, 'podium')}`}>
+                      <span
+                        className={`font-display flex-1 text-white ${classesNom(e.pseudo, 'podium')}`}
+                      >
                         {e.pseudo}
                       </span>
                       <span className="font-mono text-4xl lg:text-5xl font-bold tabular-nums text-white">
@@ -1176,6 +1183,41 @@ function ScreenRoundPodiumView({
                     </li>
                   ))}
                 </ol>
+                {/* fix/podium-par-equipe — les équipes d'abord, les joueurs
+                    ensuite, plus petits : le podium reste celui des équipes. */}
+                {joueurs && joueurs.length > 0 && (
+                  <>
+                    <p className="font-mono text-xs uppercase tracking-[0.25em] mt-6 mb-3 text-[#A5A1B8]">
+                      {t('host.intermission.parJoueur')}
+                    </p>
+                    <ol className="space-y-1.5 pr-1">
+                      {joueurs.map((j) => (
+                        <li
+                          key={j.participant_id}
+                          className="flex items-center gap-4 px-5 py-2.5 rounded-xl"
+                          style={{ backgroundColor: '#ffffff08', border: '1px solid #ffffff10' }}
+                        >
+                          <span className="font-mono text-xl w-10 text-[#A5A1B8]">{j.rank}.</span>
+                          <span className="flex-1 min-w-0">
+                            <span
+                              className={`font-display text-white ${classesNom(j.pseudo, 'liste')}`}
+                            >
+                              {j.pseudo}
+                            </span>
+                            {j.equipe && (
+                              <span className="block font-mono text-sm uppercase tracking-wider text-[#A5A1B8]">
+                                {j.equipe}
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-mono text-2xl lg:text-3xl font-bold tabular-nums text-white">
+                            +{j.points}
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  </>
+                )}
               </AutoScrollList>
             )}
           </section>
@@ -1221,7 +1263,9 @@ function ScreenRoundPodiumView({
                       }}
                     >
                       <span className="font-mono text-xl w-10 text-[#A5A1B8]">{idx + 1}.</span>
-                      <span className={`font-display flex-1 text-white ${classesNom(e.label, 'podium')}`}>
+                      <span
+                        className={`font-display flex-1 text-white ${classesNom(e.label, 'podium')}`}
+                      >
                         {e.label}
                       </span>
                       <span className="font-mono text-3xl lg:text-4xl font-bold tabular-nums text-white">
@@ -1284,7 +1328,9 @@ function ScreenFinalPodiumView({
                 <span aria-hidden className="text-4xl">
                   <Rang rang={idx + 1} />
                 </span>
-                <span className={`font-display flex-1 text-white ${classesNom(entry!.label, 'podium')}`}>
+                <span
+                  className={`font-display flex-1 text-white ${classesNom(entry!.label, 'podium')}`}
+                >
                   {entry!.label}
                 </span>
                 <span className="font-mono text-2xl font-bold tabular-nums text-white">

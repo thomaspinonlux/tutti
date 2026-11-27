@@ -83,7 +83,7 @@ export function JoinQrCorner({
                 onClick();
               }}
               aria-label={t('host.joinQr.close')}
-              className="absolute -top-3 -right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-hairline bg-raspberry text-cream shadow-pop-lg font-display text-2xl leading-none transition-transform active:scale-90"
+              className="absolute -top-3 -right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-hairline bg-raspberry text-white shadow-pop-lg font-display text-2xl leading-none transition-transform active:scale-90"
             >
               ✕
             </button>

@@ -756,6 +756,34 @@ export function PlayPage(): JSX.Element {
   };
 
   /**
+   * feat/rallumer-le-micro — Thomas, 26/11 : « si les gens commencent à jouer
+   * et qu'ils oublient d'ouvrir leur micro, quelle est la procédure pour
+   * revenir en arrière ? ». Il n'y en avait pas : « Jouer sans micro » valait
+   * pour toute la partie, même après avoir quitté et être revenu.
+   *
+   * Un appui redemande l'autorisation. Accordée : le buzzer revient. Refusée :
+   * les étapes pour l'autoriser dans les réglages s'affichent, avec
+   * « Réessayer » — et « Jouer sans micro » referme simplement la fenêtre.
+   */
+  const [aideMicro, setAideMicro] = useState(false);
+  const [microIndisponible, setMicroIndisponible] = useState(false);
+  const handleActiverMicro = async (): Promise<void> => {
+    setMicRequesting(true);
+    const res = await requestMicPermission();
+    setMicRequesting(false);
+    if (res.kind === 'granted') {
+      noterSansMicro(false);
+      setAideMicro(false);
+      setMicroIndisponible(false);
+    } else if (res.kind === 'unsupported') {
+      setAideMicro(false);
+      setMicroIndisponible(true);
+    } else {
+      setAideMicro(true);
+    }
+  };
+
+  /**
    * feat/joueur-peut-quitter — Thomas, 23/11 : « le téléphone d'un joueur doit
    * avoir un bouton quitter ».
    *
@@ -1317,6 +1345,47 @@ export function PlayPage(): JSX.Element {
               onSansMicro={handleSansMicro}
               busy={micRequesting || submitting}
             />
+          )}
+
+          {/* feat/rallumer-le-micro — partie à la voix jouée sans micro : la
+              touche pour le rallumer reste sous la main, en attente comme en
+              jeu. Pas au quiz (pas de voix), pas pour l'animateur seul (il ne
+              répond pas). */}
+          {vocalActif &&
+            sansMicro &&
+            identity &&
+            view?.game_type !== 'QUIZZ' &&
+            myRole !== 'ANIMATOR_FULL' &&
+            (step === 'waiting' || step === 'playing') && (
+              <div className="mb-3 rounded-2xl border border-white/12 bg-white/[0.05] px-3 py-2">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="min-w-0 text-sm text-white/75">{t('play.sansMicroBandeau')}</p>
+                  <button
+                    type="button"
+                    onClick={() => void handleActiverMicro()}
+                    disabled={micRequesting}
+                    className="min-h-[40px] shrink-0 rounded-xl border border-white/25 px-3 text-sm font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-40"
+                  >
+                    {micRequesting ? t('onboarding.requesting') : t('play.activerMicro')}
+                  </button>
+                </div>
+                {microIndisponible && (
+                  <p role="alert" className="mt-2 text-sm" style={{ color: TEL_CORAIL }}>
+                    {t('play.microIndisponible')}
+                  </p>
+                )}
+              </div>
+            )}
+          {aideMicro && (
+            <div className="fixed inset-0 z-[70] overflow-y-auto bg-black/80 p-5 backdrop-blur-sm animate-fade-in">
+              <div className="mx-auto w-full max-w-sm">
+                <MicPermissionErrorScreen
+                  onRetry={handleActiverMicro}
+                  onSansMicro={() => setAideMicro(false)}
+                  busy={micRequesting}
+                />
+              </div>
+            </div>
           )}
 
           {step === 'waiting' && identity && (

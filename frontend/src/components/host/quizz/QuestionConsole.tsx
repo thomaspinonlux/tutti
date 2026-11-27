@@ -94,7 +94,9 @@ export function QuestionConsole({
   const pausable = ['MCQ', 'TRUE_FALSE', 'FREE_TEXT', 'ESTIMATION'].includes(state.type);
 
   // L'animateur seul ne répond pas : il ne compte pas dans les réponses attendues.
-  const expectedCount = participants.filter((p) => !p.is_kicked && p.role !== 'ANIMATOR_FULL').length;
+  const expectedCount = participants.filter(
+    (p) => !p.is_kicked && p.role !== 'ANIMATOR_FULL',
+  ).length;
   const submittedCount = submittedSet.size;
 
   const isAsking = state.phase === 'asking';
@@ -120,7 +122,12 @@ export function QuestionConsole({
           )}
           <span className="font-mono text-[11px] text-ink-soft">{state.points} pts</span>
         </div>
-        <TimerBar remainingSec={remainingSec} ratio={ratio} isAsking={isAsking} enPause={!!state.en_pause} />
+        <TimerBar
+          remainingSec={remainingSec}
+          ratio={ratio}
+          isAsking={isAsking}
+          enPause={!!state.en_pause}
+        />
       </header>
 
       {/* fix/quiz-bouton-en-haut — Thomas, 08/11 : « nous devons bouger l'écran
@@ -140,7 +147,9 @@ export function QuestionConsole({
           )}
           {isAsking && onReveal && (
             <Button onClick={onReveal} disabled={busy} variant="secondary">
-              {state.type === 'BLUFF' || state.type === 'FUNNY' ? t('jeux.etapeSuivante') : t('hostQuizz.revealNow')}
+              {state.type === 'BLUFF' || state.type === 'FUNNY'
+                ? t('jeux.etapeSuivante')
+                : t('hostQuizz.revealNow')}
             </Button>
           )}
           {!isAsking && onNext && (
@@ -152,13 +161,16 @@ export function QuestionConsole({
       </div>
 
       {/* feat/jeux-de-salon — Bluff / Réponse drôle / P'tit Bac. */}
-      {(state.type === 'BLUFF' || state.type === 'FUNNY' || state.type === 'PETIT_BAC') && sessionId ? (
+      {(state.type === 'BLUFF' || state.type === 'FUNNY' || state.type === 'PETIT_BAC') &&
+      sessionId ? (
         <div className="flex-1 min-h-0 mb-2 overflow-auto">
           {state.type === 'PETIT_BAC' ? (
             <SceneBac
               question={state}
               details={
-                !isAsking && lastReveal?.question_index === state.question_index && lastReveal.details?.kind === 'bac'
+                !isAsking &&
+                lastReveal?.question_index === state.question_index &&
+                lastReveal.details?.kind === 'bac'
                   ? lastReveal.details
                   : null
               }
@@ -170,7 +182,9 @@ export function QuestionConsole({
               sessionId={sessionId}
               question={state}
               details={
-                !isAsking && lastReveal?.question_index === state.question_index && lastReveal.details?.kind === 'vote'
+                !isAsking &&
+                lastReveal?.question_index === state.question_index &&
+                lastReveal.details?.kind === 'vote'
                   ? lastReveal.details
                   : null
               }
@@ -184,105 +198,108 @@ export function QuestionConsole({
             socket={socket}
             sessionId={sessionId}
             question={state}
-            revealAnswer={isAsking ? null : (state.reveal?.answer ?? lastRevealAnswer(lastReveal, state))}
+            revealAnswer={
+              isAsking ? null : (state.reveal?.answer ?? lastRevealAnswer(lastReveal, state))
+            }
             restant={isAsking ? remainingSec : null}
             motAnimateur={motAnimateur}
             xl={xl}
           />
         </div>
       ) : (
-      <>
-      {/* Énoncé */}
-      <Card size="lg" tone={isAsking ? 'cream' : 'spritz'} className="mb-4">
-        <p
-          className={`font-display leading-tight mb-2 whitespace-pre-line ${
-            xl ? 'text-5xl md:text-6xl 2xl:text-7xl' : 'text-3xl md:text-4xl'
-          }`}
-        >
-          {state.text}
-        </p>
-        {packBilingual && state.text_alt && (
-          <p className={`font-editorial italic text-ink-soft ${xl ? 'text-3xl' : 'text-xl'}`}>
-            {state.text_alt}
-          </p>
-        )}
-      </Card>
-
-      {/* feat/quiz-question-media — embed YouTube (audio caché / video visible) */}
-      {state.media_youtube_id && (state.media_type === 'AUDIO' || state.media_type === 'VIDEO') && (
-        <QuizMediaEmbed
-          youtubeId={state.media_youtube_id}
-          startSec={state.media_start_sec ?? 0}
-          durationSec={state.media_duration_sec ?? 10}
-          kind={state.media_type === 'AUDIO' ? 'audio' : 'video'}
-          xl={xl}
-        />
-      )}
-
-      {/* Body type-specific */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        {state.type === 'MCQ' && (
-          <McqChoices
-            choices={state.choices}
-            choicesAlt={packBilingual ? state.choices_alt : undefined}
-            revealAnswer={state.reveal?.answer ?? null}
-          />
-        )}
-        {/* feat/blind-test-simple — la réponse révélée donne le titre ET l'interprète. */}
-        {aUnExtrait(state) && state.reveal?.answer_alt && (
-          <p className="mt-4 text-center font-display text-2xl md:text-3xl break-words">{state.reveal.answer_alt}</p>
-        )}
-        {state.type === 'TRUE_FALSE' && (
-          <TrueFalseDisplay revealAnswer={state.reveal?.answer ?? null} />
-        )}
-        {state.type === 'FREE_TEXT' && (
-          <FreeTextDisplay
-            revealAnswer={state.reveal?.answer ?? null}
-            revealAlt={packBilingual ? state.reveal?.answer_alt : undefined}
-          />
-        )}
-        {state.type === 'ESTIMATION' && (
-          <EstimationDisplay
-            min={state.estimation_min}
-            max={state.estimation_max}
-            unit={state.estimation_unit}
-            revealAnswer={state.reveal?.answer ?? null}
-          />
-        )}
-
-        {/* Phase revealed : classement */}
-        {!isAsking && lastReveal && lastReveal.question_index === state.question_index && (
-          <div className="mt-6">
-            <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
-              {t('hostQuizz.questionResults')}
+        <>
+          {/* Énoncé */}
+          <Card size="lg" tone={isAsking ? 'cream' : 'spritz'} className="mb-4">
+            <p
+              className={`font-display leading-tight mb-2 whitespace-pre-line ${
+                xl ? 'text-5xl md:text-6xl 2xl:text-7xl' : 'text-3xl md:text-4xl'
+              }`}
+            >
+              {state.text}
             </p>
-            <ol className="space-y-1">
-              {lastReveal.results.slice(0, 10).map((r, idx) => (
-                <li
-                  key={r.participant_id}
-                  className={`flex items-center gap-2 px-3 py-1.5 border-2 border-hairline rounded text-sm ${
-                    r.is_correct ? 'bg-basil/20' : 'bg-cream'
-                  }`}
-                >
-                  <span className="font-mono text-xs text-ink-soft w-5">{idx + 1}.</span>
-                  <span className="flex-1 truncate font-medium">{r.pseudo}</span>
-                  <span className="font-mono text-xs text-ink-soft truncate max-w-[40%]">
-                    {r.submitted}
-                  </span>
-                  <span className="font-mono font-bold w-16 text-right">
-                    {r.is_correct ? '+' : ''}
-                    {r.score}
-                  </span>
-                </li>
-              ))}
-            </ol>
+            {packBilingual && state.text_alt && (
+              <p className={`font-editorial italic text-ink-soft ${xl ? 'text-3xl' : 'text-xl'}`}>
+                {state.text_alt}
+              </p>
+            )}
+          </Card>
+
+          {/* feat/quiz-question-media — embed YouTube (audio caché / video visible) */}
+          {state.media_youtube_id &&
+            (state.media_type === 'AUDIO' || state.media_type === 'VIDEO') && (
+              <QuizMediaEmbed
+                youtubeId={state.media_youtube_id}
+                startSec={state.media_start_sec ?? 0}
+                durationSec={state.media_duration_sec ?? 10}
+                kind={state.media_type === 'AUDIO' ? 'audio' : 'video'}
+                xl={xl}
+              />
+            )}
+
+          {/* Body type-specific */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            {state.type === 'MCQ' && (
+              <McqChoices
+                choices={state.choices}
+                choicesAlt={packBilingual ? state.choices_alt : undefined}
+                revealAnswer={state.reveal?.answer ?? null}
+              />
+            )}
+            {/* feat/blind-test-simple — la réponse révélée donne le titre ET l'interprète. */}
+            {aUnExtrait(state) && state.reveal?.answer_alt && (
+              <p className="mt-4 text-center font-display text-2xl md:text-3xl break-words">
+                {state.reveal.answer_alt}
+              </p>
+            )}
+            {state.type === 'TRUE_FALSE' && (
+              <TrueFalseDisplay revealAnswer={state.reveal?.answer ?? null} />
+            )}
+            {state.type === 'FREE_TEXT' && (
+              <FreeTextDisplay
+                revealAnswer={state.reveal?.answer ?? null}
+                revealAlt={packBilingual ? state.reveal?.answer_alt : undefined}
+              />
+            )}
+            {state.type === 'ESTIMATION' && (
+              <EstimationDisplay
+                min={state.estimation_min}
+                max={state.estimation_max}
+                unit={state.estimation_unit}
+                revealAnswer={state.reveal?.answer ?? null}
+              />
+            )}
+
+            {/* Phase revealed : classement */}
+            {!isAsking && lastReveal && lastReveal.question_index === state.question_index && (
+              <div className="mt-6">
+                <p className="font-mono text-xs uppercase tracking-wider text-ink-soft mb-2">
+                  {t('hostQuizz.questionResults')}
+                </p>
+                <ol className="space-y-1">
+                  {lastReveal.results.slice(0, 10).map((r, idx) => (
+                    <li
+                      key={r.participant_id}
+                      className={`flex items-center gap-2 px-3 py-1.5 border-2 border-hairline rounded text-sm ${
+                        r.is_correct ? 'bg-basil/20' : 'bg-cream'
+                      }`}
+                    >
+                      <span className="font-mono text-xs text-ink-soft w-5">{idx + 1}.</span>
+                      <span className="flex-1 truncate font-medium">{r.pseudo}</span>
+                      <span className="font-mono text-xs text-ink-soft truncate max-w-[40%]">
+                        {r.submitted}
+                      </span>
+                      <span className="font-mono font-bold w-16 text-right">
+                        {r.is_correct ? '+' : ''}
+                        {r.score}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-
-      </>
+        </>
       )}
-
     </div>
   );
 }
@@ -386,7 +403,7 @@ function TrueFalseDisplay({ revealAnswer }: { revealAnswer: string | null }): JS
                 : isCorrect
                   ? opt === 'true'
                     ? 'bg-basil text-ink'
-                    : 'bg-raspberry text-cream'
+                    : 'bg-raspberry text-white'
                   : 'bg-cream-2 opacity-50'
             }`}
           >

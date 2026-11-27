@@ -103,7 +103,7 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
 
       {showPrompt && (
         <div
-          className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center p-6 animate-fade-in"
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6 animate-fade-in"
           onClick={handleReject}
         >
           <Card
@@ -146,7 +146,7 @@ export function ExternalScreenButton({ shortCode }: Props): JSX.Element {
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="no-screen-title"
-          className="fixed inset-0 bg-ink/50 z-50 flex items-center justify-center p-6 animate-fade-in"
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6 animate-fade-in"
           onClick={() => setShowNoScreenModal(false)}
         >
           <Card

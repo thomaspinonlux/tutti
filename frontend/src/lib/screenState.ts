@@ -12,7 +12,7 @@ import type {
   SessionWithParticipants,
 } from '@tutti/shared';
 import { api } from './api.js';
-import type { RoundRankingEntry, FastestPlayer } from './sessions.js';
+import type { RoundRankingEntry, RoundPlayerEntry, FastestPlayer } from './sessions.js';
 
 export type ScreenStateValue =
   | 'IDLE'
@@ -85,6 +85,8 @@ export type ScreenState =
       sessionName: string | null;
       cumulative: CumulativeScore[];
       roundRanking: RoundRankingEntry[];
+      /** Mode équipes : classement par joueur, sous celui des équipes. */
+      roundRankingJoueurs?: RoundPlayerEntry[] | null;
       fastestPlayer: FastestPlayer | null;
       lastEndedRoundPosition: number;
       lastUpdate: string;

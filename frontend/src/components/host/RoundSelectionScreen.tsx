@@ -475,7 +475,7 @@ export function RoundSelectionScreen({
                 onClick={() => setLibrarySubTab('quizz')}
                 className={`px-3 py-1 font-mono text-xs uppercase tracking-wider rounded-full transition-colors ${
                   librarySubTab === 'quizz'
-                    ? 'bg-raspberry text-cream shadow-pop-sm'
+                    ? 'bg-raspberry text-white shadow-pop-sm'
                     : 'bg-white/[0.06] text-white/60 hover:bg-white/[0.12]'
                 }`}
               >

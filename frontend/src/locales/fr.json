@@ -513,7 +513,8 @@
       "noBuzz": "Aucun buzz cette manche.",
       "noPoints": "Personne n'a marqué de point cette manche.",
       "fetchError": "Erreur lors du chargement des résultats",
-      "loading": "Calcul des résultats…"
+      "loading": "Calcul des résultats…",
+      "parJoueur": "Classement par joueur"
     },
     "buzzFeed": "Derniers buzz",
     "buzzFeedEmpty": "Pas encore de buzz.",
@@ -844,6 +845,9 @@
     "repriseDePlace": "Tu reprends ta place — ton score est conservé",
     "pseudoDejaEnLigne": "Ce pseudo est déjà utilisé par un téléphone connecté. Choisis-en un autre.",
     "quitter": "Quitter",
+    "sansMicroBandeau": "Tu joues sans micro.",
+    "activerMicro": "Activer le micro",
+    "microIndisponible": "Ce navigateur ne donne pas accès au micro.",
     "quitterConfirmer": "Quitter ?",
     "quitteTitre": "Tu as quitté la partie",
     "quitteAide": "Tu peux revenir quand tu veux.",

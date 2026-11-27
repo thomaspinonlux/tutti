@@ -116,7 +116,7 @@ export function LyricsOverlay({ lines, getPositionMs, paused }: Props): JSX.Elem
           La phrase en cours est la plus grosse ; celles qui suivent restent
           assez grandes pour être lues en avance, comme un karaoké. */}
       {prev?.text ? (
-        <p className="font-display text-3xl xl:text-4xl text-cream/30 mb-5 line-clamp-1 transition-all duration-300">
+        <p className="font-display text-3xl xl:text-4xl text-white/30 mb-5 line-clamp-1 transition-all duration-300">
           {prev.text}
         </p>
       ) : (
@@ -124,23 +124,23 @@ export function LyricsOverlay({ lines, getPositionMs, paused }: Props): JSX.Elem
       )}
 
       {inSilence ? (
-        <p className="font-display text-6xl xl:text-7xl text-cream/60 tracking-[0.3em] animate-pulse">
+        <p className="font-display text-6xl xl:text-7xl text-white/60 tracking-[0.3em] animate-pulse">
           ♪ ♪ ♪
         </p>
       ) : (
-        <p className="font-display text-[56px] leading-[1.08] xl:text-7xl text-cream drop-shadow-lg transition-all duration-300 max-w-[94%]">
+        <p className="font-display text-[56px] leading-[1.08] xl:text-7xl text-white drop-shadow-lg transition-all duration-300 max-w-[94%]">
           {current?.text}
         </p>
       )}
 
       <div className="mt-7 space-y-3">
         {next1?.text ? (
-          <p className="font-display text-4xl xl:text-5xl text-cream/60 line-clamp-1 transition-all duration-300">
+          <p className="font-display text-4xl xl:text-5xl text-white/60 line-clamp-1 transition-all duration-300">
             {next1.text}
           </p>
         ) : null}
         {next2?.text ? (
-          <p className="font-display text-3xl xl:text-4xl text-cream/35 line-clamp-1 transition-all duration-300">
+          <p className="font-display text-3xl xl:text-4xl text-white/35 line-clamp-1 transition-all duration-300">
             {next2.text}
           </p>
         ) : null}

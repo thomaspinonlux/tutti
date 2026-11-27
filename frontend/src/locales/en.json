@@ -513,7 +513,8 @@
       "noBuzz": "No buzz this round.",
       "noPoints": "Nobody scored this round.",
       "fetchError": "Error loading results",
-      "loading": "Calculating results…"
+      "loading": "Calculating results…",
+      "parJoueur": "Player ranking"
     },
     "buzzFeed": "Recent buzzes",
     "buzzFeedEmpty": "No buzz yet.",
@@ -844,6 +845,9 @@
     "repriseDePlace": "You’re back in your seat — your score is safe",
     "pseudoDejaEnLigne": "That nickname is already in use on a connected phone. Pick another one.",
     "quitter": "Leave",
+    "sansMicroBandeau": "You're playing without a mic.",
+    "activerMicro": "Turn on the mic",
+    "microIndisponible": "This browser doesn't give access to the mic.",
     "quitterConfirmer": "Leave?",
     "quitteTitre": "You left the game",
     "quitteAide": "You can come back whenever you like.",
